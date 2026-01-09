@@ -71,8 +71,20 @@ type NonGenericCombatTrigger =
 	| UsePowerTrigger
 	| KillTargetTrigger
 	| CombatEndIndividual
-	| PreDamageTrigger;
+	| PreDamageTrigger
+	| StartEventTrigger
+	| EndEventTrigger
 ;
+
+type StartEventTrigger = {
+	trigger: "on-event-start" ;
+	event: UniversalItemAccessor<PersonaEvent>;
+}
+
+type EndEventTrigger = {
+	trigger: "on-event-end" ;
+	event: UniversalItemAccessor<PersonaEvent>;
+}
 
 type PreDamageTrigger = UserSituation & {
 	trigger: "pre-take-damage",

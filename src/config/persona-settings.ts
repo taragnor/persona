@@ -11,8 +11,9 @@ export const HANDLEBARS_TEMPLATE_DIR = `${SYSTEMPATH}/parts` as const;
 
 
 export class PersonaSettings {
-	static cache : Partial<Record<SETTINGKEYS, unknown>> = {} ;
+	static cache : ReturnType<typeof PersonaSettings["resetCache"]>;
 	static registerSettings() {
+		this.resetCache();
 		for (const [key, options] of Object.entries(SETTINGS)) {
 			//@ts-expect-error TS doesn't like this
 			game.settings.register("persona", key, options);
@@ -20,8 +21,12 @@ export class PersonaSettings {
 	}
 
 	static resetCache() {
-		this.cache = {
+		const cache = {
+			debugMode: undefined as U<boolean>,
+			aggressiveCaching: undefined as U<boolean>,
 		};
+		this.cache = cache;
+		return cache;
 	}
 
 	static get<T extends keyof PersonaSettingKeys>(settingName: T) : PersonaSettingKeys[T] {
@@ -33,9 +38,16 @@ export class PersonaSettings {
 	}
 
 	static debugMode() : boolean {
-		const debugMode  = this.get("debugMode").valueOf();
+		const debugMode  = this._debugModeSetting();
 		const realGame = game.users.filter( user => user.active).length > 3;
 		return !realGame && debugMode;
+	}
+
+	private static _debugModeSetting() : boolean {
+		if (this.cache.debugMode == undefined) {
+			this.cache.debugMode = this.get("debugMode").valueOf();
+		}
+		return this.cache.debugMode;
 	}
 
 	 static combatPanel(): boolean {
@@ -100,7 +112,7 @@ export class PersonaSettings {
 		if (this.cache.aggressiveCaching === undefined) {
 			this.cache.aggressiveCaching = this.get("aggressiveCaching");
 		}
-		return this.cache.aggressiveCaching as boolean;
+		return this.cache.aggressiveCaching;
 	}
 
 	static getDamageSystem() : DamageInterface {
@@ -139,6 +151,7 @@ const SETTINGS = {
 		config: true,
 		type :Boolean,
 		default: false,
+		onChange: (_newVal) => {PersonaSettings.resetCache();}
 	},
 
 	"xpLock" : {
@@ -253,7 +266,7 @@ const SETTINGS = {
 		default:{},
 	},
 
-} as const;
+} as const satisfies Record<string, SettingConfig<any>>;
 
 type SETTINGKEYS = keyof typeof SETTINGS;
 

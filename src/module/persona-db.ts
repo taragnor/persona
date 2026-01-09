@@ -8,7 +8,6 @@ import { PersonaActor } from "./actor/persona-actor.js";
 import { BASIC_PC_POWER_NAMES } from "../config/basic-powers.js";
 import { BASIC_SHADOW_POWER_NAMES } from "../config/basic-powers.js";
 
-
 declare global {
 	interface HOOKS {
 		"DBrefresh": () => unknown,
@@ -19,7 +18,6 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	#cache: PersonaDBCache;
 	failLog: Map<string, string>;
-
 
 	constructor() {
 		super();
@@ -441,6 +439,26 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		const totalLevels = pcs.reduce ((acc, i : PC) => acc + i.system.personaleLevel, 0 );
 		const avgLevel = Math.round(totalLevels/ pcs.length);
 		return avgLevel;
+	}
+
+	shadowAmbush() : U<UniversalModifier> {
+		const name = "Ambush (Enemy Advantage)";
+		const item =  this.getItemByName(name);
+		if (item && item.isUniversalModifier()) {
+			return item;
+		}
+		PersonaError.softFail(`Can't find Universal Modifier named ${name}`);
+		return undefined;
+	}
+
+	PCAmbush() : U<UniversalModifier> {
+		const name  = "Ambush (PC Advantage)";
+		const item =  this.getItemByName(name);
+		if (item && item.isUniversalModifier()) {
+			return item;
+		}
+		PersonaError.softFail(`Can't find Universal Modifier named ${name}`);
+		return undefined;
 	}
 
 }

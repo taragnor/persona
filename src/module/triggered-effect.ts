@@ -96,6 +96,8 @@ export class TriggeredEffect {
 				case "on-active-effect-time-out":
 				case "on-active-effect-end":
 				case "on-power-usage-check":
+				case "on-event-start":
+				case "on-event-end":
 					PersonaError.softFail(`Must proivide a situation with this trigger:  ${trigger}`);
 					return result;
 				default:

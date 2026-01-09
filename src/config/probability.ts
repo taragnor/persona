@@ -53,3 +53,16 @@ export const RANDOM_POWER_RATE : ProbabilityRate = {
 	always: Infinity,
 };
 
+//written in percentages
+export const ITEM_DROP_RATE : ProbabilityRate = {
+	common: .50,
+	"common-minus": .20,
+	"normal-plus": .10,
+	normal: .05,
+	"normal-minus": .02,
+	"rare-plus": .01,
+	rare: .005,
+	never: 0,
+	always: 1,
+};
+

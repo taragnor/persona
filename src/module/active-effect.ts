@@ -627,10 +627,26 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 				duration satisfies never;
 				return false;
 		}
-
-
-
 	}
+
+		async onCalendarAdvance() : Promise<boolean> {
+		const duration = this.statusDuration;
+			if (duration.dtype == "X-days") {
+				if (duration.amount <= 0) {
+					await this.delete();
+					return true;
+				}
+				duration.amount -= 1;
+				await this.setDuration(duration);
+				return false;
+				;
+			}
+			if (this.durationLessThanOrEqualTo({dtype: "X-days", amount: 0})) {
+				await this.delete();
+				return true;
+			}
+			return false;
+		}
 
 	get isFatigueStatus(): boolean {
 		return this.getFatigueStatus() != undefined;
@@ -647,12 +663,10 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 
 	durationLessThanOrEqualTo(x : StatusDuration): boolean {
 		return PersonaAE.durationLessThanOrEqualTo(this.statusDuration, x);
-		// return  PersonaAE.getStatusValue(this.statusDuration) <= PersonaAE.getStatusValue(x);
 	}
 
 	static durationLessThanOrEqualTo (a: StatusDuration, b: StatusDuration): boolean {
 		return  PersonaAE.getStatusValue(a) <= PersonaAE.getStatusValue(b);
-
 	}
 
 	get statusId() : StatusEffectId | undefined {
@@ -680,7 +694,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 			case "anchored":
 				return Infinity;
 			case "X-days":
-				return duration.amount * 100;
+				return 101 + duration.amount * 100;
 			case "expedition":
 				return 100;
 			case "X-exploration-turns":

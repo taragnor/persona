@@ -150,7 +150,7 @@ export class ShadowSheet extends CombatantSheetBase {
 		const arr= this.actor.system.encounter.dungeonEncounters;
 		arr.push({
 			dungeonId: game.scenes.current.id,
-			frequency: 1,
+			// frequency: 1,
 			frequencyNew: "normal",
 		});
 		await this.actor.update({"system.encounter.dungeonEncounters": arr});

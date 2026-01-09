@@ -14,6 +14,7 @@
 		</div>
 		<label>room effect box</label>
 		<input type="checkbox" id="{{day}}" name="system.room_effect" {{checked item.system.room_effect}} }}>
+
 		{{#if (eq item.system.scope "scene")}}
 		<h3> Scenes
 			<a class="add-scene">
@@ -31,6 +32,16 @@
 		</div>
 		{{/each}}
 		{{/if}}
+
+		{{#if (eqAny item.system.scope "event-social" "event-metaverse")}}
+		<div>
+			<label>
+				Duration
+			</label>
+			{{numberInput item.system.duration class="short" name="system.duration" step=1 min=1 max=99}}
+		</div>
+		{{/if}}
+
 		<textarea name="system.description">{{item.system.description}}</textarea>
 		<body>
 			{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}

@@ -37,6 +37,7 @@ import {ConditionTarget} from '../../config/precondition-types.js';
 import {NavigatorVoiceLines} from '../navigator/nav-voice-lines.js';
 import {OpenerManager} from './openers.js';
 import {CombatPanel} from './combat-panel.js';
+import {TreasureSystem} from '../exploration/treasure-system.js';
 
 declare global {
 	interface SocketMessage {
@@ -133,7 +134,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}) as PersonaCombatant[];
 	}
 
-	override async startCombat() {
+	override async startCombat(options: StartCombatOptions = {}) {
 		let msg = '';
 		this._engagedList = new EngagementList(this);
 		await this._engagedList.flushData();
@@ -145,6 +146,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		} else {
 			const rmods = (game.scenes.current as PersonaScene).getRoomEffects();
 			regionMods.push(...rmods);
+		}
+		if (options.roomMods) {
+			regionMods.pushUnique(...options.roomMods);
 		}
 		const combatInit = await this.roomEffectsDialog(regionMods, assumeSocial);
 		await this.setSocialEncounter(combatInit.isSocialScene);
@@ -1667,7 +1671,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			PersonaError.softFail('Problem with awarding XP');
 		}
 		try{
-			const treasure = await Metaverse.generateTreasure(defeatedFoes);
+			const treasure = await TreasureSystem.generateBattleTreasure(defeatedFoes);
 			await Metaverse.printTreasure(treasure);
 			await Metaverse.distributeMoney(treasure.money, pcs);
 			void NavigatorVoiceLines.playVoice({
@@ -1978,3 +1982,7 @@ export interface CombatOptions {
 }
 
 CombatPanel.init();
+
+export interface StartCombatOptions {
+	roomMods?: UniversalModifier["id"][];
+}

@@ -7,7 +7,6 @@ import { TriggeredEffect } from "./triggered-effect.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaSockets } from "./persona.js";
 import { weightedChoice } from "./utility/array-tools.js";
-import { PersonaItem } from "./item/persona-item.js";
 import { SearchMenu } from "./exploration/searchMenu.js";
 import { PersonaRegion } from "./region/persona-region.js";
 import { ProgressClock } from "./utility/progress-clock.js";
@@ -173,50 +172,47 @@ export class Metaverse {
 		});
 	}
 
-	static async generateTreasure(shadows: PersonaActor[]): Promise<Treasure> {
-		if ("justTesting" in window) {
-			TreasureSystem.generate(0, 0);
-		}
-		const items : TreasureItem[] = [];
-		// let money = 0;
-		const considerSkillCard = async function (powerId: string, prob: number) {
-			if (!powerId) {return;}
-			if (Math.random() > (prob ?? 0) / 100) {return;}
-			const existingCard = PersonaDB.skillCards().find( x=> x.system.skillId  ==  powerId);
-			if (existingCard) {
-				items.push(existingCard);
-				return;
-			}
-			const power = PersonaDB.allPowers().get(powerId);
-			if (!power) {
-				PersonaError.softFail(`Can't fiund Power Id ${power} for treasure`);
-				return;
-			}
-			const newCard = await PersonaItem.createSkillCardFromPower(power);
-			const msg = `Skill Card created for ${power.name}`;
-			ui.notifications.notify(msg);
-			console.log(msg);
-			items.push(newCard);
-		};
-		const considerItem = function (itemId: string, prob: number) {
-			const item = PersonaDB.treasureItems().find(x=> x.id == itemId);
-			if (!item) {return;}
-			if (Math.random() > (prob ?? 0) / 100) {return;}
-			items.push(item);
-		};
-		const money = shadows.reduce( (a,s) => a + s.moneyDropped(), 0);
-		for (const shadow of shadows) {
-			if (shadow.system.type != "shadow") { continue;}
-			if (shadow.hasCreatureTag("d-mon")) { continue;}
-			const treasure = shadow.system.encounter.treasure;
-			considerItem(treasure.item0, treasure.item0prob);
-			considerItem(treasure.item1, treasure.item1prob);
-			considerItem(treasure.item2, treasure.item2prob);
-			await considerSkillCard(treasure.cardPowerId, treasure.cardProb);
-		}
-		const treasure : Treasure = { money, items };
-		return treasure;
-	}
+	// static async generateTreasure(shadows: PersonaActor[]): Promise<Treasure> {
+	// 	const items : TreasureItem[] = [];
+	// 	// let money = 0;
+	// 	const considerSkillCard = async function (powerId: string, prob: number) {
+	// 		if (!powerId) {return;}
+	// 		if (Math.random() > (prob ?? 0) / 100) {return;}
+	// 		const existingCard = PersonaDB.skillCards().find( x=> x.system.skillId  ==  powerId);
+	// 		if (existingCard) {
+	// 			items.push(existingCard);
+	// 			return;
+	// 		}
+	// 		const power = PersonaDB.allPowers().get(powerId);
+	// 		if (!power) {
+	// 			PersonaError.softFail(`Can't fiund Power Id ${power} for treasure`);
+	// 			return;
+	// 		}
+	// 		const newCard = await PersonaItem.createSkillCardFromPower(power);
+	// 		const msg = `Skill Card created for ${power.name}`;
+	// 		ui.notifications.notify(msg);
+	// 		console.log(msg);
+	// 		items.push(newCard);
+	// 	};
+	// 	const considerItem = function (itemId: string, prob: number) {
+	// 		const item = PersonaDB.treasureItems().find(x=> x.id == itemId);
+	// 		if (!item) {return;}
+	// 		if (Math.random() > (prob ?? 0) / 100) {return;}
+	// 		items.push(item);
+	// 	};
+	// 	const money = shadows.reduce( (a,s) => a + s.moneyDropped(), 0);
+	// 	for (const shadow of shadows) {
+	// 		if (shadow.system.type != "shadow") { continue;}
+	// 		if (shadow.hasCreatureTag("d-mon")) { continue;}
+	// 		const treasure = shadow.system.encounter.treasure;
+	// 		considerItem(treasure.item0, treasure.item0prob);
+	// 		considerItem(treasure.item1, treasure.item1prob);
+	// 		considerItem(treasure.item2, treasure.item2prob);
+	// 		await considerSkillCard(treasure.cardPowerId, treasure.cardProb);
+	// 	}
+	// 	const treasure : Treasure = { money, items };
+	// 	return treasure;
+	// }
 
 	static async printTreasure(treasure : Treasure) {
 		const {money, items} = treasure;

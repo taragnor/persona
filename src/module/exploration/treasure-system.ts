@@ -1,9 +1,10 @@
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaDB } from "../persona-db.js";
 import { randomSelect, weightedChoice } from "../utility/array-tools.js";
-import { ProbabilityRate, RANDOM_POWER_RATE } from "../../config/probability.js";
+import { ITEM_DROP_RATE, ProbabilityRate, RANDOM_POWER_RATE } from "../../config/probability.js";
 import { TreasureTable } from "../../config/treasure-tables.js";
 import {PersonaError} from "../persona-error.js";
+import {PersonaItem} from "../item/persona-item.js";
 
 export class TreasureSystem {
 	static generate(treasureLevel: number, modifier : number = 0, treasureMin = 1) : EnchantedTreasureFormat[] {
@@ -238,6 +239,75 @@ export class TreasureSystem {
 			}));
 		return weightedChoice(weightedPowers);
 	}
+
+
+	private static async considerSkillCard(powerId: string, prob: number) : Promise<SkillCard[]> {
+		if (!powerId) {return [];}
+		if (Math.random() > prob) {return [];}
+		const existingCard = PersonaDB.skillCards().find( x=> x.system.skillId  ==  powerId);
+		if (existingCard) {
+			return [existingCard];
+		}
+		const power = PersonaDB.allPowers().get(powerId);
+		if (!power) {
+			PersonaError.softFail(`Can't fiund Power Id ${powerId} for treasure`);
+			return [];
+		}
+		const newCard = await PersonaItem.createSkillCardFromPower(power);
+		const msg = `Skill Card created for ${power.name}`;
+		ui.notifications.notify(msg);
+		console.log(msg);
+		return [newCard];
+	}
+
+		private static considerItem (itemId: string, prob: number) : Carryable[] {
+			const item = PersonaDB.treasureItems().find(x=> x.id == itemId);
+			if (!item || prob <= 0) {return [];}
+			if (Math.random() > prob) {return [];}
+			return [item];
+		};
+
+	static async generateTreasureForShadow( shadow: Shadow) : Promise<TreasureItem[]> {
+		const items : TreasureItem[] = [];
+		if (shadow.hasCreatureTag("d-mon")) { return [];}
+		const size = shadow.encounterSizeValue();
+		const treasure = shadow.system.encounter.treasure;
+		const arr = ["item0", "item1", "item2"] as const;
+		const shadowItems = arr.reduce ( (acc, str) => {
+			const item = treasure[str];
+			const prob = treasure[`${str}prob_v`];
+			const percentage = ITEM_DROP_RATE[prob] * size;
+			if (percentage <= 0) {
+				return acc;
+			}
+			const treasureItem = this.considerItem(item, percentage);
+			return acc.concat(treasureItem);
+		}, [] as TreasureItem[]);
+		const cardId = treasure["cardPowerId"];
+		const prob = treasure["cardProb_v"];
+		const percentage = ITEM_DROP_RATE[prob] * size;
+		const card = await this.considerSkillCard(cardId, percentage);
+		if (card.length > 0) {
+			shadowItems.push(...card);
+		}
+		items.push(...shadowItems);
+		return items;
+	}
+
+	static async generateBattleTreasure(shadows: PersonaActor[]): Promise<BattleTreasure> {
+		try {
+			const money = shadows.reduce( (a,s) => a + s.moneyDropped(), 0);
+			const promises : Promise<TreasureItem[]>[] = shadows
+				.filter ( x=> x.isShadow())
+				.flatMap( async (shadow) => await this.generateTreasureForShadow(shadow));
+			const items = (await Promise.all(promises)).flat();
+			const treasure : BattleTreasure = { money, items };
+			return treasure;
+		} catch (e) {
+			PersonaError.softFail( "Problem with generating battle treasure", e);
+			return {money: 0, items: []};
+		}
+	}
 }
 
 type TreasureItem = ReturnType<typeof PersonaDB["treasureItems"]>[number];
@@ -261,4 +331,10 @@ export type EnchantedTreasureFormat = {
 	item: TreasureItem,
 	enchantments: Tag[]
 }
+
+
+type BattleTreasure = {
+	money : number,
+	items: TreasureItem[],
+};
 

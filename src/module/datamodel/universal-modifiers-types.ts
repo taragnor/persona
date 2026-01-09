@@ -1,7 +1,9 @@
 export const UNIVERSAL_MODIFIERS_TYPE_LIST = [
 	"global",
 	"scene",
-	"room"
+	"room",
+	"event-social",
+	"event-metaverse",
 ] as const;
 
 export type UniversalModifierType = typeof UNIVERSAL_MODIFIERS_TYPE_LIST[number];

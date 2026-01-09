@@ -461,6 +461,7 @@ export function combatResultBasedNumericTarget(condition: CombatResultComparison
 }
 
 function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}, situation: Situation) : boolean {
+	if (!("trigger" in situation)) {return false;}
 	if (condition.trigger != situation.trigger) {return false;}
 	switch (condition.trigger) {
 		case "on-attain-tarot-perk":
@@ -485,6 +486,8 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
 		case "on-combat-end-global":
 		case "on-search-end":
 		case "on-metaverse-turn":
+		case "on-event-end":
+		case "on-event-start":
 		case "on-open-door":
 		case "on-active-scene-change":
 		case "pre-take-damage":

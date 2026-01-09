@@ -71,7 +71,13 @@ type NonSimpleTrigger =
 	| onTarotPerk
 	| ClockTickTrigger
 	| StatusTimeOut
+	| EventTrigger
 ;
+
+
+type EventTrigger = {
+	trigger: "on-event-start" | "on-event-end",
+}
 
 type StatusTimeOut = {
 	trigger: "on-active-effect-time-out" | "on-active-effect-end",

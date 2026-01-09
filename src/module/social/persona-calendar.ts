@@ -193,8 +193,17 @@ export class PersonaCalendar {
 			rolls,
 		};
 		await ChatMessage.create(msgData,{} );
-		Hooks.callAll("personaCalendarAdvance");
+		await this.onCalendarAdvance();
 		return date;
+	}
+
+	static async onCalendarAdvance() {
+		Hooks.callAll("personaCalendarAdvance");
+		const actorPool : PersonaActor[] = ([]  as PersonaActor[])
+			.concat(PersonaDB.PCs())
+			.concat( PersonaDB.NPCAllies());
+		const promises = actorPool.map ( actor => actor.onCalendarAdvance());
+		await Promise.allSettled(promises);
 	}
 
 	static async endDayForPCs(): Promise<string[]> {

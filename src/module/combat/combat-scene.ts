@@ -1,12 +1,13 @@
 import {PersonaActor} from "../actor/persona-actor.js";
 import {Encounter} from "../exploration/random-encounters.js";
+import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
 import {PersonaRegion} from "../region/persona-region.js";
 import {waitUntilTrue} from "../utility/async-wait.js";
 import {CreateToken} from "../utility/createToken.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
-import {PersonaCombat} from "./persona-combat.js";
+import {PersonaCombat, StartCombatOptions} from "./persona-combat.js";
 
 export class CombatScene {
 	static instance : U<CombatScene>;
@@ -25,22 +26,50 @@ export class CombatScene {
 		return game.scenes.get(this._previous) as PersonaScene;
 	}
 
-	async resolve() : Promise<EncounterResult> {
+	async resolve(options :CombatSetupOptions) : Promise<EncounterResult> {
 		await this.scene.setFlag("persona", "previousScene", this._previous);
 		await this.setupCombat();
 		const promise = new Promise( (res, rej) => {
 			this.promiseData = {resolve: res, reject: rej};
 			setTimeout( () => this.checkCombatOver(), 1000);
 		});
-		if (game.combat) {
-			await game.combat.startCombat();
+		if (!PersonaCombat.combat) {
+			throw new PersonaError("Couldn't find Combat");
 		}
+		const combatOptions = this.getCombatOptions(options);
+		await PersonaCombat.combat.startCombat(combatOptions);
 		try {
 			await promise;
 		} catch  {
 			return false;
 		}
 		return true;
+	}
+
+	getCombatOptions(options: CombatSetupOptions) : StartCombatOptions {
+		const combatOptions :StartCombatOptions = {
+		};
+		const mods : UniversalModifier["id"][] = [];
+		combatOptions.roomMods = mods;
+		switch (options.advantage) {
+			case undefined:
+				break;
+			case "shadows": {
+				const ambush = PersonaDB.shadowAmbush();
+				if (ambush) {
+					mods.push(ambush.id);
+				}
+				break;
+			}
+			case "PCs": {
+				const PCAmbush = PersonaDB.PCAmbush();
+				if (PCAmbush) {
+					mods.push(PCAmbush.id);
+				}
+				break;
+			}
+		}
+		return combatOptions;
 	}
 
 	async setupCombat() {
@@ -115,12 +144,12 @@ export class CombatScene {
 		return combatScene;
 	}
 
-	static async create(encounter: Encounter) {
+	static async create(encounter: Encounter, options: CombatSetupOptions = {}) {
 		const battleChoice = await HTMLTools.confirmBox("Battle", "Start Battle Scene?");
 		if (!battleChoice) {return false;}
 		const previous = game.scenes.active;
 		this.instance = new CombatScene(previous, encounter);
-		await this.instance.resolve();
+		await this.instance.resolve(options);
 		ui.notifications.notify("Combat Encounter Resolved");
 		this.instance = undefined;
 	}
@@ -179,3 +208,9 @@ Hooks.on("deleteCombat", (_combat) => {
 
 //@ts-expect-error global state
 window.CombatScene = CombatScene;
+
+
+export interface CombatSetupOptions {
+	/** for ambushes */
+	advantage ?: "PCs" | "shadows",
+}

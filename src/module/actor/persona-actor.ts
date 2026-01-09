@@ -52,7 +52,7 @@ import {Calculation} from "../utility/calculation.js";
 import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {Defense} from "../../config/defense-types.js";
 import {FusionCombination, FusionTable} from "../../config/fusion-table.js";
-import {EnchantedTreasureFormat} from "../exploration/treasure-system.js";
+import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-system.js";
 import {PersonaCompendium} from "../persona-compendium.js";
 import {ActorHooks} from "./actor-hooks.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
@@ -281,6 +281,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			}
 		}
 		this._trackerAntiLoop = false;
+	}
+
+	async treasureRoll(this: Shadow) : Promise<TreasureItem[]> {
+		return await TreasureSystem.generateTreasureForShadow(this);
 	}
 
 	async createNewItem() {
@@ -4075,6 +4079,14 @@ async onRoll(situation: RollSituation & Situation) {
 }
 
 async onCombatStart() {
+}
+
+async onCalendarAdvance() {
+	const PCCheck =  this.isNPCAlly() || this.isPC();
+	if (!PCCheck) {return;}
+	for (const eff of this.effects.contents) {
+		await eff.onCalendarAdvance();
+	}
 }
 
 

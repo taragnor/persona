@@ -1,5 +1,5 @@
 import {PersonaActor} from "../actor/persona-actor.js";
-import {CombatScene} from "../combat/combat-scene.js";
+import {CombatScene, CombatSetupOptions} from "../combat/combat-scene.js";
 import {ModifierList} from "../combat/modifier-list.js";
 import {Metaverse, PresenceRollData} from "../metaverse.js";
 import {PersonaDB} from "../persona-db.js";
@@ -80,13 +80,13 @@ static encounterChoiceList(encounterType : PresenceRollData["encounterType"]) : 
 	let html = "";
 	html += `<br><hr><div>Will you?</div>`;
 	html += `<ul>`;
-	html += `<li> Fight</li>`;
+	html += `<li> Fight (1d10, 1: Enemy Ambush, 2-5: normal, 10: PC Ambush)</li>`;
 	switch (encounterType) {
 		case "wandering":
 			html+= `
-				<li> Evade (+1 tension on 1 on d6) </li>
-				<li> Try to sneak past (d6, ambushed on 1, 2-3: +1 tension, 4-6 safe)</li>
-				<li> Ambush (d8, +1 metaverse turn, 1 counter ambush, 2-3 no effect, 4-6 ambush shadows) </li>
+				<li> <b>Retreat</b> to previous area (1d6, 1: +1 tension 2-6: safe) </li>
+				<li> Try to <b>sneak</b> past (d6, Enemy Ambush, 2-3: +1 tension, 4-6 safe)</li>
+				<li> <b>Ambush</b> (d12, +1 metaverse turn, 1-3 no effect, 4-12 PC Ambush) </li>
 			`;
 			break;
 		case "room":
@@ -247,15 +247,29 @@ static async processPlayerPreCombatAction(action: typeof this.encounterChoices[n
 	}
 
 	static async processFight(encounter: Encounter) {
-		const html = `<div>Fight!</div>`;
+	// html += `<li> Fight (1d10, 1: Enemy Ambush, 2-5: normal, 10: PC Ambush)</li>`;
+		const roll = await new Roll("1d10").evaluate();
+		let html = `<div>Fight!</div>`;
+		let combatOptions: CombatSetupOptions = {};
+		switch (roll.total) {
+			case 1:
+				html += `<div> Enemy Ambush!</div>`;
+				combatOptions.advantage = "shadows";
+				break;
+			case 10:
+				html += `<div> PC Ambush!</div>`;
+				combatOptions.advantage = "PCs";
+				break;
+		}
 		await ChatMessage.create({
 			speaker: {
 				alias: "Player Decision"
 			},
 			content: html,
+			rolls: [roll],
 			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 		});
-		await CombatScene.create(encounter);
+		await CombatScene.create(encounter, combatOptions);
 	}
 
 static async processSneak(encounter: Encounter) {

@@ -27,6 +27,7 @@ import { tarotFields } from "../../config/actor-parts.js";
 import { combatCommonStats } from "../../config/actor-parts.js";
 import {PersonaStat} from "../../config/persona-stats.js";
 import {NavigatorTrigger} from "../navigator/nav-voice-lines.js";
+import {PROBABILITY_LIST} from "../../config/probability.js";
 
 abstract class BaseStuff extends window.foundry.abstract.DataModel {
 
@@ -116,19 +117,49 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 		return ret;
 	}
 
+	static probConvert(prob: number) : typeof PROBABILITY_LIST[number] {
+		switch (true) {
+			case prob == 0:
+				return "never";
+			case prob >= 75:
+				return "always";
+			case prob >= 25:
+				return "common";
+			case prob >= 15:
+				return "common-minus";
+			case prob >= 10:
+				return "normal-plus";
+			case prob >= 5:
+				return "normal";
+			case prob > 2:
+				return "normal-minus";
+			case prob >= 1:
+				return "rare-plus";
+			default:
+				return "rare";
+		}
+	}
+
+	static reviseTreasure(treasure: Shadow["system"]["encounter"]["treasure"]) {
+		if (treasure.cardProb_v == undefined) {
+			treasure.cardProb_v = this.probConvert(treasure.cardProb);
+			treasure.item0prob_v = this.probConvert(treasure.item0prob);
+			treasure.item1prob_v = this.probConvert(treasure.item1prob);
+			treasure.item2prob_v = this.probConvert(treasure.item2prob);
+			treasure.item0maxAmt = 1;
+			treasure.item1maxAmt = 1;
+			treasure.item2maxAmt = 1;
+		}
+	}
+
 	static override migrateData(data: any) {
 		const system = data as Shadow["system"];
-		const convert = function (x: number) {
-			switch (true) {
-				case x >= 5: return "ultimate";
-				case x >= 2: return "strong";
-				case x > -2: return "normal";
-				case x >= -5: return "weak";
-				case x >= -10 : return "pathetic";
-				default: return "normal";
-			}
-		};
 		try {
+			const treasure= system.encounter.treasure;
+			if (treasure != undefined) {
+				this.reviseTreasure(treasure);
+			}
+
 			if (system?.combat?.resists && system.combat.resists?.gun == undefined) {
 				system.combat.resists.gun = "normal";
 			}
@@ -147,7 +178,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 					const conv =  frequencyConvert(system.encounter.frequency);
 					system.encounter.dungeonEncounters.push({
 						dungeonId,
-						frequency: conv,
+						// frequency: conv,
 						frequencyNew: frequencyConvert2(conv as keyof typeof FREQUENCY),
 					});
 				}

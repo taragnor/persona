@@ -749,12 +749,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const itype = this.system.type;
 		switch (itype) {
 			case 'power': {
-				//this is still experimental but may save a lot of processing time
-				//NOTE: Test code
 				if (this.cache.tags == undefined) {
-					this.cache.tags= (this as Power).#autoTags_power();
+					this.cache.tags = (this as Power).#autoTags_power();
 					return this.cache.tags;
 				}
+				//Safety check to see if there's cache corruption
 				if (PersonaSettings.debugMode()) {
 					const checkTags =  (this as Power).#autoTags_power();
 					if (checkTags.length != this.cache.tags.length) {
@@ -767,7 +766,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				return retTags;
 			}
 			case 'consumable': {
-				const list : string[]= this.system.tags.concat(this.system.itemTags);
+				const list : string[] = this.system.tags.concat(this.system.itemTags);
 				if (!list.includes(itype)) {
 					list.pushUnique(itype);
 				}
@@ -2731,6 +2730,7 @@ declare global {
 	type Tag = Subtype<PersonaItem, "tag">;
 	type CraftingMaterial = CraftingInventoryItem | Consumable;
 	type UniversalModifier = Subtype<PersonaItem, 'universalModifier'>;
+	type PersonaEvent =  UniversalModifier & {system: {scope:"event"}};
 	type ItemContainers = Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier | SkillCard | Tag;
 	type Usable = Power | Consumable ;
 	type UsableAndCard = Usable | SkillCard;

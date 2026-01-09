@@ -15,9 +15,11 @@
 				<select name="system.encounter.dungeonEncounters.{{i}}.dungeonId">
 					{{selectOptions ../SHADOW_STUFF.SCENE_LIST localize=false selected=dungeon.dungeonId}}
 				</select>
+				{{#if false}}
 				<select name="system.encounter.dungeonEncounters.{{i}}.frequency">
 					{{selectOptions ../SHADOW_STUFF.FREQUENCY localize=false selected=dungeon.frequency}}
 				</select>
+				{{/if}}
 				<select name="system.encounter.dungeonEncounters.{{i}}.frequencyNew">
 					{{selectOptions ../SHADOW_STUFF.FREQUENCY_NEW localize=true selected=dungeon.frequencyNew}}
 				</select>
@@ -38,37 +40,44 @@
 		</div>
 	</div>
 	<div class="treasure-section">
-		{{#if false}}
-		<div class="flexrow">
-			<label> Money </label>
-			<input class="short" type="number" name="system.encounter.treasure.moneyLow" value="{{actor.system.encounter.treasure.moneyLow}}">-
-			<input class="short" type="number" name="system.encounter.treasure.moneyHigh" value="{{actor.system.encounter.treasure.moneyHigh}}">
-		</div>
-		{{/if}}
 		<div class="flexrow">
 			<label> Common Item</label>
-			<input class="short" type="number" name="system.encounter.treasure.item0prob" value="{{actor.system.encounter.treasure.item0prob}}">%
+			<select name="system.encounter.treasure.item0prob_v">
+			{{selectOptions SHADOW_STUFF.FREQUENCY_NEW localize=true selected=actor.system.encounter.treasure.item0prob_v}}
+			</select>
 			<select name="system.encounter.treasure.item0">
 				{{selectOptions SHADOW_STUFF.COMMON_TREASURE_LIST localize=false selected=actor.system.encounter.treasure.item0}}
 			</select>
+			<input class="short" type="number" name="system.encounter.treasure.item0maxAmt" value="{{actor.system.encounter.treasure.item0maxAmt}}">
 		</div>
 		<div class="flexrow">
 			<label> Item 1</label>
-			<input class="short" type="number" name="system.encounter.treasure.item1prob" value="{{actor.system.encounter.treasure.item1prob}}">%
+			<select name="system.encounter.treasure.item1prob_v">
+			{{selectOptions SHADOW_STUFF.FREQUENCY_NEW localize=true selected=actor.system.encounter.treasure.item1prob_v}}
+			</select>
+
 			<select name="system.encounter.treasure.item1">
 				{{selectOptions SHADOW_STUFF.TREASURE_LIST localize=false selected=actor.system.encounter.treasure.item1}}
 			</select>
+			<input class="short" type="number" name="system.encounter.treasure.item1maxAmt" value="{{actor.system.encounter.treasure.item1maxAmt}}">
 		</div>
 		<div class="flexrow">
 			<label> Item 2</label>
-			<input class="short" type="number" name="system.encounter.treasure.item2prob" value="{{actor.system.encounter.treasure.item2prob}}">%
+			<select name="system.encounter.treasure.item2prob_v">
+				{{selectOptions SHADOW_STUFF.FREQUENCY_NEW localize=true selected=actor.system.encounter.treasure.item2prob_v}}
+			</select>
 			<select name="system.encounter.treasure.item2">
 				{{selectOptions SHADOW_STUFF.TREASURE_LIST localize=false selected=actor.system.encounter.treasure.item2}}
 			</select>
+			<input class="short" type="number" name="system.encounter.treasure.item2maxAmt" value="{{actor.system.encounter.treasure.item2maxAmt}}">
 		</div>
 		<div class="flexrow">
 			<label> Card</label>
-			<input class="short" type="number" name="system.encounter.treasure.cardProb" value="{{actor.system.encounter.treasure.cardProb}}">%
+			<div>
+				<select name="system.encounter.treasure.cardProb_v">
+					{{selectOptions SHADOW_STUFF.FREQUENCY_NEW localize=true selected=actor.system.encounter.treasure.cardProb_v}}
+				</select>
+			</div>
 			<select name="system.encounter.treasure.cardPowerId">
 				{{selectOptions SHADOW_STUFF.CARD_CANDIDATES  localize=false selected=actor.system.encounter.treasure.cardPowerId}}
 			</select>
