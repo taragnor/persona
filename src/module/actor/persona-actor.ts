@@ -291,7 +291,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return (await this.createEmbeddedDocuments("Item", [{"name": "Unnamed Item", type: "item"}]))[0];
 	}
 
-	async addItem(newItem: Carryable, amount= 1) {
+	async addItem(newItem: Carryable, amount = 1) {
 		if (newItem.isStackable) {
 			const existing = this.items.find( item=> item.isStackableWith(newItem)) as Carryable;
 			if (existing) {
