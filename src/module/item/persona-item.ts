@@ -34,7 +34,7 @@ import { BASIC_SHADOW_POWER_NAMES } from '../../config/basic-powers.js';
 import { PersonaError } from '../persona-error.js';
 import { PersonaActor } from '../actor/persona-actor.js';
 import { SLOTTYPES } from '../../config/slot-types.js';
-import { ModifierTarget } from '../../config/item-modifiers.js';
+import { ModifierTarget, NonDeprecatedModifierType } from '../../config/item-modifiers.js';
 import { ITEMMODELS } from '../datamodel/item-types.js';
 import { PersonaDB } from '../persona-db.js';
 import {Defense, DEFENSE_TYPES} from '../../config/defense-types.js';
@@ -1215,6 +1215,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const mod = persona.getBonuses("power-energy-cost").total(sit, "standard");
 		const rounded = Math.round(mod /10);
 		return cost.cost + rounded;
+	}
+
+	getBonuses(this: ItemModifierContainer & PersonaItem, modNames: MaybeArray<NonDeprecatedModifierType>) : ModifierList {
+		const effects= this.getPassiveEffects(null);
+		const mods = PersonaItem.getModifier(effects, modNames);
+		const modList = new ModifierList(mods);
+		return modList;
 	}
 
 	static getSlotName(num : number) {

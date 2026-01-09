@@ -89,7 +89,6 @@ export const SHADOW_STATS_TYPES = [
 	"energy-per-turn",
 	"actions-per-turn",
 	"max-energy",
-	"power-energy-cost",
 ] as const;
 
 export const STUDENT_SKILLS_TYPES = [
@@ -99,8 +98,11 @@ export const STUDENT_SKILLS_TYPES = [
 ] as const;
 
 export const OTHER_TYPES = [
-
-];
+	"power-energy-cost",
+	"power-energy-req",
+	"power-mp-cost",
+	"power-hp-cost",
+] as const;
 
 export const MODIFIERLIST = [
 	...OFFENSE_TYPES,

@@ -48,9 +48,19 @@ export class EnergyClassCalculator extends CostCalculator {
 			this.#targetsMod(pwr),
 			this.#tags(pwr),
 			this.#multiattack(pwr),
+			this.#power_modifiers(pwr),
 		];
 		const eLevel =  items.reduce<EnergyCostBase>((acc, item) => acc.add(item), this.NULL_COST);
 		return eLevel;
+	}
+
+	static #power_modifiers(pwr: Power) : EnergyCostBase {
+		const situation : Situation  = {
+			usedPower: pwr.accessor,
+		};
+		const energyRequired = pwr.getBonuses("power-energy-req").total(situation);
+		const energyCost = pwr.getBonuses("power-energy-cost").total(situation);
+		return new EnergyCostBase(energyCost, energyRequired);
 	}
 
 	static #targetsMod(power: Power) : EnergyCostBase {

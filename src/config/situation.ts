@@ -169,7 +169,15 @@ type EnterRegionTrigger = {
 type SituationType = SituationUniversal & (
 	TriggerSituation  | NonTriggerUserSituation | SocialCardSituation);
 
-type NonTriggerUserSituation = UserSituation & {trigger ?: never};
+type NonTriggerUserSituation =
+	PowerOnlySituation |
+	(UserSituation & {trigger?: never});
+
+type PowerOnlySituation = {
+	usedPower : UniversalItemAccessor<Usable>;
+	trigger?: never;
+	user?: never;
+};
 
 export type SocialCardSituation = UserSituation & {
 	attacker : UniversalActorAccessor<ValidSocialTarget>;

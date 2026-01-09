@@ -15,6 +15,7 @@ export class MPCostCalculator extends CostCalculator {
 			// this.statusRemoval(pwr),
 			this.#mpCost_tags(pwr),
 			this.mpCost_multiattack(pwr),
+			this.#modifiers(pwr),
 		];
 		return Math.round(this.combineModifiers(mods));
 	}
@@ -35,6 +36,14 @@ export class MPCostCalculator extends CostCalculator {
 			cost += 4;
 		}
 		return this.i(cost);
+	}
+
+	static #modifiers(pwr: Power) : CostModifier {
+		const situation: Situation = {
+			usedPower: pwr.accessor,
+		};
+		const mod = pwr.getBonuses("power-mp-cost").total(situation);
+		return this.i(mod);
 	}
 
 	static mpCost_dekaja(pwr: Power) : CostModifier {

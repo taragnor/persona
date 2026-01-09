@@ -13,8 +13,8 @@ export class HPCostCalculator extends CostCalculator {
 			this.hpCost_ailment(pwr),
 			this.hpCost_multiattack(pwr),
 			this.hpCost_buffOrDebuff(pwr),
+			this.#modifiers(pwr),
 		];
-		// ].reduce ( (acc, x) => acc * x.mult + x.add, 0);
 		return Math.round(this.combineModifiers(mods));
 	}
 
@@ -27,6 +27,13 @@ export class HPCostCalculator extends CostCalculator {
     return this.i(total);
   }
 
+	static #modifiers(pwr: Power) : CostModifier {
+		const situation: Situation = {
+			usedPower: pwr.accessor,
+		};
+		const mod = pwr.getBonuses("power-hp-cost").total(situation);
+		return this.i(mod);
+	}
 
   static hpCost_multiattack(pwr: Power) :CostModifier {
     if (pwr.system.attacksMax == 1) {return this.i(0);}
