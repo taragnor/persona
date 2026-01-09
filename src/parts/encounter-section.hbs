@@ -72,6 +72,16 @@
 			<input class="short" type="number" name="system.encounter.treasure.item2maxAmt" value="{{actor.system.encounter.treasure.item2maxAmt}}">
 		</div>
 		<div class="flexrow">
+			<label> Crafting Item</label>
+			<select name="system.encounter.treasure.item3prob_v">
+				{{selectOptions SHADOW_STUFF.FREQUENCY_NEW localize=true selected=actor.system.encounter.treasure.item3prob_v}}
+			</select>
+			<select name="system.encounter.treasure.item3">
+				{{selectOptions SHADOW_STUFF.CRAFTING_TREASURE_LIST localize=false selected=actor.system.encounter.treasure.item3}}
+			</select>
+			<input class="short" type="number" name="system.encounter.treasure.item3maxAmt" value="{{actor.system.encounter.treasure.item3maxAmt}}">
+		</div>
+		<div class="flexrow">
 			<label> Card</label>
 			<div>
 				<select name="system.encounter.treasure.cardProb_v">

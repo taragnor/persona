@@ -24,10 +24,11 @@ export class EnergyClassCalculator extends CostCalculator {
 			user: shadow.accessor,
 		};
 		const modifiers = shadow.persona().getBonuses("power-energy-cost").total(situation);
-		const effectiveCost  = this.BASE_COST + energyCost - shadow_lvl + modifiers;
-		const effectiveER  = this.BASE_COST + energyRequired - shadow_lvl + modifiers;
-		energyRequired  = Math.floor(Math.max(0 , effectiveER) / 10);
-		energyCost  = Math.floor(Math.max(0, effectiveCost) / 10);
+		const effectiveCost  = this.BASE_COST + energyCost + modifiers - shadow_lvl;
+		const effectiveER  = this.BASE_COST + energyRequired + modifiers - shadow_lvl;
+		energyCost  = Math.floor(Math.max(0, effectiveCost / 10));
+		const minReq = Math.max(0, energyCost-5);
+		energyRequired  = Math.floor(Math.clamp(effectiveER / 10, minReq, shadow.maxEnergy));
 		if (energyCost <= 0) {
 			return { energyRequired: 0, energyCost: 0, };
 		}
@@ -107,8 +108,8 @@ export class EnergyClassCalculator extends CostCalculator {
 			case "none": return this.NULL_COST;
 			case "medium": return new EnergyCostBase(24,24);
 			case "low": return new EnergyCostBase(10 ,10);
-			case "high": return new EnergyCostBase(40 ,40);
-			case "always": return new EnergyCostBase(60 ,60);
+			case "high": return new EnergyCostBase(35 ,35);
+			case "always": return new EnergyCostBase(55 ,55);
 		}
 
 	}
@@ -168,8 +169,8 @@ export class EnergyClassCalculator extends CostCalculator {
 		light: 25,
 		medium: 50,
 		heavy: 75,
-		severe: 100,
-		colossal: 125,
+		severe: 88,
+		colossal: 99,
 	} as const;
 
 	static NULL_COST :Readonly<EnergyCostBase>=  new EnergyCostBase(0, 0);
@@ -200,7 +201,7 @@ export class EnergyClassCalculator extends CostCalculator {
 		healing: 0,
 		cold: 0,
 		lightning: 0,
-		untyped: 7,
+		untyped: 6,
 		"all-out": 0,
 		"by-power": 0
 	};

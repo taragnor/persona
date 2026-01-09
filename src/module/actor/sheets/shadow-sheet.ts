@@ -85,6 +85,14 @@ export class ShadowSheet extends CombatantSheetBase {
 				.map( x=> [x.id, x.name])
 			)
 		);
+		const CRAFTING_TREASURE_LIST = Object.fromEntries(
+			[["", "-"]].concat(
+				PersonaDB.treasureItems()
+				.filter( item => item.isCraftingItem)
+				.sort( (a, b) => a.name.localeCompare(b.name))
+				.map( x=> [x.id, x.name])
+			)
+		);
 		data.SHADOW_STUFF =  {
 			FREQUENCY_NEW: PROBABILITIES,
 			CREATURE_TAGS : CREATURE_TAGS,
@@ -95,6 +103,7 @@ export class ShadowSheet extends CombatantSheetBase {
 			CARD_CANDIDATES,
 			COMMON_TREASURE_LIST,
 			FREQUENCY,
+			CRAFTING_TREASURE_LIST,
 		};
 
 		data["persona"] = this.actor.persona();

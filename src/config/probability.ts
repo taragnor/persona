@@ -66,3 +66,15 @@ export const ITEM_DROP_RATE : ProbabilityRate = {
 	always: 1,
 };
 
+export const CARD_DROP_RATE : ProbabilityRate = {
+	common: 0.08,
+	"common-minus": .05,
+	"normal-plus": .04,
+	normal: .03,
+	"normal-minus": .02,
+	"rare-plus": .01,
+	rare: .005,
+	never: 0,
+	always: 1,
+};
+

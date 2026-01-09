@@ -1,7 +1,7 @@
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaDB } from "../persona-db.js";
 import { randomSelect, weightedChoice } from "../utility/array-tools.js";
-import { ITEM_DROP_RATE, ProbabilityRate, RANDOM_POWER_RATE } from "../../config/probability.js";
+import { CARD_DROP_RATE, ITEM_DROP_RATE, ProbabilityRate, RANDOM_POWER_RATE } from "../../config/probability.js";
 import { TreasureTable } from "../../config/treasure-tables.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaItem} from "../item/persona-item.js";
@@ -243,15 +243,15 @@ export class TreasureSystem {
 
 	private static async considerSkillCard(powerId: string, prob: number) : Promise<SkillCard[]> {
 		if (!powerId) {return [];}
-		if (Math.random() > prob) {return [];}
-		const existingCard = PersonaDB.skillCards().find( x=> x.system.skillId  ==  powerId);
-		if (existingCard) {
-			return [existingCard];
-		}
 		const power = PersonaDB.allPowers().get(powerId);
 		if (!power) {
 			PersonaError.softFail(`Can't fiund Power Id ${powerId} for treasure`);
 			return [];
+		}
+		if (Math.random() > prob) {return [];}
+		const existingCard = PersonaDB.skillCards().find( x=> x.system.skillId  ==  powerId);
+		if (existingCard) {
+			return [existingCard];
 		}
 		const newCard = await PersonaItem.createSkillCardFromPower(power);
 		const msg = `Skill Card created for ${power.name}`;
@@ -260,35 +260,44 @@ export class TreasureSystem {
 		return [newCard];
 	}
 
-		private static considerItem (itemId: string, prob: number) : Carryable[] {
-			const item = PersonaDB.treasureItems().find(x=> x.id == itemId);
+	private static considerItem (itemId: string, prob: number, maxAmount = 1) : Carryable[] {
+		const item = PersonaDB.treasureItems().find(x=> x.id == itemId);
+		let amt = Math.max(1, Math.floor(Math.random() * maxAmount + 1));
+		const arr : Carryable[] = [];
+		while (amt-- > 0) {
 			if (!item || prob <= 0) {return [];}
 			if (Math.random() > prob) {return [];}
-			return [item];
-		};
+			arr.push(item);
+		}
+		return arr;
+	}
 
 	static async generateTreasureForShadow( shadow: Shadow) : Promise<TreasureItem[]> {
 		const items : TreasureItem[] = [];
-		if (shadow.hasCreatureTag("d-mon")) { return [];}
+		if (shadow.isDMon()) { return [];}
 		const size = shadow.encounterSizeValue();
 		const treasure = shadow.system.encounter.treasure;
-		const arr = ["item0", "item1", "item2"] as const;
+		const arr = ["item0", "item1", "item2", "item3"] as const;
 		const shadowItems = arr.reduce ( (acc, str) => {
 			const item = treasure[str];
+			if (!item) {return acc;}
 			const prob = treasure[`${str}prob_v`];
 			const percentage = ITEM_DROP_RATE[prob] * size;
+			const maxAmount = treasure[`${str}maxAmt`];
 			if (percentage <= 0) {
 				return acc;
 			}
-			const treasureItem = this.considerItem(item, percentage);
+			const treasureItem = this.considerItem(item, percentage, maxAmount);
 			return acc.concat(treasureItem);
 		}, [] as TreasureItem[]);
 		const cardId = treasure["cardPowerId"];
-		const prob = treasure["cardProb_v"];
-		const percentage = ITEM_DROP_RATE[prob] * size;
-		const card = await this.considerSkillCard(cardId, percentage);
-		if (card.length > 0) {
-			shadowItems.push(...card);
+		if (cardId) {
+			const prob = treasure["cardProb_v"];
+			const percentage = CARD_DROP_RATE[prob] * size;
+			const card = await this.considerSkillCard(cardId, percentage);
+			if (card.length > 0) {
+				shadowItems.push(...card);
+			}
 		}
 		items.push(...shadowItems);
 		return items;

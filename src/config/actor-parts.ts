@@ -332,20 +332,24 @@ export function encounterDataSchema() {
 			// moneyLow: new num( {initial: 0, integer: true}),
 			// moneyHigh: new num( {initial: 0, integer: true}),
 			cardPowerId: new id(), //Power Id
-			cardProb_v: new txt( {choices: PROBABILITY_LIST, initial:"never" }),
+			cardProb_v: new txt( {choices: PROBABILITY_LIST, initial:"normal-minus" }),
 			cardProb: new num( {initial: 2, integer: false, min: 0, max: 100}),
 			item0: new id(),
 			item0prob: new num( {initial: 15, integer: false, min: 0, max: 100}),
-			item0prob_v: new txt( {choices: PROBABILITY_LIST, initial:"never" }),
+			item0prob_v: new txt( {choices: PROBABILITY_LIST, initial:"common-minus" }),
 			item0maxAmt: new num( {initial: 1, integer: true, min: 0, max: 20}),
 			item1: new id(),
 			item1prob: new num( {initial: 7, integer: false, min: 0, max: 100}),
-			item1prob_v: new txt( {choices: PROBABILITY_LIST, initial:"never" }),
+			item1prob_v: new txt( {choices: PROBABILITY_LIST, initial:"rare" }),
 			item1maxAmt: new num( {initial: 1, integer: true, min: 0, max: 20}),
 			item2: new id(),
 			item2prob: new num( {initial: 2, integer: false, min: 0, max: 100}),
-			item2prob_v: new txt( {choices: PROBABILITY_LIST, initial:"never" }),
+			item2prob_v: new txt( {choices: PROBABILITY_LIST, initial:"rare" }),
 			item2maxAmt: new num( {initial: 1, integer: true, min: 0, max: 20}),
+			//** crafting item
+			item3: new id(),
+			item3prob_v: new txt( {choices: PROBABILITY_LIST, initial:"rare" }),
+			item3maxAmt: new num( {initial: 1, integer: true, min: 0, max: 20}),
 		}),
 	});
 }
