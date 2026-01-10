@@ -30,6 +30,7 @@ export class PersonaScene extends Scene {
 			.filter ( shadow=> shadow.system.encounter.dungeonEncounters.some( x=> x.dungeonId == this.id)) ;
 	}
 
+
 	encounterList() : Shadow[] {
 		const disAllowedRoles: ShadowRole[] = [
 			"boss",
@@ -362,6 +363,17 @@ get encounterData() : SceneEncounterData {
 	return foundry.utils.mergeObject(data,
 		{monsters: monsterList});
 }
+
+async setAsMementosScene() {
+	if (await HTMLTools.confirmBox("Mementos Confirm", `Really set ${this.name} as a Mementos scene?`)) {
+		await this.setFlag("persona", "MEMENTOS", 1);
+	}
+}
+
+	allowsRandomGenerator(): boolean {
+		if (this.getFlag("persona", "MEMENTOS") == 1) {return true;}
+		return false;
+	}
 
 }
 

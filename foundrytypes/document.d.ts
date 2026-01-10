@@ -19,7 +19,7 @@ namespace Foundry {
 		id: string;
 		get pack(): string | null;
 		updateEmbeddedDocuments(type: string, updates: unknown): Promise<unknown>;
-		createEmbeddedDocuments(type: string, objData: Record<string, any>[], context?: unknown): Promise<Embedded[]>;
+		createEmbeddedDocuments<E extends FoundryDocument = Embedded>(type: string, objData: object[], context?: unknown): Promise<E[]>;
 		sheet: Sheet<this>
 		get schema(): SchemaField<unknown>;
 		delete(): Promise<void>;

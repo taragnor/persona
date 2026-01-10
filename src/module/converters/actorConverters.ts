@@ -2,6 +2,7 @@ import { LevelUpCalculator } from "../../config/level-up-calculator.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaError } from "../persona-error.js";
 import { PersonaDB } from "../persona-db.js";
+import {PersonaItem} from "../item/persona-item.js";
 
 
 export class ActorConverters {
@@ -98,7 +99,7 @@ export class ActorConverters {
 		};
 		personaData.system!.combat!.powers = [];
 		const persona = await PersonaActor.create<Shadow>(personaData);
-		await persona.createEmbeddedDocuments("Item", shadow.items.contents.map (x=> x.toJSON()));
+		await persona.createEmbeddedDocuments<PersonaItem>("Item", shadow.items.contents.map (x=> x.toJSON()));
 		await this.convertPowers(shadow, persona);
 		await persona.basePersona.resetCombatStats(true);
 		return persona;

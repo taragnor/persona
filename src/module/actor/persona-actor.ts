@@ -299,7 +299,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				await existing.update( {
 					"system.amount": newAmount,
 				});
-				void Logger.sendToChat(`${this.name} gained ${amount} ${existing.name} (total: ${newAmount})`);
+				if (this.hasPlayerOwner) {
+					void Logger.sendToChat(`${this.name} gained ${amount} ${existing.name} (total: ${newAmount})`);
+				}
 				return existing;
 			}
 		}
@@ -309,11 +311,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			...baseData
 		};
 		const item = (await this.createEmbeddedDocuments("Item", [itemData]))[0];
-		void Logger.sendToChat(`${this.name} gained ${amount} ${item.name}`);
+		if (this.hasPlayerOwner) {
+			void Logger.sendToChat(`${this.name} gained ${amount} ${item.name}`);
+		}
 		return item;
 	}
 
-	async addTreasureItem( treasure: EnchantedTreasureFormat) {
+	async addTreasureItem( treasure: EnchantedTreasureFormat, quietLog = false) {
 		const baseItem = treasure.item;
 		const tags = baseItem.system.itemTags;
 		if (treasure.enchantments.length == 0) {
@@ -336,7 +340,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			name,
 		};
 		const item = (await this.createEmbeddedDocuments("Item", [itemData]))[0];
-		void Logger.sendToChat(`${this.name} gained ${item.name}`);
+		if (this.hasPlayerOwner && !quietLog) {
+			void Logger.sendToChat(`${this.name} gained Treasure Item : ${item.name}`);
+		}
 		return item;
 	}
 

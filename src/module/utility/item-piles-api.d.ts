@@ -12,8 +12,14 @@ interface ItemPilesAPI {
 	removeItems(target: Actor | TokenDocument, items: (Item & {quantity?: number})[], options?: RemoveItemsOptions) : Promise<Item[]>;
 	getActorItems ( target: Actor | TokenDocument): Promise<Item[]>;
 	getItemQuantity ( item: Item) : number;
+	createItemPile (options: ItemPileCreationOptions) : Promise<{tokenUuid: string, actorUuid: string}>;
+	isValidItemPile(target: TokenDocument | Token) : boolean;
 }
 
+
+interface ItemPileCreationOptions {
+	position : { x: number; y: number;};
+};
 
 interface AddItemsOptions {
 	mergeSimilarItems ?: boolean; //default true

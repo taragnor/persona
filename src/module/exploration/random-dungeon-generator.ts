@@ -1,9 +1,12 @@
+import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaError} from "../persona-error.js";
+import {PersonaScene} from "../persona-scene.js";
+import {PersonaRegion} from "../region/persona-region.js";
 import {SeededRandom} from "../utility/seededRandom.js";
-import {DungeonSquare, Point} from "./dungeon-generator-square.js";
+import {DungeonSquare, Point, WallData} from "./dungeon-generator-square.js";
 
 export class RandomDungeonGenerator {
-	scene: Scene;
+	scene: PersonaScene;
 	gridSize: number;
 	gridX: number;
 	gridY: number;
@@ -15,11 +18,11 @@ export class RandomDungeonGenerator {
 	maxSquaresHeight : number;
 	rng: SeededRandom;
 	squaresTaken: number;
-	_depth: number
+	_depth: number;
 
 	static init() {}
 
-	constructor(scene: Scene, depth: number = 1) {
+	constructor(scene: PersonaScene, depth: number = 1) {
 		this.squaresTaken = 0;
 		this.scene = scene;
 		this.gridSize = scene.grid.size;
@@ -80,7 +83,7 @@ export class RandomDungeonGenerator {
 
 	isInBounds(sqx: number, sqy: number): boolean {
 		return sqx >= 0 && sqx < this.maxSquaresWidth
-		&& sqy >= 0 && sqy < this.maxSquaresHeight;
+			&& sqy >= 0 && sqy < this.maxSquaresHeight;
 	}
 
 	randomEmptySquareCoords() : {x:number , y:number} {
@@ -119,6 +122,7 @@ export class RandomDungeonGenerator {
 	}
 
 	sq(x: number, y: number) : U<DungeonSquare> {
+		if (!this.isInBounds(x, y)) {return undefined;}
 		return this.squares[x][y];
 	}
 
@@ -217,13 +221,13 @@ export class RandomDungeonGenerator {
 		if (adjCorridors.length > 0) {
 			const rndCorridor = this.rng.randomArraySelect(adjCorridors)!;
 			const direction = this.getDirectionBetween(rndCorridor, firstSquare);
-			return 1 + this.continueCorridor(firstSquare, direction);
+			return 1 + this.extendCorridor(firstSquare, direction);
 		}
 		const adjRooms = firstSquare.getAdjacentRooms();
 		if (adjRooms.length > 0) {
 			const rndRoom = this.rng.randomArraySelect(adjRooms)!;
 			const direction = this.getDirectionBetween(rndRoom, firstSquare);
-			return 1 + this.continueCorridor(firstSquare, direction);
+			return 1 + this.extendCorridor(firstSquare, direction);
 		}
 		return 1;
 	}
@@ -245,14 +249,14 @@ export class RandomDungeonGenerator {
 		}
 	}
 
-	continueCorridor(sq: DungeonSquare, direction: Direction) : number {
+	extendCorridor(sq: DungeonSquare, direction: Direction) : number {
 		const corridorParts= [sq];
-		const corridorLen = this.rng.die(1,5)+1;
+		const corridorLen = this.rng.die(1,4)+1;
 		let corridorsMade = 0;
-		while (corridorsMade >= corridorLen && sq.isLegalToExpand()) {
+		while (corridorsMade < corridorLen && sq.isLegalToExpand()) {
 			const nextPt = sq[direction];
 			if ( !this.isInBounds(nextPt.x, nextPt.y)
-				|| !this.sq(nextPt.x, nextPt.y)
+				|| this.sq(nextPt.x, nextPt.y)
 			) { break; }
 			const newSq = this.constructSquareAt(nextPt, "corridor");
 			corridorParts.push(newSq);
@@ -263,6 +267,7 @@ export class RandomDungeonGenerator {
 		for (const pt of corridorParts) {
 			pt.addToGroup(corridorParts);
 		}
+		console.log(`corridor Parts: ${corridorParts.map(x=> x.print()).join("")}`)
 		return corridorsMade;
 	}
 
@@ -280,7 +285,7 @@ export class RandomDungeonGenerator {
 	assignTreasures() {
 		const list = this.squareList
 			.filter(x=> x.isRoom() || x.isDeadEnd())
-			.filter (x=> !x.isStartPoint() && !x.isExitPoint());
+			.filter (x=> !x.isStartPoint() && !x.isStairsDown());
 		const rng = this.rng;
 		for (const room of list) {
 			const treasureCheck = rng.die(1,100);
@@ -307,40 +312,88 @@ export class RandomDungeonGenerator {
 		}
 		this.assignExit();
 		this.assignTreasures();
+		this.finalizeSquares();
 		console.log( this.print());
-		// await this.outputDataToScene();
+		await this.outputDataToScene();
 
 	}
 
 
-
-	generateWallData ( c : WallData["c"]) : Partial<WallData> {
-
-		const animation = {
-			direction :1,
-			double :  false,
-			duration :  750,
-			flip :  false,
-			strength : 1,
-			texture :  "canvas/doors/small/Door_Stone_Volcanic_B1_1x1.webp",
-			type :  "descend",
-		};
-
-		const wallData : Partial<WallData> = {
-			c,
-			door: 1,
-			ds: 0,
-			light: 20,
-			move: 20,
-			sight: 20,
-			sound: 20,
-			animation,
-		};
-		return wallData;
+	finalizeSquares() {
+		this.squareList.forEach( sq=> sq.finalize());
 	}
 
-	async addWall(wallData: WallData[]) {
+	async outputDataToScene() {
+		if (!this.scene.allowsRandomGenerator()) {
+			ui.notifications.warn("This scene doesn't allow random Mutation");
+			return;
+		}
+		await this.resetFog();
+		await this.clearScene();
+		await this.createWalls();
+		await this.createRegions();
+		await this.createTreasures();
+	}
+
+	async clearScene () {
+		for (const i of this.scene.walls) {
+			await i.delete();
+		}
+		for (const i of this.scene.regions) {
+			await i.delete();
+		}
+		for (const t of this.scene.tokens) {
+			if (game.itempiles && game.itempiles.API.isValidItemPile(t)) {
+				await t.delete();
+				continue;
+			}
+			if (t.actor && t.actor.isShadow()) {await t.delete();}
+		}
+	}
+
+	async createWalls() {
+		const wallData = this.squareList
+			.flatMap( x=> x.walls());
+		await this.addWall(wallData);
+	}
+
+	async createRegions() {
+		for (const sq of this.squareList) {
+			const rdata = sq.region;
+			if (!rdata) {continue;}
+			const region = (await this.scene.createEmbeddedDocuments<PersonaRegion>("Region", [rdata as Record<string, unknown>]))[0];
+			await region.setRegionData(sq.regionData);
+		}
+	}
+
+
+	async addWall(wallData: Partial<WallData>[]) {
 		await this.scene.createEmbeddedDocuments("Wall", wallData);
+	}
+
+	async createTreasures() {
+		if (game.itempiles == undefined) {
+			PersonaError.softFail("No item piles, can't create treasures");
+			return;
+		}
+		for (const sq of this.squareList)  {
+			if (sq.treasures.length == 0) {continue;}
+			const position = sq.treasurePosition();
+			const pile = await game.itempiles.API.createItemPile({position});
+			if (!pile?.tokenUuid)  {
+				PersonaError.softFail(`Something went wrong with creating Item pile at ${position.x} , ${position.y}`);
+				return;
+			}
+			const pileActor = await foundry.utils.fromUuid(pile.tokenUuid) as TokenDocument<PersonaActor> ;
+			if (!pileActor || !(pileActor instanceof TokenDocument) || !pileActor.actor) {
+				PersonaError.softFail(`Cant' find token ${pile?.tokenUuid}`);
+				return;
+			}
+			for (const treasure of sq.treasures) {
+				await pileActor.actor.addTreasureItem(treasure, true);
+			}
+		}
+
 	}
 
 	async resetFog() {
@@ -354,163 +407,7 @@ export class RandomDungeonGenerator {
 }
 
 
-type WallData = Pick<Foundry.WallDocument, "door" | "c" | "ds" | "light" | "sound" | "move" | "sight" | "animation">;
 
-// class DungeonSquare {
-// 	parent: RandomDungeonGenerator;
-// 	x: number;
-// 	y: number;
-// 	static WIDTH= 4 as const;
-// 	static HEIGHT = 4 as const;
-// 	type: "corridor" | "room";
-// 	group: DungeonSquare[];
-// 	connections: DungeonSquare[] = [];
-// 	specials: RoomSpecial[];
-
-// 	constructor(generator: RandomDungeonGenerator, x: number, y:number, type: typeof this["type"]) {
-// 		this.parent = generator;
-// 		this.x= x;
-// 		this.y = y;
-// 		this.type = type;
-// 		this.group = [this];
-// 		this.connections = [];
-// 		this.specials = [];
-// 	}
-
-// 	AdjacenciesToGroup() {
-// 		const parent = this.parent;
-// 		const group = this.group;
-// 		const val = this.group.reduce( (acc, sq) => 
-// 			acc + sq.getLegalAdjoiningPoints()
-// 			.map (pt=> parent.sq(pt.x, pt.y))
-// 			.filter(pt => pt != undefined &&
-// 				!group.includes(pt))
-// 			.length
-// 		, 0 );
-// 		return val;
-// 	}
-
-// 	isStartPoint(): boolean {
-// 		return this.specials.includes("entrance");
-// 	}
-
-// 	isExitPoint() : boolean {
-// 		return this.specials.includes("exit");
-// 	}
-
-// 	isTreasureRoom() : boolean {
-// 		return this.specials.includes("treasure");
-// 	}
-
-
-// 	addToGroup(sq: DungeonSquare[]) {
-// 		this.group.pushUnique(...sq);
-// 	}
-
-
-// 	makeStairsUp() {
-// 		this.addSpecial("entrance");
-// 	}
-
-// 	makeStairsDown() {
-// 		this.addSpecial("exit");
-// 	}
-
-// 	get up() {
-// 		return {x: this.x, y: this.y-1 };
-// 	}
-// 	get down() {
-// 		return {x: this.x, y: this.y+1 };
-// 	}
-
-// 	get right() {
-// 		return {x: this.x+1, y: this.y };
-// 	}
-
-// 	get left(): Point {
-// 		return {x: this.x-1, y: this.y };
-// 	}
-
-// 	static getAdjoiningPoints(pt: Point) : Point[] {
-// 		return [
-// 			left(pt),
-// 			right(pt),
-// 			up(pt),
-// 			down(pt)
-// 		];
-// 	}
-
-// 	private getAdjoiningPoints() : Point[] {
-// 		// const p = function (x: number, y:number) { return {x, y};};
-// 		return [
-// 			this.left,
-// 			this.right,
-// 			this.up,
-// 			this.down
-// 		];
-// 	}
-
-// 	getLegalAdjoiningPoints() : Point[] {
-// 		return this.getAdjoiningPoints()
-// 		.filter(pt => this.parent.isInBounds(pt.x, pt.y));
-// 	}
-
-// 	isLegalToExpand(): boolean {
-// 		const emptyAdjacent = this.getEmptyAdjoiningPoints();
-// 		switch (this.type) {
-// 			case "corridor" :
-// 				return emptyAdjacent.length >= 2 &&
-// 					this.AdjacenciesToGroup() <= 3;
-// 			case "room":
-// 				return this.isStartPoint();
-// 		}
-// 	}
-
-// 	connectTo(other: DungeonSquare) {
-// 		this.connections.push(other);
-// 		other.connections.push(this);
-// 	}
-
-// 	isConnectedTo(other: DungeonSquare) {
-// 		return this.connections.includes(other);
-// 	}
-
-// 	getAdjacentCorridors() : Point[] {
-// 		const parent = this.parent;
-// 		return this.getLegalAdjoiningPoints()
-// 			.filter( p=> parent.sq(p.x, p.y)?.type == "corridor"
-// 			);
-// 	}
-
-// 	getAdjacentRooms() : Point[] {
-// 		const parent = this.parent;
-// 		return this.getLegalAdjoiningPoints()
-// 			.filter( p=> parent.sq(p.x, p.y)?.type == "room");
-// 	}
-
-// 	getEmptyAdjoiningPoints() : Point[] {
-// 		const parent = this.parent;
-// 		return this.getLegalAdjoiningPoints()
-// 		.filter( p=> !parent.sq(p.x, p.y));
-// 	}
-
-// 	addSpecial (sp : RoomSpecial) {
-// 		this.specials.pushUnique(sp);
-// 	}
-
-// 	print() : string {
-// 		switch (this.type) {
-// 			case "corridor":
-// 			return "C";
-// 			case "room":
-// 				switch (true) {
-// 					case this.isStartPoint(): return "S";
-// 					case this.isExitPoint(): return "X";
-// 					default: return "R";
-// 				}
-// 		}
-// 	}
-// }
 
 
 

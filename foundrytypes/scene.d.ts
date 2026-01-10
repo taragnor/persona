@@ -59,7 +59,18 @@ namespace Foundry {
 		parent: Scene;
 		tokens: Set<TokenDocument<Actor<any>>>;
 		behaviors: Collection<RegionBehavior>;
+		shapes: RegionShape[];
 	}
+
+	type RegionShape = {
+		type: "rectangle";
+		x: number;
+		y: number;
+		hole: boolean;
+		rotation: number;
+		width: number;
+		height: number;
+	};
 
 	interface RegionBehavior<T extends keyof RegionBehaviorType = keyof RegionBehaviorType> extends FoundryDocument<never>{
 		disabled: boolean;

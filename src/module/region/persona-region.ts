@@ -13,7 +13,6 @@ import { PersonaDB } from "../persona-db.js";
 import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-system.js";
 import {EncounterOptions, RandomEncounter} from "../exploration/random-encounters.js";
 import {randomSelect, removeDuplicates} from "../utility/array-tools.js";
-import {getActiveConsequences} from "../preconditions.js";
 import {RegionPanel} from "../exploration/region-panel.js";
 
 declare global {
@@ -127,7 +126,7 @@ export class PersonaRegion extends RegionDocument {
 		return this.allRoomEffects
 			.flatMap( eff=> eff.getPassiveEffects(null))
 			.some( CE=> {
-				const cons = getActiveConsequences(CE, situation);
+				const cons = CE.getActiveConsequences(situation);
 				return cons.some( cons =>
 					cons.type == "dungeon-action" && cons.dungeonAction == "disable-region");
 			});
