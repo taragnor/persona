@@ -157,6 +157,26 @@ export class DungeonSquare {
 		return Math.floor(1 + this.die(4));
 	}
 
+	getDoorCoords(other: Point): WallData["c"][] {
+		const wallCoords = this.getWallCoords(other);
+		const doorCoords = DungeonSquare.splitLine(wallCoords, 3);
+		return doorCoords;
+	}
+
+	static splitLine([x1, y1, x2, y2] : WallData["c"], splits: number) : WallData["c"][] {
+		const x_increment = (x2-x1) / splits;
+		const y_increment = (y2-y1) / splits;
+		const arr= [] as WallData["c"][];
+		let x = x1, y = y1;
+		for (let i =0 ; i <splits; i++) {
+			const nx =  x + x_increment;
+			const ny =y + y_increment;
+			arr.push( [x, y, nx, ny]);
+			x = nx; y =ny;
+		}
+		return arr;
+	}
+
 	getWallCoords(other: Point): WallData["c"] {
 		const parent = this.parent;
 		const GS = parent.gridSize * DungeonSquare.HEIGHT;
@@ -174,7 +194,7 @@ export class DungeonSquare {
 	}
 
 	walls() : Partial<WallData>[] {
-		const walls = [];
+		const walls = [] as Partial<WallData>[];
 		const adj = this.getAdjoiningPoints();
 		const outOfBounds = adj
 		.filter( pt => this.parent.sq(pt.x, pt.y) == undefined);
@@ -183,40 +203,58 @@ export class DungeonSquare {
 		.filter( sq=> sq != undefined);
 
 		for (const OB of outOfBounds) {
-			const coords = this.getWallCoords(OB);
-			walls.push(this.generateWallData(coords));
+				walls.push(...this.generateWall(OB));
 		}
 		for (const poss of possibles) {
 			if (!this.connections.includes(poss)) {
-				const coords = this.getWallCoords(poss);
-				walls.push(this.generateWallData(coords));
+				walls.push(...this.generateWall(poss));
 				continue;
 			}
 			if (poss.type != this.type)  {
-				const coords = this.getWallCoords(poss);
-				//this is a door
-				//TODO: rooms need proper doors
-				walls.push(this.generateWallData(coords, true));
+				walls.push(...this.generateDoor(poss));
 				continue;
 			}
 		}
 		return walls;
 	}
 
+
+	generateDoor(other: Point) : Partial<WallData>[] {
+		const [wall1, door, wall2] = this.getDoorCoords(other);
+		return [
+			this.generateWallData(wall1),
+			this.generateWallData(door, true),
+			this.generateWallData(wall2),
+		];
+
+		// return [this.generateWallData(coords)];
+
+	}
+
+	generateWall(other: Point): Partial<WallData>[] {
+		const coords = this.getWallCoords(other);
+		return [this.generateWallData(coords)];
+
+	}
+
+
 	generateWallData ( c : WallData["c"], isDoor = false) : Partial<WallData> {
+		const texture = isDoor
+		? "canvas/doors/small/Door_Metal_Gray_E1_1x1.webp"
+		:   "canvas/doors/small/Door_Stone_Volcanic_B1_1x1.webp";
 		const animation = {
 			direction :1,
 			double :  false,
 			duration :  750,
 			flip :  false,
 			strength : 1,
-			texture :  "canvas/doors/small/Door_Stone_Volcanic_B1_1x1.webp",
+			texture : texture,
 			type :  "descend",
 		};
 
 		const wallData : Partial<WallData> = {
 			c,
-			door: isDoor ? 0: 1,
+			door: isDoor ? 1: 2, // 2 is secret door, used for walling
 			ds: isDoor ? 0 : 2, //0 is closed, 1 open, 2 locked
 			light: 20,
 			move: 20,

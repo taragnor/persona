@@ -26,7 +26,7 @@ export class RandomDungeonGenerator {
 
 	static init() {}
 
-	constructor(scene: PersonaScene, dungeonName: string = "Unnamed Dungeon", depth: number = 1, baseDiff: number = 70 ) {
+	constructor(scene: PersonaScene, dungeonName: string = "Unnamed Dungeon", depth: number = 1) {
 		this.squaresTaken = 0;
 		this.scene = scene;
 		this.gridSize = scene.grid.size;
@@ -40,7 +40,10 @@ export class RandomDungeonGenerator {
 		this._depth = depth;
 		this._name = dungeonName;
 		this.lenientMode = false;
-		this._baseDiff=  baseDiff;
+		this._baseDiff= this.scene.baseDungeonLevel;
+		if (this._baseDiff == 0) {
+			throw new PersonaError(`${scene.name} has no inset Difficulty`);
+		}
 	}
 
 	#resetSquares() {
@@ -351,14 +354,14 @@ export class RandomDungeonGenerator {
 				this.lenientMode = true;
 			}
 			if (emergencyBrake++ > 10000) {
-				throw new PersonaError("Had To bail out on generation, too many retries");
+				throw new GenerationBailOutError("Had To bail out on generation, too many retries");
 			}
 		}
 	}
 
 	async setRandomEncounterList() {
 		const CR =this.difficultyLevel;
-		await this.scene.setDifficulty(CR);
+		await this.scene.setTrueDifficulty(CR);
 
 		const shadows = PersonaDB.shadows()
 			.filter( x => x.isEligibleForRandomEncounter())
@@ -492,3 +495,7 @@ window.DG = RandomDungeonGenerator;
 type Direction = "up" | "down" | "left" |"right";
 
 
+
+class GenerationBailOutError extends Error {
+
+}

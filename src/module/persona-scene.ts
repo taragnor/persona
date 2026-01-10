@@ -44,22 +44,22 @@ export class PersonaScene extends Scene {
 			case diff <= -3 :
 				prob= "rare";
 				break;
-			case diff <= -2 : 
+			case diff <= -2 :
 				prob= "rare-plus";
 				break;
-			case diff <= -1 : 
+			case diff <= -1 :
 				prob= "normal";
 				break;
-			case diff <= 0 : 
+			case diff <= 0 :
 				prob= "normal-plus";
 				break;
-			case diff <= 1 : 
+			case diff <= 2 :
 				prob= "normal";
 				break;
-			case diff <= 2 : 
+			case diff <= 3 :
 				prob= "normal-minus";
 				break;
-			case diff <= 3 :
+			case diff <= 4 :
 				prob = "rare-plus";
 				break;
 			default:
@@ -69,12 +69,20 @@ export class PersonaScene extends Scene {
 		return ENCOUNTER_RATE_PROBABILITY[prob];
 	}
 
-	get difficultyLevel(): number {
+	private get difficultyLevel(): number {
 		return this.getFlag("persona", "randomGenDiff") ?? 0;
 	}
 
-	async setDifficulty(num: number) {
+	async setTrueDifficulty(num: number) {
 		await this.setFlag("persona", "randomGenDiff", num);
+	}
+
+	async setBaseDungeonLevel(num: number) {
+		await this.setFlag("persona", "baseDiff", num);
+	}
+
+	get baseDungeonLevel(): number {
+		return this.getFlag("persona", "baseDiff") ?? 0;
 	}
 
 	async setRandomEncounterList( shadows: Shadow[]) {

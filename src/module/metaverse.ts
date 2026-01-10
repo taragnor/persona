@@ -31,7 +31,7 @@ export class Metaverse {
 		if (!game.user.isGM) {return;}
 		const scene = game.scenes.current as PersonaScene;
 		if (!scene.allowsRandomGenerator()) {
-			ui.notifications.warn("Wrong Scene");
+			ui.notifications.warn(`${scene.name} doesn't support random generation`);
 			return;
 		}
 		if (!(await HTMLTools.confirmBox("reset Mementos?", "Reset Mementos dungeon?"))) {
@@ -43,8 +43,8 @@ export class Metaverse {
 		if (lvl < 0) {
 			return;
 		}
-		const startingLvl = 71;
-		const gen = new RandomDungeonGenerator(scene, "Wonderland Depths", lvl, startingLvl);
+		// const startingLvl = 71;
+		const gen = new RandomDungeonGenerator(scene, "Wonderland Depths", lvl);
 		await gen.generate(55, `${lvl}ARGFDSS` + String(Date.now()));
 	}
 	static async enterMetaverse() {
