@@ -101,6 +101,7 @@ export const OTHER_TYPES = [
 	"power-energy-cost",
 	"power-energy-req",
 	"power-mp-cost",
+	"power-mp-cost-mult",
 	"power-hp-cost",
 ] as const;
 
@@ -128,6 +129,7 @@ export const MODIFIER_CATEGORIES = {
 	"actor": ACTOR_STATS_TYPES,
 	"metaverse": ENVIRONMENTAL_MODIFIERS,
 	"deprecated": DEPRECATED_TYPES,
+	"other": OTHER_TYPES,
 } as const satisfies Record<string, readonly ModifierTarget[]>;
 
 export type ModifierCategory = keyof typeof MODIFIER_CATEGORIES;

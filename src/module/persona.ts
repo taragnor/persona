@@ -52,6 +52,7 @@ import {PersonaTagSheet} from "./item/sheets/tag-sheet.js";
 import {TagPrinter} from "./printers/tag-printer.js";
 import {EnhancedActorDirectory} from "./enhanced-directory/enhanced-directory.js";
 import {PersonaPrinter} from "./printers/persona-list.js";
+import {RandomDungeonGenerator} from "./exploration/random-dungeon-generator.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -124,6 +125,7 @@ Hooks.once("init", function() {
 	Tooltip.init();
 	PersonaPrinter.init();
 	EnhancedActorDirectory.init("systems/persona");
+	RandomDungeonGenerator.init();
 });
 
 function registerHandlebarsHelpers() {

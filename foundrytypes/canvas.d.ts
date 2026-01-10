@@ -11,7 +11,13 @@ class Canvas {
 	get stage(): Stage;
 	dimensions: CanvasDimensions;
 	get ready(): boolean;
+	fog: FogManager;
 
+}
+
+interface FogManager {
+	/** reset fog of war*/
+	reset() : Promise<void>;
 }
 
 type Animation = unknown;

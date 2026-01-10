@@ -7,7 +7,7 @@ namespace Foundry {
 	// class Scene extends FoundryDocument<never> {
 	interface Scene extends Document<never> {
 		tokens: Collection<TokenDocument<Actor<any>>>;
-		dimensions: {distance:number};
+		dimensions: {distance:number, sceneRect: SceneRect };
 		walls: Collection<WallDocument>;
 		regions: Collection<RegionDocument>;
 		weather: keyof CONFIG["weatherEffects"];
@@ -16,6 +16,8 @@ namespace Foundry {
 		view(): Promise<void>;
 		grid: {size: number};
 	}
+
+		interface SceneRect {x: number; y: number; width: number; height: number; type: number};
 
 	interface WallDocumentConstructor extends DocumentConstructor {
 		new(...args: unknown[]): WallDocument;
@@ -27,12 +29,27 @@ namespace Foundry {
 		door: number;
 		//** doorstate 0 closed, 1 open
 		ds: number;
-
 		doorSound: string;
+		light: number;
+		move: number;
+		sight: number;
+		sound: number;
 		dir: number;
-		c: number[];
+		/** coordinates:  [x1, y1, x2, y2] */
+		c: [number, number, number, number];
+		animation: DoorAnimation;
 	}
 
+	interface DoorAnimation {
+		direction : number;
+		double :boolean;
+		duration : number;
+		flip: boolean;
+		strength:  number;
+		texture: string;
+		/** example: "descend" */
+		type : string;
+	};
 	interface RegionDocumentConstructor  extends DocumentConstructor {
 		new(...args: unknown[]): RegionDocument;
 	}

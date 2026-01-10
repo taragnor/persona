@@ -71,10 +71,8 @@
 		<input class="short" type=number name="{{strcat namePrefix 'iterativePenalty'}}" value="{{cons.iterativePenalty}}">
 	</div>
 	{{/if}}
-	{{#if (eqAny cons.type "modifier" "add-escalation")}}
-	<select name="{{strcat namePrefix 'modifiedField'}}">
-		{{selectOptions POWERSTUFF.MODIFIER_TARGETS localize=true selected=cons.modifiedField}}
-	</select>
+	{{#if (eqAny cons.type "modifier")}}
+	{{> "systems/persona/parts/input-modifier.hbs" namePrefix=namePrefix cons=cons POWERSTUFF=POWERSTUFF owner=owner}}
 	{{/if}}
 	{{#if (eq cons.type "recover-slot")}}
 	<label> Slot</label>
@@ -284,10 +282,6 @@
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 	{{/if}}
 
-	{{/if}}
-
-	{{#if (eq cons.type "modifier")}}
-	{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'amount.') cons=cons.amount POWERSTUFF=POWERSTUFF owner=owner}}
 	{{/if}}
 
 	{{#if (eq cons.type "modifier-new")}}

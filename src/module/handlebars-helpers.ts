@@ -847,7 +847,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"getModifierTypesByCategory": function (category: U<keyof typeof MODIFIER_CATEGORIES>) {
-			if (!category)
+			if (!category || category.length == 0)
 			{return MODIFIERS_TABLE;}
 			if (!(category in MODIFIER_CATEGORIES)) {return {};}
 			const baseObject = MODIFIER_CATEGORIES[category] ?? {};

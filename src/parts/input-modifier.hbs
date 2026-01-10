@@ -1,17 +1,19 @@
-
 <div>
 	<select name="{{strcat namePrefix 'modifierCategory'}}">
 		{{selectOptions POWERSTUFF.MODIFIER_CATEGORIES_LOCALIZATION localize=true selected=cons.modifierCategory}}
 	</select>
 </div>
 <div>
-	{{multicheck (strcat namePrefix 'modifiedFields') (getModifierTypesByCategory cons.modifierCategory) checked=cons.modifiedFields localize=true}}
-</div>
+	<select name="{{strcat namePrefix 'modifiedField'}}">
+		{{selectOptions (getModifierTypesByCategory cons.modifierCategory) localize=true selected=cons.modifiedField}}
+	</select>
 
+</div>
 <div>
 	<select name="{{strcat namePrefix 'modifierType'}}">
 		{{selectOptions POWERSTUFF.MODIFIER_CONS_TYPES localize=true selected=(defVal cons.modifierType "constant")}}
 	</select>
 	{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'amount.') cons=cons.amount POWERSTUFF=POWERSTUFF owner=owner}}
 </div>
+
 

@@ -42,8 +42,9 @@ export class MPCostCalculator extends CostCalculator {
 		const situation: Situation = {
 			usedPower: pwr.accessor,
 		};
-		const mod = pwr.getBonuses("power-mp-cost").total(situation);
-		return this.i(mod);
+		const add = pwr.getBonuses("power-mp-cost").total(situation);
+		const mult = pwr.getBonuses("power-mp-cost-mult").total(situation, "percentage");
+		return {mult, add};
 	}
 
 	static mpCost_dekaja(pwr: Power) : CostModifier {

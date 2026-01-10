@@ -574,8 +574,9 @@ type ModifierConsequence = {
 
 type OldModifier = {
 	type: "modifier",
+	modifierCategory: ModifierCategory,
 	modifiedField : ModifierTarget,
-	amount: number,
+	amount: ConsequenceAmount,
 }
 
 

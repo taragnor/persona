@@ -17,6 +17,8 @@ private allItemsMap : Map<string, ItemType> = new Map();
 	private _edited: Actor[] = [];
 	private _editedItems: Item[] = [];
 
+	protected WAIT_DELAY = 250;
+
 	constructor() {
 		Hooks.once("ready", async () => {
 			await this.#loadPacks();
@@ -38,9 +40,9 @@ private allItemsMap : Map<string, ItemType> = new Map();
 					window.clearInterval(interval);
 					conf(true);
 				}
-			});
+			}, this.WAIT_DELAY);
 		});
-		await sleep(1000);
+		await sleep(this.WAIT_DELAY);
 	}
 
 	 _initHooks() : void {
@@ -91,7 +93,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		if (this._requiresReload)
 			{return;}
 		this._requiresReload = true;
-		setTimeout(() => this.checkReload(), 1000);
+		setTimeout(() => this.checkReload(), this.WAIT_DELAY);
 	}
 
 	async checkReload() {
@@ -102,7 +104,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 				|| (x.items?.contents?.some(x=> x.sheet._state >0)
 				))
 		) {
-			setTimeout(() => this.checkReload(), 1000);
+			setTimeout(() => this.checkReload(), this.WAIT_DELAY);
 			return;
 		}
 		await this.#loadPacks();
