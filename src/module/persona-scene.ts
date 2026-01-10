@@ -35,12 +35,13 @@ export class PersonaScene extends Scene {
 	//only called for the alternate random gen encounter system
 	getEncounterRate(shadow: Shadow) : number{
 		if (this.difficultyLevel == 0) {
-			ui.notifications.error(`Can't get difficulty level for ${this.name}`);
+			console.debug(`Can't get difficulty level for ${this.name}`);
+			return 0;
 		}
 		const diff = shadow.level - this.difficultyLevel;
 		let prob : keyof ProbabilityRate;
 		switch (true) {
-			case diff <= -3 : 
+			case diff <= -3 :
 				prob= "rare";
 				break;
 			case diff <= -2 : 

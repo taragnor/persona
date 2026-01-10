@@ -21,10 +21,32 @@ import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaScene } from "./persona-scene.js";
 import { EnchantedTreasureFormat, TreasureSystem } from "./exploration/treasure-system.js";
 import {RandomEncounter} from "./exploration/random-encounters.js";
+import {RandomDungeonGenerator} from "./exploration/random-dungeon-generator.js";
+import {HTMLTools} from "./utility/HTMLTools.js";
 
 export class Metaverse {
 	static lastCrunch : number = 0;
 
+	static async randomizeMementos (lvl?: number) {
+		if (!game.user.isGM) {return;}
+		const scene = game.scenes.current as PersonaScene;
+		if (!scene.allowsRandomGenerator()) {
+			ui.notifications.warn("Wrong Scene");
+			return;
+		}
+		if (!(await HTMLTools.confirmBox("reset Mementos?", "Reset Mementos dungeon?"))) {
+			return;
+		}
+		if (lvl == undefined) {
+			lvl = await HTMLTools.getNumber(" Level of Dungeon to set");
+		}
+		if (lvl < 0) {
+			return;
+		}
+		const startingLvl = 71;
+		const gen = new RandomDungeonGenerator(scene, "Wonderland Depths", lvl, startingLvl);
+		await gen.generate(55, `${lvl}ARGFDSS` + String(Date.now()));
+	}
 	static async enterMetaverse() {
 		if (!game.user.isGM) {return;}
 		(game.actors as Collection<PersonaActor>)
@@ -171,48 +193,6 @@ export class Metaverse {
 			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 		});
 	}
-
-	// static async generateTreasure(shadows: PersonaActor[]): Promise<Treasure> {
-	// 	const items : TreasureItem[] = [];
-	// 	// let money = 0;
-	// 	const considerSkillCard = async function (powerId: string, prob: number) {
-	// 		if (!powerId) {return;}
-	// 		if (Math.random() > (prob ?? 0) / 100) {return;}
-	// 		const existingCard = PersonaDB.skillCards().find( x=> x.system.skillId  ==  powerId);
-	// 		if (existingCard) {
-	// 			items.push(existingCard);
-	// 			return;
-	// 		}
-	// 		const power = PersonaDB.allPowers().get(powerId);
-	// 		if (!power) {
-	// 			PersonaError.softFail(`Can't fiund Power Id ${power} for treasure`);
-	// 			return;
-	// 		}
-	// 		const newCard = await PersonaItem.createSkillCardFromPower(power);
-	// 		const msg = `Skill Card created for ${power.name}`;
-	// 		ui.notifications.notify(msg);
-	// 		console.log(msg);
-	// 		items.push(newCard);
-	// 	};
-	// 	const considerItem = function (itemId: string, prob: number) {
-	// 		const item = PersonaDB.treasureItems().find(x=> x.id == itemId);
-	// 		if (!item) {return;}
-	// 		if (Math.random() > (prob ?? 0) / 100) {return;}
-	// 		items.push(item);
-	// 	};
-	// 	const money = shadows.reduce( (a,s) => a + s.moneyDropped(), 0);
-	// 	for (const shadow of shadows) {
-	// 		if (shadow.system.type != "shadow") { continue;}
-	// 		if (shadow.hasCreatureTag("d-mon")) { continue;}
-	// 		const treasure = shadow.system.encounter.treasure;
-	// 		considerItem(treasure.item0, treasure.item0prob);
-	// 		considerItem(treasure.item1, treasure.item1prob);
-	// 		considerItem(treasure.item2, treasure.item2prob);
-	// 		await considerSkillCard(treasure.cardPowerId, treasure.cardProb);
-	// 	}
-	// 	const treasure : Treasure = { money, items };
-	// 	return treasure;
-	// }
 
 	static async printTreasure(treasure : Treasure) {
 		const {money, items} = treasure;

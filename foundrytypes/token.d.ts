@@ -27,12 +27,20 @@ namespace Foundry {
 			visible: boolean;
 			hidden: boolean;
 			position: Position;
+			move(waypoints: TokenMoveWaypoint | TokenMoveWaypoint[], optionsObj?: TokenMovementOptions);
 		}
 
 	type SightObject = Record < string, any>;
 }
 declare const TokenDocument : Foundry.TokenDocumentConstructor;
 type TokenDocument<T extends Actor<any, any, any> = Actor<any>> = Foundry.TokenDocument<T>;
+
+interface TokenMoveWaypoint {
+	x: number;
+	y:number;
+	action: "displace" | ({} & string);
+}
+
 
 interface Position {
 	x: number;

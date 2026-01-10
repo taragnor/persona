@@ -20,10 +20,13 @@ export class RandomDungeonGenerator {
 	rng: SeededRandom;
 	squaresTaken: number;
 	_depth: number;
+	_name : string;
+	lenientMode: boolean;
+	_baseDiff: number;
 
 	static init() {}
 
-	constructor(scene: PersonaScene, depth: number = 1) {
+	constructor(scene: PersonaScene, dungeonName: string = "Unnamed Dungeon", depth: number = 1, baseDiff: number = 70 ) {
 		this.squaresTaken = 0;
 		this.scene = scene;
 		this.gridSize = scene.grid.size;
@@ -33,10 +36,20 @@ export class RandomDungeonGenerator {
 		this.width = rect.width;
 		this.height = rect.height;
 		this.calcmaxSquares();
+		this.#resetSquares();
+		this._depth = depth;
+		this._name = dungeonName;
+		this.lenientMode = false;
+		this._baseDiff=  baseDiff;
+	}
+
+	#resetSquares() {
 		this.squares = this.#makeRows();
 		this.squareList = [];
-		this._depth = depth;
+
 	}
+
+	get name () :string {return this._name;}
 
 	get currentDepth() : number {return this._depth;}
 
@@ -54,7 +67,7 @@ export class RandomDungeonGenerator {
 	}
 
 	get difficultyLevel() {
-		return 70 + this.currentDepth;
+		return this._baseDiff + this.currentDepth;
 	}
 
 	getAdjacentX(pt: Point, type : DungeonSquare["type"]) : Point[] {
@@ -152,12 +165,13 @@ export class RandomDungeonGenerator {
 		return rooms.length;
 	}
 
+
 	createDungeonCorridors(numOfSquares : number) {
 		let breakout = 0;
 		const rng = this.rng;
 		while (numOfSquares > 0) {
 			const pts = this.squareList
-				.filter( sq => sq.isLegalToExpand())
+				.filter( sq => sq.isLegalToExpand(this.lenientMode))
 				.map( sq => [sq, sq
 					.getEmptyAdjoiningPoints()
 					.filter(pt => this.numOfAdjacentCorridors(pt) <= 1)
@@ -189,7 +203,7 @@ export class RandomDungeonGenerator {
 		while (numOfSquares > 0) {
 			const pts = this.squareList
 				.filter( sq=> sq.type == "corridor")
-				.filter( sq => sq.isLegalToExpand())
+				.filter( sq => sq.isLegalToExpand(this.lenientMode))
 				.map( sq => [sq, sq
 					.getEmptyAdjoiningPoints()
 					.filter(pt => this.numOfAdjacentRooms(pt) == 0)
@@ -254,7 +268,7 @@ export class RandomDungeonGenerator {
 		const corridorParts= [sq];
 		const corridorLen = this.rng.die(1,4)+1;
 		let corridorsMade = 0;
-		while (corridorsMade < corridorLen && sq.isLegalToExpand()) {
+		while (corridorsMade < corridorLen && sq.isLegalToExpand(this.lenientMode)) {
 			const nextPt = sq[direction];
 			if ( !this.isInBounds(nextPt.x, nextPt.y)
 				|| this.sq(nextPt.x, nextPt.y)
@@ -268,7 +282,7 @@ export class RandomDungeonGenerator {
 		for (const pt of corridorParts) {
 			pt.addToGroup(corridorParts);
 		}
-		console.log(`corridor Parts: ${corridorParts.map(x=> x.print()).join("")}`)
+		console.log(`corridor Parts: ${corridorParts.map(x=> x.print()).join("")}`);
 		return corridorsMade;
 	}
 
@@ -290,34 +304,56 @@ export class RandomDungeonGenerator {
 		const rng = this.rng;
 		for (const room of list) {
 			const treasureCheck = rng.die(1,100);
-			if (treasureCheck < 30) {continue;}
-			const amount = rng.die(1,3);
+			if (treasureCheck < 40) {continue;}
+			const amount = rng.die(1,2);
 			room.addTreasure(amount);
 		}
 	}
 
+
 	async generate(numSquares: number, seedString: string = "TEST") {
-		this.rng = new SeededRandom(seedString);
 		const totalSquares = this.maxSquaresWidth * this.maxSquaresHeight;
 		if (numSquares > totalSquares) {
 			throw new PersonaError(`Too big, trying to request ${numSquares} with only ${totalSquares} available`);
 		}
-		//Steps
-		this.placeStartingRoom();
-		while (numSquares > 0) {
-			const corridors = this.rng.die(2,3)+1;
-			this.createDungeonCorridors(corridors );
-			const rooms = this.rng.die(1,2);
-			this.createDungeonRooms(rooms);
-			numSquares -= corridors + rooms;
+		let timeout = 0;
+		while (timeout < 100) {
+			try {
+				this.createDungeon(numSquares, seedString);
+				break;
+			} catch {
+				timeout ++;
+				seedString = seedString + "A";
+			}
+		}
+		if (timeout >= 100) {
+			PersonaError.softFail("Generation had too many errrors and had to bail out");
 		}
 		this.assignExit();
 		this.assignTreasures();
 		this.finalizeSquares();
 		console.log( this.print());
 		await this.outputDataToScene();
-		await this.setRandomEncounterList();
+	}
 
+	createDungeon(numSquares: number, seedString: string = "TEST") {
+		this.lenientMode = false;
+		this.rng = new SeededRandom(seedString);
+		this.#resetSquares();
+		this.placeStartingRoom();
+		let emergencyBrake = 0;
+		while (this.squareList.length < numSquares) {
+			const corridors = this.rng.die(2,3)+1;
+			this.createDungeonCorridors(corridors );
+			const rooms = this.rng.die(1,2);
+			this.createDungeonRooms(rooms);
+			if (emergencyBrake > 500) {
+				this.lenientMode = true;
+			}
+			if (emergencyBrake++ > 10000) {
+				throw new PersonaError("Had To bail out on generation, too many retries");
+			}
+		}
 	}
 
 	async setRandomEncounterList() {
@@ -337,16 +373,39 @@ export class RandomDungeonGenerator {
 		this.squareList.forEach( sq=> sq.finalize());
 	}
 
+
 	async outputDataToScene() {
 		if (!this.scene.allowsRandomGenerator()) {
 			ui.notifications.warn("This scene doesn't allow random Mutation");
 			return;
 		}
-		await this.resetFog();
 		await this.clearScene();
+		await this.movePCs();
+		await this.resetFog();
+		await this.updateSceneName();
 		await this.createWalls();
 		await this.createRegions();
 		await this.createTreasures();
+		await this.setRandomEncounterList();
+		await this.resetFog();
+	}
+
+	async updateSceneName() {
+		const name = `${this.name} L${this.currentDepth+1}`;
+		await this.scene.update({name});
+	}
+
+	async movePCs() {
+		const PCTokens = this.scene.tokens.filter( tok => tok.actor != undefined && tok.actor.hasPlayerOwner);
+		const startingSq = this.squareList.find( x=> x.isStartPoint());
+		if (!startingSq) {
+			ui.notifications.error("No startign square");
+			return;
+		}
+		for (const tok of PCTokens) {
+			const {x, y} = startingSq.treasurePosition();
+			await tok.move( {x , y, action: "displace"});
+		}
 	}
 
 	async clearScene () {

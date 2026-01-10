@@ -140,17 +140,21 @@ export class DungeonSquare {
 
 	}
 
-	maxTreasures(): number {
+	die (sides: number) {
+		return Math.floor(Math.random() * sides) + 1;
+	}
+
+	private maxTreasures(): number {
 		if (this.isCorridor()) {
 			if (this.isDeadEnd()) {
-				return 2;
+				return this.die(3);
 			}
-			return 1;
+			return this.die(2)-1;
 		}
 		if (this.isStartPoint() || this.isStairsDown()) {
 			return 0;
 		}
-		return Math.floor(2 + Math.random() * 4);
+		return Math.floor(1 + this.die(4));
 	}
 
 	getWallCoords(other: Point): WallData["c"] {
@@ -191,6 +195,7 @@ export class DungeonSquare {
 			if (poss.type != this.type)  {
 				const coords = this.getWallCoords(poss);
 				//this is a door
+				//TODO: rooms need proper doors
 				walls.push(this.generateWallData(coords, true));
 				continue;
 			}
@@ -232,7 +237,6 @@ export class DungeonSquare {
 			case this.isCorridor(): {
 				const presence =  Math.max(1, Math.ceil(this.group.length / 2));
 
-				console.log(`Corridor Presence : ${presence}`);
 				return presence;
 			}
 			default: return 2;
@@ -260,13 +264,26 @@ export class DungeonSquare {
 	}
 
 	private region_specialMods() : DungeonSquare["regionData"]["specialMods"] {
+		const mods : DungeonSquare["regionData"]["specialMods"] = [];
 		if (this.isTeleporter()) {
 			return ["safe" ,"compendium-access"];
 		}
 		if (this.isStartPoint()) {
 			return ["safe"];
 		}
-		return [];
+		if (this.isRoom()) {
+			const x = Math.floor(Math.random() * 10 + 1);
+			if (x>= 9) {
+				mods.push("treasure-rich");
+			}
+		}
+		if (this.isCorridor()) {
+			const x = Math.floor(Math.random() * 10 + 1);
+			if (x< 5) {
+				mods.push("treasure-poor");
+			}
+		}
+		return mods;
 	}
 
 private region_secret() : {status: DungeonSquare["regionData"]["secret"], details: string} {
@@ -366,15 +383,16 @@ private region_hazard() : {status: DungeonSquare["regionData"]["hazard"], detail
 		.filter(pt => this.parent.isInBounds(pt.x, pt.y));
 	}
 
-isLegalToExpand(): boolean {
+isLegalToExpand(lenient: boolean): boolean {
 	const emptyAdjacent = this.getEmptyAdjoiningPoints();
+	const lenientBonus = lenient ? 1 : 0;
 	switch (this.type) {
 		case "corridor" :
 			return emptyAdjacent.length >= 2 &&
-				this.AdjacenciesToGroup() <= 3;
+				this.AdjacenciesToGroup() <= (lenientBonus + this.group.length <= 3 ? 3 : 4);
 		case "room":
 			if (this.isStartPoint()) {
-				return this.AdjacenciesToGroup() <= 0;
+				return this.AdjacenciesToGroup() <= lenientBonus + 0;
 			}
 			return false;
 		}
