@@ -4237,13 +4237,21 @@ startingEnergy(this: Shadow) : number {
  */
 getEncounterWeight(this: Shadow, scene: PersonaScene = game.scenes.current as PersonaScene) : number {
 	const rate = this.system.encounter.dungeonEncounters.find(x => x.dungeonId == scene.id);
-	if (!rate) {return 0;}
+	if (!rate) {return (game.scenes.current as PersonaScene).getEncounterRate(this);}
 	const baseProb = ENCOUNTER_RATE_PROBABILITY[rate.frequencyNew];
 	if (baseProb == undefined) {
 		console.warn (`Invalid value for frequencynew: ${rate.frequencyNew}`);
 		return 0;
 	}
 	return baseProb;
+}
+
+isEligibleForRandomEncounter(this: Shadow) : boolean {
+	if (this.hasPlayerOwner) {return false;}
+	if ( this.isPersona() || this.isDMon() || this.isCompendiumEntry) {return false;}
+	if (this.hasTag("no-rand")) {return false;}
+	if (this.system.personaConversion.fusionConditions.length > 0) {return false;}
+	return true;
 }
 
 get questions(): NPC["system"]["questions"] {

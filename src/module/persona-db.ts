@@ -184,7 +184,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		if (this.#cache.shadows) {return this.#cache.shadows;}
 		const actors = this.allActors();
 		return this.#cache.shadows = actors
-			.filter( act=> act.system.type == "shadow") as Shadow[];
+			.filter( act=> act.isShadow());
 	}
 
 	tarotCards(): readonly Tarot[] {

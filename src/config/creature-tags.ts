@@ -27,6 +27,7 @@ export const TRAIT_TAG_LIST = [
 	"unscannable",
 	"enigmatic",
 	"no-xp",
+	"no-rand",
 ] as const;
 
 export const AI_TAGS = [

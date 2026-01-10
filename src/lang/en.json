@@ -1113,6 +1113,7 @@
 	"persona.creatureType.unscannable": "Scan Jam",
 	"persona.creatureType.enigmatic": "Defies Analysis",
 	"persona.creatureType.no-xp": "Gives No XP",
+	"persona.creatureType.no-rand": "Never Random Enc",
 	"persona.creatureType.stupid": "Mindless",
 	"persona.creatureType.smart": "Tactical",
 

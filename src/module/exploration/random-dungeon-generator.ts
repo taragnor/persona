@@ -1,4 +1,5 @@
 import {PersonaActor} from "../actor/persona-actor.js";
+import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
 import {PersonaRegion} from "../region/persona-region.js";
@@ -53,7 +54,7 @@ export class RandomDungeonGenerator {
 	}
 
 	get difficultyLevel() {
-		return 78 + this.currentDepth;
+		return 70 + this.currentDepth;
 	}
 
 	getAdjacentX(pt: Point, type : DungeonSquare["type"]) : Point[] {
@@ -315,9 +316,22 @@ export class RandomDungeonGenerator {
 		this.finalizeSquares();
 		console.log( this.print());
 		await this.outputDataToScene();
+		await this.setRandomEncounterList();
 
 	}
 
+	async setRandomEncounterList() {
+		const CR =this.difficultyLevel;
+		await this.scene.setDifficulty(CR);
+
+		const shadows = PersonaDB.shadows()
+			.filter( x => x.isEligibleForRandomEncounter())
+			.filter(x=> x.level >= CR -3 &&  x.level<= CR +5)
+			.filter( x=> !x.isBossOrMiniBossType());
+
+		await this.scene.setRandomEncounterList(shadows);
+		console.log(`setting random encounter list : ${shadows.map(x=> x.name).join()}` );
+	}
 
 	finalizeSquares() {
 		this.squareList.forEach( sq=> sq.finalize());
