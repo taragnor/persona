@@ -399,7 +399,7 @@ export class RandomDungeonGenerator {
 	}
 
 	async movePCs() {
-		const PCTokens = this.scene.tokens.filter( tok => tok.actor != undefined && tok.actor.hasPlayerOwner);
+		const PCTokens = this.scene.tokens.filter( tok => tok.actor != undefined && tok.actor.hasPlayerOwner && !tok.hidden);
 		const startingSq = this.squareList.find( x=> x.isStartPoint());
 		if (!startingSq) {
 			ui.notifications.error("No startign square");
