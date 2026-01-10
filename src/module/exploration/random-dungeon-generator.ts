@@ -303,16 +303,30 @@ export class RandomDungeonGenerator {
 	assignTreasures() {
 		const list = this.squareList
 			.filter(x=> x.isRoom() || x.isDeadEnd())
-			.filter (x=> !x.isStartPoint() && !x.isStairsDown());
+			.filter (x=> !x.isStairs() && !x.isTeleporter());
 		const rng = this.rng;
 		for (const room of list) {
-			const treasureCheck = rng.die(1,100);
-			if (treasureCheck < 40) {continue;}
+			if (!this.percentChance(60)) {continue;}
 			const amount = rng.die(1,2);
 			room.addTreasure(amount);
 		}
 	}
 
+	assignSpecials() {
+		const list = this.squareList
+			.filter (x=> !x.isStairs());
+		for (const room of list) {
+			if (!this.percentChance(30)) {continue;}
+			room.assignSpecials();
+		}
+	}
+
+
+	percentChance(percentNum: number) : boolean {
+		const check = this.rng.die(1,100);
+		if (check <= percentNum) {return true;}
+		return false;
+	}
 
 	async generate(numSquares: number, seedString: string = "TEST") {
 		const totalSquares = this.maxSquaresWidth * this.maxSquaresHeight;
@@ -333,6 +347,7 @@ export class RandomDungeonGenerator {
 			PersonaError.softFail("Generation had too many errrors and had to bail out");
 		}
 		this.assignExit();
+		this.assignSpecials();
 		this.assignTreasures();
 		this.finalizeSquares();
 		console.log( this.print());
@@ -397,6 +412,8 @@ export class RandomDungeonGenerator {
 		const name = `${this.name} L${this.currentDepth+1}`;
 		await this.scene.update({name});
 	}
+
+
 
 	async movePCs() {
 		const PCTokens = this.scene.tokens.filter( tok => tok.actor != undefined && tok.actor.hasPlayerOwner && !tok.hidden);

@@ -54,7 +54,6 @@ export class DungeonSquare {
 
 	isTeleporter(): boolean {
 		return this.specials.includes("checkpoint");
-
 	}
 
 	isStairs(): boolean {
@@ -82,10 +81,13 @@ export class DungeonSquare {
 			case "room":
 				switch (true) {
 					case this.isStartPoint(): {
-						return "Stairs Up";
+						return "Access Point (up)";
 					}
 					case this.isStairsDown(): {
-						return "Stairs Down";
+						return "Access Point (down)";
+					}
+					case this.isTeleporter(): {
+						return "Remote Access Terminal";
 					}
 					default:
 						return "Miscellaneous Room";
@@ -294,8 +296,8 @@ export class DungeonSquare {
 			case this.isStairsDown():
 				ret.push("Descend Point: You can descend even deeper into this strange realm.");
 				break;
-			case this.isTeleporter(): 
-				ret.push("Teleporter: You can use this to return back to the entrance of Wonderland");
+			case this.isTeleporter():
+				ret.push("Access Terminal: You can use this to return back to the entrance of Wonderland");
 				break;
 		}
 		return ret;
@@ -482,6 +484,7 @@ isLegalToExpand(lenient: boolean): boolean {
 				switch (true) {
 					case this.isStartPoint(): return "S";
 					case this.isStairsDown(): return "X";
+					case this.isTeleporter(): return "t";
 					case this.hasTreasure(): return String(this.treasures.length);
 					default: return "R";
 				}
@@ -500,6 +503,24 @@ isLegalToExpand(lenient: boolean): boolean {
 		return this.type == "corridor"
 		&& this.getEmptyAdjoiningPoints().length == 3;
 	}
+
+assignSpecials() {
+	if (this.isRoom()) {return this.assignRoomSpecials();}
+	if (this.isCorridor()) {return this.assignCorridorSpecials();}
+}
+
+assignCorridorSpecials() {
+	const die = this.die(100);
+}
+
+assignRoomSpecials() {
+	const die = this.die(100);
+	switch (true) {
+		case die > 90:
+			this.specials.push("checkpoint");
+			break;
+	}
+}
 
 	addTreasure(amt: number) {
 		let modifier: number;

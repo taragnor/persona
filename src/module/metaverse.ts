@@ -43,7 +43,6 @@ export class Metaverse {
 		if (lvl < 0) {
 			return;
 		}
-		// const startingLvl = 71;
 		const gen = new RandomDungeonGenerator(scene, "Wonderland Depths", lvl);
 		await gen.generate(55, `${lvl}ARGFDSS` + String(Date.now()));
 	}
