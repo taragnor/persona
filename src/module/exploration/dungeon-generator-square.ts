@@ -220,7 +220,6 @@ export class DungeonSquare {
 		return walls;
 	}
 
-
 	generateDoor(other: Point) : Partial<WallData>[] {
 		const [wall1, door, wall2] = this.getDoorCoords(other);
 		return [
@@ -228,15 +227,11 @@ export class DungeonSquare {
 			this.generateWallData(door, true),
 			this.generateWallData(wall2),
 		];
-
-		// return [this.generateWallData(coords)];
-
 	}
 
 	generateWall(other: Point): Partial<WallData>[] {
 		const coords = this.getWallCoords(other);
 		return [this.generateWallData(coords)];
-
 	}
 
 

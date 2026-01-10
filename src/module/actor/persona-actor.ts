@@ -4237,7 +4237,7 @@ startingEnergy(this: Shadow) : number {
  */
 getEncounterWeight(this: Shadow, scene: PersonaScene = game.scenes.current as PersonaScene) : number {
 	const rate = this.system.encounter.dungeonEncounters.find(x => x.dungeonId == scene.id);
-	if (!rate) {return (game.scenes.current as PersonaScene).getEncounterRate(this);}
+	if (!rate) {return scene.getEncounterRate(this);}
 	const baseProb = ENCOUNTER_RATE_PROBABILITY[rate.frequencyNew];
 	if (baseProb == undefined) {
 		console.warn (`Invalid value for frequencynew: ${rate.frequencyNew}`);
