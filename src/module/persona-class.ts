@@ -369,8 +369,9 @@ knowsPowerInnately(power : Power)  : boolean {
 	}
 
 	async increaseXP(amt: number): Promise<U<XPGainReport>> {
+		amt = Math.round(amt);
 		const currXP  = this.source.system.combat.personaStats.xp;
-		const newXP = currXP + amt;
+		const newXP = Math.round(currXP + amt);
 		let newLevel = this.level;
 		while (newXP >= LevelUpCalculator.minXPForEffectiveLevel(newLevel +1)) {
 			newLevel += 1;

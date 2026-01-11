@@ -560,7 +560,8 @@ export class FinalizedCombatResult {
 			}
 		}
 		if (mutableState.theurgy != 0 && !actor.isShadow()) {
-			await (actor as PC).modifyTheurgy(mutableState.theurgy);
+			console.log(`Modify Theurgy: ${mutableState.theurgy}`)
+			await actor.modifyTheurgy(mutableState.theurgy);
 		}
 		if (mutableState.mpCost != 0 && !actor.isShadow()) {
 			mutableState.mpCost *= mpmult;

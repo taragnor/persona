@@ -759,6 +759,9 @@ export class ConditionalEffectManager {
 			}
 			case "is-enemy":
 				return `${target1} is ${not} enemy of ${target2}`;
+			case "in-melee-with":
+				return `${target1} is ${not} in melee range of ${target2}`;
+
 			default:
 				cond satisfies never;
 				return "ERROR";
@@ -1117,6 +1120,8 @@ export class ConditionalEffectManager {
 				return `Energy ${cons.amount}`;
 			case "apply-recovery":
 				return `Apply Recovery`;
+			case "alter-theurgy":
+				return `Alter Theurgy Amount`;
 			default:
 				cons satisfies never;
 				return "ERROR";

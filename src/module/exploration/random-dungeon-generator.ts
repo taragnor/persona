@@ -448,6 +448,7 @@ export class RandomDungeonGenerator {
 		const wallData = this.squareList
 			.flatMap( x=> x.walls());
 		await this.addWall(wallData);
+		//need to check walls for duplicates that have equal x and y
 	}
 
 	async createRegions() {

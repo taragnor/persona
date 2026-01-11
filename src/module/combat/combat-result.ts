@@ -206,105 +206,115 @@ export class CombatResult  {
 				 case "addStatus": {
 						if (!effect) {break;}
 
-						let status_damage : number | undefined = undefined;
-						if (situation.attacker && situation.usedPower &&  cons.statusName == "burn") {
-							 const power = PersonaDB.findItem(situation.usedPower);
-							 if (power.system.type == "skillCard") {
-									PersonaError.softFail("Skill Card shouldn't be here");
-									break;
-							 }
-							 const attacker = PersonaDB.findActor(situation.attacker);
-							 // const attacker = PersonaDB.findToken(atkResult.attacker).actor;
-							 status_damage = attacker
-									? (power as Usable)
-									.damage.getDamage(power as Usable, attacker.persona())
-									.eval()
-									.hpChange ?? 0
-									: 0;
+					 let status_damage : number | undefined = undefined;
+					 if (situation.attacker && situation.usedPower &&  cons.statusName == "burn") {
+						 const power = PersonaDB.findItem(situation.usedPower);
+						 if (power.system.type == "skillCard") {
+							 PersonaError.softFail("Skill Card shouldn't be here");
+							 break;
+						 }
+						 const attacker = PersonaDB.findActor(situation.attacker);
+						 // const attacker = PersonaDB.findToken(atkResult.attacker).actor;
+						 status_damage = attacker
+							 ? (power as Usable)
+							 .damage.getDamage(power as Usable, attacker.persona())
+							 .eval()
+							 .hpChange ?? 0
+							 : 0;
+					 }
+					 const id = cons.statusName;
+					 if (id != "bonus-action") {
+						 if (!target) {
+							 PersonaError.softFail(`No Target for ${id}`);
+							 break;
+						 }
+						 const duration = convertConsToStatusDuration(cons, target);
+						 if (effect.addStatus.find( st => st.id == id && PersonaAE.durationLessThanOrEqualTo(duration, st.duration))) {
+							 break;
+						 }
+						 effect.addStatus.push({
+							 id,
+							 potency: Math.abs(status_damage ?? cons.amount ?? 0),
+							 duration,
+						 });
+					 }
+					 break;
+				 }
+				case "removeStatus": {
+					if (!effect) {break;}
+					// const id = cons.statusName;
+					const actor = PersonaDB.findActor(effect.actor);
+					for (const id of multiCheckToArray(cons.statusName)) {
+						if (actor.hasStatus(id)) {
+							effect.removeStatus.push({
+								id,
+							});
 						}
-						const id = cons.statusName;
-						if (id != "bonus-action") {
-							 if (!target) {
-									PersonaError.softFail(`No Target for ${id}`);
-									break;
-							 }
-							 const duration = convertConsToStatusDuration(cons, target);
-							 if (effect.addStatus.find( st => st.id == id && PersonaAE.durationLessThanOrEqualTo(duration, st.duration))) {
-									break;
-							 }
-							 effect.addStatus.push({
-									id,
-									potency: Math.abs(status_damage ?? cons.amount ?? 0),
-									duration,
-							 });
-						}
-						break;
-				 }
-				 case "removeStatus": {
-						if (!effect) {break;}
-						// const id = cons.statusName;
-						const actor = PersonaDB.findActor(effect.actor);
-						for (const id of multiCheckToArray(cons.statusName)) {
-							 if (actor.hasStatus(id)) {
-									effect.removeStatus.push({
-										 id,
-									});
-							 }
-						}
-						break;
-				 }
-				 case "extraAttack": {
-						if (!effect) {break;}
-						effect.otherEffects.push({
-							 type: "extra-attack",
-							 maxChain: cons.amount ?? 1,
-							 iterativePenalty: -Math.abs(cons.iterativePenalty ?? 0),
-						});
-						break;
-				 }
-				 case "extraTurn": {
-						if (situation.usedPower) {
-							 const power = PersonaDB.findItem(situation.usedPower);
-							 if (power.isOpener()) {break;}
-							 if (power.isTeamwork()) {break;}
-						}
-						if (!effect) {break;}
-						const combat = game.combat as PersonaCombat;
-						if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) {break;}
-						effect.otherEffects.push({
-							 type: "extraTurn",
-							 activation: combat.lastActivationRoll
-						});
-						break;
-				 }
-				 case "scan":
-						if (!effect) {break;}
-						effect.otherEffects.push( {
-							 type: cons.combatEffect,
-							 level: cons.amount ?? 1,
-							 downgrade: cons.downgrade ?? false,
-						});
-						break;
-				 case "auto-end-turn":
-						if (!effect) {break;}
-						effect.otherEffects.push(cons);
-						break;
-				 case "alter-energy": {
-						if (!effect) {break;}
-						const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
-						effect.otherEffects.push( {
-							 type: cons.combatEffect,
-							 amount,
-						});
-						break;
-				 }
-				 case "apply-recovery":
-						effect.otherEffects.push( {
-							 type: cons.combatEffect,
-						});
-						break;
-				 default:
-						cons satisfies never;
+					}
+					break;
+				}
+				case "extraAttack": {
+					if (!effect) {break;}
+					effect.otherEffects.push({
+						type: "extra-attack",
+						maxChain: cons.amount ?? 1,
+						iterativePenalty: -Math.abs(cons.iterativePenalty ?? 0),
+					});
+					break;
+				}
+				case "extraTurn": {
+					if (situation.usedPower) {
+						const power = PersonaDB.findItem(situation.usedPower);
+						if (power.isOpener()) {break;}
+						if (power.isTeamwork()) {break;}
+					}
+					if (!effect) {break;}
+					const combat = game.combat as PersonaCombat;
+					if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) {break;}
+					effect.otherEffects.push({
+						type: "extraTurn",
+						activation: combat.lastActivationRoll
+					});
+					break;
+				}
+				case "scan":
+					if (!effect) {break;}
+					effect.otherEffects.push( {
+						type: cons.combatEffect,
+						level: cons.amount ?? 1,
+						downgrade: cons.downgrade ?? false,
+					});
+					break;
+				case "auto-end-turn":
+					if (!effect) {break;}
+					effect.otherEffects.push(cons);
+					break;
+				case "alter-theurgy": {
+					if (!effect) {break;}
+					const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
+					effect.otherEffects.push( {
+						type: cons.combatEffect,
+						subtype: cons.subtype,
+						amount,
+					});
+					break;
+				}
+				case "alter-energy": {
+					if (!effect) {break;}
+					const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
+					effect.otherEffects.push( {
+						type: cons.combatEffect,
+						amount,
+					});
+					break;
+				}
+				case "apply-recovery":
+					effect.otherEffects.push( {
+						type: cons.combatEffect,
+					});
+					break;
+				default:
+					cons satisfies never;
 			}
 	 }
 

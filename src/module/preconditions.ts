@@ -276,8 +276,8 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
 			break;
 		}
 		case "round-count": {
-			if (!game.combat) {return false;}
-			target = game.combat.round ?? -1;
+			if (!PersonaCombat.combat) {return false;}
+			target = PersonaCombat.combat.round ?? -1;
 			break;
 		}
 		case "total-SL-levels": {
@@ -1271,6 +1271,15 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
 			const tok1 = PersonaDB.getUniversalTokenAccessor(target);
 			const tok2 = PersonaDB.getUniversalTokenAccessor(target2);
 			return combat.isEngaging(tok1, tok2);
+		}
+		case "in-melee-with": {
+			if (!combat) {return undefined;}
+			const target = getSubjectTokens(condition, situation, "conditionTarget")[0];
+			const target2 = getSubjectTokens(condition, situation, "conditionTarget2")[0];
+			if (!target || !target2) {return undefined;}
+			const tok1 = PersonaDB.getUniversalTokenAccessor(target);
+			const tok2 = PersonaDB.getUniversalTokenAccessor(target2);
+			return combat.isInMeleeWith(tok1, tok2);
 		}
 		case "is-resistant-to": {
 			return subjects.some( target => {

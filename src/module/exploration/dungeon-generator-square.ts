@@ -326,7 +326,6 @@ private region_secret() : {status: DungeonSquare["regionData"]["secret"], detail
 	const details = "";
 
 	switch (true) {
-
 		default:
 			status= "none";
 	}

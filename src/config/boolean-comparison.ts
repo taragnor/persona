@@ -105,6 +105,7 @@ const COMBAT_COMPARISON_SUBLIST_LIST = [
 	"is-dead",
 	"engaged-with",
 	"is-enemy",
+	"in-melee-with",
 	"struck-weakness",
 	"is-resistant-to",
 	"is-distracted",
@@ -151,7 +152,7 @@ type PowerComparison = {
 type CombatComparison = { boolComparisonTarget: "combat-comparison"} & CombatComparisonSub;
 
 type CombatComparisonSub = {
-	combatProp: 	"engaged-with"  | "is-enemy",
+	combatProp: 	"engaged-with"  | "is-enemy" | "in-melee-with",
 	conditionTarget : ConditionTarget,
 	conditionTarget2: ConditionTarget,
 } | {

@@ -367,7 +367,7 @@ type CombatEffectConsequencesList =
 	} | {
 		combatEffect: "apply-recovery",
 	} | {
-		type: "alter-theurgy",
+		combatEffect: "alter-theurgy",
 		applyTo : ConsequenceTarget,
 		subtype: AlterMPSubtype,
 		amount: number,
