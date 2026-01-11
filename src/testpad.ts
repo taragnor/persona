@@ -1,3 +1,4 @@
 type x = FoundryDocument
-TokenDocument
 
+
+([]).pushUnique

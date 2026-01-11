@@ -3,6 +3,7 @@ import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
 import {PersonaRegion} from "../region/persona-region.js";
+import {ArrayEq} from "../utility/array-tools.js";
 import {SeededRandom} from "../utility/seededRandom.js";
 import {DungeonSquare, Point, WallData} from "./dungeon-generator-square.js";
 
@@ -23,10 +24,11 @@ export class RandomDungeonGenerator {
 	_name : string;
 	lenientMode: boolean;
 	_baseDiff: number;
+	wallData: Partial<WallData>[] = [];
 
 	static init() {}
 
-	constructor(scene: PersonaScene, dungeonName: string = "Unnamed Dungeon", depth: number = 1) {
+	constructor(scene: PersonaScene, dungeonName: string = "Unnamed Dungeon", depth: number = 1, baseDiff ?: number) {
 		this.squaresTaken = 0;
 		this.scene = scene;
 		this.gridSize = scene.grid.size;
@@ -40,7 +42,8 @@ export class RandomDungeonGenerator {
 		this._depth = depth;
 		this._name = dungeonName;
 		this.lenientMode = false;
-		this._baseDiff= this.scene.baseDungeonLevel;
+		this.wallData = [];
+		this._baseDiff= (this.scene.baseDungeonLevel || baseDiff) ?? 0;
 		if (this._baseDiff == 0) {
 			throw new PersonaError(`${scene.name} has no inset Difficulty`);
 		}
@@ -49,7 +52,6 @@ export class RandomDungeonGenerator {
 	#resetSquares() {
 		this.squares = this.#makeRows();
 		this.squareList = [];
-
 	}
 
 	get name () :string {return this._name;}
@@ -328,7 +330,7 @@ export class RandomDungeonGenerator {
 		return false;
 	}
 
-	async generate(numSquares: number, seedString: string = "TEST") {
+	generate(numSquares: number, seedString: string = "TEST") {
 		const totalSquares = this.maxSquaresWidth * this.maxSquaresHeight;
 		if (numSquares > totalSquares) {
 			throw new PersonaError(`Too big, trying to request ${numSquares} with only ${totalSquares} available`);
@@ -351,8 +353,9 @@ export class RandomDungeonGenerator {
 		this.assignTreasures();
 		this.finalizeSquares();
 		console.log( this.print());
-		await this.outputDataToScene();
+		return this;
 	}
+
 
 	createDungeon(numSquares: number, seedString: string = "TEST") {
 		this.lenientMode = false;
@@ -389,10 +392,23 @@ export class RandomDungeonGenerator {
 
 	finalizeSquares() {
 		this.squareList.forEach( sq=> sq.finalize());
+		this.prepareWallData();
 	}
 
+	private prepareWallData() {
+		const wallData = this.squareList
+			.flatMap( x=> x.walls());
+		const dupeRemover = ([] as typeof wallData).pushUniqueS((a, b) => ArrayEq(a.c ?? [], b.c ?? []) , ...wallData);
+		if (wallData.length == dupeRemover.length) {
+			PersonaError.softFail("Create walls seems to have failed to remove duplicates");
+		}
+		this.wallData = dupeRemover;
+	}
 
 	async outputDataToScene() {
+		if (this.squareList.length == 0) {
+			throw new PersonaError("You haven't run genreate yet");
+		}
 		if (!this.scene.allowsRandomGenerator()) {
 			ui.notifications.warn("This scene doesn't allow random Mutation");
 			return;
@@ -444,10 +460,14 @@ export class RandomDungeonGenerator {
 		}
 	}
 
-	async createWalls() {
-		const wallData = this.squareList
-			.flatMap( x=> x.walls());
-		await this.addWall(wallData);
+	private async createWalls() {
+		// const wallData = this.squareList
+		// 	.flatMap( x=> x.walls());
+		// const dupeRemover = ([] as typeof wallData).pushUniqueS((a, b) => ArrayEq(a.c ?? [], b.c ?? []) , ...wallData);
+		// if (wallData.length == dupeRemover.length) {
+		// 	PersonaError.softFail("Create walls seems to have failed to remove duplicates");
+		// }
+		await this.addWalls(this.wallData);
 		//need to check walls for duplicates that have equal x and y
 	}
 
@@ -461,7 +481,7 @@ export class RandomDungeonGenerator {
 	}
 
 
-	async addWall(wallData: Partial<WallData>[]) {
+	private async addWalls(wallData: Partial<WallData>[]) {
 		await this.scene.createEmbeddedDocuments("Wall", wallData);
 	}
 

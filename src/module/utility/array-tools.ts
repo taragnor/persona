@@ -78,8 +78,8 @@ type WeightedChoiceItem<T>= {
 
 declare global {
 	interface Array<T> {
-		pushUnique<R extends T>(...x: R[]): number;
-		pushUniqueS<R extends T>(equalityTestFn: (a:R, b:R) => boolean, ...list: R[]) : number ;
+		pushUnique<R extends T>(...x: R[]): this;
+		pushUniqueS<R extends T>(equalityTestFn: (a:R, b:R) => boolean, ...list: R[]) : this ;
 	}
 }
 
@@ -88,15 +88,23 @@ Array.prototype.pushUniqueS = function<T>(this: Array<T>, equalityTestFn: (a:T, 
 		if (this.some(i => equalityTestFn(i, x))) {continue;}
 		this.push(x);
 	}
-	return this.length;
+	return this;
 };
 
 Array.prototype.pushUnique = function<T>(this: Array<T>, ...list: T[]) {
 	for (const x of list) {
 		if (this.includes(x)) {continue;}
+		if (Array.isArray(x)) {
+			if (this.some( elem => Array.isArray(elem) && ArrayEq(elem, x))) {
+				continue;
+			}
+		}
 		this.push(x);
 	}
-	return this.length;
+	return this;
 };
 
+export function ArrayEq (a: unknown[], b: unknown[]) : boolean {
+	return a.every( (elem, i) => elem == b[i]);
+}
 
