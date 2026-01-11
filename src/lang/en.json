@@ -793,6 +793,7 @@
 	"persona.preconditions.dice.attack-roll": "Attack Roll" ,
 	"persona.preconditions.comparison.constant": "Constant",
 	"persona.preconditions.comparison.roll-comparison": "Roll Comparison",
+	"persona.preconditions.comparison.in-melee-with": "Is in Melee with",
 	"persona.preconditions.comparison.using-meta-pod": "Using a Metaverse Pod",
 	"persona.preconditions.comparison.knows-power": "Knows Power",
 	"persona.preconditions.comparison.odd-even": "Odd/Even",

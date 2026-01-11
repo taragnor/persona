@@ -782,9 +782,7 @@ export class ConditionalEffectManager {
 			default:
 				cond satisfies never;
 				return "ERROR";
-
 		}
-
 	}
 
 	private static printNumericCond(cond: Precondition & {type: "numeric"}) : string {
