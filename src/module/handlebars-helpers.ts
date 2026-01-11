@@ -106,6 +106,9 @@ export class PersonaHandleBarsHelpers {
 			}
 		},
 
+		"statBoost": (persona: Persona, stat: PersonaStat) :number => {
+			return persona.source.system.combat.personaStats.permanentStatsBonuses[stat] ?? 0;
+		},
 
 		"isGM" : () => {
 			return game.user.isGM;

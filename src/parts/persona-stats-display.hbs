@@ -7,6 +7,9 @@
 			{{localize locStr}}
 		</label>
 		<span> {{statValue ../persona stat}} </span>
+		{{#if (statBoost ../persona stat)}}
+		+{{(statBoost ../persona stat)}}
+		{{/if}}
 	</div>
 	{{/each}}
 </section>
