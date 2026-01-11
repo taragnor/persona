@@ -33,6 +33,7 @@ export class RegionPanel {
 		}
 	}
 
+
 	static clearRegionDisplay() {
 		this.panel.clearPanel();
 	}

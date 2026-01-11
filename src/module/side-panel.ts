@@ -43,7 +43,7 @@ export abstract class SidePanel {
 		panel.empty();
 		templateData = {
 			...await this.getData(),
-			templateData,
+			...templateData,
 			_iteration : this.iterations,
 		};
 		this.iterations++;
