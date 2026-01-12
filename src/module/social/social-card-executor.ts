@@ -281,15 +281,6 @@ export class SocialCardExecutor {
 		if (!game.user.isGM)
 		{return await PersonaSocial.sendGMCardRequest(actor, link);}
 		return PersonaSocial._drawSocialCard(actor, link);
-		// const cards = this.validSocialCards(actor, link);
-		// const undrawn = cards;
-		// const weightedList = undrawn.map( card=> ({
-		// 	item: card,
-		// 	weight: Number(card.system.frequency ?? 1),
-		// }));
-		// const chosenCard = weightedChoice(weightedList);
-		// if (!chosenCard) {throw new PersonaError("Can't find valid social card!");}
-		// return chosenCard;
 	}
 
 
