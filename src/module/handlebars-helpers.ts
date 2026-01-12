@@ -303,22 +303,6 @@ export class PersonaHandleBarsHelpers {
 
 		"choiceMeetsConditions": function(_cardData: CardData, choice: SocialCard["system"]["events"][number]["choices"][number]) : boolean {
 			return PersonaSocial.currentSocialCardExecutor?.handler?.choiceMeetsConditions(choice) ?? false;
-			// const conditions = choice.conditions?.slice() ?? [];
-			// if (choice.resourceCost > 0) {
-			// 	conditions.push( {
-			// 		type: "numeric",
-			// 		comparisonTarget: "has-resources",
-			// 		comparator: ">=",
-			// 		num: choice.resourceCost,
-			// 	});
-			// }
-			// const sourced = conditions.map( cond => ({
-			// 	...PreconditionConverter.convertDeprecated(cond),
-			// 	owner: undefined,
-			// 	source: undefined,
-			// 	realSource: undefined,
-			// }));
-			// return testPreconditions(sourced, cardData.situation);
 
 		},
 		"meetsConditions" : function (cardData: CardData, conditions: SourcedPrecondition[]) : boolean {

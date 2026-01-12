@@ -29,14 +29,6 @@ export class SocialCardExecutor {
 		return this._abort;
 	}
 
-
-	// static cameoDisqualifierStatuses : StatusEffectId[] = [
-	// 	"jailed",
-	// 	"exhausted",
-	// 	"crippled",
-	// 	"injured",
-	// ] as const;
-
 	get handler() {
 		if (this.abort) {
 			throw new PersonaError("Card execution has aborted this shouldn't get called");
@@ -56,12 +48,6 @@ export class SocialCardExecutor {
 		this.mainActor = actor;
 		this.activity = activity;
 		this.sound = null;
-		// const continuation = this._nullContinuation;
-		// const cardData= this.generateCardData(actor, activity);
-		// this.rollState = {
-		// 	cardData,
-		// 	continuation,
-		// };
 	}
 
 	activateContinuation(x: unknown) {
@@ -101,14 +87,6 @@ export class SocialCardExecutor {
 			const link = PersonaSocial.lookupSocialLink(actor, activity.id);
 			replaceSet["$TARGET"] = link.actor.name;
 		}
-		// if (activity instanceof PersonaActor) {
-		// 	const link = PersonaSocial.lookupSocialLink(actor, activity.id);
-		// 	replaceSet["$TARGET"] = link.actor.name;
-		// 	if (link.actor.isSpecialEvent(link.linkLevel + 1)) {
-		// 		const msg = await this.specialEvent(actor, activity);
-		// 		return [msg];
-		// 	}
-		// }
 		const card = await this.#drawSocialCard(actor, activity);
 		const cameos = this.#getCameos(card, actor, activity.id);
 		const perk = this.#getPerk(card, actor, activity, cameos);
@@ -117,7 +95,6 @@ export class SocialCardExecutor {
 			user: actor.accessor,
 			socialTarget: activity instanceof PersonaActor ?  activity.accessor: undefined,
 			attacker: actor.accessor,
-			// target: activity instanceof PersonaActor ?  activity.accessor: undefined,
 			cameo,
 			isSocial: true,
 			socialRandom : Math.floor(Math.random() * 20) + 1,
@@ -161,57 +138,6 @@ export class SocialCardExecutor {
 			continuation,
 		};
 		return await this.#execCardSequence();
-		// const replaceSet : Record<string, string> = {};
-		// if (activity instanceof PersonaActor) {
-		// 	const link = PersonaSocial.lookupSocialLink(actor, activity.id);
-		// 	replaceSet["$TARGET"] = link.actor.name;
-		// 	if (link.actor.isSpecialEvent(link.linkLevel + 1)) {
-		// 		const msg = await this.specialEvent(actor, activity);
-		// 		return [msg];
-		// 	}
-		// }
-		// const card = await this.#drawSocialCard(actor, activity);
-		// const cameos = this.#getCameos(card, actor, activity.id);
-		// const perk = this.#getPerk(card, actor, activity, cameos);
-		// const cameo = cameos.length > 0 ? cameos[0].accessor : undefined;
-		// const situation : CardData["situation"] = {
-		// 	user: actor.accessor,
-		// 	socialTarget: activity instanceof PersonaActor ?  activity.accessor: undefined,
-		// 	attacker: actor.accessor,
-		// 	// target: activity instanceof PersonaActor ?  activity.accessor: undefined,
-		// 	cameo,
-		// 	isSocial: true,
-		// 	socialRandom : Math.floor(Math.random() * 20) + 1,
-		// };
-		// if (cameos[0]) {
-		// 	replaceSet["$CAMEO"] = cameos[0].name;
-		// } else {
-		// 	replaceSet["$CAMEO"] = "NULL CAMEO";
-		// }
-		// const eventList = card.cardEvents().slice() ;
-		// if (activity instanceof PersonaActor) {
-		// 	const questionsAsEvents= SocialCardEventHandler.questionsAsEvents(activity);
-		// 	eventList.push(...questionsAsEvents);
-		// }
-		// const cardData : CardData = {
-		// 	card,
-		// 	actor,
-		// 	linkId: activity.id,
-		// 	activity,
-		// 	cameos,
-		// 	perk,
-		// 	eventsChosen: [],
-		// 	eventsRemaining: card.system.num_of_events,
-		// 	situation,
-		// 	forceEventLabel: null,
-		// 	eventList,
-		// 	replaceSet,
-		// 	variables: {},
-		// 	extraCardTags: [],
-		// 	currentEvent: null,
-		// 	item: undefined,
-		// };
-		// return await this.#execCardSequence(cardData);
 	}
 
 	async #execCardSequence(): Promise<ChatMessage[]> {
@@ -227,21 +153,6 @@ export class SocialCardExecutor {
 		await PersonaSocial.applyEffects(effectList, cardData.situation, cardData.actor);
 		const msgs= await this.handler!.cardEventLoop();
 		chatMessages.push(...msgs);
-		// while (cardData.eventsRemaining > 0) {
-		// 	if (!this.rollState) { return chatMessages;}
-		// 	const ev = this.#getCardEvent(cardData);
-		// 	if (!ev) {
-		// 		cardData.currentEvent = null;
-		// 		PersonaError.softFail(`Missing Event choice for events remaining: ${cardData.eventsRemaining} on card ${cardData.card.name}`);
-		// 		cardData.eventsRemaining--;
-		// 		continue;
-		// 	}
-		// 	cardData.eventsChosen.push(ev);
-		// 	cardData.currentEvent = ev;
-		// 	cardData.eventsRemaining--;
-		// 	const msg = await this.#execEvent(ev, cardData);
-		// 	chatMessages.push(msg as ChatMessage);
-		// }
 		if (this.abort) { return chatMessages;}
 		const opp = await this.#execOpportunity(cardData);
 		if (opp) {

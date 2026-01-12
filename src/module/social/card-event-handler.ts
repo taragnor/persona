@@ -82,10 +82,6 @@ export class SocialCardEventHandler {
 		if (ArrayCorrector(event.choices).length > 0) {
 			const cardEvent = await new Promise( (conf, _rej) => {
 				this.owner.setContinuation(conf);
-				// this.owner.rollState = {
-				// 	cardData,
-				// 	continuation: conf
-				// };
 			});
 			if (cardEvent != undefined) {
 				const choice = cardEvent as CardData["eventList"][number]["choices"][number];
@@ -568,19 +564,6 @@ export class SocialCardEventHandler {
 	}
 
 	async makeCardRoll(eventIndex: number, choiceIndex: number, message: ChatMessage) {
-		// const cardId = HTMLTools.getClosestData(ev, "cardId");
-		// const messageId = HTMLTools.getClosestData(ev, "messageId");
-		// const message = game.messages.get(messageId);
-		// if (!message) {
-		// 	throw new PersonaError(`Couldn't find messsage ${messageId}`);
-		// }
-		// const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
-		// const choiceIndex = Number(HTMLTools.getClosestData(ev, "choiceIndex"));
-		// const card = PersonaDB.allSocialCards().find(card=> card.id == cardId);
-
-		// if (!card) {
-		// 	throw new PersonaError(`Can't find card ${cardId}`);
-		// }
 		const cardEvent = this.cardData.eventList[eventIndex];
 		if (cardEvent != this.cardData.currentEvent) {
 			throw new PersonaError("Event mismatch on card, can't execute makeCardRoll");
@@ -603,43 +586,6 @@ export class SocialCardEventHandler {
 		await message.update( {"content": html});
 		this.owner.activateContinuation(choice);
 	}
-
-	// async makeCardRoll(ev: JQuery.ClickEvent) {
-	// 	const cardId = HTMLTools.getClosestData(ev, "cardId");
-	// 	const messageId = HTMLTools.getClosestData(ev, "messageId");
-	// 	const message = game.messages.get(messageId);
-	// 	if (!message) {
-	// 		throw new PersonaError(`Couldn't find messsage ${messageId}`);
-	// 	}
-	// 	const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
-	// 	const choiceIndex = Number(HTMLTools.getClosestData(ev, "choiceIndex"));
-	// 	const card = PersonaDB.allSocialCards().find(card=> card.id == cardId);
-
-	// 	if (!card) {
-	// 		throw new PersonaError(`Can't find card ${cardId}`);
-	// 	}
-	// 	const cardEvent = this.cardData.eventList[eventIndex];
-	// 	const choice = cardEvent.choices[choiceIndex];
-	// 	// await this.handleCardChoice(this.rollState.cardData, choice);
-	// 	const content = $(message.content);
-	// 	content
-	// 		.closest(".social-card-event")
-	// 		.find(".event-choice")
-	// 		.each( function () {
-	// 			const index = Number(HTMLTools.getClosestData($(this), "choiceIndex"));
-	// 			if (index != choiceIndex) {
-	// 				$(this).remove();
-	// 			} else {
-	// 				$(this).find("button").remove();
-	// 				$(this).find(".event-choice").addClass("chosen");
-	// 			}
-	// 		});
-	// 	const html = content.html();
-	// 	await message.update( {"content": html});
-	// 	this.owner.activateContinuation(choice);
-	// }
-
-
 
 	forceEvent(evLabel?: string) {
 		console.log(`Entering Force Event : ${evLabel}`);
