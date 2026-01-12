@@ -124,10 +124,10 @@ export class SocialActionExecutor {
 				this.cardExecutor.setSocialVariable(variableName, varVal);
 				break;
 
-		default:
-			operator satisfies never;
+			default:
+				operator satisfies never;
+		}
 	}
-}
 
 	static async modifyProgress(eff: SocialCardActionConsequence & {cardAction: "modify-progress-tokens"} ) {
 		const choice = eff.socialLinkIdOrTarot;
