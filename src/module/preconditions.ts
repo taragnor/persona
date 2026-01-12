@@ -270,9 +270,10 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
 			break;
 		}
 		case "social-variable": {
-			if (!PersonaSocial.rollState) {return false;}
-			target = PersonaSocial.rollState.cardData.variables[condition.variableId] ;
-			if (target == undefined) {return false;}
+			if (!PersonaSocial.currentSocialCardExecutor) {return false;}
+			const varVal = PersonaSocial.getSocialVariable(condition.variableId);
+			if (varVal == undefined) {return false;}
+			target = varVal;
 			break;
 		}
 		case "round-count": {

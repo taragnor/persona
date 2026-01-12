@@ -119,7 +119,7 @@ export class PersonaVariables {
 				break;
 			}
 			case "social-temp": {
-				PersonaSocial.setSocialVariable(data.variableId, value);
+				PersonaSocial.currentSocialCardExecutor?.setSocialVariable(data.variableId, value);
 				break;
 			}
 			default:

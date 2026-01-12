@@ -11,7 +11,6 @@ import { Consequence } from "../../config/consequence-types.js";
 import { SocialCardActionConsequence } from "../../config/consequence-types.js";
 import { OtherEffect } from "../../config/consequence-types.js";
 import { StatusEffect } from "../../config/consequence-types.js";
-import { PersonaSocial } from "../social/persona-social.js";
 import { ValidSound } from "../persona-sounds.js";
 import { PersonaError } from "../persona-error.js";
 import { PToken } from "./persona-combat.js";
@@ -21,6 +20,7 @@ import { PersonaDB } from "../persona-db.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
 import {ConsequenceTarget} from "../../config/precondition-types.js";
+import {SocialActionExecutor} from "../social/exec-social-action.js";
 
 declare global {
 	interface SocketMessage {
@@ -431,7 +431,7 @@ export class CombatResult  {
 				const otherEffect : SocialCardActionConsequence = {
 					...cons
 				};
-				await PersonaSocial.execSocialCardAction(otherEffect);
+				await SocialActionExecutor.execSocialCardAction(otherEffect);
 				if (!effect) {break;}
 				effect.otherEffects.push( otherEffect);
 				break;
@@ -471,16 +471,27 @@ export class CombatResult  {
 					...cons,
 					situation: situation,
 				};
-				if (cons.varType == "social-temp" && "amount" in cons && cons.operator != "set-range") {
-					const amount = this.resolveConsequenceAmount(cons, situation, "value");
-					const otherEffect : SocialCardActionConsequence & {cardAction: "set-temporary-variable"} = {
-						type: "social-card-action",
-						cardAction: "set-temporary-variable",
-						variableId: cons.variableId,
-						operator: cons.operator,
-						value: amount,
-					};
-					await PersonaSocial.execSocialCardAction(otherEffect);
+				if (cons.varType == "social-temp") {
+					//social stuff must be executed player side
+					if (cons.operator == "set-range") {
+						const otherEffect : SocialCardActionConsequence & {cardAction: "set-temporary-variable"} = {
+							...cons,
+							type: "social-card-action",
+							cardAction: "set-temporary-variable",
+						};
+						await SocialActionExecutor.execSocialCardAction(otherEffect);
+					}
+					if (cons.operator != "set-range") {
+						const amount = this.resolveConsequenceAmount(cons, situation, "value");
+						const otherEffect : SocialCardActionConsequence & {cardAction: "set-temporary-variable"} = {
+							type: "social-card-action",
+							cardAction: "set-temporary-variable",
+							variableId: cons.variableId,
+							operator: cons.operator,
+							value: amount,
+						};
+						await SocialActionExecutor.execSocialCardAction(otherEffect);
+					}
 					break;
 				}
 				if (target) {

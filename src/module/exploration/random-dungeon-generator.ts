@@ -356,7 +356,6 @@ export class RandomDungeonGenerator {
 		return this;
 	}
 
-
 	createDungeon(numSquares: number, seedString: string = "TEST") {
 		this.lenientMode = false;
 		this.rng = new SeededRandom(seedString);

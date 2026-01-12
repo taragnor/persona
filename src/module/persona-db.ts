@@ -1,5 +1,4 @@
 import { TAROT_DECK, TarotCard } from "../config/tarot.js";
-import { SocialEncounterCard } from "./social/persona-social.js";
 import { ModifierContainer } from "./item/persona-item.js";
 import { PersonaError } from "./persona-error.js";
 import { PersonaItem } from "./item/persona-item.js";
@@ -7,6 +6,7 @@ import { DBAccessor } from "./utility/db-accessor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { BASIC_PC_POWER_NAMES } from "../config/basic-powers.js";
 import { BASIC_SHADOW_POWER_NAMES } from "../config/basic-powers.js";
+import {SocialEncounterCard} from "./social/social-card-executor.js";
 
 declare global {
 	interface HOOKS {

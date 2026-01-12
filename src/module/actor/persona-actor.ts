@@ -3880,7 +3880,7 @@ isAvailable(pc: PersonaActor) : boolean {
 	if(!testPreconditions(this.getAvailabilityConditions(), sit)) {
 		return false;
 	}
-	if (PersonaSocial.disqualifierStatuses.some (st=> this.hasStatus(st))) {return false;}
+	if (PersonaSocial.availabilityDisqualifierStatuses.some (st=> this.hasStatus(st))) {return false;}
 	const availability = this.system.weeklyAvailability;
 	if (this.isSociallyDisabled())  {
 		return false;

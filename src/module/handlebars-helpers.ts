@@ -23,7 +23,6 @@ import { DamageType } from "../config/damage-types.js";
 import { DAMAGETYPES } from "../config/damage-types.js";
 import { localize } from "./persona.js";
 import { AttackResult } from "./combat/combat-result.js";
-import { CardData } from "./social/persona-social.js";
 import { testPreconditions } from "./preconditions.js";
 import { SetFlagEffect } from "../config/consequence-types.js";
 import { SocialBenefit } from "./actor/persona-actor.js";
@@ -39,13 +38,13 @@ import {LevelUpCalculator} from "../config/level-up-calculator.js";
 import {PersonaSettings} from "../config/persona-settings.js";
 import {POWER_TAGS} from "../config/power-tags.js";
 import {FusionCombination, FusionTable} from "../config/fusion-table.js";
-import {PreconditionConverter} from "./migration/convertPrecondition.js";
 import {PCSheet} from "./actor/sheets/pc-sheet.js";
 import {OriginalDamageSystem} from "./combat/original-damage-system.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaCompendium} from "./persona-compendium.js";
 import {CombatPanel} from "./combat/combat-panel.js";
 import {PROBABILITIES, ProbabilityRate} from "../config/probability.js";
+import {CardData} from "./social/social-card-executor.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -302,23 +301,24 @@ export class PersonaHandleBarsHelpers {
 			else {return str;}
 		},
 
-		"choiceMeetsConditions": function(cardData: CardData, choice: SocialCard["system"]["events"][number]["choices"][number]) : boolean {
-			const conditions = choice.conditions?.slice() ?? [];
-			if (choice.resourceCost > 0) {
-				conditions.push( {
-					type: "numeric",
-					comparisonTarget: "has-resources",
-					comparator: ">=",
-					num: choice.resourceCost,
-				});
-			}
-			const sourced = conditions.map( cond => ({
-				...PreconditionConverter.convertDeprecated(cond),
-				owner: undefined,
-				source: undefined,
-				realSource: undefined,
-			}));
-			return testPreconditions(sourced, cardData.situation);
+		"choiceMeetsConditions": function(_cardData: CardData, choice: SocialCard["system"]["events"][number]["choices"][number]) : boolean {
+			return PersonaSocial.currentSocialCardExecutor?.handler?.choiceMeetsConditions(choice) ?? false;
+			// const conditions = choice.conditions?.slice() ?? [];
+			// if (choice.resourceCost > 0) {
+			// 	conditions.push( {
+			// 		type: "numeric",
+			// 		comparisonTarget: "has-resources",
+			// 		comparator: ">=",
+			// 		num: choice.resourceCost,
+			// 	});
+			// }
+			// const sourced = conditions.map( cond => ({
+			// 	...PreconditionConverter.convertDeprecated(cond),
+			// 	owner: undefined,
+			// 	source: undefined,
+			// 	realSource: undefined,
+			// }));
+			// return testPreconditions(sourced, cardData.situation);
 
 		},
 		"meetsConditions" : function (cardData: CardData, conditions: SourcedPrecondition[]) : boolean {
@@ -707,7 +707,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"getRollTags": function (cardRoll: CardRoll): string {
-			const localization= PersonaSocial.getCardRollTags(cardRoll)
+			const localization= (PersonaSocial.currentSocialCardExecutor?.handler?.getCardRollTags(cardRoll) ?? [])
 				.map (t => localize(ROLL_TAGS_AND_CARD_TAGS[t]));
 			return localization
 				.join(", ");
