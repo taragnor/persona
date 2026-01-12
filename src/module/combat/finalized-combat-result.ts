@@ -394,10 +394,6 @@ export class FinalizedCombatResult {
 				case "absorb":
 				case "block":
 				case "reflect": {
-					// const power = PersonaDB.findItem(atkResult.power);
-					// if (power.system.type != "skillCard" && power.system.dmg_type != "healing") {
-					// 	await PersonaSFX.onDefend(PersonaDB.findToken(atkResult.target), atkResult.result);
-					// }
 				}
 			}
 			let token: PToken | undefined;

@@ -1618,6 +1618,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return calc;
 	}
 
+	baseCritBoost(this: Usable): number  {
+		if (this.isWeaponSkill()
+			&& !this.isBasicPower()
+			&& this.system.ailmentChance == 'none'
+			&& !this.isInstantDeathAttack()) {
+			return 2;
+		}
+		return 0;
+	}
+
 	isWeaponSkill(): this is PowerSub<'weapon'> {
 		if (!this.isUsableType()) {return false;}
 		if (this.isSkillCard()) {return false;}

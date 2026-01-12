@@ -1,17 +1,19 @@
 <div class="roll-block">
 	{{> "systems/persona/parts/simple-roll.hbs" roll=atk.attackResult.roll }}
-	{{#if atk.attackResult.critBoost}}
+	{{#if atk.attackResult.critRange}}
 	<div class="crit-boost gm-only">
 		<div class="tooltip">
 			<span>
-				Critical Boost:
+				Critical Range:
 			</span>
-			<span>
-				{{atk.attackResult.critBoost}}
+			<span >
+				{{atk.attackResult.critRange.low}}
+				-
+				{{atk.attackResult.critRange.high}}
 			</span>
-			<div class="tooltiptext">
-				{{joinStepsHTML atk.attackResult.critPrintable}}
-			</div>
+				<div class="tooltiptext">
+					{{joinStepsHTML atk.attackResult.critRange.steps}}
+				</div>
 		</div>
 		{{/if}}
 		{{#if atk.attackResult.instantKillRange}}

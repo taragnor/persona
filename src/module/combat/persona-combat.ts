@@ -862,9 +862,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			power: PersonaDB.getUniversalItemAccessor(power),
 			ailmentRange: undefined,
 			instantKillRange: undefined,
+			critRange: undefined,
 			situation,
 			roll: null,
-			critBoost: 0,
 			// printableModifiers: []
 		};
 		const proc = new CombatEngine(undefined);

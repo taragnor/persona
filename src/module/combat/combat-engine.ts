@@ -166,7 +166,7 @@ export class CombatEngine {
 				rollType = atkNum > 0 ? 'iterative': rollType;
 				const atkResult = await this.processAttackRoll( attacker, power, target, modifiers, rollType == 'standard' && i==0 ? 'activation' : rollType, options);
 				const this_result = await this.processEffects(atkResult);
-				if (!options.simulated) {
+				if (!options.simulated && this.combat) {
 					await this.attackRollSFX(attacker, target, power, atkResult.result);
 				}
 				result.merge(this_result);
@@ -292,15 +292,15 @@ export class CombatEngine {
 		return range.possible && naturalAttackRoll >= range.low && naturalAttackRoll <= range.high;
 	}
 
-	private getEffectiveCritBoost(attacker: Persona, target: Persona, situation: Situation, power: Usable) : {critBoost: number, critPrintable: string[]} {
-		const critBoostMod = this.calcCritModifier(attacker, target, power, situation);
-		const critMin = situation.resisted ? -999 : 0;
-		const critResolved = critBoostMod.eval(situation);
-		const critMax = critResolved.total < 100 ? this.CRIT_MAX : 100;
-		const critBoost = Math.clamp(critResolved.total, critMin, critMax);
-		const critPrintable = critResolved.steps;
-		return { critBoost, critPrintable};
-	}
+	// private getEffectiveCritBoost(attacker: Persona, target: Persona, situation: Situation, power: Usable) : {critBoost: number, critPrintable: string[]} {
+	// 	const critBoostMod = this.calcCritModifier(attacker, target, power, situation);
+	// 	const critMin = situation.resisted ? -999 : 0;
+	// 	const critResolved = critBoostMod.eval(situation);
+	// 	const critMax = critResolved.total < 100 ? this.CRIT_MAX : 100;
+	// 	const critBoost = Math.clamp(critResolved.total, critMin, critMax);
+	// 	const critPrintable = critResolved.steps;
+	// 	return { critBoost, critPrintable};
+	// }
 
 	async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, modifiers: ModifierList, rollType: AttackRollType, options: CombatOptions = {}) : Promise<AttackResult> {
 		const attackerPersona = attacker.actor.persona();
@@ -338,11 +338,11 @@ export class CombatEngine {
 		}
 		const resolvedAttackMods = attackbonus.eval(situation);
 		const validAtkModifiers = resolvedAttackMods.steps;
-		const {ailmentRange, instantKillRange} = CombatEngine.calculateRanges(attackerPersona, targetPersona, power, baseSituation);
-		const {critBoost, critPrintable} = this.getEffectiveCritBoost(attackerPersona, targetPersona, situation, power);
+		const {ailmentRange, instantKillRange, critRange} = CombatEngine.calculateRanges(attackerPersona, targetPersona, power, baseSituation);
+		// const {critBoost, critPrintable} = this.getEffectiveCritBoost(attackerPersona, targetPersona, situation, power);
 		const addonAttackResultData = {
-			ailmentRange, instantKillRange,
-			critBoost, critPrintable,
+			ailmentRange, instantKillRange, critRange,
+			// critBoost, critPrintable,
 			validAtkModifiers, validDefModifiers,
 			situation,
 		};
@@ -370,7 +370,8 @@ export class CombatEngine {
 		situation.withinInstantKillRange = CombatEngine.withinRange(instantKillRange, r);
 		const canCrit = typeof rollType == 'number' || rollType == 'iterative' ? false : true;
 		const cancelCritsForInstantDeath = false;
-		if (naturalAttackRoll + critBoost >= 20
+		const withinCritRange = CombatEngine.withinRange(critRange, r);
+		if (withinCritRange
 			&& total >= defenseVal
 			&& (!power.isMultiTarget() || naturalAttackRoll % 2 == 0)
 			&& !target.actor.hasStatus('blocking')
@@ -497,11 +498,11 @@ export class CombatEngine {
 			target: PersonaDB.getUniversalTokenAccessor(target),
 			attacker: PersonaDB.getUniversalTokenAccessor(attacker),
 			power: usableOrCard.accessor,
+			critRange: undefined,
 			ailmentRange: undefined,
 			instantKillRange: undefined,
 			situation: combatRollSituation,
 			roll,
-			critBoost: 0,
 			// printableModifiers: []
 		};
 		return res;
@@ -616,9 +617,9 @@ export class CombatEngine {
 					// printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
-					critBoost: 0,
 					ailmentRange: undefined,
 					instantKillRange: undefined,
+					critRange: undefined,
 					situation: {
 						hit: false,
 						criticalHit: false,
@@ -633,10 +634,10 @@ export class CombatEngine {
 					result: 'block',
 					ailmentRange: undefined,
 					instantKillRange: undefined,
+					critRange: undefined,
 					// printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
-					critBoost: 0,
 					situation: {
 						hit: false,
 						criticalHit: false,
@@ -651,10 +652,10 @@ export class CombatEngine {
 					result: 'absorb',
 					ailmentRange: undefined,
 					instantKillRange: undefined,
+					critRange: undefined,
 					// printableModifiers: [],
 					validAtkModifiers: [],
 					validDefModifiers: [],
-					critBoost: 0,
 					situation: {
 						...situation,
 						hit: true,
@@ -671,9 +672,9 @@ export class CombatEngine {
 				// printableModifiers: [],
 				ailmentRange: undefined,
 				instantKillRange: undefined,
+				critRange: undefined,
 				validAtkModifiers: [],
 				validDefModifiers: [],
-				critBoost: 0,
 				situation: {
 					hit: false,
 					criticalHit: false,
@@ -689,9 +690,9 @@ export class CombatEngine {
 				// printableModifiers: [],
 				ailmentRange: undefined,
 				instantKillRange: undefined,
+				critRange: undefined,
 				validAtkModifiers: [],
 				validDefModifiers: [],
-				critBoost: 0,
 				situation: {
 					hit: false,
 					criticalHit: false,
@@ -718,13 +719,15 @@ export class CombatEngine {
 	static calculateRanges( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: N<Situation>) {
 		const ailmentRangeRaw = CombatEngine.calculateAilmentRange(attackerPersona, targetPersona, power, situation);
 		const instantKillRangeRaw = CombatEngine.calculateInstantDeathRange(attackerPersona, targetPersona, power, situation);
+		const critRangeRaw = CombatEngine.calculateCriticalRange(attackerPersona, targetPersona, power, situation);
 		if (PersonaSettings.debugMode()) {
 			console.debug(ailmentRangeRaw);
 			console.debug(instantKillRangeRaw);
 		}
 		const ailmentRange = this.constrainRange(ailmentRangeRaw);
 		const instantKillRange = this.constrainRange(instantKillRangeRaw);
-		return {ailmentRange, instantKillRange};
+		const critRange = this.constrainRange(critRangeRaw);
+		return {ailmentRange, instantKillRange, critRange};
 	}
 
 	static constrainRange(range: U<CalculatedRange> ) {
@@ -796,6 +799,33 @@ export class CombatEngine {
 		return attackerMods.concat(targetDefense);
 	}
 
+
+	static calculateCriticalRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation?: N<Situation>) : U<CalculatedRange> {
+		const powerMod = power.baseCritBoost();
+		if (!situation) {
+			situation = this.defaultSituation(attackerPersona, targetPersona, power);
+		}
+		const luckDiff = this.luckDiff(attackerPersona, targetPersona);
+		const mods = this.getAttackerAndDefenderModifiers("criticalBoost", attackerPersona, targetPersona, power);
+		const resist = this.getAttackerAndDefenderModifiers("critResist", attackerPersona, targetPersona, power);
+		const calc = new Calculation(0, 3);
+		calc.add(0, powerMod, "Base Critical");
+		calc.add(1, mods, "Critical Boost");
+		calc.subtract(1, resist, "Critical Resist");
+		calc.add(1, luckDiff, "Luck Difference Mod");
+		const {total, steps} = calc.eval(situation);
+		const high =20;
+		const low = high -total;
+		return {
+			high,
+			low: low > -10 ? Math.max(low, 11): low,
+			steps,
+			type: "critical",
+			possible: total > -3,
+		};
+
+	}
+
 	static calculateInstantDeathRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation?: N<Situation>) : U<CalculatedRange> {
 		const baseRangeData = this.calculateBaseInstantKillRange(power);
 		if (!baseRangeData)  { return undefined; }
@@ -815,8 +845,6 @@ export class CombatEngine {
 		}
 		const luckDiff = this.luckDiff(attackerPersona, targetPersona);
 		if (!power.canDealDamage()) {return {low: 6, high: 99, steps: [], possible: true, type: "instantKill"};}
-		// const instantDeathMods = attackerPersona.getBonuses('instantDeathRange', power, attackerPersona);
-		// const killDefense = targetPersona.getDefensiveBonuses('instantDeathRange') ;
 		const mods = this.getAttackerAndDefenderModifiers("instantDeathRange", attackerPersona, targetPersona, power);
 		const calc= new Calculation(0, 3);
 		calc.add(1, mods, "Attacker and Defender mods");
@@ -1012,7 +1040,7 @@ type CalculatedRange = {
 	low: number,
 	steps: string[],
 	possible: boolean,
-	type: "instantKill" | "ailment",
+	type: "instantKill" | "ailment" | "critical",
 }
 
 const INSTANT_KILL_RANGE_BY_POWER = {

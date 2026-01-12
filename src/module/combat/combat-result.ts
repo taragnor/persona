@@ -694,8 +694,9 @@ export type AttackResult = {
 	power: UniversalItemAccessor<UsableAndCard>,
 	situation: Situation & RollSituation,
 	roll: RollBundle | null ,
-	critBoost: number,
-	critPrintable?: string []
+	critRange: U<{low: number, high:number}>;
+	// critBoost: number,
+	// critPrintable?: string []
 };
 
 
