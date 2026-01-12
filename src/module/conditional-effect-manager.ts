@@ -1179,6 +1179,8 @@ export class ConditionalEffectManager {
 				return `Remove Cameo(s) from scene`;
 			case "set-social-card-item":
 				return `set social card item`;
+			case "event-chain":
+				return `Alter Event chain ${cons.chainAction}`;
 			default:
 				cons satisfies never;
 				return "ERROR";

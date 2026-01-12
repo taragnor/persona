@@ -225,9 +225,7 @@
 		<section class="tab tab-content finale-section flexcol" data-group="primary" data-tab="finale">
 			<div class="finale">
 				<label>Finale</label>
-				<textarea name="system.finale">
-					{{trim item.system.finale}}
-				</textarea>
+				<textarea class="finale-input" name="system.finale">{{trim item.system.finale}}</textarea>
 			</div>
 
 			{{> "systems/persona/parts/token-spends-section.hbs" item=item}}

@@ -427,7 +427,6 @@ export class SocialCardEventDM extends foundry.abstract.DataModel {
 		return this.#sheet = new CardEventSheet(this, SC);
 	}
 
-
 	static override defineSchema() {
 		return {
 			name: new txt({initial: "New Event"}),
@@ -435,6 +434,8 @@ export class SocialCardEventDM extends foundry.abstract.DataModel {
 			sound: new file ({categories: ["AUDIO"] }),
 			volume: new num({initial: 0.5, integer:false, max: 1.0, min: 0}),
 			label: new txt(),
+			chainLabel: new txt(),
+			chainCount: new num({initial: 0, integer: true}),
 			text: new txt(),
 			eventTags: new arr( new txt({choices: ROLL_TAGS_AND_CARD_TAGS })),
 			frequency: new num({initial: 1.0, integer: false}),

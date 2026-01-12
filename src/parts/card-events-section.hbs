@@ -8,6 +8,17 @@
 		<ul>
 			{{#each item.system.events as |event i|}}
 			<li data-event-index="{{i}}">
+				{{#if event.chainLabel}}
+				<span class="event-chain-label">
+					[{{event.chainLabel}}-{{event.chainCount}}]
+				</span>
+				{{/if}}
+
+				{{#if event.label}}
+				<span class="event-label {{#if (eventIsSpecialOnly event)}} special-event {{/if}}">
+					[{{event.label}}]
+				</span>
+				{{/if}}
 				<span class="name"> {{event.name}} </span>
 				<span> ({{getEventType event}}) </span>
 				</span>
@@ -18,106 +29,10 @@
 					<i class="fa-solid fa-trash-can"></i>
 				</a>
 			</li>
-
 			{{/each}}
 		</ul>
 	</section>
 
-	{{#if false}}
-	{{#each item.system.events as |event i|}}
-	<div class="card-event {{#if (ne ../focusedEvent i)}} hidden {{/if}}" data-event-index='{{i}}'>
-		<a class="go-back"> Back </a>
-		<div class="flexrow">
-			<div>
-				{{filePicker type="image" target=(strcat "system.events." i ".img")}}
-				<input class="img" type="hidden" name="system.events.{{i}}.img" value="{{event.img}}">
-				<img class="event-img" src="{{event.img}}">
-				<div>
-					<label>
-						Sound
-					</label>
-					<div class="flexrow">
-						{{filePicker type="audio" target=(strcat "system.events." i ".sound")}}
-						<input class="img" type="hidden" name="system.events.{{i}}.sound" value="{{event.sound}}">
-					</div>
-					{{#if (strcat "system.events." i ".sound")}}
-					<div>{{event.sound}}</div>
-					<div class="flexrow">
-						<label> Volume</label>
-						<input class="short" type="number" name="system.events.{{i}}.volume" value="{{event.volume}}">
-					</div>
-					{{/if}}
-				</div>
-			</div>
-			<div>
-				<h3>
-					<input class="event-name" type="string" name="system.events.{{i}}.name" value="{{event.name}}">
-				</h3>
-				<div class="placement">
-					<div>
-						<label> Frequency</label>
-						<select name="system.events.{{i}}.frequency">
-							{{selectOptions ../SOCIAL_DATA.FREQUENCY localize=false selected=event.frequency}}
-						</select>
-					</div>
-					<div>
-						<label>
-							Starter
-						</label>
-						<input type="checkbox" name="system.events.{{i}}.placement.starter" {{checked event.placement.starter}}>
-					</div>
-					<div>
-						<label>
-							Middle
-						</label>
-						<input type="checkbox" name="system.events.{{i}}.placement.middle" {{checked event.placement.middle}}>
-					</div>
-					<div>
-						<label>
-							Finale
-						</label>
-						<input type="checkbox" name="system.events.{{i}}.placement.finale" {{checked event.placement.finale}}>
-					</div>
-					<div>
-						<label>
-							Special
-						</label>
-						<input type="checkbox" name="system.events.{{i}}.placement.special" {{checked event.placement.special}}>
-					</div>
-					<div>
-						<label>
-							Label
-						</label>
-						<input type="string" name="system.events.{{i}}.label" value="{{event.label}}">
-					</div>
-				</div>
-			</div>
-		</div >
-		<div class="event-tags">
-			{{> "systems/persona/parts/eventTags.hbs" item=../item event=event POWERSTUFF=../POWERSTUFF eventIndex=i}}
-		</div>
-		<div class="card-event-conditions">
-			{{> "systems/persona/parts/conditions-section.hbs" namePrefix=(strcat "system.events." i ".conditions.")  POWERSTUFF=../POWERSTUFF i=i owner=../item}}
-		</div>
-		<label> Event Setup</label>
-		<textarea name="system.events.{{i}}.text">{{trim event.text}}</textarea>
-		<h3> Choices </h3>
-		{{#each event.choices as |choice j|}}
-		{{> "systems/persona/parts/input-card-choice.hbs" CONST=../../SOCIAL_DATA POWERSTUFF=../../item.sheet.powerStuff namePrefix=(strcat "system.events." i ".choices." j ".") choiceIndex=j item=../../item choice=choice}}
-		{{/each}}
-		<div>
-			<label>Add Choice
-				<a class="add-choice">
-					<i class="fa-solid fa-plus"> </i>
-				</a>
-				<a class="paste-choice">
-					<i class="fa-solid fa-paste"> </i>
-				</a>
-			</label>
-		</div>
-	</div>
-	{{/each}}
-	{{/if}}
 	<div>
 		{{#if (gt item.system.num_of_events 0)}}
 		<h4>Add Event

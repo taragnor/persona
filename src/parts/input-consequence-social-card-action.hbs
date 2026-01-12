@@ -73,4 +73,18 @@
 </div>
 {{/if}}
 
+{{#if (eq cons.cardAction "event-chain")}}
+<div>
+	<select name="{{strcat namePrefix 'chainAction'}}">
+		{{selectOptions POWERSTUFF.EVENT_CHAIN_ACTIONS localize=true selected=(defVal cons.chainAction "start-chain")}}
+	</select>
+	{{#if (eq cons.chainAction "start-chain")}}
+	<input type=string name="{{strcat namePrefix 'chainId'}}" value="{{cons.chainId}}">
+	{{/if}}
+	{{#if (eq cons.chainAction "modify-chain-count")}}
+	<input class="short" type=number name="{{strcat namePrefix 'delta'}}" value="{{cons.delta}}">
+	{{/if}}
+</div>
+
+{{/if}}
 

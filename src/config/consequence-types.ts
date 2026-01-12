@@ -1,7 +1,7 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { PersonaItem } from "../module/item/persona-item.js";
 import { PermaBuffType } from "./perma-buff-type.js";
-import { INVENTORY_ACTION, SocialCardAction } from "./effect-types.js";
+import { EVENT_CHAIN_ACTIONS, INVENTORY_ACTION, SocialCardAction } from "./effect-types.js";
 import { CardTag } from "./card-tags.js";
 import { VariableType } from "../module/persona-variables.js";
 import { CombatEffect } from "./effect-types.js";
@@ -631,9 +631,24 @@ type CardActionTypes = [
 	}, {
 		cardAction: "set-social-card-item",
 		item: ItemSelector,
-	}
-
+	},
+	EventChainModification,
 ];
+
+type EventChainModification = {
+	cardAction: "event-chain",
+	chainAction: keyof typeof EVENT_CHAIN_ACTIONS,
+} & (
+	{
+		chainAction: "start-chain",
+		chainId: string,
+	} | {
+		chainAction: "clear-chain",
+	} | {
+		chainAction: "modify-chain-count",
+		delta: number,
+	}
+);
 
 const ITEM_SELECTOR_TYPE_LIST = [
 	"specific",

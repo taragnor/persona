@@ -2157,6 +2157,8 @@ async addCardEvent(this: SocialCard, newEv ?: SocialCard['system']['events'][num
 				special: false,
 			},
 			label: '',
+			chainLabel: '',
+			chainCount: 0,
 			name: 'Unnamed Event',
 			frequency: 1,
 			choices: [],

@@ -224,7 +224,7 @@ export class SocialCardExecutor {
 		})
 		.map(x=> `spend ${x.amount} progress tokens to ${x.text}.`)
 		.map(x=> `<li class="token-spend"> ${x} </li>`);
-		const finale = (cardData.card.system.finale?.trim()) ? `
+		const finale =`
 		<h2> Finale </h2>
 		<div class="gift">
 		${giftStr}
@@ -232,7 +232,7 @@ export class SocialCardExecutor {
 		<span class="finale">
 		${cardData.card.system.finale.trim()}
 		</span>
-		` : "";
+		`;
 		html += finale;
 		if (tokenSpends.length + SLImproveSpend.length > 0) {
 			html += `<div class="token-spends">
@@ -250,7 +250,7 @@ export class SocialCardExecutor {
 			content: html,
 			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 		};
-		const msg= await ChatMessage.create(msgData,{} );
+		const msg = await ChatMessage.create(msgData,{} );
 		return msg;
 	}
 
@@ -487,6 +487,10 @@ export type CardData = {
 	activity: Activity | SocialLink,
 	cameos: SocialLink[],
 	perk: string,
+	forceEventChain ?: {
+		chainLabel: string,
+		chainCount: number,
+	};
 	forceEventLabel: null | string,
 	eventList: SocialCard["system"]["events"];
 	eventsChosen: SocialCard["system"]["events"][number][];

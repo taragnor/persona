@@ -33,7 +33,6 @@ export class SocialCardEventHandler {
 		const chatMessages : ChatMessage<Roll>[] = [];
 		const cardData = this.cardData;
 		while (cardData.eventsRemaining > 0) {
-			// if (!this.rollState) { return chatMessages;}
 			if (this.earlyAbort) { return chatMessages;}
 			const ev = this.#getCardEvent(cardData);
 			if (!ev) {
@@ -212,6 +211,8 @@ export class SocialCardEventHandler {
 		const event = {
 			parent: question.parent,
 			label: "",
+			chainLabel: "",
+			chainCount: 0,
 			text: question.text,
 			img: (question?.parent?.parent as unknown as NPC)?.img ?? "",
 			eventTags,
@@ -386,12 +387,13 @@ export class SocialCardEventHandler {
 		return retList;
 	}
 
-	#getCardEvent(cardData:CardData) : CardEvent | undefined  {
-		const cardEventList = cardData.eventList;
+
+	checkForcedEvents() : N<CardEvent> {
+		const cardData = this.cardData;
+		const cardEventList = this.eventList();
 		if (cardData.forceEventLabel) {
 			const gotoEvent = cardEventList
 				.filter( x=> x.label  == cardData.forceEventLabel)
-				.filter( x=> !x.eventTags.includes("disabled"))
 			;
 			cardData.forceEventLabel = null;
 			if (gotoEvent.length > 0) {
@@ -399,19 +401,58 @@ export class SocialCardEventHandler {
 					item: event,
 					weight: Number(event.frequency) > 0 ? Number(event.frequency ?? 1) : 1,
 				})));
-				return ev;
+				if (ev) {return ev;}
 			}
 			PersonaError.softFail (`Can't find event label ${cardData.forceEventLabel} on card ${cardData.card.name}`);
 		}
+		if (cardData.forceEventChain && cardData.forceEventChain.chainLabel.length > 0) {
+			const forcedLabel = cardData.forceEventChain.chainLabel;
+			const gotoEvent = cardEventList
+				.filter( x=> x.chainLabel  == forcedLabel)
+				.filter( x=> (x.chainCount || 0) == cardData.forceEventChain?.chainCount)
+			;
+			if (gotoEvent.length >0) {
+				const ev= weightedChoice(gotoEvent.map( event => ({
+					item: event,
+					weight: Number(event.frequency) > 0 ? Number(event.frequency ?? 1) : 1,
+				})));
+				if (ev) {
+					this.modifyEventChainCount(1);
+					return ev;
+				}
+			}
+			PersonaError.softFail (`Can't find event for chain ${cardData.forceEventChain?.chainLabel}-${cardData.forceEventChain?.chainCount} on card ${cardData.card.name}`);
+		}
+		return null;
+	}
+
+	eventList() : CardData["eventList"] { 
+		const cardData = this.cardData;
 		const situation = {
 			...cardData.situation,
 			rollTags: cardData.extraCardTags
 		};
-		let eventList = cardEventList
+		return this.cardData.eventList
 			.filter ( ev => !ev.eventTags.includes("disabled"))
 			.filter( (ev) => !cardData.eventsChosen.includes(ev) && testPreconditions(
 				ConditionalEffectManager.getConditionals( ev.conditions, null, null, null),
 				situation));
+	}
+
+
+	#getCardEvent(cardData:CardData) : CardEvent | undefined  {
+		const forced = this.checkForcedEvents();
+		if (forced) {
+			return forced;
+		}
+		let eventList = this.eventList()
+		//chain events only happen when forced
+			.filter( ev => ev.chainLabel == undefined || ev.chainLabel.length== 0);
+			// .filter ( ev => !ev.eventTags.includes("disabled"))
+			// .filter( (ev) => !cardData.eventsChosen.includes(ev) && testPreconditions(
+			// 	ConditionalEffectManager.getConditionals( ev.conditions, null, null, null),
+			// 	situation));
+		console.log(eventList);
 		const isEvType = function (ev: CardEvent, evType: keyof NonNullable<CardEvent["placement"]>) {
 			let placement = ev.placement ?? {
 				starter: true,
@@ -588,10 +629,33 @@ export class SocialCardEventHandler {
 	}
 
 	forceEvent(evLabel?: string) {
+		//TODO: make a force event chain that stays until you reset the chain
 		console.log(`Entering Force Event : ${evLabel}`);
 		if (!evLabel) {return;}
 		console.log(`Forcing Event : ${evLabel}`);
 		this.cardData.forceEventLabel = evLabel;
+	}
+
+	forceEventChain(evLabel : string) {
+		this.cardData.forceEventChain = {
+			chainLabel: evLabel,
+			chainCount: 0,
+		};
+		console.log(`Forcing Event Chain: ${evLabel}`);
+	}
+
+	modifyEventChainCount(delta: number): number {
+		if (this.cardData.forceEventChain == undefined) {
+			PersonaError.softFail("Event Chain doesn't exist to be modified");
+			return -1;
+		}
+		this.cardData.forceEventChain.chainCount+= delta;
+		this.addExtraEvent(1);
+		return this.cardData.forceEventChain.chainCount;
+	}
+
+	clearEventChain () {
+		this.cardData.forceEventChain = undefined;
 	}
 
 	public async applyCardResponse(text: string) {

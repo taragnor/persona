@@ -1803,3 +1803,17 @@ animation:
 	color: red;
 }
 
+.event-label.special-event {
+	font-weight: bold;
+	color: green;
+}
+
+.event-chain-label {
+	font-weight: bold;
+	color: orange;
+}
+
+textarea.finale-input {
+	height: 6em;
+}
+

@@ -60,9 +60,16 @@
 					</div>
 					<div>
 						<label>
-							Label
+							Force Event Label
 						</label>
 						<input type="string" name="label" value="{{event.label}}">
+					</div>
+					<div>
+						<label>
+							Chain Label
+						</label>
+						<input type="string" name="chainLabel" value="{{event.chainLabel}}">
+						<input class="short" type="number" name="chainCount" value="{{event.chainCount}}">
 					</div>
 				</div>
 			</div>
@@ -73,9 +80,8 @@
 		<div class="card-event-conditions" data-top-path="conditions">
 			{{> "systems/persona/parts/conditions-section.hbs" namePrefix="conditions."  POWERSTUFF=event.sheet.powerStuff i=i owner=event}}
 		</div>
-		<label> Event Setup</label>
-		<textarea name="text">{{trim event.text}}</textarea>
 		<section data-top-path="choices">
+		<textarea name="text">{{trim event.text}}</textarea>
 			<h3> Choices </h3>
 			{{#each event.choices as |choice j|}}
 			{{> "systems/persona/parts/input-card-choice.hbs" CONST=../SOCIAL_DATA POWERSTUFF=../event.sheet.powerStuff namePrefix=(strcat "choices." j ".") choiceIndex=j item=../event choice=choice}}

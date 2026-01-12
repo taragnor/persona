@@ -556,6 +556,14 @@ export class PersonaHandleBarsHelpers {
 					return false;
 			}
 		},
+
+		"eventIsSpecialOnly": function (ev: CardEvent) : boolean {
+			const { placement} = ev;
+			return Object.entries(placement)
+				.filter( ([_k, v]) => v == true)
+				.every( ([k, _v])=> k == "special");
+		},
+
 		"getEventType": function (ev: CardEvent) : string {
 			const {frequency, placement} = ev;
 			const frequencyStr = FREQUENCY[frequency as keyof typeof FREQUENCY];
@@ -564,6 +572,7 @@ export class PersonaHandleBarsHelpers {
 				.join(", ");
 			return `${frequencyStr} -- ${placementStr}`;
 		},
+
 		"isItemUsable": function (item: PersonaItem) : boolean {
 			return item.isTrulyUsable() && !item.isMinorActionItem();
 		},

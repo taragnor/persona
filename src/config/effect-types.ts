@@ -158,11 +158,21 @@ export const SOCIAL_CARD_ACTION_LIST = [
 	"append-card-tag",
 	"remove-cameo",
 	"set-social-card-item",
+	"event-chain",
 ] as const;
 
 export type SocialCardAction = typeof SOCIAL_CARD_ACTION_LIST[number];
 
+
 export const SOCIAL_CARD_ACTIONS = HTMLTools.createLocalizationObject(SOCIAL_CARD_ACTION_LIST, "persona.effecttypes.social-card");
+
+export const EVENT_CHAIN_LIST = [
+	"start-chain",
+	"clear-chain",
+	"modify-chain-count",
+] as const;
+
+export const EVENT_CHAIN_ACTIONS = HTMLTools.createLocalizationObject(EVENT_CHAIN_LIST, "persona.effecttypes.social-card.event-chain-action");
 
 export const DUNGEON_ACTION_LIST = [
 	"roll-tension-pool",

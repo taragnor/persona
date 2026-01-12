@@ -93,6 +93,9 @@ export class SocialActionExecutor {
 			case "set-social-card-item":
 				this.cardExecutor.setSocialCardItem(eff.item);
 				break;
+			case "event-chain":
+				this.executeEventChainAction(eff);
+				break;
 			default:
 				eff satisfies never;
 				break;
@@ -126,6 +129,23 @@ export class SocialActionExecutor {
 
 			default:
 				operator satisfies never;
+		}
+	}
+
+	static executeEventChainAction(eff:  SocialCardActionConsequence & {cardAction:"event-chain"}) {
+		switch (eff.chainAction) {
+			case "start-chain":
+				this.handler.forceEventChain(eff.chainId);
+				break;
+				case "clear-chain":
+				this.handler.clearEventChain();
+				break;
+			case "modify-chain-count":
+				this.handler.modifyEventChainCount(eff.delta);
+				break;
+			default:
+				eff satisfies never;
+				break;
 		}
 	}
 

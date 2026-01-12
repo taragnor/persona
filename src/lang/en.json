@@ -678,6 +678,10 @@
 	"persona.effecttypes.social-card.append-card-tag": "Add Card Tag",
 	"persona.effecttypes.social-card.remove-cameo": "Remove Cameo from Scene",
 	"persona.effecttypes.social-card.set-social-card-item": "Set Social Card Item",
+	"persona.effecttypes.social-card.event-chain": "Event Chain Management",
+	"persona.effecttypes.social-card.event-chain-action.start-chain": "Start Event Chain",
+	"persona.effecttypes.social-card.event-chain-action.clear-chain": "Clear Event Chain",
+	"persona.effecttypes.social-card.event-chain-action.modify-chain-count": "Modify Chain Count (also +1 event)",
 	"persona.effecttypes.inventory-action": "Inventory Action",
 
 
