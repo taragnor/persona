@@ -1640,7 +1640,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	refreshTheurgyBarStyle() {
-		const percent = Math.round(100 * this.theurgyVal / this.theurgyMax);
+		const curT = 20 + this.theurgyVal; //add padding so it's never 0;
+		const maxT = 20 + this.theurgyMax; //add padding so it's never 0;
+		const percent = Math.round(100 * curT / maxT);
 		const fill = document.querySelector('.theurgy-fill');
 		if (fill == null) {return;}
 		let hue;
