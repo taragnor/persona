@@ -18,7 +18,7 @@ export class PersonaCombatStats {
 	static MIN_STAT_VAL = 1 as const;
 	static DEFENSE_DIVISOR = 3 as const;
 	static BASE_INSTANT_DEATH_DEFENSE = 20 as const;
-	static BASE_DEFENSE = 5 as const;
+	static BASE_DEFENSE = 4 as const;
 	static BASE_AILMENT_DEFENSE = 18 as const;
 	static INSTANT_DEATH_DIVISOR = 5 as const;
 	static CRITICAL_HIT_DIVISOR = 5 as const;
@@ -55,11 +55,12 @@ export class PersonaCombatStats {
 	get agility(): number { return this.getStatValue("agi"); }
 	get luck(): number { return this.getStatValue("luk");}
 
-	baseFort() : Calculation {
+	baseMagDefense() : Calculation {
 		const calc = new Calculation(PersonaCombatStats.BASE_DEFENSE);
 		const subCalc = new Calculation();
 		subCalc.add(0, this.endurance, `${this.persona.displayedName} Endurance`);
-		subCalc.mult(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Defense Divisor`);
+		subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
+		subCalc.mult(1, 1/(PersonaCombatStats.DEFENSE_DIVISOR * 2), `Defense Divisor`);
 		return calc.add(0, subCalc, "Endurance Mod");
 	}
 
@@ -71,7 +72,7 @@ export class PersonaCombatStats {
 		return calc.add(0, subCalc, "Luck Modifier");
 	}
 
-	baseRef() : Calculation {
+	baseWpnDefense() : Calculation {
 		const calc = new Calculation(PersonaCombatStats.BASE_DEFENSE, 2);
 		const subCalc = new Calculation();
 		subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
@@ -83,15 +84,17 @@ export class PersonaCombatStats {
 		const calc = new Calculation(0, 2);
 		const subCalc = new Calculation();
 		subCalc.add(0, this.strength, `${this.persona.displayedName} Strength`);
-		subCalc.mult(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Attack Divisor`);
-		return calc.add(0, subCalc, "Strength Modifier");
+		subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
+		subCalc.mult(1, 1/(PersonaCombatStats.DEFENSE_DIVISOR * 2), `Attack Divisor`);
+		return calc.add(0, subCalc, "Strength/Agility Modifier");
 	}
 
 	baseMagAttackBonus(): Calculation {
 		const calc = new Calculation(0, 2);
 		const subCalc = new Calculation();
 		subCalc.add(0, this.magic, `${this.persona.displayedName} Magic`);
-		subCalc.mult(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Attack Divisor`);
+		subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
+		subCalc.mult(1, 1/(PersonaCombatStats.DEFENSE_DIVISOR * 2), `Attack Divisor`);
 		return calc.add(0, subCalc, "Magic Modifer") ;
 	}
 

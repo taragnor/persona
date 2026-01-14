@@ -626,11 +626,11 @@ knowsPowerInnately(power : Power)  : boolean {
 		// const mods = new ModifierList();
 		switch (defense) {
 			case "ref": {
-				calc =this.combatStats.baseRef();
+				calc =this.combatStats.baseWpnDefense();
 				break;
 			}
 			case "fort": {
-				calc =this.combatStats.baseFort();
+				calc =this.combatStats.baseMagDefense();
 				break;
 			}
 			case "kill":

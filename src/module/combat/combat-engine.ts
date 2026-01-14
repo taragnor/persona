@@ -137,19 +137,6 @@ export class CombatEngine {
 		}
 	}
 
-	// private async attackRollSFX(attacker: PToken, target: PToken, power: UsableAndCard, result: AttackResult["result"]) {
-	// 	try {
-	// 		const preTime = Date.now() - this.startTime;
-	// 		console.log(`Effect on ${target.name} start at ${preTime}`);
-	// 		await PersonaSFX.onUsePowerOn(power, attacker, target, result);
-	// 		// await sleep (500);
-	// 		const postTime = Date.now() - this.startTime;
-	// 		console.log(`Effect on ${target.name} end at ${postTime}`);
-	// 	} catch(e) {
-	// 		PersonaError.softFail("Error with doing PersonaSFX.onUsePower", e);
-	// 	}
-	// }
-
 	async postActionCleanup(attacker: PToken, result: CombatResult ) {
 		await this.afterActionTriggered(attacker, result);
 		await sleep(1250); //wait for extra action status?
@@ -182,9 +169,6 @@ export class CombatEngine {
 		for (let atkNum = 0; atkNum < num_of_attacks; ++atkNum) {
 			rollType = atkNum > 0 ? 'iterative': rollType;
 			const atkResult = await this.processAttackRoll( attacker, power, target, rollType == 'standard' && atkNum==0 ? 'activation' : rollType, options);
-			// if (!options.simulated && this.combat) {
-			// 	await this.attackRollSFX(attacker, target, power, atkResult.result);
-			// }
 			const this_result = await this.processEffects(atkResult);
 			result.merge(this_result);
 			const secondary = await this.handleSecondaryAttacks(this_result, atkResult, power, attacker, target, rollType, options);
@@ -343,15 +327,6 @@ export class CombatEngine {
 		return range.possible && naturalAttackRoll >= range.low && naturalAttackRoll <= range.high;
 	}
 
-	// private getEffectiveCritBoost(attacker: Persona, target: Persona, situation: Situation, power: Usable) : {critBoost: number, critPrintable: string[]} {
-	// 	const critBoostMod = this.calcCritModifier(attacker, target, power, situation);
-	// 	const critMin = situation.resisted ? -999 : 0;
-	// 	const critResolved = critBoostMod.eval(situation);
-	// 	const critMax = critResolved.total < 100 ? this.CRIT_MAX : 100;
-	// 	const critBoost = Math.clamp(critResolved.total, critMin, critMax);
-	// 	const critPrintable = critResolved.steps;
-	// 	return { critBoost, critPrintable};
-	// }
 
 	async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, rollType: AttackRollType, options: CombatOptions = {}) : Promise<AttackResult> {
 		const attackerPersona = attacker.actor.persona();
