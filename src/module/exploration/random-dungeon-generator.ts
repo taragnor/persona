@@ -26,6 +26,8 @@ export class RandomDungeonGenerator {
 	_baseDiff: number;
 	wallData: Partial<WallData>[] = [];
 
+	static SPECIAL_FLOORS = ["tough-enemy", "revealed", "treasure-shadow", "dark"] as const;
+
 	static init() {}
 
 	constructor(scene: PersonaScene, dungeonName: string = "Unnamed Dungeon", depth: number = 1, baseDiff ?: number) {
@@ -349,11 +351,19 @@ export class RandomDungeonGenerator {
 			PersonaError.softFail("Generation had too many errrors and had to bail out");
 		}
 		this.assignExit();
+		this.assignSpecialFloor();
 		this.assignSpecials();
 		this.assignTreasures();
 		this.finalizeSquares();
 		console.log( this.print());
 		return this;
+	}
+
+	assignSpecialFloor() {
+		if (this.rng.die(1,100) <= 80) {
+			return;
+		}
+		const specials = RandomDungeonGenerator.SPECIAL_FLOORS;
 	}
 
 	createDungeon(numSquares: number, seedString: string = "TEST") {

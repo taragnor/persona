@@ -84,16 +84,14 @@ export class PersonaSFX {
 		}
 	}
 
-	static async onUsePower(usableOrCard: UsableAndCard,attacker: PToken, target: PToken, result: AttackResult["result"]) : Promise<void> {
+	static async onUsePowerStart(usableOrCard: UsableAndCard, attacker: PToken) {
 		if (usableOrCard.isSkillCard()) {
 			return;
 		}
-		const damageType = usableOrCard.getDamageType(attacker.actor);
-		void PersonaAnimation.onUsePower(usableOrCard, damageType, attacker, target, result);
-		await this.onAttackResult(attacker, target, result);
 		if (usableOrCard.name == BASIC_PC_POWER_NAMES[1]) {
 			return PersonaSFX.onAllOutAttack();
 		}
+		const damageType = usableOrCard.getDamageType(attacker.actor);
 		const power = usableOrCard;
 		if (power.system.sound) {
 			const snd = PersonaSounds.playFile(power.system.sound, 0.5);
@@ -114,7 +112,6 @@ export class PersonaSFX {
 			case "gun":
 				await this.#play("gun-auto");
 				break;
-
 			case "healing":
 				await this.#play("heal");
 				break;
@@ -126,6 +123,16 @@ export class PersonaSFX {
 				return;
 		}
 		return;
+
+	}
+
+	static async onUsePowerOn(usableOrCard: UsableAndCard,attacker: PToken, target: PToken, result: AttackResult["result"]) : Promise<void> {
+		if (usableOrCard.isSkillCard()) {
+			return;
+		}
+		const damageType = usableOrCard.getDamageType(attacker.actor);
+		void PersonaAnimation.onUsePower(usableOrCard, damageType, attacker, target, result);
+		await this.onAttackResult(attacker, target, result);
 	}
 
 	static async onAllOutAttack() {
@@ -536,7 +543,6 @@ Hooks.on("deleteActiveEffect", (eff: PersonaAE) => {
 		}
 	});
 });
-
 
 declare global {
 	interface Window {

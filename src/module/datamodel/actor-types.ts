@@ -155,7 +155,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 	static override migrateData(data: any) {
 		const system = data as Shadow["system"];
 		try {
-			const treasure= system.encounter.treasure;
+			const treasure= system?.encounter?.treasure;
 			if (treasure != undefined) {
 				this.reviseTreasure(treasure);
 			}

@@ -29,6 +29,7 @@ export class CombatEngine {
 	customAtkBonus: number = 0;
 	CRIT_MAX = 10 as const;
 	static LUCK_DIFF_MULTIPLIER = (1/6);
+	startTime: number;
 
 	constructor (combat: U<PersonaCombat> = game.combat as U<PersonaCombat>) {
 		this.combat = combat;
@@ -84,6 +85,7 @@ export class CombatEngine {
 	}
 
 	async usePower(attacker: PToken, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) : Promise<FinalizedCombatResult> {
+		this.startTime = Date.now();
 		if (attacker instanceof foundry.canvas.placeables.Token) {
 			throw new Error('Actual token found instead of token document');
 		}
@@ -92,18 +94,9 @@ export class CombatEngine {
 		}
 		try {
 			const targets = presetTargets ? presetTargets :  PersonaCombat.getTargets(attacker, power);
-			const selfOnly = targets.every( target => target.actor == attacker.actor);
-			const targetsShadows = targets.some( target => target.actor.system.type == 'shadow' );
-			if (!power.isSkillCard()
-				&& targetsShadows
-				&& !selfOnly) {
-				this.ensureCombatExists();
-			}
-			if (options.askForModifier) {
-				this.customAtkBonus = await HTMLTools.getNumber('Attack Modifier');
-			} else {
-				this.customAtkBonus = 0;
-			}
+			this.ensureCombatCheck(power, attacker, targets);
+			await this.handlePlayerInputModifier(options);
+			await PersonaSFX.onUsePowerStart(power, attacker);
 			const result = new CombatResult();
 			result.merge(await this.usePowerOn(attacker, power, targets, 'standard', options));
 			const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
@@ -115,7 +108,7 @@ export class CombatEngine {
 			}
 			await attacker.actor.removeStatus('baton-pass');
 			await finalizedResult.toMessage(power.name, attacker.actor);
-			await sleep(750); //allopw bonus action statuses and such to be placed;
+			await sleep(1250); //allopw bonus action statuses and such to be placed;
 			await this.postActionCleanup(attacker, result);
 			return finalizedResult;
 		} catch(e) {
@@ -127,9 +120,33 @@ export class CombatEngine {
 		}
 	}
 
+	/** throws error if there's no combat*/
+	ensureCombatCheck(power: UsableAndCard, attacker: PToken, targets: PToken[]) {
+		const selfOnly = targets.every( target => target.actor == attacker.actor);
+		const targetsShadows = targets.some( target => target.actor.system.type == 'shadow' );
+		if (!power.isSkillCard()
+			&& targetsShadows
+			&& !selfOnly) {
+			this.ensureCombatExists();
+		}
+	}
+
+	async handlePlayerInputModifier(options: CombatOptions): Promise<void> {
+		if (options.askForModifier) {
+			this.customAtkBonus = await HTMLTools.getNumber('Attack Modifier');
+		} else {
+			this.customAtkBonus = 0;
+		}
+	}
+
 	private async attackRollSFX(attacker: PToken, target: PToken, power: UsableAndCard, result: AttackResult["result"]) {
 		try {
-			await PersonaSFX.onUsePower(power, attacker, target, result);
+			const preTime = Date.now() - this.startTime;
+			console.log(`Effect on ${target.name} start at ${preTime}`);
+			await PersonaSFX.onUsePowerOn(power, attacker, target, result);
+			// await sleep (500);
+			const postTime = Date.now() - this.startTime;
+			console.log(`Effect on ${target.name} end at ${postTime}`);
 		} catch(e) {
 			PersonaError.softFail("Error with doing PersonaSFX.onUsePower", e);
 		}
@@ -152,60 +169,96 @@ export class CombatEngine {
 		await TriggeredEffect.execCombatTrigger('on-use-power', attacker.actor, situation);
 	}
 
-	async usePowerOn(attacker: PToken, power: UsableAndCard, targets: PToken[], rollType : AttackRollType, options: CombatOptions = {}, modifiers: ModifierList = new ModifierList()) : Promise<CombatResult> {
-		let i = 0;
+	async usePowerOn(attacker: PToken, power: UsableAndCard, targets: PToken[], rollType : AttackRollType, options: CombatOptions = {}) : Promise<CombatResult> {
 		const result = new CombatResult();
 		for (const target of targets) {
-			let num_of_attacks = 1;
-			if (power.isPower()) {
-				const min = power.system.attacksMin ?? 1;
-				const max = power.system.attacksMax ?? 1;
-				num_of_attacks = Math.floor(min + (Math.random() * (max - min+1)));
-			}
-			for (let atkNum = 0; atkNum < num_of_attacks; atkNum++) {
-				rollType = atkNum > 0 ? 'iterative': rollType;
-				const atkResult = await this.processAttackRoll( attacker, power, target, modifiers, rollType == 'standard' && i==0 ? 'activation' : rollType, options);
-				const this_result = await this.processEffects(atkResult);
-				if (!options.simulated && this.combat) {
-					await this.attackRollSFX(attacker, target, power, atkResult.result);
-				}
-				result.merge(this_result);
-				if (atkResult.result == 'reflect') {
-					result.merge(await this.usePowerOn(attacker, power, [attacker], 'reflect'));
-				}
-				const extraAttacks = this_result.findEffects('extra-attack');
-				for (const extraAttack of extraAttacks)
-				{
-					const bonusRollType = typeof rollType != 'number' ? 0: rollType+1;
-					const mods = new ModifierList();
-					//TODO BUG: Extra attacks keep the main inputted modifier
-					if (extraAttack.iterativePenalty) {
-						mods.add('Iterative Penalty', (bonusRollType + 1) * extraAttack.iterativePenalty);
-					}
-					if (bonusRollType < extraAttack.maxChain) {
-						const extra = await this.usePowerOn(attacker, power, [target], bonusRollType, options, mods);
-						result.merge(extra);
-					}
-				}
-				const execPowers = this_result.findEffects('use-power');
-				for (const usePower of execPowers) {
-					//TODO BUG: Extra attacks keep the main inputted modifier
-					if (!this.combat) {continue;}
-					const newAttacker = this.combat.getPToken(usePower.newAttacker);
-					const execPower = PersonaDB.allPowers().get( usePower.powerId);
-					if (execPower && newAttacker) {
-						const altTargets= PersonaCombat.getAltTargets(newAttacker, atkResult.situation, usePower.target );
-						const newTargets = PersonaCombat.getTargets(newAttacker, execPower, altTargets);
-						const extraPower = await this.usePowerOn(newAttacker, execPower, newTargets, 'standard', options);
-						result.merge(extraPower);
-					}
-				}
-				Hooks.callAll('onUsePower', power, attacker, target);
-				i++;
-			}
+			result.merge(await this.usePowerOnTarget(attacker, power, target, rollType, options));
 		}
 		this.computeResultBasedEffects(result);
 		return result;
+	}
+
+	async usePowerOnTarget(attacker: PToken, power: UsableAndCard, target: PToken, rollType : AttackRollType, options: CombatOptions) : Promise<CombatResult> {
+		const result = new CombatResult();
+		const num_of_attacks = this.getNumOfAttacks(power);
+		for (let atkNum = 0; atkNum < num_of_attacks; ++atkNum) {
+			rollType = atkNum > 0 ? 'iterative': rollType;
+			const atkResult = await this.processAttackRoll( attacker, power, target, rollType == 'standard' && atkNum==0 ? 'activation' : rollType, options);
+			if (!options.simulated && this.combat) {
+				await this.attackRollSFX(attacker, target, power, atkResult.result);
+			}
+			const this_result = await this.processEffects(atkResult);
+			result.merge(this_result);
+			const secondary = await this.handleSecondaryAttacks(this_result, atkResult, power, attacker, target, rollType, options);
+			result.merge(secondary);
+			Hooks.callAll('onUsePower', power, attacker, target);
+		}
+		return result;
+	}
+
+	async handleSecondaryAttacks(CR: CombatResult, atkResult: AttackResult, power: UsableAndCard, attacker: PToken, target: PToken, rollType: AttackRollType, options: CombatOptions  ): Promise<CombatResult> {
+		const result = new CombatResult;
+		if (atkResult.result == 'reflect') {
+			result.merge(await this.usePowerOn(attacker, power, [attacker], 'reflect'));
+		}
+
+		if (!power.isSkillCard()) {
+			const extraAttacks= await this.execExtraAttacks(CR, power, rollType, attacker, target, options);
+			result.merge(...extraAttacks);
+			const extraPowerEffects= await this.execSubPowers(CR, atkResult, options);
+			result.merge(...extraPowerEffects);
+		}
+		return result;
+	}
+
+	getNumOfAttacks(power: UsableAndCard) : number {
+		if (!power.isPower()) { return 1;}
+		const min = power.system.attacksMin ?? 1;
+		const max = power.system.attacksMax ?? 1;
+		const num_of_attacks = Math.floor(min + (Math.random() * (max - min+1)));
+		return num_of_attacks;
+	}
+
+	async execExtraAttacks(CR: CombatResult, power: Usable, rollType: AttackRollType,attacker: PToken, target: PToken, options: CombatOptions ) {
+		const ret : CombatResult[] = [];
+		const extraAttacks = CR.findEffects('extra-attack');
+		for (const extraAttack of extraAttacks)
+		{
+			const bonusRollType = typeof rollType != 'number' ? 0: rollType+1;
+			const mods = new ModifierList();
+			//TODO BUG: Extra attacks keep the main inputted modifier
+			if (extraAttack.iterativePenalty) {
+				mods.add('Iterative Penalty', (bonusRollType + 1) * extraAttack.iterativePenalty);
+			}
+			const newOptions = {
+				...options,
+				modifiers: mods,
+			};
+			if (bonusRollType < extraAttack.maxChain) {
+				const extra = await this.usePowerOn(attacker, power, [target], bonusRollType, newOptions);
+				ret.push(extra);
+			}
+		}
+		return ret;
+	}
+
+	/** executes powers which trigger off other powers via consequence */
+	async execSubPowers(CR : CombatResult, atkResult: AttackResult, options: CombatOptions) : Promise<CombatResult[]> {
+		const extraPowers : CombatResult[] = [];
+		const execPowers = CR.findEffects('use-power');
+		for (const usePower of execPowers) {
+			//TODO BUG: Extra attacks keep the main inputted modifier
+			if (!this.combat) {continue;}
+			const newAttacker = this.combat.getPToken(usePower.newAttacker);
+			const execPower = PersonaDB.allPowers().get( usePower.powerId);
+			if (execPower && newAttacker) {
+				const altTargets= PersonaCombat.getAltTargets(newAttacker, atkResult.situation, usePower.target );
+				const newTargets = PersonaCombat.getTargets(newAttacker, execPower, altTargets);
+				const extraPower = await this.usePowerOn(newAttacker, execPower, newTargets, 'standard', options);
+				extraPowers.push(extraPower);
+			}
+		}
+		return extraPowers;
 	}
 
 	computeResultBasedEffects(result: CombatResult) {
@@ -302,7 +355,7 @@ export class CombatEngine {
 	// 	return { critBoost, critPrintable};
 	// }
 
-	async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, modifiers: ModifierList, rollType: AttackRollType, options: CombatOptions = {}) : Promise<AttackResult> {
+	async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, rollType: AttackRollType, options: CombatOptions = {}) : Promise<AttackResult> {
 		const attackerPersona = attacker.actor.persona();
 		const targetPersona = target.actor.persona();
 		const rollTags = this.generateRollTags(rollType);
@@ -315,7 +368,7 @@ export class CombatEngine {
 		const def = power.system.defense;
 		const r = await (options.setRoll ? new Roll(`0d1+${options.setRoll}`).roll():  new Roll('1d20').roll());
 		this.storeActivationRoll(rollType, r);
-		const attackbonus = this.getAttackBonus(attackerPersona, power, target, modifiers);
+		const attackbonus = this.getAttackBonus(attackerPersona, power, target, options);
 		const roll = new RollBundle('Temp', r, attacker.actor.system.type == 'pc', attackbonus, baseSituation);
 		const naturalAttackRoll = roll.dice[0].total;
 		const defenseCalc = targetPersona.getDefense(def).eval(baseSituation);
@@ -508,13 +561,13 @@ export class CombatEngine {
 		return res;
 	}
 
-	getAttackBonus(attackerP: Persona, power: Usable, target: PToken | undefined, modifiers ?: ModifierList) : Calculation {
+	getAttackBonus(attackerP: Persona, power: Usable, target: PToken | undefined, options : CombatOptions = {}) : Calculation {
 		const attackBonus = this.getBaseAttackBonus(attackerP, power);
 		attackBonus.add(1, this.customAtkBonus ?? 0, 'Custom modifier');
 		const defense = this.getDefenderAttackModifiers(target, power.system.defense, power);
 		attackBonus.add(1, defense, "Defense Mods");
-		if (modifiers) {
-			attackBonus.add(1, modifiers, "Extra Mods");
+		if (options.modifiers) {
+			attackBonus.add(1, options.modifiers, "Extra Mods");
 		}
 		return attackBonus;
 	}

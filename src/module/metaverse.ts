@@ -44,7 +44,9 @@ export class Metaverse {
 			return;
 		}
 		const gen = new RandomDungeonGenerator(scene, "Wonderland Depths", lvl);
-		gen.generate(55, `${lvl}ARGFDSS` + String(Date.now()));
+		const squares = Math.floor(25 + (Math.random() * 30));
+		//squares was 55
+		gen.generate(squares, `${lvl}ARGFDSS` + String(Date.now()));
 		await gen.outputDataToScene();
 	}
 	static async enterMetaverse() {

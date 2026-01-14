@@ -71,7 +71,7 @@ export class PersonaSounds {
 	static async playFile(src: string, volume= 1.0, recipients: string[] | false = []): Promise<void> {
 		const sound = await this.playFree(src, volume, recipients);
 		if (sound) {
-			await waitUntilTrue( () => !sound.playing);
+			await waitUntilTrue( () => !sound.playing, 25);
 		}
 	}
 

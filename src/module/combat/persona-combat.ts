@@ -38,6 +38,7 @@ import {NavigatorVoiceLines} from '../navigator/nav-voice-lines.js';
 import {OpenerManager} from './openers.js';
 import {CombatPanel} from './combat-panel.js';
 import {TreasureSystem} from '../exploration/treasure-system.js';
+import {ModifierList} from './modifier-list.js';
 
 declare global {
 	interface SocketMessage {
@@ -1979,6 +1980,7 @@ export interface CombatOptions {
 	setRoll?: number;
 	ignorePrereqs?: boolean;
 	simulated?: boolean;
+	modifiers?: ModifierList;
 }
 
 CombatPanel.init();

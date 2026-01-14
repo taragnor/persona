@@ -23,6 +23,7 @@ import {SocketsNotConnectedError, TimeoutError, VerificationFailedError} from ".
 import {RealDamageType} from "../../config/damage-types.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
 import {NavigatorVoiceLines} from "../navigator/nav-voice-lines.js";
+import {CombatOutput} from "./combat-output.js";
 
 export class FinalizedCombatResult {
 	static pendingPromises: Map< CombatResult["id"], (val: unknown) => void> = new Map();
@@ -135,7 +136,6 @@ export class FinalizedCombatResult {
 		.filter( cost => !FinalizedCombatResult.changeIsEmpty(cost));
 		this.globalOtherEffects = cr.globalOtherEffects;
 		this.sounds = cr.sounds;
-		// this.clearFlags();
 		for (const changes of cr.attacks.values()) {
 			for (const change of changes) {
 				this.#finalizeOtherEffects(change);
@@ -232,53 +232,49 @@ export class FinalizedCombatResult {
 		this.tokenFlags = [];
 	}
 
-	async HTMLHeader(effectName: string,  initiator: PersonaActor | undefined) : Promise<string> {
-		if (!initiator) {return "";}
-		let initiatorToken : PToken | undefined;
-		if (game.combat) {
-			initiatorToken = PersonaCombat.getPTokenFromActorAccessor(initiator.accessor);
-		}
-		const attackerToken = initiatorToken;
-		const attackerPersona = (initiator.isValidCombatant() && (
-			initiator.persona().isPersona()
-			|| initiator.persona().source.hasBuiltInPersona()
-		))	? initiator.persona(): undefined;
-		const attackerName = initiator.token?.name ?? initiatorToken?.name ?? initiator.displayedName;
-		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-header.hbs", {attackerToken, attackerPersona, attackerName, effectName});
-		return html;
-	}
+	// async HTMLHeader(effectName: string,  initiator: PersonaActor | undefined) : Promise<string> {
+	// 	if (!initiator) {return "";}
+	// 	let initiatorToken : PToken | undefined;
+	// 	if (game.combat) {
+	// 		initiatorToken = PersonaCombat.getPTokenFromActorAccessor(initiator.accessor);
+	// 	}
+	// 	const attackerToken = initiatorToken;
+	// 	const attackerPersona = (initiator.isValidCombatant() && (
+	// 		initiator.persona().isPersona()
+	// 		|| initiator.persona().source.hasBuiltInPersona()
+	// 	))	? initiator.persona(): undefined;
+	// 	const attackerName = initiator.token?.name ?? initiatorToken?.name ?? initiator.displayedName;
+	// 	const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-header.hbs", {attackerToken, attackerPersona, attackerName, effectName});
+	// 	return html;
+	// }
 
-	async HTMLBody(): Promise<string> {
-		this.compressChained();
-		const attacks = this.attacks.map( (attack)=> {
-			return {
-				attackResult: attack.atkResult,
-				changes: attack.changes,
-			};
-		});
-		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-body.hbs", {attacks, escalation: 0, result: this, costs: this.costs});
-		return html;
-	}
+	// async HTMLBody(): Promise<string> {
+	// 	this.compressChained();
+	// 	const attacks = this.attacks.map( (attack)=> {
+	// 		return {
+	// 			attackResult: attack.atkResult,
+	// 			changes: attack.changes,
+	// 		};
+	// 	});
+	// 	const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-body.hbs", {attacks, escalation: 0, result: this, costs: this.costs});
+	// 	return html;
+	// }
 
 	async toMessage( header: string) : Promise<ChatMessage>;
 	async toMessage( effectName: string, initiator: U<PersonaActor>) : Promise<ChatMessage>;
 	async toMessage( effectNameOrHeader: string, initiator?: U<PersonaActor>) : Promise<ChatMessage> {
-		let header: string;
-		if (initiator) {
-			header = await this.HTMLHeader(effectNameOrHeader, initiator);
-		} else {
-			header = effectNameOrHeader;
-		}
 		let initiatorToken : PToken | undefined;
 		if (game.combat) {
 			initiatorToken = initiator ? PersonaCombat.getPTokenFromActorAccessor(initiator.accessor) : undefined;
 		}
-		const rolls : RollBundle[] = this.attacks
-		.flatMap( (attack) => attack.atkResult.roll? [attack.atkResult.roll] : []);
+		const output = new CombatOutput(this, initiatorToken);
 		try {
 			await this.autoApplyResult();
+			return await output.renderMessage(effectNameOrHeader, initiator);
 		} catch (e) {
-			const html = header + await this.HTMLBody();
+			const html = await output.generateHTML(effectNameOrHeader, initiator);
+			const rolls : RollBundle[] = this.attacks
+				.flatMap( (attack) => attack.atkResult.roll? [attack.atkResult.roll] : []);
 			PersonaError.softFail("Error with automatic result application", e, this, html);
 			return await ChatMessage.create( {
 				speaker: {
@@ -293,20 +289,6 @@ export class FinalizedCombatResult {
 				style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 			}, {});
 		}
-		const html = header + await this.HTMLBody();
-		const chatMsg = await ChatMessage.create( {
-			speaker: {
-				scene: initiatorToken?.parent?.id ?? initiator?.token?.parent.id,
-				actor: initiatorToken?.actor?.id ?? initiator?.id,
-				token:  initiatorToken?.id,
-				alias: initiatorToken?.name ?? "System",
-			},
-			rolls: rolls.map( rb=> rb.roll),
-			content: html,
-			user: game.user,
-			style: CONST?.CHAT_MESSAGE_STYLES.OTHER,
-		}, {});
-		return chatMsg;
 	}
 
 	async autoApplyResult() {
@@ -556,7 +538,7 @@ export class FinalizedCombatResult {
 			}
 		}
 		if (mutableState.theurgy != 0 && !actor.isShadow()) {
-			console.log(`Modify Theurgy: ${mutableState.theurgy}`)
+			console.log(`Modify Theurgy: ${mutableState.theurgy}`);
 			await actor.modifyTheurgy(mutableState.theurgy);
 		}
 		if (mutableState.mpCost != 0 && !actor.isShadow()) {

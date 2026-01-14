@@ -560,18 +560,20 @@ export class CombatResult  {
 		return amount;
 	}
 
-	merge(other: CombatResult) {
-		this.escalationMod += other.escalationMod;
-		CombatResult.mergeChanges( this.costs, other.costs);
-		for (const [atkResult, changeArr] of other.attacks.entries()) {
-			const myRes = this.attacks.get(atkResult);
-			if (myRes) {
-				CombatResult.mergeChanges(myRes, changeArr);
-			} else {
-				this.attacks.set(atkResult, changeArr);
+	merge(...others: CombatResult[]) {
+		for (const other of others) {
+			this.escalationMod += other.escalationMod;
+			CombatResult.mergeChanges( this.costs, other.costs);
+			for (const [atkResult, changeArr] of other.attacks.entries()) {
+				const myRes = this.attacks.get(atkResult);
+				if (myRes) {
+					CombatResult.mergeChanges(myRes, changeArr);
+				} else {
+					this.attacks.set(atkResult, changeArr);
+				}
 			}
+			this.globalOtherEffects = this.globalOtherEffects.concat(other.globalOtherEffects);
 		}
-		this.globalOtherEffects = this.globalOtherEffects.concat(other.globalOtherEffects);
 	}
 
 	static mergeChanges(mainEffects: ActorChange<ValidAttackers>[], newEffects: ActorChange<ValidAttackers>[]) {

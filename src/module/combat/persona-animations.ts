@@ -1,5 +1,6 @@
 import {DAMAGE_LEVELS, RealDamageType} from "../../config/damage-types.js";
 import {PersonaError} from "../persona-error.js";
+import {sleep} from "../utility/async-wait.js";
 import {AttackResult} from "./combat-result.js";
 import {PToken} from "./persona-combat.js";
 
@@ -131,7 +132,6 @@ export class PersonaAnimation {
 				: this.basicAnimationOnTarget(animData, token)
 			)
 				.map( x=> this.result == "miss" ? this.appendMiss(x) : x)
-				// .map( x=> this.result == "miss" ? x.missed() : x)
 				.map( x=> this.result == "crit" ? this.appendCriticalHit(x) : x)
 				.map ( x=> x.delay(500))
 				.map( x=> x.play());
@@ -274,7 +274,7 @@ export class PersonaAnimation {
 		const color = hp_change > 0 ? "green" : "red";
 		const txt = String(Math.abs(hp_change));
 		await this.appendScrollingText(new Sequence(), txt, target, color)
-		.play();
+			.play();
 	}
 
 	private static appendScrollingText<T extends SequencerBase | Sequence>(seq: T, txt: string, location: PToken, color = "white") {
@@ -290,6 +290,29 @@ export class PersonaAnimation {
 			.delay(300)
 			.text(txt, style);
 	}
+
+	static test() {
+		const tokens = game.scenes.current.tokens.filter (x=> (x.actor as Shadow).isPC());
+		for (const token of tokens) {
+			void this.floatingDamageNumbers((token as PToken), 1);
+		}
+	}
+
+	static async test2() {
+		const tokens = game.scenes.current.tokens.filter (x=> (x.actor as Shadow).isPC());
+		for (const token of tokens) {
+			void new Sequence().effect()
+			.file("jb2a.eruption.orange")
+			.atLocation(token)
+			.fadeOut(500)
+			.fadeIn(500)
+			.opacity(0.5)
+			.playbackRate(.9)
+			.play();
+		}
+		await sleep(200);
+	}
+
 }
 
 interface BasicAnimationData {
@@ -456,7 +479,6 @@ const SCALE_MULT : Record<keyof typeof DAMAGE_LEVELS, number> = {
 	colossal: 1.8,
 };
 
-
 const BUFF = "jb2a.healing_generic.03.burst.bluegreen";
 
 const ABSORB = "jb2a.cast_generic.01";
@@ -478,3 +500,6 @@ const STATUS_ICONS = {
 	CURSE_ICON : "jb2a.icon.skull.purple",
 } as const;
 
+
+//@ts-expect-error adding to global scope
+window.PersonaAnimation = PersonaAnimation;
