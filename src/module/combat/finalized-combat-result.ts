@@ -425,46 +425,11 @@ export class FinalizedCombatResult {
 		return this;
 	}
 
-	// async #onDefeatOpponent(target: PToken, attacker ?: PToken) {
-	// 	const combat = game.combat as PersonaCombat | undefined;
-	// 	if (!combat) {return;}
-	// 	if (target.actor.isShadow()) {
-	// 		const shadow = combat.findCombatant(target);
-	// 		if (shadow) {
-	// 			if (!shadow.defeated) {
-	// 				try {
-	// 					await shadow.update( {defeated: true});
-	// 				} catch (e) {
-	// 					console.error(e);
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// 	const attackerActor = attacker?.actor;
-	// 	if (attackerActor) {
-	// 		const situation: Situation = {
-	// 			trigger: "on-kill-target",
-	// 			triggeringCharacter: attackerActor.accessor,
-	// 			attacker: attacker.actor.accessor,
-	// 			target: target.actor.accessor,
-	// 			user: attackerActor.accessor,
-	// 			triggeringUser: game.user,
-	// 		};
-	// 		for (const comb of combat.combatants) {
-	// 			if (!comb.actor) {continue;}
-	// 			situation.user = comb.actor.accessor;
-	// 			this.addChained((await TriggeredEffect.onTrigger("on-kill-target", comb.actor, situation)).finalize());
-	// 		}
-	// 	}
-	// 	void NavigatorVoiceLines.onTargetKilled(target.actor, combat);
-	// }
-
 	async #applyCosts() {
 		const power = this.power && !this.power.isSkillCard() ? this.power : undefined;
 		for (const cost of this.costs) {
 			const chained= await ConsequenceApplier.applyActorChange(cost, power);
 			this.addChained(...chained);
-			// await this._applyChange(cost, power);
 		}
 	}
 
