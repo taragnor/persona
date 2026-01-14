@@ -741,7 +741,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return this._engagedList;
 	}
 
-	static async postActionCleanup(attacker: PToken, result: CombatResult ) {
+	static async postActionCleanup(attacker: PToken, result: FinalizedCombatResult ) {
 		// await this.afterActionTriggered(attacker, result);
 		const power = result.power;
 		if (!power) {return;}
@@ -1359,12 +1359,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	isInMeleeWith (token1: UniversalTokenAccessor<PToken> | PToken, token2: UniversalTokenAccessor<PToken> | PToken) : boolean {
 		const c1 = token1 instanceof TokenDocument ? this.findCombatant(token1) : this.findCombatant(token1);
 		if (!c1) {
-			PersonaError.softFail("Can't find combatant");
+			// PersonaError.softFail("Can't find combatant");
 			return false;
 		}
 		const c2 = token2 instanceof TokenDocument ? this.findCombatant(token2) : this.findCombatant(token2);
 		if (!c2) {
-			PersonaError.softFail("Can't find combatant");
+			// PersonaError.softFail("Can't find combatant");
 			return false;
 		}
 		const melee = EngagementChecker.listOfCombatantsInMelee(c1, this);
@@ -1462,7 +1462,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (!actor.hasStatus('bonus-action')) {ui.notifications.warn('No bonus action');}
 		const allOutAttack = PersonaDB.getBasicPower('All-out Attack');
 		if (!allOutAttack) {throw new PersonaError("Can't find all out attack in database");}
-		await combat.combatEngine.usePower(comb.token as PToken, allOutAttack);
+		const attacker= comb.token as PToken;
+		const result = await combat.combatEngine.usePower(attacker, allOutAttack);
+		await this.postActionCleanup(attacker, result);
+
 	}
 
 	findCombatant(acc :UniversalTokenAccessor<TokenDocument<ValidAttackers>>) : PersonaCombatant | undefined;
@@ -1876,6 +1879,23 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			style: CONST.CHAT_MESSAGE_STYLES.ROLL,
 		};
 		return await ChatMessage.create(chatMessage, messageOptions);
+	}
+
+	async markTokenDefeated(target: PToken) : Promise<boolean> {
+		if (target.actor.isShadow()) {
+			const shadow = this.findCombatant(target);
+			if (shadow) {
+				if (!shadow.defeated) {
+					try {
+						await shadow.update( {defeated: true});
+						return true;
+					} catch (e) {
+						console.error(e);
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 

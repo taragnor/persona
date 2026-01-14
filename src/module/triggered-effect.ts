@@ -203,6 +203,7 @@ static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Sit
 				continue;
 			}
 		}
-		await triggerResult?.finalize().toMessage("Triggered Effect", actor);
+		await triggerResult?.finalize().toMessage("Triggered Effect");
+		// await triggerResult?.finalize().toMessage("Triggered Effect", actor);
 	}
 }

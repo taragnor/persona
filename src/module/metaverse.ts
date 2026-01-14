@@ -48,6 +48,7 @@ export class Metaverse {
 		//squares was 55
 		gen.generate(squares, `${lvl}ARGFDSS` + String(Date.now()));
 		await gen.outputDataToScene();
+		await TensionPool._instance.clear();
 	}
 	static async enterMetaverse() {
 		if (!game.user.isGM) {return;}

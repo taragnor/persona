@@ -96,7 +96,7 @@ export class CombatEngine {
 			const targets = presetTargets ? presetTargets :  PersonaCombat.getTargets(attacker, power);
 			this.ensureCombatCheck(power, attacker, targets);
 			await this.handlePlayerInputModifier(options);
-			await PersonaSFX.onUsePowerStart(power, attacker);
+			// await PersonaSFX.onUsePowerStart(power, attacker);
 			const result = new CombatResult();
 			result.merge(await this.usePowerOn(attacker, power, targets, 'standard', options));
 			const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
@@ -108,7 +108,6 @@ export class CombatEngine {
 			}
 			await attacker.actor.removeStatus('baton-pass');
 			await finalizedResult.toMessage(power.name, attacker.actor);
-			await sleep(1250); //allopw bonus action statuses and such to be placed;
 			await this.postActionCleanup(attacker, result);
 			return finalizedResult;
 		} catch(e) {
@@ -154,7 +153,7 @@ export class CombatEngine {
 
 	async postActionCleanup(attacker: PToken, result: CombatResult ) {
 		await this.afterActionTriggered(attacker, result);
-		await PersonaCombat.postActionCleanup(attacker, result);
+		await sleep(1250); //wait for extra action status?
 	}
 
 	async afterActionTriggered(attacker: PToken, combatResult: CombatResult) {
@@ -184,9 +183,9 @@ export class CombatEngine {
 		for (let atkNum = 0; atkNum < num_of_attacks; ++atkNum) {
 			rollType = atkNum > 0 ? 'iterative': rollType;
 			const atkResult = await this.processAttackRoll( attacker, power, target, rollType == 'standard' && atkNum==0 ? 'activation' : rollType, options);
-			if (!options.simulated && this.combat) {
-				await this.attackRollSFX(attacker, target, power, atkResult.result);
-			}
+			// if (!options.simulated && this.combat) {
+			// 	await this.attackRollSFX(attacker, target, power, atkResult.result);
+			// }
 			const this_result = await this.processEffects(atkResult);
 			result.merge(this_result);
 			const secondary = await this.handleSecondaryAttacks(this_result, atkResult, power, attacker, target, rollType, options);
