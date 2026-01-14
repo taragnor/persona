@@ -277,7 +277,7 @@ export class PersonaAnimation {
 		for (let i = 0; i< 7 ; ++i ) {
 			seq =  this.loadAnimationData(animData, seq);
 			seq = seq.atLocation(source)
-				.stretchTo(target, {randomOffset: 0.3})
+				.stretchTo(target, {randomOffset: 0.4})
 				.waitUntilFinished(-100);
 		}
 		return seq as EffectProxy;

@@ -22,7 +22,6 @@ import {AILMENT_LEVELS, DamageCalculation, INSTANT_KILL_LEVELS, InstantKillLevel
 import {FinalizedCombatResult} from "./finalized-combat-result.js";
 import {ModifierList} from "./modifier-list.js";
 import {CombatOptions, PersonaCombat, PToken, TargettingError} from "./persona-combat.js";
-import {PersonaSFX} from "./persona-sfx.js";
 
 export class CombatEngine {
 	combat: U<PersonaCombat>;
@@ -138,18 +137,18 @@ export class CombatEngine {
 		}
 	}
 
-	private async attackRollSFX(attacker: PToken, target: PToken, power: UsableAndCard, result: AttackResult["result"]) {
-		try {
-			const preTime = Date.now() - this.startTime;
-			console.log(`Effect on ${target.name} start at ${preTime}`);
-			await PersonaSFX.onUsePowerOn(power, attacker, target, result);
-			// await sleep (500);
-			const postTime = Date.now() - this.startTime;
-			console.log(`Effect on ${target.name} end at ${postTime}`);
-		} catch(e) {
-			PersonaError.softFail("Error with doing PersonaSFX.onUsePower", e);
-		}
-	}
+	// private async attackRollSFX(attacker: PToken, target: PToken, power: UsableAndCard, result: AttackResult["result"]) {
+	// 	try {
+	// 		const preTime = Date.now() - this.startTime;
+	// 		console.log(`Effect on ${target.name} start at ${preTime}`);
+	// 		await PersonaSFX.onUsePowerOn(power, attacker, target, result);
+	// 		// await sleep (500);
+	// 		const postTime = Date.now() - this.startTime;
+	// 		console.log(`Effect on ${target.name} end at ${postTime}`);
+	// 	} catch(e) {
+	// 		PersonaError.softFail("Error with doing PersonaSFX.onUsePower", e);
+	// 	}
+	// }
 
 	async postActionCleanup(attacker: PToken, result: CombatResult ) {
 		await this.afterActionTriggered(attacker, result);

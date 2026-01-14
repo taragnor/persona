@@ -293,10 +293,10 @@ export class FinalizedCombatResult {
 			const power = this.power;
 			const attacker = this.attacker;
 			try {
-				await this.#apply();
 				if (power && attacker) {
-					await PersonaSFX.onUsePowerStart(this.power, attacker);
+					void PersonaSFX.onUsePowerStart(this.power, attacker);
 				}
+				await this.#apply();
 			} catch (e) {
 				PersonaError.softFail("Problem with GM apply");
 				Debug(e);
