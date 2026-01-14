@@ -13,6 +13,7 @@ interface SequencerBase {
 	delay(num: number): this;
 	scrollingText(): ScrollingTextProxy;
 	duration(ms: number): this;
+	addSequence <T extends SequencerBase>( seq : T) : T;
 }
 
 interface EffectProxy extends SequencerBase {
@@ -24,7 +25,7 @@ interface EffectProxy extends SequencerBase {
 	fadeIn(ms: number) : this;
 	fadeOut(ms: number, options?: FadeOptions): this;
 	/** used for ray effects this targets them*/
-	stretchTo(token: Token | TokenDocument) : this;
+	stretchTo(token: Token | TokenDocument, options?: LocationOptions) : this;
 	playbackRate(multipier: number): this;
 	belowTokens(): this;
 	scaleToObject(num: number): this;
@@ -32,6 +33,7 @@ interface EffectProxy extends SequencerBase {
 	randomSpriteRotation() : this;
 	aboveInterface(): this;
 	screenSpace(): this;
+	waitUntilFinished(timeOffset: number) : this;
 
 	/** target a location near but not at the target*/
 	missed(): this;

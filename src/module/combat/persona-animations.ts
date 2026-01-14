@@ -209,7 +209,6 @@ export class PersonaAnimation {
 
 
 	private fromAnimationData(data: BasicAnimationData, target: PToken) {
-		if (data.fileName.length == 0) {throw new PersonaError("Bad animation, no filename");}
 		const locationData =  data.randomOffsetPercent
 			? {randomOffset: data.randomOffsetPercent}
 			: {};
@@ -220,8 +219,15 @@ export class PersonaAnimation {
 	private loadAnimationData (animData: BasicAnimationData, sequence : SequencerBase | Sequence = new Sequence()) {
 		const scale = this.scale(animData);
 		let seq = sequence.effect();
-		seq= seq
-			.file(animData.fileName)
+		const fileName : string =
+			typeof animData.fileName == "string"
+			? animData.fileName
+			: ( this.usable.isAoE() 
+				? animData.fileName.multi
+				: animData.fileName.single
+			);
+		seq = seq
+			.file(fileName)
 			.fadeOut(animData.fadeOut ?? 0)
 			.fadeIn(animData.fadeIn ?? 0)
 			.opacity(animData.opacity ?? 1)
@@ -258,8 +264,23 @@ export class PersonaAnimation {
 	}
 
 	private projectileAnimation (animData: BasicAnimationData, source: TokenDocument | Token, target: TokenDocument | Token)  {
+		if (!this.usable.isAoE()) {
 		return this.basicAnimationOnTarget(animData, source)
 			.stretchTo(target);
+		} else {
+			return this.spreadFireProjectileAnimation(animData, source, target);
+		}
+	}
+
+	private spreadFireProjectileAnimation( animData: BasicAnimationData, source: TokenDocument | Token, target: TokenDocument | Token) {
+		let seq : U<EffectProxy> = undefined;
+		for (let i = 0; i< 7 ; ++i ) {
+			seq =  this.loadAnimationData(animData, seq);
+			seq = seq.atLocation(source)
+				.stretchTo(target, {randomOffset: 0.3})
+				.waitUntilFinished(-100);
+		}
+		return seq as EffectProxy;
 	}
 
 	private static sequencerIsLoaded() : boolean {
@@ -316,7 +337,7 @@ export class PersonaAnimation {
 }
 
 interface BasicAnimationData {
-	fileName: string;
+	fileName: string | {single: string, multi: string};
 	duration?: number;
 	objectScale?: number;
 	scale?: number;
@@ -368,7 +389,8 @@ const BASE_VALUES : Record<RealDamageType, BasicAnimationData | BasicAnimationDa
 		fadeOut: 500,
 	},
 	cold: {
-		fileName: "jb2a.aura_themed.01.inward.complete.cold.01.blue",
+		fileName: "jb2a.ice_spikes.radial.burst.white",
+		// fileName: "jb2a.aura_themed.01.inward.complete.cold.01.blue",
 		scale: 0.15,
 		duration: 2250,
 		fadeOut: 500,
