@@ -630,7 +630,7 @@ knowsPowerInnately(power : Power)  : boolean {
 				break;
 			}
 			case "fort": {
-				calc =this.combatStats.baseMagDefense();
+				calc = this.combatStats.baseMagDefense();
 				break;
 			}
 			case "kill":

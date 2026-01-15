@@ -161,7 +161,7 @@ type StatusEffect_FollowUp = {
 }
 
 export type EnhancedSourcedConsequence<C extends Consequence = Consequence> = SourcedConsequence<C> & {
-	modifiers?: ConsModifiers[];
+	// modifiers?: ConsModifiers[];
 }
 
 type ConsModifiers = "blocked" | "absorbed" | "resisted";

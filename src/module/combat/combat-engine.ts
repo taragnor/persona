@@ -747,8 +747,12 @@ export class CombatEngine {
 		const instantKillRangeRaw = CombatEngine.calculateInstantDeathRange(attackerPersona, targetPersona, power, situation);
 		const critRangeRaw = CombatEngine.calculateCriticalRange(attackerPersona, targetPersona, power, situation);
 		if (PersonaSettings.debugMode()) {
-			console.debug(ailmentRangeRaw);
-			console.debug(instantKillRangeRaw);
+			if (ailmentRangeRaw) {
+				console.debug(ailmentRangeRaw);
+			}
+			if (instantKillRangeRaw) {
+				console.debug(instantKillRangeRaw);
+			}
 		}
 		const ailmentRange = this.constrainRange(ailmentRangeRaw);
 		const instantKillRange = this.constrainRange(instantKillRangeRaw);

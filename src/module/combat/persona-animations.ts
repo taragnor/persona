@@ -401,12 +401,20 @@ const BASE_VALUES : Record<RealDamageType, BasicAnimationData | BasicAnimationDa
 		duration: 3500,
 		fadeOut: 750,
 	},
-	lightning: {
+	lightning: [{
 		fileName: "jb2a.lightning_strike",
 		scale: 0.3,
 		duration: 700,
 		fadeOut: 100,
-	},
+	}, {
+		fileName: "jb2a.static_electricity.01.blue",
+		scale: 0.4,
+		duration: 1000,
+		fadeIn: 250,
+		fadeOut: 100,
+		hitOnly: true,
+		delay: 250,
+	}],
 	light: {
 		fileName: "jb2a.sacred_flame.target.yellow",
 		scale: 0.6,

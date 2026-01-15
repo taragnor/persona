@@ -66,6 +66,11 @@ export class DamageCalculation {
 		return this;
 	}
 
+	setBlocked() {
+		this.#blocked = true;
+		return this;
+	}
+
 	static convertToNewFormConsequence( cons: SourcedConsequence<OldDamageConsequence> | SourcedConsequence<DamageConsequence>, defaultDamageType: DamageType) : SourcedConsequence<NonDeprecatedDamageCons> {
 		const convert = ConsequenceConverter.convertDeprecatedDamageConsequence(cons, defaultDamageType);
 		return {
@@ -79,21 +84,21 @@ export class DamageCalculation {
 	addConsequence(cons: EnhancedSourcedConsequence<NewDamageConsequence>, target: ValidAttackers): DamageCalculation {
 		let damageOrder: DamageOrder;
 		let amt : number;
-		if (cons.modifiers) {
-			for (const mod of cons.modifiers) {
-				switch (mod) {
-					case "blocked":
-						this.#blocked = true;
-						break;
-					case "absorbed":
-						this.#absorbed = true;
-						break;
-					case "resisted":
-						this.#resisted = true;
-						break;
-				}
-			}
-		}
+		// if (cons.modifiers) {
+		// 	for (const mod of cons.modifiers) {
+		// 		switch (mod) {
+		// 			case "blocked":
+		// 				this.#blocked = true;
+		// 				break;
+		// 			case "absorbed":
+		// 				this.#absorbed = true;
+		// 				break;
+		// 			case "resisted":
+		// 				this.#resisted = true;
+		// 				break;
+		// 		}
+		// 	}
+		// }
 		switch (cons.damageSubtype) {
 			case "multiplier": {
 				damageOrder = "multiplier";

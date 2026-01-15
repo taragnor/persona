@@ -74,10 +74,6 @@ export class CombatResult  {
 		if (!effect) {return undefined;}
 		let damageType = cons.damageType;
 		if (damageType == "by-power") {
-			// if (!atkResult) {
-			// 	PersonaError.softFail("Can't get atk Result for determining damage type");
-			// 	return undefined;
-			// }
 			if (!situation.usedPower) {
 				PersonaError.softFail("Can't get situation: Used Power for determining damage type");
 				return undefined;
@@ -87,13 +83,11 @@ export class CombatResult  {
 				return undefined;
 			}
 			const power = PersonaDB.findItem(situation.usedPower);
-			// const power = PersonaDB.findItem(atkResult.power);
 			if (power.isSkillCard()) {
 				PersonaError.softFail("Skill Cards can't do damage");
 				return undefined;
 			}
 			const attacker = PersonaDB.findActor(situation.attacker);
-			// const attacker = PersonaDB.findToken(situation.attacker).actor;
 			if (!attacker) {
 				PersonaError.softFail("Can't get attacker");
 				return undefined;
@@ -135,27 +129,12 @@ export class CombatResult  {
 		situation: Situation,
 		effect: ActorChange<ValidAttackers>,
 		target: ValidAttackers,
-		// atkResult: U<AttackResult> | null
 	) {
 		if (!target) {return;}
-		// const sitAttacker = situation.attacker;
-		// const user = situation.user;
 		switch  (cons.damageSubtype) {
 			case "set-to-percent":
 			case "set-to-const": {
 				if (!effect) {return;}
-				// const attacker = sitAttacker;
-				// const attacker = atkResult?.attacker
-				// ? PersonaDB.findToken(atkResult.attacker).actor.accessor
-				// : sitAttacker;
-				// const NewSituation = {
-				// 	triggeringCharacter: target.accessor,
-				// 	user: user ? user : attacker,
-				// 	target: target.accessor,
-				// 	attacker: attacker,
-				// 	...situation,
-					// ...(atkResult ?  atkResult.situation : {}),
-				// };
 				const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
 				const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situation);
 				if (amount == undefined) {
@@ -173,18 +152,16 @@ export class CombatResult  {
 				// eslint-disable-next-line no-fallthrough
 			default: {
 				if (cons.amount != undefined && typeof cons.amount == "object") {
-					// const attacker = atkResult?.attacker ? PersonaDB.findToken(atkResult.attacker).actor : undefined;
-					// const situation = {
-					// 	triggeringCharacter: target.accessor,
-					// 	user: attacker ? attacker.accessor : target.accessor,
-					// 	target: target.accessor,
-					// 	attacker: attacker ? attacker.accessor : undefined,
-					// 	...(atkResult ?  atkResult.situation : {}),
-					// };
 					const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons as typeof cons & {amount: ConsequenceAmount});
 					const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situation);
-					//@ts-expect-error writing to read only
-					cons.amount = amount;
+					if (amount == undefined) {
+						PersonaError.softFail(`ConsAmount is undefiend in Damage Effect ${cons.damageSubtype} of ${cons.realSource?.name}`);
+						return;
+					}
+					cons = {
+						...cons,
+						amount : amount,
+					};
 				}
 				const damageCalc = this.#getDamageCalc(cons, situation, effect);
 				if (!damageCalc) {break;}
@@ -204,7 +181,7 @@ export class CombatResult  {
 						this.addEffect_damage(cons, situation, effect, target);
 						break;
 				 case "addStatus": {
-						if (!effect) {break;}
+						if (!effect || !target) {break;}
 
 					 let status_damage : number | undefined = undefined;
 					 if (situation.attacker && situation.usedPower &&  cons.statusName == "burn") {
@@ -214,12 +191,9 @@ export class CombatResult  {
 							 break;
 						 }
 						 const attacker = PersonaDB.findActor(situation.attacker);
-						 // const attacker = PersonaDB.findToken(atkResult.attacker).actor;
 						 status_damage = attacker
 							 ? (power as Usable)
-							 .damage.getDamage(power as Usable, attacker.persona())
-							 .eval()
-							 .hpChange ?? 0
+							 .damage.getBurnDamage(power as Usable, attacker.persona(), target.persona())
 							 : 0;
 					 }
 					 const id = cons.statusName;
@@ -622,12 +596,8 @@ export class CombatResult  {
 		return {
 			actor: initial.actor,
 			damage: this.combineDamage(initial.damage, other.damage),
-			// hpchange: absMax(initial.hpchange, other.hpchange),
-			// damageType : initial.damageType == "none" ? other.damageType : initial.damageType,
-			// hpchangemult: CombatResult.calcHpChangeMult(initial.hpchangemult, other.hpchangemult),
 			addStatus : initial.addStatus.concat(other.addStatus),
 			removeStatus : initial.removeStatus.concat(other.removeStatus),
-			// expendSlot : initial.expendSlot.map( (x,i)=> x + other.expendSlot[i]) as [number, number, number, number],
 			otherEffects: initial.otherEffects.concat(other.otherEffects)
 		};
 	}

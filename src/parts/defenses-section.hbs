@@ -1,19 +1,4 @@
-	{{#if (gte (scanLevel persona) 2)}}
-	<div class="defenses DR">
-		<div title="{{WeaponDRBreakdown persona}}">
-			<label>
-				Weapon DR
-			</label>
-			{{getWeaponDR persona}}
-		</div>
-		<div title="{{MagicDRBreakdown persona}}">
-			<label>
-				Magic DR
-			</label>
-			{{getMagicDR persona}}
-		</div>
-
-	</div>
+{{#if (gte (scanLevel persona) 2)}}
 <div class="defenses">
 	{{#each CONST.REAL_DEFENSE_TYPES as |locName systemName|}}
 	<div class="defense" title="{{defenseBreakdown ../persona systemName}}">

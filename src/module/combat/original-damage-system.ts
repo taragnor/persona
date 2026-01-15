@@ -10,9 +10,6 @@ import {DamageCalculation, NewDamageParams} from "./damage-calc.js";
 import {DamageSystemBase} from "./damage-system.js";
 
 export class OriginalDamageSystem extends DamageSystemBase {
-	// WEAPON_DAMAGE_MULT = 1.75 as const;
-	// MAGIC_DAMAGE_MULT = 1.75 as const;
-	// ENDURANCE_DR_MULTIPLIER = 0.005 as const;
 	ENDURANCE_DR_MULTIPLIER = 0.01 as const;
 	WEAPON_DAMAGE_MULT = 2 as const;
 	MAGIC_DAMAGE_MULT = 2 as const;
@@ -44,7 +41,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 		return calc ;
 	}
 
-	override applyDR(calc: DamageCalculation, damageType: RealDamageType, power: Usable, targetPersona: Persona): DamageCalculation {
+	override applyDR(calc: DamageCalculation, damageType: RealDamageType, power: Usable, _attackerPersona: U<Persona>, targetPersona: Persona): DamageCalculation {
 		let DR = new DamageCalculation(damageType);
 		switch (true) {
 			case (damageType == "healing"):
@@ -119,6 +116,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 	}
 
 
+
 	#endurancePercentDR(targetPersona: Persona) : number {
 		const situation = {
 			user: targetPersona.user.accessor,
@@ -172,16 +170,16 @@ export class OriginalDamageSystem extends DamageSystemBase {
 		const strength = persona.combatStats.strength;
 		const calc = new Calculation(0, 2);
 		return calc
-			.add(0, strength + 0, `${persona.displayedName} Strength`, "add")
-			.add(1, this.WEAPON_DAMAGE_MULT, `Strength Damage Bonus Multiplier`, "multiply");
+			.add(0, strength + 0, `${persona.displayedName} Strength`)
+			.mult(1, this.WEAPON_DAMAGE_MULT, `Strength Damage Bonus Multiplier`);
 	}
 
 	magDamageBonus(persona: Persona) : Calculation {
 		const magic = persona.combatStats.magic;
 		const calc = new Calculation(0);
 		return calc
-			.add(0, magic, `${persona.displayedName} Magic`, "add")
-			.add(1, this.MAGIC_DAMAGE_MULT, `Magic Damage Multiplier`, "multiply");
+			.add(0, magic, `${persona.displayedName} Magic`)
+			.mult(1, this.MAGIC_DAMAGE_MULT, `Magic Damage Multiplier`);
 	}
 
 	magicSkillDamage(magic: ItemSubtype<Power, "magic">) : Readonly<NewDamageParams> {
@@ -225,16 +223,8 @@ export class OriginalDamageSystem extends DamageSystemBase {
 		return this._weaponDmgGrowth.valueAt(lvl + 1);
 	}
 
-	// getWeaponDamageByWpnLevel(lvl: number) : number {
-	// 	lvl = Math.clamp(Math.round(lvl), 0, 12);
-	// 	const val =  WEAPON_LEVEL_TO_DAMAGE[lvl];
-	// 	if (val) {return val;}
-	// 	return 0;
-	// }
-
 	getArmorDRByArmorLevel(lvl: number) : number {
 		const ARMOR_DIVISOR = this.ARMOR_TO_DAMAGE_DIVISOR;
-		// const ARMOR_DIVISOR = 0.90;
 		const val =  this.getWeaponDamageByWpnLevel(lvl);
 		if (val) {return Math.floor(val * ARMOR_DIVISOR);}
 		return 0;
@@ -249,7 +239,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 			PersonaError.softFail("Can't find Basic attack power");
 			return new DamageCalculation("physical");
 		}
-		const damage = basicAttack.damage.getDamage(basicAttack, actor.persona(), situation);
+		const damage = this.getPowerDamage(basicAttack, actor.persona(), situation);
 		if (!isAttackLeader) {
 			damage.add("multiplier", this.ALL_OUT_ATTACK_HELPER_DIVISOR, "All out attack helper multiplier");
 		}
