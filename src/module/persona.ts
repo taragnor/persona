@@ -98,7 +98,6 @@ Hooks.once("ready", () => {Darkness.init();});
 Hooks.once("init", function() {
 	console.log("*** PERSONA SYSTEM INIT START ***");
 
-
 	DebugTools.setDebugMode(true);
 
 	game.persona = {

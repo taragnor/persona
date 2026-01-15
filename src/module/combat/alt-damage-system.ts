@@ -299,8 +299,6 @@ const DAMAGE_LEVEL_NEW = {
 	"colossal": {extraVariance: 2, baseAmt: 45, mult: 1.7, healMult :4},
 } as const satisfies Readonly<Record< ConvertableDamageLevel, ExtraDamageParams>>;
 
-
-
 export const ALT_DAMAGE_SYSTEM = new AltDamageSystem();
 
 type ExtraDamageParams = {

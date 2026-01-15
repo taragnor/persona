@@ -74,7 +74,7 @@ export class RandomDungeonGenerator {
 	}
 
 	get difficultyLevel() {
-		return this._baseDiff + this.currentDepth;
+		return this._baseDiff + Math.floor(this.currentDepth / 2);
 	}
 
 	getAdjacentX(pt: Point, type : DungeonSquare["type"]) : Point[] {
@@ -324,7 +324,6 @@ export class RandomDungeonGenerator {
 			room.assignSpecials();
 		}
 	}
-
 
 	percentChance(percentNum: number) : boolean {
 		const check = this.rng.die(1,100);
