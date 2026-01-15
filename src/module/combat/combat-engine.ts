@@ -365,7 +365,6 @@ export class CombatEngine {
 		const resolvedAttackMods = attackbonus.eval(situation);
 		const validAtkModifiers = resolvedAttackMods.steps;
 		const {ailmentRange, instantKillRange, critRange} = CombatEngine.calculateRanges(attackerPersona, targetPersona, power, baseSituation);
-		// const {critBoost, critPrintable} = this.getEffectiveCritBoost(attackerPersona, targetPersona, situation, power);
 		const addonAttackResultData = {
 			ailmentRange, instantKillRange, critRange,
 			// critBoost, critPrintable,
@@ -857,8 +856,6 @@ export class CombatEngine {
 	}
 
 	static calculateInstantDeathRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation?: N<Situation>) : U<CalculatedRange> {
-		const baseRangeData = this.calculateBaseInstantKillRange(power);
-		if (!baseRangeData)  { return undefined; }
 		if (power.targetsDefense == "kill") {
 			return {
 				low: 6,
@@ -868,6 +865,8 @@ export class CombatEngine {
 				type: "instantKill",
 			};
 		}
+		const baseRangeData = this.calculateBaseInstantKillRange(power);
+		if (!baseRangeData)  { return undefined; }
 		const {high, modifier, locType}= baseRangeData;
 
 		if (!situation) {
@@ -1035,8 +1034,14 @@ export class CombatEngine {
 
 	static calculateBaseInstantKillRange(power: Usable):  U<{high: number, modifier: number, locType: string}> {
 		if (!power.isInstantDeathAttack()) {return undefined ;}
+		if (power.targetsDefense == "kill") {
+			return {
+				modifier: +1000,
+				high: 20,
+				locType: game.i18n.localize(INSTANT_KILL_LEVELS[power.system.instantKillChance]),
+			};
+		};
 		const chance = INSTANT_KILL_RANGE_BY_POWER[power.system.instantKillChance];
-		if (power.targetsDefense == "kill") {return undefined;}
 		if (!chance) {return undefined;}
 		return {
 			...chance,

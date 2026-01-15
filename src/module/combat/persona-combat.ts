@@ -1948,7 +1948,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 export type PToken = TokenDocument<ValidAttackers> & {get actor(): ValidAttackers};
 
 CONFIG.Combat.initiative = {
-	formula : '1d10 + @parent.init',
+	formula : '1d20 + @parent.init',
 	decimals: 2
 };
 
@@ -1965,7 +1965,7 @@ export type SaveOptions = {
 	askForModifier?: boolean,
 	saveVersus?: StatusEffectId,
 	modifier ?: number,
-	rollTags : (RollTag | CardTag) [], 
+	rollTags : (RollTag | CardTag) [],
 }
 
 
