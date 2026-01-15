@@ -230,7 +230,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 		return 0;
 	}
 
-	individualContributionToAllOutAttackDamage(actor: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation {
+	individualContributionToAllOutAttackDamage(actor: ValidAttackers, target: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation {
 		if (!actor.canAllOutAttack()) {
 			return new DamageCalculation("physical");
 		}
@@ -239,7 +239,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 			PersonaError.softFail("Can't find Basic attack power");
 			return new DamageCalculation("physical");
 		}
-		const damage = this.getPowerDamage(basicAttack, actor.persona(), situation);
+		const damage = this.getDamage(basicAttack, actor.persona(), target.persona(), situation);
 		if (!isAttackLeader) {
 			damage.add("multiplier", this.ALL_OUT_ATTACK_HELPER_DIVISOR, "All out attack helper multiplier");
 		}

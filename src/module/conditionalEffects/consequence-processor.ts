@@ -1,11 +1,8 @@
-import {ConsequenceAmount, DamageConsequence, EnhancedSourcedConsequence, NewDamageConsequence, NonDeprecatedConsequence} from "../../config/consequence-types.js";
-import {RealDamageType} from "../../config/damage-types.js";
+import {NewDamageConsequence, NonDeprecatedConsequence} from "../../config/consequence-types.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {AttackResult, CombatResult} from "../combat/combat-result.js";
-import {DamageCalculation} from "../combat/damage-calc.js";
 import {ConsequenceProcessed, PersonaCombat} from "../combat/persona-combat.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
-import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 
 export class ConsequenceProcessor {

@@ -138,7 +138,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.system.type == "tarot";
 	}
 
-	isRealPC(): this is PC & {tarot : Tarot} {
+	isRealPC(): this is RealPC {
 		return this.system.type == "pc" && this.hasPlayerOwner && this.tarot != undefined;
 	}
 
@@ -439,8 +439,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		await this.update( {"system.combat.personaStats.pLevel" : lvl});
 	}
 
-	isPCLike(): this is NPCAlly | PC {
-		return this.isPC() || this.isNPCAlly();
+	isPCLike(): this is NPCAlly | RealPC {
+		return this.isRealPC() || this.isNPCAlly();
 	}
 
 	get theurgyVal() : number {
@@ -4555,3 +4555,5 @@ declare global {
 
 	type SocialLink = PC | NPC | NPCAlly;
 }
+
+type RealPC = PC & {tarot : Tarot};

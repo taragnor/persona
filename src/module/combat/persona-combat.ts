@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { EvaluatedDamage } from './damage-calc.js';
 import { EnhancedSourcedConsequence, NonDeprecatedConsequence} from '../../config/consequence-types.js';
 import { sleep } from '../utility/async-wait.js';
 import { CardTag } from '../../config/card-tags.js';
@@ -1179,7 +1178,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return targets.map( x=> x as PToken);
 	}
 
-	static selectedPTokens(): PToken[] {
+	static targettedPTokens(): PToken[] {
 		return Array.from(game.user.targets)
 			.map(x=> x.document)
 			.filter(x=> x.actor != undefined && x.actor instanceof PersonaActor && x.actor.isValidCombatant()) as PToken[];
@@ -1188,7 +1187,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[]): PToken[] {
 		const selected = altTargets != undefined
 			? altTargets
-			: this.selectedPTokens();
+			: this.targettedPTokens();
 		const combat = game.combat as PersonaCombat | undefined;
 		for (const target of selected) {
 			const targetActor = target.actor;
@@ -1512,22 +1511,22 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return this.getFoes(comb).filter ( c=> c.actor && c.actor.isAlive());
 	}
 
-	static calculateAllOutAttackDamage(attacker: PToken, situation: AttackResult['situation']) :{contributor: ValidAttackers, amt: number, stack: EvaluatedDamage['str']}[] {
-		const attackLeader = PersonaDB.findActor(situation.attacker!);
-		const combat = game.combat as PersonaCombat | undefined;
-		if (!combat)
-		{return [];}
-		const attackerComb = combat.findCombatant(attacker);
-		if (!attackerComb) {return [];}
-		const attackers = [
-			attackerComb,
-			...combat.getAllies(attackerComb)
-		].flatMap (c=>c.actor?  [c.actor] : []);
-		if (PersonaSettings.debugMode()) {
-			console.debug(`All out attack leader ${attacker.name}`);
-		}
-		return PersonaSettings.getDamageSystem().calculateAllOutDamage(attackLeader, attackers, situation);
-	}
+	// static calculateAllOutAttackDamage(attacker: PToken, situation: AttackResult['situation']) :{contributor: ValidAttackers, amt: number, stack: EvaluatedDamage['str']}[] {
+	// 	const attackLeader = PersonaDB.findActor(situation.attacker!);
+	// 	const combat = game.combat as PersonaCombat | undefined;
+	// 	if (!combat)
+	// 	{return [];}
+	// 	const attackerComb = combat.findCombatant(attacker);
+	// 	if (!attackerComb) {return [];}
+	// 	const attackers = [
+	// 		attackerComb,
+	// 		...combat.getAllies(attackerComb)
+	// 	].flatMap (c=>c.actor?  [c.actor] : []);
+	// 	if (PersonaSettings.debugMode()) {
+	// 		console.debug(`All out attack leader ${attacker.name}`);
+	// 	}
+	// 	return PersonaSettings.getDamageSystem().calculateAllOutDamage(attackLeader, attackers, situation);
+	// }
 
 	getToken( acc: UniversalActorAccessor<PersonaActor>  | undefined): UniversalTokenAccessor<PToken> | undefined {
 		if (!acc) {return undefined;}
@@ -1906,30 +1905,38 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return undefined;
 	}
 
-	static async testPowerVersusPCs(attacker: PToken, power: Usable) :Promise<number[]> {
-		const PCs= PersonaDB.PCs();
-		const scene = game.scenes
-		.find( sc=> PCs
-			.every( pc => sc.tokens.contents
-				.some(tok => tok.actor == pc)
-			)
-		);
-		if (!scene) {
-			throw new PersonaError("Can't find scnee containing all PCs");
+	private static getSimulationTargets(attacker: PToken) : PToken[] {
+		const scene = CombatScene.scene;
+		if (attacker.actor.isShadow()) {
+			const PCTokens= scene.tokens.filter( (tok: PToken)=> tok.actor != undefined && !tok.hidden && tok.actor.isPCLike()) as PToken[];
+			return PCTokens;
 		}
-		const PCTokens= scene.tokens.filter( (tok: PToken)=> tok.actor != undefined && tok.actor.isPC() && PCs.includes(tok.actor)) as PToken[];
+		if (attacker.actor.isPCLike()) {
+			const combat = PersonaCombat.combat;
+			if (!combat) {return [];}
+			const combatant = combat.getCombatantByToken(attacker);
+			if (!combatant) {return [];}
+			return combat.getFoes(combatant)
+				.map( comb => comb.token)
+				.filter( token => token.actor.persona().effectiveScanLevel >= 2);
+		}
+		return [];
+	}
+
+	static async testPowerVersusFoes(attacker: PToken, power: Usable) :Promise<string[]> {
 		const processor = this.instance?.combatEngine ?? new CombatEngine(undefined);
-		const result = await processor.usePower(attacker, power, PCTokens, {askForModifier: false, setRoll: 16, ignorePrereqs : true, simulated: true});
+		const testingTargets= this.getSimulationTargets(attacker);
+		const result = await processor.usePower(attacker, power, testingTargets, {askForModifier: false, setRoll: 16, ignorePrereqs : true, simulated: true});
 		const changes = result.attacks.flatMap( atk => atk.changes);
-		const PCResult = PCs.map( pc => {
+		const PCResult = testingTargets.map( target => {
 			const PCChanges = changes.filter( ch => {
 				const actor = PersonaDB.findActor(ch.actor);
-				return actor == pc;
+				return actor == target.actor;
 			});
 			const HPChanges = PCChanges.map ( x=> x.damage.reduce (
 				(acc, dmg) => acc + dmg.hpChange, 0));
 			const dmg= -1 * HPChanges.reduce( (acc,ch) => acc+ch, 0);
-			return Number((pc.mhp / dmg).toFixed(2));
+			return `${target.name} HTK ${(target.actor.mhp / dmg).toFixed(2)}`;
 		});
 		//BUG does not work well for flurry powers yet
 		return PCResult;

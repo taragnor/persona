@@ -70,16 +70,12 @@ export class ModifierList {
 		return this._data.filter( item => {
 			try {
 				// const source = item.source ? PersonaDB.find(item.source) ?? null: null;
-				if (testPreconditions(item.conditions, situation)) {
-					if (item.modifier != 0) {
-						return true;
-					}
+				if (item.modifier == 0) {return false;}
+					return testPreconditions(item.conditions, situation);
+				} catch (e) {
+					PersonaError.softFail("Problem with Valid MOdifiers in situation, can't get source",e,item );
+					return false;
 				}
-				return false;
-			} catch (e) {
-				PersonaError.softFail("Problem with Valid MOdifiers in situation, can't get source",e,item );
-				return false;
-			}
 		});
 	}
 

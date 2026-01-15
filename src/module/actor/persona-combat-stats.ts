@@ -37,16 +37,20 @@ export class PersonaCombatStats {
 		return this.persona.source.system.combat.personaStats;
 	}
 
-	getStatValue(x: PersonaStat) : number {
-		const permaBonus = this.combatStats.permanentStatsBonuses[x];
+	getStatValue(stat: PersonaStat) : number {
+		const permaBonus = this.combatStats.permanentStatsBonuses[stat];
 		const situation = {
 			user: this.persona.user.accessor,
 		};
 		const modBonuses = this.persona
-			.getBonuses(x)
+			.getBonuses(stat)
 			.total(situation);
-		const statTotal = Math.round( permaBonus + this.combatStats.stats[x] + modBonuses);
+		const statTotal = Math.round( permaBonus + this.getBaseStatValue(stat) + modBonuses);
 		return Math.min(99, statTotal);
+	}
+
+	getBaseStatValue(stat: PersonaStat) : number {
+		return this.combatStats.stats[stat];
 	}
 
 	get strength() : number { return this.getStatValue("str");}

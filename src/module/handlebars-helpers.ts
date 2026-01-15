@@ -90,6 +90,9 @@ export class PersonaHandleBarsHelpers {
 			return SS;
 		},
 
+		"baseStatValue" : (persona: Persona, stat: PersonaStat) : number => {
+			return persona.combatStats.getBaseStatValue(stat);
+		},
 		"statValue" : (persona: Persona, stat: PersonaStat) : number => {
 			switch (stat) {
 				case "str":
@@ -956,13 +959,6 @@ export class PersonaHandleBarsHelpers {
 
 		"isFoe": function (actor: PersonaActor) : boolean {
 			return actor.isShadow() && !actor.hasPlayerOwner && !actor.isPersona() && !actor.isDMon();
-		},
-		"DamageBalanceCheck": async function (actor: PersonaActor, power: Usable) : Promise<string> {
-			const token = game.scenes.current.tokens.find( x=> x.actor == actor);
-			if (!token) {return "No token to test balance";}
-			const test = await PersonaCombat.testPowerVersusPCs(token as PToken, power);
-			return test
-			.join(", ");
 		},
 
 		"deprecationList" : function<T extends string | number, L extends T[] | Record<T, unknown>>(listElement: T, nonDepList: L, fullList: L): L {

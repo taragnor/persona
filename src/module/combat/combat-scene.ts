@@ -136,12 +136,16 @@ export class CombatScene {
 		return true;
 	}
 
-	get scene() : PersonaScene {
+	static get scene() : PersonaScene {
 		const combatScene= game.scenes.getName("Combat") as PersonaScene;
 		if (!combatScene) {
 			throw new PersonaError("Can't find Combat scene!");
 		}
 		return combatScene;
+	}
+
+	get scene() : PersonaScene {
+		return CombatScene.scene;
 	}
 
 	static async create(encounter: Encounter, options: CombatSetupOptions = {}) {

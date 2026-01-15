@@ -1475,32 +1475,32 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	/** used for damage calculation estaimate for char sheet*/
-	async generateSimulatedResult(this: Usable, user: ValidAttackers, situation: AttackResult['situation']) : Promise<CombatResult | undefined>;
-	async generateSimulatedResult(this: Usable, user: ValidAttackers, simulatedNat: number) : Promise<CombatResult | undefined>;
-	async generateSimulatedResult (this: Usable, user: ValidAttackers, simulatedSitOrNat: number | AttackResult['situation']) : Promise<CombatResult | undefined> {
+	async generateSimulatedResult(this: Usable, user: ValidAttackers, target: N<PToken>, situation: AttackResult['situation']) : Promise<CombatResult | undefined>;
+	async generateSimulatedResult(this: Usable, user: ValidAttackers, target: N<PToken>, simulatedNat: number) : Promise<CombatResult | undefined>;
+	async generateSimulatedResult (this: Usable, user: ValidAttackers, target: N<PToken>, simulatedSitOrNat: number | AttackResult['situation']) : Promise<CombatResult | undefined> {
 		const token = user.getActiveTokens(true)
 		.map(x=> x.document) as PToken[];
 		if (!token || token.length ==0) {return undefined;}
 		if (typeof simulatedSitOrNat == 'number') {
-			return await PersonaCombat.getSimulatedResult(token[0], this,token[0], simulatedSitOrNat);
+			return await PersonaCombat.getSimulatedResult(token[0], this,target ?? token[0], simulatedSitOrNat);
 		} else {
-			return await PersonaCombat.getSimulatedResult(token[0], this,token[0], simulatedSitOrNat);
+			return await PersonaCombat.getSimulatedResult(token[0], this,target ?? token[0], simulatedSitOrNat);
 		}
 	}
 
-	async generateSimulatedDamageObject(this: Usable, user: ValidAttackers, simulatedNat: number) : Promise<EvaluatedDamage | undefined> {
-		const result = await this.generateSimulatedResult(user, simulatedNat);
+	async generateSimulatedDamageObject(this: Usable, user: ValidAttackers, simulatedNat: number, target : N<PToken>) : Promise<EvaluatedDamage | undefined> {
+		const result = await this.generateSimulatedResult(user, target, simulatedNat);
 		return result?.finalize()?.attacks[0]?.changes[0]?.damage[0];
 	}
 
-	async displayDamageStack(this: Usable, persona: Persona) : Promise<string> {
-		const st = await this.getDamageStack(persona.user);
+	async displayDamageStack(this: Usable, persona: Persona, target: N<PToken>) : Promise<string> {
+		const st = await this.getDamageStack(persona.user, target);
 		console.log(`Damage stack ${st}`);
 		return st;
 	}
 
-	async getDamageStack(this: Usable, user: ValidAttackers): Promise<string> {
-		const estimate = await this.generateSimulatedDamageObject(user, 6);
+	async getDamageStack(this: Usable, user: ValidAttackers, target: N<PToken>): Promise<string> {
+		const estimate = await this.generateSimulatedDamageObject(user, 6, target);
 		if (!estimate) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return '';}
 		const sim = estimate?.str;
 		if (!sim) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return '';}
@@ -1510,7 +1510,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		`;
 	}
 
-	async estimateDamage(this: Usable, user: ValidAttackers) : Promise<{low: number, high: number}> {
+	async estimateDamage(this: Usable, user: ValidAttackers, target: N<PToken>) : Promise<{low: number, high: number}> {
 		switch (this.system.subtype) {
 			case 'social-link':
 			case 'passive':
@@ -1523,8 +1523,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case 'consumable':
 			case 'standalone': {
 				return {
-					high: Math.abs((await this.generateSimulatedDamageObject(user, 6))?.hpChange ?? 0),
-					low: Math.abs((await this.generateSimulatedDamageObject(user, 5))?.hpChange ?? 0) ,
+					high: Math.abs((await this.generateSimulatedDamageObject(user, 6, target))?.hpChange ?? 0),
+					low: Math.abs((await this.generateSimulatedDamageObject(user, 5, target))?.hpChange ?? 0) ,
 				};
 			}
 			case 'weapon':
@@ -1533,8 +1533,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					return {high: 0, low:0};
 				}
 				return {
-					high: Math.abs((await this.generateSimulatedDamageObject(user, 6))?.hpChange ?? 0),
-					low: Math.abs((await this.generateSimulatedDamageObject(user, 5))?.hpChange ?? 0) ,
+					high: Math.abs((await this.generateSimulatedDamageObject(user, 6, target))?.hpChange ?? 0),
+					low: Math.abs((await this.generateSimulatedDamageObject(user, 5, target))?.hpChange ?? 0) ,
 				};
 			default:
 				this.system satisfies never;
@@ -1892,23 +1892,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			...PersonaItem.getBasicPCPowers(),
 			...PersonaItem.getBasicShadowPowers(),
 		];
-		return basics.includes(this as Power);
+		//straight up comparison failed for some reason, probably due to how Foundry draws from compendiums
+		return basics.some(pwr=> pwr.id == this.id);
 	}
-
-	// baseInstantKillBonus(this: Usable) : number {
-	// 	if (!this.isInstantDeathAttack()) {return 0;}
-	// 	const boost = INSTANT_KILL_CRIT_BOOST[this.system.instantKillChance] ?? 0;
-	// 	return boost;
-	// }
-
-	// baseAilmentBonus(this: Usable) : number {
-	// 	if (this.system.defense != "ail") {return 0;}
-	// 	const boost = AILMENT_BONUS_LEVELS[this.system.ailmentChance] ?? 0;
-	// 	if (this.system.ailmentChance == "always") {
-	// 		ui.notifications.notify(`${this.name} Ailment Always not allowed on ailment targetting powers, treating as High`);
-	// 	}
-	// 	return boost;
-	// }
 
 	mpCost(this: Usable, userPersona: Persona | null): number {
 		if (this.isConsumable()) {return 0;}
@@ -1947,7 +1933,7 @@ private _getLinkedEffects (this: ItemModifierContainer, sourceActor: PersonaActo
 		const tags = this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
 			.filter (tag=> tag instanceof PersonaItem);
 		tagEffects.push(...tags.flatMap(tag =>
-			tag.getEffects(sourceActor, {CETypes})
+			tag.getEffects(sourceActor, {CETypes, proxyItem: this})
 		));
 	}
 	return tagEffects;

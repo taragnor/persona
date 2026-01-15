@@ -352,8 +352,10 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!power) {
 			throw new PersonaError(`Can't find power id ${powerId}`);
 		}
-		await power.displayDamageStack(this.actor.persona());
-		const stack = await power.getDamageStack(this.actor);
+		const targets= PersonaCombat.targettedPTokens()
+		.filter( x=> x.actor.persona().effectiveScanLevel >=2 ) ;
+		await power.displayDamageStack(this.actor.persona(), targets[0] ?? null);
+		const stack = await power.getDamageStack(this.actor, targets[0] ?? null);
 		$(event.currentTarget).prop('title', stack);
 	}
 
@@ -419,7 +421,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			if (!persona.isValidCombatant()) {return "0/0";}
 			persona = persona.persona();
 		}
-		const dmg = await usable.estimateDamage(persona.user);
+		const target= PersonaCombat.targettedPTokens()
+		.filter( x=> x.actor.persona().effectiveScanLevel >=2 ).at(0) ?? null ;
+		const dmg = await usable.estimateDamage(persona.user, target);
 		if (dmg.high <= 0) {
 			return `-/-`;
 		}
@@ -461,14 +465,17 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async getBalanceTest(power: Usable) : Promise<U<string>> {
 		const actor = this.actor;
-		if (actor.isShadow() && !actor.hasPlayerOwner && !actor.isPersona() && !actor.isDMon()) {
-			const token = game.scenes.current.tokens.find( x=> x.actor == actor);
-			if (!token) {return "No token to test balance";}
-			const test = await PersonaCombat.testPowerVersusPCs(token as PToken, power);
-			return test
-				.join(", ");
-		}
-		return undefined;
+		if (!actor.isValidCombatant()) {return undefined;}
+		// if (actor.isShadow() && !actor.hasPlayerOwner && !actor.isPersona() && !actor.isDMon()) {
+		const token = game.scenes.current.tokens.find( x=> x.actor == actor);
+		if (!token) {return "No token to test balance";}
+		const dtype = power.getDamageType(this.actor.persona());
+		if (dtype == "none"  || dtype == "healing") {return undefined;}
+		const test = await PersonaCombat.testPowerVersusFoes(token as PToken, power);
+		return test
+		.join(", ");
+		// }
+		// return undefined;
 	}
 
 	async removeStatus(event: JQuery.ClickEvent) {

@@ -15,10 +15,12 @@ export abstract class DamageSystemBase implements DamageInterface {
 	getDamage(power: Usable, attackerPersona: Persona, targetPersona: Persona, situation ?: Situation, options : GetDamageOptions = {}) : DamageCalculation {
 		const damageType = power.getDamageType(attackerPersona);
 		const calc = this.getPowerDamage(power, attackerPersona, situation, options);
-		this.applyDR(calc, damageType, power, attackerPersona, targetPersona);
 		calc.setDamageType(damageType);
-		const resist = targetPersona.elemResist(damageType);
-		this.setResistance(calc, power, situation, resist);
+		if (!options.ignoreDefenses) {
+			this.applyDR(calc, damageType, power, attackerPersona, targetPersona);
+			const resist = targetPersona.elemResist(damageType);
+			this.setResistance(calc, power, situation, resist);
+		}
 		return calc;
 	}
 
@@ -91,12 +93,12 @@ export abstract class DamageSystemBase implements DamageInterface {
 		return Math.round(targetPersona.source.mhp  * this.BURN_PERCENT);
 	}
 
-	calculateAllOutDamage(attackLeader: ValidAttackers, allAttackers: ValidAttackers[], situation: AttackResult['situation'] ) : AllOutReturn[] {
+	protected calculateAllOutAttackDamage(attackLeader: ValidAttackers, allAttackers: ValidAttackers[], target:ValidAttackers, situation: AttackResult['situation'] ) : AllOutReturn[] {
 		const list : AllOutReturn[] = [];
 		for (const actor of allAttackers) {
 			if (!actor.canAllOutAttack()) {continue;}
 			const isAttackLeader = actor == attackLeader;
-			const damageCalc = this.individualContributionToAllOutAttackDamage(actor, situation, isAttackLeader);
+			const damageCalc = this.individualContributionToAllOutAttackDamage(actor, target, situation, isAttackLeader);
 			const result = damageCalc.eval();
 			if (result == undefined) {
 				PersonaError.softFail('Allout contribution for ${actor.name} was undefined');
@@ -112,9 +114,9 @@ export abstract class DamageSystemBase implements DamageInterface {
 		return list;
 	}
 
-	abstract individualContributionToAllOutAttackDamage(attacker: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation;
+	protected abstract individualContributionToAllOutAttackDamage(attacker: ValidAttackers, target: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation;
 
-	abstract applyDR(calc: DamageCalculation, damageType: RealDamageType, power: Usable, attackerPersona: U<Persona>, targetPersona: Persona) : DamageCalculation;
+	protected abstract applyDR(calc: DamageCalculation, damageType: RealDamageType, power: Usable, attackerPersona: U<Persona>, targetPersona: Persona) : DamageCalculation;
 
 	abstract getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation ;
 
@@ -145,133 +147,6 @@ abstract	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Pe
 			} return [];
 		});
 
-		//const consList : ConsequenceProcessed['consequences'] = [];
-		//let dmgCalc: U<DamageCalculation>;
-		//let dmgAmt : ConsequenceAmount = 0;
-		//let damageType : U<RealDamageType> = cons.damageType != "by-power" ? cons.damageType : "none";
-		//const power = powerUsed instanceof PersonaItem && powerUsed.isUsableType() ? powerUsed : undefined;
-		//if (power && power.isUsableType()) {
-		//	damageType = cons.damageType != 'by-power' && cons.damageType != undefined ? cons.damageType : power.getDamageType(attacker);
-		//}
-		//// const mods : EnhancedSourcedConsequence<DamageConsequence>['modifiers'] = [];
-		//cons = {
-		//	...cons,
-		//	damageType,
-		//};
-		//switch (cons.damageSubtype) {
-		//	case "set-to-const":
-		//	case "set-to-percent": {
-		//		const consArray   = targets
-		//		.map( target => {
-		//			return {
-		//				applyTo: target, 
-		//				cons: cons,
-		//			};
-		//		});
-		//		return consArray;
-		//	}
-		//}
-		//if (cons.damageType == undefined) {
-		//	PersonaError.softFail(`Damage type is undefined for ${power?.name ?? "Undefined Power"}`, cons);
-		//	return [];
-		//}
-		//switch (cons.damageSubtype) {
-		//	case 'low':
-		//	case 'high':
-		//	case 'odd-even': {
-		//		if (!power) {return [];}
-		//		if (situation.naturalRoll == undefined) {
-		//			PersonaError.softFail(`Can't get odd even for damage of ${power.displayedName.toString() }` );
-		//			return [];
-		//		}
-		//		dmgCalc = power.damage.getDamage(power, attacker.persona(), situation, cons.damageType);
-		//		const evenRoll = (situation.naturalRoll ?? 0) % 2 == 0;
-		//		if ( cons.damageSubtype == "high" || (cons.damageSubtype == "odd-even" && evenRoll)) {
-		//			dmgCalc.setApplyEvenBonus();
-		//		}
-		//		break;
-		//	}
-		//	case 'multiplier':
-		//		return targets.map( applyTo => ({applyTo, cons, })
-		//		);
-		//	case 'allout': {
-		//		const combat = PersonaCombat.combat;
-		//		if (combat) {
-		//			const userTokenAcc = combat.getToken(situation.user);
-		//			if (!userTokenAcc) {
-		//				PersonaError.softFail(`Can't calculate All out damage - no token for ${situation?.user?.actorId ?? 'Null user'}`);
-		//				break;
-		//			}
-		//			const userToken = PersonaDB.findToken(userTokenAcc);
-		//			const allOutDmg = PersonaCombat.calculateAllOutAttackDamage(userToken, situation as AttackResult['situation']);
-		//			dmgCalc = new DamageCalculation("all-out");
-		//			for (const AOD of allOutDmg) {
-		//				const source = {
-		//					displayedName: `${AOD.contributor.displayedName} (${AOD.stack.join(', ')})`,
-		//				};
-		//				dmgCalc.add("base", AOD.amt, source.displayedName);
-		//			}
-		//			const evenRoll = (situation.naturalRoll ?? 0) % 2 == 0;
-		//			if ( evenRoll) {
-		//				dmgCalc.setApplyEvenBonus();
-		//			}
-		//			break;
-		//		} else {
-		//			return [];
-		//			//bailout since no combat and can't calc all out.
-		//		}
-		//	}
-		//	case 'constant':
-		//		dmgAmt = cons.amount;
-		//		break;
-		//	case 'percentage-current':
-		//	case 'percentage':
-		//		dmgAmt = cons.amount;
-		//		break;
-		//	case 'mult-stack':
-		//		dmgAmt =  cons.amount;
-		//		break;
-		//	default:
-		//		cons.damageSubtype satisfies never;
-		//}
-		//if (dmgAmt || dmgCalc) {
-		//	for (const applyTo of targets) {
-		//		const piercePower = power && power.hasTag('pierce');
-		//		const pierceTag = 'addedTags' in situation && situation.addedTags && situation.addedTags.includes('pierce');
-		//		if (!piercePower && !pierceTag) {
-		//			const resist = applyTo.persona().elemResist(damageType);
-		//			if (resist == 'resist') {
-		//				mods.push('resisted');
-		//			}
-		//			if (resist == 'absorb') {
-		//				mods.push('absorbed');
-		//			}
-		//			if (resist == 'block') {
-		//				mods.push('blocked');
-			//			}
-			//		}
-		//		if (dmgCalc) {
-		//			dmgCalc.setDamageType(damageType);
-			//		}
-			//		const consItems = targets.map( target => {
-		//			const DC = dmgCalc != undefined ? dmgCalc.clone(): undefined;
-		//			if (DC && power) {
-		//				power.damage.applyDR(DC, damageType, power, target.persona());
-		//			};
-		//			return {
-		//				applyTo: target,
-		//				cons: {
-			//					...cons,
-			//					modifiers: mods,
-		//					amount: dmgAmt,
-		//					calc: DC
-		//				}
-		//			};
-		//		});
-		//		consList.push(...consItems);
-		//	}
-		//}
-		//return consList;
 	}
 
 	protected process_damageConsOnTarget( cons: SourcedConsequence<NewDamageConsequence>, target: ValidAttackers, attacker: ValidAttackers, powerUsed: U<ModifierContainer>, situation: Situation) : N<ConsequenceProcessed['consequences'][number]["cons"]> {
@@ -322,33 +197,36 @@ abstract	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Pe
 				return cons;
 			case 'allout': {
 				const combat = PersonaCombat.combat;
-				if (combat) {
-					const userTokenAcc = combat.getToken(situation.user);
-					if (!userTokenAcc) {
-						PersonaError.softFail(`Can't calculate All out damage - no token for ${situation?.user?.actorId ?? 'Null user'}`);
-						return null;
-					}
-					const userToken = PersonaDB.findToken(userTokenAcc);
-					const allOutDmg = PersonaCombat.calculateAllOutAttackDamage(userToken, situation as AttackResult['situation']);
-					dmgCalc = new DamageCalculation("all-out");
-					for (const AOD of allOutDmg) {
-						const source = {
-							displayedName: `${AOD.contributor.displayedName} (${AOD.stack.join(', ')})`,
-						};
-						dmgCalc.add("base", AOD.amt, source.displayedName);
-					}
-					const evenRoll = (situation.naturalRoll ?? 0) % 2 == 0;
-					if ( evenRoll) {
-						dmgCalc.setApplyEvenBonus();
-					}
-					return {
-						...cons,
-						calc: dmgCalc,
-					};
-				} else {
-					//bailout since no combat and can't calc all out.
+				if (!combat) { return null; }
+				const userTokenAcc = combat.getToken(situation.user);
+				if (!userTokenAcc) {
+					PersonaError.softFail(`Can't calculate All out damage - no token for ${situation?.user?.actorId ?? 'Null user'}`);
 					return null;
 				}
+				const userToken = PersonaDB.findToken(userTokenAcc);
+				if (!combat) {return null;}
+				const leader = combat.getCombatantByToken(userToken);
+				if (!leader) {return null;}
+				const allAttackers = combat
+				.getAllies(leader, true)
+				.map (ally => ally.actor)
+				.filter( ally => ally.canAllOutAttack());
+				const allOutDmg = this.calculateAllOutAttackDamage(userToken.actor, allAttackers, target, situation as AttackResult['situation']);
+				dmgCalc = new DamageCalculation("all-out");
+				for (const AOD of allOutDmg) {
+					const source = {
+						displayedName: `${AOD.contributor.displayedName} (${AOD.stack.join(', ')})`,
+					};
+					dmgCalc.add("base", AOD.amt, source.displayedName);
+				}
+				const evenRoll = (situation.naturalRoll ?? 0) % 2 == 0;
+				if ( evenRoll) {
+					dmgCalc.setApplyEvenBonus();
+				}
+				return {
+					...cons,
+					calc: dmgCalc,
+				};
 			}
 			case 'constant':
 			case 'percentage-current':
@@ -370,12 +248,12 @@ abstract	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Pe
 export interface DamageInterface {
 	getBurnDamage(power: Usable, attackerPersona: Persona, targetPersona: Persona) : number;
 	getDamage(power: Usable,attackerPersona: Persona, targetPersona: Persona, situation ?: Situation, options?: GetDamageOptions) : DamageCalculation;
-	applyDR(calc: DamageCalculation, damageType: RealDamageType, power: Usable, attackerPersona: U<Persona>, targetPersona: Persona) : DamageCalculation;
+	// applyDR(calc: DamageCalculation, damageType: RealDamageType, power: Usable, attackerPersona: U<Persona>, targetPersona: Persona) : DamageCalculation;
 	convertFromOldLowDamageToNewBase(lowDmg: number): number;
 	getWeaponDamageByWpnLevel(lvl: number) : number;
 	getArmorDRByArmorLevel(lvl: number) : number;
-	calculateAllOutDamage(attackLeader: ValidAttackers, allAttackers: ValidAttackers[], situation: AttackResult['situation'] ) : AllOutReturn[];
-	individualContributionToAllOutAttackDamage(actor: ValidAttackers, situation: AttackResult["situation"], isAttackLeader: boolean) : DamageCalculation;
+	// calculateAllOutAttackDamage(attackLeader: ValidAttackers, allAttackers: ValidAttackers[], situation: AttackResult['situation'] ) : AllOutReturn[];
+	// individualContributionToAllOutAttackDamage(actor: ValidAttackers, situation: AttackResult["situation"], isAttackLeader: boolean) : DamageCalculation;
 	processConsequence_damage( cons: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'];
 
 }
@@ -395,5 +273,6 @@ export type AllOutReturn  = {
 };
 
 interface GetDamageOptions {
-	overrideDamageType ?:  RealDamageType,
+	overrideDamageType ?:  RealDamageType;
+	ignoreDefenses?: boolean;
 }

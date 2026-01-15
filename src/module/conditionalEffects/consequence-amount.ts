@@ -31,13 +31,13 @@ export class ConsequenceAmountResolver {
 
 	static resolveConsequenceAmount< C extends ConsequenceAmount>(amt: C extends object ? Sourced<C> : number, situation: Partial<Situation>) : U<number> {
 		if (typeof amt == "number") {return amt;}
-		return this.resolveConsequenceAmountV2(amt, situation, amt.source);
+		return this.resolveConsequenceAmountV2(amt, situation);
 	}
 
-static resolveConsequenceAmountV2< C extends ConsequenceAmountV2>(amt: C, situation: Partial<Situation>, source: Sourced<ConsequenceAmountV2>["source"]) : U<number> {
+static resolveConsequenceAmountV2< C extends Sourced<ConsequenceAmountV2>>(amt: C, situation: Partial<Situation>) : U<number> {
 	switch (amt.type) {
 		case "operation": {
-			return this.resolveOperation(amt, situation, source);
+			return this.resolveOperation(amt, situation);
 		}
 		case "constant":
 			return amt.val;
@@ -48,13 +48,13 @@ static resolveConsequenceAmountV2< C extends ConsequenceAmountV2>(amt: C, situat
 			return rand;
 		}
 		case "item-property": {
-			return this.resolveItemProperty(amt, situation, source);
+			return this.resolveItemProperty(amt, situation);
 		}
 		case "situation-property": {
-			return this.resolveSituationProperty(amt, situation, source);
+			return this.resolveSituationProperty(amt, situation);
 		}
 		case "actor-property": {
-			return this.resolveActorProperty(amt, situation, source);
+			return this.resolveActorProperty(amt, situation);
 		}
 		default:
 				amt satisfies never;
@@ -63,7 +63,7 @@ static resolveConsequenceAmountV2< C extends ConsequenceAmountV2>(amt: C, situat
 	}
 }
 
-private static resolveSituationProperty(amt: ConsequenceAmountV2 & {type: "situation-property"}, situation :Partial<Situation>, _source: Sourced<ConsequenceAmountV2>["source"]): U<number> {
+private static resolveSituationProperty(amt: Sourced<ConsequenceAmountV2> & {type: "situation-property"}, situation :Partial<Situation>): U<number> {
 	if (!situation) {return undefined;}
 	switch (amt.property) {
 		case "damage-dealt":
@@ -71,10 +71,9 @@ private static resolveSituationProperty(amt: ConsequenceAmountV2 & {type: "situa
 		default:
 			amt.property satisfies never;
 	}
-
 }
 
-private static resolveActorProperty(amt: ConsequenceAmountV2 & {type: "actor-property"}, situation: Partial<Situation>, _source: Sourced<ConsequenceAmountV2>["source"]): U<number> {
+private static resolveActorProperty(amt: Sourced<ConsequenceAmountV2> & {type: "actor-property"}, situation: Partial<Situation>): U<number> {
 	const list= PersonaCombat.createTargettingContextList(situation, null);
 	const targets = list[amt.target];
 	if (!targets) {return undefined;}
@@ -100,19 +99,29 @@ private static resolveActorProperty(amt: ConsequenceAmountV2 & {type: "actor-pro
 	return returns.at(0);
 }
 
-static resolveItemProperty<T extends ConsequenceAmountV2 & {type: "item-property"}>( amt: T, _situation: Partial<Situation>, source: Sourced<T>["source"]) : U<number> {
+static resolveItemProperty<T extends Sourced<ConsequenceAmountV2> & {type: "item-property"}>( amt: T, _situation: Partial<Situation>) : U<number> {
 	let item : U<PersonaItem>;
 	switch (amt.itemTarget) {
-		case "source":
-			if (source instanceof PersonaItem) {
+		case "source": {
+			const source = amt.source;
+			if (source instanceof PersonaItem && !source.isTag()) {
 				item = source;
 				break;
 			}
 			if (source instanceof PersonaAE
-				&& source.parent instanceof PersonaItem) {
+				&& source.parent instanceof PersonaItem
+				&& !source.parent.isTag()
+			) {
 				item = source.parent;
+				break;
+			}
+			const realSource=  amt.realSource;
+			if (realSource instanceof PersonaItem && !realSource.isTag()) {
+				item = realSource;
+				break;
 			}
 			break;
+		}
 		default:
 			amt.itemTarget satisfies never;
 	}
@@ -126,9 +135,17 @@ static resolveItemProperty<T extends ConsequenceAmountV2 & {type: "item-property
 	}
 }
 
-static resolveOperation <T extends ConsequenceAmountV2 & {type: "operation"}> (amt: T, situation: Partial<Situation>, source: Sourced<T>["source"] ) : U<number> {
-	let val1 = this.resolveConsequenceAmountV2(amt.amt1, situation, source);
-	let val2 = this.resolveConsequenceAmountV2(amt.amt2, situation, source);
+static resolveOperation <T extends Sourced<ConsequenceAmountV2> & {type: "operation"}> (amt: T, situation: Partial<Situation>) : U<number> {
+	const amt1 : Sourced<ConsequenceAmountV2> = {
+		...amt,
+		...amt.amt1,
+	};
+	const amt2 : Sourced<ConsequenceAmountV2> = {
+		...amt,
+		...amt.amt2,
+	};
+	let val1 = this.resolveConsequenceAmountV2(amt1, situation);
+	let val2 = this.resolveConsequenceAmountV2(amt2, situation);
 	switch (amt.operator) {
 		case "add":
 			val1 = val1 == undefined ? 0 : val1;

@@ -12,17 +12,17 @@ import {ConvertableDamageLevel, DamageSystemBase, NewDamageParams} from "./damag
 
 export class AltDamageSystem extends DamageSystemBase {
 
-	ENDURANCE_DR_MULTIPLIER = 0.01 as const;
-	WEAPON_DAMAGE_MULT = 2 as const;
-	MAGIC_DAMAGE_MULT = 2 as const;
-	BASE_VARIANCE = 2 as const;
-	ARMOR_TO_DAMAGE_DIVISOR = 0.8 as const;
-	ALL_OUT_ATTACK_HELPER_DIVISOR = 1/4;
-	BASE_DAMAGE_LEVEL_DIVISOR = 0.5;
-	STAT_DIFF_DAMAGE_BOOST_PERCENT = 0.02;
+	// private ENDURANCE_DR_MULTIPLIER = 0.01 as const;
+	// private WEAPON_DAMAGE_MULT = 2 as const;
+	private MAGIC_DAMAGE_MULT = 1 as const;
+	private BASE_VARIANCE = 2 as const;
+	private ARMOR_TO_DAMAGE_DIVISOR = 1.0 as const;
+	private ALL_OUT_ATTACK_HELPER_DIVISOR = 1/3;
+	private BASE_DAMAGE_LEVEL_DIVISOR = 0.5;
+	// private STAT_DIFF_DAMAGE_BOOST_PERCENT = 0.02;
 	private _weaponDmgGrowth = new GrowthCalculator(1.20, 11, 4.5);
 
-	individualContributionToAllOutAttackDamage(actor: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation {
+	individualContributionToAllOutAttackDamage(actor: ValidAttackers, target: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation {
 		if (!actor.canAllOutAttack()) {
 			return new DamageCalculation("physical");
 		}
@@ -31,14 +31,14 @@ export class AltDamageSystem extends DamageSystemBase {
 			PersonaError.softFail("Can't find Basic attack power");
 			return new DamageCalculation("physical");
 		}
-		const damage = this.getPowerDamage(basicAttack, actor.persona(), situation);
+		const damage = this.getDamage(basicAttack, actor.persona(), target.persona(), situation);
 		if (!isAttackLeader) {
 			damage.add("multiplier", this.ALL_OUT_ATTACK_HELPER_DIVISOR, "All out attack helper multiplier");
 		}
 		return damage;
 	}
 
-	override applyDR(calc: DamageCalculation, damageType: RealDamageType, power: Usable, attackerPersona: U<Persona>, targetPersona: Persona): DamageCalculation {
+	protected override applyDR(calc: DamageCalculation, damageType: RealDamageType, power: Usable, attackerPersona: U<Persona>, targetPersona: Persona): DamageCalculation {
 		let DR = new DamageCalculation(damageType);
 		switch (true) {
 			case (damageType == "healing"):
@@ -62,16 +62,22 @@ export class AltDamageSystem extends DamageSystemBase {
 		return calc.merge(DR);
 	}
 
-	getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
+	public getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
 		const dtype = power.getDamageType(userPersona);
 		const calc = new DamageCalculation(dtype);
+		let levelDivisor = this.BASE_DAMAGE_LEVEL_DIVISOR;
+		if (power.isBasicPower()) {
+			levelDivisor *= 2;
+
+			//for basic attacks
+		}
 		// const str = this.strDamageBonus(userPersona);
 		const weaponDmg = this.weaponDamage(userPersona);
 		const skillDamage = this.weaponSkillDamage(power);
 		const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
 		const bonusVariance = userPersona.getBonusVariance().total(situation);
 		// const strRes = str.eval(situation);
-		calc.add('base', userPersona.user.level * this.BASE_DAMAGE_LEVEL_DIVISOR, `Character Level * ${this.BASE_DAMAGE_LEVEL_DIVISOR} `);
+		calc.add('base', userPersona.user.level * levelDivisor, `Character Level * ${levelDivisor} `);
 		// calc.add('base', strRes.total, `${userPersona.publicName} Strength (${strRes.steps.join(" ,")})`);
 		const weaponName = userPersona.user.isShadow() ? 'Unarmed Shadow Damage' : (userPersona.user.weapon?.displayedName ?? 'Unarmed');
 		calc.add('base', weaponDmg.baseAmt, weaponName.toString());
@@ -84,17 +90,17 @@ export class AltDamageSystem extends DamageSystemBase {
 		return calc ;
 	}
 
-	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Persona, situation: Situation) : DamageCalculation {
+	public getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Persona, situation: Situation) : DamageCalculation {
 		const persona = userPersona;
-		// const magicDmg = this.magDamageBonus(userPersona);
+		const magicDmg = this.magDamageBonus(userPersona);
 		const skillDamage = this.magicSkillDamage(power);
 		const damageBonus = persona.getBonuses('magDmg').total(situation);
 		const bonusVariance = userPersona.getBonusVariance().total(situation);
 		const dtype = power.getDamageType(userPersona);
 		const calc= new DamageCalculation(dtype);
-		// const resMag = magicDmg.eval(situation);
+		const resMag = magicDmg.eval(situation);
 		calc.add('base', userPersona.user.level * this.BASE_DAMAGE_LEVEL_DIVISOR, `Character Level * ${this.BASE_DAMAGE_LEVEL_DIVISOR} `);
-		// calc.add('base', resMag.total, `${userPersona.publicName} Magic (${resMag.steps.join(" ,")})`, );
+		calc.add('base', resMag.total, `${userPersona.publicName} Magic (${resMag.steps.join(" ,")})`, );
 		calc.add('base', skillDamage.baseAmt, `${power.displayedName.toString()} Damage`);
 		calc.add('base', damageBonus, 'Bonus Damage');
 		const variance  = (this.BASE_VARIANCE + skillDamage.extraVariance + bonusVariance );
@@ -104,12 +110,12 @@ export class AltDamageSystem extends DamageSystemBase {
 		return calc;
 	}
 
-	getWeaponDamageByWpnLevel(lvl: number) : number {
+	public getWeaponDamageByWpnLevel(lvl: number) : number {
 		lvl = Math.round(lvl);
 		return this._weaponDmgGrowth.valueAt(lvl + 1);
 	}
 
-	getArmorDRByArmorLevel(lvl: number) : number {
+	public getArmorDRByArmorLevel(lvl: number) : number {
 		const ARMOR_DIVISOR = this.ARMOR_TO_DAMAGE_DIVISOR;
 		// const ARMOR_DIVISOR = 0.90;
 		const val =  this.getWeaponDamageByWpnLevel(lvl);
@@ -117,13 +123,16 @@ export class AltDamageSystem extends DamageSystemBase {
 		return 0;
 	}
 
-	getPercentModifier(attackStat: number, endurance: number) : number {
-		let percent = (5 + attackStat) / (5 + endurance);
+	protected getPercentModifier(attackStat: number, endurance: number) : number {
+		const PERCENT_PADDING = 10 as const;
+		let percent = (PERCENT_PADDING + attackStat) / (PERCENT_PADDING + endurance);
+		const deviance = 1- percent;
+		percent += deviance / 2;
 		percent = Math.round(percent * 100) / 100;
 		return percent;
 	}
 
-	physDR(attackerPersona : Persona, targetPersona: Persona): DamageCalculation {
+	protected physDR(attackerPersona : Persona, targetPersona: Persona): DamageCalculation {
 		const calc = new DamageCalculation(null);
 		const attackStat = attackerPersona.combatStats.strength;
 		const endurance = targetPersona.combatStats.endurance;
@@ -134,16 +143,18 @@ export class AltDamageSystem extends DamageSystemBase {
 		return calc;
 	}
 
-	magDR(attackerPersona: Persona, targetPersona: Persona) : DamageCalculation {
+	protected magDR(attackerPersona: Persona, targetPersona: Persona) : DamageCalculation {
 		const calc = new DamageCalculation(null);
 		const attackStat = attackerPersona.combatStats.magic;
 		const endurance = targetPersona.combatStats.endurance;
 		const percent= this.getPercentModifier(attackStat, endurance);
 		calc.add("stackMult", percent, "Magic vs Endurance Difference");
+		const armorDR = this.armorDR(targetPersona);
+		calc.merge(armorDR);
 		return calc;
 	}
 
-	armorDR(targetPersona: Persona) : DamageCalculation {
+	protected armorDR(targetPersona: Persona) : DamageCalculation {
 		const calc = new DamageCalculation(null);
 		const situation = {
 			user: targetPersona.user.accessor,
@@ -160,13 +171,17 @@ export class AltDamageSystem extends DamageSystemBase {
 		return calc;
 	}
 
-	#armorDR(persona: Persona) : number {
-	if (persona.user.isShadow()) {
-		const DR =  this.getArmorDRByArmorLevel(Math.floor(persona.level /10));
-		return DR;
+	getShadowEffectiveEquipmentLevel(shadow: Shadow) {
+		const base =  Math.floor((shadow.level -10) / 10);
+		return Math.max(0, base);
 	}
-	const armor = persona.user.equippedItems().find(x => x.isInvItem() && x.system.slot == "body") as U<InvItem>;
-	return armor  != undefined ? this.armorDRByEquipment(armor) : 0;
+
+	#armorDR(persona: Persona) : number {
+		if (persona.user.isShadow()) {
+			return this.getArmorDRByArmorLevel(this.getShadowEffectiveEquipmentLevel(persona.user));
+		}
+		const armor = persona.user.equippedItems().find(x => x.isInvItem() && x.system.slot == "body") as U<InvItem>;
+		return armor  != undefined ? this.armorDRByEquipment(armor) : 0;
 	}
 
 	armorDRByEquipment(item: InvItem) : number {
@@ -183,15 +198,15 @@ export class AltDamageSystem extends DamageSystemBase {
 		return 0;
 	}
 
-	strDamageBonus(persona: Persona) : Calculation {
-		const strength = persona.combatStats.strength;
-		const calc = new Calculation(0, 2);
-		return calc
-			.add(0, strength + 0, `${persona.displayedName} Strength`)
-			.mult(1, this.WEAPON_DAMAGE_MULT, `Strength Damage Bonus Multiplier`);
-	}
+	// protected strDamageBonus(persona: Persona) : Calculation {
+	// 	const strength = persona.combatStats.strength;
+	// 	const calc = new Calculation(0, 2);
+	// 	return calc
+	// 		.add(0, strength + 0, `${persona.displayedName} Strength`)
+	// 		.mult(1, this.WEAPON_DAMAGE_MULT, `Strength Damage Bonus Multiplier`);
+	// }
 
-	magDamageBonus(persona: Persona) : Calculation {
+	protected magDamageBonus(persona: Persona) : Calculation {
 		const magic = persona.combatStats.magic;
 		const calc = new Calculation(0);
 		return calc
@@ -199,10 +214,11 @@ export class AltDamageSystem extends DamageSystemBase {
 			.mult(1, this.MAGIC_DAMAGE_MULT, `Magic Damage Multiplier`);
 	}
 
-	weaponDamage(persona: Persona) : NewDamageParams {
+	protected weaponDamage(persona: Persona) : NewDamageParams {
 		if (persona.user.isShadow()) {
+			const shadowDmg = this.getWeaponDamageByWpnLevel(this.getShadowEffectiveEquipmentLevel(persona.user));
 			return {
-				baseAmt: this.getWeaponDamageByWpnLevel(Math.floor(persona.level / 10)),
+				baseAmt: Math.max(0, shadowDmg) ,
 				extraVariance: 0
 			};
 		} else {
@@ -214,7 +230,7 @@ export class AltDamageSystem extends DamageSystemBase {
 		}
 	}
 
-	weaponSkillDamage(weaponPower:ItemSubtype<Power, "weapon">) : NewDamageParams {
+	protected weaponSkillDamage(weaponPower:ItemSubtype<Power, "weapon">) : NewDamageParams {
 		switch (weaponPower.system.damageLevel) {
 			case "-": //old system
 				PersonaError.softFail(`${weaponPower.name} is no longer supported`);
@@ -232,7 +248,7 @@ export class AltDamageSystem extends DamageSystemBase {
 		}
 	}
 
-	magicSkillDamage(magic: ItemSubtype<Power, "magic">) : Readonly<NewDamageParams> {
+	protected magicSkillDamage(magic: ItemSubtype<Power, "magic">) : Readonly<NewDamageParams> {
 		switch (magic.system.damageLevel) {
 			case "-":
 				PersonaError.softFail(`${magic.name} is no longer supported (No damagelevel)`);
