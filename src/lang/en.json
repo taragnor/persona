@@ -636,6 +636,7 @@
 	"persona.effecttypes.alter-fatigue-lvl": "Alter Rested Level (negative = fatigue)",
 	"persona.effecttypes.gain-levels": "Gain Levels",
 	"persona.effecttypes.cancel": "Request Cancel of Triggering Event",
+	"persona.effecttypes.set-roll-result": "Set Roll Result of triggering event to X",
 	"persona.effecttypes.escalationManipulation": " (Deprecated) Change Escalation",
 	"persona.effecttypes.extraAttack": "Extra Attack",
 	"persona.effecttypes.modifier-new": "Apply Modifier (multi)",
@@ -1279,6 +1280,14 @@
 	"persona.consequenceAmount.actorProperties.level": "Level",
 
 	"persona.consequenceAmount.actorProperties.damage-dealt": "Damage Dealt",
+
+
+	"persona.attack.result.hit": "Hit",
+	"persona.attack.result.miss": "Miss",
+	"persona.attack.result.crit": "Critical",
+	"persona.attack.result.reflect": "Reflect",
+	"persona.attack.result.block": "Block",
+	"persona.attack.result.absorb": "Absorb",
 
 	"persona.affinity.ranking.all": "All",
 	"persona.affinity.ranking.strong": "Strong",

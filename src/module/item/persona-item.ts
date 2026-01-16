@@ -1,6 +1,6 @@
 import { GrowthCalculator } from '../utility/growth-calculator.js';
 import { STATUS_AILMENT_SET } from '../../config/status-effects.js';
-import { NewDamageParams, EvaluatedDamage } from '../combat/damage-calc.js';
+import { NewDamageParams } from '../combat/damage-calc.js';
 import { PowerCostCalculator } from '../power-cost-calculator.js';
 import { StatusEffectId } from '../../config/status-effects.js';
 import { CATEGORY_SORT_ORDER, DAMAGE_ICONS, ITEM_ICONS, ItemCategory } from '../../config/icons.js';
@@ -1975,7 +1975,7 @@ getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, optio
 			return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
 				.filter (ce => !ce.isEmbedded);
 		};
-		return this.#accessEffectsCache('allNonEmbeddedEffects', sourceActor, effectsGetterFn)
+		return this.#accessEffectsCache('allNonEmbeddedEffects', sourceActor, options, effectsGetterFn)
 			.concat(tagEffects);
 	} else {
 		const effects: ConditionalEffectC[] = [];
@@ -2012,7 +2012,7 @@ getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | nul
 		return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
 			.filter (ce => ce.isEmbedded);
 	};
-	const embedded= this.#accessEffectsCache('embeddedEffects', sourceActor, effectsGetterFn);
+	const embedded= this.#accessEffectsCache('embeddedEffects', sourceActor, options, effectsGetterFn);
 	const {CETypes} = options;
 	if (CETypes == undefined || CETypes.length == 0) {return embedded;}
 	return embedded
@@ -2020,8 +2020,9 @@ getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | nul
 }
 
 
-#accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, refresherFn: () => ConditionalEffectC[]) : ConditionalEffectC[] {
+#accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, options: GetEffectsOptions, refresherFn: () => ConditionalEffectC[]) : ConditionalEffectC[] {
 	if (!PersonaDB.isLoaded) {return [];}
+	if (options.deepTags === false) {return refresherFn();}
 	PersonaItem.cacheStats.total++;
 	const cache = this.cache.effects[cacheType];
 	if (sourceActor == null) {
@@ -2043,7 +2044,7 @@ getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | nul
 
 getTriggeredEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}, triggerType ?: Trigger) : ConditionalEffectC[] {
 	options = {...options, CETypes: []};
-	return this.#accessEffectsCache('triggeredEffects', sourceActor, () => this.getEffects(sourceActor, options)
+	return this.#accessEffectsCache('triggeredEffects', sourceActor, options, () => this.getEffects(sourceActor, options)
 		.filter( x => x.conditionalType === 'triggered')
 		.filter( x=> triggerType != undefined ? x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == triggerType) : true)
 	);
@@ -2056,12 +2057,12 @@ hasTriggeredEffects(this: ItemModifierContainer, actor: PersonaActor) : boolean 
 
 getOnUseEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
 	options = {...options, CETypes: []};
-	return this.#accessEffectsCache('onUseEffects', sourceActor, () => this.getEffects(sourceActor, options).filter( x => x.conditionalType === 'on-use'));
+	return this.#accessEffectsCache('onUseEffects', sourceActor, options, () => this.getEffects(sourceActor, options).filter( x => x.conditionalType === 'on-use'));
 }
 
 getPassiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
 	options = {...options, CETypes: []};
-	return this.#accessEffectsCache('passiveEffects', sourceActor, () => this.getEffects(sourceActor, options).filter( x => x.conditionalType === 'passive'));
+	return this.#accessEffectsCache('passiveEffects', sourceActor, options, () => this.getEffects(sourceActor, options).filter( x => x.conditionalType === 'passive'));
 }
 
 getPassiveAndDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor  | null) : readonly ConditionalEffect[] {
@@ -2075,7 +2076,7 @@ hasPassiveEffects(this: ItemModifierContainer, actor: PersonaActor | null) : boo
 
 getDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options : GetEffectsOptions = {}) : readonly ConditionalEffectC[] {
 	options = {...options, CETypes: []};
-	return this.#accessEffectsCache('defensiveEffects', sourceActor, () => this.getEffects(sourceActor, options ).filter( x => x.conditionalType === 'defensive'));
+	return this.#accessEffectsCache('defensiveEffects', sourceActor, options, () => this.getEffects(sourceActor, options ).filter( x => x.conditionalType === 'defensive'));
 }
 
 hasDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null) : boolean {
@@ -2785,6 +2786,12 @@ Hooks.on('updateItem', (item :PersonaItem, _diff: DeepPartial<typeof item>) => {
 	item.clearCache();
 	if (item.parent instanceof PersonaActor) {
 		item.parent.clearCache();
+	}
+	if (item.isTag()) {
+		PersonaDB.allItems()
+			.filter (x=> x.isCarryableType() || x.isUsableType())
+			.filter( x=> x.hasTag(item))
+			.forEach( x=> x.clearCache());
 	}
 });
 

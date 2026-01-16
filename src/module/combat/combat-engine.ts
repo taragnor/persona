@@ -169,6 +169,7 @@ export class CombatEngine {
 		for (let atkNum = 0; atkNum < num_of_attacks; ++atkNum) {
 			rollType = atkNum > 0 ? 'iterative': rollType;
 			const atkResult = await this.processAttackRoll( attacker, power, target, rollType == 'standard' && atkNum==0 ? 'activation' : rollType, options);
+			this.updateSituation(atkResult);
 			const this_result = await this.processEffects(atkResult);
 			result.merge(this_result);
 			const secondary = await this.handleSecondaryAttacks(this_result, atkResult, power, attacker, target, rollType, options);
@@ -176,6 +177,44 @@ export class CombatEngine {
 			Hooks.callAll('onUsePower', power, attacker, target);
 		}
 		return result;
+	}
+
+	updateSituation(atkResult: AttackResult) {
+		const situation = atkResult.situation;
+		switch (atkResult.result) {
+			case "hit":
+				situation.hit = true;
+				situation.miss = false;
+				situation.criticalHit = false;
+				break;
+			case "miss":
+				situation.miss = true;
+				situation.hit = false;
+				situation.criticalHit = false;
+				break;
+			case "crit":
+				situation.hit = true;
+				situation.miss = false;
+				situation.criticalHit = true;
+				break;
+			case "reflect":
+				situation.hit = false;
+				situation.miss = false;
+				situation.criticalHit = false;
+				break;
+			case "absorb":
+				situation.hit = true;
+				situation.miss = false;
+				situation.criticalHit = false;
+				break;
+			case "block":
+				situation.hit = true;
+				situation.miss = false;
+				situation.criticalHit = false;
+				break;
+			default:
+				atkResult.result satisfies never;
+		}
 	}
 
 	async handleSecondaryAttacks(CR: CombatResult, atkResult: AttackResult, power: UsableAndCard, attacker: PToken, target: PToken, rollType: AttackRollType, options: CombatOptions  ): Promise<CombatResult> {
@@ -307,9 +346,6 @@ export class CombatEngine {
 				|| (rageOrBlind && naturalAttackRoll % 2 == 1)
 			)
 		) {
-			situation.hit = false;
-			situation.criticalHit = false;
-			situation.miss = true;
 			return {
 				result: 'miss',
 				defenseValue: defenseVal,
@@ -358,6 +394,11 @@ export class CombatEngine {
 			withinAilmentRange: false,
 			withinInstantKillRange: false,
 		};
+		const overrideResult = (await TriggeredEffect.onTrigger("on-use-power", attacker.actor, situation))
+		.globalOtherEffects.find( eff=> eff.type == "set-roll-result")?.result;
+		if (overrideResult) {
+			console.log(`Override to ${overrideResult}`);
+		}
 		const testNullify = this.processAttackNullifiers(attacker, power, target, baseData, situation, rollType);
 		if (testNullify)  {
 			return testNullify;
@@ -372,10 +413,8 @@ export class CombatEngine {
 			situation,
 		};
 		if (def == 'none') {
-			situation.hit = true;
-			situation.miss = false;
 			return {
-				result: 'hit',
+				result: overrideResult ?? 'hit',
 				...addonAttackResultData,
 				...baseData,
 			} satisfies AttackResult;
@@ -386,11 +425,10 @@ export class CombatEngine {
 		if (checkMiss) {
 			return {
 				...checkMiss,
+				result : overrideResult ?? checkMiss.result,
 				...addonAttackResultData,
 			};
 		}
-		situation.hit = true;
-		situation.miss = false;
 		situation.withinAilmentRange = CombatEngine.withinRange(ailmentRange, r);
 		situation.withinInstantKillRange = CombatEngine.withinRange(instantKillRange, r);
 		const canCrit = typeof rollType == 'number' || rollType == 'iterative' ? false : true;
@@ -404,9 +442,8 @@ export class CombatEngine {
 			&& canCrit
 			&& !cancelCritsForInstantDeath
 		) {
-			situation.criticalHit  = true;
 			return {
-				result: 'crit',
+				result: overrideResult ?? 'crit',
 				defenseValue: defenseVal,
 				hitWeakness: situation.struckWeakness ?? false,
 				hitResistance: situation.resisted ?? false,
@@ -414,9 +451,8 @@ export class CombatEngine {
 				...baseData,
 			};
 		} else {
-			situation.criticalHit = false;
 			return {
-				result: 'hit',
+				result: overrideResult ?? 'hit',
 				defenseValue: defenseVal,
 				hitWeakness: situation.struckWeakness ?? false,
 				hitResistance: situation.resisted ?? false,
@@ -613,14 +649,6 @@ export class CombatEngine {
 		const eqTest = (a: ConditionalEffectC, b: ConditionalEffectC) => a.equals(b);
 		sourcedEffects.pushUniqueS(eqTest, ...defenderEffects);
 		sourcedEffects.pushUniqueS(eqTest, ...powerEffects);
-		//TODO: need a special class to handle lists of effects and to filter for duplicates
-		// if (PersonaSettings.debugMode()) {
-
-		// 		console.warn("Duplicates Detected in effects");
-		// 		ui.notifications.warn("Duplicates detected in effects");
-		// 		console.debug("Effects printed to DLog");
-		// 		Debug("Effects", powerEffects, attackerEffects, defenderEffects);
-		// 	}
 		const CombatRes = new CombatResult(atkResult);
 		const consequences = sourcedEffects.flatMap( eff => eff.getActiveConsequences(situation));
 		const res = await ConsequenceProcessor.consequencesToResult(consequences, power,  situation, attacker.actor, target.actor, atkResult);

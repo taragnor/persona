@@ -1023,6 +1023,8 @@ export class ConditionalEffectManager {
 				return `Cancel Triggering Event`;
 			case "inventory-action":
 				return this.printInventoryAction(cons);
+			case "set-roll-result":
+				return `Set Roll Result to ${cons.result}`;
 			default:
 				cons satisfies never;
 				return "ERROR";

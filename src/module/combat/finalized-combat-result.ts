@@ -193,6 +193,7 @@ export class FinalizedCombatResult {
 				case "play-sound":
 				case "gain-levels":
 				case "cancel":
+				case "set-roll-result":
 				case "set-hp":
 				case "inventory-action":
 				case "apply-recovery":

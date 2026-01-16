@@ -284,6 +284,7 @@ export class ConsequenceApplier {
 				break;
 			}
 			case "cancel":
+			case "set-roll-result":
 				break;
 			case "set-hp": {
 				let newhp : number;
@@ -304,7 +305,6 @@ export class ConsequenceApplier {
 			case "apply-recovery" :
 				await actor.spendRecovery(null);
 				break;
-
 			default:
 				otherEffect satisfies never;
 		}

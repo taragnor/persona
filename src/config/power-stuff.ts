@@ -33,6 +33,7 @@ import {WEATHER_TYPES} from "./weather-types.js";
 import {TREASURE_TABLES} from "./treasure-tables.js";
 import {PROBABILITIES} from "./probability.js";
 import {HTMLTools} from "../module/utility/HTMLTools.js";
+import { ATTACK_RESULT } from "./attack-result-config.js";
 
 export class PowerStuff {
 private static _powerStuffBase: Record<string, unknown>;
@@ -113,6 +114,7 @@ private static _powerStuffBase: Record<string, unknown>;
 			USER_COMPARISON_TARGETS,
 			CREATURE_TYPE,
 			ALTER_MP_SUBTYPES,
+			ATTACK_RESULT,
 			SOCIAL_CHECKS,
 			SITUATION_PROPERTIES,
 			WEAPON_TAGS,

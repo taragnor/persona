@@ -21,6 +21,7 @@ import { PersonaActor } from "../actor/persona-actor.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
 import {ConsequenceTarget} from "../../config/precondition-types.js";
 import {SocialActionExecutor} from "../social/exec-social-action.js";
+import {ATTACK_RESULT} from "../../config/attack-result-config.js";
 
 declare global {
 	interface SocketMessage {
@@ -511,6 +512,9 @@ export class CombatResult  {
 
 				break;
 			}
+			case "set-roll-result":
+				this.globalOtherEffects.push(cons);
+				break;
 			default: {
 				cons satisfies never;
 				throw new Error("Should be unreachable");
@@ -653,7 +657,7 @@ export interface ActorChange<T extends PersonaActor> {
 
 
 export type AttackResult = {
-	result: "hit" | "miss" | "crit" | "reflect" | "block" | "absorb",
+	result: keyof typeof ATTACK_RESULT,
 	ailmentRange: {low: number, high: number} | undefined;
 	instantKillRange: U<{low: number, high:number}>;
 	defenseValue?: number,

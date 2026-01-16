@@ -146,6 +146,7 @@ export class ConsequenceProcessor {
 				});
 			}
 			case "cancel":
+			case "set-roll-result":
 				return [{applyTo: 'global', cons}];
 			default:
 				cons satisfies never;

@@ -25,6 +25,7 @@ import { OtherConsequence } from "../module/datamodel/other-effects.js";
 import { StatusDuration } from "../module/active-effect.js";
 import { StatusEffectId } from "./status-effects.js";
 import { ItemProperty, ModifierCategory, ModifierTarget } from "./item-modifiers.js";
+import {AttackResult, CombatResult} from "../module/combat/combat-result.js";
 
 type ExpendOtherEffect = {
 	type: "expend-item";
@@ -120,7 +121,7 @@ type RecoveryEffect = {
 	type: "apply-recovery",
 }
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | AlterTheurgyEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | SetHPOtherEffect | InventoryActionConsequence | RecoveryEffect;
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | AlterTheurgyEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | SetHPOtherEffect | InventoryActionConsequence | RecoveryEffect | setRollResultConsequence;
 ;
 
 type SetHPOtherEffect = {
@@ -208,6 +209,7 @@ type NonGenericConsequences = UsePowerConsequence
 	| PlaySoundConsequence
 	| GainLevelConsequence
 	| CancelRequestConsequence
+	| setRollResultConsequence
 	| InventoryActionConsequence
 ;
 
@@ -235,6 +237,11 @@ type InventoryActions = {
 
 type CancelRequestConsequence = {
 	type: "cancel";
+}
+
+type setRollResultConsequence = {
+	type: "set-roll-result";
+	result: AttackResult["result"];
 }
 
 type ExtraActionConsequence = {

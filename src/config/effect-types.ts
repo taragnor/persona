@@ -55,6 +55,7 @@ export const NON_DEPRECATED_CONSQUENCELIST = [
 	"alter-fatigue-lvl",
 	"gain-levels",
 	"cancel",
+	"set-roll-result",
 	"inventory-action",
 ] as const;
 

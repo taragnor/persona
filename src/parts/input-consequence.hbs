@@ -356,6 +356,14 @@
 		{{selectOptions POWERSTUFF.LEVEL_GAIN_TARGETS localize=true selected=cons.gainTarget}}
 	</select>
 	{{/if}}
+
+	{{#if (eq cons.type "set-roll-result")}}
+	<select name="{{strcat namePrefix 'result'}}">
+		{{selectOptions POWERSTUFF.ATTACK_RESULT localize=true selected=cons.result}}
+	</select>
+
+	{{/if}}
+
 	{{#if (eq cons.type "inventory-action")}}
 	<select name="{{strcat namePrefix 'invAction'}}">
 		{{selectOptions POWERSTUFF.INVENTORY_ACTION localize=true selected=cons.invAction}}
