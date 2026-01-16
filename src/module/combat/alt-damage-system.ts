@@ -292,11 +292,11 @@ const DAMAGE_LEVEL_NEW = {
 	"none": {extraVariance: 0, baseAmt: 0, mult: 0, healMult: 0},
 	"miniscule": {extraVariance: 0, baseAmt: 0, mult: 0.5, healMult: 0.25},
 	"basic": {extraVariance: 0, baseAmt: 0, mult: 1, healMult: 0.5},
-	"light": {extraVariance: 0, baseAmt: 10, mult: 1.10, healMult: 1.25},
-	"medium": {extraVariance: 0, baseAmt: 25, mult: 1.20, healMult: 1.75},
-	"heavy": {extraVariance: 1, baseAmt: 30, mult: 1.35, healMult: 2.5},
-	"severe": {extraVariance: 1, baseAmt: 35, mult: 1.55, healMult: 3},
-	"colossal": {extraVariance: 2, baseAmt: 45, mult: 1.7, healMult :4},
+	"light": {extraVariance: 0, baseAmt: 20, mult: 1.1, healMult: 1.25},
+	"medium": {extraVariance: 0, baseAmt: 30, mult: 1.3, healMult: 1.75},
+	"heavy": {extraVariance: 0, baseAmt: 40, mult: 1.6, healMult: 2.5},
+	"severe": {extraVariance: 0, baseAmt: 50, mult: 1.9, healMult: 3},
+	"colossal": {extraVariance: 0, baseAmt: 60, mult: 2.25, healMult :4},
 } as const satisfies Readonly<Record< ConvertableDamageLevel, ExtraDamageParams>>;
 
 export const ALT_DAMAGE_SYSTEM = new AltDamageSystem();

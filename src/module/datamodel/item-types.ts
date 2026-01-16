@@ -11,7 +11,7 @@ import { CardRoll, Opportunity, SOCIAL_CARD_TYPES_LIST, ThresholdOrDC, TokenSpen
 import { ArrayCorrector, PersonaItem } from "../item/persona-item.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { EQUIPMENT_TAGS_LIST } from "../../config/equipment-tags.js";
-const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, FilePathField: file} = foundry.data.fields;
+	const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, FilePathField: file} = foundry.data.fields;
 import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
 import { CharacterClassDM } from "./character-class-dm.js";
 import { EQUIP_SLOTS_LIST } from "../../config/equip-slots.js";

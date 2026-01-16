@@ -27,7 +27,7 @@ export class PersonaCombatStats {
 	static FAVORED_TAROT_STAT_WEIGHT_INCREASE = 1.33 as const;
 	static DISFAVORED_TAROT_STAT_WEIGHT_DECREASE = 0.8 as const;
 	static MAX_STAT_DIVISOR_WILD = 7 as const;
-	static MAX_STAT_DIVISOR_CUSTOM = 10 as const;
+	static MAX_STAT_DIVISOR_CUSTOM = 9 as const;
 
 	constructor (persona: Persona) {
 		this.persona = persona;
@@ -185,11 +185,34 @@ export class PersonaCombatStats {
 	}
 
 	unspentStatPoints() : number {
-		const persona = this.persona;
 		const total = Object.values(this.combatStats.stats).reduce( (a,x) => a+x, 0);
-		const baseStatPoints = 5;
-		const expected_total = persona.level * PersonaCombatStats.STAT_POINTS_PER_LEVEL + baseStatPoints;
+		const expected_total = this.totalStatPoints();
 		return expected_total - total;
+	}
+
+	private statPointsPerLevel() : number {
+		return PersonaCombatStats.STAT_POINTS_PER_LEVEL;
+	}
+
+	private baseStatPoints() : number {
+		const persona = this.persona;
+		if (persona.isCustomPersona || persona.source.isNPCAlly()) {
+			return 5;
+		}
+		const sl = persona.startingLevel;
+		switch (true) {
+			case (sl < 20) :return 2;
+			case (sl < 40): return 5;
+			case (sl < 60): return 10;
+			case (sl < 80): return 15;
+			default: return 20;
+		}
+	}
+
+	private totalStatPoints() : number {
+		const expected_total = this.persona.level * this.statPointsPerLevel() + this.baseStatPoints();
+		return Math.max(5, Math.round(expected_total));
+
 	}
 
 	#autoSpendPoints(pointsToSpend: number = this.persona.unspentStatPoints) : StatGroup {

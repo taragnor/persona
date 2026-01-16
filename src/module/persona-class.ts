@@ -871,7 +871,7 @@ knowsPowerInnately(power : Power)  : boolean {
 				return 8;
 			case "shadow":
 				if (this.isPersona()) {return 8;}
-				return 16;
+				return 25;
 			default:
 				this.source.system satisfies never;
 				return -1;

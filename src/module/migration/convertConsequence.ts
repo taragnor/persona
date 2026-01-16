@@ -138,7 +138,7 @@ export class ConsequenceConverter {
 		};
 	}
 
-	static resolveApplyTo ( cons: DeprecatedConsequence) : ConditionTarget {
+	static resolveApplyTo ( cons: Consequence) : ConditionTarget {
 		if ("applyTo" in cons && cons.applyTo != undefined) {
 			return cons.applyTo;
 		}
@@ -146,9 +146,12 @@ export class ConsequenceConverter {
 			return cons.applyToSelf ? "user" : "target";
 		}
 		if (PersonaSettings.debugMode()) {
-			console.debug(`Applying default applyTo of 'target' for ${cons.type}`);
-			// console.debug(cons);
-			// Debug(cons);
+			switch (cons.type) {
+				case "none":
+					break;
+				default:
+					console.debug(`Applying default applyTo of 'target' for ${cons.type}`);
+			}
 		}
 		return "target";
 	}

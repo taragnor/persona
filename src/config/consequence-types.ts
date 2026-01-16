@@ -49,10 +49,6 @@ type EnableFlagEffect = {
 
 type ClearFlagEffect = {
 	state: false,
-	// flagName?: string,
-	// duration?: StatusDuration,
-	// embeddedEffects ?: readonly SourcedConditionalEffect[],
-	// clearOnDeath?: boolean,
 };
 
 export type ResistanceShiftEffect = {

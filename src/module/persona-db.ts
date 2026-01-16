@@ -461,6 +461,14 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return undefined;
 	}
 
+	async recalcShadowStatMods() {
+		const promises= this.shadows()
+			.map (x=> x.basePersona)
+			.filter( p=> p.canAutoSpendStatPoints())
+			.map( p=> p.resetCombatStats(true));
+		return await Promise.allSettled(promises);
+	}
+
 }
 
 export const PersonaDB = new PersonaDatabase();
