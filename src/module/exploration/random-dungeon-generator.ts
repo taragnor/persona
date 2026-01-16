@@ -413,6 +413,42 @@ export class RandomDungeonGenerator {
 		this.wallData = dupeRemover;
 	}
 
+	static async createLine(scene: PersonaScene, data: Partial<Foundry.DrawingData>) {
+		await scene.createEmbeddedDocuments("Drawing", [data]);
+	}
+
+	private static flipCoordsIfNecessary (c: WallData["c"]) : WallData["c"] {
+		const [x1, y1, x2, y2] = c;
+		if (x2 < x1 || y2 < y1) {
+			return [x2, y2, x1, y1];
+		}
+		return c;
+	}
+	static wallToLineConvert( wd: WallData) : U<Partial<Foundry.DrawingData>> {
+		if (wd.door == 1) {return undefined;}
+		const [x1, y1, x2, y2] = this.flipCoordsIfNecessary(wd.c);
+		const dx = x2- x1;
+		const dy = y2- y1;
+		const shape : Foundry.ShapesData = {
+			type: "p",
+			height: Math.abs(y2- y1),
+			width: Math.abs(x2- x1),
+			radius: null,
+			points: [0, 0, Math.abs(dx), Math.abs(dy)]
+		};
+		return {
+			x: x1,
+			y: y1,
+			strokeColor: "#FF0000",
+			strokeWidth: 15,
+			strokeAlpha: 0.8,
+			shape,
+			hidden: false,
+			locked: true,
+			interface: false,
+		};
+	}
+
 	async outputDataToScene() {
 		if (this.squareList.length == 0) {
 			throw new PersonaError("You haven't run genreate yet");

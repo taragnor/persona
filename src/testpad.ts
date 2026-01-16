@@ -1,4 +1,1 @@
-type x = FoundryDocument
-
-
-([]).pushUnique
+game.scenes.current

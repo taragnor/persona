@@ -1,4 +1,8 @@
 namespace Foundry {
+	/** pound symbol folowed by RGB hex code*/
+	type ColorString = string;
+	type FontName = string;
+
 	interface SceneConstructor extends DocumentConstructor {
 		new(...args: unknown[]): Scene;
 	}
@@ -10,6 +14,7 @@ namespace Foundry {
 		dimensions: {distance:number, sceneRect: SceneRect };
 		walls: Collection<WallDocument>;
 		regions: Collection<RegionDocument>;
+		drawings: Collection<DrawingDocument>;
 		weather: keyof CONFIG["weatherEffects"];
 		active: boolean;
 		activate(): Promise<void>;
@@ -23,11 +28,53 @@ namespace Foundry {
 		new(...args: unknown[]): WallDocument;
 	}
 
+	interface DrawingData {
+		elevation: number;
+		fillAlpha: number;
+		fillColor: ColorString;
+		fillType:  number;
+		fontFamily : FontName;
+		fontSize : number;
+		hidden : boolean;
+		/** true means the drawing is visible above the mpa and through fog*/
+		interface : boolean;
+		locked : boolean;
+		rotation : number;
+		strokeAlpha : number;
+		strokeColor : string;
+		strokeWidth : number;
+		text : "";
+		textAlpha : 1;
+		textColor : "#ffffff";
+		texture : null;
+		x: number;
+		y: number;
+		shape: ShapesData;
+	}
+
+	interface ShapesData {
+		/** the length of the line in the interface tool must change to limit distance */
+		height: number;
+		radius: null;
+		/** stores as x, y pairs with offset from main x,y making a sequence of points, a line requires, 0,0 and the x,y */
+		points: number[];
+		/** type p is point perhaps?*/
+		type: "p" ;
+		width: number;
+	}
+
+
+
+	interface DrawingDocument extends Document<never>, DrawingData {
+		_source: DrawingData;
+	}
+
+
 	// class WallDocument extends FoundryDocument {
 	interface WallDocument extends Document<never> {
-		//** 0, not a doort, 1 regular, 2 secret
+		/** 0, not a door, 1 regular, 2 secret */
 		door: number;
-		//** doorstate 0 closed, 1 open
+		/** doorstate 0 closed, 1 open */
 		ds: number;
 		doorSound: string;
 		light: number;

@@ -88,7 +88,6 @@ function registerSheetApplications() {
 	Items.registerSheet("persona", PersonaFocusSheet, {types: ["focus"], makeDefault: true});
 	Items.registerSheet("persona", ConsumableSheet, {types: ["consumable"], makeDefault: true});
 		Items.registerSheet("persona", PersonaTagSheet, {types: ["tag"], makeDefault: true});
-	// Items.registerSheet("persona", PersonaJobSheet, {types: ["job"], makeDefault: true});
 	Items.registerSheet("persona", UniversalModifierSheet, {types: ["universalModifier"], makeDefault: true});
 	Items.registerSheet("persona", PersonaSocialCardSheet, {types: ["socialCard"], makeDefault: true});
 }

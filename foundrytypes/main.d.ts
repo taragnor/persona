@@ -117,7 +117,6 @@ type CompendiumMetaData = {
 class SceneCollection extends Collection<Scene> {
 	get active(): Scene;
 	get current(): Scene;
-
 }
 
 
