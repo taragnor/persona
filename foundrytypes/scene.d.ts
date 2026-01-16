@@ -69,7 +69,6 @@ namespace Foundry {
 	}
 
 
-	// class WallDocument extends FoundryDocument {
 	interface WallDocument extends Document<never> {
 		/** 0, not a door, 1 regular, 2 secret */
 		door: number;

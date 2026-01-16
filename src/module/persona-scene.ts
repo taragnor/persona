@@ -69,6 +69,17 @@ export class PersonaScene extends Scene {
 		return ENCOUNTER_RATE_PROBABILITY[prob];
 	}
 
+	async setSceneTags(mods : UniversalModifier[]) {
+		mods.forEach( mod => {
+			if (mod.system.scope == "scene") {
+				ui.notifications.warn(`${mod.name} is not a scene modifier`);
+			}
+		});
+		const ids= mods.filter (mod => mod.system.scope == "scene")
+			.map (x=> x.id);
+		await this.setFlag("persona", "sceneModifiers", ids);
+	}
+
 	private get difficultyLevel(): number {
 		return this.getFlag("persona", "randomGenDiff") ?? 0;
 	}
@@ -128,8 +139,13 @@ export class PersonaScene extends Scene {
 	}
 
 	get sceneEffects() : UniversalModifier[] {
+		const embeddedIds : UniversalModifier["id"][]  = (this.getFlag("persona", "sceneModifiers") ?? []);
+		const embedded = embeddedIds
+			.map( id => PersonaDB.getItemById(id))
+			.filter (item => item != undefined)
+			.filter (item => item.isUniversalModifier());
 		return PersonaDB.getSceneModifiers()
-			.filter( x=> x.system.sceneList.some(id=> id == this.id));
+			.filter( x=> x.system.sceneList.some(id=> id == this.id)).concat (embedded);
 	}
 
 	getRoomEffects() : (UniversalModifier["id"])[] {

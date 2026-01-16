@@ -6,7 +6,7 @@ export class DungeonSquare {
 	parent: RandomDungeonGenerator;
 	x: number;
 	y: number;
-	static WIDTH= 5 as const;
+	static WIDTH = 5 as const;
 	static HEIGHT = 5 as const;
 	type: "corridor" | "room";
 	group: DungeonSquare[];
@@ -63,7 +63,6 @@ export class DungeonSquare {
 	hasTreasure() : boolean {
 		return this.treasures.length > 0;
 	}
-
 
 	generateRegionName() : string {
 		switch (this.type) {
@@ -269,7 +268,6 @@ export class DungeonSquare {
 			case this.isStairsDown(): {return 4;}
 			case this.isCorridor(): {
 				const presence =  Math.max(1, Math.ceil(this.group.length / 2));
-
 				return presence;
 			}
 			default: return 2;
