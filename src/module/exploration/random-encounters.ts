@@ -427,24 +427,43 @@ static async processSneak(encounter: Encounter) {
 		return {enemies: encounter, encounterDifficulty: etype};
 	}
 
-	static #getEncounterType(frequencies: {hard ?: number, mixed ?: number}): EncounterDifficulty {
-		const mixed = frequencies.mixed ? frequencies.mixed : 0;
-		const DIE_SIZE = 16 + mixed;
-		const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
-		const hardMod = frequencies.hard ? frequencies.hard : 0;
-		console.debug(`Hard Mod: ${hardMod}, Mixed Mod:${mixed}`);
-		switch (true) {
-			case sizeRoll <= 11 - hardMod:
-				return "standard";
-			case sizeRoll <= 13:
-				return "tough";
-			case sizeRoll == 14:
-				return "treasure";
-			case sizeRoll >= 15:
-				return "mixed";
-			default:
-				return "standard";
+	static #getEncounterType(frequencies: {hard ?: number, mixed ?: number, treasure ?: number}): EncounterDifficulty {
+		const {hard, mixed, treasure} = frequencies;
+		const choices = [{
+			item: "standard",
+			weight: 10,
+		}, {
+			item: "tough",
+			weight: 2 + (hard ?? 0),
+		}, {
+			item: "treasure",
+			weight: 1 + (treasure?? 0),
+		}, {
+			item: "mixed",
+			weight: 1 + (mixed ?? 0),
+		},
+		] as const;
+		const choice =  weightedChoice(choices);
+		if (choice == undefined) {
+			PersonaError.softFail("Weighted Choice returned undefined");
+			return "standard";
 		}
+		return choice;
+
+		// const DIE_SIZE = 16 + mixed;
+		// const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
+		// switch (true) {
+		// 	case sizeRoll <= 11 - hardMod:
+		// 		return "standard";
+		// 	case sizeRoll <= 13:
+		// 		return "tough";
+		// 	case sizeRoll == 14:
+		// 		return "treasure";
+		// 	case sizeRoll >= 15:
+		// 		return "mixed";
+		// 	default:
+		// 		return "standard";
+		// }
 	}
 
 	static #choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encounterList: Shadow[]): Shadow | undefined {
@@ -562,7 +581,7 @@ type EncounterDifficulty = "standard" | "tough" | "treasure" | "mixed" | "error"
 export interface EncounterOptions {
 	sizeMod ?: number;
 	encounterType ?: EncounterDifficulty;
-	frequencies ?: {hard: number, mixed: number},
+	frequencies ?: {hard: number, mixed: number, treasure: number, normal: number},
 }
 
 export type EncounterAction = {

@@ -356,19 +356,6 @@ export class PersonaRegion extends RegionDocument {
 		if (!presence) {return false;}
 		const shadowTypes =this.encounterList().map(x=> x.system.creatureType);
 		const shadowType = randomSelect(removeDuplicates(shadowTypes));
-		// let shadowType : Shadow["system"]["creatureType"] | undefined = undefined;
-		// switch (presence) {
-		// 	case "shadows":
-		// 		shadowType = "shadow";
-		// 		break;
-		// 	case "daemons":
-		// 		shadowType = "daemon";
-		// 		break;
-		// 	case "any":
-		// 		break;
-		// 	default:
-		// 		presence satisfies never;
-		// }
 		const situation : Situation = {
 			trigger: "on-presence-check",
 			triggeringUser: game.user,
@@ -383,6 +370,9 @@ export class PersonaRegion extends RegionDocument {
 		).total(situation);
 		const hardMod = new ModifierList(
 			modifiers.flatMap( x=> x.getModifier("hardMod", null))
+		).total(situation);
+		const treasureMod = new ModifierList(
+			modifiers.flatMap( x=> x.getModifier("treasureMod", null))
 		).total(situation);
 		const mixedMod = new ModifierList(
 			modifiers.flatMap( x=> x.getModifier("mixedMod", null))
@@ -399,12 +389,11 @@ export class PersonaRegion extends RegionDocument {
 			frequencies: {
 				hard: hardMod,
 				mixed: mixedMod,
+				treasure: treasureMod,
+				normal: 0,
 			},
 		};
 		void RandomEncounter.encounterProcess(battleType, shadowType, options);
-		// const encounter = RandomEncounter.generateEncounter(shadowType, options);
-		// await RandomEncounter.printRandomEncounterList(encounter);
-		// void RandomEncounter.queryPlayerResponse(encounter);
 		return true;
 	}
 

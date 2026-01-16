@@ -8,6 +8,7 @@ export const ENVIRONMENTAL_MODIFIERS = [
 	"encounterSize",
 	"hardMod",
 	"mixedMod",
+	"treasureMod",
 	"numberOfSearches",
 	"treasureFind", // adds to search rolls of 4 or better
 	"shadowMoneyBoostPercent",

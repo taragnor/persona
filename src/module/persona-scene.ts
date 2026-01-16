@@ -38,28 +38,28 @@ export class PersonaScene extends Scene {
 			console.debug(`Can't get difficulty level for ${this.name}`);
 			return 0;
 		}
-		const diff = shadow.level - this.difficultyLevel;
+		const diff = Math.floor(shadow.level - this.difficultyLevel);
 		let prob : keyof ProbabilityRate;
 		switch (true) {
 			case diff <= -3 :
 				prob= "rare";
 				break;
-			case diff <= -2 :
+			case diff == -2 :
 				prob= "rare-plus";
 				break;
-			case diff <= -1 :
+			case diff == -1 :
 				prob= "normal";
 				break;
-			case diff <= 0 :
+			case diff == 0 :
 				prob= "normal-plus";
 				break;
-			case diff <= 2 :
+			case diff == 1 :
 				prob= "normal";
 				break;
-			case diff <= 3 :
+			case diff == 2 :
 				prob= "normal-minus";
 				break;
-			case diff <= 4 :
+			case diff <= 3 :
 				prob = "rare-plus";
 				break;
 			default:
