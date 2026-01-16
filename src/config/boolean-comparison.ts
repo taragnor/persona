@@ -162,7 +162,7 @@ type CombatComparisonSub = {
 	combatProp: "in-combat",
 } | {
 	combatProp:  "is-resistant-to",
-	powerDamageType : DamageType,
+	powerDamageType : MultiCheckOrSingle<DamageType>,
 	conditionTarget : ConditionTarget,
 };
 

@@ -1640,11 +1640,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	baseCritBoost(this: Usable): number  {
-		if (this.isWeaponSkill()
-			&& !this.isBasicPower()
+		if ( !this.isBasicPower()
 			&& this.system.ailmentChance == 'none'
 			&& !this.isInstantDeathAttack()) {
-			return 2;
+			if (this.isWeaponSkill()) {
+				return 2;
+			}
+			if (this.isMagicSkill()) {
+				return 1;
+			}
 		}
 		return 0;
 	}

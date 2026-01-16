@@ -1285,24 +1285,26 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
 		case "is-resistant-to": {
 			return subjects.some( target => {
 				const targetActor = target instanceof PersonaActor ? target : target.actor;
-				let dtype = condition.powerDamageType;
-				if (dtype == "by-power") {
-					if (!situation.usedPower) { return undefined; }
-					const power = PersonaDB.findItem(situation.usedPower);
-					if (power.system.type == "skillCard") {return undefined;}
-					if (!situation.attacker) {return undefined;}
-					const attacker = PersonaDB.findActor(situation?.attacker);
-					dtype = (power as Usable).getDamageType(attacker);
-				}
-				if (targetActor.system.type == "npc") {return undefined;}
-				const resist = (targetActor as PC | Shadow).persona().elemResist(dtype);
-				switch (resist) {
-					case "resist": case "block": case "absorb": case "reflect": return true;
-					case "weakness": case "normal": return  false;
-					default:
-						resist satisfies never;
-						return false;
-				}
+				const arr = typeof condition.powerDamageType == "string" ? [condition.powerDamageType] : multiCheckToArray(condition.powerDamageType);
+				return arr.some( dtype => {
+					if (dtype == "by-power") {
+						if (!situation.usedPower) { return undefined; }
+						const power = PersonaDB.findItem(situation.usedPower);
+						if (power.system.type == "skillCard") {return undefined;}
+						if (!situation.attacker) {return undefined;}
+						const attacker = PersonaDB.findActor(situation?.attacker);
+						dtype = (power as Usable).getDamageType(attacker);
+					}
+					if (targetActor.system.type == "npc") {return undefined;}
+					const resist = (targetActor as PC | Shadow).persona().elemResist(dtype);
+					switch (resist) {
+						case "resist": case "block": case "absorb": case "reflect": return true;
+						case "weakness": case "normal": return  false;
+						default:
+							resist satisfies never;
+							return false;
+					}
+				});
 			});
 		}
 		case "is-enemy":{
