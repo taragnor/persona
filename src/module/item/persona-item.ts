@@ -1524,7 +1524,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const sim = estimate?.damage?.str;
 		if (!sim) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return '';}
 		return `
-	 ${this.name}: ${estimate.damage.damageType} vs ${target?.name ?? this.name}
+	 ${this.name}: ${estimate.damage.damageType} vs ${target?.name ?? user.name}
 	 ${sim.join('\n')}
 
 		${otherString}
@@ -2023,6 +2023,8 @@ getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | nul
 #accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, options: GetEffectsOptions, refresherFn: () => ConditionalEffectC[]) : ConditionalEffectC[] {
 	if (!PersonaDB.isLoaded) {return [];}
 	if (options.deepTags === false) {return refresherFn();}
+	if (options.proxyItem) {return refresherFn();}
+	if (options.CETypes && options.CETypes.length > 0) {return refresherFn();}
 	PersonaItem.cacheStats.total++;
 	const cache = this.cache.effects[cacheType];
 	if (sourceActor == null) {

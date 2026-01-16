@@ -369,7 +369,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const balanceReport = await this.getBalanceTest(power as Usable);
 		const ailmentRange = CombatEngine.calculateAilmentRange(persona, persona, power as Usable, null);
 		const instantDeathRange = CombatEngine.calculateInstantDeathRange(persona, persona, power as Usable, null);
-		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona(), damage, balanceReport, ailmentRange, instantDeathRange});
+		const critRange = CombatEngine.calculateCriticalRange(persona, persona, power as Usable, null);
+		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona(), damage, balanceReport, ailmentRange, instantDeathRange, critRange});
 		$(ev.currentTarget).prop('title', html);
 	}
 

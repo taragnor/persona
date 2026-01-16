@@ -780,6 +780,9 @@ export class CombatEngine {
 			if (instantKillRangeRaw) {
 				console.debug(instantKillRangeRaw);
 			}
+			if (critRangeRaw) {
+				console.debug(critRangeRaw);
+			}
 		}
 		const ailmentRange = this.constrainRange(ailmentRangeRaw);
 		const instantKillRange = this.constrainRange(instantKillRangeRaw);
@@ -789,6 +792,8 @@ export class CombatEngine {
 
 	static constrainRange(range: U<CalculatedRange> ) {
 		if (range == undefined) {return undefined;}
+		if (range.low > 23) {return undefined;}
+		if (range.low > 20) {range.low = 20;}
 		return {
 			...range,
 			low: Math.max(1, range.low),

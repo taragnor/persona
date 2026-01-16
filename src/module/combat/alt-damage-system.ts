@@ -16,11 +16,12 @@ export class AltDamageSystem extends DamageSystemBase {
 	private WEAPON_STRENGTH_DAMAGE_MULT = 0.5 as const;
 	private HEALING_MAGIC_MULT = 1 as const;
 	private END_DIFF_PERCENTAGE_MULT = 0.5 as const;
-	private MAGIC_DAMAGE_MULT = 1 as const;
+	private MAGIC_DAMAGE_MULT = 0.5 as const;
 	private BASE_VARIANCE = 2 as const;
 	private ARMOR_TO_DAMAGE_DIVISOR = 1.0 as const;
 	private ALL_OUT_ATTACK_HELPER_DIVISOR = 1/3;
-	private BASE_DAMAGE_LEVEL_DIVISOR = 0.50 as const;
+	private BASIC_ATTACK_LEVEL_DIVISOR = 0.666 as const;
+	private BASE_DAMAGE_LEVEL_DIVISOR = 0.25 as const;
 	// private STAT_DIFF_DAMAGE_BOOST_PERCENT = 0.02;
 	private _weaponDmgGrowth = new GrowthCalculator(1.20, 11, 4.5);
 
@@ -67,7 +68,7 @@ export class AltDamageSystem extends DamageSystemBase {
 	public getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
 		const dtype = power.getDamageType(userPersona);
 		const calc = new DamageCalculation(dtype);
-		const levelDivisor = power.isBasicPower() ? 1 : this.BASE_DAMAGE_LEVEL_DIVISOR;
+		const levelDivisor = power.isBasicPower() ? this.BASIC_ATTACK_LEVEL_DIVISOR : this.BASE_DAMAGE_LEVEL_DIVISOR;
 		const str = this.strDamageBonus(userPersona);
 		const weaponDmg = this.weaponDamage(userPersona);
 		const skillDamage = this.weaponSkillDamage(power);
@@ -126,7 +127,6 @@ export class AltDamageSystem extends DamageSystemBase {
 
 	public getArmorDRByArmorLevel(lvl: number) : number {
 		const ARMOR_DIVISOR = this.ARMOR_TO_DAMAGE_DIVISOR;
-		// const ARMOR_DIVISOR = 0.90;
 		const val =  this.getWeaponDamageByWpnLevel(lvl);
 		if (val) {return Math.floor(val * ARMOR_DIVISOR);}
 		return 0;
@@ -158,8 +158,8 @@ export class AltDamageSystem extends DamageSystemBase {
 		const endurance = targetPersona.combatStats.endurance;
 		const percent= this.getPercentModifier(attackStat, endurance);
 		calc.add("stackMult", percent, "Magic vs Endurance Difference");
-		const armorDR = this.armorDR(targetPersona);
-		calc.merge(armorDR);
+		// const armorDR = this.armorDR(targetPersona);
+		// calc.merge(armorDR);
 		return calc;
 	}
 

@@ -1342,8 +1342,7 @@ background: initial !important;
 
 }
 
-.combat-roll-header h2 img,
-.combat-roll h2 img {
+.combat-roll-header img {
 	max-height: 100px;
 	min-height: 75px;
 }
