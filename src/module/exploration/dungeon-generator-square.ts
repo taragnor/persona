@@ -195,8 +195,8 @@ export class DungeonSquare {
 		return [ x, y, x2, y2];
 	}
 
-	walls() : Partial<WallData>[] {
-		const walls = [] as Partial<WallData>[];
+	walls() {
+		const walls = [] as ReturnType<DungeonSquare["generateWallData"]>[];
 		const adj = this.getAdjoiningPoints();
 		const outOfBounds = adj
 		.filter( pt => this.parent.sq(pt.x, pt.y) == undefined);
@@ -220,7 +220,7 @@ export class DungeonSquare {
 		return walls;
 	}
 
-	generateDoor(other: Point) : Partial<WallData>[] {
+	generateDoor(other: Point) {
 		const [wall1, door, wall2] = this.getDoorCoords(other);
 		return [
 			this.generateWallData(wall1),
@@ -229,13 +229,13 @@ export class DungeonSquare {
 		];
 	}
 
-	generateWall(other: Point): Partial<WallData>[] {
+	generateWall(other: Point) {
 		const coords = this.getWallCoords(other);
 		return [this.generateWallData(coords)];
 	}
 
 
-	generateWallData ( c : WallData["c"], isDoor = false) : Partial<WallData> {
+	generateWallData ( c : WallData["c"], isDoor = false) {
 		const texture = isDoor
 		? "canvas/doors/small/Door_Metal_Gray_E1_1x1.webp"
 		:   "canvas/doors/small/Door_Stone_Volcanic_B1_1x1.webp";
@@ -249,20 +249,18 @@ export class DungeonSquare {
 			type :  "descend",
 		};
 
-		const wallData : Partial<WallData> = {
+		const wallData = {
 			c,
-			door: isDoor ? 1: 2, // 2 is secret door, used for walling
-			ds: isDoor ? 0 : 2, //0 is closed, 1 open, 2 locked
+			door: isDoor ? 1: 0, // 2 is secret door, used for walling
+			ds: isDoor ? 0 : 0, //0 is closed, 1 open, 2 locked
 			light: 20,
 			move: 20,
 			sight: 20,
 			sound: 20,
 			animation,
-		};
+		} satisfies Partial<WallData>;
 		return wallData;
 	}
-
-
 
 	private shadowPresence() : number {
 		switch (true) {

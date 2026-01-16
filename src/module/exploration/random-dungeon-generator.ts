@@ -24,7 +24,7 @@ export class RandomDungeonGenerator {
 	_name : string;
 	lenientMode: boolean;
 	_baseDiff: number;
-	wallData: Partial<WallData>[] = [];
+	wallData: ReturnType<DungeonSquare["walls"]> = [];
 
 	static SPECIAL_FLOORS = ["tough-enemy", "revealed", "treasure-shadow", "dark"] as const;
 
@@ -413,10 +413,6 @@ export class RandomDungeonGenerator {
 		this.wallData = dupeRemover;
 	}
 
-	static async createLine(scene: PersonaScene, data: Partial<Foundry.DrawingData>) {
-		await scene.createEmbeddedDocuments("Drawing", [data]);
-	}
-
 	private static flipCoordsIfNecessary (c: WallData["c"]) : WallData["c"] {
 		const [x1, y1, x2, y2] = c;
 		if (x2 < x1 || y2 < y1) {
@@ -424,7 +420,8 @@ export class RandomDungeonGenerator {
 		}
 		return c;
 	}
-	static wallToLineConvert( wd: WallData) : U<Partial<Foundry.DrawingData>> {
+
+	static wallToLineConvert( wd: Pick<WallData, "door" | "c">) : U<Partial<Foundry.DrawingData>> {
 		if (wd.door == 1) {return undefined;}
 		const [x1, y1, x2, y2] = this.flipCoordsIfNecessary(wd.c);
 		const dx = x2- x1;
@@ -473,8 +470,6 @@ export class RandomDungeonGenerator {
 		await this.scene.update({name});
 	}
 
-
-
 	async movePCs() {
 		const PCTokens = this.scene.tokens.filter( tok => tok.actor != undefined && tok.actor.hasPlayerOwner && !tok.hidden);
 		const startingSq = this.squareList.find( x=> x.isStartPoint());
@@ -505,15 +500,13 @@ export class RandomDungeonGenerator {
 	}
 
 	private async createWalls() {
-		// const wallData = this.squareList
-		// 	.flatMap( x=> x.walls());
-		// const dupeRemover = ([] as typeof wallData).pushUniqueS((a, b) => ArrayEq(a.c ?? [], b.c ?? []) , ...wallData);
-		// if (wallData.length == dupeRemover.length) {
-		// 	PersonaError.softFail("Create walls seems to have failed to remove duplicates");
-		// }
 		await this.addWalls(this.wallData);
-		//need to check walls for duplicates that have equal x and y
+		const lines = this.wallData
+			.map(x=> RandomDungeonGenerator.wallToLineConvert(x))
+			.filter (x => x != undefined);
+		await this.scene.createEmbeddedDocuments( "Drawing", lines);
 	}
+
 
 	async createRegions() {
 		for (const sq of this.squareList) {
