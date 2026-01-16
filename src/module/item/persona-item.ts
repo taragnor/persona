@@ -1488,25 +1488,46 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	async generateSimulatedDamageObject(this: Usable, user: ValidAttackers, simulatedNat: number, target : N<PToken>) : Promise<EvaluatedDamage | undefined> {
+	async generateSimulatedDamageObject(this: Usable, user: ValidAttackers, simulatedNat: number, target : N<PToken>) {
 		const result = await this.generateSimulatedResult(user, target, simulatedNat);
-		return result?.finalize()?.attacks[0]?.changes[0]?.damage[0];
+		if (!result) {return undefined;}
+		const finalized = result.finalize();
+		const atkResult = finalized.attacks[0]?.atkResult;
+		if (!atkResult) {
+			return undefined;
+		}
+		const damage = finalized.attacks[0]?.changes[0]?.damage[0];
+		const critRange = atkResult.critRange;
+		const instantKillChance = atkResult.instantKillRange;
+		const ailmentRange = atkResult.ailmentRange;
+		return {damage, critRange, instantKillChance, ailmentRange};
 	}
 
 	async displayDamageStack(this: Usable, persona: Persona, target: N<PToken>) : Promise<string> {
 		const st = await this.getDamageStack(persona.user, target);
-		console.log(`Damage stack ${st}`);
+		console.log(`Damage stack ${st} vs ${target?.name ?? persona.user.name}`);
 		return st;
 	}
 
 	async getDamageStack(this: Usable, user: ValidAttackers, target: N<PToken>): Promise<string> {
+		const printRange = function (name: string, range: U<{high: number, low: number}>) {
+			if (!range) {return "";}
+			return `${name} : ${range.low} - ${range.high}`;
+		};
 		const estimate = await this.generateSimulatedDamageObject(user, 6, target);
+		const otherString = `
+		${printRange("Critical Range",  estimate?.critRange)}
+		${printRange("Ailment Range",  estimate?.ailmentRange)}
+		${printRange("Instant Death Range",  estimate?.instantKillChance)}
+		`;
 		if (!estimate) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return '';}
-		const sim = estimate?.str;
+		const sim = estimate?.damage?.str;
 		if (!sim) {ui.notifications.notify(`Can't get damage stack for ${this.name}`); return '';}
 		return `
-	 ${this.name}: ${estimate.damageType}
+	 ${this.name}: ${estimate.damage.damageType} vs ${target?.name ?? this.name}
 	 ${sim.join('\n')}
+
+		${otherString}
 		`;
 	}
 
@@ -1523,8 +1544,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			case 'consumable':
 			case 'standalone': {
 				return {
-					high: Math.abs((await this.generateSimulatedDamageObject(user, 6, target))?.hpChange ?? 0),
-					low: Math.abs((await this.generateSimulatedDamageObject(user, 5, target))?.hpChange ?? 0) ,
+					high: Math.abs((await this.generateSimulatedDamageObject(user, 6, target))?.damage.hpChange ?? 0),
+					low: Math.abs((await this.generateSimulatedDamageObject(user, 5, target))?.damage.hpChange ?? 0) ,
 				};
 			}
 			case 'weapon':
@@ -1533,8 +1554,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					return {high: 0, low:0};
 				}
 				return {
-					high: Math.abs((await this.generateSimulatedDamageObject(user, 6, target))?.hpChange ?? 0),
-					low: Math.abs((await this.generateSimulatedDamageObject(user, 5, target))?.hpChange ?? 0) ,
+					high: Math.abs((await this.generateSimulatedDamageObject(user, 6, target))?.damage?.hpChange ?? 0),
+					low: Math.abs((await this.generateSimulatedDamageObject(user, 5, target))?.damage?.hpChange ?? 0) ,
 				};
 			default:
 				this.system satisfies never;

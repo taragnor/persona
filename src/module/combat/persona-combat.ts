@@ -854,18 +854,24 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		} else {
 			situation = simSitOrNat;
 		}
-
+		type maybeRange = U<AttackResult["ailmentRange"]>
+		let ailmentRange : maybeRange, critRange: maybeRange, instantKillRange: maybeRange;
+		if (!power.isSocialCard()) {
+			const ranges= CombatEngine.calculateRanges(attacker.actor.persona(), target.actor.persona(), power as Usable, situation);
+			ailmentRange = ranges.ailmentRange;
+			critRange = ranges.critRange;
+			instantKillRange= ranges.instantKillRange;
+		}
 		const simAtkResult : AttackResult = {
 			result: 'hit',
 			target: PersonaDB.getUniversalTokenAccessor(target),
 			attacker: PersonaDB.getUniversalTokenAccessor(attacker),
 			power: PersonaDB.getUniversalItemAccessor(power),
-			ailmentRange: undefined,
-			instantKillRange: undefined,
-			critRange: undefined,
+			ailmentRange,
+			instantKillRange,
+			critRange,
 			situation,
 			roll: null,
-			// printableModifiers: []
 		};
 		const proc = new CombatEngine(undefined);
 		const CR = await proc.processEffects(simAtkResult);

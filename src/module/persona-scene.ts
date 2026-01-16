@@ -15,6 +15,7 @@ import { PersonaActor } from "./actor/persona-actor.js";
 import { ConditionalEffectManager } from "./conditional-effect-manager.js";
 import { HTMLTools } from "./utility/HTMLTools.js";
 import {ENCOUNTER_RATE_PROBABILITY, ProbabilityRate} from "../config/probability.js";
+import {RandomEncounter} from "./exploration/random-encounters.js";
 
 export class PersonaScene extends Scene {
 	static ENCOUNTER_DATA_FLAG_NAME = "encounterData" as const;
@@ -84,11 +85,12 @@ export class PersonaScene extends Scene {
 		return this.getFlag("persona", "randomGenDiff") ?? 0;
 	}
 
-	async setTrueDifficulty(num: number) {
+	async setDifficulty(num: number) {
 		await this.setFlag("persona", "randomGenDiff", num);
 	}
 
-	async setBaseDungeonLevel(num: number) {
+	//used by Dungeon generator
+	async setBaseDungeonLevelForGen(num: number) {
 		await this.setFlag("persona", "baseDiff", num);
 	}
 
@@ -96,18 +98,9 @@ export class PersonaScene extends Scene {
 		return this.getFlag("persona", "baseDiff") ?? 0;
 	}
 
-	async setRandomEncounterList( shadows: Shadow[]) {
-		const ids = shadows.map(x=> x.id);
-		await this.setFlag("persona", "shadowList", ids);
-	}
-
 	encounterList() : Shadow[] {
-		if (this.allowsRandomGenerator()) {
-			const flagArr = this.getFlag<string[]>("persona", "shadowList") ?? [];
-			const shadows = flagArr
-				.map( id=> PersonaDB.getActor(id))
-				.filter (x=> x != undefined)
-				.filter (x=> x.isShadow());
+		if (this.difficultyLevel > 0) {
+			const shadows = RandomEncounter.getRandomEncounterListFromDiffLevel(this.difficultyLevel);
 			if (shadows.length > 0) {return shadows;}
 		}
 		const disAllowedRoles: ShadowRole[] = [

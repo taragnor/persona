@@ -147,6 +147,8 @@ export class ConsequenceConverter {
 		}
 		if (PersonaSettings.debugMode()) {
 			switch (cons.type) {
+				case "modifier":
+				case "modifier-new":
 				case "none":
 					break;
 				default:

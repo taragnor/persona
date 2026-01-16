@@ -47,7 +47,7 @@ export class RandomDungeonGenerator {
 		this._name = dungeonName;
 		this.lenientMode = false;
 		this.wallData = [];
-		this._baseDiff= (this.scene.baseDungeonLevel || baseDiff) ?? 0;
+		this._baseDiff = (this.scene.baseDungeonLevel || baseDiff) ?? 0;
 		if (this._baseDiff == 0) {
 			throw new PersonaError(`${scene.name} has no inset Difficulty`);
 		}
@@ -388,16 +388,7 @@ export class RandomDungeonGenerator {
 	}
 
 	async setRandomEncounterList() {
-		const CR =this.difficultyLevel;
-		await this.scene.setTrueDifficulty(CR);
-
-		const shadows = PersonaDB.shadows()
-			.filter( x => x.isEligibleForRandomEncounter())
-			.filter(x=> x.level >= CR -3 &&  x.level<= CR +5)
-			.filter( x=> !x.isBossOrMiniBossType());
-
-		await this.scene.setRandomEncounterList(shadows);
-		console.log(`setting random encounter list : ${shadows.map(x=> x.name).join()}` );
+		await this.scene.setDifficulty(this.difficultyLevel);
 	}
 
 	async writeSceneModifiers() {

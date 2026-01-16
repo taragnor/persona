@@ -466,6 +466,15 @@ static async processSneak(encounter: Encounter) {
 		// }
 	}
 
+public static getRandomEncounterListFromDiffLevel(difficultyLevel: number, lowRange=3, highRange = 3) {
+	const CR = difficultyLevel;
+	const shadows = PersonaDB.shadows()
+		.filter( x => x.isEligibleForRandomEncounter())
+		.filter(x=> x.level >= CR - lowRange &&  x.level<= CR +highRange)
+		.filter( x=> !x.isBossOrMiniBossType());
+	return shadows;
+}
+
 	static #choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encounterList: Shadow[]): Shadow | undefined {
 		if (!pick1 || !pick2) {
 			PersonaError.softFail("Couldn't get a pick from choice list");
