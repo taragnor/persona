@@ -7,7 +7,6 @@ namespace Foundry {
 		new(...args: unknown[]): Scene;
 	}
 
-
 	// class Scene extends FoundryDocument<never> {
 	interface Scene extends Document<never> {
 		tokens: Collection<TokenDocument<Actor<any>>>;

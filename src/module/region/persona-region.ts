@@ -408,12 +408,6 @@ export class PersonaRegion extends RegionDocument {
 		await this.setRegionData(rdata);
 	}
 
-	// async setConcordiaPresence(newPresence: number) {
-	// 	const rdata = this.regionData;
-	// 	rdata.concordiaPresence = newPresence;
-	// 	await this.setRegionData(rdata);
-	// }
-
 	formEntryField(field: keyof RegionData) {
 		const element = $("<div>");
 		element.append($("<label>").text(
