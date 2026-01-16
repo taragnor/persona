@@ -11,8 +11,7 @@ import { CardRoll, Opportunity, SOCIAL_CARD_TYPES_LIST, ThresholdOrDC, TokenSpen
 import { ArrayCorrector, PersonaItem } from "../item/persona-item.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { EQUIPMENT_TAGS_LIST } from "../../config/equipment-tags.js";
-const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, FilePathField: file, EmbeddedCollectionField : collection } = foundry.data.fields;
-
+const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, FilePathField: file} = foundry.data.fields;
 import { STUDENT_SKILLS_LIST } from "../../config/student-skills.js";
 import { CharacterClassDM } from "./character-class-dm.js";
 import { EQUIP_SLOTS_LIST } from "../../config/equip-slots.js";
@@ -142,7 +141,7 @@ class UniversalModifierDM extends foundry.abstract.TypeDataModel {
 		const ret = {
 			description: new html(),
 			room_effect: new bool({initial: false}), //deprecated in favor of scope
-			scope: new txt({choices: UNIVERSAL_MODIFIERS_TYPE_LIST, initial: "global"}),
+			scope: new txt({choices: UNIVERSAL_MODIFIERS_TYPE_LIST, initial: "scene"}),
 			duration: new num( {initial: 0, integer: true}),
 			sceneList: new arr( new id()),
 			...effects (false),
@@ -151,14 +150,15 @@ class UniversalModifierDM extends foundry.abstract.TypeDataModel {
 	}
 
 	static override migrateData(data: UniversalModifier["system"])  {
-		if (data.scope != undefined) {
-			return data;
-		}
-		if (data?.room_effect === true) {
-			data.scope = "room";
-		}
-		if ("room_effect" in data) {
-			data.room_effect = false;
+		if (data.scope == undefined) {
+			if (data?.room_effect === true) {
+				data.scope = "room";
+				if ("room_effect" in data) {
+					data.room_effect = false;
+				}
+			} else {
+				data.scope = "global";
+			}
 		}
 		return data;
 	}
@@ -334,7 +334,7 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 	}
 
 	static override migrateData(data: SocialCard["system"]) {
-	return data;
+		return data;
 	}
 }
 
@@ -514,7 +514,7 @@ export class SocialCardEventDM extends foundry.abstract.DataModel {
 			data.conditions = ArrayCorrector(data.conditions)as typeof data.conditions;
 		}
 		if (data.choices == undefined)
-			{data.choices = [];}
+		{data.choices = [];}
 		if (FREQUENCY[data.frequency as keyof typeof FREQUENCY] == undefined) {
 			data.frequency = frequencyConvert(data.frequency);
 		}

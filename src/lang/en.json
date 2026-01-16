@@ -343,6 +343,7 @@
 	"persona.modifier.numberOfSearches": "Number of Searches",
 	"persona.modifier.treasureFind": "Bonus to d6 to find treasure",
 	"persona.modifier.shadowMoneyBoostPercent": "Money Found (multiplier)",
+	"persona.modifier.shadowItemDropRate": "Shadow Item Drop Rate (multiplier, decimal)",
 	"persona.modifier.treasure-roll-bonus": "Bonus to Treasure Roll (new treasure system)",
 	"persona.modifier.actions-per-turn": "Actions per turn",
 	"persona.modifier.baleful-status-duration": "Baleful Status Duration",

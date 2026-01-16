@@ -69,7 +69,7 @@ export class PersonaScene extends Scene {
 		return ENCOUNTER_RATE_PROBABILITY[prob];
 	}
 
-	async setSceneTags(mods : UniversalModifier[]) {
+	async setSceneModifiers(mods : UniversalModifier[]) {
 		mods.forEach( mod => {
 			if (mod.system.scope == "scene") {
 				ui.notifications.warn(`${mod.name} is not a scene modifier`);

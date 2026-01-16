@@ -14,18 +14,6 @@ export class TreasureSystem {
 		const otherTreasure = this.moreTreasure(treasureRoll) ? this.generate(treasureLevel, modifier, treasureMin) : [];
 		if (!item) {return otherTreasure;}
 		if (item.isEnchantable()) {
-			// if (item.isInvItem()) {
-			// 	if (item.system.slot == "weapon_crystal") {
-			// 		modifier -= 50;
-			// 	}
-			// 	if (item.system.slot == "accessory") {
-			// 		treasureMin = Math.max(50, treasureMin);
-			// 	}
-
-			// }
-			// const enchantmentRoll = this.treasureRoll(modifier, treasureMin);
-			// const enchantmentTable = this.convertRollToTreasureTable(enchantmentRoll);
-			// const enchantment = this.generateEnchantmentFromTable(enchantmentTable, treasureLevel);
 			const enchantment = this.generateEnchantment(item, treasureLevel, modifier, treasureMin);
 			if (enchantment) {
 				return [{
@@ -41,19 +29,19 @@ export class TreasureSystem {
 	}
 
 	static generateEnchantment(item: Carryable, treasureLevel: number, modifier = 0, treasureMin = 1) : U<Tag> {
-			if (item.isInvItem()) {
-				if (item.system.slot == "weapon_crystal") {
-					modifier -= 50;
-				}
-				if (item.system.slot == "accessory") {
-					treasureMin = Math.max(50, treasureMin);
-				}
-
+		if (item.isInvItem()) {
+			if (item.system.slot == "weapon_crystal") {
+				modifier -= 50;
 			}
-			const enchantmentRoll = this.treasureRoll(modifier, treasureMin);
-			const enchantmentTable = this.convertRollToTreasureTable(enchantmentRoll);
-			const enchantment = this.generateEnchantmentFromTable(enchantmentTable, treasureLevel);
-			return enchantment;
+			if (item.system.slot == "accessory") {
+				treasureMin = Math.max(50, treasureMin);
+			}
+
+		}
+		const enchantmentRoll = this.treasureRoll(modifier, treasureMin);
+		const enchantmentTable = this.convertRollToTreasureTable(enchantmentRoll);
+		const enchantment = this.generateEnchantmentFromTable(enchantmentTable, treasureLevel);
+		return enchantment;
 	}
 
 	static async DorisAbility(item: Carryable) {
@@ -73,7 +61,7 @@ export class TreasureSystem {
 			content: html,
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 
-			});
+		});
 		return enchantment;
 	}
 
@@ -114,11 +102,11 @@ export class TreasureSystem {
 				|| item.system.treasure.greater.enabled
 				|| item.system.treasure.royal.enabled
 			)
-		.filter( tag =>
-			tag.system.treasure[table].enabled
-			&& treasureLevel >= tag.system.treasure[table].minLevel
-			&& treasureLevel <= tag.system.treasure[table].maxLevel
-		);
+			.filter( tag =>
+				tag.system.treasure[table].enabled
+				&& treasureLevel >= tag.system.treasure[table].minLevel
+				&& treasureLevel <= tag.system.treasure[table].maxLevel
+			);
 	}
 
 	static treasureList(table: Exclude<TreasureTable, "none">, treasureLevel: number)  : Carryable[] {
@@ -229,9 +217,9 @@ export class TreasureSystem {
 
 	static randomPower(slot?:0 | 1 | 2 | 3, forbidExotic : boolean= false) {
 		const powers = PersonaDB.allPowersArr()
-		.filter ( pwr => pwr.isInheritable())
-		.filter ( pwr => slot != undefined ? pwr.system.slot == slot : true)
-		.filter ( pwr => forbidExotic ? !pwr.isExotic() : true)
+			.filter ( pwr => pwr.isInheritable())
+			.filter ( pwr => slot != undefined ? pwr.system.slot == slot : true)
+			.filter ( pwr => forbidExotic ? !pwr.isExotic() : true)
 		const weightedPowers = powers.map ( pwr =>
 			({
 				item: pwr,
@@ -278,11 +266,12 @@ export class TreasureSystem {
 		const size = shadow.encounterSizeValue();
 		const treasure = shadow.system.encounter.treasure;
 		const arr = ["item0", "item1", "item2", "item3"] as const;
+		const treasureMod = shadow.persona().getBonuses("shadowItemDropRate").total(shadow, "percentage");
 		const shadowItems = arr.reduce ( (acc, str) => {
 			const item = treasure[str];
 			if (!item) {return acc;}
 			const prob = treasure[`${str}prob_v`];
-			const percentage = ITEM_DROP_RATE[prob] * size;
+			const percentage = ITEM_DROP_RATE[prob] * size * treasureMod;
 			const maxAmount = treasure[`${str}maxAmt`];
 			if (percentage <= 0) {
 				return acc;

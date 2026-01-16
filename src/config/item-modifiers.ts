@@ -8,11 +8,12 @@ export const ENVIRONMENTAL_MODIFIERS = [
 	"encounterSize",
 	"hardMod",
 	"mixedMod",
-	"treasureMod",
+	"treasureMod", //increases chance of running into treasure shadows
 	"numberOfSearches",
 	"treasureFind", // adds to search rolls of 4 or better
 	"shadowMoneyBoostPercent",
 	"treasure-roll-bonus", // adds to actual treasure roll in new treasure system
+	"shadowItemDropRate", // multiplies item drop rate
 ] as const;
 
 const DEPRECATED_TYPES = [
@@ -42,7 +43,7 @@ export const OFFENSE_TYPES = [
 	"afflictionRange",
 	"instantDeathRange",
 	"allOutDmgMult", //adds to weapon multiplier on AoA
-	] as const;
+] as const;
 
 const DEFENSE_TYPES = [
 	"allDefenses",

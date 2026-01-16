@@ -25,6 +25,8 @@ export class RandomDungeonGenerator {
 	lenientMode: boolean;
 	_baseDiff: number;
 	wallData: ReturnType<DungeonSquare["walls"]> = [];
+	sceneModifiers : UniversalModifier[] = [];
+	SCENEMODS = SCENE_MOD_NAMES;
 
 	static SPECIAL_FLOORS = ["tough-enemy", "revealed", "treasure-shadow", "dark"] as const;
 
@@ -350,7 +352,7 @@ export class RandomDungeonGenerator {
 			PersonaError.softFail("Generation had too many errrors and had to bail out");
 		}
 		this.assignExit();
-		this.assignSpecialFloor();
+		this.assignSpecialFloors();
 		this.assignSpecials();
 		this.assignTreasures();
 		this.finalizeSquares();
@@ -398,9 +400,44 @@ export class RandomDungeonGenerator {
 		console.log(`setting random encounter list : ${shadows.map(x=> x.name).join()}` );
 	}
 
+	async writeSceneModifiers() {
+		await this.scene.setSceneModifiers(this.sceneModifiers);
+	}
+
 	finalizeSquares() {
 		this.squareList.forEach( sq=> sq.finalize());
 		this.prepareWallData();
+	}
+
+	assignSpecialFloors() {
+		const roll = this.rng.die(1,100);
+		const mods : (keyof typeof SCENE_MOD_NAMES)[] = [];
+		if (this.currentDepth < 2) {return;}
+		switch (true) {
+			case roll < 5: {
+				mods.push("hardShadowsFloor");
+				break;
+			}
+			case roll < 10: {
+				mods.push("treasureFloor");
+				break;
+			}
+			case roll < 14: {
+				mods.push("shadowDrops");
+				break;
+			}
+			default:
+				break;
+		}
+		this.sceneModifiers = mods
+			.flatMap (x=> this.getSceneMod(x));
+	}
+
+	getSceneMod ( mod : keyof RandomDungeonGenerator["SCENEMODS"]) : UniversalModifier[] {
+		const item = PersonaDB.getSceneModifiers().find( x=> x.name == this.SCENEMODS[mod]);
+		if (item) {return [item];}
+		PersonaError.softFail(`Can't find modifier ${this.SCENEMODS[mod]}`);
+		return [];
 	}
 
 	private prepareWallData() {
@@ -462,6 +499,7 @@ export class RandomDungeonGenerator {
 		await this.createRegions();
 		await this.createTreasures();
 		await this.setRandomEncounterList();
+		await this.writeSceneModifiers();
 		await this.resetFog();
 	}
 
@@ -557,20 +595,17 @@ export class RandomDungeonGenerator {
 
 }
 
-
-
-
-
-
-
-
 //@ts-expect-error adding to glboal scope for test
 window.DG = RandomDungeonGenerator;
 
 type Direction = "up" | "down" | "left" |"right";
 
-
-
 class GenerationBailOutError extends Error {
 
 }
+
+const SCENE_MOD_NAMES = {
+	"hardShadowsFloor": "Difficult Enemies",
+	"treasureFloor": "Treasure Floor",
+	"shadowDrops" : "Extra Shadow Drops",
+} as const;

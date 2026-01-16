@@ -3,6 +3,7 @@ import { testPreconditions } from "../preconditions.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import {PersonaError} from "../persona-error.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
+import {PersonaActor} from "../actor/persona-actor.js";
 
 export type ModifierListItem = Sourced<{
 	name: string;
@@ -120,7 +121,10 @@ export class ModifierList {
 
 	}
 
-	total(situation: Situation , style = this.listType) : number {
+	total(user: ValidAttackers, style ?: ModifierList["listType"]) : number;
+	total(situation: Situation , style ?: ModifierList["listType"]) : number;
+	total(situationOrActor: Situation | ValidAttackers , style = this.listType) : number {
+		const situation :Situation = situationOrActor instanceof PersonaActor  ? {user: situationOrActor.accessor} : situationOrActor;
 		const mods = this.validModifiers(situation);
 		switch (style) {
 			case "standard": {
