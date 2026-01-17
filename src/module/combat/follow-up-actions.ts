@@ -133,15 +133,6 @@ export class FollowUpManager {
 				&& pwr.testFollowUpPrereqs(situation, actor)
 			);
 		return followUpMoves;
-		// const followup = followUpMoves
-			// .map(usable => {
-			// 	const targets =this.combat.getValidTargetsFor(usable, combatant, situation)
-			// 		.map (x=> x.token.name);
-
-			// 	if (targets.length == 0) {return '';}
-			// 	return `<li> ${usable.name} (${targets.join(', ')})</li>`;
-			// });
-		// return followup;
 	}
 
 	static checkForFollowUpChanges(diffObject: FlagChangeDiffObject) : boolean {
