@@ -19,6 +19,7 @@ import {RealDamageType} from "../../config/damage-types.js";
 import {CombatOutput} from "./combat-output.js";
 import {ConsequenceApplier} from "./consequence-applier.js";
 import {PersonaSFX} from "./persona-sfx.js";
+import {TriggeredEffect} from "../triggered-effect.js";
 
 export class FinalizedCombatResult {
 	static pendingPromises: Map< CombatResult["id"], (val: unknown) => void> = new Map();
@@ -228,34 +229,6 @@ export class FinalizedCombatResult {
 		this.tokenFlags = [];
 	}
 
-	// async HTMLHeader(effectName: string,  initiator: PersonaActor | undefined) : Promise<string> {
-	// 	if (!initiator) {return "";}
-	// 	let initiatorToken : PToken | undefined;
-	// 	if (game.combat) {
-	// 		initiatorToken = PersonaCombat.getPTokenFromActorAccessor(initiator.accessor);
-	// 	}
-	// 	const attackerToken = initiatorToken;
-	// 	const attackerPersona = (initiator.isValidCombatant() && (
-	// 		initiator.persona().isPersona()
-	// 		|| initiator.persona().source.hasBuiltInPersona()
-	// 	))	? initiator.persona(): undefined;
-	// 	const attackerName = initiator.token?.name ?? initiatorToken?.name ?? initiator.displayedName;
-	// 	const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-header.hbs", {attackerToken, attackerPersona, attackerName, effectName});
-	// 	return html;
-	// }
-
-	// async HTMLBody(): Promise<string> {
-	// 	this.compressChained();
-	// 	const attacks = this.attacks.map( (attack)=> {
-	// 		return {
-	// 			attackResult: attack.atkResult,
-	// 			changes: attack.changes,
-	// 		};
-	// 	});
-	// 	const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-body.hbs", {attacks, escalation: 0, result: this, costs: this.costs});
-	// 	return html;
-	// }
-
 	async toMessage( header: string) : Promise<void>;
 	async toMessage( effectName: string, initiator: U<PersonaActor>) : Promise<void>;
 	async toMessage( effectNameOrHeader: string, initiator?: U<PersonaActor>) : Promise<void> {
@@ -352,6 +325,7 @@ export class FinalizedCombatResult {
 			await this.#processAttacks();
 			await this.#applyCosts();
 			await this.#applyGlobalOtherEffects();
+			await this.#onUsePowerTriggered();
 			await this.#applyChained();
 		} catch (e) {
 			PersonaError.softFail("Trouble executing combat result", e, this);
@@ -390,8 +364,6 @@ export class FinalizedCombatResult {
 	}
 
 	async #processAttacks() {
-		// const power = this.power && !this.power.isSkillCard() ? this.power : undefined;
-		// const combat = PersonaCombat.combat;
 		for (const {atkResult, changes} of this.attacks ) {
 			const {attacker, target, power}  = this.getAttackData(atkResult);
 			await PersonaSFX.onUsePowerOn(power, attacker, target, atkResult.result);
@@ -440,6 +412,21 @@ export class FinalizedCombatResult {
 		}
 	}
 
+	async #onUsePowerTriggered() {
+		if (!this.attacker || !this.power) {return;}
+		const situation : Situation = {
+			trigger: 'on-use-power',
+			user: this.attacker.actor.accessor,
+			usedPower: this.power.accessor,
+			triggeringCharacter : this.attacker.actor.accessor,
+			triggeringUser: game.user,
+			combatResult: this,
+		};
+		const trigg= (await TriggeredEffect.onTrigger('on-use-power', this.attacker.actor, situation)).finalize();
+		this.addChained(trigg);
+	}
+
+
 	get power() : UsableAndCard | undefined {
 		for (const {atkResult} of this.attacks) {
 			if (atkResult.power) {
@@ -453,9 +440,11 @@ export class FinalizedCombatResult {
 		for (const {atkResult} of this.attacks) {
 			if (atkResult.attacker) {
 				const combat = PersonaCombat.combat;
-				if (!combat) {return undefined;}
+				if (!combat) {
+					return PersonaDB.findToken(atkResult.attacker);
+				}
 				const comb = combat.findCombatant(atkResult.attacker);
-				if (!comb) {return undefined;}
+				if (!comb) {return PersonaDB.findToken(atkResult.attacker);}
 				return comb.token;
 			}
 		}

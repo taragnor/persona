@@ -107,7 +107,7 @@ export class CombatEngine {
 			}
 			await attacker.actor.removeStatus('baton-pass');
 			await finalizedResult.toMessage(power.name, attacker.actor);
-			await this.postActionCleanup(attacker, result);
+			// await this.postActionCleanup(attacker, result);
 			return finalizedResult;
 		} catch(e) {
 			if (e instanceof CanceledDialgogError) {
@@ -138,21 +138,21 @@ export class CombatEngine {
 	}
 
 	async postActionCleanup(attacker: PToken, result: CombatResult ) {
-		await this.afterActionTriggered(attacker, result);
-		await sleep(1250); //wait for extra action status?
+		// await this.afterActionTriggered(attacker, result);
+		// await sleep(1250); //wait for extra action status?
 	}
 
-	async afterActionTriggered(attacker: PToken, combatResult: CombatResult) {
-		const situation : Situation = {
-			trigger: 'on-use-power',
-			user: attacker.actor.accessor,
-			usedPower: combatResult.power?.accessor,
-			triggeringCharacter : attacker.actor.accessor,
-			triggeringUser: game.user,
-			combatResult,
-		};
-		await TriggeredEffect.execCombatTrigger('on-use-power', attacker.actor, situation);
-	}
+	// async afterActionTriggered(attacker: PToken, combatResult: CombatResult) {
+	// 	const situation : Situation = {
+	// 		trigger: 'on-use-power',
+	// 		user: attacker.actor.accessor,
+	// 		usedPower: combatResult.power?.accessor,
+	// 		triggeringCharacter : attacker.actor.accessor,
+	// 		triggeringUser: game.user,
+	// 		combatResult,
+	// 	};
+	// 	await TriggeredEffect.execCombatTrigger('on-use-power', attacker.actor, situation);
+	// }
 
 	async usePowerOn(attacker: PToken, power: UsableAndCard, targets: PToken[], rollType : AttackRollType, options: CombatOptions = {}) : Promise<CombatResult> {
 		const result = new CombatResult();

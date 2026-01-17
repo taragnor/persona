@@ -5,7 +5,6 @@ import { NumberOfOthersWithComparison } from "../config/numeric-comparison.js";
 import { CombatResultComparison } from "../config/numeric-comparison.js";
 import { PersonaVariables } from "./persona-variables.js";
 import { PersonaScene } from "./persona-scene.js";
-import { ActorChange } from "./combat/combat-result.js";
 import { AttackResult } from "./combat/combat-result.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaSocial } from "./social/persona-social.js";
@@ -31,6 +30,7 @@ import {ConsequenceAmountResolver} from "./conditionalEffects/consequence-amount
 import {PreconditionConverter} from "./migration/convertPrecondition.js";
 import {PersonaAE} from "./active-effect.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
+import {ResolvedActorChange} from "./combat/finalized-combat-result.js";
 
 /** @deprecated Use ConditionalEffectC.getActiveConsequences instead */
 export function getActiveConsequences(condEffect: ConditionalEffectC, situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {
@@ -427,7 +427,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
 export function combatResultBasedNumericTarget(condition: CombatResultComparison, situation: Situation): number | boolean {
 	const invert = condition.invertComparison ?? false;
 	let resultCompFn : (atk: AttackResult) => boolean = (_atk) => true;
-	let changeCompFn: (  changes: ActorChange<ValidAttackers>) => boolean = () => true;
+	let changeCompFn: (  changes: ResolvedActorChange<ValidAttackers>) => boolean = () => true;
 	switch (condition.resultSubtypeComparison) {
 		case "total-hits":
 			resultCompFn = function(atk: AttackResult) {
@@ -447,18 +447,30 @@ export function combatResultBasedNumericTarget(condition: CombatResultComparison
 		return false;
 	}
 	let count = 0;
-	for (const [atkRes, changes] of situation.combatResult.attacks.entries()) {
-		const target = PersonaDB.findToken(atkRes.target);
+	for (const { atkResult, changes } of situation.combatResult.attacks) {
+		const target = PersonaDB.findToken(atkResult.target);
 		const targetChanges = changes.filter( c=> {
 			const changed = PersonaDB.findActor(c.actor);
 			return changed == target.actor;
 		});
 		const changePass = targetChanges.some( change=>changeCompFn (change));
-		let res = resultCompFn(atkRes) && changePass;
+		let res = resultCompFn(atkResult) && changePass;
 		res = invert ? !res : res;
 		if (res) {count += 1;}
 	}
 	return count;
+	// for (const [atkRes, changes] of situation.combatResult.attacks.entries()) {
+	// 	const target = PersonaDB.findToken(atkRes.target);
+	// 	const targetChanges = changes.filter( c=> {
+	// 		const changed = PersonaDB.findActor(c.actor);
+	// 		return changed == target.actor;
+	// 	});
+		// const changePass = targetChanges.some( change=>changeCompFn (change));
+		// let res = resultCompFn(atkRes) && changePass;
+		// res = invert ? !res : res;
+		// if (res) {count += 1;}
+	// }
+	// return count;
 }
 
 function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}, situation: Situation) : boolean {

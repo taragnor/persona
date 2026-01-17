@@ -9,6 +9,7 @@ import { CombatResult } from "../module/combat/combat-result.js";
 import { CombatTriggerTypes } from "./triggers.js";
 import {RealDamageType} from "./damage-types.js";
 import {PersonaAE} from "../module/active-effect.js";
+import {FinalizedCombatResult} from "../module/combat/finalized-combat-result.js";
 
 export type UserSituation = {
 	user: UniversalActorAccessor<ValidAttackers>;
@@ -105,7 +106,7 @@ type KillTargetTrigger = UserSituation & {
 type UsePowerTrigger = UserSituation & {
 	trigger: "on-use-power",
 	triggeringCharacter: UniversalActorAccessor<ValidAttackers>;
-	combatResult: CombatResult,
+	combatResult: FinalizedCombatResult,
 }
 
 type InflictStatusTrigger_Generic = {
