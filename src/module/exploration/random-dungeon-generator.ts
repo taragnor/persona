@@ -8,6 +8,7 @@ import {SeededRandom} from "../utility/seededRandom.js";
 import {DungeonSquare, Point, WallData} from "./dungeon-generator-square.js";
 
 export class RandomDungeonGenerator {
+	seedString: string;
 	scene: PersonaScene;
 	gridSize: number;
 	gridX: number;
@@ -63,7 +64,8 @@ export class RandomDungeonGenerator {
 	get currentDepth() : number {return this._depth;}
 
 	print() : string {
-		let ret = "";
+
+		let ret = `Dungeon Lvl ${this.currentDepth} Seed: ${this.seedString}`;
 		for (const column of this.squares) {
 			ret += column
 				.map(sq=> sq ? sq.print() : " ")
@@ -333,7 +335,8 @@ export class RandomDungeonGenerator {
 		return false;
 	}
 
-	generate(numSquares: number, seedString: string = "TEST") {
+	generate(numSquares: number, originalSeedString: string = "TEST") {
+		this.seedString = originalSeedString;
 		const totalSquares = this.maxSquaresWidth * this.maxSquaresHeight;
 		if (numSquares > totalSquares) {
 			throw new InvalidDungeonError(`Too big, trying to request ${numSquares} with only ${totalSquares} available`);
@@ -341,7 +344,7 @@ export class RandomDungeonGenerator {
 		let timeout = 0;
 		while (timeout < 100) {
 			try {
-				this.createDungeon(numSquares, seedString);
+				this.createDungeon(numSquares);
 				this.assignExit();
 				this.assignSpecialFloors();
 				this.assignSpecials();
@@ -349,9 +352,13 @@ export class RandomDungeonGenerator {
 				this.finalizeSquares();
 				console.log( this.print());
 				return this;
-			} catch {
+			} catch (e) {
 				timeout ++;
-				seedString = seedString + "A";
+				if (e instanceof UnexpectedResultError) {
+					PersonaError.softFail("Unexpected Behavior from dungeon generator", e);
+				}
+				this.seedString += this.rng.randomLetter();
+				// this.seedString += "A";
 			}
 		}
 		if (timeout >= 100) {
@@ -359,9 +366,9 @@ export class RandomDungeonGenerator {
 		}
 	}
 
-	createDungeon(numSquares: number, seedString: string = "TEST") {
+	createDungeon(numSquares: number) {
 		this.lenientMode = false;
-		this.rng = new SeededRandom(seedString);
+		this.rng = new SeededRandom(this.seedString);
 		this.#resetSquares();
 		this.placeStartingRoom();
 		let emergencyBrake = 0;

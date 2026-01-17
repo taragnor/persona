@@ -43,6 +43,12 @@ export class SeededRandom {
 		return arr[randomChoice];
 	}
 
+	randomLetter() : string {
+		const str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		const index = this.random() % str.length;
+		return str.at(index)!;
+	}
+
 	weightedChoice<T>( array: WeightedChoiceItem<T>[]): U<T> {
 	array = array.filter( x=>x.weight > 0);
 	if (array.length == 0) {return undefined;}
