@@ -5,6 +5,8 @@ import { PToken } from "./persona-combat.js";
 import { StatusEffect } from "../../config/consequence-types.js";
 import { PersonaError } from "../persona-error.js";
 import { PersonaSockets } from "../persona.js";
+import {FlagChangeDiffObject, OpenerManager} from "./openers.js";
+import {CombatPanel} from "./combat-panel.js";
 
 export class CombatHooks {
 
@@ -55,6 +57,16 @@ export class CombatHooks {
 						}
 					}
 				}
+			}
+		});
+
+		Hooks.on("updateCombat", async (combat: PersonaCombat, diff) => {
+			const changes = diff as FlagChangeDiffObject;
+			if (!changes.flags) {return;}
+			if (OpenerManager.checkForOpeningChanges(changes)) {
+				if (!combat.combatant
+				|| !PersonaCombat.isPersonaCombatant(combat.combatant)) {return;}
+				await CombatPanel.instance.setOpeningActionChoices(combat.combatant, combat.openers.getOpenerChoices());
 			}
 		});
 

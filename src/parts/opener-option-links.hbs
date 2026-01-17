@@ -8,9 +8,9 @@
 	</span>
 	<span class="option-targets">
 		(
-		{{#each opt.power.targets as |target|}}
-		<a class="option-target" data-target-id="{{target.id}}">
-			{{target.token.name}}
+		{{#each opt.power.targets as |targetId|}}
+		<a class="option-target" data-target-id="{{targetId}}">
+			{{getCombatantTokenNameByCombatantId targetId}}
 		</a>
 		{{/each}}
 		)

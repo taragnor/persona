@@ -5,13 +5,15 @@ import {PersonaError} from "../persona-error.js";
 import {SidePanel} from "../side-panel.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {CombatEngine} from "./combat-engine.js";
+import {OpenerOption} from "./openers.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
 
 export class CombatPanel extends SidePanel {
-	_target: U<PToken>;
+	private _target: U<PToken>;
 	static instance: CombatPanel;
-	_powerUseLock: boolean = false;
-	mode: "main" | "inventory" | "persona" | "tactical";
+	private _openers: OpenerOption[] = [];
+	private _powerUseLock: boolean = false;
+	mode: "main" | "inventory" | "persona" | "tactical" | "opener";
 	tacticalTarget: U<PToken>;
 
 	constructor() {
@@ -88,11 +90,24 @@ export class CombatPanel extends SidePanel {
 		 html.find(".control-panel .tacticalMode").on("click", (ev) => void this._onTacticalMode(ev));
 		 html.find(".control-panel button.persona-switch").on("click", (ev) => void this._onPersonaModeSwitchButton(ev));
 		 html.find(".control-panel button.persona-name-button").on("click", (ev) => void this._onPersonaSwitchButton(ev));
+		 html.find(".control-panel button.persona-name-button").on("click", (ev) => void this._onPersonaSwitchButton(ev));
 		 html.rightclick( (ev) => this._onReturnToMainButton(ev));
+		 html.find(".control-panel .opener-list .option-target").on("click", (ev) => void this._onSelectOpenerTarget(ev));
+		 html.find(".control-panel .opener-list .simple-action").on("click", (ev) => void this._onSelectSimpleOpener(ev));
 		 if ( this.target ) {
 			 this.target.actor.refreshTheurgyBarStyle();
 		 }
 	 }
+
+	async setOpeningActionChoices(combatant: PersonaCombatant, openerList: OpenerOption[]) {
+		console.log(`Entering Opening Action choices`);
+		if (!combatant.isOwner) {return;}
+		if (this._target != combatant.token) {return;}
+		this._openers = openerList;
+		if (openerList.length == 0) {return;}
+		await this.setMode("opener");
+		console.log(`Set opening actions: ${openerList.length}`);
+	}
 
 	async setTacticalTarget(token: UN<PToken>) {
 		if (!PersonaSettings.combatPanel()) {return;}
@@ -113,14 +128,14 @@ export class CombatPanel extends SidePanel {
 		if (token == undefined || !token.actor) {
 			this._target = undefined;
 			this.clearPanel();
-			this.mode = "main";
+			await this.setMode("main");
 			return;
 		}
 		if (token.actor.isPC() && !token.actor.isRealPC()) {
 			return;
 		}
 		this._target = token;
-		this.mode = "main";
+		await this.setMode("main");
 		try {
 			await this.setTacticalTarget(null);
 			await this.updatePanel({});
@@ -157,9 +172,11 @@ export class CombatPanel extends SidePanel {
 			engagedList,
 			CONST,
 			target: this.target,
+			combatant,
 			persona,
 			actor,
 			token,
+			openers: this._openers ?? [],
 		};
 	}
 
@@ -171,16 +188,37 @@ export class CombatPanel extends SidePanel {
 	}
 
 	private async _onInventoryButton(_ev: JQuery.ClickEvent) {
-
-		this.mode = "inventory";
+		await this.setMode("inventory");
 		await this.updatePanel({});
 	}
 
 	private async _onReturnToMainButton(ev: JQuery.ClickEvent) {
 		if (this.mode == "main") {return;}
 		ev.stopPropagation();
-		this.mode = "main";
+		await this.setMode("main");
+	}
+
+	async setMode( mode: CombatPanel["mode"]) {
+		this.mode = mode;
 		await this.updatePanel({});
+	}
+
+	private async _onSelectOpenerTarget(ev: JQuery.ClickEvent) {
+		const combat = PersonaCombat.combat;
+		if (!combat) {return;}
+		const ret = await combat.openers.activateTargettedOpener(ev);
+		if (ret) {
+			await this.setMode("main");
+		}
+	}
+
+	private async _onSelectSimpleOpener(ev: JQuery.ClickEvent) {
+		const combat = PersonaCombat.combat;
+		if (!combat) {return;}
+		const ret = await combat.openers.activateGeneralOpener(ev);
+		if (ret) {
+			await this.setMode("main");
+		}
 	}
 
 	private async _onUseItem(ev: JQuery.ClickEvent) {
@@ -233,8 +271,7 @@ export class CombatPanel extends SidePanel {
 
 	private async _onTacticalMode(ev: JQuery.ClickEvent) {
 		ev.stopPropagation();
-		this.mode = "tactical";
-		await this.updatePanel();
+		await this.setMode("tactical");
 	}
 
 	private async _onPersonaModeSwitchButton(ev: JQuery.ClickEvent) {
@@ -252,8 +289,7 @@ export class CombatPanel extends SidePanel {
 			await actor.switchPersona(filteredPList.at(0)!.source.id);
 			return;
 		}
-		this.mode = "persona";
-		await this.updatePanel();
+		await this.setMode("persona");
 	}
 
 	private async _onPersonaSwitchButton(event: JQuery.ClickEvent) {

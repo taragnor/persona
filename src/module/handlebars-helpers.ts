@@ -12,7 +12,7 @@ import { PersonaError } from "./persona-error.js";
 import { FREQUENCY } from "../config/frequency.js";
 import { CardEvent } from "../config/social-card-config.js";
 import { ContainerTypes} from "./item/persona-item.js";
-import { PersonaCombat } from "./combat/persona-combat.js";
+import { PersonaCombat, PersonaCombatant } from "./combat/persona-combat.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
@@ -106,6 +106,24 @@ export class PersonaHandleBarsHelpers {
 				case "agi":
 					return persona.combatStats.agility;
 			}
+		},
+
+		"getCombatant" : function (id: PersonaCombatant["id"]) : U<PersonaCombat["combatant"]> {
+		const combat= PersonaCombat.combat;
+			if (!combat) {
+				PersonaError.softFail("combat is undefined, can't find combatant");
+				return undefined;
+			}
+			return combat.combatants.get(id);
+		},
+
+		"getCombatantTokenNameByCombatantId": function (id: PersonaCombatant["id"]) {
+		const combat= PersonaCombat.combat;
+			if (!combat) {
+				PersonaError.softFail("combat is undefined, can't find combatant");
+				return undefined;
+			}
+			return combat.combatants.get(id)?.token.name;
 		},
 
 		"statBoost": (persona: Persona, stat: PersonaStat) :number => {

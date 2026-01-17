@@ -51,7 +51,7 @@ declare interface HOOKS {
 	"preDeleteActiveEffect": PreDeleteHook<ActiveEffect>;
 	"updateScene": UpdateHook<Scene>;
 	"updateItem": UpdateHook<Item>;
-	"updateCombat": UpdateHook<Combat, {advanceTime: number, direction?:number, type: string}>;
+	"updateCombat": UpdateHook<Combat, {advanceTime?: number, direction?:number, type?: string}>;
 	"updateActor": UpdateHook<Actor>;
 	"updateWall": UpdateHook<WallDocument>;
 	"updateRegion": UpdateHook<RegionDocument>;

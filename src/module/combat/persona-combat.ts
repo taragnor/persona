@@ -472,12 +472,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			this.handleStartTurnEffects(combatant),
 		);
 		await this.execStartingTrigger(combatant);
-		const openingReturn = await this.openers.execOpeningRoll(combatant);
-		if (openingReturn) {
-			const {data, roll} = openingReturn;
-			const openerMsg = await foundry.applications.handlebars.renderTemplate('systems/persona/parts/openers-list.hbs', {roll, openers: data, combatant});
-			startTurnMsg.push(openerMsg);
-			baseRolls.push(roll);
+		// const openingReturn = await this.openers.execOpeningRoll(combatant);
+		// if (openingReturn) {
+		// 	const {data, roll} = openingReturn;
+		// 	const openerMsg = await foundry.applications.handlebars.renderTemplate('systems/persona/parts/openers-list.hbs', {roll, openers: data, combatant});
+		const openingData= await this.openers.printOpenerList(combatant);
+		if (openingData) {
+			startTurnMsg.push(openingData.openerMsg);
+			baseRolls.push(openingData.roll);
 		}
 		const speaker = {alias: 'Combat Turn Start'};
 		const messageData = {

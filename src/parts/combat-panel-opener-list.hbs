@@ -1,0 +1,12 @@
+<h3>Choose Opening Action</h3>
+<section class="opener-list" data-combatant-id="{{combatant.id}}">
+<ul class="options-list">
+	{{#each openers as |opt j|}}
+	<li class="opener-option">
+		{{> "systems/persona/parts/opener-option-links.hbs" opt=opt}}
+	</li>
+	{{/each}}
+</ul>
+
+<button class="no-opener" > Pass </button>
+</section>
