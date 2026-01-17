@@ -662,6 +662,7 @@ export class CombatEngine {
 		const element = power.getDamageType(attacker.actor);
 		const targetP = target.actor.persona();
 		const resist = targetP.elemResist(element);
+		if (power.hasTag("theurgy")) {return null;}
 		const pierce = power.hasTag('pierce');
 		switch (resist) {
 			case 'reflect': {

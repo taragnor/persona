@@ -33,7 +33,7 @@ export abstract class DamageSystemBase implements DamageInterface {
 	}
 
 	protected setResistance(calc: DamageCalculation, power: Usable, situation: U<Situation>, resist: ResistStrength) {
-		const piercePower = power && power.hasTag('pierce');
+		const piercePower = power && power.hasTag('pierce') || power.hasTag("theurgy");
 		const pierceTag = situation != undefined && 'addedTags' in situation && situation.addedTags && situation.addedTags.includes('pierce');
 		if (piercePower || pierceTag) {return;}
 		switch (resist) {

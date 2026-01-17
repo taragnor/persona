@@ -153,6 +153,10 @@ export class FollowUpManager {
 
 	/** retunr true if selected else false if fails */
 	async chooseFollowUp(ev: JQuery.ClickEvent) :Promise<boolean> {
+		if (!PersonaCombat.combat || !PersonaCombat.combat.combatant?.isOwner) {
+			ui.notifications.warn("Can't act now, its not your turn");
+			return false;
+		}
 		const combatantId = HTMLTools.getClosestData(ev, "combatantId");
 		const powerId = HTMLTools.getClosestData(ev, "powerId");
 		const combatant = this.combat.combatants.get(combatantId);
