@@ -13,15 +13,15 @@ import {ConvertableDamageLevel, DamageSystemBase, NewDamageParams} from "./damag
 export class AltDamageSystem extends DamageSystemBase {
 
 	// private ENDURANCE_DR_MULTIPLIER = 0.01 as const;
-	private WEAPON_STRENGTH_DAMAGE_MULT = 0.5 as const;
+	private WEAPON_STRENGTH_DAMAGE_MULT = 0.75 as const;
+	private MAGIC_DAMAGE_MULT = 0.75 as const;
 	private HEALING_MAGIC_MULT = 1 as const;
 	private END_DIFF_PERCENTAGE_MULT = 0.5 as const;
-	private MAGIC_DAMAGE_MULT = 0.5 as const;
 	private BASE_VARIANCE = 2 as const;
 	private ARMOR_TO_DAMAGE_DIVISOR = 1.0 as const;
 	private ALL_OUT_ATTACK_HELPER_DIVISOR = 1/3;
-	private BASIC_ATTACK_LEVEL_DIVISOR = 0.666 as const;
-	private BASE_DAMAGE_LEVEL_DIVISOR = 0.25 as const;
+	private BASIC_ATTACK_LEVEL_DIVISOR = 0.5 as const;
+	private BASE_DAMAGE_LEVEL_DIVISOR = 0 as const;
 	// private STAT_DIFF_DAMAGE_BOOST_PERCENT = 0.02;
 	private _weaponDmgGrowth = new GrowthCalculator(1.20, 11, 4.5);
 
@@ -85,7 +85,7 @@ export class AltDamageSystem extends DamageSystemBase {
 		const varianceMult = userPersona.combatStats.getPhysicalVariance();
 		calc.add('evenBonus', variance * varianceMult, `Even Bonus (${variance}x Variance)` );
 		const damageLevelLoc = game.i18n.localize(DAMAGE_LEVELS[power.system.damageLevel]);
-		calc.add("multiplier", skillDamage.mult, `${damageLevelLoc} Damage Multiplier`);
+		calc.add("stackMult", skillDamage.mult, `${damageLevelLoc} Damage Multiplier`);
 		calc.setMinValue(1);
 		return calc ;
 	}
