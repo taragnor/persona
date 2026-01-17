@@ -117,11 +117,11 @@ export class RandomDungeonGenerator {
 			randx = this.rng.die(1,this.maxSquaresWidth)  -1;
 			randy = this.rng.die(1, this.maxSquaresHeight)-1 ;
 			if (!this.isInBounds(randx, randy)) {
-				throw new PersonaError("Out of bounds error, this shyouldn't happen");
+				throw new InvalidDungeonError("Out of bounds error, this shyouldn't happen");
 			}
 			if (safetyBreak ++ > 10000) {
 				Debug(this);
-				throw new PersonaError("Safety Break");
+				throw new InvalidDungeonError("Safety Break");
 			}
 		} while (this.sq(randx, randy) != undefined);
 		return {
@@ -132,10 +132,10 @@ export class RandomDungeonGenerator {
 
 	constructSquareAt( {x, y} : {x: number, y:number}, type: DungeonSquare["type"] ) : DungeonSquare {
 		if (!this.isInBounds(x, y)) {
-			throw new PersonaError(`Square ${x} ${y} is out of bounds`);
+			throw new InvalidDungeonError(`Square ${x} ${y} is out of bounds`);
 		}
 		if (this.sq(x, y)) {
-			throw new PersonaError(`Trying to create a quare a ${x} ${y} where one alerady exists`);
+			throw new InvalidDungeonError(`Trying to create a quare a ${x} ${y} where one alerady exists`);
 		}
 		const sq = new DungeonSquare(this, x, y, type);
 		this.squares[x][y]= sq;
@@ -195,7 +195,7 @@ export class RandomDungeonGenerator {
 			if (!origin) {
 				if (breakout++ > 10000) {
 					Debug(this);
-					throw new PersonaError("corridor create breakout trap");
+					throw new InvalidDungeonError("corridor create breakout trap");
 				}
 				continue;
 			}
@@ -226,7 +226,7 @@ export class RandomDungeonGenerator {
 			if (!origin) {
 				if (breakout++ > 10000) {
 					Debug(this);
-					throw new PersonaError("room create breakout trap");
+					throw new InvalidDungeonError("room create breakout trap");
 				}
 				continue;
 			}
@@ -269,7 +269,7 @@ export class RandomDungeonGenerator {
 			case a.x > b.x: return "left";
 			case a.y < b.y : return "down";
 			case a.y > b.y: return "up";
-			default: throw new PersonaError("Points are equal!");
+			default: throw new UnexpectedResultError("Points are equal!");
 		}
 	}
 
@@ -301,7 +301,7 @@ export class RandomDungeonGenerator {
 			.filter (x=> !x.isStartPoint());
 		const rm = this.rng.randomArraySelect(list);
 		if (!rm) {
-			throw new PersonaError("Can't assign exit room!");
+			throw new InvalidDungeonError("Can't assign exit room!");
 		}
 		rm.makeStairsDown();
 	}
@@ -336,35 +336,27 @@ export class RandomDungeonGenerator {
 	generate(numSquares: number, seedString: string = "TEST") {
 		const totalSquares = this.maxSquaresWidth * this.maxSquaresHeight;
 		if (numSquares > totalSquares) {
-			throw new PersonaError(`Too big, trying to request ${numSquares} with only ${totalSquares} available`);
+			throw new InvalidDungeonError(`Too big, trying to request ${numSquares} with only ${totalSquares} available`);
 		}
 		let timeout = 0;
 		while (timeout < 100) {
 			try {
 				this.createDungeon(numSquares, seedString);
-				break;
+				this.assignExit();
+				this.assignSpecialFloors();
+				this.assignSpecials();
+				this.assignTreasures();
+				this.finalizeSquares();
+				console.log( this.print());
+				return this;
 			} catch {
 				timeout ++;
 				seedString = seedString + "A";
 			}
 		}
 		if (timeout >= 100) {
-			PersonaError.softFail("Generation had too many errrors and had to bail out");
+			throw new InvalidDungeonError("Generation had too many errrors and had to bail out");
 		}
-		this.assignExit();
-		this.assignSpecialFloors();
-		this.assignSpecials();
-		this.assignTreasures();
-		this.finalizeSquares();
-		console.log( this.print());
-		return this;
-	}
-
-	assignSpecialFloor() {
-		if (this.rng.die(1,100) <= 80) {
-			return;
-		}
-		const specials = RandomDungeonGenerator.SPECIAL_FLOORS;
 	}
 
 	createDungeon(numSquares: number, seedString: string = "TEST") {
@@ -600,3 +592,8 @@ const SCENE_MOD_NAMES = {
 	"treasureFloor": "Treasure Floor",
 	"shadowDrops" : "Extra Shadow Drops",
 } as const;
+
+
+class InvalidDungeonError extends Error { }
+
+class UnexpectedResultError extends Error{ }
