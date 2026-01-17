@@ -126,6 +126,10 @@ export class PersonaHandleBarsHelpers {
 			return combat.combatants.get(id)?.token.name;
 		},
 
+		"resolveTokenNameWithAccessor": function (acc: UniversalTokenAccessor<PToken>) {
+			return PersonaDB.findToken(acc).name;
+		},
+
 		"statBoost": (persona: Persona, stat: PersonaStat) :number => {
 			return persona.source.system.combat.personaStats.permanentStatsBonuses[stat] ?? 0;
 		},

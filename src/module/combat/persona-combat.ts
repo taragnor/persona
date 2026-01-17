@@ -506,6 +506,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	}
 
+	static _openRollBlock(ev: JQuery.ClickEvent) {
+		$(ev.currentTarget).closest('.outer-roll-block').toggleClass('open');
+	}
+
+
+
 	static async activateGeneralOpener(ev: JQuery.ClickEvent) {
 		if (this.combat) {
 			await this.combat.openers.activateGeneralOpener(ev);

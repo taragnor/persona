@@ -166,5 +166,10 @@ export class CombatHooks {
 			}
 		});
 
+		Hooks.on("renderChatMessageHTML", (_msg, elem) => {
+			$(elem).find('.outer-roll-block').on('click', (ev) => void PersonaCombat._openRollBlock(ev));
+		});
+
 	}
+
 }
