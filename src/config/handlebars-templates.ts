@@ -99,6 +99,7 @@ const templateFileNames : string[] =[
 	"combat-panel-control-body-main.hbs",
 	"combat-panel-control-body-inventory.hbs",
 	"combat-panel-opener-list.hbs",
+	"combat-panel-follow-up-list.hbs",
 	"status-block.hbs",
 	"persona-name.hbs",
 	"input-consequence-social-card-action.hbs",

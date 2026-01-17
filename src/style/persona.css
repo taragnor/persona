@@ -1820,4 +1820,8 @@ textarea.finale-input {
 	font-size: 1.2em;
  }
 
+ .combat-panel .follow-ups .follow-up {
+	 cursor: pointer;
+ }
+
 

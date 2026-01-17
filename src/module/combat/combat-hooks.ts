@@ -7,6 +7,7 @@ import { PersonaError } from "../persona-error.js";
 import { PersonaSockets } from "../persona.js";
 import {FlagChangeDiffObject, OpenerManager} from "./openers.js";
 import {CombatPanel} from "./combat-panel.js";
+import {FollowUpManager} from "./follow-up-actions.js";
 
 export class CombatHooks {
 
@@ -63,10 +64,14 @@ export class CombatHooks {
 		Hooks.on("updateCombat", async (combat: PersonaCombat, diff) => {
 			const changes = diff as FlagChangeDiffObject;
 			if (!changes.flags) {return;}
-			if (OpenerManager.checkForOpeningChanges(changes)) {
-				if (!combat.combatant
+			if (!combat.combatant
 				|| !PersonaCombat.isPersonaCombatant(combat.combatant)) {return;}
+			if (OpenerManager.checkForOpeningChanges(changes)) {
 				await CombatPanel.instance.setOpeningActionChoices(combat.combatant, combat.openers.getOpenerChoices());
+			}
+			if (FollowUpManager.checkForFollowUpChanges(changes)) {
+				await CombatPanel.instance.setFollowUpChoices(combat.combatant, combat.followUp.getFollowUpChoices());
+
 			}
 		});
 
@@ -106,12 +111,12 @@ export class CombatHooks {
 		});
 
 		Hooks.on("onAddStatus", async function (token: PToken, status: StatusEffect)  {
+			if (!game.user.isGM) {
+				throw new PersonaError("Somehow isn't GM executing this");
+			}
 			switch (status.id) {
 				case "down":
 					if (status.id != "down") {return;}
-					if (!game.user.isGM) {
-						throw new PersonaError("Somehow isn't GM executing this");
-					}
 					if (game.combat) {
 						const allegiance = token.actor.getAllegiance();
 						const standingAllies = game.combat.combatants.contents

@@ -30,5 +30,10 @@
 		{{#if (eq mode "opener")}}
 		{{> "systems/persona/parts/combat-panel-opener-list.hbs" actor=persona.user CONST=CONST persona=selectedPersona openers=openers combatant=combatant}}
 		{{/if}}
+
+		{{#if (eq mode "followUp")}}
+		{{> "systems/persona/parts/combat-panel-follow-up-list.hbs" actor=persona.user CONST=CONST persona=selectedPersona followUps=followUps combatant=combatant}}
+		{{/if}}
+
 	</body>
 </div>

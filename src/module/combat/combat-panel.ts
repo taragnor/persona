@@ -5,6 +5,7 @@ import {PersonaError} from "../persona-error.js";
 import {SidePanel} from "../side-panel.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {CombatEngine} from "./combat-engine.js";
+import {FollowUpActionData} from "./follow-up-actions.js";
 import {OpenerOption} from "./openers.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
 
@@ -12,8 +13,9 @@ export class CombatPanel extends SidePanel {
 	private _target: U<PToken>;
 	static instance: CombatPanel;
 	private _openers: OpenerOption[] = [];
+	private _followUps: FollowUpActionData[] = [];
 	private _powerUseLock: boolean = false;
-	mode: "main" | "inventory" | "persona" | "tactical" | "opener";
+	mode: "main" | "inventory" | "persona" | "tactical" | "opener" | "followUp";
 	tacticalTarget: U<PToken>;
 
 	constructor() {
@@ -92,6 +94,9 @@ export class CombatPanel extends SidePanel {
 		 html.find(".control-panel button.persona-name-button").on("click", (ev) => void this._onPersonaSwitchButton(ev));
 		 html.find(".control-panel button.persona-name-button").on("click", (ev) => void this._onPersonaSwitchButton(ev));
 		 html.rightclick( (ev) => this._onReturnToMainButton(ev));
+		 html.find(".control-panel button.no-opener").on("click", (ev) => void this._onReturnToMainButton(ev));
+		 html.find(".control-panel button.act-again").on("click", (ev) => void this._onReturnToMainButton(ev));
+		 html.find(".control-panel .follow-ups .follow-up").on("click", (ev) => void this._onSelectFollowUp(ev));
 		 html.find(".control-panel .opener-list .option-target").on("click", (ev) => void this._onSelectOpenerTarget(ev));
 		 html.find(".control-panel .opener-list .simple-action").on("click", (ev) => void this._onSelectSimpleOpener(ev));
 		 if ( this.target ) {
@@ -100,13 +105,22 @@ export class CombatPanel extends SidePanel {
 	 }
 
 	async setOpeningActionChoices(combatant: PersonaCombatant, openerList: OpenerOption[]) {
-		console.log(`Entering Opening Action choices`);
 		if (!combatant.isOwner) {return;}
 		if (this._target != combatant.token) {return;}
 		this._openers = openerList;
 		if (openerList.length == 0) {return;}
 		await this.setMode("opener");
 		console.log(`Set opening actions: ${openerList.length}`);
+	}
+
+	async setFollowUpChoices( combatant: PersonaCombatant, followUpList : CombatPanel["_followUps"]) {
+		if (!combatant.isOwner) {return;}
+		if (this._target != combatant.token) {return;}
+		this._followUps = followUpList;
+		if (followUpList.length == 0) {return;}
+		await this.setMode("followUp");
+		console.log(`Set FollowUP actions: ${followUpList.length}`);
+
 	}
 
 	async setTacticalTarget(token: UN<PToken>) {
@@ -177,6 +191,7 @@ export class CombatPanel extends SidePanel {
 			actor,
 			token,
 			openers: this._openers ?? [],
+			followUps: this._followUps,
 		};
 	}
 
@@ -216,6 +231,15 @@ export class CombatPanel extends SidePanel {
 		const combat = PersonaCombat.combat;
 		if (!combat) {return;}
 		const ret = await combat.openers.activateGeneralOpener(ev);
+		if (ret) {
+			await this.setMode("main");
+		}
+	}
+
+	private async _onSelectFollowUp(ev: JQuery.ClickEvent) {
+		const combat = PersonaCombat.combat;
+		if (!combat) {return;}
+		const ret = await combat.followUp.chooseFollowUp(ev);
 		if (ret) {
 			await this.setMode("main");
 		}

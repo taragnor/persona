@@ -38,6 +38,7 @@ import {OpenerManager} from './openers.js';
 import {CombatPanel} from './combat-panel.js';
 import {TreasureSystem} from '../exploration/treasure-system.js';
 import {ModifierList} from './modifier-list.js';
+import {FollowUpManager} from './follow-up-actions.js';
 
 declare global {
 	interface SocketMessage {
@@ -58,6 +59,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	lastActivationRoll: number;
 	combatEngine: CombatEngine;
 	openers: OpenerManager;
+	followUp: FollowUpManager;
 
 	constructor (...args: unknown[]) {
 		super(...args);
@@ -65,6 +67,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		this.consecutiveCombat = 0;
 		this.defeatedFoes = [];
 		this.openers = new OpenerManager(this);
+		this.followUp = new FollowUpManager(this);
 	}
 
 	hasCombatantRanStartCombatTrigger(combatant: Combatant<ValidAttackers>) : boolean {
@@ -1787,86 +1790,94 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return this;
 	}
 
-	async onFollowUpAction(token: PToken, activationRoll: number) {
-		console.debug('Calling On Follow Up Action');
-		const combatant = token.object ? this.getCombatantByToken(token): null;
-		if (!combatant || !combatant.actor) {return;}
-		if (combatant.actor && combatant.actor.hasStatus('down')) {return;}
-		const combat = combatant.parent as PersonaCombat | undefined;
-		if (!combat) {return;}
-		const allies = this.getAllies(combatant as Combatant<ValidAttackers>)
-			.filter (ally => ally.actor?.canTakeFollowUpAction());
-		const followups = this.getUsableFollowUps(token, activationRoll).join('');
-		const validTeamworkAllies = allies
-			.flatMap( ally => {
-				if (ally == combatant) {return [];}
-				const actor = ally.actor;
-				if (!actor || !actor.teamworkMove ) {return [];}
-				if (!actor.persona().canUsePower(actor.teamworkMove, false)) {return [];}
-				const situation : CombatRollSituation = {
-					naturalRoll: activationRoll,
-					rollTags: ['attack', 'activation'],
-					rollTotal : activationRoll,
-					user: actor.accessor,
-				};
-				if (!actor.teamworkMove.testTeamworkPrereqs(situation, actor)) {return [];}
-				const targets = combat.getValidTargetsFor(actor.teamworkMove, combatant as Combatant<ValidAttackers>, situation);
-				if (targets.length == 0) {return [];}
-				return [ally];
-			});
-		const allout = (combat.getAllEnemiesOf(token)
-			.every(enemy => enemy.actor.hasStatus('down'))
-			&& combatant.actor.canAllOutAttack())
-			? '<li> All out attack </li>'
-			: '';
-		const listItems = validTeamworkAllies
-			.map( ally => {
-				const power = ally.actor.teamworkMove!;
-				return `<li>${power.name} (${ally.name})</li>`;
-			}).join('');
-		const teamworkList = !combatant.actor.isDistracted() ? listItems: '';
-		const msg = `<h2> Valid Follow Up Actions </h2>
-<ul>
-			<li> Act again </li>
-			${allout}
-			${followups}
-			${teamworkList}
-			</ul>
-`;
-		const messageData: MessageData = {
-			speaker: {alias: 'Follow Up Action'},
-			content: msg,
-			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-		};
-		await ChatMessage.create(messageData, {});
+	async onFollowUpAction(token: PToken, activationRoll: number) : Promise<void> {
+		try {
+			await this.followUp.onFollowUpAction(token, activationRoll);
+		} catch (e) {
+			PersonaError.softFail("Problem with onFollowUpAction", e);
+		}
 	}
 
-	getUsableFollowUps(token: PToken, activationRoll: number) : string []{
-		const combatant = token.object ? this.getCombatantByToken(token): null;
-		if (!combatant || !combatant.actor) {return [];}
-		const actor = combatant.actor;
-		const situation : CombatRollSituation = {
-			naturalRoll: activationRoll,
-			rollTags: ['attack', 'activation'],
-			rollTotal: activationRoll,
-			user: actor.accessor,
-		};
-		const persona = actor.persona();
-		const followUpMoves = actor.powers
-			.filter(pwr => pwr.isFollowUpMove()
-				&& persona.canPayActivationCost(pwr)
-				&& pwr.testFollowUpPrereqs(situation, actor)
-			);
-		const followup = followUpMoves
-			.map(usable => {
-				const targets =this.getValidTargetsFor(usable, combatant, situation)
-					.map (x=> x.token.name);
+	// async onFollowUpAction(token: PToken, activationRoll: number) {
+	// 	console.debug('Calling On Follow Up Action');
+	// 	const combatant = token.object ? this.getCombatantByToken(token): null;
+	// 	if (!combatant || !combatant.actor) {return;}
+	// 	if (combatant.actor && combatant.actor.hasStatus('down')) {return;}
+	// 	const combat = combatant.parent as PersonaCombat | undefined;
+	// 	if (!combat) {return;}
+	// 	const allies = this.getAllies(combatant as Combatant<ValidAttackers>)
+	// 		.filter (ally => ally.actor?.canTakeFollowUpAction());
+	// 	const followups = this.getUsableFollowUps(token, activationRoll).join('');
+	// 	const validTeamworkAllies = allies
+	// 		.flatMap( ally => {
+	// 			if (ally == combatant) {return [];}
+	// 			const actor = ally.actor;
+	// 			if (!actor || !actor.teamworkMove ) {return [];}
+	// 			if (!actor.persona().canUsePower(actor.teamworkMove, false)) {return [];}
+	// 			const situation : CombatRollSituation = {
+	// 				naturalRoll: activationRoll,
+	// 				rollTags: ['attack', 'activation'],
+	// 				rollTotal : activationRoll,
+	// 				user: actor.accessor,
+	// 			};
+	// 			if (!actor.teamworkMove.testTeamworkPrereqs(situation, actor)) {return [];}
+	// 			const targets = combat.getValidTargetsFor(actor.teamworkMove, combatant as Combatant<ValidAttackers>, situation);
+	// 			if (targets.length == 0) {return [];}
+	// 			return [ally];
+	// 		});
+	// 	const allout = (combat.getAllEnemiesOf(token)
+	// 		.every(enemy => enemy.actor.hasStatus('down'))
+	// 		&& combatant.actor.canAllOutAttack())
+	// 		? '<li> All out attack </li>'
+	// 		: '';
+	// 	const listItems = validTeamworkAllies
+	// 		.map( ally => {
+	// 			const power = ally.actor.teamworkMove!;
+	// 			return `<li>${power.name} (${ally.name})</li>`;
+	// 		}).join('');
+	// 	const teamworkList = !combatant.actor.isDistracted() ? listItems: '';
+	// 	const msg = `<h2> Valid Follow Up Actions </h2>
+// <ul>
+	// 		<li> Act again </li>
+	// 		${allout}
+	// 		${followups}
+	// 		${teamworkList}
+	// 		</ul>
+// `;
+	// 	const messageData: MessageData = {
+	// 		speaker: {alias: 'Follow Up Action'},
+	// 		content: msg,
+	// 		style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+	// 	};
+	// 	await ChatMessage.create(messageData, {});
+	// }
 
-				if (targets.length == 0) {return '';}
-				return `<li> ${usable.name} (${targets.join(', ')})</li>`;
-			});
-		return followup;
-	}
+	// getUsableFollowUps(token: PToken, activationRoll: number) : string []{
+	// 	const combatant = token.object ? this.getCombatantByToken(token): null;
+	// 	if (!combatant || !combatant.actor) {return [];}
+	// 	const actor = combatant.actor;
+	// 	const situation : CombatRollSituation = {
+	// 		naturalRoll: activationRoll,
+	// 		rollTags: ['attack', 'activation'],
+	// 		rollTotal: activationRoll,
+	// 		user: actor.accessor,
+	// 	};
+	// 	const persona = actor.persona();
+	// 	const followUpMoves = actor.powers
+	// 		.filter(pwr => pwr.isFollowUpMove()
+	// 			&& persona.canPayActivationCost(pwr)
+	// 			&& pwr.testFollowUpPrereqs(situation, actor)
+	// 		);
+	// 	const followup = followUpMoves
+	// 		.map(usable => {
+	// 			const targets =this.getValidTargetsFor(usable, combatant, situation)
+	// 				.map (x=> x.token.name);
+
+	// 			if (targets.length == 0) {return '';}
+	// 			return `<li> ${usable.name} (${targets.join(', ')})</li>`;
+	// 		});
+	// 	return followup;
+	// }
 
 	async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll: R}[], messageOptions: Foundry.MessageOptions = {}): Promise<ChatMessage<R>> {
 		const rollTransformer = function (roll: Roll) {
@@ -1988,7 +1999,6 @@ CombatHooks.init();
 
 export type PersonaCombatant = NonNullable<PersonaCombat['combatant']> & {actor: ValidAttackers , token: PToken, parent: PersonaCombat};
 
-type CombatRollSituation = AttackResult['situation'];
 
 type IntoCombatant = PersonaCombatant | UniversalTokenAccessor<PToken> | UniversalActorAccessor<ValidAttackers>;
 

@@ -529,14 +529,6 @@ async chooseOpener(openerName: string) {
 	await this.modifyOpenerMsg(msgTarget, openerName);
 }
 
-// async chooseOpener(event: JQuery.ClickEvent) {
-// 	const actionName = $(event.currentTarget).parents('li.opener-option').find('.option-name').text().trim();
-// 	const chatMsgId = HTMLTools.getClosestData(event, 'messageId');
-// 	const msg = game.messages.get(chatMsgId);
-// 	if (!msg) {return;}
-// await this.modifyOpenerMsg(mmgs, actionName);
-// }
-
 async modifyOpenerMsg(msg: ChatMessage, actionName: string) {
 	if (!msg) {return;}
 	const choice = $(`<div class='opener-choice'>
@@ -616,6 +608,12 @@ type OptionEffect = keyof OptionEffects;
 
 export type FlagChangeDiffObject = {
 	flags ?: {
-		persona?: Record<typeof OpenerManager["OPENING_ACTION_FLAG_NAME"],OpenerOption[]>;
+		persona?: CombatFlags
 	}
 };
+
+declare global {
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+	interface CombatFlags extends Record<typeof OpenerManager["OPENING_ACTION_FLAG_NAME"], OpenerOption[]> {
+	}
+}
