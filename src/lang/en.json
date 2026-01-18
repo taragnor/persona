@@ -302,7 +302,7 @@
 	"persona.modifier.maxhpMult": "Max Hp Multiplier (old form)",
 	"persona.modifier.maxhpMult-new": "Max Hp Multiplier (new form)",
 	"persona.modifier.maxmpMult": "Max MP Multiplier",
-	"persona.modifier.hpCostMult": "HP cost multiplier (Deprecated)",
+	"persona.modifier.hpCostMult": "HP cost multiplier (for actors only not powers)",
 	"persona.modifier.mpCostMult": "MP cost multiplier (Deprecated)",
 	"persona.modifier.save": "Saving Throws",
 	"persona.modifier.recovery": "Recovery Amount",
