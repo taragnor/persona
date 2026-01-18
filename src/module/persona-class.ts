@@ -970,7 +970,7 @@ knowsPowerInnately(power : Power)  : boolean {
 	}
 
 	hpCostMod() : ModifierList {
-		return this.getBonuses("hpCostMult");
+		return this.getBonuses("power-hp-cost");
 	}
 
 	canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {

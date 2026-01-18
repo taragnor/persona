@@ -518,9 +518,12 @@ export class RandomDungeonGenerator {
 		for (const i of this.scene.regions) {
 			await i.delete();
 		}
+		for (const i of this.scene.drawings) {
+			await i.delete();
+		}
 		for (const t of this.scene.tokens) {
 			if (game.itempiles && game.itempiles.API.isValidItemPile(t)) {
-				await t.delete();
+			await t.delete();
 				continue;
 			}
 			if (t.actor && t.actor.isShadow()) {await t.delete();}

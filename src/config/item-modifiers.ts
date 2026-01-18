@@ -24,6 +24,8 @@ const DEPRECATED_TYPES = [
 	"wpnDmg_high",
 	"weakestSlot",
 	"pay",
+	"hpCostMult",
+	"mpCostMult",
 ] as const;
 
 export const COMBAT_BONUS_TYPES = [
@@ -69,8 +71,6 @@ export const ACTOR_STATS_TYPES = [
 	"maxhpMult-new", //newform straight multiply
 	"maxmp",
 	"maxmpMult",
-	"hpCostMult",
-	"mpCostMult",
 	"xp-multiplier",
 	"inactive-party-member-xp-gains", //decimal percentage additive , max 1.0
 	"navigator-xp-mult", //XP gained while navigating

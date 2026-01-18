@@ -413,16 +413,31 @@ export class FinalizedCombatResult {
 	}
 
 	async #onUsePowerTriggered() {
-		if (!this.attacker || !this.power) {return;}
+		const attacker = this.attacker;
+		const power = this.power;
+		if (!attacker && this.attacks.length > 0) {
+			console.log("Not running onUse power since no attacker");
+			Debug(this);
+			return;
+		}
+		if (!power && this.attacks.length > 0) {
+			console.log("Not running onUse power since no power");
+			Debug(this);
+			return;
+		}
+		if ((!attacker || !power)) {
+			return;
+		}
 		const situation : Situation = {
 			trigger: 'on-use-power',
-			user: this.attacker.actor.accessor,
-			usedPower: this.power.accessor,
+			user: attacker.actor.accessor,
+			attacker: attacker.actor.accessor,
+			usedPower: power.accessor,
 			triggeringCharacter : this.attacker.actor.accessor,
 			triggeringUser: game.user,
 			combatResult: this,
 		};
-		const trigg= (await TriggeredEffect.onTrigger('on-use-power', this.attacker.actor, situation)).finalize();
+		const trigg= (await TriggeredEffect.onTrigger('on-use-power', attacker.actor, situation)).finalize();
 		this.addChained(trigg);
 	}
 

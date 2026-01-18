@@ -57,8 +57,8 @@ export class ModifierList {
 		this._data= this._data.filter( x=> x.modifier != 0);
 	}
 
-	list(situtation: Situation): [number, string][] {
-		const filtered = this.validModifiers(situtation);
+	list(situtation: Situation, listType : ModifierList["listType"] = this.listType): [number, string][] {
+		const filtered = this.validModifiers(situtation, listType);
 		return filtered.map( x=> [x.modifier, x.name]);
 	}
 
@@ -67,11 +67,11 @@ export class ModifierList {
 		return new ModifierList(list, this.listType);
 	}
 
-	validModifiers (situation: Situation) : ModifierListItem[]  {
+	validModifiers (situation: Situation, type : ModifierList["listType"] = this.listType) : ModifierListItem[]  {
 		return this._data.filter( item => {
 			try {
 				// const source = item.source ? PersonaDB.find(item.source) ?? null: null;
-				if (item.modifier == 0) {return false;}
+				if (item.modifier == 0 && type =="standard" ) {return false;}
 					return testPreconditions(item.conditions, situation);
 				} catch (e) {
 					PersonaError.softFail("Problem with Valid MOdifiers in situation, can't get source",e,item );
@@ -125,7 +125,7 @@ export class ModifierList {
 	total(situation: Situation , style ?: ModifierList["listType"]) : number;
 	total(situationOrActor: Situation | ValidAttackers , style = this.listType) : number {
 		const situation :Situation = situationOrActor instanceof PersonaActor  ? {user: situationOrActor.accessor} : situationOrActor;
-		const mods = this.validModifiers(situation);
+		const mods = this.validModifiers(situation, style);
 		switch (style) {
 			case "standard": {
 				const base =  mods.reduce( (acc, item) => acc + item.modifier , 0);
@@ -152,31 +152,11 @@ export class ModifierList {
 		}
 	}
 
-	// static testPreconditions (...args: Parameters<typeof testPreconditions>) : boolean {
-	// 	return testPreconditions( ...args);
-	// }
-
-	// static resolveVariableModifiers( variableMods: ModifierListItem["variableModifier"], _situation: Situation) : number {
-	// 	return Array.from(variableMods).reduce( (acc, varmod) => {
-	// 		const sign = varmod.makeNegative ? -1 : 1;
-	// 		switch (varmod.variable) {
-	// 			case "escalationDie":
-	// 				if (!game.combat) {return acc;}
-	// 				return acc + (((game?.combat as PersonaCombat )?.getEscalationDie() ?? 0) * sign);
-	// 			case "tensionPool":
-	// 					return (TensionPool.instance.amt ?? 0) * sign;
-	// 			default:
-	// 					varmod.variable satisfies never;
-	// 		}
-	// 		return acc;
-	// 	},0);
-	// }
-
 	/** returns an array of values to use in printing the rol */
-	printable(situation:Situation) : ResolvedModifierList {
+	printable(situation:Situation, listType = this.listType) : ResolvedModifierList {
 		const signedFormatter = new Intl.NumberFormat("en-US", {signDisplay:"always"});
 		return this
-			.validModifiers(situation)
+			.validModifiers(situation, listType)
 			.map( ({name, modifier}) => {
 				const total = modifier;
 				return { name, modifier: signedFormatter.format(total), raw: total};

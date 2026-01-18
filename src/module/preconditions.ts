@@ -1229,7 +1229,10 @@ function rollPropertyIs(condition : SourcedPrecondition  & {type: "boolean"; boo
 
 function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "combat-comparison"}, situation: Situation)  : U<boolean> {
 	if (condition.combatProp == "in-combat") {
-		return Boolean(situation.activeCombat);
+		if (situation.activeCombat) {return true;}
+		const combat = PersonaCombat.combat;
+		if (combat && !combat.isSocial) {return true;}
+		return false;
 	}
 	const subjects = getSubjects(condition, situation, "conditionTarget");
 	if (!subjects || !subjects.at(0)) {return undefined;}

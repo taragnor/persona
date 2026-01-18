@@ -273,7 +273,7 @@ export class OpenerManager {
 				msg.push('Success');
 				break;
 			}
-			case (saveTotal <= 5):{
+			case (saveTotal <= 2):{
 				msg.push('Failure (Miss Turn + lose 10% Resources)');
 				options.push({
 					optionName: 'Throw Away Money (Miss Turn + lose 10% Resources)',

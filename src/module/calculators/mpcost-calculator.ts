@@ -17,7 +17,7 @@ export class MPCostCalculator extends CostCalculator {
 			this.mpCost_multiattack(pwr),
 			this.#modifiers(pwr),
 		];
-		return Math.round(this.combineModifiers(mods));
+		return Math.max(0, Math.round(this.combineModifiers(mods)));
 	}
 
 	static mpCost_damagePower(pwr : Power) : CostModifier {

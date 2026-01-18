@@ -1218,7 +1218,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	getBonuses(this: ItemModifierContainer & PersonaItem, modNames: MaybeArray<NonDeprecatedModifierType>) : ModifierList {
-		const effects= this.getPassiveEffects(null);
+			const effects = this.getPassiveEffects(null);
 		const mods = PersonaItem.getModifier(effects, modNames);
 		const modList = new ModifierList(mods);
 		return modList;
@@ -1930,11 +1930,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				usedPower: this.accessor,
 				attacker: userPersona.user.accessor,
 			};
-			const list = userPersona.getBonuses('mpCostMult');
+			const list = userPersona.getBonuses('power-mp-cost-mult');
 			mult = list.total(sit, 'percentage');
 		}
 		const baseMPCost = this.baseMPCost;
-		return Math.round(baseMPCost * mult);
+		return Math.clamp(Math.round(baseMPCost * mult), 0,  1000);
 	}
 
 

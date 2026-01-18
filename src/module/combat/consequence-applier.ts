@@ -27,17 +27,27 @@ export class ConsequenceApplier {
 			if (statusAdd && attacker) {
 				const attackerActor = PersonaDB.findToken(attacker)?.actor;
 				if (attackerActor) {
-					const situation : Situation= {
+					const sitPartial ={
 						target: actor.accessor,
-						user: actor.accessor,
-						triggeringCharacter: actor.accessor,
+						triggeringCharacter: attackerActor.accessor,
 						attacker: attackerActor.accessor,
 						trigger : "on-inflict-status",
 						usedPower: power?.accessor,
 						statusEffect: status.id,
 						triggeringUser: game.user,
-					};
-					chained.push((await TriggeredEffect.onTrigger("on-inflict-status", actor, situation)).finalize());
+					} as const;
+					for (const user of [actor, attackerActor]) {
+						const situation : Situation =  {
+							...sitPartial,
+							user: user.accessor,
+						};
+						const eff = (await TriggeredEffect.onTrigger("on-inflict-status", user, situation))
+							.finalize()
+							.emptyCheck() ;
+						if (eff) {
+							chained.push(eff);
+						}
+					}
 				}
 			}
 			if (statusAdd && token) {

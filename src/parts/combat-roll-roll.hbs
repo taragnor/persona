@@ -19,46 +19,45 @@
 						{{joinStepsHTML atk.attackResult.critRange.steps}}
 					</div>
 			</div>
-			{{/if}}
-			{{#if atk.attackResult.instantKillRange}}
-			<div class="instant-kill">
-				<div class="tooltip">
-					<span>
-						Instant Kill Range:
-					</span>
-					<span >
-						{{atk.attackResult.instantKillRange.low}}
-						-
-						{{atk.attackResult.instantKillRange.high}}
-					</span>
-						<div class="tooltiptext">
-							{{joinStepsHTML atk.attackResult.instantKillRange.steps}}
-						</div>
-				</div>
-			</div>
-			{{/if}}
-			{{#if atk.attackResult.ailmentRange}}
-			<div class="ailment-range">
-				<div class="tooltip">
-					<span>
-						Ailment Range:
-					</span>
-					<span>
-						{{atk.attackResult.ailmentRange.low}}
-						-
-						{{atk.attackResult.ailmentRange.high}}
-					</span>
-					<div class="tooltiptext">
-						{{joinStepsHTML atk.attackResult.ailmentRange.steps}}
-					</div>
-				</div>
-			</div>
-			{{/if}}
 		</div>
-		<hr>
+		{{/if}}
+		{{#if atk.attackResult.instantKillRange}}
+		<div class="instant-kill">
+			<div class="tooltip">
+				<span>
+					Instant Kill Range:
+				</span>
+				<span >
+					{{atk.attackResult.instantKillRange.low}}
+					-
+					{{atk.attackResult.instantKillRange.high}}
+				</span>
+					<div class="tooltiptext">
+						{{joinStepsHTML atk.attackResult.instantKillRange.steps}}
+					</div>
+			</div>
+		</div>
+		{{/if}}
+		{{#if atk.attackResult.ailmentRange}}
+		<div class="ailment-range">
+			<div class="tooltip">
+				<span>
+					Ailment Range:
+				</span>
+				<span>
+					{{atk.attackResult.ailmentRange.low}}
+					-
+					{{atk.attackResult.ailmentRange.high}}
+				</span>
+				<div class="tooltiptext">
+					{{joinStepsHTML atk.attackResult.ailmentRange.steps}}
+				</div>
+			</div>
+		</div>
+		{{/if}}
 	</div>
+	<hr>
 	<div class="attack-result">
 		{{prettyAtkResult atk.attackResult}}
 	</div>
-
 </section>

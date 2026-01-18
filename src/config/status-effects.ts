@@ -168,6 +168,10 @@ export const STATUS_EFFECT_LIST = [
 		icon: "icons/weapons/staves/staff-orb-red.webp",
 		tags: [],
 	}, {
+		id: "tactical-shift",
+		icon: "icons/svg/wingfoot.svg",
+		tags: [],
+	}, {
 		id:"challenged",
 		icon: "icons/skills/melee/swords-parry-block-blue.webp",
 		tags: [],
