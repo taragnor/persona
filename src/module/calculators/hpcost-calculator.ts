@@ -15,7 +15,7 @@ export class HPCostCalculator extends CostCalculator {
 			this.hpCost_buffOrDebuff(pwr),
 			this.#modifiers(pwr),
 		];
-		return Math.round(this.combineModifiers(mods));
+		return Math.clamp(Math.round(this.combineModifiers(mods)), 0 , 100);
 	}
 
   static tagAdjust(pwr: Power) : CostModifier {

@@ -1106,7 +1106,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			return Math.round(calcedHPPercent * persona.hpCostMod().total(situation, 'percentage'));
 		}
 		const oldHPCost = this.oldhpCost();
-		return Math.round(oldHPCost * persona.hpCostMod().total(situation, 'percentage'));
+		return Math.clamp(Math.round(oldHPCost * persona.hpCostMod().total(situation, 'percentage')), 0, 1000);
 	}
 
 	powerCostString_PC(this: Power, persona: Persona) : string {
