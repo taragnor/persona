@@ -99,6 +99,7 @@ export class CombatPanel extends SidePanel {
 		 html.find(".control-panel .follow-ups .follow-up").on("click", (ev) => void this._onSelectFollowUp(ev));
 		 html.find(".control-panel .opener-list .option-target").on("click", (ev) => void this._onSelectOpenerTarget(ev));
 		 html.find(".control-panel .opener-list .simple-action").on("click", (ev) => void this._onSelectSimpleOpener(ev));
+		 html.find(".active-control-panel button.end-turn").on("click", (ev) => void this._onSelectEndTurn(ev));
 		 if ( this.target ) {
 			 this.target.actor.refreshTheurgyBarStyle();
 		 }
@@ -235,6 +236,11 @@ export class CombatPanel extends SidePanel {
 		if (ret) {
 			await this.setMode("main");
 		}
+	}
+
+	private async _onSelectEndTurn( _ev: JQuery.ClickEvent) {
+		if (this._target != this.combat.combatant?.token) {return;}
+		await this.combat.nextTurn();
 	}
 
 	private async _onSelectFollowUp(ev: JQuery.ClickEvent) {

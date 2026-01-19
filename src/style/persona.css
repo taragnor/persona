@@ -1855,3 +1855,11 @@ textarea.finale-input {
  .outer-roll-block.open .simple-target {
 	 visibility: hidden;
  }
+
+ .active-control-panel button.end-turn {
+  visibility: visible;
+ }
+
+ button.end-turn {
+		visibility: hidden;
+ }
