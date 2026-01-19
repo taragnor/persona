@@ -231,6 +231,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	async combatantsEndCombat() : Promise<void> {
+		if (!game.user.isGM) {return;}
 		await this.endCombatTriggers();
 		await this.reviveFallenActors();
 		const promises = this.combatants.contents.map( async (c) => {
@@ -1446,12 +1447,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	/**return true if the target is eligible to use the power based on whose turn it is
 	 */
 	turnCheck(token: PToken): boolean {
-		if (this.isSocial) {return true;}
+		if (
+			this.isSocial
+			|| token.actor.hasStatus('baton-pass')
+			|| token.actor.hasStatus('tactical-shift')
+			|| token.actor.hasStatus('bonus-action')) {
+			return true;
+		}
 		if (!this.combatant) {return false;}
-		if (token.actor.hasStatus('baton-pass'))
-		{return true;}
-		if (token.actor.hasStatus('bonus-action'))
-		{return true;}
 		return (this.combatant.token.id == token.id);
 	}
 
@@ -1478,7 +1481,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		if (!actor.hasStatus('bonus-action')) {ui.notifications.warn('No bonus action');}
 		const allOutAttack = PersonaDB.getBasicPower('All-out Attack');
 		if (!allOutAttack) {throw new PersonaError("Can't find all out attack in database");}
-		const attacker= comb.token as PToken;
+		const attacker = comb.token as PToken;
 		const result = await combat.combatEngine.usePower(attacker, allOutAttack);
 		await this.postActionCleanup(attacker, result);
 
@@ -1690,16 +1693,16 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		} catch  {
 			PersonaError.softFail('Problem with awarding XP');
 		}
-		try{
+		try {
 			const treasure = await TreasureSystem.generateBattleTreasure(defeatedFoes);
 			await Metaverse.printTreasure(treasure);
 			await Metaverse.distributeMoney(treasure.money, pcs);
-			void NavigatorVoiceLines.playVoice({
-				type: "great-work"
-			});
 		} catch (e)  {
 			PersonaError.softFail('Problem with generating treasure', e);
 		}
+		await NavigatorVoiceLines.playVoice({
+			type: "great-work"
+		});
 	}
 
 	displayCombatHeader(element : JQuery<HTMLElement>) {

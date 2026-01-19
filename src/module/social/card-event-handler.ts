@@ -79,11 +79,11 @@ export class SocialCardEventHandler {
 			cardData.sound = await PersonaSounds.playFree(event.sound, event.volume ?? 0.5);
 		}
 		if (ArrayCorrector(event.choices).length > 0) {
-			const cardEvent = await new Promise( (conf, _rej) => {
+			const cardChoice = await new Promise( (conf, _rej) => {
 				this.owner.setContinuation(conf);
 			});
-			if (cardEvent != undefined) {
-				const choice = cardEvent as CardData["eventList"][number]["choices"][number];
+			if (cardChoice != undefined) {
+				const choice = cardChoice as CardData["eventList"][number]["choices"][number];
 				await this.handleCardChoice(this.cardData, choice);
 			}
 		}
@@ -439,6 +439,9 @@ export class SocialCardEventHandler {
 				situation));
 	}
 
+	static isChainEvent(ev: CardData["eventList"][number]) : boolean {
+		return ev.chainLabel != undefined && ev.chainLabel.length > 0;
+	}
 
 	#getCardEvent(cardData:CardData) : CardEvent | undefined  {
 		const forced = this.checkForcedEvents();
@@ -446,12 +449,7 @@ export class SocialCardEventHandler {
 			return forced;
 		}
 		let eventList = this.eventList()
-		//chain events only happen when forced
-			.filter( ev => ev.chainLabel == undefined || ev.chainLabel.length== 0);
-			// .filter ( ev => !ev.eventTags.includes("disabled"))
-			// .filter( (ev) => !cardData.eventsChosen.includes(ev) && testPreconditions(
-			// 	ConditionalEffectManager.getConditionals( ev.conditions, null, null, null),
-			// 	situation));
+			.filter( ev => !SocialCardEventHandler.isChainEvent(ev));
 		console.log(eventList);
 		const isEvType = function (ev: CardEvent, evType: keyof NonNullable<CardEvent["placement"]>) {
 			let placement = ev.placement ?? {
@@ -575,11 +573,6 @@ export class SocialCardEventHandler {
 			case "secondary":
 				PersonaError.softFail("Primary/Secondary no longer accepted, defaulting to 'expression' as skill");
 				return "expression";
-				// if (link instanceof PersonaActor){
-				// 	return link.getSocialStatToRaiseLink(choice);
-				// }else {
-				// 	return link.system.keyskill[choice];
-				// }
 			default:
 				return choice;
 		}
@@ -727,6 +720,47 @@ export class SocialCardEventHandler {
 			realSource: undefined,
 		}));
 		return testPreconditions(sourced, this.cardData.situation);
+	}
+
+	/** Generates the text for a choice by analyzing the auto effects*/
+	static appendedText(choice : SocialCard["system"]["events"][number]["choices"][number]) : string {
+		let starterTxt = "";
+
+		const roll = choice.roll;
+		roll.progressCrit = roll.progressCrit == undefined ? 0 : roll.progressCrit;
+		roll.progressSuccess = roll.progressSuccess == undefined ? 0 : roll.progressSuccess;
+		roll.progressFail = roll.progressFail == undefined ? 0 : roll.progressFail;
+		switch (roll.rollType) {
+			case "question":
+				return ""; //early bail out to not give away info
+			case "studentSkillCheck":
+				if (roll.progressSuccess || roll.progressCrit) {
+					const modifier = 0;
+					starterTxt += ` ${roll.studentSkill} ${modifier ? modifier : ""} Check Success (${roll.progressSuccess} + ${roll.progressCrit}). `;
+				}
+				break;
+			case "save": {
+				const modifier = 0;
+				if (roll.progressSuccess) {
+					starterTxt += `${roll.saveType} Save Success ${modifier ? modifier : ""} (${roll.progressSuccess} + ${roll.progressCrit}).`;
+				}
+			}
+				break;
+			case "none": {
+				const gainLose = roll.progressSuccess >= 0 ? "Gain" : "Lose";
+				if (roll.progressSuccess) {
+					starterTxt += `${gainLose} ${roll.progressSuccess} Progress Tokens. `;
+				}
+				break;
+			}
+			default:
+		}
+		if ((roll.progressFail ?? 0) != 0) {
+			const gainLose = roll.progressFail > 0 ? "Gain" : "Lose";
+			starterTxt += ` ${gainLose} ${roll.progressFail} on failure. `;
+		}
+		if (starterTxt.length > 0) { starterTxt += "<br>";}
+		return starterTxt +  choice.text;
 	}
 
 }

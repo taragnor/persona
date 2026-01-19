@@ -105,12 +105,13 @@ export class CombatPanel extends SidePanel {
 	 }
 
 	async setOpeningActionChoices(combatant: PersonaCombatant, openerList: OpenerOption[]) {
-		if (!combatant.isOwner) {return;}
-		if (this._target != combatant.token) {return;}
-		this._openers = openerList;
 		if (openerList.length == 0) {return;}
+		if (!combatant.isOwner) {return;}
+		if (game.user.isGM && combatant.hasPlayerOwner) {return;}
+		await this.setTarget(combatant.token);
+		this._openers = openerList;
 		await this.setMode("opener");
-		console.log(`Set opening actions: ${openerList.length}`);
+		// console.log(`Set opening actions: ${openerList.length}`);
 	}
 
 	async setFollowUpChoices( combatant: PersonaCombatant, followUpList : CombatPanel["_followUps"]) {

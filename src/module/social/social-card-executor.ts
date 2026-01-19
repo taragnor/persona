@@ -151,7 +151,7 @@ export class SocialCardExecutor {
 		};
 		const effectList = ConditionalEffectManager.getEffects(cardData.card.system.immediateEffects ?? [], null, null);
 		await PersonaSocial.applyEffects(effectList, cardData.situation, cardData.actor);
-		const msgs= await this.handler!.cardEventLoop();
+		const msgs = await this.handler!.cardEventLoop();
 		chatMessages.push(...msgs);
 		if (this.abort) { return chatMessages;}
 		const opp = await this.#execOpportunity(cardData);

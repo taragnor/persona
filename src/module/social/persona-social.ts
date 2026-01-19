@@ -594,7 +594,9 @@ export class PersonaSocial {
 	}
 
 	static getCardReply(req: SocketMessage["CARD_REPLY"]) {
-		console.log(`got reply ${req.cardId}`);
+		if (PersonaSettings.debugMode()) {
+			console.log(`got reply ${req.cardId}`);
+		}
 		if (!this.cardDrawPromise) {return;}
 		if (req.cardId) {
 			this.cardDrawPromise.res(req.cardId);

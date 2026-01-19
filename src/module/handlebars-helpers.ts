@@ -52,7 +52,6 @@ export class PersonaHandleBarsHelpers {
 		for (const [k, v] of Object.entries(PersonaHandleBarsHelpers.helpers)) {
 			Handlebars.registerHelper(k, v);
 		}
-
 	}
 
 	static helpers : Record<string, (...args: unknown[])=> unknown>  = {
@@ -272,7 +271,7 @@ export class PersonaHandleBarsHelpers {
 
 
 		'newlineConversion': function (txt: string) : SafeString {
-			return new Handlebars.SafeString(txt?.replaceAll("\n", "<br>") ?? "");
+			return new Handlebars.SafeString(txt?.replaceAll("\n", "<br>") ?? "ERROR");
 		},
 
 		'isHighestLinker': (_pc: PC, linkData:SocialLinkData ) => {
@@ -518,9 +517,11 @@ export class PersonaHandleBarsHelpers {
 			});
 			return ret;
 		},
+
 		"getSocialCardTagList": function (card: SocialCard) : string {
 			return card.cardTags;
 		},
+
 		"hasTag": function (source: PersonaActor | PersonaItem, tagName: string) : boolean {
 			switch (true) {
 				case source instanceof PersonaActor :{
@@ -534,6 +535,7 @@ export class PersonaHandleBarsHelpers {
 					return false;
 			}
 		},
+
 		"getEventTagList": function (event: SocialCard["system"]["events"][number]) {
 			const tags= event.eventTags.map(tag => localize(ROLL_TAGS_AND_CARD_TAGS[tag]));
 			return tags.join(", ");
@@ -542,18 +544,23 @@ export class PersonaHandleBarsHelpers {
 		"eq-m": function<T> (comparisonOne:T, ...compArr: T[]) {
 			return compArr.some(x=> x == comparisonOne);
 		},
+
 		"neq-m": function<T> (comparisonOne:T, ...compArr: T[]) {
 			return compArr.every(x=> x != comparisonOne);
 		},
+
 		"replace": function(originalString: string = "ERROR", replacementSet: Record<string, string> = {}): string {
 			return Helpers.replaceAll(originalString, replacementSet);
 		},
+
 		"isPowerIllegal":  function (persona: Persona, power: Power): boolean {
 			return power.system.slot > persona.highestPowerSlotUsable();
 		},
+
 		"canUseTalents": function (actor: PersonaActor) : boolean {
 			return actor.isValidCombatant();
 		},
+
 		"canUseCustomFocii": function (actor: PersonaActor) : boolean {
 			switch (actor.system.type) {
 				case "tarot":
@@ -568,6 +575,7 @@ export class PersonaHandleBarsHelpers {
 					return false;
 			}
 		},
+
 		"hasMP": function (actor: PersonaActor) : boolean {
 			switch (actor.system.type) {
 				case "pc":

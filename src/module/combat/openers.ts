@@ -476,7 +476,10 @@ async activateGeneralOpener (ev: JQuery.ClickEvent) :Promise<boolean> {
 	const powerId = HTMLTools.getClosestDataSafe(ev,'powerId', '');
 	const combatant = this.combat.ensureActivatingCharacterValid(combatantId);
 	const options = HTMLTools.getClosestDataSafe(ev, 'optionEffects', '');
-	if (!combatant) {return false;}
+	if (!combatant) {
+		PersonaError.softFail("Invalid combatant");
+		return false;
+	}
 	if (!powerId) {
 		this.execSimpleAction(options);
 		const actionName = $(ev.currentTarget).parents('li.opener-option').find('.option-name').text().trim();

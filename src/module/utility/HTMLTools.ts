@@ -25,11 +25,21 @@ export class HTMLTools {
 		return num as ReturnType;
 	}
 
-	static getClosestDataSafe<T extends string | number> (eventOrJQObj: Event | JQuery<HTMLElement> | JQuery.Event, prop: string, elseValue: T): T {
+	static getClosestDataSafe<T extends string | number> (eventOrJQObj: Event | JQuery<HTMLElement> | JQuery.Event, prop: string, elseValue: T): T extends string ? string : T extends number ? number : T {
+		type retType = T extends string ? string : T extends number ? number : T;
 		try {
-			return this.getClosestData(eventOrJQObj, prop);
+			const ret = this.getClosestData(eventOrJQObj, prop);
+			if (typeof elseValue == "string") {
+				return ret as retType;
+			}
+			if (typeof elseValue == "number") {
+				const num = Number(ret);
+				if (Number.isNaN(ret)) {return elseValue as retType;}
+				return num as retType;
+			}
+			throw new Error('strange return type');
 		} catch {
-			return elseValue;
+			return elseValue as retType;
 		}
 	}
 

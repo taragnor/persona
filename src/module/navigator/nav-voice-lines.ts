@@ -90,10 +90,10 @@ export class NavigatorVoiceLines {
 			if (lines.length == 0) {return;}
 			const line = randomSelect(lines);
 			if (selfOnly) {
-				this.nowPlaying=true;
+				this.nowPlaying = true;
 				await PersonaSounds.playFileSelf(line.fileName);
 			} else {
-				this.nowPlaying=true;
+				this.nowPlaying = true;
 				await PersonaSounds.playFileAll(line.fileName);
 			}
 			this.nowPlaying = false;
