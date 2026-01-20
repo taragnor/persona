@@ -693,8 +693,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		newTags.push('');
 		ev.eventTags = newTags;
 		await ev.update!(ev);
-		// const json = data.map(x=> (x as unknown as JSONAble).toJSON());
-		// await this.update( {'system.events': json});
 	}
 
 	async deleteEventTag(this: SocialCard, eventIndex:number, tagIndex: number) {
@@ -702,8 +700,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const ev= data[eventIndex];
 		ArrayCorrector(ev.eventTags).splice(tagIndex, 1);
 		await ev.update!(ev);
-		// const json = data.map(x=> (x as unknown as JSONAble).toJSON());
-		// await this.update( {'system.events': json});
 	}
 
 	async deleteItemTag(this: Consumable | InvItem | Weapon, index: number) : Promise<void> {
@@ -1201,10 +1197,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			cost = this.system.energy.cost;
 		} else {
 			const Ecost= this.energyCostData(persona);
-			// const estimates = this.estimateShadowCosts(persona.user);
 			required = Ecost.required;
 			cost = this.energyCost(persona);
-			// cost = Ecost.cost;
 		}
 		if (required > 0) {
 			costs.push(`EN>=${required}`);
@@ -1348,7 +1342,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				.map(eff =>
 					({
 						name: eff.source?.name ?? "Unknown Source",
-						// source: eff.source?.accessor ?? null,
 						source: eff.source,
 						owner: eff.owner,
 						realSource: eff.realSource,
