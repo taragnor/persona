@@ -232,7 +232,6 @@
 	"persona.damage-subtype.set-to-const" : "Set HP to constant",
 	"persona.damage-subtype.set-to-percent" : "Set to Percentage of Max HP (1 = 1%, min 1)",
 
-
 	"persona.status.duration.permanent": "Permanent",
 	"persona.status.duration.expedition": "Lasts for expedition",
 	"persona.status.duration.combat": "Combat Duration",

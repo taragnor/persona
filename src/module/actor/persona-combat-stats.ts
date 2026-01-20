@@ -26,7 +26,7 @@ export class PersonaCombatStats {
 	static DISFAVORED_STAT_WEIGHT_DECREASE = 0.5 as const;
 	static FAVORED_TAROT_STAT_WEIGHT_INCREASE = 1.33 as const;
 	static DISFAVORED_TAROT_STAT_WEIGHT_DECREASE = 0.8 as const;
-	static MAX_STAT_DIVISOR_WILD = 7 as const;
+	static MAX_STAT_DIVISOR_WILD = 8 as const;
 	static MAX_STAT_DIVISOR_CUSTOM = 9 as const;
 
 	constructor (persona: Persona) {

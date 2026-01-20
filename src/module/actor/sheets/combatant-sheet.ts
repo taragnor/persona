@@ -13,12 +13,13 @@ import { PersonaItem } from "../../item/persona-item.js";
 import { PersonaActorSheetBase } from "./actor-sheet.base.js";
 import {Persona} from "../../persona-class.js";
 import {CombatEngine} from "../../combat/combat-engine.js";
+import {lockObject} from "../../utility/anti-loop.js";
 
 export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	declare actor: ValidAttackers;
 
 	selectedPersona: U<Persona>;
-	_powerUseLock: boolean;
+	// private _powerUseLock: boolean;
 
 	override async getData() {
 		const data= await super.getData();
@@ -191,34 +192,41 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	protected async _useItemOrPower(power : UsableAndCard) {
 		Helpers.pauseCheck();
-		if (this._powerUseLock) {
-			ui.notifications.notify("Can't use another power now, as a power is already in process");
-			return;
-		}
-		this._powerUseLock = true;
 		Helpers.ownerCheck(this.actor);
-		const actor = this.actor;
-		let token : PToken | undefined;
-		if (actor.token) {
-			token = actor.token as PToken;
-		} else {
-			const tokens = this.actor._dependentTokens.get(game.scenes.current)!;
-			//THIS IS PROBABLY A bad idea to iterate over weakset
-			//@ts-expect-error not sure what type tokens are
-			token = Array.from(tokens)[0];
-		}
-		if (!token) {
-			token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
-		}
+		const lockOptions = {
+			timeoutMs: 5000,
+			inUseMsg: "Can't use another power now, as a power is already in process"
+		};
+
+		// if (this._powerUseLock) {
+		// 	ui.notifications.notify("Can't use another power now, as a power is already in process");
+		// 	return;
+		// }
+		// this._powerUseLock = true;
+		await lockObject( this, async () => {
+			const actor = this.actor;
+			let token : PToken | undefined;
+			if (actor.token) {
+				token = actor.token as PToken;
+			} else {
+				const tokens = this.actor._dependentTokens.get(game.scenes.current)!;
+				//THIS IS PROBABLY A bad idea to iterate over weakset
+				//@ts-expect-error not sure what type tokens are
+				token = Array.from(tokens)[0];
+			}
+			if (!token) {
+				token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
+			}
 
 		if (!token) {
 			throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` );
 		}
 		try {
-			const engine = new CombatEngine(undefined);
+			const combat = PersonaCombat.combat && PersonaCombat.combat.findCombatant(token) ? PersonaCombat.combat : undefined;
+			const engine = new CombatEngine(combat);
 			await engine.usePower(token, power );
 		} catch (e) {
-			this._powerUseLock = false;
+			// this._powerUseLock = false;
 			switch (true) {
 				case e instanceof CanceledDialgogError: {
 					break;
@@ -235,7 +243,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				default: break;
 			}
 		}
-		this._powerUseLock = false;
+		}, lockOptions);
+		// this._powerUseLock = false;
 	}
 
 	async useItem(event: Event) {

@@ -56,6 +56,7 @@ import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-s
 import {PersonaCompendium} from "../persona-compendium.js";
 import {ActorHooks} from "./actor-hooks.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
+import {lockObject} from "../utility/anti-loop.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -64,7 +65,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	declare sheet: PersonaActorSheetBase;
 
 	_antiloop : boolean = false;
-	_trackerAntiLoop : boolean = false;
+	// private _trackerAntiLoop : boolean = false;
 
 	static MPMap = new Map<number, number>;
 
@@ -261,26 +262,29 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async #refreshHpTracker(this:ValidAttackers)  : Promise<void> {
 		if (!game.user.isGM) {return;}
-		if (this._trackerAntiLoop) {return;}
-		this._trackerAntiLoop = true;
-		const mhp = this.mhp;
-		if (this.hp > mhp) {
-			await this.update({"system.combat.hp": mhp});
-		}
-		if (this.system.combat.hpTracker.value != this.hp
-			|| this.system.combat.hpTracker.max != mhp) {
-			this.system.combat.hpTracker.max = mhp;
-			this.system.combat.hpTracker.value = this.hp;
-			await this.update(
-				{
-					"system.combat.hpTracker.value" : this.hp,
-					"system.combat.hpTracker.max": mhp
-				});
-			if (PersonaSettings.debugMode()) {
-				console.log(`Tracker Value: ${this.system.combat.hpTracker.max}`);
+		//anti-loop
+		await lockObject(this, async ()  => {
+			// if (this._trackerAntiLoop) {return;}
+			// this._trackerAntiLoop = true;
+			const mhp = this.mhp;
+			if (this.hp > mhp) {
+				await this.update({"system.combat.hp": mhp});
 			}
-		}
-		this._trackerAntiLoop = false;
+			if (this.system.combat.hpTracker.value != this.hp
+				|| this.system.combat.hpTracker.max != mhp) {
+				this.system.combat.hpTracker.max = mhp;
+				this.system.combat.hpTracker.value = this.hp;
+				await this.update(
+					{
+						"system.combat.hpTracker.value" : this.hp,
+						"system.combat.hpTracker.max": mhp
+					});
+				// if (PersonaSettings.debugMode()) {
+				// 	console.log(`Tracker Value: ${this.system.combat.hpTracker.max}`);
+				// }
+			}
+		});
+		// this._trackerAntiLoop = false;
 	}
 
 	async treasureRoll(this: Shadow) : Promise<TreasureItem[]> {

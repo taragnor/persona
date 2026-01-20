@@ -13,15 +13,17 @@ import {ConvertableDamageLevel, DamageSystemBase, NewDamageParams} from "./damag
 export class AltDamageSystem extends DamageSystemBase {
 
 	// private ENDURANCE_DR_MULTIPLIER = 0.01 as const;
-	private WEAPON_STRENGTH_DAMAGE_MULT = 0.75 as const;
-	private MAGIC_DAMAGE_MULT = 0.75 as const;
+	private BASE_MAGIC_DMG = 10 as const;
+	private BASE_WEAPON_DMG = 10 as const;
+	private WEAPON_STRENGTH_DAMAGE_MULT = 1 as const;
+	private MAGIC_DAMAGE_MULT = 1 as const;
 	private HEALING_MAGIC_MULT = 1 as const;
-	private END_DIFF_PERCENTAGE_MULT = 0.5 as const;
+	private END_DIFF_PERCENTAGE_MULT = 0.7 as const;
 	private BASE_VARIANCE = 2 as const;
 	private ARMOR_TO_DAMAGE_DIVISOR = 1.0 as const;
 	private ALL_OUT_ATTACK_HELPER_DIVISOR = 1/3;
-	private BASIC_ATTACK_LEVEL_DIVISOR = 0.5 as const;
-	private BASE_DAMAGE_LEVEL_DIVISOR = 0 as const;
+	private BASIC_ATTACK_LEVEL_DIVISOR = 1.00 as const;
+	private BASE_DAMAGE_LEVEL_DIVISOR = 0.25 as const;
 	// private STAT_DIFF_DAMAGE_BOOST_PERCENT = 0.02;
 	private _weaponDmgGrowth = new GrowthCalculator(1.20, 11, 4.5);
 
@@ -68,6 +70,7 @@ export class AltDamageSystem extends DamageSystemBase {
 	public getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
 		const dtype = power.getDamageType(userPersona);
 		const calc = new DamageCalculation(dtype);
+		calc.add("base", this.BASE_WEAPON_DMG, "Base Weapon Damage");
 		const levelDivisor = power.isBasicPower() ? this.BASIC_ATTACK_LEVEL_DIVISOR : this.BASE_DAMAGE_LEVEL_DIVISOR;
 		const str = this.strDamageBonus(userPersona);
 		const weaponDmg = this.weaponDamage(userPersona);
@@ -102,6 +105,7 @@ export class AltDamageSystem extends DamageSystemBase {
 		const damageBonus = persona.getBonuses('magDmg').total(situation);
 		const bonusVariance = userPersona.getBonusVariance().total(situation);
 		const calc= new DamageCalculation(dtype);
+		calc.add("base", this.BASE_MAGIC_DMG, "Base Magic Damage");
 		const resMag = magicDmg.eval(situation);
 		if (!isHealing) {
 			calc.add('base', userPersona.user.level * this.BASE_DAMAGE_LEVEL_DIVISOR, `Character Level * ${this.BASE_DAMAGE_LEVEL_DIVISOR} `);
@@ -292,11 +296,11 @@ const DAMAGE_LEVEL_NEW = {
 	"none": {extraVariance: 0, baseAmt: 0, mult: 0, healMult: 0},
 	"miniscule": {extraVariance: 0, baseAmt: 0, mult: 0.5, healMult: 0.25},
 	"basic": {extraVariance: 0, baseAmt: 0, mult: 1, healMult: 0.5},
-	"light": {extraVariance: 0, baseAmt: 15, mult: 1.05, healMult: 1.25},
-	"medium": {extraVariance: 0, baseAmt: 20, mult: 1.20, healMult: 2},
-	"heavy": {extraVariance: 0, baseAmt: 30, mult: 1.4, healMult: 3},
-	"severe": {extraVariance: 0, baseAmt: 35, mult: 1.6, healMult: 4},
-	"colossal": {extraVariance: 0, baseAmt: 40, mult: 1.8, healMult :5},
+	"light": {extraVariance: 0, baseAmt: 10, mult: 1.10, healMult: 1.25},
+	"medium": {extraVariance: 0, baseAmt: 20, mult: 1.25, healMult: 2},
+	"heavy": {extraVariance: 0, baseAmt: 30, mult: 1.50, healMult: 3},
+	"severe": {extraVariance: 0, baseAmt: 40, mult: 1.75, healMult: 4},
+	"colossal": {extraVariance: 0, baseAmt: 50, mult: 2.0, healMult :5},
 } as const satisfies Readonly<Record< ConvertableDamageLevel, ExtraDamageParams>>;
 
 export const ALT_DAMAGE_SYSTEM = new AltDamageSystem();
