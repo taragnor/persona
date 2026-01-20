@@ -166,11 +166,11 @@ export const STATUS_EFFECT_LIST = [
 	}, {
 		id: "baton-pass",
 		icon: "icons/weapons/staves/staff-orb-red.webp",
-		tags: [],
+		tags: ["out-of-turn-action"],
 	}, {
 		id: "tactical-shift",
 		icon: "icons/svg/wingfoot.svg",
-		tags: [],
+		tags: ["out-of-turn-action"],
 	}, {
 		id:"challenged",
 		icon: "icons/skills/melee/swords-parry-block-blue.webp",
@@ -207,6 +207,10 @@ export const STATUS_EFFECT_LIST = [
 				mode: 1,
 			},
 		],
+	}, {
+		id:"preparing-fusion",
+		icon: "icons/skills/social/diplomacy-unity-alliance.webp",
+		tags: [],
 	},
 ] as const satisfies Omit<StatusEffectObject, "name">[];
 
@@ -216,7 +220,23 @@ declare global {
 	}
 }
 
-type StatusTag = "distracting" | "baneful" | "incapacitating" | "debuff" | "buff" | "lethal" | "downtime" | "beneficial" | "fade" | "fatigue" | "identifier";
+type StatusTag = typeof STATUS_PROPERTY_TAGS[number];
+
+const STATUS_PROPERTY_TAGS = [
+"distracting" ,
+"baneful" ,
+"incapacitating" ,
+"debuff" ,
+"buff" ,
+"lethal" ,
+"downtime" ,
+"beneficial" ,
+"fade" ,
+"fatigue" ,
+"identifier" ,
+"out-of-turn-action" ,
+"fusion"
+];
 
 CONFIG.statusEffects = STATUS_EFFECT_LIST
 	.map( ({id, icon, tags})=> {
@@ -315,3 +335,12 @@ export const STATUS_AILMENT_LIST = [
 ] as const satisfies StatusEffectId[];
 
 export const STATUS_AILMENT_SET : Set<StatusEffectId> = new Set(STATUS_AILMENT_LIST);
+
+export const STATUSES_BY_TAG : Record<StatusTag, Set<StatusEffectId>> = Object.fromEntries(
+	STATUS_PROPERTY_TAGS.map( tag => [ tag, new Set( CONFIG.statusEffects
+		.filter( x=> x.tags.includes(tag))
+		.map( x=> x.id as StatusEffectId)
+	)])
+);
+
+

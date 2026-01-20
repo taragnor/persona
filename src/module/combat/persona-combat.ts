@@ -1449,8 +1449,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	turnCheck(token: PToken): boolean {
 		if (
 			this.isSocial
-			|| token.actor.hasStatus('baton-pass')
-			|| token.actor.hasStatus('tactical-shift')
+			|| token.actor.hasStatusOfType("out-of-turn-action")
 			|| token.actor.hasStatus('bonus-action')) {
 			return true;
 		}

@@ -13,7 +13,7 @@ import { Persona } from "../persona-class.js";
 import { SHADOW_CREATURE_TYPE, SHADOW_ROLE } from "../../config/shadow-types.js";
 import { PowerTag } from "../../config/power-tags.js";
 import { POWER_TAGS_LIST } from "../../config/power-tags.js";
-import { fatigueLevelToStatus } from "../../config/status-effects.js";
+import { fatigueLevelToStatus, STATUSES_BY_TAG } from "../../config/status-effects.js";
 import { statusToFatigueLevel } from "../../config/status-effects.js";
 import { FatigueStatusId } from "../../config/status-effects.js";
 import { statusMap } from "../../config/status-effects.js";
@@ -1930,6 +1930,23 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			}
 		}
 		return removed > 0 && !cont;
+	}
+
+	/** removes all statuses that have a given status tag*/
+	async removeStatusesOfType( statusPropertyTag: typeof STATUS_EFFECT_LIST[number]["tags"][number])  : Promise<void> {
+		for (const eff of this.effects) {
+			for (const status of eff.statuses) {
+				if (STATUSES_BY_TAG[statusPropertyTag].has(status)) {
+					await eff.delete();
+				}
+			}
+		}
+	}
+
+	hasStatusOfType( statusPropertyTag: typeof STATUS_EFFECT_LIST[number]["tags"][number])  : boolean {
+		return this.effects.contents.some( eff =>
+			eff.statuses.intersection(STATUSES_BY_TAG[statusPropertyTag]).size > 0
+		);
 	}
 
 	/** returns new status to escalate if needed  */

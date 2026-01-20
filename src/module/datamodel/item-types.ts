@@ -539,46 +539,7 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 
 	get appendedText() : string {
 		type Choice = SocialCard["system"]["events"][number]["choices"][number];
-		const data = this as Choice;
-		return SocialCardEventHandler.appendedText(data);
-		// let starterTxt = "";
-
-		// const roll = data.roll;
-		// roll.progressCrit = roll.progressCrit == undefined ? 0 : roll.progressCrit;
-		// roll.progressSuccess = roll.progressSuccess == undefined ? 0 : roll.progressSuccess;
-		// roll.progressFail = roll.progressFail == undefined ? 0 : roll.progressFail;
-		// switch (roll.rollType) {
-		// 	case "question":
-		// 		return ""; //early bail out to not give away info
-		// 	case "studentSkillCheck":
-		// 		if (roll.progressSuccess || roll.progressCrit) {
-		// 			// const modifier = roll.modifier == 0 ? "" : `at ${NumberTools.signed(roll.modifier)}`;
-		// 			const modifier = 0;
-		// 			starterTxt += ` ${roll.studentSkill} ${modifier ? modifier : ""} Check Success (${roll.progressSuccess} + ${roll.progressCrit}).`;
-		// 		}
-		// 		break;
-		// 	case "save": {
-		// 		const modifier = 0;
-		// 		// const modifier = (roll.modifier ?? 0) == 0 ? "" : `at ${NumberTools.signed(roll.modifier)}`;
-		// 		if (roll.progressSuccess) {
-		// 			starterTxt += `${roll.saveType} Save Success ${modifier ? modifier : ""} (${roll.progressSuccess} + ${roll.progressCrit}).`;
-		// 		}
-		// 	}
-		// 		break;
-		// 	case "none": {
-		// 		const gainLose = roll.progressSuccess >= 0 ? "Gain" : "Lose";
-		// 		if (roll.progressSuccess) {
-		// 			starterTxt += `${gainLose} ${roll.progressSuccess} Progress Tokens`;
-		// 		}
-		// 		break;
-		// 	}
-		// 	default:
-		// }
-		// if ((roll.progressFail ?? 0) != 0) {
-		// 	const gainLose = roll.progressFail > 0 ? "Gain" : "Lose";
-		// 	starterTxt += ` ${gainLose} ${roll.progressFail} on failure.`;
-		// }
-		// return starterTxt +  data.text;
+		return SocialCardEventHandler.appendedText(this as Choice);
 	}
 
 	static override migrateData(source: Record<string, any>) : typeof source {
@@ -610,7 +571,6 @@ export const ITEMMODELS = {
 	weapon: WeaponDM,
 	universalModifier: UniversalModifierDM,
 	skillCard: SkillCardSchema,
-	// job: JobItemSchema,
 	socialCard: SocialCardSchema,
 	tag: TagSchema,
 } as const;

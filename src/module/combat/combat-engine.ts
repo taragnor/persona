@@ -105,7 +105,7 @@ export class CombatEngine {
 			if (!power.isOpener())  {
 				await attacker.actor.expendAction();
 			}
-			await attacker.actor.removeStatus('baton-pass');
+			await attacker.actor.removeStatusesOfType("out-of-turn-action");
 			await finalizedResult.toMessage(power.name, attacker.actor);
 			await this.postActionCleanup(attacker, finalizedResult);
 			return finalizedResult;

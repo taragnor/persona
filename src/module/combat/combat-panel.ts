@@ -105,21 +105,29 @@ export class CombatPanel extends SidePanel {
 		 }
 	 }
 
-	async setOpeningActionChoices(combatant: PersonaCombatant, openerList: OpenerOption[]) {
-		if (openerList.length == 0) {return;}
-		if (!combatant.isOwner) {return;}
-		if (game.user.isGM && combatant.hasPlayerOwner) {return;}
+	async selectCombatantIfNeeded(combatant: PersonaCombatant) : Promise<boolean> {
+		if (!combatant.isOwner) {return false;}
+		if (game.user.isGM && combatant.hasPlayerOwner) {return false;}
 		await this.setTarget(combatant.token);
+		return true;
+	}
+
+	async setOpeningActionChoices(combatant: PersonaCombatant, openerList: OpenerOption[]) : Promise<void> {
+		if (openerList.length == 0) {return;}
+		if (!await this.selectCombatantIfNeeded(combatant)) {
+			return;
+		}
 		this._openers = openerList;
 		await this.setMode("opener");
 		// console.log(`Set opening actions: ${openerList.length}`);
 	}
 
-	async setFollowUpChoices( combatant: PersonaCombatant, followUpList : CombatPanel["_followUps"]) {
-		if (!combatant.isOwner) {return;}
-		if (this._target != combatant.token) {return;}
-		this._followUps = followUpList;
+	async setFollowUpChoices( combatant: PersonaCombatant, followUpList : CombatPanel["_followUps"])  : Promise<void>{
 		if (followUpList.length == 0) {return;}
+		if (!await this.selectCombatantIfNeeded(combatant)) {
+			return;
+		}
+		this._followUps = followUpList;
 		await this.setMode("followUp");
 		console.log(`Set FollowUP actions: ${followUpList.length}`);
 

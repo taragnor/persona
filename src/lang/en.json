@@ -215,6 +215,7 @@
 	"persona.status.magic-shield" : "Makarakarn",
 	"persona.status.fight-in-spirit-attack" : "Fight in Spirit (Attack)",
 	"persona.status.fight-in-spirit-defense" : "Fight in Spirit (Defend)",
+	"persona.status.preparing-fusion" : "Assisting Fusion Skill",
 
 	"persona.damage.low": "Low",
 	"persona.damage.high": "High",

@@ -158,10 +158,6 @@ export class FinalizedCombatResult {
 					this.addFlag(actor, otherEffect);
 					break;
 				case "extraTurn": {
-					if (actor.hasStatus("baton-pass")) {
-						//can't get bonus actions from baton pass
-						break;
-					}
 					const bonusAction : StatusEffect = {
 						id: "bonus-action",
 						duration: { dtype:  "UEoT"},
