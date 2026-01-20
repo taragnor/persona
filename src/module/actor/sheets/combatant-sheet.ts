@@ -19,7 +19,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	declare actor: ValidAttackers;
 
 	selectedPersona: U<Persona>;
-	// private _powerUseLock: boolean;
 
 	override async getData() {
 		const data= await super.getData();
@@ -198,11 +197,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			inUseMsg: "Can't use another power now, as a power is already in process"
 		};
 
-		// if (this._powerUseLock) {
-		// 	ui.notifications.notify("Can't use another power now, as a power is already in process");
-		// 	return;
-		// }
-		// this._powerUseLock = true;
 		await lockObject( this, async () => {
 			const actor = this.actor;
 			let token : PToken | undefined;
@@ -214,37 +208,32 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				//@ts-expect-error not sure what type tokens are
 				token = Array.from(tokens)[0];
 			}
+			token = token ? token : game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
 			if (!token) {
-				token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
+				throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` );
 			}
-
-		if (!token) {
-			throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` );
-		}
-		try {
-			const combat = PersonaCombat.combat && PersonaCombat.combat.findCombatant(token) ? PersonaCombat.combat : undefined;
-			const engine = new CombatEngine(combat);
-			await engine.usePower(token, power );
-		} catch (e) {
-			// this._powerUseLock = false;
-			switch (true) {
-				case e instanceof CanceledDialgogError: {
-					break;
+			try {
+				const combat = PersonaCombat.combat && PersonaCombat.combat.findCombatant(token) ? PersonaCombat.combat : undefined;
+				const engine = new CombatEngine(combat);
+				await engine.usePower(token, power );
+			} catch (e) {
+				switch (true) {
+					case e instanceof CanceledDialgogError: {
+						break;
+					}
+					case e instanceof TargettingError: {
+						break;
+					}
+					case e instanceof Error: {
+						console.error(e);
+						console.error(e.stack);
+						PersonaError.softFail("Problem with Using Item or Power", e, e.stack);
+						break;
+					}
+					default: break;
 				}
-				case e instanceof TargettingError: {
-					break;
-				}
-				case e instanceof Error: {
-					console.error(e);
-					console.error(e.stack);
-					PersonaError.softFail("Problem with Using Item or Power", e, e.stack);
-					break;
-				}
-				default: break;
 			}
-		}
 		}, lockOptions);
-		// this._powerUseLock = false;
 	}
 
 	async useItem(event: Event) {
@@ -362,7 +351,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new PersonaError(`Can't find power id ${powerId}`);
 		}
 		const targets= PersonaCombat.targettedPTokens()
-		.filter( x=> x.actor.persona().effectiveScanLevel >=2 ) ;
+			.filter( x=> x.actor.persona().effectiveScanLevel >=2 ) ;
 		await power.displayDamageStack(this.actor.persona(), targets[0] ?? null);
 		const stack = await power.getDamageStack(this.actor, targets[0] ?? null);
 		$(event.currentTarget).prop('title', stack);
@@ -432,7 +421,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			persona = persona.persona();
 		}
 		const target= PersonaCombat.targettedPTokens()
-		.filter( x=> x.actor.persona().effectiveScanLevel >=2 ).at(0) ?? null ;
+			.filter( x=> x.actor.persona().effectiveScanLevel >=2 ).at(0) ?? null ;
 		const dmg = await usable.estimateDamage(persona.user, target);
 		if (dmg.high <= 0) {
 			return `-/-`;
