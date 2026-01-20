@@ -195,7 +195,7 @@ export type RollSituation = {
 	// activationRoll ?: boolean;
 	// openingRoll ?: number,
 	naturalRoll : number,
-	rollTags : (RollTag | CardTag)[],
+	rollTags : (RollTag | CardTag | Tag)[],
 	rollTotal : number;
 	hit?: boolean;
 	miss?: boolean;
@@ -211,7 +211,7 @@ type NonRollSituation = {
 	naturalRoll ?: undefined,
 	// openingRoll ?: undefined,
 	criticalHit ?: undefined;
-	rollTags ?: (RollTag | CardTag)[];
+	rollTags ?: (RollTag | CardTag | Tag)[];
 	rollTotal ?: undefined;
 }
 

@@ -459,18 +459,6 @@ export function combatResultBasedNumericTarget(condition: CombatResultComparison
 		if (res) {count += 1;}
 	}
 	return count;
-	// for (const [atkRes, changes] of situation.combatResult.attacks.entries()) {
-	// 	const target = PersonaDB.findToken(atkRes.target);
-	// 	const targetChanges = changes.filter( c=> {
-	// 		const changed = PersonaDB.findActor(c.actor);
-	// 		return changed == target.actor;
-	// 	});
-		// const changePass = targetChanges.some( change=>changeCompFn (change));
-		// let res = resultCompFn(atkRes) && changePass;
-		// res = invert ? !res : res;
-		// if (res) {count += 1;}
-	// }
-	// return count;
 }
 
 function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}, situation: Situation) : boolean {
@@ -817,7 +805,8 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
 			return multiCheckTest(condition.creatureTag, x => target.hasCreatureTag(x));
 		}
 		case "roll": {
-			const rollTags = situation.rollTags ?? [];
+			const rollTags = (situation.rollTags ?? [])
+			.flatMap (tag => typeof tag == "string"? [tag] : [tag.id, tag.system.linkedInternalTag]);
 			return multiCheckContains(condition.rollTag, rollTags);
 		}
 		case "weapon":{

@@ -281,7 +281,7 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 		const ret = {
 			cardType: new txt({initial: "social", choices: SOCIAL_CARD_TYPES_LIST}),
 			//for social cards
-			cardTags: new arr( new txt({choices: ROLL_TAGS_AND_CARD_TAGS})),
+			cardTags: new arr( new txt()),
 			frequency: new num({initial: 1, integer: false}),
 			announceWhenAvailable: new bool({initial : false}),
 			qualifiers: new arr( new obj<{

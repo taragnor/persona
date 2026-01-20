@@ -384,7 +384,7 @@ export class CombatEngine {
 		};
 		const overrideResult = (await TriggeredEffect.onTrigger("on-use-power", attacker.actor, situation))
 		.globalOtherEffects.find( eff=> eff.type == "set-roll-result")?.result;
-		if (overrideResult) {
+		if (overrideResult && PersonaSettings.debugMode()) {
 			console.log(`Override to ${overrideResult}`);
 		}
 		const testNullify = this.processAttackNullifiers(attacker, power, target, baseData, situation, rollType);

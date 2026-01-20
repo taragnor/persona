@@ -500,7 +500,7 @@ export type CardData = {
 	replaceSet: Record<string, string>;
 	sound?: FOUNDRY.AUDIO.Sound
 	variables: Record<string, number>;
-	extraCardTags: (CardTag | RollTag)[];
+	extraCardTags: (CardTag | RollTag | Tag)[];
 	item : U<EnchantedTreasureFormat>;
 
 };

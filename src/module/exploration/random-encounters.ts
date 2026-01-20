@@ -341,7 +341,6 @@ static async processAmbush(encounter: Encounter) {
 		const scene =  region ?  region.parent : game.scenes.current as PersonaScene;
 		const regionOrScene = region ? region : scene;
 		const baseList  = this.getEncounterList(regionOrScene); //allow for mixed daemon/shadow encounters
-		// const baseList  = this.getEncounterList(regionOrScene, shadowType);
 		let enemyType : Shadow["system"]["creatureType"] | undefined = undefined;
 		const encounter : Shadow[] = [];
 		let bailout = 0;

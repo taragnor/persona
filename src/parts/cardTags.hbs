@@ -19,7 +19,12 @@
 		{{/each}}
 	</div>
 	{{else}}
-	<span>Tags: </span> <span>{{getSocialCardTagList item}}</span>
+	<span>Tags: </span>
+	{{#each item.printableCardTags as |tag|}}
+	{{#if (not tag.isHidden)}}
+	<span>{{tag.name}}</span>
+	{{/if}}
+	{{/each}}
 	{{/if}}
 </div>
 

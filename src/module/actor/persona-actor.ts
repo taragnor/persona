@@ -3741,7 +3741,13 @@ async onMetaverseTimeAdvance(): Promise<string[]> {
 
 socialEffects(this: SocialLink) : readonly SourcedConditionalEffect[] {
 	// weird bug where sometimes the this isn't set properly
-	return ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this );
+	const tags= this.tagList
+		.filter (tag => tag instanceof PersonaItem)
+		.flatMap (tag => tag.getEffects(this));
+	return [
+		...tags,
+		...ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this )
+	];
 }
 
 async resetFatigueChecks(this: PC) {

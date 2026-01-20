@@ -517,11 +517,6 @@ export class PersonaHandleBarsHelpers {
 			});
 			return ret;
 		},
-
-		"getSocialCardTagList": function (card: SocialCard) : string {
-			return card.cardTags;
-		},
-
 		"hasTag": function (source: PersonaActor | PersonaItem, tagName: string) : boolean {
 			switch (true) {
 				case source instanceof PersonaActor :{
@@ -734,7 +729,7 @@ export class PersonaHandleBarsHelpers {
 
 		"getRollTags": function (cardRoll: CardRoll): string {
 			const localization= (PersonaSocial.currentSocialCardExecutor?.handler?.getCardRollTags(cardRoll) ?? [])
-				.map (t => localize(ROLL_TAGS_AND_CARD_TAGS[t]));
+				.map (t => typeof t == "string" ? localize(ROLL_TAGS_AND_CARD_TAGS[t]) : t.name);
 			return localization
 				.join(", ");
 		},

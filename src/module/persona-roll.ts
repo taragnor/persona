@@ -7,15 +7,13 @@ import { PersonaError } from "./persona-error.js";
 import { ResolvedModifierList } from "./combat/modifier-list.js";
 import { ModifierList } from "./combat/modifier-list.js";
 import { PersonaDB } from "./persona-db.js";
-import { RollTag } from "../config/roll-tags.js";
-import { CardTag } from "../config/card-tags.js";
 import { SocialStat } from "../config/student-skills.js";
 import { STUDENT_SKILLS } from "../config/student-skills.js";
 import {Calculation} from "./utility/calculation.js";
 
 
 export class PersonaRoller {
-	static async #makeRoll(rollName:string, mods: ModifierList, situation: Situation & {rollTags: (RollTag | CardTag)[]}, DC ?: number ): Promise<RollBundle & {modList: ResolvedMods}> {
+	static async #makeRoll(rollName:string, mods: ModifierList, situation: Situation & {rollTags: NonNullable<Situation["rollTags"]>}, DC ?: number ): Promise<RollBundle & {modList: ResolvedMods}> {
 		const user = situation.user;
 		let playerRoll = !game.user.isGM;
 		if (user) {
@@ -335,7 +333,7 @@ type RollOptions = {
 	DCMods ?: ModifierList,
 	askForModifier ?: boolean,
 	modifier ?: number,
-	rollTags : (RollTag | CardTag) [],
+	rollTags : NonNullable<Situation["rollTags"]>,
 	modifierList ?: ModifierList,
 	situation ?: UserSituation & Situation,
 }

@@ -1,4 +1,5 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
+import {SOCIAL_CARD_TYPES, SOCIAL_CARD_TYPES_LIST} from "./social-card-config.js";
 
 export const CARD_RESTRICTOR_TAGS = [
 	"friends",
@@ -41,6 +42,7 @@ export const CARD_SITUATIONS = [
 	"movie-sports",
 	"movie-science",
 	"sci-fi",
+	...SOCIAL_CARD_TYPES_LIST,
 
 ] as const;
 
@@ -53,4 +55,8 @@ export const CARD_TAG_LIST = [
 
 export type CardTag = typeof CARD_TAG_LIST[number];
 
-export const CARD_TAGS = HTMLTools.createLocalizationObject(CARD_TAG_LIST.slice().sort(), "persona.card.tag");
+export const CARD_TAGS = {
+	...HTMLTools.createLocalizationObject(CARD_TAG_LIST.slice().sort(), "persona.card.tag"),
+	...SOCIAL_CARD_TYPES,
+}
+	;

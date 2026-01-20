@@ -1,5 +1,5 @@
 import {CardTag} from "../../config/card-tags.js";
-import {HBS_TEMPLATES_DIR} from "../../config/persona-settings.js";
+import {HBS_TEMPLATES_DIR, PersonaSettings} from "../../config/persona-settings.js";
 import {RollTag} from "../../config/roll-tags.js";
 import {RollSituation} from "../../config/situation.js";
 import {CardChoice, CardEvent, CardRoll} from "../../config/social-card-config.js";
@@ -34,6 +34,9 @@ export class SocialCardEventHandler {
 		const cardData = this.cardData;
 		while (cardData.eventsRemaining > 0) {
 			if (this.earlyAbort) { return chatMessages;}
+			if (PersonaSettings.debugMode()) {
+				console.debug(`Events Remaining ${this.cardData.eventsRemaining}`);
+			}
 			const ev = this.#getCardEvent(cardData);
 			if (!ev) {
 				cardData.currentEvent = null;
@@ -342,7 +345,7 @@ export class SocialCardEventHandler {
 		}
 	}
 
-	private getCardRollDC(cardData: CardData, cardRoll: CardRoll, rollTags: (RollTag | CardTag)[]) : number {
+	private getCardRollDC(cardData: CardData, cardRoll: CardRoll, rollTags: (RollTag | CardTag | Tag)[]) : number {
 		const modifiers = this.getCardRollDCModifiers(cardData, cardRoll, rollTags);
 		const situation = {
 			... cardData.situation,
@@ -351,7 +354,7 @@ export class SocialCardEventHandler {
 		return modifiers.total(situation);
 	}
 
-	private getCardRollDCModifiers(cardData: CardData, cardRoll: CardRoll, rollTags : (RollTag | CardTag)[]) : ModifierList {
+	private getCardRollDCModifiers(cardData: CardData, cardRoll: CardRoll, rollTags : (RollTag | CardTag | Tag)[]) : ModifierList {
 		const base = this.getBaseCardRollDC(cardData, cardRoll);
 		if ((cardRoll.rollType == "save" || cardRoll.rollType == "studentSkillCheck") && !(base > 0)) {
 			// debugger;
@@ -365,7 +368,7 @@ export class SocialCardEventHandler {
 		return modifiers;
 	}
 
-	private getCardModifiers(cardData: CardData, rollTags: (RollTag | CardTag)[] ) : ModifierList {
+	private getCardModifiers(cardData: CardData, rollTags: (RollTag | CardTag | Tag)[] ) : ModifierList {
 		const card = cardData.card;
 		const effects : SourcedConditionalEffect[] = [];
 		const globalMods = ConditionalEffectManager.getEffects(card.system.globalModifiers, null, null);
@@ -430,7 +433,7 @@ export class SocialCardEventHandler {
 		const cardData = this.cardData;
 		const situation = {
 			...cardData.situation,
-			rollTags: cardData.extraCardTags
+			rollTags: cardData.extraCardTags.concat(cardData.card.cardTags),
 		};
 		return this.cardData.eventList
 			.filter ( ev => !ev.eventTags.includes("disabled"))
@@ -450,7 +453,9 @@ export class SocialCardEventHandler {
 		}
 		let eventList = this.eventList()
 			.filter( ev => !SocialCardEventHandler.isChainEvent(ev));
-		console.log(eventList);
+		if(PersonaSettings.debugMode()) {
+			console.debug(eventList);
+		}
 		const isEvType = function (ev: CardEvent, evType: keyof NonNullable<CardEvent["placement"]>) {
 			let placement = ev.placement ?? {
 				starter: true,
@@ -489,12 +494,14 @@ export class SocialCardEventHandler {
 		return ev;
 	}
 
-	getCardRollTags (cardRoll: CardRoll) : (RollTag | CardTag)[] {
+	getCardRollTags (cardRoll: CardRoll) : (RollTag | CardTag | Tag)[] {
 		return [
 			cardRoll.rollTag1,
 			cardRoll.rollTag2,
 			cardRoll.rollTag3,
-		].filter(x=> x);
+		]
+			.filter(x=> x)
+			.map (t=> PersonaItem.resolveTag(t));
 	}
 
 	addExtraEvent(amount: number) {
@@ -552,18 +559,18 @@ export class SocialCardEventHandler {
 		}
 	}
 
-	private getRollTags(cardData: CardData, cardChoice: SocialCard["system"]["events"][number]["choices"][number]) : (RollTag | CardTag)[] {
+	private getRollTags(cardData: CardData, cardChoice: SocialCard["system"]["events"][number]["choices"][number]) : (RollTag | CardTag | Tag)[] {
 		const cardRoll = cardChoice.roll;
 		const rollTags = this.getCardRollTags(cardRoll);
 		rollTags.pushUnique(...cardData.extraCardTags);
-		rollTags.pushUnique(...cardData.card.system.cardTags);
+		rollTags.pushUnique(...cardData.card.cardTags);
 		if (cardData.currentEvent) {
 			rollTags.pushUnique(	...cardData.currentEvent.eventTags);
 		}
 		return rollTags;
 	}
 
-	async #onCardChoice(_cardData: CardData , _cardRoll: CardChoice["roll"], _rollTags: (RollTag | CardTag)[]) {
+	async #onCardChoice(_cardData: CardData , _cardRoll: CardChoice["roll"], _rollTags: (RollTag | CardTag | Tag)[]) {
 
 	}
 
@@ -700,7 +707,7 @@ export class SocialCardEventHandler {
 		}
 		cardData.eventsChosen = [];
 		cardData.eventList = newCard.cardEvents().slice();
-		cardData.extraCardTags = newCard.system.cardTags.slice();
+		cardData.extraCardTags = newCard.cardTags.slice();
 	}
 
 	choiceMeetsConditions(choice: SocialCard["system"]["events"][number]["choices"][number] ) : boolean {

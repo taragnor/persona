@@ -199,6 +199,8 @@ private static _powerStuffBase: Record<string, unknown>;
 
 		const UNIFIED_EQUIPMENT_TAGS = PersonaDB.createMergedTagLocList(["equipment", "enchantment"], EQUIPMENT_TAGS);
 
+		const UNIFIED_ROLL_AND_CARD_TAGS  = PersonaDB.createMergedTagLocList(["roll", "card"], ROLL_TAGS_AND_CARD_TAGS);
+
 		const TAGS = {
 			"": "-",
 			...PersonaDB.createMergedTagLocList( ["power", "equipment"], POWER_TAGS)
@@ -228,6 +230,7 @@ private static _powerStuffBase: Record<string, unknown>;
 			CREATURE_TAGS: UNIFIED_CREATURE_TAGS,
 			RELATIONSHIP_TYPE_OBJECT,
 			SOCIAL_CARDS,
+			ROLL_TAGS_AND_CARD_TAGS: UNIFIED_ROLL_AND_CARD_TAGS,
 		};
 		return data;
 	}

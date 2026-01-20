@@ -11,8 +11,8 @@ import { PToken, PersonaCombat } from '../combat/persona-combat.js';
 import { ItemSelector } from '../../config/consequence-types.js';
 import { Trigger } from '../../config/triggers.js';
 import { CombatResult, AttackResult } from '../combat/combat-result.js';
-import { ROLL_TAGS_AND_CARD_TAGS } from '../../config/roll-tags.js';
-import { CARD_RESTRICTOR_TAGS } from '../../config/card-tags.js';
+import { ROLL_TAGS_AND_CARD_TAGS, RollTag } from '../../config/roll-tags.js';
+import { CARD_RESTRICTOR_TAGS, CardTag } from '../../config/card-tags.js';
 import { PersonaSettings } from '../../config/persona-settings.js';
 import { POWER_TAGS_LIST, POWER_TYPE_TAGS , STATUS_AILMENT_POWER_TAGS} from '../../config/power-tags.js';
 import { Logger } from '../utility/logger.js';
@@ -643,12 +643,36 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 
-	get cardTags() : string {
-		if ('cardTags' in this.system) {
-			const tags= this.system.cardTags.map(tag => localize(ROLL_TAGS_AND_CARD_TAGS[tag]));
-			return tags.join(', ');
+	get isHidden() : boolean {
+		switch (true) {
+			case this.isTag(): return this.system.hidden;
+
 		}
-		return '';
+		return false;
+
+	}
+
+	get cardTags() : (Tag | CardTag | RollTag)[] {
+		if ('cardTags' in this.system) {
+			const baseList = [
+				...this.system.cardTags,
+				this.system.cardType,
+			];
+			const tags = baseList
+				.map(tag => PersonaItem.resolveTag<CardTag| RollTag>(tag));
+			return tags;
+		}
+		return [];
+	}
+
+	get printableCardTags() : {name: string, isHidden: boolean}[] {
+		return this.cardTags
+			.map(tag => typeof tag != "string" 
+				? tag
+				: {
+					isHidden: false,
+					name : localize(ROLL_TAGS_AND_CARD_TAGS[tag]),
+				});
 	}
 
 	async addItemTag(this: Consumable | InvItem | Weapon): Promise<void> {
@@ -782,7 +806,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				return list.map ( t=> PersonaItem.resolveTag<EquipmentTag | PowerTag>(t));
 			}
 			case 'item': {
-				const list= this.system.itemTags.slice();
+			const list= this.system.itemTags.slice();
 				const subtype = this.system.slot;
 				switch (subtype) {
 					case 'body':
