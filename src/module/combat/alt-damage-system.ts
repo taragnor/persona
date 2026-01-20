@@ -18,7 +18,7 @@ export class AltDamageSystem extends DamageSystemBase {
 	private WEAPON_STRENGTH_DAMAGE_MULT = 1 as const;
 	private MAGIC_DAMAGE_MULT = 1 as const;
 	private HEALING_MAGIC_MULT = 1 as const;
-	private END_DIFF_PERCENTAGE_MULT = 0.7 as const;
+	private END_DIFF_PERCENTAGE_MULT = 0.8 as const;
 	private BASE_VARIANCE = 2 as const;
 	private ARMOR_TO_DAMAGE_DIVISOR = 1.0 as const;
 	private ALL_OUT_ATTACK_HELPER_DIVISOR = 1/3;
@@ -297,10 +297,10 @@ const DAMAGE_LEVEL_NEW = {
 	"miniscule": {extraVariance: 0, baseAmt: 0, mult: 0.5, healMult: 0.25},
 	"basic": {extraVariance: 0, baseAmt: 0, mult: 1, healMult: 0.5},
 	"light": {extraVariance: 0, baseAmt: 10, mult: 1.10, healMult: 1.25},
-	"medium": {extraVariance: 0, baseAmt: 20, mult: 1.25, healMult: 2},
-	"heavy": {extraVariance: 0, baseAmt: 30, mult: 1.50, healMult: 3},
-	"severe": {extraVariance: 0, baseAmt: 40, mult: 1.75, healMult: 4},
-	"colossal": {extraVariance: 0, baseAmt: 50, mult: 2.0, healMult :5},
+	"medium": {extraVariance: 0, baseAmt: 25, mult: 1.20, healMult: 2},
+	"heavy": {extraVariance: 0, baseAmt: 35, mult: 1.50, healMult: 3},
+	"severe": {extraVariance: 0, baseAmt: 50, mult: 1.75, healMult: 4},
+	"colossal": {extraVariance: 0, baseAmt: 60, mult: 2.0, healMult :5},
 } as const satisfies Readonly<Record< ConvertableDamageLevel, ExtraDamageParams>>;
 
 export const ALT_DAMAGE_SYSTEM = new AltDamageSystem();

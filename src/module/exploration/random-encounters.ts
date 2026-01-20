@@ -9,6 +9,7 @@ import {PersonaRegion} from "../region/persona-region.js";
 import {weightedChoice} from "../utility/array-tools.js";
 import {CreateToken} from "../utility/createToken.js";
 import {VotingDialog} from "../utility/shared-dialog.js";
+import {StepsClock} from "./steps-clock.js";
 import {TensionPool} from "./tension-pool.js";
 
 export class RandomEncounter {
@@ -84,14 +85,14 @@ static encounterChoiceList(encounterType : PresenceRollData["encounterType"]) : 
 	switch (encounterType) {
 		case "wandering":
 			html+= `
-				<li> <b>Retreat</b> to previous area (1d6, 1: +1 tension 2-6: safe) </li>
-				<li> Try to <b>sneak</b> past (d6, Enemy Ambush, 2-3: +1 tension, 4-6 safe)</li>
+				<li> <b>Retreat</b> to previous area (1d10, 1: +1 tension 2-6: safe) </li>
+				<li> Try to <b>sneak</b> past (d6, 1: Enemy Ambush, 2-3: +1 tension, 4-6 safe)</li>
 				<li> <b>Ambush</b> (d12, +1 metaverse turn, 1-3 no effect, 4-12 PC Ambush) </li>
 			`;
 			break;
 		case "room":
 			html+= `
-				<li> Evade (Requires Guard): +1 tension unless a guard rolls 3-6 on d6. </li>
+				<li> Evade (Requires Guard): Leave by any door, +1 tension unless a guard rolls 3-6 on d6. Multiple guards means more rolls.</li>
 				<li> Ambush (Requires Guard + SL ability) </li>
 				`;
 			break;
@@ -229,12 +230,14 @@ static async processPlayerPreCombatAction(action: typeof this.encounterChoices[n
 }
 
 	static async processEvade(_encounter: Encounter) {
-		const roll = await new Roll("1d6").evaluate();
+		const roll = await new Roll("1d10").evaluate();
 		let html = `<div>Evade</div>
 		<div> Roll : ${roll.total} </div>`;
 		if (roll.total == 1) {
 			void TensionPool._instance.inc();
 			html += `<div> Tension +1</div>`;
+		} else {
+			html += "Success (no consequences)";
 		}
 		await ChatMessage.create({
 			speaker: {
@@ -250,7 +253,7 @@ static async processPlayerPreCombatAction(action: typeof this.encounterChoices[n
 	// html += `<li> Fight (1d10, 1: Enemy Ambush, 2-5: normal, 10: PC Ambush)</li>`;
 		const roll = await new Roll("1d10").evaluate();
 		let html = `<div>Fight!</div>`;
-		let combatOptions: CombatSetupOptions = {};
+		const combatOptions: CombatSetupOptions = {};
 		switch (roll.total) {
 			case 1:
 				html += `<div> Enemy Ambush!</div>`;
@@ -279,7 +282,7 @@ static async processSneak(encounter: Encounter) {
 		<div> Roll : ${total} </div>`;
 	switch (true) {
 		case total == 1 : {
-			html += `<div> Ambushed By Shadows!!</div>`;
+			html += `<div> Failure (enemy advantage)!</div>`;
 			await CombatScene.create(encounter);
 			break;
 		}
@@ -302,34 +305,35 @@ static async processSneak(encounter: Encounter) {
 	});
 }
 
-	static async processAmbush(encounter: Encounter) {
-		const roll = await new Roll("1d8").evaluate();
-		const total = roll.total;
-		let html = `<div>Ambush</div>
+static async processAmbush(encounter: Encounter) {
+	// <li> <b>Ambush</b> (d12, +1 metaverse turn, 1-3 standard encounter, 4-12 PC Ambush) </li>
+	const roll = await new Roll("1d8").evaluate();
+	const total = roll.total;
+	let html = `<div>Ambush</div>
+		<div> +1 metaverse turn </div>
 		<div> Roll : ${total} </div>`;
-		switch (true) {
-			case total == 1 : {
-				html += `<div> Counter Ambushed By Shadows!!</div>`;
-				break;
-			}
-			case total >= 2 && total <= 3: {
-				html += `<div> No Effect</div>`;
-				break;
-			}
-			default: {
-				html += `<div> Ambush Successful!</div>`;
-			}
+	await StepsClock.instance.inc();
+	const combatOptions: CombatSetupOptions = {};
+	switch (true) {
+		case total < 3 : {
+			html += `<div> standard Encounter</div>`;
+			break;
 		}
-		await ChatMessage.create({
-			speaker: {
-				alias: "Player Decision"
-			},
-			content: html,
-			rolls: [roll],
-			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-		});
-		await CombatScene.create(encounter);
+		default: {
+			html += `<div> Player Advantage!</div>`;
+			combatOptions.advantage = "PCs";
+		}
 	}
+	await ChatMessage.create({
+		speaker: {
+			alias: "Player Decision"
+		},
+		content: html,
+		rolls: [roll],
+		style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+	});
+	await CombatScene.create(encounter, combatOptions);
+}
 
 
 	static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}): Omit<Encounter, "encounterType"> {
