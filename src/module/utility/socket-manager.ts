@@ -1,5 +1,4 @@
-declare global {
-	export interface SocketMessage {
+declare global { export interface SocketMessage {
 		"TEST": string;
 		"X": number;
 		"__VERIFY__": VerificationId;
@@ -78,7 +77,7 @@ export class SocketManager {
 		const id = this.#messageId  ;
 		this.#messageId += 1;
 		if (typeof id == "number" && !Number.isNaN(id))
-			{return id;}
+		{return id;}
 		throw new Error("Something screwy with Id");
 	}
 
@@ -138,7 +137,6 @@ export class SocketManager {
 		return true;
 	}
 
-
 	setPending(verificationId: VerificationId, recipient: User["id"], promiseData: PromiseData)
 	{
 		const r = recipient;
@@ -147,7 +145,6 @@ export class SocketManager {
 		const map = this._pendingVerifications.get(r)!;
 		map.set(verificationId, promiseData);
 	}
-
 
 	clearPendingErr(verificationId: VerificationId, sender: User["id"]) {
 		const realClear = this.clearPending(verificationId, sender);
@@ -168,7 +165,7 @@ export class SocketManager {
 		console.debug(`resolved ${verificationId} from ${user?.name}, clearing log`);
 		userPending.delete(verificationId);
 		return true;
-}
+	}
 
 	setHandler<T extends keyof SocketMessage>(msgType: T, handlerFn : DataHandlerFn<T>) : void {
 		if (!this.socketsReady) {
@@ -184,75 +181,73 @@ export class SocketManager {
 		arr.push(handlerFn);
 	}
 
-private async onMsgRecieve(packet: SocketPayload<keyof SocketMessage>) : Promise<void> {
-	const {code, recipients} = packet;
-	if (!recipients.includes(game.user.id)) {return;}
-	if (packet.sender == game.user.id) {return;}
-	const handlers = this.#handlers.get(code);
-	if (!handlers) {
-		console.warn(`No handler for message ${code}`);
-		return;
-	}
-	if (this.#recordVerifiedMessage(packet)) {return;}
-	for (const handler of handlers) {
-		try{
-			await handler(packet.data, packet);
-			void this.#sendVerification(packet);
-		} catch (e) {
-			PersonaError.softFail("Error during handler", e);
-			void this.#sendVerificationError(packet);
-			continue;
+	private async onMsgRecieve(packet: SocketPayload<keyof SocketMessage>) : Promise<void> {
+		const {code, recipients} = packet;
+		if (!recipients.includes(game.user.id)) {return;}
+		if (packet.sender == game.user.id) {return;}
+		const handlers = this.#handlers.get(code);
+		if (!handlers) {
+			console.warn(`No handler for message ${code}`);
+			return;
+		}
+		if (this.#recordVerifiedMessage(packet)) {return;}
+		for (const handler of handlers) {
+			try{
+				await handler(packet.data, packet);
+				void this.#sendVerification(packet);
+			} catch (e) {
+				PersonaError.softFail("Error during handler", e);
+				void this.#sendVerificationError(packet);
+				continue;
+			}
 		}
 	}
-}
 
 
-/** returns true if this message has already been verified, to prevent invoking the handler for an alrady handled request */
-#recordVerifiedMessage(packet: SocketPayload<keyof SocketMessage>)  : boolean {
-	const verificationId = packet.verificationId;
-	if (verificationId == undefined)  {return false;}
-	const sender = packet.sender;
-
-	if( !this._handledVerifications.has(sender)) {
-		this._handledVerifications.set(sender, new Set());
+	/** returns true if this message has already been verified, to prevent invoking the handler for an alrady handled request */
+	#recordVerifiedMessage(packet: SocketPayload<keyof SocketMessage>)  : boolean {
+		const verificationId = packet.verificationId;
+		if (verificationId == undefined)  {return false;}
+		const sender = packet.sender;
+		if( !this._handledVerifications.has(sender)) {
+			this._handledVerifications.set(sender, new Set());
+		}
+		const handledSet = this._handledVerifications.get(sender)!;
+		if (handledSet.has(verificationId)) {return true;}
+		handledSet.add(verificationId);
+		return false;
 	}
-	const handledSet = this._handledVerifications.get(sender)!;
-	if (handledSet.has(verificationId)) {return true;}
-	handledSet.add(verificationId);
-	return false;
-}
 
 	createChannel<T extends ChannelMessage>(linkCode: string, recipients: SocketChannel<T>["recipients"] = [], _sessionCode?: number) : SocketChannel<T> {
 		const channel =  new SocketChannel<T>(linkCode, recipients);
 		SocketChannel.channels.push(channel);
-
 		if (recipients.length) {
 			channel.sendOpen();
 		}
 		return channel;
 	}
 
-async #sendVerification(packet: SocketPayload<keyof SocketMessage>) {
-	const verificationId = packet.verificationId;
-	if (verificationId == undefined) { return; }
-	const targets = [packet.sender];
-	console.debug(`Reciever: Verified Request recieved ${packet.verificationId}, sending Verification`);
-	for (let i = 0; i< 10; i++) {
-		this.simpleSend("__VERIFY__", verificationId, targets);
-		await sleep(5000);
+	async #sendVerification(packet: SocketPayload<keyof SocketMessage>) {
+		const verificationId = packet.verificationId;
+		if (verificationId == undefined) { return; }
+		const targets = [packet.sender];
+		console.debug(`Reciever: Verified Request recieved ${packet.verificationId}, sending Verification`);
+		for (let i = 0; i< 10; i++) {
+			this.simpleSend("__VERIFY__", verificationId, targets);
+			await sleep(5000);
+		}
 	}
-}
 
-async #sendVerificationError(packet: SocketPayload<keyof SocketMessage>) {
-	const verificationId = packet.verificationId;
-	if (verificationId == undefined) { return; }
-	const targets = [packet.sender];
-	console.debug(`Reciever: Error on handling Verifified Packet Request ${packet.verificationId}, sending Error Result`);
-	for (let i = 0; i< 10; i++) {
-		this.simpleSend("__VERIFY_ERROR__", verificationId, targets);
-		await sleep (5000);
+	async #sendVerificationError(packet: SocketPayload<keyof SocketMessage>) {
+		const verificationId = packet.verificationId;
+		if (verificationId == undefined) { return; }
+		const targets = [packet.sender];
+		console.debug(`Reciever: Error on handling Verifified Packet Request ${packet.verificationId}, sending Error Result`);
+		for (let i = 0; i< 10; i++) {
+			this.simpleSend("__VERIFY_ERROR__", verificationId, targets);
+			await sleep (5000);
+		}
 	}
-}
 
 }
 
@@ -281,19 +276,7 @@ type PromiseData = {
 
 type VerificationId = ReturnType<SocketManager["newMessageId"]>;
 
-export class TimeoutError extends Error{
-
-};
-
-export class VerificationFailedError extends Error{
-
-}
-
-export class SocketsNotConnectedError extends Error {
-
-}
-
-
-class PlayerDisconnectedError extends Error {
-
-}
+export class TimeoutError extends Error{ };
+export class VerificationFailedError extends Error{ }
+export class SocketsNotConnectedError extends Error { }
+class PlayerDisconnectedError extends Error { }
