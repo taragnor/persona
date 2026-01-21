@@ -260,7 +260,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			//TODO: temp fix until we get a persona Id
 			await this.actor.persona().deleteTalent(talentId);
 		}
-
 	}
 
 	async deletePower(event: Event) {
@@ -287,7 +286,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this power?")) {
 			await this.actor.deleteLearnablePower(powerId as Power["id"]);
 		}
-
 	}
 
 	async openPower(event: Event) {

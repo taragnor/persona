@@ -49,9 +49,6 @@ namespace Foundry {
 
 	type CreationData<T extends Document> = 
 		DeepPartial<T>;
-		// {
-		// name: string;
-	// } & DeepPartial<InstanceType<T>>;
 
 	interface Folder {
 	};
