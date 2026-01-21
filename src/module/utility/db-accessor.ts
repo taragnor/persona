@@ -146,7 +146,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		return this.#findById(id, "Actor") as Option<T>;
 	}
 
-	 getItemById<T extends ItemType = ItemType> (id : string) : Option<T> {
+	 getItemById<T extends ItemType = ItemType> (id : Item["id"]) : Option<T> {
 		return this.#findById(id, "Item") as Option<T>;
 	}
 

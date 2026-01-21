@@ -433,10 +433,10 @@ type InspirationChangeConsequence = {
 
 type AddPowerConsequence = {
 	type: "add-power-to-list",
-	id: string, // id of power
+	id: Power["id"], // id of power
 } | {
 	type:  "teach-power"
-	id: string, // id of power
+	id: Power["id"], // id of power
 	randomPower: false,
 } | {
 	type:  "teach-power"
@@ -445,7 +445,7 @@ type AddPowerConsequence = {
 
 type AddTalentConsequence = {
 	type: "add-talent-to-list",
-	id: string, //id of talent
+	id: Talent["id"], //id of talent
 }
 
 type OtherEffectConsequence = {
@@ -731,7 +731,7 @@ type DisplayMessageConsequence = {
 
 type UsePowerConsequence = {
 	type: "use-power",
-	powerId: string,
+	powerId: Power["id"],
 	target: ConsTarget,
 }
 

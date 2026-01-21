@@ -24,7 +24,7 @@ import { FlagData } from "../../config/actor-parts.js";
 import { TarotCard } from "../../config/tarot.js";
 import { removeDuplicates } from "../utility/array-tools.js";
 import { testPreconditions } from "../preconditions.js";
-import { CreatureTag, InternalCreatureTag } from "../../config/creature-tags.js";
+import { CreatureTag, InternalCreatureTag, PersonaTag } from "../../config/creature-tags.js";
 import { PersonaSocial } from "../social/persona-social.js";
 import { TAROT_DECK } from "../../config/tarot.js";
 import { localize } from "../persona.js";
@@ -2548,7 +2548,7 @@ async addLearnedPower(this: ValidAttackers, power: Power, level = 99) : Promise<
 }
 
 
-async deletePower(this: ValidAttackers, id: string ) {
+async deletePower(this: ValidAttackers, id: Power["id"] ) {
 	const item = this.items.find(x => x.id == id);
 	if (item) {
 		await item.delete();
@@ -2658,7 +2658,7 @@ addFocus(this: PC, focus: Focus) {
 	return;
 }
 
-async deleteFocus(focusId: string) {
+async deleteFocus(focusId: Focus["id"]) {
 	const item = this.items.find(x => x.id == focusId);
 	if (item) {
 		await item.delete();
@@ -4150,7 +4150,7 @@ onRevive() : Promise<void> {
 get tagListNames(): string[] {
 	return this.tagListPartial
 		.map( tag=> {
-			return PersonaDB.allTags().get(tag)?.displayedName?.toString()
+			return PersonaDB.allTags().get(tag as Tag["id"])?.displayedName?.toString()
 				?? tag;
 		});
 }
@@ -4164,13 +4164,13 @@ realTags() : Tag[] {
 	return ret;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-get tagListPartial() : (InternalCreatureTag | Tag["id"])[] {
+get tagListPartial() : (InternalCreatureTag | Tag["id"] | PersonaTag)[] {
 	//NOTE: This is a candidate for caching
 	if (this.isTarot()) { return []; }
-	const list : (Tag["id"])[] = this.system.creatureTags.slice();
+	const list : (Tag["id"] | InternalCreatureTag | PersonaTag)[] = this.system.creatureTags.slice();
 	if (this.isValidCombatant()) {
-		list.pushUnique(...this.persona().tagListPartial());
+		list.pushUnique(...this.persona().tagListPartial()
+		);
 	}
 	if (this.isValidCombatant()) {
 		const extraTags = this.mainModifiers({omitPowers:true, omitTalents: true, omitTags: true})
@@ -4193,7 +4193,7 @@ get tagListPartial() : (InternalCreatureTag | Tag["id"])[] {
 			return list;
 		case "npc": return list;
 		case "shadow": {
-			list.pushUnique(this.system.creatureType);
+			list.pushUnique(this.system.creatureType as InternalCreatureTag);
 			if (this.system.creatureType == "d-mon" && this.hasPlayerOwner) {
 				list.pushUnique("pc-d-mon");
 			}
@@ -4212,12 +4212,11 @@ get tagList() : (Tag | InternalCreatureTag)[] {
 		.map(tag => PersonaItem.searchForPotentialTagMatch(tag) ?? (tag as InternalCreatureTag));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 hasCreatureTag(tagOrTagName: CreatureTag | Tag["id"]) : boolean{
-	const tag = tagOrTagName instanceof PersonaItem ? tagOrTagName : PersonaDB.allTags().get(tagOrTagName);
-	const tagList = this.tagListPartial;
+	const tag = tagOrTagName instanceof PersonaItem ? tagOrTagName : PersonaDB.allTags().get(tagOrTagName as Tag["id"]);
+	const tagList : string[] = this.tagListPartial;
 	if (!tag) {
-		return tagList.includes(tagOrTagName as string);
+		return tagList.includes(tagOrTagName as typeof tagList[number]);
 	}
 	return tagList.includes(tag.id)
 		|| tagList.includes(tag.system.linkedInternalTag)

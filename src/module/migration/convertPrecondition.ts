@@ -60,6 +60,7 @@ export class PreconditionConverter {
 			case "has-creature-tag":
 				return {
 					...cond,
+					creatureTag: cond.creatureTag as Tag["id"],
 					boolComparisonTarget:"has-tag",
 					tagComparisonType: "actor",
 					___deprecated : undefined,

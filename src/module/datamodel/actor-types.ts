@@ -274,6 +274,7 @@ export const ACTORMODELS = {
 
 //testing the types, purely for debug purposes
 // type testPC = Foundry.SystemDataObjectFromDM<typeof PCSchema>;
+// type j = Foundry.SchemaConvert<Foundry.Branded<string, "hello">>;
 // type testNPC = Foundry.SystemDataObjectFromDM<typeof NPCSchema>;
 // type testShadow =Foundry.SystemDataObjectFromDM<typeof ShadowSchema>;
 

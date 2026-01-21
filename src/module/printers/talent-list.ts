@@ -47,7 +47,7 @@ export class TalentPrinter extends Application {
 	}
 
 	openTalent(event: JQuery.ClickEvent) {
-		const talentId = HTMLTools.getClosestData(event, "talentId");
+		const talentId = HTMLTools.getClosestData<Talent["id"]>(event, "talentId");
 		const talent = PersonaDB.getItemById(talentId);
 		if (!talent) {
 			throw new Error(`Can't find Talent ${talentId}`);

@@ -83,38 +83,25 @@ export class PCLikeSheet extends CombatantSheetBase {
 	async reorderPowerUp (event: JQuery.ClickEvent) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		const powers = this.actor.system.combat.powers;
-		const index = powers.indexOf(powerId);
+		const index = powers.indexOf(powerId as Power["id"]);
 		if (index == -1) {return;}
 		if (index == 0) {return;}
 		powers[index] = powers[index-1];
-		powers[index-1] = powerId;
+		powers[index-1] = powerId as Power["id"];
 		await this.actor.update({"system.combat.powers": powers});
 	}
 
 	async reorderPowerDown (event: JQuery.ClickEvent) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		const powers = this.actor.system.combat.powers;
-		const index = powers.indexOf(powerId);
+		const index = powers.indexOf(powerId as Power["id"]);
 		if (index == -1) {return;}
 		if (index >= powers.length-1)
 			{return;}
 		powers[index] = powers[index+1];
-		powers[index+1] = powerId;
+		powers[index+1] = powerId as Power["id"];
 		await this.actor.update({"system.combat.powers": powers});
 	}
-
-
-	// async incTalent(event: Event) {
-	// 	const talentId= String(HTMLTools.getClosestData(event, "talentId"));
-	// 	await this.actor.incrementTalent(talentId);
-	// }
-
-	// async decTalent(event: Event) {
-	// 	const talentId= String(HTMLTools.getClosestData(event, "talentId"));
-	// 	await this.actor.decrementTalent(talentId);
-	// }
-
-
 
 }
 

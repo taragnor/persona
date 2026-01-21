@@ -149,7 +149,7 @@ export class FollowUpManager {
 			return false;
 		}
 		const combatantId = HTMLTools.getClosestData(ev, "combatantId");
-		const powerId = HTMLTools.getClosestData(ev, "powerId");
+		const powerId = HTMLTools.getClosestData<Power["id"]>(ev, "powerId");
 		const combatant = this.combat.combatants.get(combatantId);
 		if (!combatant  || !PersonaCombat.isPersonaCombatant(combatant)) {
 			PersonaError.softFail("combatnat isn't a real Combatant");

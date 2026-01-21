@@ -338,7 +338,7 @@ export class CombatPanel extends SidePanel {
 		}
 		const personaId = HTMLTools.getClosestData(event, "personaId");
 		if (this.target) {
-			await this.target.actor.switchPersona(personaId);
+			await this.target.actor.switchPersona(personaId as ValidAttackers["id"]);
 		}
 	}
 

@@ -249,7 +249,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 	async deleteTalent(event: Event) {
-		const talentId = HTMLTools.getClosestData(event, "talentId");
+		const talentId = HTMLTools.getClosestData<Talent["id"]>(event, "talentId");
 		if (talentId == undefined) {
 			const err = `Can't find talent: TalentId is undefined`;
 			console.error(err);
@@ -264,7 +264,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 	async deletePower(event: Event) {
-		const powerId = HTMLTools.getClosestData(event, "powerId");
+		const powerId = HTMLTools.getClosestData<Power["id"]>(event, "powerId");
 		if (powerId == undefined) {
 			const err = `Can't find power: Power Id is undefied`;
 			console.error(err);
@@ -285,7 +285,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new Error(err);
 		}
 		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this power?")) {
-			await this.actor.deleteLearnablePower(powerId);
+			await this.actor.deleteLearnablePower(powerId as Power["id"]);
 		}
 
 	}
@@ -346,7 +346,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (powerId == undefined) {
 			throw new PersonaError(`Can't find power`);
 		}
-		const power = this.actor.powers.find(x=> x.id == powerId) ?? (PersonaDB.getItemById(powerId) as Power);
+		const power = this.actor.powers.find(x=> x.id == powerId) ?? (PersonaDB.getItemById(powerId as Power["id"]) as Power);
 		if (!power) {
 			throw new PersonaError(`Can't find power id ${powerId}`);
 		}
@@ -359,7 +359,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async createDamageEstimate( ev: JQuery.MouseOverEvent) {
 		const powerId = HTMLTools.getClosestData(ev, "powerId");
-		const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.getItemById<Power>(powerId);
+		const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.getItemById<Power>(powerId as Power["id"]);
 		const CONST = PersonaActorSheetBase.CONST();
 		if (!power) {return;}
 		const persona = this.actor.persona();
@@ -442,14 +442,14 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async activatePersona(event: JQuery.ClickEvent) {
 		const personaId = HTMLTools.getClosestData(event, "personaId");
-		await this.actor.switchPersona(personaId);
+		await this.actor.switchPersona(personaId as ValidAttackers["id"]);
 	}
 
 	async deletePersona(event: JQuery.ClickEvent) {
 		const personaId = HTMLTools.getClosestData(event, "personaId");
 		if (this.actor.isNPCAlly()) {return;}
 		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this Persona?")) {
-			await this.actor.deletePersona(personaId);
+			await this.actor.deletePersona(personaId as ValidAttackers["id"]);
 		}
 	}
 

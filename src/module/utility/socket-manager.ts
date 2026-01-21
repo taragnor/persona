@@ -97,7 +97,7 @@ export class SocketManager {
 	}
 
 	/** as simple send but returns a boolean as a promise if the message was recieved*/
-	async verifiedSend<T extends keyof SocketMessage>(msgType: T, dataToSend: SocketMessage[T], recipient: string) : Promise<boolean> {
+	async verifiedSend<T extends keyof SocketMessage>(msgType: T, dataToSend: SocketMessage[T], recipient: User["id"]) : Promise<boolean> {
 		if (recipient == game.user.id) {return true;}
 		this.#checkSockets();
 		const sessionInfo = {};
@@ -261,8 +261,8 @@ export type SocketPayload<T extends keyof SocketMessage> = {
 	data: SocketMessage[T],
 	/** userId of sender*/
 	verificationId ?: number,
-	sender: string,
-	recipients: string[],
+	sender: FoundryUser["id"],
+	recipients: FoundryUser["id"][],
 	targetInfo: SessionInfo,
 };
 

@@ -58,8 +58,10 @@ namespace Foundry {
 
 	type SchemaConvert<F> = F extends FoundryDMField<infer T>
 		? T extends typeof DataModelClass ? SystemDataObjectFromDM<T>
+		: T extends string ? T
 		: T extends object ? {[K in keyof T] : SchemaConvert<T[K]>} : T
 		:F;
+		// :never;
 
 	//Components to help with converting
 

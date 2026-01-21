@@ -918,7 +918,8 @@ export function resolveActorIdOrTarot (targetIdOrTarot: string)  {
 			return idTest;
 		}
 	}
-	return PersonaDB.getSocialLinkByTarot(targetIdOrTarot as TarotCard | (string & {}));
+	// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
+	return PersonaDB.getSocialLinkByTarot(targetIdOrTarot as TarotCard | Tarot["id"] | SocialLink["id"]);
 }
 
 function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K) : (PToken | ValidAttackers | NPC) []{

@@ -474,7 +474,7 @@ async activateGeneralOpener (ev: JQuery.ClickEvent) :Promise<boolean> {
 	if (!await HTMLTools.confirmBox('use this opener?', 'use this opener?')) {return false;}
 	const combatantId = HTMLTools.getClosestData(ev,'combatantId');
 	const powerId = HTMLTools.getClosestDataSafe(ev,'powerId', '');
-	const combatant = this.combat.ensureActivatingCharacterValid(combatantId);
+	const combatant = this.combat.ensureActivatingCharacterValid(combatantId as ValidAttackers["id"]);
 	const options = HTMLTools.getClosestDataSafe(ev, 'optionEffects', '');
 	if (!combatant) {
 		PersonaError.softFail("Invalid combatant");
@@ -487,7 +487,7 @@ async activateGeneralOpener (ev: JQuery.ClickEvent) :Promise<boolean> {
 		// await this.chooseOpener(ev);
 		return true;
 	}
-	const power = combatant.actor.getUsableById(powerId);
+	const power = combatant.actor.getUsableById(powerId as Power["id"]);
 	if (!power) { return false; }
 	if (power && combatant.actor?.canUseOpener()) {
 		await combatant.parent.combatEngine.usePower(combatant.token as PToken, power);
@@ -552,9 +552,9 @@ async modifyOpenerMsg(msg: ChatMessage, actionName: string) {
 async activateTargettedOpener( ev: JQuery.ClickEvent) : Promise<boolean> {
 	if (!await HTMLTools.confirmBox('use this opener?', 'use this opener?')) {return false;}
 	const combatantId = HTMLTools.getClosestData(ev,'combatantId');
-	const powerId = HTMLTools.getClosestData(ev,'powerId');
+	const powerId = HTMLTools.getClosestData<Power["id"]>(ev,'powerId');
 	const targetId = HTMLTools.getClosestData(ev,'targetId');
-	const combatant = this.combat.ensureActivatingCharacterValid(combatantId);
+	const combatant = this.combat.ensureActivatingCharacterValid(combatantId as ValidAttackers["id"]);
 	if (!combatant) {return false;}
 	const power = combatant.actor.getUsableById(powerId);
 	if (!power) { return false; }

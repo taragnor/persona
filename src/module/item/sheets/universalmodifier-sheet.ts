@@ -30,7 +30,7 @@ export class UniversalModifierSheet extends PersonaEffectContainerBaseSheet {
 	async addScene(_event: JQuery.ClickEvent) {
 		const arr= this.item.system.sceneList;
 		arr.push(
-			""
+			"" as Scene["id"]
 		);
 		await this.item.update({"system.sceneList": arr});
 	}

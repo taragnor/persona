@@ -504,7 +504,7 @@ export class PersonaHandleBarsHelpers {
 			// .map( x=> new Handlebars.SafeString(x));
 		},
 
-		"tagTooltip" : function (item: string): SafeString {
+		"tagTooltip" : function (item: Tag["id"]): SafeString {
 			const tag = PersonaDB.allTags().get(item) ?? PersonaDB.allTagLinks().get(item) ?? "";
 			if (typeof tag == "string") {return new Handlebars.SafeString("");}
 			return tag.description;

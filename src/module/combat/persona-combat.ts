@@ -1550,7 +1550,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	getToken( acc: UniversalActorAccessor<PersonaActor>  | undefined): UniversalTokenAccessor<PToken> | undefined {
 		if (!acc) {return undefined;}
 		if (acc.token) {return acc.token as UniversalTokenAccessor<PToken>;}
-		const token = this.combatants.find( comb=> comb?.actor?.id == acc.actorId && comb.actor.token == undefined)?.token;
+		const token = this.combatants.find( comb=> comb?.actor?.id == acc.actorId && comb.actor?.token == undefined)?.token;
 		if (token && token.actor) {return PersonaDB.getUniversalTokenAccessor(token as PToken);}
 		return undefined;
 	}

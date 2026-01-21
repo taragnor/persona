@@ -333,12 +333,12 @@ export class PCSheet extends PCLikeSheet {
 	}
 
 	async movePowerToSideboard( event: JQuery.ClickEvent) {
-		const powerId = HTMLTools.getClosestData(event, "powerId");
+		const powerId = HTMLTools.getClosestData<Power["id"]>(event, "powerId");
 		await this.actor.movePowerToSideboard(powerId);
 	}
 
 	async movePowerToMain( event: JQuery.ClickEvent) {
-		const powerId = HTMLTools.getClosestData(event, "powerId");
+		const powerId = HTMLTools.getClosestData<Power["id"]>(event, "powerId");
 		await this.actor.retrievePowerFromSideboard(powerId);
 	}
 

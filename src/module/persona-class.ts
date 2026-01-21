@@ -18,7 +18,7 @@ import { multiCheckContains, multiCheckToArray } from "./preconditions.js";
 import { PersonaI } from "../config/persona-interface.js";
 import { DamageType } from "../config/damage-types.js";
 import { ResistStrength } from "../config/damage-types.js";
-import {PersonaTag} from "../config/creature-tags.js";
+import {InternalCreatureTag, PersonaTag} from "../config/creature-tags.js";
 import {Defense} from "../config/defense-types.js";
 import {PersonaStat} from "../config/persona-stats.js";
 import {Calculation, EvaluatedCalculation} from "./utility/calculation.js";
@@ -563,7 +563,7 @@ knowsPowerInnately(power : Power)  : boolean {
 		}
 	}
 
-	async deleteTalent(id: string) {
+	async deleteTalent(id: Talent["id"]) {
 		const source = this.source;
 		const talent = PersonaDB.getItemById<Talent>(id);
 		if (!talent) {throw new PersonaError(`No such talent ${id}`);}
@@ -1187,9 +1187,9 @@ knowsPowerInnately(power : Power)  : boolean {
 		return this.tagListPartial().includes(tag);
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-	tagListPartial() : (PersonaTag | Tag["id"])[] {
-		const base = this.source.system.combat.personaTags.slice();
+	tagListPartial() : (PersonaTag | Tag["id"] | InternalCreatureTag)[] {
+		type ret = (PersonaTag | Tag["id"] | InternalCreatureTag)[];
+		const base = this.source.system.combat.personaTags.slice() as ret;
 		base.pushUnique (...this.source.system.creatureTags);
 		base.pushUnique(...this._autoTags());
 		return base;
@@ -1233,7 +1233,7 @@ knowsPowerInnately(power : Power)  : boolean {
 
 	realTags() : Tag[] {
 		const ret =  this.tagListPartial().flatMap( tag => {
-			const IdCheck = PersonaDB.allTags().get(tag);
+			const IdCheck = PersonaDB.allTags().get(tag as Tag["id"]);
 			if (IdCheck) {return [IdCheck];}
 			const nameCheck = PersonaDB.allTagLinks().get(tag);
 			if (nameCheck) {return [nameCheck];}

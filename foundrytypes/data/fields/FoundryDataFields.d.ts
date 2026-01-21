@@ -56,7 +56,7 @@ class ColorFieldClass extends FoundryDMField<string> {
 class JSONField extends StringFieldClass {
 }
 
-class DocumentIdField extends StringFieldClass {
+class DocumentIdField extends StringFieldClass<Foundry.Document["id"]> {
 }
 
 declare class StringFieldClass<const T extends string= string> extends FoundryDMField<T> {
@@ -128,6 +128,7 @@ type NoInfer<A>= [A][A extends any ? 0 : never]
 type NoArray<I>= I extends Array<infer T> ? Record<number, T> : I;
 type DeepNoArray<I>=
 	I extends Array<infer J> ? NoArray<Array<DeepNoArray<J>>> :
+	I extends string ? I :
 	I extends object ? { [k in keyof I]: DeepNoArray<I[k]>} :
 	I;
 

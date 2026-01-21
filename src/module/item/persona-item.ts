@@ -503,7 +503,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	static searchForPotentialTagMatch (idOrInternalTag: string) : U<Tag> {
-		const IdCheck = PersonaDB.allTags().get(idOrInternalTag);
+		const IdCheck = PersonaDB.allTags().get(idOrInternalTag as Tag["id"]);
 		if (IdCheck) {return IdCheck;}
 		const nameCheck = PersonaDB.allTagLinks().get(idOrInternalTag);
 		if (nameCheck) {return nameCheck;}
@@ -572,9 +572,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			.flatMap( tag => tag.getEffects(user));
 	}
 
-	static resolveTag<T extends (string | Tag)>(tag: string | Tag) : Tag | Exclude<T, Tag>  {
+	static resolveTag<T extends (string | Tag | Tag["id"])>(tag: string | Tag) : Tag | Exclude<T, Tag>  {
 		if (tag instanceof PersonaItem) {return tag;}
-		const tagGetTest = PersonaDB.allTags().get(tag);
+		const tagGetTest = PersonaDB.allTags().get(tag as Tag["id"]);
 		if (tagGetTest) {return tagGetTest;}
 		const linkTagTest = PersonaDB.allTagLinks().get(tag);
 		if (linkTagTest) {return linkTagTest;}
@@ -786,7 +786,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				return retTags;
 			}
 			case 'consumable': {
-				const list : string[] = this.system.tags.concat(this.system.itemTags);
+				const list  =
+				([] as (typeof this.system.tags[number] | typeof this.system.itemTags[number])[])
+				.concat( this.system.tags)
+				.concat(this.system.itemTags);
 				if (!list.includes(itype)) {
 					list.pushUnique(itype);
 				}
@@ -802,7 +805,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				return list.map ( t=> PersonaItem.resolveTag<EquipmentTag | PowerTag>(t));
 			}
 			case 'item': {
-			const list= this.system.itemTags.slice();
+				const list= this.system.itemTags.slice();
 				const subtype = this.system.slot;
 				switch (subtype) {
 					case 'body':
@@ -2802,7 +2805,7 @@ export interface ModifierContainer <T extends Actor | TokenDocument | Item | Act
 	getEmbeddedEffects ?: (sourceActor : PersonaActor | null, options ?: GetEffectsOptions) => readonly SourcedConditionalEffect[];
 	parent: T["parent"];
 	name: string;
-	id: string;
+	id: T["id"];
 	displayedName: string;
 	accessor : UniversalAccessor<T>,
 	getModifier(bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null): ModifierListItem[];

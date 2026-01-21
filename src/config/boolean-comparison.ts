@@ -16,6 +16,7 @@ import { ShadowRole } from "./shadow-types.js";
 import { DAYS_LIST } from "./days.js";
 import { WeatherType } from "./weather-types.js";
 import {Defense} from "./defense-types.js";
+import {CreatureTag, InternalCreatureTag} from "./creature-tags.js";
 
 const BASIC_BOOLEAN_COMPARISON_LIST = [
 	"cameo-in-scene",
@@ -388,7 +389,7 @@ type GeneralTagComparison = {
 	powerTag: MultiCheckOrSingle<Exclude<PowerTag, Tag>>,
 } | {
 	tagComparisonType: "actor",
-	creatureTag : MultiCheckOrSingle<string>,
+	creatureTag : MultiCheckOrSingle<InternalCreatureTag | Tag["id"]>,
 	conditionTarget : ConditionTarget,
 } | {
 	tagComparisonType: "roll",

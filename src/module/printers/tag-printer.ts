@@ -55,7 +55,7 @@ export class TagPrinter  extends Application {
 	}
 
 	openTag(event: JQuery.ClickEvent) {
-		const tagId = HTMLTools.getClosestData(event, "tagId");
+		const tagId = HTMLTools.getClosestData<Tag["id"]>(event, "tagId");
 		const talent = PersonaDB.getItemById(tagId);
 		if (!talent) {
 			throw new Error(`Can't find Tag ${tagId}`);

@@ -93,6 +93,7 @@ export class HypotheticalPersona extends Persona<PC> {
 		return persona;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/require-await
 	private async destroyComponents() {
 		this.components
 			.filter( x=> x.isPersona()) //want to prevent any chance of deleting a base shadow
@@ -130,13 +131,13 @@ export class HypotheticalPersona extends Persona<PC> {
 			.filter( pwr => !pwr.hasTag("non-inheritable") && !pwr.hasTag("shadow-only"))
 			.filter( pwr => !currentPowers.includes(pwr))
 		);
-		const finalList = Object.fromEntries(
+		const finalList :Record< Power["id"], Power["name"]>= Object.fromEntries(
 			removeDuplicates(inheritableSkills)
 			.map (pwr => [pwr.id, pwr.name])
 		);
 		const choice = await HTMLTools.singleChoiceBox(finalList);
 		if (!choice) {return null;}
-		const chosenPower = PersonaDB.getPower(choice);
+		const chosenPower = PersonaDB.getPower(choice as Power["id"]);
 		return chosenPower ?? null;
 	}
 

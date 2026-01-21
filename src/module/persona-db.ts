@@ -70,7 +70,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		this.#resetCache();
 	}
 
-	getClassById(id: string): Option<CClass> {
+	getClassById(id: CClass["id"]): Option<CClass> {
 		const item = this.getItemById(id);
 		if (!item) {return null;}
 		if (item.system.type == "characterClass") {
@@ -166,7 +166,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		// return this.#cache.powers =
 		const items = this.allItems()
 			.filter( x=> x.system.type == "power")
-			.map( pwr => [pwr.id, pwr]) as [string, Power][];
+			.map( pwr => [pwr.id, pwr]) as [Power["id"], Power][];
 		return this.#cache.powers = new Map(items);
 	}
 
@@ -266,7 +266,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		if (this.#cache.tags) {return this.#cache.tags;}
 		const tags= this.allItems()
 		.filter (x=> x.isTag())
-		.map( tag=> [tag.id, tag] as [string, Tag]);
+		.map( tag=> [tag.id, tag] as [Tag["id"], Tag]);
 		return this.#cache.tags = new Map(tags);
 	}
 

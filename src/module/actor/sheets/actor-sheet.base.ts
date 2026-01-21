@@ -173,7 +173,7 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 	}
 
 	async deleteFocus(event: Event) {
-		const focusId = HTMLTools.getClosestData(event, "focusId");
+		const focusId = HTMLTools.getClosestData<Focus["id"]>(event, "focusId");
 		if (focusId == undefined) {
 			const err = `Can't find talent at index $focusId}`;
 			throw new PersonaError(err);
