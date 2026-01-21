@@ -18,7 +18,7 @@ import { shadowOnlyCombatAbilities } from "../../config/actor-parts.js";
 import { encounterDataSchema } from "../../config/actor-parts.js";
 import { sharedAbilities } from "../../config/actor-parts.js";
 import { personalBio } from "../../config/actor-parts.js";
-import { CreatureTag } from "../../config/creature-tags.js";
+import { CreatureTag, InternalCreatureTag } from "../../config/creature-tags.js";
 const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
 import { SHADOW_CREATURE_TYPE_LIST } from "../../config/shadow-types.js";
 import { SHADOW_ROLE_LIST } from "../../config/shadow-types.js";
@@ -36,7 +36,8 @@ abstract class BaseStuff extends window.foundry.abstract.DataModel {
 			locked: new bool( { initial: false}),
 			short_desc: new txt(),
 			// flags: new arr(new obj<FlagData>()),
-			creatureTags: new arr(new txt<CreatureTag>()),
+			// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+			creatureTags: new arr(new txt<InternalCreatureTag | Tag["id"]>()),
 		};
 	}
 

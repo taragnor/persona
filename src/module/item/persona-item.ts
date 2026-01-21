@@ -19,7 +19,7 @@ import { Logger } from '../utility/logger.js';
 import { DamageType } from '../../config/damage-types.js';
 import { EQUIPMENT_TAGS, EquipmentTag } from '../../config/equipment-tags.js';
 import { Consequence } from '../../config/consequence-types.js';
-import { CreatureTag } from '../../config/creature-tags.js';
+import { CreatureTag, InternalCreatureTag } from '../../config/creature-tags.js';
 import { PersonaAE } from '../active-effect.js';
 import { removeDuplicates } from '../utility/array-tools.js';
 import { PowerTag } from '../../config/power-tags.js';
@@ -1397,7 +1397,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			);
 	}
 
-	static getConferredTags (eff: ConditionalEffectC, actor: ValidAttackers) : CreatureTag[] {
+	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+	static getConferredTags (eff: ConditionalEffectC, actor: ValidAttackers) : (InternalCreatureTag | Tag["id"])[] {
 		const situation = {
 			user: actor.accessor,
 		};
@@ -1424,7 +1425,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		};
 		const cons : (Consequence & {type : 'add-creature-tag'})[] = ConditionalEffectManager.getAllActiveConsequences(effects, situation)
 			.filter( c=> c.type == 'add-creature-tag') as (Consequence & {type : 'add-creature-tag'})[] ;
-		return cons.map( c => c.creatureTag);
+		return cons
+			.map( c => c.creatureTag)
+			.map( t => PersonaItem.resolveTag(t));
 	}
 
 	getDamageType(this: Usable | Weapon, attacker: ValidAttackers | Persona): Exclude<DamageType, 'by-power'> {

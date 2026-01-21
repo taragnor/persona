@@ -4099,7 +4099,9 @@ async alterEnergy(this: Shadow, amt: number) {
 }
 
 async onRoll(situation: RollSituation & Situation) {
-	console.log(`${this.name} is making a roll with tags: ${situation.rollTags.join(", ")}`);
+	console.log(`${this.name} is making a roll with tags: ${situation.rollTags
+			.map( tag => typeof tag == "string" ? tag : tag.name)
+			.join(", ")}`);
 	if (!this.isValidCombatant()) {return;}
 	if (this.isPC() ) {
 		if (situation.rollTags.includes("fatigue")) {
@@ -4162,10 +4164,11 @@ realTags() : Tag[] {
 	return ret;
 }
 
-get tagListPartial() : CreatureTag[] {
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+get tagListPartial() : (InternalCreatureTag | Tag["id"])[] {
 	//NOTE: This is a candidate for caching
 	if (this.isTarot()) { return []; }
-	const list : CreatureTag[] = this.system.creatureTags.slice();
+	const list : (Tag["id"])[] = this.system.creatureTags.slice();
 	if (this.isValidCombatant()) {
 		list.pushUnique(...this.persona().tagListPartial());
 	}
@@ -4209,11 +4212,12 @@ get tagList() : (Tag | InternalCreatureTag)[] {
 		.map(tag => PersonaItem.searchForPotentialTagMatch(tag) ?? (tag as InternalCreatureTag));
 }
 
-hasCreatureTag(tagNameOrId: CreatureTag) : boolean{
-	const tag = PersonaDB.allTags().get(tagNameOrId);
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+hasCreatureTag(tagOrTagName: CreatureTag | Tag["id"]) : boolean{
+	const tag = tagOrTagName instanceof PersonaItem ? tagOrTagName : PersonaDB.allTags().get(tagOrTagName);
 	const tagList = this.tagListPartial;
 	if (!tag) {
-		return tagList.includes(tagNameOrId);
+		return tagList.includes(tagOrTagName as string);
 	}
 	return tagList.includes(tag.id)
 		|| tagList.includes(tag.system.linkedInternalTag)

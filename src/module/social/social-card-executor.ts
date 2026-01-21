@@ -283,6 +283,9 @@ export class SocialCardExecutor {
 		return PersonaSocial._drawSocialCard(actor, link);
 	}
 
+	static socialLinkIsMetaverseBased(link: SocialLink) : boolean {
+		return link.hasCreatureTag("stuck-in-metaverse");
+	}
 
 	#getCameos(card: SocialCard, actor: PC, linkId: string) : SocialLink[] {
 		let targets : (SocialLink)[] = [];
@@ -290,7 +293,8 @@ export class SocialCardExecutor {
 			if (cameo.id == actor.id) {return false;}
 			if (cameo.id == linkId) {return false;}
 			const acc = cameo.accessor;
-			if (!cameo.isAvailable(actor)) {return false;}
+			if (!cameo.isSociallyDisabled()) {return false;}
+			// if (!cameo.isAvailable(actor)) {return false;}
 			if (cameo.hasCreatureTag("stuck-in-metaverse")) {return false;}
 			const target = PersonaDB.socialLinks().find(link => link.id == linkId) as SocialLink | undefined;
 			const targetAcc = target?.accessor;

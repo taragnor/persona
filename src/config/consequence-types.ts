@@ -6,7 +6,7 @@ import { CardTag } from "./card-tags.js";
 import { VariableType } from "../module/persona-variables.js";
 import { CombatEffect } from "./effect-types.js";
 import { ConsequenceType } from "./effect-types.js";
-import { CreatureTag } from "./creature-tags.js";
+import { InternalCreatureTag } from "./creature-tags.js";
 import { SaveType } from "./save-types.js";
 import { StatusDurationType } from "./status-effects.js";
 import { ConditionTarget, MultiCheckOrSingle, SocialLinkIdOrTarot } from "./precondition-types.js";
@@ -25,7 +25,7 @@ import { OtherConsequence } from "../module/datamodel/other-effects.js";
 import { StatusDuration } from "../module/active-effect.js";
 import { StatusEffectId } from "./status-effects.js";
 import { ItemProperty, ModifierCategory, ModifierTarget } from "./item-modifiers.js";
-import {AttackResult, CombatResult} from "../module/combat/combat-result.js";
+import {AttackResult} from "../module/combat/combat-result.js";
 
 type ExpendOtherEffect = {
 	type: "expend-item";
@@ -390,7 +390,8 @@ export type NewDamageConsequence =
 
 type AddTagConsequence = {
 	type: "add-creature-tag",
-	creatureTag: CreatureTag;
+	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+	creatureTag: InternalCreatureTag | Tag["id"];
 }
 
 type SetFlagConsequence = {

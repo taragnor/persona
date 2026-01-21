@@ -1,1 +1,1 @@
-game.scenes.current
+
