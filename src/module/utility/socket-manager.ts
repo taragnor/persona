@@ -249,7 +249,7 @@ export class SocketManager {
 		}
 	}
 
-}
+} //end of class
 
 export type SocketPayload<T extends keyof SocketMessage> = {
 	code: T,

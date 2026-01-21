@@ -2070,12 +2070,11 @@ getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | nul
 	}
 }
 
-
-getTriggeredEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}, triggerType ?: Trigger) : ConditionalEffectC[] {
+getTriggeredEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
 	options = {...options, CETypes: []};
 	return this.#accessEffectsCache('triggeredEffects', sourceActor, options, () => this.getEffects(sourceActor, options)
 		.filter( x => x.conditionalType === 'triggered')
-		.filter( x=> triggerType != undefined ? x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == triggerType) : true)
+		.filter( x=> options.triggerType != undefined ? x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == options.triggerType) : true)
 	);
 }
 
@@ -2818,9 +2817,9 @@ Hooks.on('updateItem', (item :PersonaItem, _diff: DeepPartial<typeof item>) => {
 	}
 	if (item.isTag()) {
 		PersonaDB.allItems()
-			.filter (x=> x.isCarryableType() || x.isUsableType())
-			.filter( x=> x.hasTag(item))
-			.forEach( x=> x.clearCache());
+			.filter (x=> x.isCarryableType() || x.isUsableType() )
+			.filter( x=> x.hasTag(item) )
+			.forEach( x=> x.clearCache() );
 	}
 });
 
@@ -2864,5 +2863,7 @@ export interface GetEffectsOptions {
 	proxyItem ?: ItemModifierContainer | null;
 	/** defaults to true*/
 	deepTags ?: boolean;
-	CETypes ?: TypedConditionalEffect['conditionalType'][],
+	CETypes ?: TypedConditionalEffect['conditionalType'][];
+	triggerType ?: Trigger
 }
+

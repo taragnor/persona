@@ -1085,7 +1085,7 @@ knowsPowerInnately(power : Power)  : boolean {
 	}
 
 	private _checkConditionals(usable: UsableAndCard) : N<FailReason> {
-		const effects= usable.getTriggeredEffects(this.user, {}, "on-power-usage-check");
+		const effects= usable.getTriggeredEffects(this.user, {triggerType: "on-power-usage-check"});
 		const situation : Situation = {
 			trigger : "on-power-usage-check",
 			user: this.user.accessor,

@@ -127,8 +127,9 @@ export class TriggeredEffect {
 
 static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Situation) :  ConditionalEffectC[] {
 	const triggers : ConditionalEffectC[] = PersonaDB.getGlobalModifiers().flatMap( x=> x
-		.getTriggeredEffects(null)
-		.filter(x=> x.conditions.some( x=> x.type == "on-trigger" && x.trigger == trigger))
+		.getTriggeredEffects(null, {triggerType: trigger})
+		//may not need this
+		// .filter(x=> x.conditions.some( x=> x.type == "on-trigger" && x.trigger == trigger))
 	);
 	if (actor) {
 		triggers.push(...actor.triggersOn(trigger));
