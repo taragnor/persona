@@ -597,8 +597,6 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 		}
 		case "weekday-is": {
 			const weekday = PersonaCalendar.getCurrentWeekday();
-			console.debug(`Checking ${weekday} against ${Object.values(condition.days).join(" ,")}`);
-			Debug(condition.days);
 			return condition.days[weekday];
 		}
 		case "social-target-is": {

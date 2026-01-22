@@ -246,7 +246,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		const tags = this.tagsOfCategory(cat);
 		const locListEntries = Object.entries(originalLocObject)
 		.filter( ([tagName,_locString]) => {
-			return !tags.some( tag => tag.system.linkedInternalTag == tagName);
+			return !tags.some( tag => tagName != "" && tag.system.linkedInternalTag == tagName);
 		});
 		const locObj = {
 			...Object.fromEntries(locListEntries),

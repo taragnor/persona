@@ -567,7 +567,7 @@ export class SocialCardEventHandler {
 		if (cardData.currentEvent) {
 			rollTags.pushUnique(	...cardData.currentEvent.eventTags);
 		}
-		return rollTags;
+		return rollTags.filter ( x=> x);
 	}
 
 	async #onCardChoice(_cardData: CardData , _cardRoll: CardChoice["roll"], _rollTags: (RollTag | CardTag | Tag)[]) {

@@ -62,6 +62,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		if (this._socialData) {
 			return this._socialData;
 		}
+		const UNIFIED_ROLL_TAGS  = PersonaDB.createMergedTagLocList(["roll"], ROLL_TAGS);
 		this._socialData = {
 			ROLLTYPES : SOCIAL_CARD_ROLL_TYPES,
 			SIMPLE_ROLL_TYPES : SIMPLE_SOCIAL_CARD_ROLL_TYPES,
@@ -71,7 +72,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 			ROLL_DC_TYPES: CARD_DC_TYPES,
 			FREQUENCY: FREQUENCY,
 			CARD_TAGS,
-			ROLL_TAGS,
+			ROLL_TAGS : UNIFIED_ROLL_TAGS,
 		} as const;
 		return this._socialData;
 	}

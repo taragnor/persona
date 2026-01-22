@@ -316,7 +316,7 @@ export class TreasureSystem {
 				if (!tag) {return acc;}
 				return acc * this.getTagCostMultiplier(tag);
 			}, baseVal);
-		return Math.round(val) * (treasure.costMult ?? 1);
+		return Math.round(val * (treasure.costMult ?? 1));
 	}
 
 	static baseItemPriceByLevel(item: Carryable) : number {

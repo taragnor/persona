@@ -659,6 +659,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				this.system.cardType,
 			];
 			const tags = baseList
+				.filter( tag=> tag)
 				.map(tag => PersonaItem.resolveTag<CardTag| RollTag>(tag));
 			return tags;
 		}
