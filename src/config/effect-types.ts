@@ -254,6 +254,7 @@ export const COMBAT_EFFECTS = Object.fromEntries(
 
 const INVENTORY_ACTION_LIST = [
 	"add-item",
+	"add-card-item",
 	"add-treasure",
 	"remove-item",
 ] as const;

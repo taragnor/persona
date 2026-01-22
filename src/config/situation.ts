@@ -10,6 +10,7 @@ import { CombatTriggerTypes } from "./triggers.js";
 import {RealDamageType} from "./damage-types.js";
 import {PersonaAE} from "../module/active-effect.js";
 import {FinalizedCombatResult} from "../module/combat/finalized-combat-result.js";
+import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js";
 
 export type UserSituation = {
 	user: UniversalActorAccessor<ValidAttackers>;
@@ -188,6 +189,7 @@ export type SocialCardSituation = UserSituation & {
 	isSocial: true;
 	cameo : UniversalActorAccessor<ValidSocialTarget> | undefined;
 	trigger ?: never;
+	cardEventItem ?: U<EnchantedTreasureFormat>,
 };
 
 //CHANGED THIS SO THAT IT WOULD force roll data when needed

@@ -26,6 +26,7 @@ import { StatusDuration } from "../module/active-effect.js";
 import { StatusEffectId } from "./status-effects.js";
 import { ItemProperty, ModifierCategory, ModifierTarget } from "./item-modifiers.js";
 import {AttackResult} from "../module/combat/combat-result.js";
+import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js";
 
 type ExpendOtherEffect = {
 	type: "expend-item";
@@ -121,8 +122,14 @@ type RecoveryEffect = {
 	type: "apply-recovery",
 }
 
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | AlterTheurgyEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | SetHPOtherEffect | InventoryActionConsequence | RecoveryEffect | setRollResultConsequence;
-;
+export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | AlterTheurgyEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | SetHPOtherEffect | InventoryActionOtherEffect | RecoveryEffect | setRollResultConsequence;
+
+type InventoryActionOtherEffect = Exclude<InventoryActionConsequence, {invAction: "add-card-item"}> | {
+	type: "inventory-action",
+	invAction: "add-card-item",
+	treasureItem: EnchantedTreasureFormat,
+	amount: number,
+}
 
 type SetHPOtherEffect = {
 	type: "set-hp",
@@ -230,6 +237,9 @@ type InventoryActions = {
 } | {
 	invAction : Extract<keyof typeof INVENTORY_ACTION, "remove-item">;
 	itemId: PersonaItem["id"];
+	amount: ConsequenceAmount,
+} | {
+	invAction : Extract<keyof typeof INVENTORY_ACTION, "add-card-item">;
 	amount: ConsequenceAmount,
 }
 
@@ -596,16 +606,16 @@ type CardActionTypes = [
 		eventLabel: string,
 	}, {
 		cardAction: "inc-events" | "gain-money" | "modify-progress-tokens-cameo" ,
-		amount: number,
+		amount: ConsequenceAmount,
 	},{
 		cardAction: "modify-progress-tokens",
 		//older versions may not have this value filled out
 		socialLinkIdOrTarot ?: SocialLinkIdOrTarot,
-		amount : number,
+		amount : ConsequenceAmount,
 	}, {
 		cardAction: "alter-student-skill",
 		studentSkill: StudentSkill,
-		amount : number,
+		amount : ConsequenceAmount,
 	}, {
 		cardAction:	"add-card-events-to-list",
 		cardId : string,
@@ -663,14 +673,17 @@ type ItemSelectorType = typeof ITEM_SELECTOR_TYPE_LIST[number];
 
 export const ITEM_SELECTOR_TYPE = HTMLTools.createLocalizationObject(ITEM_SELECTOR_TYPE_LIST, "persona.consequences.item-selector");
 
-export type ItemSelector = {
+export type ItemSelector = 
+	{costMult: number}
+	& ( {
 	selectType: Extract<ItemSelectorType, "specific">,
 	itemId: PersonaItem["id"],
 } | {
 	selectType: Extract<ItemSelectorType, "randomTreasure">,
-	treasureLevel: number,
+	treasureLevelModifier: number,
 	rollModifier: number,
-}
+	minValue: number,
+});
 
 export const VARIABLE_ACTION_LIST =  [
 	"set",
@@ -861,10 +874,11 @@ type ConsAmountActorProperty = typeof CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST[n
 
 const CONSEQUENCE_AMOUNT_SITUATION_PROPERTIES_LIST = [
 	"damage-dealt",
+	"card-item-value",
 ] as const;
 
 type SituationProperty = typeof CONSEQUENCE_AMOUNT_SITUATION_PROPERTIES_LIST[number];
 
- export const SITUATION_PROPERTIES = HTMLTools.createLocalizationObject( CONSEQUENCE_AMOUNT_SITUATION_PROPERTIES_LIST, "persona.consequenceAmount.actorProperties");
+ export const SITUATION_PROPERTIES = HTMLTools.createLocalizationObject( CONSEQUENCE_AMOUNT_SITUATION_PROPERTIES_LIST, "persona.consequenceAmount.sitProperties");
 
 

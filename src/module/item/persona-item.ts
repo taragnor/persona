@@ -1825,9 +1825,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	/** returns the level of the inventory item */
 	itemLevel() : number {
+		if (this.isTag()) {return this.system.tagLevel || TreasureSystem.guessItemLevel(this) ;}
 		if (!this.isCarryableType()) {return 0;}
-		if (this.isConsumable()) { return 1;}
-		return this.system.itemLevel;
+		// if (this.isConsumable()) { return 1;}
+		if (this.system.itemLevel == 0) {
+			return TreasureSystem.guessItemLevel(this);
+		}
+		return this.system.itemLevel ?? 1;
 	}
 
 	isPower() : this is Power {
@@ -2288,18 +2292,27 @@ async deleteTokenSpend(this: Activity  , deleteIndex:number) {
 	await this.update({'system.tokenSpends':list});
 }
 
-async priceFix() {
-	//updates money to new x10 total
-	switch (this.system.type) {
-		case 'item':
-		case 'consumable': {
-			const price = this.system.price * 10;
-			await this.update({'system.price': price});
-			break;
-		}
-		default:
-			return;
-	}
+//async priceFix() {
+//	//updates money to new x10 total
+//	switch (this.system.type) {
+//		case 'item':
+//		case 'consumable': {
+//			const price = this.system.price * 10;
+//			await this.update({'system.price': price});
+//			break;
+//		}
+//		default:
+//			return;
+//	}
+//}
+
+get moneyValue(): number {
+	if (!this.isCarryableType()) {return 0;}
+	const base= TreasureSystem.baseItemPriceByLevel(this);
+	const val=  this.tagList(null)
+	.reduce ( (acc, tag) => tag instanceof PersonaItem ? acc * TreasureSystem.getTagCostMultiplier(tag) : acc
+	, base);
+	return Math.round(val);
 }
 
 isStatusEffect(this: UsableAndCard) : boolean {
@@ -2731,20 +2744,23 @@ isStatusRemoval(this: Usable) : boolean {
 	return removed.length > 0;
 }
 
-static resolveItemSelector(selector: ItemSelector): EnchantedTreasureFormat[] {
+static resolveItemSelector(selector: ItemSelector, situation: Situation): EnchantedTreasureFormat[] {
 	switch (selector.selectType) {
 		case "specific": {
 			const item= PersonaDB.getItemById(selector.itemId);
 			if (item?.isCarryableType()) {
 				return [{
-					item,
+					item: item.accessor,
 					enchantments:[],
 				}];
 			}
 		}
 			break;
 		case "randomTreasure": {
-			return TreasureSystem.generate(selector.treasureLevel, selector.rollModifier);
+			if (!situation.user) {return [];}
+			const user = PersonaDB.findActor(situation.user);
+			const lvlMod = selector.treasureLevelModifier ?? 0;
+			return TreasureSystem.generate(user.level + lvlMod, selector.rollModifier ?? 0, selector.minValue ?? 0);
 		}
 		default :
 			selector satisfies never;

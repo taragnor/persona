@@ -403,10 +403,10 @@ export class CombatResult  {
 			}
 			case "social-card-action": {
 				//must be executed playerside as event execution is a player thing
-				const otherEffect : SocialCardActionConsequence = {
+				const otherEffect : Sourced<SocialCardActionConsequence> = {
 					...cons
 				};
-				await SocialActionExecutor.execSocialCardAction(otherEffect);
+				await SocialActionExecutor.execSocialCardAction(otherEffect, situation);
 				if (!effect) {break;}
 				effect.otherEffects.push( otherEffect);
 				break;
@@ -449,23 +449,24 @@ export class CombatResult  {
 				if (cons.varType == "social-temp") {
 					//social stuff must be executed player side
 					if (cons.operator == "set-range") {
-						const otherEffect : SocialCardActionConsequence & {cardAction: "set-temporary-variable"} = {
+						const otherEffect : Sourced<SocialCardActionConsequence> & {cardAction: "set-temporary-variable"} = {
 							...cons,
 							type: "social-card-action",
 							cardAction: "set-temporary-variable",
 						};
-						await SocialActionExecutor.execSocialCardAction(otherEffect);
+						await SocialActionExecutor.execSocialCardAction(otherEffect, situation);
 					}
 					if (cons.operator != "set-range") {
 						const amount = this.resolveConsequenceAmount(cons, situation, "value");
-						const otherEffect : SocialCardActionConsequence & {cardAction: "set-temporary-variable"} = {
+						const otherEffect : Sourced<SocialCardActionConsequence> & {cardAction: "set-temporary-variable"} = {
+							...cons,
 							type: "social-card-action",
 							cardAction: "set-temporary-variable",
 							variableId: cons.variableId,
 							operator: cons.operator,
 							value: amount,
 						};
-						await SocialActionExecutor.execSocialCardAction(otherEffect);
+						await SocialActionExecutor.execSocialCardAction(otherEffect, situation);
 					}
 					break;
 				}
@@ -493,6 +494,16 @@ export class CombatResult  {
 			case "inventory-action": {
 				if (!effect) {break;}
 				const amount = this.resolveConsequenceAmount(cons, situation);
+				if (cons.invAction == "add-card-item") {
+					const treasureItem = "cardEventItem" in situation ? situation.cardEventItem : undefined;
+						if (!treasureItem) {break;}
+						effect.otherEffects.push( {
+							...cons,
+							amount,
+							treasureItem,
+						});
+						break;
+					}
 				if (cons.invAction != "add-treasure") {
 					const resolvedCons = {
 						...cons,

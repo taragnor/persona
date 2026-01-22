@@ -355,6 +355,9 @@ export class ConsequenceApplier {
 				await actor.expendConsumable(item,amount);
 				break;
 			}
+			case "add-card-item":
+				await actor.addTreasureItem(otherEffect.treasureItem);
+				break;
 			default:
 				otherEffect satisfies never;
 				break;

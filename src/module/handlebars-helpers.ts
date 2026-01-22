@@ -501,7 +501,6 @@ export class PersonaHandleBarsHelpers {
 				})
 				.join(", ")
 			);
-			// .map( x=> new Handlebars.SafeString(x));
 		},
 
 		"tagTooltip" : function (item: Tag["id"]): SafeString {

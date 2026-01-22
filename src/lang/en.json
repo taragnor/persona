@@ -683,9 +683,9 @@
 	"persona.effecttypes.social-card.remove-cameo": "Remove Cameo from Scene",
 	"persona.effecttypes.social-card.set-social-card-item": "Set Social Card Item",
 	"persona.effecttypes.social-card.event-chain": "Event Chain Management",
-	"persona.effecttypes.social-card.event-chain-action.start-chain": "Start Event Chain",
+	"persona.effecttypes.social-card.event-chain-action.start-chain": "Start Event Chain (+1 event)",
 	"persona.effecttypes.social-card.event-chain-action.clear-chain": "Clear Event Chain",
-	"persona.effecttypes.social-card.event-chain-action.modify-chain-count": "Modify Chain Count (also +1 event)",
+	"persona.effecttypes.social-card.event-chain-action.modify-chain-count": "Modify Chain Count (+1 event)",
 	"persona.effecttypes.inventory-action": "Inventory Action",
 
 
@@ -1034,6 +1034,7 @@
 "persona.consequences.inventoryAction.add-item" : "Add Item",
 "persona.consequences.inventoryAction.add-treasure" : "Add Treasure",
 "persona.consequences.inventoryAction.remove-item" : "Remove Item",
+"persona.consequences.inventoryAction.add-card-item" : "Add Card Item",
 
 	"persona.modifier-variable.escalationDie": "Escalation Die",
 	"persona.modifier-variable.tensionPool": "Tension Pool",
@@ -1280,7 +1281,8 @@
 	"persona.consequenceAmount.actorProperties.batonPassLevel": "Baton Pass Lvl",
 	"persona.consequenceAmount.actorProperties.level": "Level",
 
-	"persona.consequenceAmount.actorProperties.damage-dealt": "Damage Dealt",
+	"persona.consequenceAmount.sitProperties.damage-dealt": "Damage Dealt",
+	"persona.consequenceAmount.sitProperties.card-item-value": "Value of Card Item",
 
 
 	"persona.attack.result.hit": "Hit",

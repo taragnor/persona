@@ -57,6 +57,14 @@
 			<div>
 				<label> Hidden </label>
 				<input type="checkbox" id="hidden-tag" name="system.hidden" {{checked item.system.hidden}}>
+				<label> Price Mult</label>
+				{{numberInput item.system.priceMult class="short" name="system.priceMult" step=1 min=0 max=900}}
+			</div>
+			<div class="item-level">
+				<label>
+					Tag Level:
+				</label>
+				{{numberInput item.system.tagLevel class="short" name="system.tagLevel" step=1 min=0 max=15}}
 			</div>
 		</div>
 		<div class="f-row">

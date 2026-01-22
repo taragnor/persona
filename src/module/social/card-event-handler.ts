@@ -641,6 +641,7 @@ export class SocialCardEventHandler {
 			chainLabel: evLabel,
 			chainCount: 0,
 		};
+		this.addExtraEvent(1);
 		console.log(`Forcing Event Chain: ${evLabel}`);
 	}
 

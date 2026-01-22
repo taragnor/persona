@@ -124,9 +124,11 @@ class TagSchema extends foundry.abstract.TypeDataModel {
 	static override defineSchema() {
 		const ret = {
 			hidden: new bool(),
+			priceMult: new num({ integer: true, initial: 1, min:0}),
 			description: new txt(),
 			defensive: new bool(),
 			tagType: new txt({choices: TAG_TYPES}),
+			tagLevel: new num( {initial: 0, integer: true}),
 			linkedInternalTag: new txt(),
 			treasure: itemTreasureStats(),
 			...effects (false),

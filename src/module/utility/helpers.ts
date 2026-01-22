@@ -81,7 +81,10 @@ export class Helpers {
 		const escapeRegExp = function escapeRegExp(str: string): string {
 			return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 		};
-		const keys = Object.keys(replacements).map(key => escapeRegExp(key));
+		const keys = Object.keys(replacements)
+		.sort( (a, b) => b.length - a.length)
+			.map(key => escapeRegExp(key))
+		;
 		if (keys.length == 0) {return input;}
 		const pattern = new RegExp(keys.join('|'), 'g');
 		return input.replace(pattern, match => replacements[match]);

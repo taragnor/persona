@@ -1044,6 +1044,8 @@ export class ConditionalEffectManager {
 			}
 			case "remove-item":
 				return `remove ${amount} item`;
+			case "add-card-item":
+				return `add ${amount ?? 1} of card Item`;
 			default:
 				cons satisfies never;
 				return "ERROR";
@@ -1144,7 +1146,8 @@ export class ConditionalEffectManager {
 	static #printSocialCardAction(cons: Consequence & {type:"social-card-action"}) : string {
 		let signedAmount;
 		if ("amount" in cons){
-			signedAmount = this.signedAmount(cons.amount);
+			signedAmount = this.printConsequenceAmount(cons.amount);
+			// signedAmount = this.signedAmount(cons.amount);
 		}
 		switch (cons.cardAction) {
 			case "stop-execution":

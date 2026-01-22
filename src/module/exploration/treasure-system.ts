@@ -1,6 +1,6 @@
 import { PersonaActor } from "../actor/persona-actor.js";
 import { PersonaDB } from "../persona-db.js";
-import { randomSelect, weightedChoice } from "../utility/array-tools.js";
+import { weightedChoice } from "../utility/array-tools.js";
 import { CARD_DROP_RATE, ITEM_DROP_RATE, ProbabilityRate, RANDOM_POWER_RATE } from "../../config/probability.js";
 import { TreasureTable } from "../../config/treasure-tables.js";
 import {PersonaError} from "../persona-error.js";
@@ -17,13 +17,13 @@ export class TreasureSystem {
 			const enchantment = this.generateEnchantment(item, treasureLevel, modifier, treasureMin);
 			if (enchantment) {
 				return [{
-					item,
-					enchantments: [enchantment],
+					item: item.accessor as UniversalItemAccessor<TreasureItem>,
+					enchantments: [enchantment.id],
 				} ] .concat(otherTreasure);
 			}
 		}
 		return [{
-			item,
+			item: item.accessor,
 			enchantments: [],
 		} as EnchantedTreasureFormat].concat(otherTreasure);
 	}
@@ -182,11 +182,11 @@ export class TreasureSystem {
 	}
 
 	static printEnchantedTreasureString(treasure: EnchantedTreasureFormat) : string {
-		const basename = treasure.item.name;
+		const basename = PersonaDB.findItem(treasure.item).name;
 		if (treasure.enchantments.length == 0) {
 			return basename;
 		}
-		const enchantments = treasure.enchantments.map( x=> x.name);
+		const enchantments = treasure.enchantments.map( x=> PersonaDB.allTags().get(x)?.name);
 		return `${basename} (${enchantments.join(", ")})`;
 	}
 
@@ -219,7 +219,7 @@ export class TreasureSystem {
 		const powers = PersonaDB.allPowersArr()
 			.filter ( pwr => pwr.isInheritable())
 			.filter ( pwr => slot != undefined ? pwr.system.slot == slot : true)
-			.filter ( pwr => forbidExotic ? !pwr.isExotic() : true)
+			.filter ( pwr => forbidExotic ? !pwr.isExotic() : true);
 		const weightedPowers = powers.map ( pwr =>
 			({
 				item: pwr,
@@ -306,6 +306,63 @@ export class TreasureSystem {
 			return {money: 0, items: []};
 		}
 	}
+
+	static getValueOf(treasure: EnchantedTreasureFormat)  :number {
+		const item = PersonaDB.findItem(treasure.item);
+		const baseVal = item.moneyValue;
+		const val= treasure.enchantments
+			.reduce ( (acc, enc)=> {
+				const tag = PersonaDB.allTags().get(enc);
+				if (!tag) {return acc;}
+				return acc * this.getTagCostMultiplier(tag);
+			}, baseVal);
+		return Math.round(val) * (treasure.costMult ?? 1);
+	}
+
+	static baseItemPriceByLevel(item: Carryable) : number {
+		const base = item.system.price ?? 0;
+		if (base > 0) {return base;}
+		const ILevelCost=  this._itemCost(item.itemLevel());
+		if (item.isConsumable()) {return Math.round(ILevelCost * 0.33);}
+		return Math.round(ILevelCost);
+	}
+
+	static getTagCostMultiplier(tag: Tag) : number {
+		if (tag.system.priceMult != 1) {return tag.system.priceMult;}
+		return (1 + 0.15 * tag.itemLevel());
+	}
+
+	private static _itemCost(lvl: number) : number {
+		if (lvl <= 0) {return 0;}
+		if (lvl == 1) {return 40;}
+		return Math.round(this._itemCost(lvl -1) * 1.33);
+
+	}
+
+	static guessItemLevel(item: Carryable | Tag) : number {
+		const treasure = item.system.treasure;
+		for (let i = 0; i < 100; i+=5) {
+			if (i >= treasure.royal.minLevel
+				&& i <= treasure.royal.maxLevel)
+				{return Math.max(1, Math.round(i / 10) + 1);}
+		}
+		for (let i = 0; i < 100; i+=5) {
+			if (i >= treasure.greater.minLevel
+				&& i <= treasure.greater.maxLevel )
+				{return Math.max(1 ,Math.round(i / 10));}
+		}
+		for (let i = 0; i < 100; i+=5) {
+			if (i >= treasure.lesser.minLevel
+				&& i <= treasure.lesser.maxLevel)
+				{return Math.max( 1 , Math.round(i / 10) - 1);}
+		}
+		for (let i = 0; i < 100; i +=5) {
+			if (i >= treasure.trinkets.minLevel
+				&& i <= treasure.trinkets.maxLevel)
+				{return Math.max(1, Math.round(i / 10) - 3);}
+		}
+		return item.isTag() ? 0 : 1;
+	}
 }
 
 type TreasureItem = ReturnType<typeof PersonaDB["treasureItems"]>[number];
@@ -326,8 +383,9 @@ export const ENCOUNTER_RATE_PROBABILITY : ProbabilityRate = {
 window.TreasureSystem = TreasureSystem;
 
 export type EnchantedTreasureFormat = {
-	item: TreasureItem,
-	enchantments: Tag[]
+	item: UniversalItemAccessor<TreasureItem>,
+	enchantments: Tag["id"][],
+	costMult ?: number,
 }
 
 
@@ -335,4 +393,5 @@ type BattleTreasure = {
 	money : number,
 	items: TreasureItem[],
 };
+
 

@@ -322,7 +322,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async addTreasureItem( treasure: EnchantedTreasureFormat, quietLog = false) {
-		const baseItem = treasure.item;
+		const baseItem = PersonaDB.findItem(treasure.item);
 		const tags = baseItem.system.itemTags;
 		if (treasure.enchantments.length == 0) {
 			return await this.addItem(baseItem);
@@ -330,10 +330,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		const tagIds =
 			[
 				...tags,
-				...treasure.enchantments.map( x=> x.id),
+				...treasure.enchantments,
 			];
 		const tagsString = treasure.enchantments
-			.map( x=>x.name )
+			.map( x=> PersonaDB.allTags().get(x)?.name  ?? "ERROR")
 			.join(", ");
 		const name =`${baseItem.name} (${tagsString})`;
 		const baseData = baseItem.toJSON() as typeof baseItem;

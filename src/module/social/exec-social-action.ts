@@ -1,5 +1,6 @@
 import {CardTag} from "../../config/card-tags.js";
-import {SocialCardActionConsequence, VariableAction} from "../../config/consequence-types.js";
+import {ConsequenceAmount, SocialCardActionConsequence, VariableAction} from "../../config/consequence-types.js";
+import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
 import {PersonaError} from "../persona-error.js";
 import {resolveActorIdOrTarot} from "../preconditions.js";
 import {SocialCardEventHandler} from "./card-event-handler.js";
@@ -32,15 +33,15 @@ export class SocialActionExecutor {
 		return this.cardExecutor.cardData;
 	}
 
-	static async execSocialCardAction(eff: SocialCardActionConsequence) : Promise<void> {
+	static async execSocialCardAction(eff: Sourced<SocialCardActionConsequence>, situation: Situation) : Promise<void> {
 		try{
-			await this._execSocialCardAction(eff);
+			await this._execSocialCardAction(eff, situation);
 		} catch (e) {
 			PersonaError.softFail(`Error Executing Social Action ${eff.cardAction}`, e);
 		}
 	}
 
-	private static async _execSocialCardAction(eff: SocialCardActionConsequence) : Promise<void> {
+	private static async _execSocialCardAction(eff: Sourced<SocialCardActionConsequence>, situation: Situation) : Promise<void> {
 		switch (eff.cardAction) {
 			case "stop-execution":
 				this.cardExecutor.stopCardExecution();
@@ -50,24 +51,36 @@ export class SocialActionExecutor {
 				this.handler.forceEvent(eff.eventLabel);
 				this.handler.addExtraEvent(1);
 				break;
-			case "inc-events":
-				this.handler.addExtraEvent(eff.amount ?? 0);
+			case "inc-events": {
+				const amount = this.resolveConsAmount(eff, situation);
+				if (!amount) {return;}
+				this.handler.addExtraEvent(amount ?? 0);
 				break;
-			case "gain-money":
-					await PersonaSocial.gainMoney(this.cardData.actor, eff.amount ?? 0);
+			}
+			case "gain-money": {
+				const amount = this.resolveConsAmount(eff, situation);
+				if (!amount) {return;}
+				await PersonaSocial.gainMoney(this.cardData.actor, amount ?? 0);
 				break;
-			case "modify-progress-tokens":
-					await this.modifyProgress(eff ?? 0);
+			}
+			case "modify-progress-tokens": {
+				await this.modifyProgress(eff ?? 0, situation);
 				break;
-			case "alter-student-skill":
+			}
+			case "alter-student-skill": {
 					if (!eff.studentSkill) {
 						PersonaError.softFail("No student skill given");
 						break;
 					}
-				await PersonaSocial.alterStudentSkill( this.mainActor, eff.studentSkill, eff.amount ?? 0);
+				const amount = this.resolveConsAmount(eff, situation);
+				if (!amount) {return;}
+				await PersonaSocial.alterStudentSkill( this.mainActor, eff.studentSkill, amount ?? 0);
 				break;
+			}
 			case "modify-progress-tokens-cameo": {
-				await this.modifyCameoProgress(eff.amount);
+				const amount = this.resolveConsAmount(eff, situation);
+				if (!amount) {return;}
+				await this.modifyCameoProgress(amount);
 				break;
 			}
 			case "add-card-events-to-list":
@@ -82,7 +95,7 @@ export class SocialActionExecutor {
 				break;
 			}
 			case "card-response":
-					await this.handler.applyCardResponse(eff.text);
+				await this.handler.applyCardResponse(eff.text);
 				break;
 			case "append-card-tag":
 				this.#appendCardTag(eff.cardTag);
@@ -149,13 +162,27 @@ export class SocialActionExecutor {
 		}
 	}
 
-	static async modifyProgress(eff: SocialCardActionConsequence & {cardAction: "modify-progress-tokens"} ) {
+	static resolveConsAmount( eff: Sourced<{amount: ConsequenceAmount}>, situation: Situation) : U<number> {
+		const sourced = ConsequenceAmountResolver.extractSourcedAmount(eff);
+		const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situation);
+		if (!amount) {
+			PersonaError.softFail("Can't resolve Consequence Amount.", eff.amount);
+			return undefined;
+		}
+		return amount;
+	}
+
+	static async modifyProgress(eff: Sourced<SocialCardActionConsequence> & {cardAction: "modify-progress-tokens"}, situation: Situation ) {
 		const choice = eff.socialLinkIdOrTarot;
 		if (choice == undefined || choice == "target") {
-			return this.modifyTargetProgress(eff.amount);
+			const amount = this.resolveConsAmount(eff, situation);
+			if (!amount) {return;}
+			return this.modifyTargetProgress(amount);
 		}
 		if (choice == "cameo") {
-			return this.modifyCameoProgress(eff.amount);
+			const amount = this.resolveConsAmount(eff, situation);
+			if (!amount) {return;}
+			return this.modifyCameoProgress(amount);
 		}
 		const target = resolveActorIdOrTarot(choice as string);
 		if (!target) {
@@ -163,7 +190,9 @@ export class SocialActionExecutor {
 			return;
 		}
 		const actor  = this.cardData.actor;
-		await actor.socialLinkProgress(target.id, eff.amount);
+		const amount = this.resolveConsAmount(eff, situation);
+		if (!amount) {return;}
+		await actor.socialLinkProgress(target.id, amount);
 	}
 
 	static async modifyTargetProgress(amt: number) {

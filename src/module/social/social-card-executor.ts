@@ -470,17 +470,24 @@ export class SocialCardExecutor {
 	}
 
 	public setSocialCardItem(selector: ItemSelector){
-		const item = PersonaItem.resolveItemSelector(selector);
 		const cardData = this.cardData;
+		const item = PersonaItem.resolveItemSelector(selector, cardData.situation);
 		cardData.item = item.at(0);
+		if (cardData.item) {
+			cardData.item.costMult = selector.costMult ?? 1;
+		}
+		cardData.situation.cardEventItem = cardData.item;
 		cardData.replaceSet["$ITEM"] = cardData.item ? TreasureSystem.printEnchantedTreasureString(cardData.item): `No Item` ;
-
+		cardData.replaceSet["$ITEMCOST"] = cardData.item ? String(TreasureSystem.getValueOf(cardData.item)): `No Item` ;
+		if (!cardData.item) {
+			PersonaError.softFail("Unable to find item to select for set card item", selector, cardData.situation);
+		}
+		// Debug(cardData.item);
 	}
 
 	getSocailVariable(varId: string) {
 		return this.cardData.variables[varId] ?? 0;
 	}
-
 
 } //end of class
 

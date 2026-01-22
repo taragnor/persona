@@ -1,6 +1,7 @@
 import {ConsequenceAmount, ConsequenceAmountV2} from "../../config/consequence-types.js";
 import {PersonaAE} from "../active-effect.js";
 import {PersonaCombat} from "../combat/persona-combat.js";
+import {TreasureSystem} from "../exploration/treasure-system.js";
 import {PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
@@ -68,6 +69,12 @@ private static resolveSituationProperty(amt: Sourced<ConsequenceAmountV2> & {typ
 	switch (amt.property) {
 		case "damage-dealt":
 			return ("amt" in situation) ? situation.amt : undefined;
+		case "card-item-value": {
+			const item = ("cardEventItem" in situation) ? situation.cardEventItem : undefined;
+			if (! item) {return 0;}
+			const cost = TreasureSystem.getValueOf(item);
+			return cost;
+		}
 		default:
 			amt.property satisfies never;
 	}

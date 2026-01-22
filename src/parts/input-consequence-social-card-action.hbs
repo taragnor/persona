@@ -12,7 +12,7 @@
 {{/if}}
 
 {{#if (eqAny cons.cardAction "gain-money" "modify-progress-tokens" "modify-progress-tokens-cameo" "alter-student-skill" "inc-events")}}
-<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'amount.') cons=cons.amount POWERSTUFF=POWERSTUFF owner=owner}}
 {{/if}}
 
 {{#if (eqAny cons.cardAction "modify-progress-tokens")}}
@@ -65,11 +65,17 @@
 	</select>
 	{{/if}}
 	{{#if (eq cons.item.selectType "randomTreasure")}}
-	<label>Treasure Level</label>
-	<input class="short" type=number name="{{strcat namePrefix 'item.treasureLevel'}}" value="{{cons.item.treasureLevel}}">
-	<label>Modifier</label>
-	<input class="short" type=number name="{{strcat namePrefix 'item.rollModifier'}}" value="{{cons.item.rollModifier}}">
+	<div class="treasure-data">
+		<label>Treasure Level Mod</label>
+		<input class="short" type=number name="{{strcat namePrefix 'item.treasureLevelModifier'}}" value="{{cons.item.treasureLevelModifier}}">
+		<label>Modifier</label>
+		<input class="short" type=number name="{{strcat namePrefix 'item.rollModifier'}}" value="{{cons.item.rollModifier}}">
+		<label>Min Val</label>
+		<input class="short" type=number name="{{strcat namePrefix 'item.minValue'}}" value="{{cons.item.minValue}}">
+	</div>
 	{{/if}}
+	<label> Cost Multiplier  </label>
+		<input class="short" type=number name="{{strcat namePrefix 'item.costMult'}}" value="{{cons.item.costMult}}">
 </div>
 {{/if}}
 
@@ -78,7 +84,7 @@
 	<select name="{{strcat namePrefix 'chainAction'}}">
 		{{selectOptions POWERSTUFF.EVENT_CHAIN_ACTIONS localize=true selected=(defVal cons.chainAction "start-chain")}}
 	</select>
-	{{#if (eq cons.chainAction "start-chain")}}
+	{{#if (eq (defVal cons.chainAction "start-chain") "start-chain")}}
 	<input type=string name="{{strcat namePrefix 'chainId'}}" value="{{cons.chainId}}">
 	{{/if}}
 	{{#if (eq cons.chainAction "modify-chain-count")}}
