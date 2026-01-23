@@ -1,4 +1,4 @@
-import {CardTag} from "../../config/card-tags.js";
+import {CARD_RESTRICTOR_TAGS, CardTag} from "../../config/card-tags.js";
 import {HBS_TEMPLATES_DIR, PersonaSettings} from "../../config/persona-settings.js";
 import {RollTag} from "../../config/roll-tags.js";
 import {SocialCardSituation} from "../../config/situation.js";
@@ -68,8 +68,6 @@ export class SocialCardExecutor {
 		this.rollState.continuation = promiseResolvefn;
 	}
 
-
-
 	get cardData() : CardData{
 		if (this.abort) {
 			throw new PersonaError("Card execution has aborted this shouldn't get called");
@@ -106,7 +104,7 @@ export class SocialCardExecutor {
 		}
 		const eventList = card.cardEvents().slice() ;
 		if (activity instanceof PersonaActor) {
-			const questionsAsEvents= SocialCardEventHandler.questionsAsEvents(activity);
+			const questionsAsEvents = SocialCardEventHandler.questionsAsEvents(activity);
 			eventList.push(...questionsAsEvents);
 		}
 		const cardData : CardData = {
@@ -141,7 +139,7 @@ export class SocialCardExecutor {
 	}
 
 	async #execCardSequence(): Promise<ChatMessage[]> {
-		const cardData= this.cardData;
+		const cardData = this.cardData;
 		const chatMessages: ChatMessage[] = [];
 		this._handler = new SocialCardEventHandler(this);
 		await this.#printCardIntro(cardData);
@@ -208,7 +206,7 @@ export class SocialCardExecutor {
 				if (SL <= 3 && cardData.actor?.tarot?.name == "Fool") {
 					improveAmt -= 2;
 				}
-				SLImproveSpend = `<li class="token-spend"> spend ${improveAmt} progress tokens to raise link with ${link.actor.name}</li>`;
+				SLImproveSpend = `<li class="token-spend" data-token-amt="${improveAmt}" > spend ${improveAmt} progress tokens to raise link with ${link.actor.name} <button class="raise-SL" data-link-id="${link.actor.id}"> Raise SL </button></li>`;
 			}
 			giftStr += `You may give a gift to anyone in the scene (max 1 gift per person). `;
 			const SLCameos = cardData.cameos.filter(cameo => cardData.actor.getSocialSLWith(cameo) >= 4);
@@ -225,6 +223,7 @@ export class SocialCardExecutor {
 		.map(x=> `spend ${x.amount} progress tokens to ${x.text}.`)
 		.map(x=> `<li class="token-spend"> ${x} </li>`);
 		const finale =`
+		<section class="finale" data-pc-id="${cardData.actor.id}">
 		<h2> Finale </h2>
 		<div class="gift">
 		${giftStr}
@@ -242,6 +241,7 @@ export class SocialCardExecutor {
 		${tokenSpends.join("")}
 		</ul>
 		</div>
+		</section>
 		`;
 		}
 		const speaker = ChatMessage.getSpeaker();
@@ -261,7 +261,6 @@ export class SocialCardExecutor {
 			attacker: actor.accessor,
 			socialTarget: link? link.actor.accessor : undefined,
 			isSocial: true,
-			// target: link ? link.actor.accessor : undefined,
 		};
 		const cardList = PersonaDB.socialEncounterCards();
 		if (cardList.length == 0) {
@@ -269,18 +268,19 @@ export class SocialCardExecutor {
 		}
 		const preconditionPass =  cardList
 			.filter( card => card.system.frequency > 0)
-			.filter( card => testPreconditions(card.cardConditionsToSelect(), situation));
+			.filter( card => testPreconditions(this.cardConditionsToSelect(card), situation));
 		if (PersonaSettings.debugMode() == true) {
 			console.log(`Valid Cards: ${preconditionPass.map(x=> x.name).join(", ")}`);
 		}
-		// if (preconditionPass.length == 0) { }
 		return preconditionPass;
 	}
 
 	async #drawSocialCard(actor: PC, link : Activity | SocialLink) : Promise<SocialCard> {
-		if (!game.user.isGM)
-		{return await PersonaSocial.sendGMCardRequest(actor, link);}
-		return PersonaSocial._drawSocialCard(actor, link);
+		if (!game.user.isGM) {
+			return await PersonaSocial.sendGMCardRequest(actor, link);
+		} else {
+			return PersonaSocial._drawSocialCard(actor, link);
+		}
 	}
 
 	static socialLinkIsMetaverseBased(link: SocialLink) : boolean {
@@ -487,6 +487,88 @@ export class SocialCardExecutor {
 
 	getSocailVariable(varId: string) {
 		return this.cardData.variables[varId] ?? 0;
+	}
+
+	static cardConditionsToSelect( card: SocialCard) : readonly SourcedPrecondition[] {
+		const extraConditionsFromTags =this.extraConditionsFromTags(card);
+		if (extraConditionsFromTags.length == 0) {
+			return ConditionalEffectManager.getConditionals(card.system.conditions, null, null, null);
+		}
+		const conditions =  card.system.conditions.concat(extraConditionsFromTags);
+		return ConditionalEffectManager.getConditionals(conditions, null, null, null);
+	}
+
+	static extraConditionsFromTags( card: SocialCard) : SocialCard['system']['conditions'] {
+		const SLCheck = function (low:number, high:number) : Precondition {
+			const SLcheck: Precondition = {
+				type: 'numeric',
+				comparator: 'range',
+				comparisonTarget: 'social-link-level',
+				num: low,
+				high: high,
+				socialLinkIdOrTarot: 'target',
+			};
+			return SLcheck;
+		};
+		const conditionTags : typeof CARD_RESTRICTOR_TAGS[number][] = card.system.cardTags
+			.filter(tag=> CARD_RESTRICTOR_TAGS.includes(tag as typeof CARD_RESTRICTOR_TAGS[number])) as typeof CARD_RESTRICTOR_TAGS[number][];
+		return conditionTags.flatMap( tag => {
+			switch (tag) {
+				case 'real-world': {
+					const realWorld : Precondition = {
+						type: 'boolean',
+						boolComparisonTarget: 'has-tag',
+						tagComparisonType: 'actor',
+						conditionTarget: 'target',
+						creatureTag: 'stuck-in-metaverse',
+						booleanState: false,
+					};
+					return [ realWorld ];
+				}
+				case 'date':
+				case 'friends': {
+					const isDating : Precondition = {
+						type: 'boolean',
+						boolComparisonTarget: 'social-availability',
+						booleanState: tag == 'date',
+						conditionTarget: 'user',
+						socialTypeCheck: 'is-dating',
+						socialLinkIdOrTarot: 'target',
+					};
+					return [ isDating ];
+				}
+				case 'student-stuff': {
+					const isStudent: Precondition = {
+						type: 'boolean',
+						boolComparisonTarget: 'has-tag',
+						tagComparisonType: 'actor',
+						booleanState: true,
+						conditionTarget: 'target',
+						creatureTag: 'student',
+					};
+					return [isStudent];
+				}
+				case 'middle-range':
+					return [SLCheck(3,8)];
+				case 'trusted':
+					return [SLCheck(7,10)];
+				case 'introductory':
+					return [SLCheck(1,3)];
+				case 'one-shot':
+				case 'question':
+					return [];
+				case 'disabled': {
+					const neverHappen: Precondition = {
+						type: 'never',
+					};
+					return [neverHappen];
+				}
+				default:
+					tag satisfies never;
+					break;
+			}
+			return [];
+		});
 	}
 
 } //end of class

@@ -12,7 +12,7 @@ import { ItemSelector } from '../../config/consequence-types.js';
 import { Trigger } from '../../config/triggers.js';
 import { CombatResult, AttackResult } from '../combat/combat-result.js';
 import { ROLL_TAGS_AND_CARD_TAGS, RollTag } from '../../config/roll-tags.js';
-import { CARD_RESTRICTOR_TAGS, CardTag } from '../../config/card-tags.js';
+import { CardTag } from '../../config/card-tags.js';
 import { PersonaSettings } from '../../config/persona-settings.js';
 import { POWER_TAGS_LIST, POWER_TYPE_TAGS , STATUS_AILMENT_POWER_TAGS} from '../../config/power-tags.js';
 import { Logger } from '../utility/logger.js';
@@ -1401,7 +1401,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			);
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 	static getConferredTags (eff: ConditionalEffectC, actor: ValidAttackers) : (InternalCreatureTag | Tag["id"])[] {
 		const situation = {
 			user: actor.accessor,
@@ -2461,14 +2460,6 @@ requiresTargetSelection(this: Usable) : boolean {
 	}
 }
 
-cardConditionsToSelect( this: SocialCard) : readonly SourcedPrecondition[] {
-	const extraConditionsFromTags = this.extraConditionsFromTags();
-	if (extraConditionsFromTags.length == 0) {
-		return ConditionalEffectManager.getConditionals(this.system.conditions, null, null, null);
-	}
-	const conditions =  this.system.conditions.concat(extraConditionsFromTags);
-	return ConditionalEffectManager.getConditionals(conditions, null, null, null);
-}
 
 isInstantDeathAttack(this: Usable) : boolean {
 	return (this.system.instantKillChance != 'none');
@@ -2483,78 +2474,6 @@ canDealDamage(this: Usable) :  boolean {
 		);
 }
 
-extraConditionsFromTags( this: SocialCard) : SocialCard['system']['conditions'] {
-	const SLCheck = function (low:number, high:number) : Precondition {
-		const SLcheck: Precondition = {
-			type: 'numeric',
-			comparator: 'range',
-			comparisonTarget: 'social-link-level',
-			num: low,
-			high: high,
-			socialLinkIdOrTarot: 'target',
-		};
-		return SLcheck;
-	};
-	const conditionTags : typeof CARD_RESTRICTOR_TAGS[number][] = this.system.cardTags
-		.filter(tag=> CARD_RESTRICTOR_TAGS.includes(tag as typeof CARD_RESTRICTOR_TAGS[number])) as typeof CARD_RESTRICTOR_TAGS[number][];
-	return conditionTags.flatMap( tag => {
-		switch (tag) {
-			case 'real-world': {
-				const realWorld : Precondition = {
-					type: 'boolean',
-					boolComparisonTarget: 'has-tag',
-					tagComparisonType: 'actor',
-					conditionTarget: 'target',
-					creatureTag: 'stuck-in-metaverse',
-					booleanState: false,
-				};
-				return [ realWorld ];
-			}
-			case 'date':
-			case 'friends': {
-				const isDating : Precondition = {
-					type: 'boolean',
-					boolComparisonTarget: 'social-availability',
-					booleanState: tag == 'date',
-					conditionTarget: 'user',
-					socialTypeCheck: 'is-dating',
-					socialLinkIdOrTarot: 'target',
-				};
-				return [ isDating ];
-			}
-			case 'student-stuff': {
-				const isStudent: Precondition = {
-					type: 'boolean',
-					boolComparisonTarget: 'has-tag',
-					tagComparisonType: 'actor',
-					booleanState: true,
-					conditionTarget: 'target',
-					creatureTag: 'student',
-				};
-				return [isStudent];
-			}
-			case 'middle-range':
-				return [SLCheck(3,8)];
-			case 'trusted':
-				return [SLCheck(7,10)];
-			case 'introductory':
-				return [SLCheck(1,3)];
-			case 'one-shot':
-			case 'question':
-				return [];
-			case 'disabled': {
-				const neverHappen: Precondition = {
-					type: 'never',
-				};
-				return [neverHappen];
-			}
-			default:
-				tag satisfies never;
-				break;
-		}
-		return [];
-	});
-}
 
 async markEventUsed(this: SocialCard, event: CardEvent) {
 	const ev = this.system.events.find(ev => ev == event);

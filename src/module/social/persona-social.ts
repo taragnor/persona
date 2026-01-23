@@ -626,6 +626,20 @@ export class PersonaSocial {
 		void handler.makeCardRoll(eventIndex, choiceIndex, message);
 	}
 
+	static async _onRaiseSLButton(ev: JQuery.ClickEvent) {
+		const tokenCost = HTMLTools.getClosestDataNumber(ev, "tokenAmt");
+		const PCId = HTMLTools.getClosestData(ev, "pcId");
+		const linkId = HTMLTools.getClosestData(ev, "linkId");
+		const PC = PersonaDB.getActor(PCId);
+		if (!PC || !PC.isPC()) {
+			throw new PersonaError(`Cant' find PC : ${PCId}`);
+		}
+		if (PC.getSocialLinkProgress(linkId) < tokenCost) {
+			ui.notifications.warn("Not enough tokesn to improve this link");
+		}
+		await PC.socialLinkProgress(linkId, -tokenCost);
+		await PC.increaseSocialLink(linkId);
+	}
 
 } //end of class
 
@@ -712,6 +726,7 @@ Hooks.on("renderChatMessageHTML", (message: ChatMessage, htm: HTMLElement ) => {
 	if ((message?.author ?? message?.user) == game.user) {
 		html.find(".social-card-roll .make-roll").on("click", ev => void PersonaSocial._onMakeCardRoll(ev));
 		html.find(".social-card-roll .next").on("click", ev => void PersonaSocial._onMakeCardRoll(ev));
+		html.find("button.raise-SL").on("click", ev => void PersonaSocial._onRaiseSLButton(ev));
 	}
 });
 

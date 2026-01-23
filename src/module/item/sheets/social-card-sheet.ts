@@ -31,7 +31,7 @@ const PRIMARY_SECONDARY = {
 export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 	declare item: SocialCard;
 	focusedEvent: number | undefined = undefined;
-	static _socialData: Record<string, unknown>;
+	static _socialData: Readonly<Record<string, unknown>>;
 	static clipboard: {
 		event ?: SocialCard["system"]["events"][number];
 		choice ?: SocialCard["system"]["events"][number]["choices"][number];
@@ -59,10 +59,18 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 	}
 
 	static socialData() {
+		const UNIFIED_ROLL_TAGS  = PersonaDB.createMergedTagLocList(["roll"], ROLL_TAGS);
+		this._socialData = {
+			...this.staticSocialData(),
+			ROLL_TAGS : UNIFIED_ROLL_TAGS,
+		} as const;
+		return this._socialData;
+	}
+
+	private static staticSocialData() : typeof PersonaSocialCardSheet["_socialData"] {
 		if (this._socialData) {
 			return this._socialData;
 		}
-		const UNIFIED_ROLL_TAGS  = PersonaDB.createMergedTagLocList(["roll"], ROLL_TAGS);
 		this._socialData = {
 			ROLLTYPES : SOCIAL_CARD_ROLL_TYPES,
 			SIMPLE_ROLL_TYPES : SIMPLE_SOCIAL_CARD_ROLL_TYPES,
@@ -72,7 +80,6 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 			ROLL_DC_TYPES: CARD_DC_TYPES,
 			FREQUENCY: FREQUENCY,
 			CARD_TAGS,
-			ROLL_TAGS : UNIFIED_ROLL_TAGS,
 		} as const;
 		return this._socialData;
 	}
