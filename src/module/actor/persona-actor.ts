@@ -3531,8 +3531,8 @@ async awardXP(this: ValidAttackers, amt: number) : Promise<XPGainReport[]> {
 		amt = Math.clamp(navigatorXP, 0.1, 1) * amt;
 	}
 	if (amt ==0) {return [];}
-	const personaXPAwards = this.personaList.map<Promise<U<XPGainReport>>>( persona=> persona.awardXP(amt));
-	const sideboardAwards = this.sideboardPersonas.map<Promise<U<XPGainReport>>>( persona=> persona.awardXP(amt));
+	const personaXPAwards = this.personaList.map( persona=> persona.awardXP(amt));
+	const sideboardAwards = this.sideboardPersonas.map( persona=> persona.awardXP(amt));
 	const personaGains = (await Promise.allSettled(personaXPAwards.concat(sideboardAwards)))
 	.map( pr => pr.status == "fulfilled" ? pr.value : undefined);
 	const possibleLevelUps : U<XPGainReport>[] = [

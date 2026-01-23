@@ -333,7 +333,7 @@ knowsPowerInnately(power : Power)  : boolean {
 	/** return leveled Persona on level up*/
 	async awardXP(amt: number, allowMult = true): Promise<U<XPGainReport>> {
 		const isSideboard = this.user.sideboardPersonas.some(x=> x.equals(this));
-		const isBackup = !this.user.persona().equals(this) && !isSideboard;
+		const isInactive = !this.user.persona().equals(this) && !isSideboard;
 		if (!amt) {
 			return undefined;
 		}
@@ -353,7 +353,7 @@ knowsPowerInnately(power : Power)  : boolean {
 			PersonaError.softFail(`Could be an error as XP gained is now ${amt}`);
 			return undefined;
 		}
-		if (isBackup) {
+		if (isInactive) {
 			let multiplier = this.getBonuses("inactive-persona-xp").total(sit);
 			multiplier = Math.clamp(multiplier, 0, 1);
 			amt *= multiplier;
@@ -365,7 +365,6 @@ knowsPowerInnately(power : Power)  : boolean {
 		}
 		if (amt == 0) {return undefined;}
 		return this.increaseXP(amt);
-
 	}
 
 	async increaseXP(amt: number): Promise<U<XPGainReport>> {

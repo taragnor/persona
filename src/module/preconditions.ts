@@ -571,6 +571,7 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 			if (!targetActor) {return undefined;}
 			return targetActor.getFlagState(condition.flagId);
 		}
+
 		case "is-same-arcana": {
 			if (!situation.attacker) {return undefined;}
 			const actor = PersonaDB.findActor(situation.attacker);
@@ -581,6 +582,7 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 			if (!targetActor) {return undefined;}
 			return actor.system.tarot == targetActor.system.tarot;
 		}
+
 		case "target-owner-comparison": {
 			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
 			const target2 = getSubjectActors(condition, situation, "conditionTarget2")[0];
@@ -595,10 +597,12 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 			}
 			return comparison[weather] ?? false; 
 		}
+
 		case "weekday-is": {
 			const weekday = PersonaCalendar.getCurrentWeekday();
 			return condition.days[weekday];
 		}
+
 		case "social-target-is": {
 			const arr = getSubjects(condition, situation, "conditionTarget");
 			if (!arr) {return undefined;}
@@ -607,12 +611,14 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 				return target == desiredActor;
 			});
 		}
+
 		case "social-target-is-multi": {
 			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!target) { return undefined; }
 			const actors= multiCheckToArray(condition.socialLinkIdOrTarot) as SocialLinkIdOrTarot[];
 			return actors.some(actor => getSocialLinkTarget(actor, situation, condition.source) == target);
 		}
+
 		case "shadow-role-is": {
 			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!target) {return undefined;}
@@ -622,15 +628,18 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 			}
 			return multiCheckContains(condition.shadowRole, [target.system.role, target.system.role2]);
 		}
+
 		case "active-scene-is": {
 			const scene = game.scenes.active;
 			if (!scene) {return false;}
 			return scene.id == condition.sceneId;
 		}
+
 		case "is-gm": {
 			const user = getUser(condition.userComparisonTarget, situation);
 			return user?.isGM ?? undefined;
 		}
+
 		case "has-item-in-inventory": {
 			const item = game.items.get(condition.itemId);
 			if (!item) {return undefined;}
@@ -643,56 +652,21 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 				return itemList.some(x=> x.name == item.name && (("amount" in x.system)? x.system.amount > 0 : true ));
 			});
 		}
+
 		case "creature-type-is": {
 			const target = getSubjectActors(condition, situation,  "conditionTarget")[0];
 			if (!target) {return undefined;}
 			return multiCheckContains(condition.creatureType, [target.system.creatureType]);
+		}
 
-		}
 		case "social-availability": {
-			if (!condition.conditionTarget) {
-				condition.conditionTarget = "user";
-			}
-			let target1 = getSubjectActors(condition, situation,  "conditionTarget")[0];
-			if (!target1) {
-				if (!situation.user) {return undefined;}
-				target1 = PersonaDB.findActor(situation.user);
-				if (!target1) {return undefined;}
-			}
-			if (target1.system.type == "shadow") {return undefined;}
-			switch (condition.socialTypeCheck) {
-				case "relationship-type-check": {
-					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, condition.source);
-					const link = target1.socialLinks.find(x=>x.actor == target2);
-					if (!link) {return undefined;}
-					return link.relationshipType.toUpperCase() == condition.relationshipType.toUpperCase();
-				}
-				case "is-social-disabled":
-					return target1.isSociallyDisabled();
-				case "is-available": {
-					if (target1.system.type != "pc") {
-						return undefined;
-					}
-					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, condition.source);
-					if (!target2) {return undefined;}
-					return target1.isAvailable(target2);
-				}
-				case "is-dating": {
-					const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, condition.source);
-					if (!target2) {return undefined;}
-					return target1.isDating(target2);
-				}
-				default:
-					condition satisfies never;
-					PersonaError.softFail(`Unexpected social check ${(condition as Record<string,string>)?.socialTypeCheck}`);
-					Debug(condition);
-					Debug(situation);
-					return undefined;
-			}
+			return resolveSocialAvailabilityCheck(condition, situation);
 		}
+
 		case "cameo-in-scene": {
 			return Boolean(situation.cameo);
 		}
+
 		case "arcana-is": {
 			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!target) {return undefined;}
@@ -700,6 +674,7 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 			if (!tarot) {return undefined;}
 			return target.system.tarot == condition.tarot;
 		}
+
 		case "logical-and":
 		case "logical-or": {
 			const comp1 = {
@@ -1322,5 +1297,49 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
 		default:
 			condition satisfies never;
 	}
+
+
 }
 
+
+function resolveSocialAvailabilityCheck(condition: SourcedPrecondition & {type: "boolean", boolComparisonTarget: "social-availability" }, situation: Situation) :U<boolean>{
+	if (!condition.conditionTarget) {
+		condition.conditionTarget = "user";
+	}
+	let target1 = getSubjectActors(condition, situation,  "conditionTarget")[0];
+	if (!target1) {
+		if (!situation.user) {return undefined;}
+		target1 = PersonaDB.findActor(situation.user);
+		if (!target1) {return undefined;}
+	}
+	if (target1.system.type == "shadow") {return undefined;}
+	switch (condition.socialTypeCheck) {
+		case "relationship-type-check": {
+			const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, condition.source);
+			const link = target1.socialLinks.find(x=>x.actor == target2);
+			if (!link) {return undefined;}
+			return link.relationshipType.toUpperCase() == condition.relationshipType.toUpperCase();
+		}
+		case "is-social-disabled":
+			return target1.isSociallyDisabled();
+		case "is-available": {
+			if (target1.system.type != "pc") {
+				return undefined;
+			}
+			const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, condition.source);
+			if (!target2) {return undefined;}
+			return target1.isAvailable(target2);
+		}
+		case "is-dating": {
+			const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, condition.source);
+			if (!target2) {return undefined;}
+			return target1.isDating(target2);
+		}
+		default:
+			condition satisfies never;
+			PersonaError.softFail(`Unexpected social check ${(condition as Record<string,string>)?.socialTypeCheck}`);
+			Debug(condition);
+			Debug(situation);
+			return undefined;
+	}
+}

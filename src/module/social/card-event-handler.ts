@@ -182,7 +182,7 @@ export class SocialCardEventHandler {
 		if (question.expended) {
 			eventTags.push("disabled");
 		}
-		const conditions= [] as Precondition[];
+		const conditions = [] as Precondition[];
 		if (question.SLmax < 10) {
 			conditions.push( {
 				type: "numeric",
