@@ -532,6 +532,10 @@ export class DungeonSquare {
 
 	assignCorridorSpecials() {
 		const die = this.die(100);
+		switch (true) {
+			case die > 90:
+				break;
+		}
 	}
 
 	assignRoomSpecials() {

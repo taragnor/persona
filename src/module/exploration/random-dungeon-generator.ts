@@ -3,7 +3,7 @@ import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
 import {ArrayEq} from "../utility/array-tools.js";
 import {SeededRandom} from "../utility/seededRandom.js";
-import {DungeonSquare, Point, WallData} from "./dungeon-generator-square.js";
+import {DungeonSquare, Point} from "./dungeon-generator-square.js";
 
 export class RandomDungeonGenerator {
 	seedString: string;
