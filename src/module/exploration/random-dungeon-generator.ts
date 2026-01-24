@@ -1,8 +1,6 @@
-import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
-import {PersonaRegion} from "../region/persona-region.js";
 import {ArrayEq} from "../utility/array-tools.js";
 import {SeededRandom} from "../utility/seededRandom.js";
 import {DungeonSquare, Point, WallData} from "./dungeon-generator-square.js";
@@ -297,7 +295,7 @@ export class RandomDungeonGenerator {
 		return corridorsMade;
 	}
 
-	assignExit() {
+	private assignExit() {
 		const list = this.squareList
 			.filter(x=> x.type == "room")
 			.filter (x=> !x.isStartPoint());
@@ -308,7 +306,7 @@ export class RandomDungeonGenerator {
 		rm.makeStairsDown();
 	}
 
-	assignTreasures() {
+	private assignTreasures() {
 		const list = this.squareList
 			.filter(x=> x.isRoom() || x.isDeadEnd())
 			.filter (x=> !x.isStairs() && !x.isTeleporter());
@@ -318,6 +316,42 @@ export class RandomDungeonGenerator {
 			const amount = rng.die(1,2);
 			room.addTreasure(amount);
 		}
+	}
+
+	private assignFlavorText() {
+		this.squareList
+			.filter( sq => sq.isEmptyRoom())
+			.filter( sq => this.percentChance( sq.isHiddenRoom() ? 100 : 60))
+			.forEach( sq=> this.createFlavorEffectInRoom(sq));
+
+		this.squareList
+			.filter( sq => sq.isCorridor())
+			.filter( _sq => this.percentChance(20))
+			.forEach( sq=> this.createFlavorEffectInCorridor(sq));
+	}
+
+	private createFlavorEffectInRoom(sq: DungeonSquare) : void{
+		const effect = this.rng.weightedChoice(
+			ROOM_FLAVORS
+			.filter( fl =>
+				(!sq.isHiddenRoom() && !fl.hiddenRoomOnly)
+				|| (sq.isHiddenRoom() && fl.hiddenRoomOnly)
+			)
+			.map( fl => ({weight: fl.weight ?? 1.0, item: fl}))
+		);
+		if (!effect) {return;}
+		sq.addFlavorText(effect);
+	}
+
+	private createFlavorEffectInCorridor (sq: DungeonSquare) : void {
+		const effect = this.rng.weightedChoice(
+			CORRIDOR_FLAVORS
+			.filter( fl => !fl.tellForHiddenDoor || sq.hasHiddenDoor() )
+			.map( fl => ({weight: fl.weight ?? 1.0, item: fl}))
+		);
+		if (!effect) {return;}
+		sq.addFlavorText(effect);
+
 	}
 
 	assignSpecials() {
@@ -335,20 +369,25 @@ export class RandomDungeonGenerator {
 		return false;
 	}
 
-	generate(numSquares: number, originalSeedString: string = "TEST") {
+	private init(numSquares: number, originalSeedString: string) {
 		this.seedString = originalSeedString;
 		const totalSquares = this.maxSquaresWidth * this.maxSquaresHeight;
 		if (numSquares > totalSquares) {
 			throw new InvalidDungeonError(`Too big, trying to request ${numSquares} with only ${totalSquares} available`);
 		}
+	}
+
+	generate(numSquares: number, originalSeedString: string = "TEST") {
+		this.init(numSquares, originalSeedString);
 		let timeout = 0;
 		while (timeout < 100) {
 			try {
-				this.createDungeon(numSquares);
+				this.createFloorplan(numSquares);
 				this.assignExit();
 				this.assignSpecialFloors();
 				this.assignSpecials();
 				this.assignTreasures();
+				this.assignFlavorText();
 				this.finalizeSquares();
 				console.log( this.print());
 				return this;
@@ -366,7 +405,7 @@ export class RandomDungeonGenerator {
 		}
 	}
 
-	createDungeon(numSquares: number) {
+	private createFloorplan(numSquares: number) {
 		this.lenientMode = false;
 		this.rng = new SeededRandom(this.seedString);
 		this.#resetSquares();
@@ -384,14 +423,6 @@ export class RandomDungeonGenerator {
 				throw new GenerationBailOutError("Had To bail out on generation, too many retries");
 			}
 		}
-	}
-
-	async setRandomEncounterList() {
-		await this.scene.setDifficulty(this.difficultyLevel);
-	}
-
-	async writeSceneModifiers() {
-		await this.scene.setSceneModifiers(this.sceneModifiers);
 	}
 
 	finalizeSquares() {
@@ -440,152 +471,6 @@ export class RandomDungeonGenerator {
 		this.wallData = dupeRemover;
 	}
 
-	private static flipCoordsIfNecessary (c: WallData["c"]) : WallData["c"] {
-		const [x1, y1, x2, y2] = c;
-		if (x2 < x1 || y2 < y1) {
-			return [x2, y2, x1, y1];
-		}
-		return c;
-	}
-
-	static wallToLineConvert( wd: Pick<WallData, "door" | "c">) : U<Partial<Foundry.DrawingData>> {
-		if (wd.door == 1) {return undefined;}
-		const [x1, y1, x2, y2] = this.flipCoordsIfNecessary(wd.c);
-		const dx = x2- x1;
-		const dy = y2- y1;
-		const shape : Foundry.ShapesData = {
-			type: "p",
-			height: Math.abs(y2- y1),
-			width: Math.abs(x2- x1),
-			radius: null,
-			points: [0, 0, Math.abs(dx), Math.abs(dy)]
-		};
-		return {
-			x: x1,
-			y: y1,
-			strokeColor: "#FF0000",
-			strokeWidth: 15,
-			strokeAlpha: 0.8,
-			shape,
-			hidden: false,
-			locked: true,
-			interface: false,
-		};
-	}
-
-	async outputDataToScene() {
-		if (this.squareList.length == 0) {
-			throw new PersonaError("You haven't run genreate yet");
-		}
-		if (!this.scene.allowsRandomGenerator()) {
-			ui.notifications.warn("This scene doesn't allow random Mutation");
-			return;
-		}
-		await this.clearScene();
-		await this.movePCs();
-		await this.resetFog();
-		await this.updateSceneName();
-		await this.createWalls();
-		await this.createRegions();
-		await this.createTreasures();
-		await this.setRandomEncounterList();
-		await this.writeSceneModifiers();
-		await this.resetFog();
-	}
-
-	async updateSceneName() {
-		const name = `${this.name} L${this.currentDepth+1}`;
-		await this.scene.update({name});
-	}
-
-	async movePCs() {
-		const PCTokens = this.scene.tokens.filter( tok => tok.actor != undefined && tok.actor.hasPlayerOwner && !tok.hidden);
-		const startingSq = this.squareList.find( x=> x.isStartPoint());
-		if (!startingSq) {
-			ui.notifications.error("No startign square");
-			return;
-		}
-		for (const tok of PCTokens) {
-			const {x, y} = startingSq.treasurePosition();
-			await tok.move( {x , y, action: "displace"});
-		}
-	}
-
-	async clearScene () {
-		for (const i of this.scene.walls) {
-			await i.delete();
-		}
-		for (const i of this.scene.regions) {
-			await i.delete();
-		}
-		for (const i of this.scene.drawings) {
-			await i.delete();
-		}
-		for (const t of this.scene.tokens) {
-			if (game.itempiles && game.itempiles.API.isValidItemPile(t)) {
-			await t.delete();
-				continue;
-			}
-			if (t.actor && t.actor.isShadow()) {await t.delete();}
-		}
-	}
-
-	private async createWalls() {
-		await this.addWalls(this.wallData);
-		const lines = this.wallData
-			.map(x=> RandomDungeonGenerator.wallToLineConvert(x))
-			.filter (x => x != undefined);
-		await this.scene.createEmbeddedDocuments( "Drawing", lines);
-	}
-
-
-	async createRegions() {
-		for (const sq of this.squareList) {
-			const rdata = sq.region;
-			if (!rdata) {continue;}
-			const region = (await this.scene.createEmbeddedDocuments<PersonaRegion>("Region", [rdata as Record<string, unknown>]))[0];
-			await region.setRegionData(sq.regionData);
-		}
-	}
-
-
-	private async addWalls(wallData: Partial<WallData>[]) {
-		await this.scene.createEmbeddedDocuments("Wall", wallData);
-	}
-
-	async createTreasures() {
-		if (game.itempiles == undefined) {
-			PersonaError.softFail("No item piles, can't create treasures");
-			return;
-		}
-		for (const sq of this.squareList)  {
-			if (sq.treasures.length == 0) {continue;}
-			const position = sq.treasurePosition();
-			const pile = await game.itempiles.API.createItemPile({position});
-			if (!pile?.tokenUuid)  {
-				PersonaError.softFail(`Something went wrong with creating Item pile at ${position.x} , ${position.y}`);
-				return;
-			}
-			const pileActor = await foundry.utils.fromUuid(pile.tokenUuid) as TokenDocument<PersonaActor> ;
-			if (!pileActor || !(pileActor instanceof TokenDocument) || !pileActor.actor) {
-				PersonaError.softFail(`Cant' find token ${pile?.tokenUuid}`);
-				return;
-			}
-			for (const treasure of sq.treasures) {
-				await pileActor.actor.addTreasureItem(treasure, true);
-			}
-		}
-
-	}
-
-	async resetFog() {
-		if (!game.user.isGM) {return;}
-		if (game.scenes.current != this.scene) {
-			new PersonaError("Can't clear fog this scene isn't current scene.");
-		}
-		await game.canvas.fog.reset();
-	}
-
 }
 
 //@ts-expect-error adding to glboal scope for test
@@ -607,3 +492,98 @@ const SCENE_MOD_NAMES = {
 class InvalidDungeonError extends Error { }
 
 class UnexpectedResultError extends Error{ }
+
+
+export type FlavorText = {
+	newName ?: string,
+	text: string;
+	gmNote?: string,
+	secret?: string,
+	weight?: number,//defautl to 1
+	hazard ?: string,
+	ultraRichTreasure ?: true;
+};
+
+type CorridorFlavorText = FlavorText & {
+	tellForHiddenDoor?: true;
+}
+
+type RoomFlavorText = FlavorText & {
+	hiddenRoomOnly?: true,
+}
+
+const ROOM_FLAVORS : RoomFlavorText[] = [
+	{
+		newName: "Data Cache",
+		text: "There seems to be a collection of various data here. If you had the right implement, you might be able to extract some." ,
+		gmNote: "Can be mined with a Data Miner",
+	}, {
+		newName: "Gallery",
+		text: "Various Photos, (many of them of cats) are all over the walls of this room" ,
+	}, {
+		newName: "Explicit Pictures Gallery",
+		text: "Various pictures of a sexual nature are posted here on the walls" ,
+		secret: "Can find some clues to find Cassandra's source if possible",
+		weight: 0.2,
+	}, {
+		newName: "Blanked Data",
+		text: "The data here seems to have bene deliberately deleted. It seems irrecoverable" ,
+		weight: 1.0,
+	}, {
+		newName: "Blanked Data",
+		text: "The data here seems to have bene deliberately deleted." ,
+		weight: 0.333,
+		secret: "With some effort you're able to reconstruct the data."
+	}, {
+		newName: "Data Cache",
+		text: "There seems to be a collection of various data here. If you had the right implement, you might be able to extract some." ,
+		weight: 0.333,
+		gmNote: "Can be mined with a Data Miner. Contains financial Data, get 300R",
+	}, {
+		newName: "Concordia Daemon Processing Node",
+		text: "This area seems to contain some kind of secuirity device, it has a concordia signature on it. It does seem important, but do you smash it or try to examine it." ,
+		hazard: "Summons a daemon encounter",
+		secret: "Grants a new daemon persona or skillCard",
+		gmNote: "",
+		weight: 0.2,
+		hiddenRoomOnly: true,
+	}, {
+		newName: "Concordia Daemon Processing Node",
+		text: "This area seems to contain some kind of secuirity device, it has a concordia signature on it. It does seem important, but do you smash it or try to examine it." ,
+		hazard: "Summons a daemon encounter",
+		secret: "Reveals Cheshy as a daemon",
+		gmNote: "Reveals Cheshy's true nature",
+		weight: 0.2,
+		hiddenRoomOnly: true,
+	}, {
+		newName: "Concordia Treasure Cache",
+		text: "Seems to be a collection of useful Metaverse objects",
+		weight: 0.2,
+		hazard: "Alarm raises tension by +2",
+		hiddenRoomOnly: true,
+		ultraRichTreasure : true ,
+	}, {
+		newName: "Concordia Metaverse Manipulator",
+		text: "An odd Concordia device",
+		weight: 0.2,
+		hiddenRoomOnly: true,
+		secret: "Seems to be a warp zone, takes you down 5 levels instantly."
+	},
+
+
+] as const;
+
+const CORRIDOR_FLAVORS : CorridorFlavorText[] = [
+	{
+		text: "Many data cubes whizz by at great speed",
+	} , {
+		text: "Many data cubes whizz by at great speed",
+		secret: "There is a Concordia packet inspector here. It seems to be gathering information. Can either be destroyed or tapped for data with the other action.",
+		weight: 0.5,
+		gmNote: "PCs can destroy it with an other action or try to tap it for data."
+	} , {
+		text: "The travelling Data cubes seem to travel in an odd path here",
+		tellForHiddenDoor : true,
+		weight: 0.333,
+	}
+] as const;

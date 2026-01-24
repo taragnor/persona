@@ -1,5 +1,5 @@
 import {PersonaRegion} from "../region/persona-region.js";
-import {RandomDungeonGenerator} from "./random-dungeon-generator.js";
+import {FlavorText, RandomDungeonGenerator} from "./random-dungeon-generator.js";
 import {EnchantedTreasureFormat, TreasureSystem} from "./treasure-system.js";
 
 export class DungeonSquare {
@@ -36,7 +36,7 @@ export class DungeonSquare {
 			.filter(pt => pt != undefined &&
 				!group.includes(pt))
 			.length
-		, 0 );
+			, 0 );
 		return val;
 	}
 
@@ -164,6 +164,14 @@ export class DungeonSquare {
 		return doorCoords;
 	}
 
+	static flipCoordsIfNecessary (c: WallData["c"]) : WallData["c"] {
+		const [x1, y1, x2, y2] = c;
+		if (x2 < x1 || y2 < y1) {
+			return [x2, y2, x1, y1];
+		}
+		return c;
+	}
+
 	static splitLine([x1, y1, x2, y2] : WallData["c"], splits: number) : WallData["c"][] {
 		const x_increment = (x2-x1) / splits;
 		const y_increment = (y2-y1) / splits;
@@ -198,13 +206,13 @@ export class DungeonSquare {
 		const walls = [] as ReturnType<DungeonSquare["generateWallData"]>[];
 		const adj = this.getAdjoiningPoints();
 		const outOfBounds = adj
-		.filter( pt => this.parent.sq(pt.x, pt.y) == undefined);
+			.filter( pt => this.parent.sq(pt.x, pt.y) == undefined);
 		const possibles = adj
-		.map( pt => this.parent.sq(pt.x, pt.y))
-		.filter( sq=> sq != undefined);
+			.map( pt => this.parent.sq(pt.x, pt.y))
+			.filter( sq=> sq != undefined);
 
 		for (const OB of outOfBounds) {
-				walls.push(...this.generateWall(OB));
+			walls.push(...this.generateWall(OB));
 		}
 		for (const poss of possibles) {
 			if (!this.connections.includes(poss)) {
@@ -212,18 +220,19 @@ export class DungeonSquare {
 				continue;
 			}
 			if (poss.type != this.type)  {
-				walls.push(...this.generateDoor(poss));
+				const isSecret = poss.isHiddenRoom() || this.isHiddenRoom();
+				walls.push(...this.generateDoor(poss, isSecret));
 				continue;
 			}
 		}
 		return walls;
 	}
 
-	generateDoor(other: Point) {
+	generateDoor(other: Point, isSecret : boolean) {
 		const [wall1, door, wall2] = this.getDoorCoords(other);
 		return [
 			this.generateWallData(wall1),
-			this.generateWallData(door, true),
+			this.generateWallData(door, isSecret ? "secret" : true),
 			this.generateWallData(wall2),
 		];
 	}
@@ -234,10 +243,10 @@ export class DungeonSquare {
 	}
 
 
-	generateWallData ( c : WallData["c"], isDoor = false) {
-		const texture = isDoor
-		? "canvas/doors/small/Door_Metal_Gray_E1_1x1.webp"
-		:   "canvas/doors/small/Door_Stone_Volcanic_B1_1x1.webp";
+	generateWallData ( c : WallData["c"], isDoor : "secret" | boolean = false) {
+		const texture = isDoor == true
+			? "canvas/doors/small/Door_Metal_Gray_E1_1x1.webp"
+			:   "canvas/doors/small/Door_Stone_Volcanic_B1_1x1.webp";
 		const animation = {
 			direction :1,
 			double :  false,
@@ -248,15 +257,18 @@ export class DungeonSquare {
 			type :  "descend",
 		};
 
+		const doorVal = (isDoor === "secret") ? 2
+		: isDoor == true ? 1
+		:0 ;
 		const wallData = {
 			c,
-			door: isDoor ? 1: 0, // 2 is secret door, used for walling
-			ds: isDoor ? 0 : 0, //0 is closed, 1 open, 2 locked
+			door: doorVal, // 2 is secret door, used for walling
+			ds: doorVal == 2 ? 2 : 0, //0 is closed, 1 open, 2 locked
 			light: 20,
 			move: 20,
 			sight: 20,
 			sound: 20,
-			animation,
+			animation: doorVal == 1 ? animation : undefined,
 		} satisfies Partial<WallData>;
 		return wallData;
 	}
@@ -317,26 +329,26 @@ export class DungeonSquare {
 		return mods;
 	}
 
-private region_secret() : {status: DungeonSquare["regionData"]["secret"], details: string} {
-	let status : DungeonSquare["regionData"]["secret"];
-	const details = "";
+	private region_secret() : {status: DungeonSquare["regionData"]["secret"], details: string} {
+		let status : DungeonSquare["regionData"]["secret"];
+		const details = "";
 
-	switch (true) {
-		default:
-			status= "none";
+		switch (true) {
+			default:
+				status= "none";
+		}
+		return {status, details};
 	}
-	return {status, details};
-}
 
-private region_hazard() : {status: DungeonSquare["regionData"]["hazard"], details: string} {
-	let status : DungeonSquare["regionData"]["secret"];
-	const details = "";
-	switch (true) {
-		default:
-			status= "none";
+	private region_hazard() : {status: DungeonSquare["regionData"]["hazard"], details: string} {
+		let status : DungeonSquare["regionData"]["secret"];
+		const details = "";
+		switch (true) {
+			default:
+				status= "none";
+		}
+		return {status, details};
 	}
-	return {status, details};
-}
 
 	private prepPersonaRegionData() {
 		const secret = this.region_secret();
@@ -410,21 +422,21 @@ private region_hazard() : {status: DungeonSquare["regionData"]["hazard"], detail
 
 	getLegalAdjoiningPoints() : Point[] {
 		return this.getAdjoiningPoints()
-		.filter(pt => this.parent.isInBounds(pt.x, pt.y));
+			.filter(pt => this.parent.isInBounds(pt.x, pt.y));
 	}
 
-isLegalToExpand(lenient: boolean): boolean {
-	const emptyAdjacent = this.getEmptyAdjoiningPoints();
-	const lenientBonus = lenient ? 1 : 0;
-	switch (this.type) {
-		case "corridor" :
-			return emptyAdjacent.length >= 2 &&
-				this.AdjacenciesToGroup() <= (lenientBonus + this.group.length <= 3 ? 3 : 4);
-		case "room":
-			if (this.isStartPoint()) {
-				return this.AdjacenciesToGroup() <= lenientBonus + 0;
-			}
-			return false;
+	isLegalToExpand(lenient: boolean): boolean {
+		const emptyAdjacent = this.getEmptyAdjoiningPoints();
+		const lenientBonus = lenient ? 1 : 0;
+		switch (this.type) {
+			case "corridor" :
+				return emptyAdjacent.length >= 2 &&
+					this.AdjacenciesToGroup() <= (lenientBonus + this.group.length <= 3 ? 3 : 4);
+			case "room":
+				if (this.isStartPoint()) {
+					return this.AdjacenciesToGroup() <= lenientBonus + 0;
+				}
+				return false;
 		}
 	}
 
@@ -453,7 +465,7 @@ isLegalToExpand(lenient: boolean): boolean {
 	getEmptyAdjoiningPoints() : Point[] {
 		const parent = this.parent;
 		return this.getLegalAdjoiningPoints()
-		.filter( p=> !parent.sq(p.x, p.y));
+			.filter( p=> !parent.sq(p.x, p.y));
 	}
 
 	addSpecial (sp : RoomSpecial) {
@@ -469,7 +481,7 @@ isLegalToExpand(lenient: boolean): boolean {
 				if (this.isDeadEnd()) {
 					return "D";
 				}
-			return "C";
+				return "C";
 			case "room":
 				switch (true) {
 					case this.isStartPoint(): return "S";
@@ -491,26 +503,49 @@ isLegalToExpand(lenient: boolean): boolean {
 
 	isDeadEnd() : boolean {
 		return this.type == "corridor"
-		&& this.getEmptyAdjoiningPoints().length == 3;
+			&& this.getEmptyAdjoiningPoints().length == 3;
 	}
 
-assignSpecials() {
-	if (this.isRoom()) {return this.assignRoomSpecials();}
-	if (this.isCorridor()) {return this.assignCorridorSpecials();}
-}
-
-assignCorridorSpecials() {
-	const die = this.die(100);
-}
-
-assignRoomSpecials() {
-	const die = this.die(100);
-	switch (true) {
-		case die > 90:
-			this.specials.push("checkpoint");
-			break;
+	isEmptyRoom() : boolean {
+		return this.isRoom()
+			&& this.specials.length == 0
+			&& this.regionData.pointsOfInterest.length == 0;
 	}
-}
+
+	isHiddenRoom() : boolean {
+		return this.specials.includes("hidden-room");
+	}
+
+	hasHiddenDoor() : boolean {
+		return this.isHiddenRoom()
+			|| (
+				this.isCorridor()
+				&& this.connections.some( c => c.isHiddenRoom())
+			)
+		;
+	}
+
+	assignSpecials() {
+		if (this.isRoom()) {return this.assignRoomSpecials();}
+		if (this.isCorridor()) {return this.assignCorridorSpecials();}
+	}
+
+	assignCorridorSpecials() {
+		const die = this.die(100);
+	}
+
+	assignRoomSpecials() {
+		const die = this.die(100);
+		switch (true) {
+			case die > 90:
+				this.specials.push("checkpoint");
+				break;
+			case die > 80 : {
+				this.specials.push("hidden-room");
+				break;
+			}
+		}
+	}
 
 	addTreasure(amt: number) {
 		let modifier: number;
@@ -529,7 +564,33 @@ assignRoomSpecials() {
 			this.treasures.push(...treasure);
 		}
 	}
+
+	addFlavorText(flavor: FlavorText)  {
+		if (flavor.newName && this.region) {
+			this.region.name = flavor.newName;
+		}
+		this.regionData.pointsOfInterest.push(flavor.text);
+		if (flavor.secret) {
+			this.regionData.secret = "hidden";
+			this.regionData.secretNotes = flavor.secret;
+		}
+		if (flavor.hazard) {
+			this.regionData.hazard = "hidden";
+			this.regionData.hazardDetails = flavor.hazard;
+		}
+		if (flavor.ultraRichTreasure) {
+			const mods = this.regionData.specialMods;
+			if (mods.includes("treasure-rich") || mods.includes("treasure-poor")) {
+				this.regionData.specialMods = mods
+				.filter ( x=> x != "treasure-poor" && x != "treasure-rich");
+			}
+			this.regionData.specialMods.push("treasure-ultra");
+		}
+	}
+
 }
+
+
 
 function up(pt: Point): Point {
 	return {x: pt.x, y: pt.y-1 };
@@ -538,19 +599,19 @@ function down(pt: Point) :Point{
 	return {x: pt.x, y: pt.y+1 };
 }
 
-	function right(pt: Point) :Point{
-		return {x: pt.x+1, y: pt.y };
-	}
+function right(pt: Point) :Point{
+	return {x: pt.x+1, y: pt.y };
+}
 
-	function left(pt: Point): Point {
-		return {x: pt.x-1, y: pt.y };
-	}
+function left(pt: Point): Point {
+	return {x: pt.x-1, y: pt.y };
+}
 
 
 export type Point = {x: number, y:number};
 
 
-type RoomSpecial = "exit" | "entrance" | "checkpoint" | "persona-gather";
+type RoomSpecial = "exit" | "entrance" | "checkpoint" | "persona-gather" | "hidden-room";
 
 
 type RegionData = U<Pick<RegionDocument, "name" | "shapes">>;

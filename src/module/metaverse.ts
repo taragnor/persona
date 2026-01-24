@@ -23,6 +23,7 @@ import { EnchantedTreasureFormat, TreasureSystem } from "./exploration/treasure-
 import {RandomEncounter} from "./exploration/random-encounters.js";
 import {RandomDungeonGenerator} from "./exploration/random-dungeon-generator.js";
 import {HTMLTools} from "./utility/HTMLTools.js";
+import {RandomDungeonOutput} from "./exploration/random-dungeon-output.js";
 
 export class Metaverse {
 	static lastCrunch : number = 0;
@@ -47,7 +48,7 @@ export class Metaverse {
 		const squares = Math.floor(25 + (Math.random() * 30));
 		//squares was 55
 		gen.generate(squares, `${lvl}ARGFDSS` + String(Date.now()));
-		await gen.outputDataToScene();
+		await RandomDungeonOutput.outputToScene(gen, scene);
 		await TensionPool._instance.clear();
 	}
 	static async enterMetaverse() {
