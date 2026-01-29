@@ -27,6 +27,20 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		return game.i18n.localize(this.name);
 	}
 
+	override apply( actor: Actor, change: Foundry.AEChange) {
+		if (typeof change.value == "string" && change.value.startsWith("system.")) {
+			const val = foundry.utils.getProperty(actor, change.value) as unknown;
+			if (val != undefined && typeof val == "string" || typeof val == "number") {
+				const modChange = {
+					...change,
+					value: String(val),
+				};
+				return super.apply(actor, modChange);
+			}
+		}
+		return super.apply(actor, change);
+	}
+
 	get potency(): number {
 		try {
 			const potency = Number(this.getFlag<string>("persona", "potency"));
@@ -907,3 +921,23 @@ type DurationOptions = {
 	clearOnDeath?: boolean;
 
 }
+
+//@ts-expect-error adding to global scope
+window.testAE = async function testAE(actor: PersonaActor, name : string = "TEST") {
+	const flag = await actor.createEffectFlag(name, name);
+	const changes : Foundry.AEChange[] = [
+		{
+			key: "courage",
+			mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
+			value: "system.skills.courage",
+			priority: 0,
+		}, {
+			key: "courage",
+			mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+			value: "system.skills.diligence",
+			priority: 1,
+		}
+	];
+	await flag.update({"changes": changes});
+};
+

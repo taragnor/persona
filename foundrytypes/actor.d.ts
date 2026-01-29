@@ -41,6 +41,9 @@ namespace Foundry {
 			getActiveTokens(linked?: boolean, document?: boolean) : Token<Actor<T, ItemType, AEType>>[];
 			async toggleStatusEffect(statusId: string, options: ToggleStatusOptions = {}): Promise<AEType | boolean | undefined>;
 
+			/**refreshes list of status effects, and also applies status effect, is part of actorupdate loop */
+			protected applyActiveEffects();
+
 			// Get a list of all effects that are actually applied to the actor.
 			appliedEffects: AEType[];
 		}

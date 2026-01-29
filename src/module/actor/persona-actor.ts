@@ -3829,7 +3829,7 @@ getFlagDuration(flagName: string) : StatusDuration | undefined {
 
 async setEffectFlag(effect: DistributiveOmit<SetFlagEffect, "type">) {
 	if (effect.state == true) {
-		const flag = await this.createEffectFlag(effect.flagId, effect.duration, effect.flagName, effect.clearOnDeath);
+		const flag = await this.createEffectFlag(effect.flagId, effect.flagName, effect.duration, effect.clearOnDeath);
 		if (effect.embeddedEffects.length> 0) {
 			await flag.setEmbeddedEffects(effect.embeddedEffects);
 		}
@@ -3837,11 +3837,12 @@ async setEffectFlag(effect: DistributiveOmit<SetFlagEffect, "type">) {
 		await this.clearEffectFlag(effect.flagId);
 	}
 }
-
 async createEffectFlag(flagId: string,
+	flagName ?: string,
 	duration: StatusDuration = {dtype: "instant"},
-	flagName ?: string, clearOnDeath = false)
+	clearOnDeath = false)
 	: Promise<PersonaAE> {
+		if (!flagName) {flagName = flagId;}
 		flagId = flagId.toLowerCase();
 		const eff = this.effects.find(x=> x.isFlag(flagId));
 		const newAE = {
