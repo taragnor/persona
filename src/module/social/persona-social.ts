@@ -434,7 +434,7 @@ export class PersonaSocial {
 		tracker.find(".day").text(weekday);
 	}
 
-	static async startSocialLink(initiator: PC, targetId: string) {
+	static async startSocialLink(initiator: PC, targetId: PC["id"]) {
 		const target = game.actors.get(targetId) as (NPC | PC);
 		if (!target) {
 			throw new PersonaError(`Couldn't find target ${targetId}`);
@@ -554,7 +554,7 @@ export class PersonaSocial {
 		});
 		PersonaSockets.simpleSend("DRAW_CARD", {actorId: actor.id, linkId: link.id}, gms.map( x=> x.id));
 		const cardId = await promise;
-		const card = game.items.get(cardId) as SocialCard | undefined;
+		const card = game.items.get(cardId as SocialCard["id"]) as SocialCard | undefined;
 		if (!card) {throw new PersonaError(`No card found for ${link.name}`);}
 		return card;
 	}
@@ -605,7 +605,7 @@ export class PersonaSocial {
 
 	static _onMakeCardRoll(ev: JQuery.ClickEvent) {
 		const cardId = HTMLTools.getClosestData(ev, "cardId");
-		const messageId = HTMLTools.getClosestData(ev, "messageId");
+		const messageId = HTMLTools.getClosestData<ChatMessage["id"]>(ev, "messageId");
 		const message = game.messages.get(messageId);
 		if (!message) {
 			throw new PersonaError(`Couldn't find messsage ${messageId}`);
@@ -653,19 +653,19 @@ declare global {
 	interface SocketMessage {
 		"DEC_AVAILABILITY": string;
 		"EXPEND_QUESTION": {
-			npcId: string;
+			npcId: NPC["id"];
 			eventIndex: number;
 		}
 		"EXPEND_EVENT": {
-			cardId: string;
+			cardId: SocialCard["id"];
 			eventIndex: number;
 		}
 		"DRAW_CARD": {
-			actorId: string,
-			linkId: string
+			actorId: PersonaActor["id"],
+			linkId: PersonaActor["id"],
 		};
 		"CARD_REPLY": {
-			cardId: string
+			cardId: SocialCard["id"],
 		}
 	}
 }

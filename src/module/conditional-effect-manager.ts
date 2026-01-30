@@ -572,12 +572,12 @@ export class ConditionalEffectManager {
 				const weekday = this.translate(cond.days, DAYS);
 				return `weekday is ${not} : ${weekday}`;
 			}
-			case "social-target-is": { const link = cond.socialLinkIdOrTarot ? (game.actors.get(cond.socialLinkIdOrTarot as string) as PersonaActor)?.displayedName : "ERROR";
+			case "social-target-is": { const link = cond.socialLinkIdOrTarot ? (game.actors.get(cond.socialLinkIdOrTarot as PersonaActor["id"]) as PersonaActor)?.displayedName : "ERROR";
 				return `social Target is ${not} ${link}`;
 			}
 			case "social-target-is-multi": {
 				const actors = multiCheckToArray(cond.socialLinkIdOrTarot)
-				.map( x=> x ? (game.actors.get(x) as PersonaActor)?.displayedName ?? x : "ERROR");
+				.map( x=> x ? (game.actors.get(x as PersonaActor["id"]) as PersonaActor)?.displayedName ?? x : "ERROR");
 				return `social Target is ${not} ${actors.join(", ")}`;
 			}
 			case "shadow-role-is": {
@@ -591,7 +591,7 @@ export class ConditionalEffectManager {
 			case "is-gm":
 				return `User is ${not} GM`;
 			case "has-item-in-inventory": {
-				const item = game.items.get(cond.itemId);
+				const item = game.items.get(cond.itemId as PersonaItem["id"]);
 				return `${target1} ${not} has ${item?.name ?? "Unknown Item"} in Inventory`;
 			}
 			case "creature-type-is": {
@@ -861,7 +861,7 @@ export class ConditionalEffectManager {
 			case "inspirationWith":
 				return `Has Inspiration With Link ??? ${endString(cond)}`;
 			case "itemCount": {
-				const item = game.items.get(cond.itemId);
+				const item = game.items.get(cond.itemId as PersonaItem["id"]);
 				return `Has Amount of ${item?.name ?? "UNKNOWN"} ${endString(cond)}`;
 			}
 			case "opening-roll":

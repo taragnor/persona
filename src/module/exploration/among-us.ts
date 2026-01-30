@@ -7,7 +7,7 @@ import { HTMLTools } from "../utility/HTMLTools.js";
 export class AmongUs {
 	static async admin(shipScene: string | PersonaScene = (game.scenes.current as PersonaScene)): Promise<ChatMessage<Roll> | undefined> {
 		if (typeof shipScene == "string") {
-			shipScene = game.scenes.get(shipScene) as PersonaScene;
+			shipScene = game.scenes.get(shipScene as PersonaScene["id"]) as PersonaScene;
 		}
 		if (!game.user.isGM) {throw new Error("GM only");}
 		if (!await HTMLTools.confirmBox("Show Player Locations", "Show Player Locations")) {
@@ -120,7 +120,7 @@ export class AmongUs {
 	static async printActions(scene: string | PersonaScene = game.scenes.current as PersonaScene) {
 		if (!game.user.isGM) {return;}
 		if (typeof scene == "string") {
-			scene = game.scenes.get(scene) as PersonaScene;
+			scene = game.scenes.get(scene as Scene["id"]) as PersonaScene;
 		}
 
 		const actions : [string, string][] = [];
@@ -145,7 +145,7 @@ export class AmongUs {
 			case "Do Nothing":
 				return "Do Nothing";
 			case "Move To": {
-				const target = scene.regions.get(action.regionId);
+				const target = scene.regions.get(action.regionId as PersonaRegion["id"]);
 				return `Go To ${target?.name ?? "Region Not found"}`;
 			}
 		}

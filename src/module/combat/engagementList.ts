@@ -1,4 +1,4 @@
-import { PersonaCombat } from "./persona-combat.js";
+import { PersonaCombat, PersonaCombatant } from "./persona-combat.js";
 import { PersonaError } from "../persona-error.js";
 
 export class EngagementList {
@@ -77,4 +77,4 @@ export class EngagementList {
 
 }
 
-type CombatantId = string;
+type CombatantId = PersonaCombatant["id"];

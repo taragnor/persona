@@ -94,6 +94,6 @@ declare global {
 type RemoteErrorInfo = {
 	errorMsg:string,
 	trace: string,
-	userId: string,
+	userId: User["id"],
 	args: string[],
 }

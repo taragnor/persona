@@ -406,12 +406,6 @@ export class Metaverse {
 	}
 
 	static getRegion(regionId ?: string) : PersonaRegion | undefined {
-		// if (CombatScene.instance) {
-		// 	const prev = CombatScene.instance.previous;
-		// 	if (prev) {
-		// 		scene= prev;
-		// 	}
-		// }
 		let scene = game.scenes.active;
 		const regionData = PersonaSettings.getLastRegion();
 		if (regionData.lastRegionId && regionData.lastSceneId) {
@@ -513,7 +507,7 @@ declare global {
 	}
 }
 
-Hooks.on("updateWall", async function (_updateItem: WallDocument, changes: Record<string, unknown>, _diff: unknown, userId: string) {
+Hooks.on("updateWall", async function (_updateItem: WallDocument, changes: Record<string, unknown>, _diff: unknown, userId: User["id"]) {
 	if (changes.ds == 1 && game.user.isGM) {
 		const situation : Situation = {
 			trigger: "on-open-door",

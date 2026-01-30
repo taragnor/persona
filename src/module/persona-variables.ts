@@ -39,7 +39,7 @@ export class PersonaVariables {
 					varType,
 					variableId,
 				};
-			case "scene": { const scene = game.scenes.get(cons.sceneId) as PersonaScene;
+			case "scene": { const scene = game.scenes.get(cons.sceneId as PersonaScene["id"]) as PersonaScene;
 				if (!scene) {
 					PersonaError.softFail(`can't find scene ${cons.sceneId} in convertConsequenceToLocation`);
 					return undefined;

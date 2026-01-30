@@ -148,7 +148,7 @@ export class FollowUpManager {
 			ui.notifications.warn("Can't act now, its not your turn");
 			return false;
 		}
-		const combatantId = HTMLTools.getClosestData(ev, "combatantId");
+		const combatantId = HTMLTools.getClosestData<PersonaCombatant["id"]>(ev, "combatantId");
 		const powerId = HTMLTools.getClosestData<Power["id"]>(ev, "powerId");
 		const combatant = this.combat.combatants.get(combatantId);
 		if (!combatant  || !PersonaCombat.isPersonaCombatant(combatant)) {

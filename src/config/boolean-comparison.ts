@@ -16,7 +16,8 @@ import { ShadowRole } from "./shadow-types.js";
 import { DAYS_LIST } from "./days.js";
 import { WeatherType } from "./weather-types.js";
 import {Defense} from "./defense-types.js";
-import {CreatureTag, InternalCreatureTag} from "./creature-tags.js";
+import {InternalCreatureTag} from "./creature-tags.js";
+import {PersonaItem} from "../module/item/persona-item.js";
 
 const BASIC_BOOLEAN_COMPARISON_LIST = [
 	"cameo-in-scene",
@@ -326,7 +327,7 @@ type DeprecatedTwoTargetComparisons = {
 
 type HasItemCheckComparison = {
 	boolComparisonTarget: "has-item-in-inventory",
-	itemId: string,
+	itemId: PersonaItem["id"],
 	conditionTarget: ConditionTarget,
 	equipped: boolean,
 }

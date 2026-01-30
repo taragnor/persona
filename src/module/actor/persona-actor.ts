@@ -1202,8 +1202,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 
 	async spendRecovery(this: ValidAttackers, socialLinkId: null): Promise<void>;
-	async spendRecovery(this: PC, socialLinkId: string): Promise<void>;
-	async spendRecovery(this: ValidAttackers, socialLinkId: string | null) {
+	async spendRecovery(this: PC, socialLinkId: PersonaActor["id"]): Promise<void>;
+	async spendRecovery(this: ValidAttackers, socialLinkId: PersonaActor["id"] | null) {
 		const healing = this.recoveryAmt;
 		if (this.isPC() && socialLinkId != null)  {
 			const linkActor = game.actors.get(socialLinkId);
@@ -4413,12 +4413,12 @@ getPrimaryPlayerOwner() : typeof game.users.contents[number] | undefined {
 	const userIdPair = Object.entries(this.ownership)
 		.find( ([k,v]) => {
 			if (v < CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER) {return false;}
-			const user = game.users.get(k);
+			const user = game.users.get(k as User["id"]);
 			if (user && !user.isGM) {return true;}
 			return false;
 		});
 	if (!userIdPair) {return undefined;}
-	return game.users.get(userIdPair[0]);
+	return game.users.get(userIdPair[0] as User["id"]);
 }
 
 get startingPowers() : Power[] {

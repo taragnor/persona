@@ -162,7 +162,7 @@ export class PCSheet extends PCLikeSheet {
 	}
 
 	async useRecovery(event: Event) {
-		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
+		const linkId= HTMLTools.getClosestData<PersonaActor["id"]>(event, "linkId");
 		await this.actor.spendRecovery(linkId);
 	}
 
@@ -327,7 +327,7 @@ export class PCSheet extends PCLikeSheet {
 
 
 	async startSocialLink(event: JQuery.ClickEvent) {
-		const linkId= String(HTMLTools.getClosestData(event, "linkId"));
+		const linkId= HTMLTools.getClosestData<PersonaActor["id"]>(event, "linkId");
 		await PersonaSocial.startSocialLink(this.actor, linkId);
 
 	}

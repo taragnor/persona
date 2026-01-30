@@ -480,7 +480,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!await HTMLTools.confirmBox("Delete Confirm", "Really delete this status or flag?")) {
 			return;
 		}
-		const effectId = HTMLTools.getClosestData(event, "effectId");
+		const effectId = HTMLTools.getClosestData<ActiveEffect["id"]>(event, "effectId");
 		const effect = this.actor.effects.get(effectId);
 		if (effect) {
 			await effect.delete();

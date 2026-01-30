@@ -15,6 +15,7 @@ import { ResistType } from "./damage-types.js";
 import { RESIST_STRENGTH_LIST } from "./damage-types.js";
 import { ResistStrength } from "./damage-types.js";
 import { STUDENT_SKILLS_LIST } from "./student-skills.js";
+import {PersonaActor} from "../module/actor/persona-actor.js";
 
 export type FlagData = {
 	flagId: string,
@@ -101,7 +102,7 @@ export function weeklyAvailability() {
 }
 
 export type SocialData = {
-	linkId: string,
+	linkId: PersonaActor["id"],
 	linkLevel: number,
 	inspiration: number,
 	currentProgress: number,

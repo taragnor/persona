@@ -7,7 +7,7 @@ declare global {
 			name: string,
 			dataDef: SharedDataDefinition,
 			dialogId: string,
-			userIds: string[]
+			userIds: User["id"][]
 		};
 		"SHARED_DIALOG_UPDATE" : {
 			name: string;

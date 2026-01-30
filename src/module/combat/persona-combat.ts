@@ -1772,7 +1772,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		for ( const [_i, id] of ids.entries() ) {
 
 			// Get Combatant data (non-strictly)
-			const combatant = this.combatants.get(id);
+			const combatant = this.combatants.get(id as Combatant["id"]);
 			if ( !combatant?.isOwner ) {continue;}
 
 			// Produce an initiative roll for the Combatant

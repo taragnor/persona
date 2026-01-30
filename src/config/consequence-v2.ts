@@ -41,7 +41,6 @@ const VariableValue = {
   consStruct: [{
     name: "varSubtype",
     dataType: "menu",
-
   }],
 } as const satisfies MenuItem;
 
@@ -66,7 +65,7 @@ function NumericResolver(x: unknown, _sit: Situation): number {
 
 function ActorStatResolver (x: unknown, _sit: Situation): number | undefined{
   const y= x as FieldDescriptorToObject<typeof ActorStatSelector>;
-    const actor=  game.actors.get(y.actorId);
+    const actor=  game.actors.get(y.actorId as Actor["id"]);
   if (!actor) {return undefined;}
   switch (y.actorStat) {
     case "strength":

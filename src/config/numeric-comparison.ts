@@ -7,6 +7,7 @@ import { ConditionTarget } from "./precondition-types.js";
 import { ResistType } from "../config/damage-types.js";
 import { ResistStrength } from "../config/damage-types.js";
 import { SocialStat } from "../config/student-skills.js";
+import {PersonaItem} from "../module/item/persona-item.js";
 
 const DEPRECATED_OPERANDS = [
 	"escalation",
@@ -326,7 +327,7 @@ type InspirationNumericComparison =  {
 type AmountOfItemComparison =  {
 	conditionTarget : ConditionTarget,
 	comparisonTarget: "itemCount",
-	itemId: string,
+	itemId: PersonaItem["id"],
 }
 
 type ResistanceComparison =  {

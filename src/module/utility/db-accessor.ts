@@ -467,7 +467,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 declare global {
 
 type UniversalTokenAccessor<T extends TokenDocument<any> = TokenDocument<any>> = {
-	scene: string,
+	scene: Scene["id"],
 	tokenId : T["id"],
 };
 
