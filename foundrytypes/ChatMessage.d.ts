@@ -11,6 +11,7 @@ namespace Foundry {
 
 	// declare class ChatMessage<R extends Roll = Roll> extends FoundryDocument {
 	interface ChatMessage<R extends Roll = Roll> extends Document<never> {
+		id: Branded<Document["id"], "ChatMessageId">;
 		/**deprecated as of V12, use author instead*/
 		user?: FoundryUser;
 		author: FoundryUser;

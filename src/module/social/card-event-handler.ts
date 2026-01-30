@@ -661,7 +661,7 @@ export class SocialCardEventHandler {
 
 	public async applyCardResponse(text: string) {
 		const cardData = this.cardData;
-		const link = game.actors.get(cardData.linkId);
+		const link = game.actors.get(cardData.linkId as PersonaActor["id"]);
 		if (!link) {
 			PersonaError.softFail(`Can't get link for apply Card Response ${cardData.linkId}`, cardData.linkId);
 		}

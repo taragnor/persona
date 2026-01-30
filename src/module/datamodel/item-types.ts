@@ -172,7 +172,7 @@ class SkillCardSchema extends foundry.abstract.TypeDataModel {
 	static override defineSchema() {
 		return {
 			...itemBase(),
-			skillId: new id(),
+			skillId: new id<Item>(),
 		};
 	}
 }

@@ -15,6 +15,7 @@ namespace Foundry {
 
 			/** @deprecated use system.type instead, as this will not promote TS narrowing */
 			type: keyof T;
+			id: Branded<Document["id"], "ActorId">;
 			system: TotalConvert<T>;
 			items: Collection<ItemType>;
 			getRollData(): TotalConvert<T>;

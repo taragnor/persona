@@ -258,7 +258,7 @@ export class PersonaHandleBarsHelpers {
 			}
 		},
 
-		'canModifySearchChoice': (ownerId : Actor["id"]) => {
+		'canModifySearchChoice': (ownerId : User["id"]) => {
 			const user = game.users.get(ownerId);
 			if (game.user.isGM) {
 				return true;

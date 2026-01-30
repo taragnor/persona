@@ -13,3 +13,5 @@ const x : j = {x: "hello", j: "goodbye", b:5} as j;
 type xx= typeof x["x"];
 
 type xxx = typeof x["x"] extends string ? true: false;
+
+game.messages

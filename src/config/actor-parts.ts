@@ -16,6 +16,7 @@ import { RESIST_STRENGTH_LIST } from "./damage-types.js";
 import { ResistStrength } from "./damage-types.js";
 import { STUDENT_SKILLS_LIST } from "./student-skills.js";
 import {PersonaActor} from "../module/actor/persona-actor.js";
+import {PersonaItem} from "../module/item/persona-item.js";
 
 export type FlagData = {
 	flagId: string,
@@ -118,10 +119,10 @@ export type ActivityData = {
 
 export function equipslots() {
 	return new sch( {
-		weapon: new id(),
-		body: new id(),
-		accessory: new id(),
-		weapon_crystal: new id(),
+		weapon: new id<Weapon>(),
+		body: new id<InvItem>(),
+		accessory: new id<InvItem>(),
+		weapon_crystal: new id<InvItem>(),
 	});
 }
 
@@ -146,15 +147,6 @@ export function tarotFields() {
 	};
 }
 
-// export const classData = function () {
-// 	return  new sch( {
-// 		level: new num({min: 0, max: 10, initial: 1, integer:true}),
-// 		classId: new id(),
-// 		favoredIncremental: new txt<incrementalTypes | "">({initial: ""}),
-// 		incremental: incremental(),
-// 	});
-// }
-
 type incrementalTypes = ReturnType<typeof incremental> extends SchemaField<infer T> ? keyof T : never;
 
 function incremental() {
@@ -176,7 +168,7 @@ export class ClassDataDM extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		return {
 			level: new num({min: 0, max: 10, initial: 1, integer:true}),
-		classId: new id(),
+		classId: new id<PersonaItem>(),
 		favoredIncremental: new txt<incrementalTypes | "">({initial: ""}),
 		incremental: incremental(),
 		};
@@ -199,10 +191,10 @@ export function combatCommonStats() {
 		hp: new num( {integer:true, initial: 1}),
 		wpnatk: new num( {integer:true, initial: 0}),
 		magatk: new num( {integer:true, initial: 0}),
-		powers: new arr( new id()),
+		powers: new arr( new id<Power>()),
 		lastLearnedLevel: new num({initial: 0, integer: true, min: 0}),
 		powersToLearn: new arr( new obj<PowerToLearn>()),
-		learnedPowersBuffer: new arr( new id()),
+		learnedPowersBuffer: new arr( new id<Power>()),
 		// defenses :
 		// new sch({
 		// 	ref: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
@@ -216,12 +208,11 @@ export function combatCommonStats() {
 		hpTracker: new obj<HPTracking>(),
 		// fadingState: new num( {integer:true, initial:0}),
 		statusResists: statusResists(),
-		focuses: new arr( new id(), {initial: []}),
-		talents: new arr( new id(), {initial: []}),
+		focuses: new arr( new id<Focus>(), {initial: []}),
+		talents: new arr( new id<Talent>(), {initial: []}),
 		actionsRemaining: new num( {initial: 1, integer:true, min:0, max: 20}),
 		bonusHP: new num({initial: 0, integer: true}),
 		bonusMP: new num({initial: 0, integer: true}),
-		// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 		personaTags: new arr(new txt<Tag["id"] | PersonaTag>({})),
 
 	};
@@ -229,8 +220,8 @@ export function combatCommonStats() {
 
 export function PCAndNPCAllyCombatStats() {
 	return {
-		powers_sideboard: new arr( new id()),
-		persona_sideboard: new arr( new id()),
+		powers_sideboard: new arr( new id<Power>()),
+		persona_sideboard: new arr( new id<PersonaActor>()),
 		teamworkMove: new id(),
 		usingMetaPod: new bool({initial: true}),
 		// personaImg: new txt(),

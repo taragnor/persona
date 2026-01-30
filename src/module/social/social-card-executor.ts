@@ -576,7 +576,7 @@ export class SocialCardExecutor {
 export type CardData = {
 	card: SocialCard,
 	actor: PC,
-	linkId: PersonaActor["id"],
+	linkId: PersonaActor["id"] | SocialCard["id"],
 	activity: Activity | SocialLink,
 	cameos: SocialLink[],
 	perk: string,

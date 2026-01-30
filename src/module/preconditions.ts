@@ -31,6 +31,7 @@ import {PreconditionConverter} from "./migration/convertPrecondition.js";
 import {PersonaAE} from "./active-effect.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {ResolvedActorChange} from "./combat/finalized-combat-result.js";
+import {PersonaItem} from "./item/persona-item.js";
 
 /** @deprecated Use ConditionalEffectC.getActiveConsequences instead */
 export function getActiveConsequences(condEffect: ConditionalEffectC, situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {
@@ -124,7 +125,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
 			if (!situation.user) {return false;}
 			const user = PersonaDB.findActor(situation.user);
 			const sourceItem = condition.source;
-			const id = sourceItem ? sourceItem.id : undefined;
+			const id = sourceItem && sourceItem instanceof PersonaItem ? sourceItem.id : undefined;
 			if (!id || !user) {
 				return false;
 			}

@@ -591,7 +591,7 @@ export class ConditionalEffectManager {
 			case "is-gm":
 				return `User is ${not} GM`;
 			case "has-item-in-inventory": {
-				const item = game.items.get(cond.itemId as PersonaItem["id"]);
+				const item = game.items.get(cond.itemId);
 				return `${target1} ${not} has ${item?.name ?? "Unknown Item"} in Inventory`;
 			}
 			case "creature-type-is": {
@@ -861,7 +861,7 @@ export class ConditionalEffectManager {
 			case "inspirationWith":
 				return `Has Inspiration With Link ??? ${endString(cond)}`;
 			case "itemCount": {
-				const item = game.items.get(cond.itemId as PersonaItem["id"]);
+				const item = game.items.get(cond.itemId);
 				return `Has Amount of ${item?.name ?? "UNKNOWN"} ${endString(cond)}`;
 			}
 			case "opening-roll":

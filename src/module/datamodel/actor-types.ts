@@ -28,6 +28,7 @@ import { combatCommonStats } from "../../config/actor-parts.js";
 import {PersonaStat} from "../../config/persona-stats.js";
 import {NavigatorTrigger} from "../navigator/nav-voice-lines.js";
 import {PROBABILITY_LIST} from "../../config/probability.js";
+import {PersonaActor} from "../actor/persona-actor.js";
 
 abstract class BaseStuff extends window.foundry.abstract.DataModel {
 
@@ -77,7 +78,7 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 			...PCAndAllyStuff(),
 			...sharedAbilities(),
 			questions: new arr( new embedded(SocialQuestionDM)),
-			trueOwner: new id(),
+			trueOwner: new id<User>(),
 		} as const;
 		return ret;
 	}
@@ -206,7 +207,7 @@ class NPCAllySchema extends foundry.abstract.TypeDataModel {
 			combat: new sch( {
 				...combatCommonStats(),
 				...PCAndNPCAllyCombatStats(),
-				navigatorSkills: new arr(new id()),
+				navigatorSkills: new arr(new id<Power>()),
 				isNavigator: new bool(),
 				navigatorVoice: new arr(
 					new sch({
