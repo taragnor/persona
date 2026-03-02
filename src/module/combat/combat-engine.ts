@@ -458,6 +458,8 @@ export class CombatEngine {
 			...addonAttackResultData,
 			situation: situationFull,
 			result,
+			hitWeakness : struckWeakness,
+			hitResistance : resisted,
 		}
 		return attackResult;
 	}
@@ -498,9 +500,10 @@ export class CombatEngine {
 			};
 		}
 		const element = power.getDamageType(attacker);
-		const resist = target.elemResist(element);
-		const resisted= resist  == "resist";
-		const struckWeakness = resist == "weakness";
+		const resistance = target.elemResist(element);
+		debugger;
+		const resisted= resistance  == "resist";
+		const struckWeakness = resistance == "weakness";
 		const canCrit = typeof situation.rollType == 'number' || situation.rollType == 'iterative' ? false : true;
 		const def = power.system.defense;
 		if (def == 'none') {
