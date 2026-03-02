@@ -3,7 +3,7 @@ import { FinalizedCombatResult } from "./finalized-combat-result.js";
 import { ConsequenceProcessed } from "./persona-combat.js";
 import { ConsequenceAmount, NewDamageConsequence, SetFlagEffect } from "../../config/consequence-types.js";
 import { DamageCalculation } from "./damage-calc.js";
-import { RollSituation } from "../../config/situation.js";
+import { PostAttackRollSituation } from "../../config/situation.js";
 import { PersonaItem} from "../item/persona-item.js";
 import { PersonaAE, StatusDuration } from "../active-effect.js";
 import { getSocialLinkTarget, multiCheckToArray } from "../preconditions.js";
@@ -669,21 +669,21 @@ export interface ActorChange<T extends PersonaActor> {
 
 export type AttackResult = {
 	result: keyof typeof ATTACK_RESULT,
-	ailmentRange: {low: number, high: number} | undefined;
-	instantKillRange: U<{low: number, high:number}>;
 	defenseValue?: number,
 	hitWeakness?: boolean,
 	hitResistance?: boolean,
 	validAtkModifiers ?: string[],
 	validDefModifiers ?: string[],
-	target: UniversalTokenAccessor<PToken>,
-	attacker: UniversalTokenAccessor<PToken>,
+	target: N<UniversalTokenAccessor<PToken>>,
+	attacker: N<UniversalTokenAccessor<PToken>>,
 	power: UniversalItemAccessor<UsableAndCard>,
-	situation: Situation & RollSituation,
+	situation: Situation & PostAttackRollSituation,
 	roll: RollBundle | null ,
-	critRange: U<{low: number, high:number}>;
 	// critBoost: number,
 	// critPrintable?: string []
+	ailmentRange: U<{low: number, high: number}>;
+	instantKillRange: U<{low: number, high:number}>;
+	critRange: U<{low: number, high:number}>;
 };
 
 
@@ -691,7 +691,7 @@ function resolveStatusDurationAnchor (anchor: ConsequenceTarget, atkResult: Atta
 	if (!anchor) {
 		anchor = "target";
 	}
-	let accessor : UniversalTokenAccessor<PToken> | undefined;
+	let accessor : UN<UniversalTokenAccessor<PToken>>;
 	const situation = atkResult.situation;
 	switch (anchor) {
 		case "target":

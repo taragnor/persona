@@ -58,7 +58,7 @@ export class ConsequenceProcessor {
 		const applyTo = cons.applyTo ?? "target";
 		const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
 		const applyToSelf = applyTo == 'attacker' || applyTo =='user' || applyTo == 'owner';
-		const absorb = (situation.isAbsorbed && !applyToSelf) ?? false;
+		const absorb = ("result" in situation && situation.result == "absorb" && !applyToSelf) ?? false;
 		const block = atkresult && atkresult.result == 'block' && !applyToSelf;
 		switch (cons.type) {
 			case 'none':

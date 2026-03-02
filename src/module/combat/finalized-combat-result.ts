@@ -342,8 +342,8 @@ export class FinalizedCombatResult {
 
 	getAttackData(atkResult: AttackResult) : {attacker: PToken, target: PToken, power: UsableAndCard} {
 		const {attacker, target, power} = atkResult;
-		const attackerToken = PersonaDB.findToken(attacker);
-		const targetToken = PersonaDB.findToken(target);
+		const attackerToken = PersonaDB.findToken(attacker!);
+		const targetToken = PersonaDB.findToken(target!);
 		const powerItem = PersonaDB.findItem(power);
 		return {
 			attacker: attackerToken,
@@ -364,7 +364,7 @@ export class FinalizedCombatResult {
 			const {attacker, target, power}  = this.getAttackData(atkResult);
 			await PersonaSFX.onUsePowerOn(power, attacker, target, atkResult.result);
 			for (const change of changes) {
-				const chained = await ConsequenceApplier.applyActorChange(change, power, atkResult.attacker);
+				const chained = await ConsequenceApplier.applyActorChange(change, power, atkResult.attacker!);
 				this.addChained(...chained);
 			}
 		}

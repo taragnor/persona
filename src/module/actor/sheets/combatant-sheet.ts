@@ -67,7 +67,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".copy-to-compendium").on("click", this.copyToCompendium.bind(this));
 	}
 
-	override async _onDropActor(_event: Event, actorD: unknown) {
+	override async _onDropActor(_event: JQuery.Event, actorD: unknown) {
 		//@ts-expect-error using weird function
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
 		const actor : PersonaActor = await Actor.implementation.fromDropData(actorD) as PersonaActor;
@@ -81,7 +81,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		return super._onDropActor(_event, actorD);
 	}
 
-	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:unknown[]) {
+	override async _onDropItem(_event: JQuery.Event, itemD: unknown, ..._rest:unknown[]) {
 		Helpers.ownerCheck(this.actor);
 		//@ts-expect-error using unsupported foundrytype
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access

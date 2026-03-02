@@ -5,12 +5,13 @@ import { RollTag } from "./roll-tags.js";
 import { SocialStat } from "../config/student-skills.js";
 import { TarotCard } from "../config/tarot.js";
 import { StatusEffectId } from "./status-effects";
-import { CombatResult } from "../module/combat/combat-result.js";
+import { AttackResult, CombatResult } from "../module/combat/combat-result.js";
 import { CombatTriggerTypes } from "./triggers.js";
 import {RealDamageType} from "./damage-types.js";
 import {PersonaAE} from "../module/active-effect.js";
 import {FinalizedCombatResult} from "../module/combat/finalized-combat-result.js";
 import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js";
+import {AttackRollType} from "../module/combat/combat-engine.js";
 
 export type UserSituation = {
 	user: UniversalActorAccessor<ValidAttackers>;
@@ -36,7 +37,7 @@ export type OnRollTrigger = {
 	trigger: "on-roll",
 	triggeringCharacter: UniversalActorAccessor<ValidAttackers>,
 	user: UniversalActorAccessor<ValidAttackers>,
-} & RollSituation;
+	} & RollSituation;
 
 type ClockTrigger = {
 	trigger: "on-clock-tick" | "on-clock-change",
@@ -169,7 +170,7 @@ type EnterRegionTrigger = {
 }
 
 type SituationType = SituationUniversal & (
-	TriggerSituation  | NonTriggerUserSituation | SocialCardSituation);
+	TriggerSituation  | NonTriggerUserSituation | SocialCardSituation | CombatTypeSituation);
 
 type NonTriggerUserSituation =
 	PowerOnlySituation |
@@ -199,13 +200,43 @@ export type RollSituation = {
 	naturalRoll : number,
 	rollTags : (RollTag | CardTag | Tag)[],
 	rollTotal : number;
-	hit?: boolean;
-	miss?: boolean;
 	criticalHit ?: boolean;
 	DC ?: number;
 	addedTags ?: PowerTag[],
+}
+
+export type BaseAttackRollSituation = RollSituation & {
+	rollType: AttackRollType,
+	DC ?: number;
+	attacker :UniversalActorAccessor<ValidAttackers>;
+	target : UniversalActorAccessor<ValidAttackers>;
+}
+
+type CombatTypeSituation = UserSituation & (BaseAttackRollSituation | AttackRollSituation | PostAttackRollSituation);
+
+
+export type AttackRollSituation = BaseAttackRollSituation & {
 	withinAilmentRange ?: boolean;
-	withinInstantKillRange?: boolean;
+	withinInstantKillRange ?: boolean;
+	withinCritRange ?: boolean;
+	ailmentRange ?: AttackResult["ailmentRange"],
+	instantKillRange ?: AttackResult["instantKillRange"],
+	critRange ?: AttackResult["critRange"],
+	DC : number;
+	result ?: AttackResult["result"],
+}
+
+export type PostAttackRollSituation = AttackRollSituation & {
+	withinAilmentRange : boolean;
+	withinInstantKillRange : boolean;
+	withinCritRange : boolean;
+	ailmentRange ?: AttackResult["ailmentRange"],
+	instantKillRange ?: AttackResult["instantKillRange"],
+	critRange ?: AttackResult["critRange"],
+	result : AttackResult["result"],
+	DC : number;
+	resisted : boolean;
+	struckWeakness : boolean;
 }
 
 type NonRollSituation = {
@@ -227,7 +258,6 @@ type SituationUniversal = {
 	hit ?: boolean; // Todo change the wording of this to success since it funcitons in for universal succes
 	resisted ?: boolean;
 	struckWeakness ?: boolean;
-	isAbsorbed ?: boolean;
 	target ?: UniversalActorAccessor<ValidAttackers>;
 	attacker ?:UniversalActorAccessor<ValidAttackers>;
 	saveVersus ?: StatusEffectId;
@@ -236,7 +266,6 @@ type SituationUniversal = {
 	isSocial?: boolean,
 	tarot ?: TarotCard,
 	socialTarget ?: UniversalActorAccessor<ValidSocialTarget>;
-	socialRandom ?: number;
 	cameo ?: UniversalActorAccessor<ValidSocialTarget>;
 	"triggering-character" ?: never;
 } & (RollSituation | NonRollSituation);

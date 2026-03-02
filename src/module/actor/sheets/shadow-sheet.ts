@@ -28,7 +28,7 @@ export class ShadowSheet extends CombatantSheetBase {
 		});
 	}
 
-	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:unknown[]) {
+	override async _onDropItem(_event: JQuery.Event, itemD: unknown, ..._rest:unknown[]) {
 		//@ts-expect-error not in foundrytypes
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 		const item: PersonaItem = await Item.implementation.fromDropData(itemD);
@@ -112,9 +112,9 @@ export class ShadowSheet extends CombatantSheetBase {
 
 	override get template() {
 		if (this.actor.hasCreatureTag("d-mon"))
-			{return this.options.template;}
+		{return this.options.template;}
 		if (game.user.isOwner)
-			{return this.options.template;}
+		{return this.options.template;}
 		if ( !game.user.isGM && this.actor.limited) {
 			return `${HBS_TEMPLATES_DIR}/shadow-limited.hbs`;
 		}

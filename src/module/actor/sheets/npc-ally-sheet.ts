@@ -43,7 +43,7 @@ export class NPCAllySheet extends PCLikeSheet {
 		html.find(".play-voiceline").on("click", (ev) => void this.playVoiceLine(ev));
 	}
 
-	override async _onDropItem(_event: Event, itemD: unknown, ..._rest:unknown[]) {
+	override async _onDropItem(_event: JQuery.Event, itemD: unknown, ..._rest:unknown[]) {
 		//@ts-expect-error not in foundrytypes
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 		const item: PersonaItem = await Item.implementation.fromDropData(itemD);
@@ -75,7 +75,7 @@ export class NPCAllySheet extends PCLikeSheet {
 		}
 	}
 
-	override async _onDropActor(_event: Event, actorD: unknown) {
+	override async _onDropActor(_event: JQuery.Event, actorD: unknown) {
 		//@ts-expect-error no supported
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 		const actor : PersonaActor = await Actor.implementation.fromDropData(actorD);

@@ -129,4 +129,10 @@ interface FoundrySystem {
 }
 
 
+type U<T> = T| undefined;
 
+type N<T> = T | undefined;
+
+type UN<T> = T | undefined | null;
+
+ActorSheet

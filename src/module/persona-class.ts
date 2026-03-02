@@ -8,7 +8,7 @@ import { PersonaSettings } from "../config/persona-settings.js";
 import { Metaverse } from "./metaverse.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaDB } from "./persona-db.js";
-import { PersonaCombat } from "./combat/persona-combat.js";
+import { PersonaCombat, PToken } from "./combat/persona-combat.js";
 import { ModifierList } from "./combat/modifier-list.js";
 import { PersonaError } from "./persona-error.js";
 import { localize } from "./persona.js";
@@ -51,6 +51,20 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			passivePowers: undefined,
 			defensiveModifiers : undefined,
 		};
+	}
+
+	get combatName(): string {
+		return this.token?.name ?? this.user.name;
+	}
+
+	get token() : N<PToken> {
+		const combat = PersonaCombat.combat;
+		const user = this.user;
+	const comb = combat?.getCombatantByActor(user);
+		if (comb && comb.token) {return comb.token as PToken;}
+		const tok = game.scenes.current.tokens.find( x=> x.actor == user);
+		if (tok) {return tok as PToken;}
+		return null;
 	}
 
 	get img() : string {

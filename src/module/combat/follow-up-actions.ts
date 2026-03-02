@@ -1,7 +1,7 @@
+import {RollSituation} from "../../config/situation.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
-import {AttackResult} from "./combat-result.js";
 import {FlagChangeDiffObject} from "./openers.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
 
@@ -198,7 +198,7 @@ export type FollowUpActionData = {
 	type: "act-again";
 };
 
-type CombatRollSituation = AttackResult['situation'];
+type CombatRollSituation = RollSituation & Situation;
 
 
 declare global {

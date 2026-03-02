@@ -23,9 +23,8 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 	#activeQuestion = -1;
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	constructor(...args: any[]) {
-		//@ts-expect-error making it someone elses problem
-		super(...args);
+	constructor(obj: object, options: object) {
+		super(obj, options );
 		this.refreshQuestionFocus();
 	}
 

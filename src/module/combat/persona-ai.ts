@@ -30,8 +30,10 @@ export abstract class PersonaAI {
 		const actions : AIAction[] = [];
 		for (const power of powers) {
 			const targetSets= this.calculatePotentialTargetsOfPower(power);
+			const energyCost = power.energyCost(this.persona);
 			for (const targets of targetSets) {
 				actions.push( {
+					energyCost,
 					targets,
 					power,
 				});
@@ -169,13 +171,13 @@ export class NullAI extends PersonaAI {
 
 }
 
-
 export type AIAction = {
    power: Power,
    targets: PersonaCombatant[],
-
-}
+	energyCost: number,
+};
 
 type AISituationData = {
-	canEscapeEngaged?: boolean;
+	canEscapeEngaged ?: boolean;
 };
+

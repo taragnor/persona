@@ -226,7 +226,10 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
 			break;
 		}
 		case "socialRandom": {
-			if (situation.socialRandom == undefined) {
+			if (
+				!("socialRandom" in situation) ||
+				situation.socialRandom == undefined
+			) {
 				return false;
 			}
 			target = situation.socialRandom;
@@ -449,7 +452,7 @@ export function combatResultBasedNumericTarget(condition: CombatResultComparison
 	}
 	let count = 0;
 	for (const { atkResult, changes } of situation.combatResult.attacks) {
-		const target = PersonaDB.findToken(atkResult.target);
+		const target = PersonaDB.findToken(atkResult.target!);
 		const targetChanges = changes.filter( c=> {
 			const changed = PersonaDB.findActor(c.actor);
 			return changed == target.actor;

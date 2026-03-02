@@ -380,6 +380,8 @@ export class PersonaHandleBarsHelpers {
 					return "BLOCK";
 				case "absorb":
 					return "ABSORB";
+				case "fumble":
+					return "FUMBLE";
 				default:
 					result.result satisfies never;
 					return "ERROR";

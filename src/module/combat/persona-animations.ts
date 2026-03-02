@@ -97,7 +97,8 @@ export class PersonaAnimation {
 			case "miss":
 			case "hit":
 			case "crit":
-				throw new PersonaError("Hit or Crit shoiuldn't be called in the null attack context");
+			case "fumble":
+				throw new PersonaError(`${this.result} shoiuldn't be called in the null attack context`);
 			default:
 				this.result satisfies never;
 		}

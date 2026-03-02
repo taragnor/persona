@@ -45,7 +45,7 @@ export class PCSheet extends PCLikeSheet {
 		return data;
 	}
 
-	override async _onDropActor(_event: Event, actorD: unknown)
+	override async _onDropActor(_event: JQuery.Event, actorD: unknown)
 	{
 		//@ts-expect-error using weird function
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

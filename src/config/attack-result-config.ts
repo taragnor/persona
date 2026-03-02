@@ -1,6 +1,7 @@
 import {HTMLTools} from "../module/utility/HTMLTools.js";
 
 const ATTACK_RESULT_LIST = [
+	"fumble",
 	"hit",
 	"miss" ,
 	"crit" ,

@@ -4,7 +4,7 @@ import {Defense} from "../../config/defense-types.js";
 import {ModifierTarget, NonDeprecatedModifierType} from "../../config/item-modifiers.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {AnyStringObject} from "../../config/precondition-types.js";
-import {RollSituation} from "../../config/situation.js";
+import {AttackRollSituation, BaseAttackRollSituation, RollSituation} from "../../config/situation.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 import {ConsequenceProcessor} from "../conditionalEffects/consequence-processor.js";
 import {PersonaItem} from "../item/persona-item.js";
@@ -156,8 +156,9 @@ export class CombatEngine {
 		const num_of_attacks = this.getNumOfAttacks(power);
 		for (let atkNum = 0; atkNum < num_of_attacks; ++atkNum) {
 			rollType = atkNum > 0 ? 'iterative': rollType;
-			const atkResult = await this.processAttackRoll( attacker, power, target, rollType == 'standard' && atkNum==0 ? 'activation' : rollType, options);
-			this.updateSituation(atkResult);
+			// const atkResult = await this.processAttackRoll( attacker, power, target, rollType == 'standard' && atkNum==0 ? 'activation' : rollType, options);
+			const atkResult = await this.attackRollProcess( attacker, power, target, rollType == 'standard' && atkNum==0 ? 'activation' : rollType, options);
+			// this.updateSituation(atkResult);
 			const this_result = await this.processEffects(atkResult);
 			result.merge(this_result);
 			const secondary = await this.handleSecondaryAttacks(this_result, atkResult, power, attacker, target, rollType, options);
@@ -167,43 +168,43 @@ export class CombatEngine {
 		return result;
 	}
 
-	updateSituation(atkResult: AttackResult) {
-		const situation = atkResult.situation;
-		switch (atkResult.result) {
-			case "hit":
-				situation.hit = true;
-				situation.miss = false;
-				situation.criticalHit = false;
-				break;
-			case "miss":
-				situation.miss = true;
-				situation.hit = false;
-				situation.criticalHit = false;
-				break;
-			case "crit":
-				situation.hit = true;
-				situation.miss = false;
-				situation.criticalHit = true;
-				break;
-			case "reflect":
-				situation.hit = false;
-				situation.miss = false;
-				situation.criticalHit = false;
-				break;
-			case "absorb":
-				situation.hit = true;
-				situation.miss = false;
-				situation.criticalHit = false;
-				break;
-			case "block":
-				situation.hit = true;
-				situation.miss = false;
-				situation.criticalHit = false;
-				break;
-			default:
-				atkResult.result satisfies never;
-		}
-	}
+	// private updateSituation(atkResult: AttackResult) {
+	// 	const situation = atkResult.situation;
+	// 	switch (atkResult.result) {
+	// 		case "hit":
+	// 			situation.hit = true;
+	// 			situation.miss = false;
+	// 			situation.criticalHit = false;
+	// 			break;
+	// 		case "miss":
+	// 			situation.miss = true;
+	// 			situation.hit = false;
+	// 			situation.criticalHit = false;
+	// 			break;
+	// 		case "crit":
+	// 			situation.hit = true;
+	// 			situation.miss = false;
+	// 			situation.criticalHit = true;
+	// 			break;
+	// 		case "reflect":
+	// 			situation.hit = false;
+	// 			situation.miss = false;
+	// 			situation.criticalHit = false;
+	// 			break;
+	// 		case "absorb":
+	// 			situation.hit = true;
+	// 			situation.miss = false;
+	// 			situation.criticalHit = false;
+	// 			break;
+	// 		case "block":
+	// 			situation.hit = true;
+	// 			situation.miss = false;
+	// 			situation.criticalHit = false;
+	// 			break;
+	// 		default:
+	// 			atkResult.result satisfies never;
+	// 	}
+	// }
 
 	async handleSecondaryAttacks(CR: CombatResult, atkResult: AttackResult, power: UsableAndCard, attacker: PToken, target: PToken, rollType: AttackRollType, options: CombatOptions  ): Promise<CombatResult> {
 		const result = new CombatResult;
@@ -275,17 +276,26 @@ export class CombatEngine {
 		return result;
 	}
 
-	private getBaseSituation(attacker: PToken, target: PToken, usableOrCard: UsableAndCard, rollTags: NonNullable<Situation['rollTags']>) {
-		rollTags.pushUnique('attack');
-		const combat= this.combat;
-		const baseSituation = {
-			target: target.actor.accessor,
-			usedPower: PersonaDB.getUniversalItemAccessor(usableOrCard),
-			user: PersonaDB.getUniversalActorAccessor(attacker.actor),
-			rollTags,
-			attacker: attacker.actor.accessor,
-			activeCombat:combat ? Boolean(combat.combatants.find( x=> x.actor?.system.type != attacker.actor.system.type)): false ,
+	private getBaseSituation(attacker: Persona, target: Persona, usableOrCard: UsableAndCard, rollData: AttackRollData) : BaseAttackRollSituation & Situation {
+		const activeCombat  = this.combat ? Boolean(this.combat.combatants.find( x=> x.actor?.system.type != attacker.user.system.type)): false;
+		// const def = usableOrCard.isSkillCard() ? "none" : usableOrCard.system.defense;
+		const baseProtoSituation = {
+			target: target.user.accessor,
+			usedPower: usableOrCard.accessor,
+			user: attacker.user.accessor,
+			rollTags: rollData.rollTags,
+			attacker: attacker.user.accessor,
+			activeCombat,
+			naturalRoll: rollData.roll.dice[0].total,
+			rollTotal: rollData.roll.total,
+			isSocial : false,
 		} satisfies Situation;
+		// const defenseCalc = target.getDefense(def).eval(baseProtoSituation);
+		// const defenseVal = def != 'none' ? defenseCalc.total: 0;
+		const baseSituation = {
+			...baseProtoSituation,
+			rollType: rollData.rollType,
+		} satisfies BaseAttackRollSituation & Situation;
 		return baseSituation;
 	}
 
@@ -298,159 +308,399 @@ export class CombatEngine {
 		return rollTags;
 	}
 
-	private storeActivationRoll(rollType: AttackRollType, roll: Roll) {
+	// private storeActivationRoll(rollType: AttackRollType, roll: Roll) {
+	private storeActivationRoll(attackRollData: AttackRollData) {
 		if (this.combat
 			&& !this.combat.isSocial
-			&& rollType == "activation") {
-			this.combat.lastActivationRoll = roll.total;
+			&& attackRollData.rollType == "activation") {
+			this.combat.lastActivationRoll = attackRollData.roll.total;
 		}
 	}
 
-	private getRollName(attacker: PToken, power: Usable, target: PToken, defenseVal: number) {
-		const cssClass= (!target.actor.isPC()) ? 'gm-only' : '';
+	private getRollName(attacker: Persona, power: Usable, target: Persona, defenseVal: number) {
+		const cssClass= (!target.user.isPC()) ? 'gm-only' : '';
 		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
-		const rollName =  `${attacker.name} (${power.name}) ->  ${target.name} vs. ${power.targettedDefenseLocalized()} ${defenseStr}`;
+		const rollName =  `${attacker.combatName} (${power.name}) ->  ${target.combatName} vs. ${power.targettedDefenseLocalized()} ${defenseStr}`;
 		return rollName;
 	}
 
-	private getBaseAttackResult(roll: RollBundle, attacker: PToken, target:PToken, power: Usable ): Pick<AttackResult, 'attacker' | 'target'  | 'power' | 'roll'>  {
+	private getBaseAttackResult(roll: RollBundle, attacker: Persona, target:Persona, power: Usable ): Pick<AttackResult, 'attacker' | 'target'  | 'power' | 'roll'>  {
 		const baseData = {
 			roll,
-			attacker: PersonaDB.getUniversalTokenAccessor(attacker) ,
-			target: PersonaDB.getUniversalTokenAccessor(target),
+			attacker: attacker.token ? PersonaDB.getUniversalTokenAccessor(attacker.token): null,
+			target: target.token ? PersonaDB.getUniversalTokenAccessor(target.token) : null,
 			power: PersonaDB.getUniversalItemAccessor(power)
 		} satisfies Pick<AttackResult, 'attacker' | 'target'  | 'power' | 'roll'>;
 		return baseData;
 	}
 
-	private checkMiss(roll: RollBundle, attacker: PToken, target: PToken, situation: AttackResult["situation"] , power: Usable, rollType: AttackRollType, defenseVal: number) {
-		const naturalAttackRoll = roll.dice[0].total;
-		const rageOrBlind = attacker.actor.hasStatus('rage') || attacker.actor.hasStatus('blind');
-		const autoHit = rollType == "reflect" && !power.isInstantDeathAttack() && !power.isAilment();
+	// private checkMiss(roll: RollBundle, attacker: PToken, target: PToken, situation: AttackResult["situation"] , power: Usable, rollType: AttackRollType, defenseVal: number) {
+	// 	const naturalAttackRoll = roll.dice[0].total;
+	// 	const rageOrBlind = attacker.actor.hasStatus('rage') || attacker.actor.hasStatus('blind');
+	// 	const autoHit = rollType == "reflect" && !power.isInstantDeathAttack() && !power.isAilment();
+	// 	const Mod20 = naturalAttackRoll == 20 ? 3 : 0;
+	// 	if (!autoHit &&
+	// 		(naturalAttackRoll == 1
+	// 			|| (roll.total+Mod20) < defenseVal
+	// 			|| (rageOrBlind && naturalAttackRoll % 2 == 1)
+	// 		)
+	// 	) {
+	// 		return {
+	// 			result: 'miss',
+	// 			defenseValue: defenseVal,
+	// 			hitWeakness: situation.struckWeakness ?? false,
+	// 			hitResistance: situation.resisted ?? false,
+	// 			situation,
+	// 			...this.getBaseAttackResult(roll, attacker, target, power),
+	// 		} as const;
+	// 	}
+	// }
+
+	static withinRange(range: U<CalculatedRange>, roll: AttackRollData) : boolean {
+		if (!range) {return false;}
+		return range.possible
+			&& roll.natural >= range.low
+			&& roll.natural <= range.high;
+	}
+
+	generateAttackSituation (attacker: Persona, target: Persona, power: Usable, rollData: AttackRollData, rollTotal: number, _options: CombatOptions = {}): ProtoResultAttackSituation {
+		const baseSituation = this.getBaseSituation(attacker, target, power, rollData);
+		// const element = power.getDamageType(attacker);
+		// const resist = target.elemResist(element);
+		const def = power.system.defense;
+		const defenseCalc = target.getDefense(def).eval(baseSituation);
+		const defenseVal = def != 'none' ? defenseCalc.total: 0;
+		// const roll = this.makeRollBundle(rollData, attacker, target, power, baseSituation, options );
+		// const validDefModifiers = def != 'none' ? defenseCalc.steps: [];
+		// const rollName = this.getRollName(attacker, power, target, defenseVal);
+		// roll.setName(rollName);
+		// const baseData = this.getBaseAttackResult(roll, attacker, target, power);
+		// const total = roll.total;
+		const partialSituation : ProtoResultAttackSituation = {
+			...baseSituation,
+			naturalRoll: rollData.natural,
+			rollTotal: rollTotal,
+			DC: defenseVal,
+			rollType: rollData.rollType,
+			// withinAilmentRange: false,
+			// withinInstantKillRange: false,
+		};
+
+		const {ailmentRange, instantKillRange, critRange} = CombatEngine.calculateRanges(attacker, target, power, partialSituation);
+		const withinAilmentRange = CombatEngine.withinRange(ailmentRange, rollData);
+		const withinCritRange = CombatEngine.withinRange(critRange, rollData);
+		const withinInstantKillRange = CombatEngine.withinRange(instantKillRange, rollData);
+		const protoSituation : ProtoResultAttackSituation = {
+			...partialSituation,
+			ailmentRange, instantKillRange, critRange,
+			withinAilmentRange,
+			withinInstantKillRange,
+			withinCritRange,
+		};
+		return protoSituation;
+	}
+
+	makeRollBundle (rollData: AttackRollData, attacker: Persona, target: Persona, power: Usable, situation: Situation & RollSituation, options: RollOptions ) : RollBundle {
+		const attackBonus = this.getAttackBonus(attacker, power, target, options);
+		const rollName = this.getRollName(attacker, power, target, situation.DC ?? 0);
+		const bundle = new RollBundle(rollName, rollData.roll, attacker.user.isPC(), attackBonus, situation);
+		return bundle;
+	}
+
+	async makeAttackRoll( rollType: AttackRollData["rollType"], options : CombatOptions) : Promise<AttackRollData> {
+		const roll = await (options.setRoll ? new Roll(`0d1+${options.setRoll}`).roll():  new Roll('1d20').roll());
+		const rollTags = this.generateRollTags(rollType);
+		rollTags.pushUnique('attack');
+		const attackRollData : AttackRollData = {
+			roll,
+			rollType,
+			rollTags,
+			natural: roll.total,
+		};
+		this.storeActivationRoll(attackRollData);
+		return attackRollData;
+	}
+
+	async attackRollProcess ( attackerToken: PToken, power: UsableAndCard, targetToken: PToken, rollType: AttackRollType, options: CombatOptions = {}) : Promise<AttackResult> {
+		const attacker = attackerToken.actor.persona();
+		const target = targetToken.actor.persona();
+		const rollData = await this.makeAttackRoll(rollType, options);
+		if (power.isSkillCard()) {
+			return this.processSkillCard(attacker, power, target, rollData);
+		}
+		const baseSituation = this.getBaseSituation(attacker, target, power, rollData);
+		const rollBundle = this.makeRollBundle(rollData, attacker, target, power, baseSituation, options );
+		const situation = this.generateAttackSituation(attacker, target, power, rollData, rollBundle.total, options);
+		return await this.generateAttackResult(attacker, target, power, rollBundle, situation);
+	}
+
+	async generateAttackResult(attacker: Persona, target: Persona, power: Usable, rollBundle: RollBundle, situation: ProtoResultAttackSituation): Promise<AttackResult> {
+		const addonAttackResultData = {
+			ailmentRange: situation.ailmentRange,
+			instantKillRange: situation.instantKillRange,
+			critRange: situation.critRange,
+			// validAtkModifiers, validDefModifiers,
+			situation,
+		};
+		const {result, resisted, struckWeakness} = await this.determineAttackResult(attacker, target, power, rollBundle, situation);
+		const baseData = this.getBaseAttackResult(rollBundle, attacker, target, power);
+		const situationFull : AttackResult["situation"] = {
+			...situation,
+			result,
+			withinAilmentRange : situation.withinAilmentRange ?? false,
+			withinInstantKillRange: situation.withinInstantKillRange ?? false,
+			withinCritRange: situation.withinCritRange ?? false,
+			resisted,
+			struckWeakness,
+		};
+		const attackResult : AttackResult = {
+			...baseData,
+			...addonAttackResultData,
+			situation: situationFull,
+			result,
+		}
+		return attackResult;
+	}
+
+	async determineAttackResult(attacker: Persona, target: Persona, power: Usable, _roll: RollBundle, situation: ProtoResultAttackSituation) : Promise<AttackResultData> {
+		const result = this.getBaseResult(attacker, target,power, situation);
+		const resultSituation = {
+			...situation,
+			...result,
+		}
+		const override = await this.checkOverride(attacker, target, power, resultSituation);
+		return override ?? result;
+	}
+
+	async checkOverride(attacker : Persona, _target: Persona, _power: Usable, resultSituation: Situation & AttackRollSituation & {result: AttackResult["result"]}) : Promise<N<AttackResultData>> {
+		const overrideResult = (await TriggeredEffect.onTrigger("on-use-power", attacker.user, resultSituation))
+		.globalOtherEffects.find( eff=> eff.type == "set-roll-result")?.result;
+		if (overrideResult) {
+			if (PersonaSettings.debugMode()) {
+				console.log(`Override to ${overrideResult}`);
+			}
+			return {
+				result: overrideResult,
+				struckWeakness: false,
+				resisted: false,
+			};
+		}
+		return null;
+	}
+
+	getBaseResult(attacker: Persona, target: Persona, power: Usable, situation: Situation & AttackRollSituation) : AttackResultData {
+		const testNullify = this.checkAttackNullifiers(attacker, power, target, situation);
+		if (testNullify) {
+			return {
+				struckWeakness: false,
+				resisted: false,
+				result: testNullify,
+			};
+		}
+		const element = power.getDamageType(attacker);
+		const resist = target.elemResist(element);
+		const resisted= resist  == "resist";
+		const struckWeakness = resist == "weakness";
+		const canCrit = typeof situation.rollType == 'number' || situation.rollType == 'iterative' ? false : true;
+		const def = power.system.defense;
+		if (def == 'none') {
+			return {
+				result: "hit",
+				resisted,
+				struckWeakness,
+			};
+		}
+		if (this.checkFumble(attacker, target, power, situation)) {
+			return {
+				struckWeakness: false,
+				resisted: false,
+				result: "fumble",
+			};
+		}
+		if (this.checkMiss(attacker, target, power, situation)) {
+			return {
+				struckWeakness: false,
+				resisted,
+				result: "miss",
+			};
+		}
+		if (situation.withinCritRange
+			&& situation.rollTotal >= situation.DC
+			&& (!power.isMultiTarget() || situation.naturalRoll % 2 == 0)
+			&& !target.user.hasStatus('blocking')
+			&& !power.hasTag('no-crit')
+			&& canCrit
+		) {
+			return {
+				result: "crit",
+				struckWeakness,
+				resisted,
+			};
+		}
+		return {
+			struckWeakness,
+			resisted,
+			result: "hit"
+		};
+	}
+
+	private checkMiss( attacker: Persona, _target: Persona,  power: Usable, situation: ProtoResultAttackSituation) : boolean {
+		const naturalAttackRoll = situation.naturalRoll;
+		const rageOrBlind = attacker.user.hasStatus('rage') || attacker.user.hasStatus('blind');
+		const autoHit = situation.rollType == "reflect" && !power.isInstantDeathAttack() && !power.isAilment();
 		const Mod20 = naturalAttackRoll == 20 ? 3 : 0;
 		if (!autoHit &&
 			(naturalAttackRoll == 1
-				|| (roll.total+Mod20) < defenseVal
+				|| (situation.rollTotal+Mod20) < situation.DC
 				|| (rageOrBlind && naturalAttackRoll % 2 == 1)
 			)
 		) {
-			return {
-				result: 'miss',
-				defenseValue: defenseVal,
-				hitWeakness: situation.struckWeakness ?? false,
-				hitResistance: situation.resisted ?? false,
-				situation,
-				...this.getBaseAttackResult(roll, attacker, target, power),
-			} as const;
+			return true;
+			// return {
+			// 	result: 'miss',
+			// 	defenseValue: defenseVal,
+			// 	hitWeakness: situation.struckWeakness ?? false,
+			// 	hitResistance: situation.resisted ?? false,
+			// 	situation,
+			// 	...this.getBaseAttackResult(roll, attacker, target, power),
+			// } as const;
 		}
+		return false;
 	}
 
-	static withinRange(range: U<CalculatedRange>, roll: Roll) : boolean {
-		if (!range) {return false;}
-		const naturalAttackRoll = roll.dice[0].total;
-		return range.possible && naturalAttackRoll >= range.low && naturalAttackRoll <= range.high;
+	private checkFumble( attacker: Persona, _target: Persona,  power: Usable, situation: ProtoResultAttackSituation) : boolean {
+		if (
+			power.isWeaponSkill()
+			&& power.getDamageType(attacker) == "physical"
+			&& situation.naturalRoll == 1
+		) {return true;}
+		return false;
 	}
 
-
-	async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, rollType: AttackRollType, options: CombatOptions = {}) : Promise<AttackResult> {
-		const attackerPersona = attacker.actor.persona();
-		const targetPersona = target.actor.persona();
-		const rollTags = this.generateRollTags(rollType);
-		const baseSituation = this.getBaseSituation(attacker, target, usableOrCard, rollTags);
-		const cardReturn = await this.processSkillCard(attacker, usableOrCard, target, baseSituation);
-		if (cardReturn) {return cardReturn;}
-		const power = usableOrCard as Usable;
-		const element = power.getDamageType(attacker.actor);
-		const resist = targetPersona.elemResist(element);
-		const def = power.system.defense;
-		const r = await (options.setRoll ? new Roll(`0d1+${options.setRoll}`).roll():  new Roll('1d20').roll());
-		this.storeActivationRoll(rollType, r);
-		const attackbonus = this.getAttackBonus(attackerPersona, power, target, options);
-		const roll = new RollBundle('Temp', r, attacker.actor.system.type == 'pc', attackbonus, baseSituation);
-		const naturalAttackRoll = roll.dice[0].total;
-		const defenseCalc = targetPersona.getDefense(def).eval(baseSituation);
-		const defenseVal = def != 'none' ? defenseCalc.total: 0;
-		const validDefModifiers = def != 'none' ? defenseCalc.steps: [];
-		const rollName = this.getRollName(attacker, power, target, defenseVal);
-		roll.setName(rollName);
-		const baseData = this.getBaseAttackResult(roll, attacker, target, power);
-		const total = roll.total;
-		const situation : CombatRollSituation = {
-			...baseSituation,
-			naturalRoll: naturalAttackRoll,
-			rollTotal: roll.total,
-			withinAilmentRange: false,
-			withinInstantKillRange: false,
-		};
-		const overrideResult = (await TriggeredEffect.onTrigger("on-use-power", attacker.actor, situation))
-		.globalOtherEffects.find( eff=> eff.type == "set-roll-result")?.result;
-		if (overrideResult && PersonaSettings.debugMode()) {
-			console.log(`Override to ${overrideResult}`);
+	checkAttackNullifiers(attacker : Persona , power :Usable, target: Persona, situation: Situation & AttackRollSituation): N<AttackResult["result"]> {
+		if (power.hasTag("theurgy")) {return null;}
+		const element = power.getDamageType(attacker);
+		const resist = target.elemResist(element);
+		const pierce = power.hasTag('pierce');
+		switch (resist) {
+			case 'reflect': {
+				return situation.rollType != "reflect" ? "reflect" : "block";
+			}
+			case 'block': {
+				if (!pierce) {return "block";}
+			}
+			case 'absorb' : {
+				if (!pierce) {return "absorb";}
+			}
 		}
-		const testNullify = this.processAttackNullifiers(attacker, power, target, baseData, situation, rollType);
-		if (testNullify)  {
-			return testNullify;
+		if (target.user.hasStatus('phys-shield') && this.canBeReflectedByPhysicalShield(power, attacker)) {
+			return situation.rollType != "reflect" ? "reflect" : "block";
 		}
-		const resolvedAttackMods = attackbonus.eval(situation);
-		const validAtkModifiers = resolvedAttackMods.steps;
-		const {ailmentRange, instantKillRange, critRange} = CombatEngine.calculateRanges(attackerPersona, targetPersona, power, baseSituation);
-		const addonAttackResultData = {
-			ailmentRange, instantKillRange, critRange,
-			// critBoost, critPrintable,
-			validAtkModifiers, validDefModifiers,
-			situation,
-		};
-		if (def == 'none') {
-			return {
-				result: overrideResult ?? 'hit',
-				...addonAttackResultData,
-				...baseData,
-			} satisfies AttackResult;
+		if (target.user.hasStatus('magic-shield') && this.canBeReflectedByMagicShield(power, attacker)) {
+			return situation.rollType != "reflect" ? "reflect" : "block";
 		}
-		situation.resisted = resist == 'resist' && !power.hasTag('pierce');
-		situation.struckWeakness = resist == 'weakness';
-		const checkMiss = this.checkMiss(roll, attacker, target, situation, power, rollType, defenseVal);
-		if (checkMiss) {
-			return {
-				...checkMiss,
-				result : overrideResult ?? checkMiss.result,
-				...addonAttackResultData,
-			};
-		}
-		situation.withinAilmentRange = CombatEngine.withinRange(ailmentRange, r);
-		situation.withinInstantKillRange = CombatEngine.withinRange(instantKillRange, r);
-		const canCrit = typeof rollType == 'number' || rollType == 'iterative' ? false : true;
-		const cancelCritsForInstantDeath = false;
-		const withinCritRange = CombatEngine.withinRange(critRange, r);
-		if (withinCritRange
-			&& total >= defenseVal
-			&& (!power.isMultiTarget() || naturalAttackRoll % 2 == 0)
-			&& !target.actor.hasStatus('blocking')
-			&& !power.hasTag('no-crit')
-			&& canCrit
-			&& !cancelCritsForInstantDeath
-		) {
-			return {
-				result: overrideResult ?? 'crit',
-				defenseValue: defenseVal,
-				hitWeakness: situation.struckWeakness ?? false,
-				hitResistance: situation.resisted ?? false,
-				...addonAttackResultData,
-				...baseData,
-			};
-		} else {
-			return {
-				result: overrideResult ?? 'hit',
-				defenseValue: defenseVal,
-				hitWeakness: situation.struckWeakness ?? false,
-				hitResistance: situation.resisted ?? false,
-				...addonAttackResultData,
-				...baseData,
-			};
-		}
+		return null;
 	}
 
-	canBeReflectedByPhysicalShield(power: UsableAndCard, attacker: ValidAttackers): boolean {
+	/** older function to be deprecated */
+	// async processAttackRoll( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, rollType: AttackRollType, options: CombatOptions = {}) : Promise<AttackResult> {
+	// 	const attackerPersona = attacker.actor.persona();
+	// 	const targetPersona = target.actor.persona();
+	// 	const rollTags = this.generateRollTags(rollType);
+	// 	const baseSituation = this.getBaseSituation(attacker, target, usableOrCard, rollTags);
+	// 	const cardReturn = await this.processSkillCard(attacker, usableOrCard, target, baseSituation);
+	// 	if (cardReturn) {return cardReturn;}
+	// 	const power = usableOrCard as Usable;
+	// 	const element = power.getDamageType(attacker.actor);
+	// 	const resist = targetPersona.elemResist(element);
+	// 	const def = power.system.defense;
+	// 	const r = await (options.setRoll ? new Roll(`0d1+${options.setRoll}`).roll():  new Roll('1d20').roll());
+	// 	this.storeActivationRoll(rollType, r);
+	// 	const attackbonus = this.getAttackBonus(attackerPersona, power, target, options);
+	// 	const roll = new RollBundle('Temp', r, attacker.actor.system.type == 'pc', attackbonus, baseSituation);
+	// 	const naturalAttackRoll = roll.dice[0].total;
+	// 	const defenseCalc = targetPersona.getDefense(def).eval(baseSituation);
+	// 	const defenseVal = def != 'none' ? defenseCalc.total: 0;
+	// 	const validDefModifiers = def != 'none' ? defenseCalc.steps: [];
+	// 	const rollName = this.getRollName(attacker, power, target, defenseVal);
+	// 	roll.setName(rollName);
+	// 	const baseData = this.getBaseAttackResult(roll, attacker, target, power);
+	// 	const total = roll.total;
+	// 	const situation : CombatRollSituation = {
+	// 		...baseSituation,
+	// 		naturalRoll: naturalAttackRoll,
+	// 		rollTotal: roll.total,
+	// 		withinAilmentRange: false,
+	// 		withinInstantKillRange: false,
+	// 	};
+	// 	const overrideResult = (await TriggeredEffect.onTrigger("on-use-power", attacker.actor, situation))
+	// 	.globalOtherEffects.find( eff=> eff.type == "set-roll-result")?.result;
+	// 	if (overrideResult && PersonaSettings.debugMode()) {
+	// 		console.log(`Override to ${overrideResult}`);
+	// 	}
+	// 	const testNullify = this.processAttackNullifiers(attacker, power, target, baseData, situation, rollType);
+	// 	if (testNullify)  {
+	// 		return testNullify;
+	// 	}
+	// 	const resolvedAttackMods = attackbonus.eval(situation);
+	// 	const validAtkModifiers = resolvedAttackMods.steps;
+	// 	const {ailmentRange, instantKillRange, critRange} = CombatEngine.calculateRanges(attackerPersona, targetPersona, power, baseSituation);
+	// 	const addonAttackResultData = {
+	// 		ailmentRange, instantKillRange, critRange,
+	// 		validAtkModifiers, validDefModifiers,
+	// 		situation,
+	// 	};
+	// 	if (def == 'none') {
+	// 		return {
+	// 			result: overrideResult ?? 'hit',
+	// 			...addonAttackResultData,
+	// 			...baseData,
+	// 		} satisfies AttackResult;
+	// 	}
+	// 	situation.resisted = resist == 'resist' && !power.hasTag('pierce');
+	// 	situation.struckWeakness = resist == 'weakness';
+	// 	const checkMiss = this.checkMiss(roll, attacker, target, situation, power, rollType, defenseVal);
+	// 	if (checkMiss) {
+	// 		return {
+	// 			...checkMiss,
+	// 			result : overrideResult ?? checkMiss.result,
+	// 			...addonAttackResultData,
+	// 		};
+	// 	}
+	// 	situation.withinAilmentRange = CombatEngine.withinRange(ailmentRange, r);
+	// 	situation.withinInstantKillRange = CombatEngine.withinRange(instantKillRange, r);
+	// 	const canCrit = typeof rollType == 'number' || rollType == 'iterative' ? false : true;
+	// 	const cancelCritsForInstantDeath = false;
+	// 	const withinCritRange = CombatEngine.withinRange(critRange, r);
+	// 	if (withinCritRange
+	// 		&& total >= defenseVal
+	// 		&& (!power.isMultiTarget() || naturalAttackRoll % 2 == 0)
+	// 		&& !target.actor.hasStatus('blocking')
+	// 		&& !power.hasTag('no-crit')
+	// 		&& canCrit
+	// 		&& !cancelCritsForInstantDeath
+	// 	) {
+	// 		return {
+	// 			result: overrideResult ?? 'crit',
+	// 			defenseValue: defenseVal,
+	// 			hitWeakness: situation.struckWeakness ?? false,
+	// 			hitResistance: situation.resisted ?? false,
+	// 			...addonAttackResultData,
+	// 			...baseData,
+	// 		};
+	// 	} else {
+	// 		return {
+	// 			result: overrideResult ?? 'hit',
+	// 			defenseValue: defenseVal,
+	// 			hitWeakness: situation.struckWeakness ?? false,
+	// 			hitResistance: situation.resisted ?? false,
+	// 			...addonAttackResultData,
+	// 			...baseData,
+	// 		};
+	// 	}
+	// }
+
+	canBeReflectedByPhysicalShield(power: UsableAndCard, attacker: Persona): boolean {
 		if (power.isSkillCard()) {return false;}
 		const dtype = power.getDamageType(attacker);
 		switch (dtype) {
@@ -462,7 +712,7 @@ export class CombatEngine {
 		}
 	}
 
-	canBeReflectedByMagicShield(power: UsableAndCard, attacker: ValidAttackers) : boolean {
+	canBeReflectedByMagicShield(power: UsableAndCard, attacker: Persona) : boolean {
 		if (power.isSkillCard()) {return false;}
 		const dtype = power.getDamageType(attacker);
 		const reflectable : DamageType[] = ["fire", "wind", "light", "dark", "cold", "lightning"];
@@ -482,10 +732,10 @@ export class CombatEngine {
 		switch (result) {
 			case 'reflect': {
 				const reflectRes = new CombatResult(atkResult);
-				const targetActor = PersonaDB.findToken(atkResult.target).actor;
+				const targetActor = atkResult.target ? PersonaDB.findToken(atkResult.target)?.actor : PersonaDB.findActor(atkResult.situation.target!);
 				const power = PersonaDB.findItem(atkResult.power);
-				const attacker = PersonaDB.findToken(atkResult.attacker);
-				if ( targetActor.hasStatus('magic-shield') && this.canBeReflectedByMagicShield(power, attacker.actor)) {
+				const attacker = PersonaDB.findToken(atkResult.attacker!);
+				if ( targetActor.hasStatus('magic-shield') && this.canBeReflectedByMagicShield(power, attacker.actor.persona())) {
 					const cons : SourcedConsequence = {
 						type: "combat-effect",
 						combatEffect: 'removeStatus',
@@ -497,7 +747,7 @@ export class CombatEngine {
 					};
 					await reflectRes.addEffect(atkResult, targetActor, cons, atkResult.situation );
 				}
-				if (targetActor.hasStatus('phys-shield') && this.canBeReflectedByPhysicalShield(power, attacker.actor)) {
+				if (targetActor.hasStatus('phys-shield') && this.canBeReflectedByPhysicalShield(power, attacker.actor.persona())) {
 					const cons : SourcedConsequence = {
 						type: "combat-effect",
 						combatEffect: 'removeStatus',
@@ -518,6 +768,7 @@ export class CombatEngine {
 			case 'hit':
 			case 'miss':
 			case 'crit':
+			case "fumble":
 			case 'absorb':
 				break;
 			default:
@@ -529,23 +780,29 @@ export class CombatEngine {
 		return CombatRes;
 	}
 
-	async processSkillCard( attacker: PToken, usableOrCard: UsableAndCard, target: PToken, situation: Situation) : Promise<AttackResult | null> {
-		if (usableOrCard.system.type != 'skillCard') {
-			return null;
-		}
+	async processSkillCard( attacker: Persona, usableOrCard: UsableAndCard, target: Persona, rollData: AttackRollData) : Promise<AttackResult> {
+		const situation = this.getBaseSituation(attacker, target, usableOrCard, rollData);
 		const r = await new Roll('1d20').roll();
 		const emptyList = new ModifierList();
-		const roll = new RollBundle('Activation Roll Skiill Card', r, attacker.actor.system.type == 'pc', emptyList, situation);
+		const roll = new RollBundle('Activation Roll Skiill Card', r, attacker.user.isPC(), emptyList, situation);
 		const combatRollSituation : CombatRollSituation = {
 			...situation,
 			naturalRoll: r.total,
+			rollType: "standard",
 			rollTags: [],
 			rollTotal: r.total,
+			withinAilmentRange: false,
+			withinCritRange: false,
+			withinInstantKillRange: false,
+			resisted: false,
+			struckWeakness: false,
+			DC: 0,
+			result: "hit",
 		};
 		const res : AttackResult = {
 			result: 'hit',
-			target: PersonaDB.getUniversalTokenAccessor(target),
-			attacker: PersonaDB.getUniversalTokenAccessor(attacker),
+			target: target.token ? PersonaDB.getUniversalTokenAccessor(target.token): null,
+			attacker: attacker.token ? PersonaDB.getUniversalTokenAccessor(attacker.token): null,
 			power: usableOrCard.accessor,
 			critRange: undefined,
 			ailmentRange: undefined,
@@ -557,7 +814,7 @@ export class CombatEngine {
 		return res;
 	}
 
-	getAttackBonus(attackerP: Persona, power: Usable, target: PToken | undefined, options : CombatOptions = {}) : Calculation {
+	getAttackBonus(attackerP: Persona, power: Usable, target: Persona | undefined, options : CombatOptions = {}) : Calculation {
 		const attackBonus = this.getBaseAttackBonus(attackerP, power);
 		attackBonus.add(1, this.customAtkBonus ?? 0, 'Custom modifier');
 		const defense = this.getDefenderAttackModifiers(target, power.system.defense, power);
@@ -568,7 +825,7 @@ export class CombatEngine {
 		return attackBonus;
 	}
 
-	getDefenderAttackModifiers(target: PToken | undefined, defense : Defense, power: Usable) : ModifierList {
+	getDefenderAttackModifiers(target: Persona | undefined, defense : Defense, power: Usable) : ModifierList {
 		if (!target || defense == "none") {return new ModifierList();}
 		const vectors : ModifierTarget[] = ['allAtk'];
 		if (power.isMagicSkill())  {
@@ -579,7 +836,7 @@ export class CombatEngine {
 		}
 		const defenseMod = new ModifierList(
 			PersonaItem.getModifier(
-				target.actor.persona().defensiveModifiers(),
+				target.defensiveModifiers(),
 				['allAtk']
 			)
 		);
@@ -628,124 +885,124 @@ export class CombatEngine {
 	async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<CombatResult> {
 		const {situation} = atkResult;
 		const power = PersonaDB.findItem(atkResult.power);
-		const attacker = PersonaDB.findToken(atkResult.attacker);
-		const target = PersonaDB.findToken(atkResult.target);
-		const attackerEffects= attacker.actor.getEffects(['passive']);
-		const defenderEffects = target.actor.getEffects(['defensive']);
-		const powerEffects= power.getEffects(attacker.actor, {CETypes: ['on-use', 'passive']});
+		const attacker = atkResult.attacker ? PersonaDB.findToken(atkResult.attacker).actor : PersonaDB.findActor(atkResult.situation.attacker);
+		const target = atkResult.target ? PersonaDB.findToken(atkResult.target).actor : PersonaDB.findActor(atkResult.situation.target);
+		const attackerEffects= attacker.getEffects(['passive']);
+		const defenderEffects = target.getEffects(['defensive']);
+		const powerEffects= power.getEffects(attacker, {CETypes: ['on-use', 'passive']});
 		const sourcedEffects = [...attackerEffects];
 		const eqTest = (a: ConditionalEffectC, b: ConditionalEffectC) => a.equals(b);
 		sourcedEffects.pushUniqueS(eqTest, ...defenderEffects);
 		sourcedEffects.pushUniqueS(eqTest, ...powerEffects);
 		const CombatRes = new CombatResult(atkResult);
 		const consequences = sourcedEffects.flatMap( eff => eff.getActiveConsequences(situation));
-		const res = await ConsequenceProcessor.consequencesToResult(consequences, power,  situation, attacker.actor, target.actor, atkResult);
+		const res = await ConsequenceProcessor.consequencesToResult(consequences, power,  situation, attacker, target, atkResult);
 		CombatRes.merge(res);
 		return CombatRes;
 	}
 
-	processAttackNullifiers(attacker : PToken , power :Usable, target: PToken, baseData: Pick<AttackResult, 'attacker' | 'target'  | 'power' | 'roll'>, situation: Situation & RollSituation, rollType: AttackRollType): AttackResult | null
-	{
-		const naturalAttackRoll = situation.naturalRoll;
-		const element = power.getDamageType(attacker.actor);
-		const targetP = target.actor.persona();
-		const resist = targetP.elemResist(element);
-		if (power.hasTag("theurgy")) {return null;}
-		const pierce = power.hasTag('pierce');
-		switch (resist) {
-			case 'reflect': {
-				return {
-					result: rollType != 'reflect' ? 'reflect': 'block',
-					// printableModifiers: [],
-					validAtkModifiers: [],
-					validDefModifiers: [],
-					ailmentRange: undefined,
-					instantKillRange: undefined,
-					critRange: undefined,
-					situation: {
-						hit: false,
-						criticalHit: false,
-						...situation,
-					},
-					...baseData,
-				};
-			}
-			case 'block': {
-				if (pierce) {return null;}
-				return {
-					result: 'block',
-					ailmentRange: undefined,
-					instantKillRange: undefined,
-					critRange: undefined,
-					// printableModifiers: [],
-					validAtkModifiers: [],
-					validDefModifiers: [],
-					situation: {
-						hit: false,
-						criticalHit: false,
-						...situation,
-					},
-					...baseData,
-				};
-			}
-			case 'absorb' : {
-				if (pierce) {return null;}
-				return {
-					result: 'absorb',
-					ailmentRange: undefined,
-					instantKillRange: undefined,
-					critRange: undefined,
-					// printableModifiers: [],
-					validAtkModifiers: [],
-					validDefModifiers: [],
-					situation: {
-						...situation,
-						hit: true,
-						criticalHit: false,
-						isAbsorbed: true,
-					},
-					...baseData,
-				};
-			}
-		}
-		if (target.actor.hasStatus('phys-shield') && this.canBeReflectedByPhysicalShield(power, attacker.actor)) {
-			return {
-				result: rollType != 'reflect' ? 'reflect': 'block',
-				// printableModifiers: [],
-				ailmentRange: undefined,
-				instantKillRange: undefined,
-				critRange: undefined,
-				validAtkModifiers: [],
-				validDefModifiers: [],
-				situation: {
-					hit: false,
-					criticalHit: false,
-					...situation,
-					naturalRoll: naturalAttackRoll,
-				},
-				...baseData,
-			};
-		}
-		if (target.actor.hasStatus('magic-shield') && this.canBeReflectedByMagicShield(power, attacker.actor)) {
-			return {
-				result: rollType != 'reflect' ? 'reflect': 'block',
-				// printableModifiers: [],
-				ailmentRange: undefined,
-				instantKillRange: undefined,
-				critRange: undefined,
-				validAtkModifiers: [],
-				validDefModifiers: [],
-				situation: {
-					hit: false,
-					criticalHit: false,
-					...situation,
-					naturalRoll: naturalAttackRoll,
-				},
-				...baseData,
-			};
-		}
-		return null;
-	}
+
+	// processAttackNullifiers(attacker : Persona , power :Usable, target: Persona, baseData: Pick<AttackResult, 'attacker' | 'target'  | 'power' | 'roll'>, situation: Situation & RollSituation, rollType: AttackRollType): AttackResult | null
+	// {
+	// 	const naturalAttackRoll = situation.naturalRoll;
+	// 	const element = power.getDamageType(attacker);
+	// 	const resist = target.elemResist(element);
+	// 	if (power.hasTag("theurgy")) {return null;}
+	// 	const pierce = power.hasTag('pierce');
+	// 	switch (resist) {
+	// 		case 'reflect': {
+	// 			return {
+	// 				result: rollType != 'reflect' ? 'reflect': 'block',
+	// 				// printableModifiers: [],
+	// 				validAtkModifiers: [],
+	// 				validDefModifiers: [],
+	// 				ailmentRange: undefined,
+	// 				instantKillRange: undefined,
+	// 				critRange: undefined,
+	// 				situation: {
+	// 					hit: false,
+	// 					criticalHit: false,
+	// 					...situation,
+	// 				},
+	// 				...baseData,
+	// 			};
+	// 		}
+	// 		case 'block': {
+	// 			if (pierce) {return null;}
+	// 			return {
+	// 				result: 'block',
+	// 				ailmentRange: undefined,
+	// 				instantKillRange: undefined,
+	// 				critRange: undefined,
+	// 				// printableModifiers: [],
+	// 				validAtkModifiers: [],
+	// 				validDefModifiers: [],
+	// 				situation: {
+	// 					hit: false,
+	// 					criticalHit: false,
+	// 					...situation,
+	// 				},
+	// 				...baseData,
+	// 			};
+	// 		}
+	// 		case 'absorb' : {
+	// 			if (pierce) {return null;}
+	// 			return {
+	// 				result: 'absorb',
+	// 				ailmentRange: undefined,
+	// 				instantKillRange: undefined,
+	// 				critRange: undefined,
+	// 				// printableModifiers: [],
+	// 				validAtkModifiers: [],
+	// 				validDefModifiers: [],
+	// 				situation: {
+	// 					...situation,
+	// 					hit: true,
+	// 					criticalHit: false,
+	// 					isAbsorbed: true,
+	// 				},
+	// 				...baseData,
+	// 			};
+	// 		}
+	// 	}
+	// 	if (target.actor.hasStatus('phys-shield') && this.canBeReflectedByPhysicalShield(power, attacker.actor)) {
+	// 		return {
+	// 			result: rollType != 'reflect' ? 'reflect': 'block',
+	// 			// printableModifiers: [],
+	// 			ailmentRange: undefined,
+	// 			instantKillRange: undefined,
+	// 			critRange: undefined,
+	// 			validAtkModifiers: [],
+	// 			validDefModifiers: [],
+	// 			situation: {
+	// 				hit: false,
+	// 				criticalHit: false,
+	// 				...situation,
+	// 				naturalRoll: naturalAttackRoll,
+	// 			},
+	// 			...baseData,
+	// 		};
+	// 	}
+	// 	if (target.actor.hasStatus('magic-shield') && this.canBeReflectedByMagicShield(power, attacker.actor)) {
+	// 		return {
+	// 			result: rollType != 'reflect' ? 'reflect': 'block',
+	// 			// printableModifiers: [],
+	// 			ailmentRange: undefined,
+	// 			instantKillRange: undefined,
+	// 			critRange: undefined,
+	// 			validAtkModifiers: [],
+	// 			validDefModifiers: [],
+	// 			situation: {
+	// 				hit: false,
+	// 				criticalHit: false,
+	// 				...situation,
+	// 				naturalRoll: naturalAttackRoll,
+	// 			},
+	// 			...baseData,
+	// 		};
+	// 	}
+	// 	return null;
+	// }
 
 	static defaultSituation(  attackerPersona: Persona, targetPersona: Persona, power: Usable) {
 		const actorAcc = attackerPersona.user.accessor;
@@ -796,7 +1053,7 @@ export class CombatEngine {
 		const attackerLuck = attackerPersona.combatStats.luck;
 		const targetLuck = targetPersona.combatStats.luck;
 		calc.add(0,attackerLuck, "Attacker Luck");
-		calc.add(0,-targetLuck, "Attacker Luck");
+		calc.add(0,-targetLuck, "Target Luck");
 		calc.mult(1, this.LUCK_DIFF_MULTIPLIER, "Luck Diff Multiplier");
 		return calc;
 	}
@@ -1088,7 +1345,7 @@ export class CombatEngine {
 
 }
 
-type AttackRollType = 'activation' | 'standard' | 'reflect' | 'iterative' | number; //number is used for bonus attacks
+export type AttackRollType = 'activation' | 'standard' | 'reflect' | 'iterative' | number; //number is used for bonus attacks
 
 type CombatRollSituation = AttackResult['situation'];
 
@@ -1133,3 +1390,18 @@ const INSTANT_KILL_CRIT_BOOST : Record< InstantKillLevel, number>= {
 	none: 0,
 };
 
+
+type AttackRollData = {
+	roll: Roll,
+	rollType: AttackRollType,
+	rollTags: NonNullable<Situation["rollTags"]>,
+	natural: number,
+}
+
+type ProtoResultAttackSituation = Situation & AttackRollSituation;
+
+type AttackResultData = {
+	result: AttackResult["result"],
+	struckWeakness: boolean,
+	resisted: boolean,
+}
