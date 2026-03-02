@@ -1343,6 +1343,18 @@ export class CombatEngine {
 		return boost;
 	}
 
+	static isAnyHit(situation: Situation) : boolean{
+		return (situation.result == "hit" || situation.result == "crit");
+	}
+
+	static isMiss(situation: Situation) : boolean{
+		return (situation.result == "miss");
+	}
+
+	static isCrit(situation: Situation) : boolean {
+		return situation.result == "crit";
+	}
+
 }
 
 export type AttackRollType = 'activation' | 'standard' | 'reflect' | 'iterative' | number; //number is used for bonus attacks
@@ -1405,3 +1417,4 @@ type AttackResultData = {
 	struckWeakness: boolean,
 	resisted: boolean,
 }
+

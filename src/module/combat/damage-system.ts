@@ -54,7 +54,7 @@ export abstract class DamageSystemBase implements DamageInterface {
 			situation = {
 				user: attackerPersona.user.accessor ,
 				usedPower: power.accessor,
-				hit: true,
+				result: "hit",
 				attacker: attackerPersona.user.accessor
 			};
 		}

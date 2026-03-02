@@ -32,6 +32,7 @@ import {PersonaAE} from "./active-effect.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {ResolvedActorChange} from "./combat/finalized-combat-result.js";
 import {PersonaItem} from "./item/persona-item.js";
+import {CombatEngine} from "./combat/combat-engine.js";
 
 /** @deprecated Use ConditionalEffectC.getActiveConsequences instead */
 export function getActiveConsequences(condEffect: ConditionalEffectC, situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {
@@ -63,7 +64,7 @@ export function testPrecondition (condition: SourcedPrecondition, situation:Situ
 			return triggerComparison(condition, situation);
 		case "is-hit": {
 			//deliberate duplication
-			return situation.hit === condition.booleanState;
+			return (CombatEngine.isAnyHit(situation))  === condition.booleanState;
 		}
 		case "numeric": {
 			return numericComparison(condition, situation);
@@ -1181,9 +1182,9 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
 function rollPropertyIs(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "roll-property-is"}, situation: Situation) : U<boolean> {
 	switch (condition.rollProp) {
 		case "is-critical":
-			return situation.criticalHit ?? false;
+			return CombatEngine.isCrit(situation) ?? false;
 		case "is-hit":
-				return situation.hit === true;
+				return CombatEngine.isAnyHit(situation) === true;
 		case "is-within-ailment-range":
 				return "withinAilmentRange" in situation ? situation.withinAilmentRange ?? false : false;
 		case "is-within-instant-death-range":

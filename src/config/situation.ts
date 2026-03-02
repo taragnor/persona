@@ -243,7 +243,7 @@ type NonRollSituation = {
 	// activationRoll ?: undefined;
 	naturalRoll ?: undefined,
 	// openingRoll ?: undefined,
-	criticalHit ?: undefined;
+	// criticalHit ?: undefined;
 	rollTags ?: (RollTag | CardTag | Tag)[];
 	rollTotal ?: undefined;
 }
@@ -255,15 +255,16 @@ type SituationUniversal = {
 	usedPower ?: UniversalItemAccessor<UsableAndCard>;
 	usedSkill ?: SocialStat;
 	activeCombat ?: boolean ;
-	hit ?: boolean; // Todo change the wording of this to success since it funcitons in for universal succes
-	resisted ?: boolean;
-	struckWeakness ?: boolean;
+	// hit ?: boolean; // Todo change the wording of this to success since it funcitons in for universal succes
+	// resisted ?: boolean;
+	// struckWeakness ?: boolean;
 	target ?: UniversalActorAccessor<ValidAttackers>;
 	attacker ?:UniversalActorAccessor<ValidAttackers>;
 	saveVersus ?: StatusEffectId;
 	statusEffect ?: StatusEffectId;
 	eventCard ?: UniversalItemAccessor<SocialCard>,
 	isSocial?: boolean,
+	result ?: AttackResult["result"],
 	tarot ?: TarotCard,
 	socialTarget ?: UniversalActorAccessor<ValidSocialTarget>;
 	cameo ?: UniversalActorAccessor<ValidSocialTarget>;

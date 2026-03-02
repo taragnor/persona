@@ -10,6 +10,7 @@ import { PersonaDB } from "./persona-db.js";
 import { SocialStat } from "../config/student-skills.js";
 import { STUDENT_SKILLS } from "../config/student-skills.js";
 import {Calculation} from "./utility/calculation.js";
+import {CombatEngine} from "./combat/combat-engine.js";
 
 
 export class PersonaRoller {
@@ -86,8 +87,14 @@ export class PersonaRoller {
 		const bundle = await this.#makeRoll(rollName, mods, situationWithRollTags, DC);
 		const resSit = bundle.modList.resolvedSituation;
 		if (DC != undefined) {
-			resSit.hit = resSit.rollTotal >= DC;
-			resSit.criticalHit = resSit.rollTotal >= DC + 10;
+			if (resSit.rollTotal >= DC) {
+				resSit.result = "hit";
+			}
+			// resSit.hit = resSit.rollTotal >= DC;
+			if (resSit.rollTotal >= DC + 10) {
+				resSit.result = "crit";
+			}
+			// resSit.criticalHit = resSit.rollTotal >= DC + 10;
 		}
 		await pc.onRoll(resSit);
 		return bundle;
@@ -119,8 +126,11 @@ export class PersonaRoller {
 		const bundle = await this.#makeRoll(labelTxt, mods, situationWithRollTags, DC);
 		const resSit = bundle.modList.resolvedSituation;
 		if (DC != undefined) {
-			resSit.hit = resSit.rollTotal >= DC;
-			resSit.criticalHit = false;
+			if (resSit.rollTotal >= DC) {
+				resSit.result = "hit";
+			}
+			// resSit.hit = resSit.rollTotal >= DC;
+			// resSit.criticalHit = false;
 		}
 		await actor.onRoll(resSit);
 		return bundle;
@@ -219,13 +229,13 @@ export class RollBundle {
 
 	get success() : boolean | undefined {
 		if ("modtotal" in this.modList) {
-			return this.modList.resolvedSituation.hit;
+			return CombatEngine.isAnyHit(this.modList.resolvedSituation);
 		}
 	}
 
 	get critical(): boolean | undefined {
 		if ("modtotal" in this.modList) {
-			return this.modList.resolvedSituation.criticalHit;
+			return CombatEngine.isCrit(this.modList.resolvedSituation);
 		}
 	}
 
