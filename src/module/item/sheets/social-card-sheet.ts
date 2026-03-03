@@ -9,7 +9,6 @@ import { Opportunity } from "../../../config/social-card-config.js";
 import { PersonaError } from "../../persona-error.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { PersonaDB } from "../../persona-db.js";
-import { ArrayCorrector } from "../persona-item.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PERK_TYPES } from "../../../config/perk-types.js";
 import { CAMEO_TYPES } from "../../../config/cameo-types.js";
@@ -22,6 +21,7 @@ import { SAVE_TYPES_LOCALIZED } from "../../../config/save-types.js";
 import { STUDENT_SKILLS_EXT } from "../../../config/student-skills.js";
 import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 import {SocialCardEventDM} from "../../datamodel/item-types.js";
+import {ConditionalEffectManager} from "../../conditional-effect-manager.js";
 
 const PRIMARY_SECONDARY = {
 	"primary": "persona.term.primary",
@@ -238,7 +238,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 	}
 
 	async addQualifier(_ev: JQuery.ClickEvent) {
-		const qual = ArrayCorrector(this.item.system.qualifiers);
+		const qual = ConditionalEffectManager.ArrayCorrector(this.item.system.qualifiers);
 		qual.push({
 			relationshipName: "",
 			min: 0,
@@ -253,7 +253,7 @@ export class PersonaSocialCardSheet extends PersonaSocialSheetBase {
 		if (Number.isNaN(index))  {
 			throw new PersonaError("NaN index");
 		}
-		const qual = ArrayCorrector(this.item.system.qualifiers);
+		const qual = ConditionalEffectManager.ArrayCorrector(this.item.system.qualifiers);
 		qual.splice(index, 1);
 		await this.item.update({"system.qualifiers": qual});
 	}

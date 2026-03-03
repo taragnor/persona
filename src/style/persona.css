@@ -1863,3 +1863,12 @@ textarea.finale-input {
  button.end-turn {
 		visibility: hidden;
  }
+
+ .printable-power-table .rarity {
+	cursor: pointer;
+ }
+
+ .token-spends input.tokenspend {
+	 display: inline;
+	 width: 100%;
+ }

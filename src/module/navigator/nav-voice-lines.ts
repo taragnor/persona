@@ -85,7 +85,7 @@ export class NavigatorVoiceLines {
 			let lines = navigator.navigatorVoiceLines
 				.filter ( ln => ln.trigger == trigger.type);
 			if (trigger.type == "vulnerable" || trigger.type == "immune") {
-				lines = lines.filter ( x=> x.elementType == trigger.elementType)
+				lines = lines.filter ( x=> x.elementType == trigger.elementType);
 			}
 			if (lines.length == 0) {return;}
 			const line = randomSelect(lines);

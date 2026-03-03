@@ -1,9 +1,9 @@
-import { ArrayCorrector } from "../item/persona-item.js";
 import { testPreconditions } from "../preconditions.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import {PersonaError} from "../persona-error.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
 import {PersonaActor} from "../actor/persona-actor.js";
+import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 
 export type ModifierListItem = Sourced<{
 	name: string;
@@ -34,7 +34,7 @@ export class ModifierList {
 			source: eff.source,
 			owner: eff.owner,
 			realSource : eff.realSource,
-			conditions: ArrayCorrector(eff.conditions),
+			conditions: ConditionalEffectManager.ArrayCorrector(eff.conditions),
 			modifier: typeof listTypeOrFn == "function" ? listTypeOrFn(eff): 0,
 		}));
 		this._data = ModListItems;
@@ -83,7 +83,7 @@ export class ModifierList {
 
 	static getModifierAmount(consequences: SourcedConsequence[], targetMods: ModifierTarget[] | ModifierTarget) : number {
 		targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
-		return (ArrayCorrector(consequences) ?? [])
+		return (ConditionalEffectManager.ArrayCorrector(consequences) ?? [])
 			.reduce( (acc,cons)=> {
 				if ("modifiedFields" in cons
 					&& targetMods
@@ -106,12 +106,12 @@ export class ModifierList {
 
 	addConditionalEffects( effects: SourcedConditionalEffect[], source: PowerContainer  | string, bonusTypes: ModifierTarget[]) : this {
 		const sourceName = typeof source =="string" ? source : source.name;
-		const stuff : ModifierListItem[] = (ArrayCorrector(effects) ?? []).map( eff=>{
+		const stuff : ModifierListItem[] = (ConditionalEffectManager.ArrayCorrector(effects) ?? []).map( eff=>{
 			return {
 				name: sourceName,
 				source: eff.source,
 				owner: eff.owner,
-				conditions: ArrayCorrector(eff.conditions),
+				conditions: ConditionalEffectManager.ArrayCorrector(eff.conditions),
 				modifier: ModifierList.getModifierAmount(eff.consequences, bonusTypes),
 				realSource: eff.realSource,
 			};

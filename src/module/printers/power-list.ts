@@ -13,7 +13,7 @@ export class PowerPrinter extends Application {
 		return foundry.utils.mergeObject(super.defaultOptions, {
 			id: "power-list-printer",
 			template: "systems/persona/sheets/lists/power-printout.hbs",
-			width: 1000,
+			width: 1200,
 			height: 1200,
 			minimizable: true,
 			resizable: true,
@@ -24,6 +24,8 @@ export class PowerPrinter extends Application {
 	override activateListeners(html: JQuery) {
 		super.activateListeners(html);
 		html.find(".power-name").on("click", ev => void this.openPower(ev));
+		html.find(".rarity").on ("click", ev => void this.changeRarityLeftClick(ev));
+		html.find(".rarity").on ("contextmenu", ev => void this.changeRarityRightClick(ev));
 	}
 
 	static async open() {
@@ -90,6 +92,20 @@ export class PowerPrinter extends Application {
 	}
 
 	async openPower(event: JQuery.ClickEvent) {
+		await this.fetchPower(event).sheet.render(true);
+	}
+
+	private async changeRarityLeftClick(event: JQuery.ClickEvent) {
+		if (!game.user.isGM) {return;}
+		await this.fetchPower(event).increaseRarity();
+	}
+
+	private async changeRarityRightClick(event: JQuery.ContextMenuEvent) {
+		if (!game.user.isGM) {return;}
+		await this.fetchPower(event).reduceRarity();
+	}
+
+	private fetchPower(event: JQuery.Event) : Power {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		if (powerId == undefined) {
 			throw new PersonaError(`Can't find power`);
@@ -98,10 +114,8 @@ export class PowerPrinter extends Application {
 		if (!power) {
 			throw new PersonaError(`Can't find power id ${powerId}`);
 		}
-		await power.sheet.render(true);
+		return power;
 	}
-
-
 
 }
 

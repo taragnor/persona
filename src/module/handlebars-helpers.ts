@@ -43,7 +43,7 @@ import {OriginalDamageSystem} from "./combat/original-damage-system.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaCompendium} from "./persona-compendium.js";
 import {CombatPanel} from "./combat/combat-panel.js";
-import {PROBABILITIES, ProbabilityRate} from "../config/probability.js";
+import {PROBABILITIES, PROBABILITIES_POWER_RARITY, ProbabilityRate} from "../config/probability.js";
 import {CardData} from "./social/social-card-executor.js";
 
 
@@ -667,7 +667,7 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"localizeRarity": function (rarityVal : keyof ProbabilityRate) : string {
-			return localize(PROBABILITIES[rarityVal]);
+			return localize(PROBABILITIES_POWER_RARITY[rarityVal]);
 		},
 		"localizeAilmentLevel": function (pwr: Power) : SafeString {
 			const dlevel = pwr.system.ailmentChance;

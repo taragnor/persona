@@ -24,6 +24,7 @@
   ],
   "include":[
 	  "src/**/*.ts",
-	  "foundrytypes/**/*.ts"
+	  "foundrytypes/**/*.ts",
+	  "eslint.config.mjs"
   ]
 }

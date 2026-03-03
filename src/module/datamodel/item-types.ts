@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { damage, damageNew, effects, powerCost, powerOnlyUsableProps, powerSpecific, triEffects, UsablePowerProps } from "./power-dm.js";
@@ -8,7 +7,7 @@ import { UNIVERSAL_MODIFIERS_TYPE_LIST } from "./universal-modifiers-types.js";
 import { FREQUENCY, frequencyConvert } from "../../config/frequency.js";
 import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
 import { CardRoll, Opportunity, SOCIAL_CARD_TYPES_LIST, ThresholdOrDC, TokenSpend } from "../../config/social-card-config.js";
-import { ArrayCorrector, PersonaItem } from "../item/persona-item.js";
+import { PersonaItem } from "../item/persona-item.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { EQUIPMENT_TAGS_LIST } from "../../config/equipment-tags.js";
 	const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id, FilePathField: file} = foundry.data.fields;
@@ -26,6 +25,7 @@ import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaError} from "../persona-error.js";
 import {CardEventSheet} from "../item/sheets/card-event-sheet.js";
 import {SocialCardEventHandler} from "../social/card-event-handler.js";
+import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 
 function itemBase() {
 	return {
@@ -364,13 +364,13 @@ export class ConditionalEffectDM extends foundry.abstract.DataModel {
 		}
 		if ( !Array.isArray(data.conditions)) {
 			change = true;
-			data.conditions = ArrayCorrector(data.conditions) as typeof data.conditions ;
+			data.conditions = ConditionalEffectManager.ArrayCorrector(data.conditions) as typeof data.conditions ;
 		}
 		data.conditions = data.conditions
 			.map (cond => PreconditionConverter.convertDeprecated(cond));
 		if(!Array.isArray(data.consequences)) {
 			change = true;
-			data.consequences = ArrayCorrector(data.consequences) as typeof data.consequences;
+			data.consequences = ConditionalEffectManager.ArrayCorrector(data.consequences) as typeof data.consequences;
 		}
 		data.consequences = data.consequences
 			.map (cons=> ConsequenceConverter.convertDeprecated(cons));
@@ -514,7 +514,7 @@ export class SocialCardEventDM extends foundry.abstract.DataModel {
 			data.conditions = [];
 		}
 		if (!Array.isArray(data.conditions)) {
-			data.conditions = ArrayCorrector(data.conditions)as typeof data.conditions;
+			data.conditions = ConditionalEffectManager.ArrayCorrector(data.conditions)as typeof data.conditions;
 		}
 		if (data.choices == undefined)
 		{data.choices = [];}
@@ -550,13 +550,13 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 			data.conditions = [];
 		}
 		if (!Array.isArray(data.conditions)) {
-			data.conditions = ArrayCorrector(data.conditions) as typeof data.conditions;
+			data.conditions = ConditionalEffectManager.ArrayCorrector(data.conditions) as typeof data.conditions;
 		}
 		if (data.postEffects.effects == undefined) {
 			data.postEffects.effects = [];
 		}
 		if (!Array.isArray(data.postEffects.effects)) {
-			data.postEffects.effects = ArrayCorrector(data.postEffects.effects) as typeof data.postEffects.effects;
+			data.postEffects.effects = ConditionalEffectManager.ArrayCorrector(data.postEffects.effects) as typeof data.postEffects.effects;
 		}
 		return source;
 	}

@@ -7,7 +7,7 @@ import {StudentSkill, StudentSkillExt} from "../../config/student-skills.js";
 import { PersonaActor} from "../actor/persona-actor.js";
 import {ModifierList} from "../combat/modifier-list.js";
 import {ConditionalEffectManager} from "../conditional-effect-manager.js";
-import {ArrayCorrector, PersonaItem} from "../item/persona-item.js";
+import { PersonaItem} from "../item/persona-item.js";
 import {PreconditionConverter} from "../migration/convertPrecondition.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
@@ -54,7 +54,6 @@ export class SocialCardEventHandler {
 
 	}
 
-
 	async #execEvent(event: CardEvent, cardData: CardData) {
 		const eventNumber = cardData.eventsChosen.length;
 		const eventIndex = cardData.eventList.indexOf(event);
@@ -81,7 +80,7 @@ export class SocialCardEventHandler {
 			if (cardData.sound) {cardData.sound.stop();}
 			cardData.sound = await PersonaSounds.playFree(event.sound, event.volume ?? 0.5);
 		}
-		if (ArrayCorrector(event.choices).length > 0) {
+		if (ConditionalEffectManager.ArrayCorrector(event.choices).length > 0) {
 			const cardChoice = await new Promise( (conf, _rej) => {
 				this.owner.setContinuation(conf);
 			});
@@ -269,7 +268,6 @@ export class SocialCardEventHandler {
 			},
 			postEffects: {effects},
 		};
-
 	}
 
 	getBaseSkillDC (cardData: CardData) : number {

@@ -15,6 +15,8 @@ type Probability = typeof PROBABILITY_LIST[number];
 
 export const PROBABILITIES = HTMLTools.createLocalizationObject(PROBABILITY_LIST, "persona.probability");
 
+export const PROBABILITIES_POWER_RARITY = HTMLTools.createLocalizationObject(PROBABILITY_LIST, "persona.probability.powerRarity");
+
 export type ProbabilityRate = Record<Probability, number>;
 
 export const ENCOUNTER_RATE_PROBABILITY : ProbabilityRate = {
@@ -78,3 +80,14 @@ export const CARD_DROP_RATE : ProbabilityRate = {
 	always: 1,
 };
 
+const SORTEDPROB = Object.entries(ITEM_DROP_RATE)
+	.sort( ([_k, v], [k2,v2]) => v - v2)
+	.map ( ([k, _v]) => k) as Probability[];
+
+
+export function changeProbability(x: Probability, amt : number) : Probability {
+	const index = SORTEDPROB.indexOf(x);
+	const newIndex = index + amt;
+	if (newIndex > SORTEDPROB.length || newIndex < 0) {return x;}
+	return SORTEDPROB[newIndex];
+}

@@ -44,6 +44,7 @@ import {EnchantedTreasureFormat, TreasureSystem} from '../exploration/treasure-s
 import {Calculation} from '../utility/calculation.js';
 import {DamageInterface} from '../combat/damage-system.js';
 import {ConditionalEffectC} from '../conditionalEffects/conditional-effect-class.js';
+import {changeProbability} from '../../config/probability.js';
 
 declare global {
 	type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -354,10 +355,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	isInheritable(this: Power) : boolean {
 		return !this.hasTag("non-inheritable") && !this.hasTag("shadow-only")
-		&& (this.isMagicSkill() || this.isWeaponSkill() || this.isPassive() || this.isDefensive())
-		&& !this.hasTag("teamwork")
-		&&	!this.hasTag("opener")
-		&&	!this.hasTag("navigator");
+			&& (this.isMagicSkill() || this.isWeaponSkill() || this.isPassive() || this.isDefensive())
+			&& !this.hasTag("teamwork")
+			&&	!this.hasTag("opener")
+			&&	!this.hasTag("navigator");
 	}
 
 	getDisplayedIcon(this: Power | Consumable, user: ValidAttackers | Persona) : SafeString  | undefined {
@@ -690,7 +691,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	async addEventTag(this: SocialCard, eventIndex:number) : Promise<void> {
 		const ev = this.system.events[eventIndex];
-		const newTags =  ArrayCorrector(ev.eventTags).slice();
+		const newTags =  ConditionalEffectManager.ArrayCorrector(ev.eventTags).slice();
 		newTags.push('');
 		ev.eventTags = newTags;
 		await ev.update!(ev);
@@ -699,7 +700,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	async deleteEventTag(this: SocialCard, eventIndex:number, tagIndex: number) {
 		const data = this.system.events;
 		const ev= data[eventIndex];
-		ArrayCorrector(ev.eventTags).splice(tagIndex, 1);
+		ConditionalEffectManager.ArrayCorrector(ev.eventTags).splice(tagIndex, 1);
 		await ev.update!(ev);
 	}
 
@@ -1240,7 +1241,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	getBonuses(this: ItemModifierContainer & PersonaItem, modNames: MaybeArray<NonDeprecatedModifierType>) : ModifierList {
-			const effects = this.getPassiveEffects(null);
+		const effects = this.getPassiveEffects(null);
 		const mods = PersonaItem.getModifier(effects, modNames);
 		const modList = new ModifierList(mods);
 		return modList;
@@ -1280,16 +1281,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		let effects = this.system.effects;
 		try {
 			if (!isArray(this.system.effects)) {
-				effects = ArrayCorrector(this.system.effects) as typeof this.system.effects;
+				effects = ConditionalEffectManager.ArrayCorrector(this.system.effects) as typeof this.system.effects;
 				update = true;
 			}
 			effects.forEach( ({conditions, consequences}, i) => {
 				if (!isArray(conditions)) {
-					effects[i].conditions = ArrayCorrector(conditions);
+					effects[i].conditions = ConditionalEffectManager.ArrayCorrector(conditions);
 					update = true;
 				}
 				if (!isArray(consequences)) {
-					effects[i].consequences = ArrayCorrector(consequences);
+					effects[i].consequences = ConditionalEffectManager.ArrayCorrector(consequences);
 					update = true;
 				}
 			});
@@ -1349,7 +1350,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 						source: eff.source,
 						owner: eff.owner,
 						realSource: eff.realSource,
-						conditions: ArrayCorrector(eff.conditions),
+						conditions: ConditionalEffectManager.ArrayCorrector(eff.conditions),
 						modifier: ModifierList.getModifierAmount(eff.consequences, btype),
 					})
 				);
@@ -1394,7 +1395,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 					source: x.source,
 					owner: x.owner,
 					realSource: x.realSource,
-					conditions: ArrayCorrector(x.conditions),
+					conditions: ConditionalEffectManager.ArrayCorrector(x.conditions),
 					modifier: ModifierList.getModifierAmount(x.consequences, bonusTypes),
 				};
 			}
@@ -1870,12 +1871,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return false;
 	}
 
-	 get armorHPBoost() : number {
-			if (!this.isInvItem()
-				 || this.system.slot != "body"
-			) {return 0;}
-			return Math.round(this.system.armorHPBoost / 2);
-	 }
+	get armorHPBoost() : number {
+		if (!this.isInvItem()
+			|| this.system.slot != "body"
+		) {return 0;}
+		return Math.round(this.system.armorHPBoost / 2);
+	}
 
 	isInvItem(): this is InvItem {
 		return this.system.type == "item";
@@ -1979,76 +1980,76 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return this.system.mpcost;
 	}
 
-private _getLinkedEffects (this: ItemModifierContainer, sourceActor: PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) : readonly ConditionalEffectC[] {
-	const tagEffects : ConditionalEffectC[] = [];
-	if (!this.isTalent() && !this.isTag() && !this.isUniversalModifier()){
-		const tags = this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
-			.filter (tag=> tag instanceof PersonaItem);
-		tagEffects.push(...tags.flatMap(tag =>
-			tag.getEffects(sourceActor, {CETypes, proxyItem: this})
-		));
+	private _getLinkedEffects (this: ItemModifierContainer, sourceActor: PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) : readonly ConditionalEffectC[] {
+		const tagEffects : ConditionalEffectC[] = [];
+		if (!this.isTalent() && !this.isTag() && !this.isUniversalModifier()){
+			const tags = this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
+				.filter (tag=> tag instanceof PersonaItem);
+			tagEffects.push(...tags.flatMap(tag =>
+				tag.getEffects(sourceActor, {CETypes, proxyItem: this})
+			));
+		}
+		return tagEffects;
 	}
-	return tagEffects;
-}
 
-getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options : GetEffectsOptions = {}): ConditionalEffectC[] {
-	//proxy item is used for tags to redirect their source to their parent item (for purposes of reading item level)
-	const {CETypes} = options;
-	if (this.isSkillCard()) {
-		return [new ConditionalEffectC(this)];
+	getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options : GetEffectsOptions = {}): ConditionalEffectC[] {
+		//proxy item is used for tags to redirect their source to their parent item (for purposes of reading item level)
+		const {CETypes} = options;
+		if (this.isSkillCard()) {
+			return [new ConditionalEffectC(this)];
+		}
+		const deepTags = options.deepTags ?? true;
+		const tagEffects = deepTags ? this._getLinkedEffects(sourceActor, CETypes) : [];
+		if (!CETypes || CETypes.length == 0) {
+			const effects = this.system.effects;
+			const effectsGetterFn = () => {
+				const proxyItem = options.proxyItem ? options.proxyItem : this;
+				return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
+					.filter (ce => !ce.isEmbedded);
+			};
+			return this.#accessEffectsCache('allNonEmbeddedEffects', sourceActor, options, effectsGetterFn)
+				.concat(tagEffects);
+		} else {
+			const effects: ConditionalEffectC[] = [];
+			for (const cType of CETypes) {
+				switch (cType) {
+					case 'defensive':
+						effects.push(...this.getDefensiveEffects(sourceActor, options));
+						break;
+					case 'triggered':
+						effects.push(...this.getTriggeredEffects(sourceActor, options));
+						break;
+					case 'passive':
+						effects.push(...this.getPassiveEffects(sourceActor, options));
+						break;
+					case 'on-use':
+						effects.push(...this.getOnUseEffects(sourceActor, options));
+						break;
+					case 'unknown':
+						effects.push(...this.getEffects(sourceActor, options).filter( x=> x.conditionalType == cType));
+						break;
+					default:
+						cType satisfies never;
+				}
+			}
+			return effects;
+		}
 	}
-	const deepTags = options.deepTags ?? true;
-	const tagEffects = deepTags ? this._getLinkedEffects(sourceActor, CETypes) : [];
-	if (!CETypes || CETypes.length == 0) {
+
+	getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options: GetEffectsOptions = {}) : readonly SourcedConditionalEffect[] {
+		if (this.isSkillCard()) { return []; }
 		const effects = this.system.effects;
 		const effectsGetterFn = () => {
-			const proxyItem = options.proxyItem ? options.proxyItem : this;
+			const proxyItem = options.proxyItem ?? this;
 			return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
-				.filter (ce => !ce.isEmbedded);
+				.filter (ce => ce.isEmbedded);
 		};
-		return this.#accessEffectsCache('allNonEmbeddedEffects', sourceActor, options, effectsGetterFn)
-			.concat(tagEffects);
-	} else {
-		const effects: ConditionalEffectC[] = [];
-		for (const cType of CETypes) {
-			switch (cType) {
-				case 'defensive':
-					effects.push(...this.getDefensiveEffects(sourceActor, options));
-					break;
-				case 'triggered':
-					effects.push(...this.getTriggeredEffects(sourceActor, options));
-					break;
-				case 'passive':
-					effects.push(...this.getPassiveEffects(sourceActor, options));
-					break;
-				case 'on-use':
-					effects.push(...this.getOnUseEffects(sourceActor, options));
-					break;
-				case 'unknown':
-					effects.push(...this.getEffects(sourceActor, options).filter( x=> x.conditionalType == cType));
-					break;
-				default:
-					cType satisfies never;
-			}
-		}
-		return effects;
+		const embedded= this.#accessEffectsCache('embeddedEffects', sourceActor, options, effectsGetterFn);
+		const {CETypes} = options;
+		if (CETypes == undefined || CETypes.length == 0) {return embedded;}
+		return embedded
+			.filter( x=> CETypes.includes(x.conditionalType));
 	}
-}
-
-getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options: GetEffectsOptions = {}) : readonly SourcedConditionalEffect[] {
-	if (this.isSkillCard()) { return []; }
-	const effects = this.system.effects;
-	const effectsGetterFn = () => {
-		const proxyItem = options.proxyItem ?? this;
-		return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
-			.filter (ce => ce.isEmbedded);
-	};
-	const embedded= this.#accessEffectsCache('embeddedEffects', sourceActor, options, effectsGetterFn);
-	const {CETypes} = options;
-	if (CETypes == undefined || CETypes.length == 0) {return embedded;}
-	return embedded
-		.filter( x=> CETypes.includes(x.conditionalType));
-}
 
 
 #accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, options: GetEffectsOptions, refresherFn: () => ConditionalEffectC[]) : ConditionalEffectC[] {
@@ -2228,7 +2229,7 @@ async deleteCardEvent(this: SocialCard, eventIndex: number) {
 
 async addEventChoice(this: SocialCard, eventIndex: number, newChoice ?: CardChoice ) {
 	const event = this.system.events[eventIndex];
-	const arr = ArrayCorrector(event.choices) as CardChoice[];
+	const arr = ConditionalEffectManager.ArrayCorrector(event.choices) as CardChoice[];
 	if (newChoice == undefined) {
 		const roll: CardRoll = {
 			rollType: 'none',
@@ -2257,7 +2258,7 @@ async addEventChoice(this: SocialCard, eventIndex: number, newChoice ?: CardChoi
 
 async deleteEventChoice(this: SocialCard, eventIndex: number, choiceIndex: number) {
 	const event = this.system.events[eventIndex];
-	const arr = ArrayCorrector(event.choices) as CardChoice[];
+	const arr = ConditionalEffectManager.ArrayCorrector(event.choices) as CardChoice[];
 	arr.splice(choiceIndex, 1);
 	event.choices = arr;
 	await event.update!({choices: arr});
@@ -2310,8 +2311,8 @@ get moneyValue(): number {
 	if (!this.isCarryableType()) {return 0;}
 	const base= TreasureSystem.baseItemPriceByLevel(this);
 	const val=  this.tagList(null)
-	.reduce ( (acc, tag) => tag instanceof PersonaItem ? acc * TreasureSystem.getTagCostMultiplier(tag) : acc
-	, base);
+		.reduce ( (acc, tag) => tag instanceof PersonaItem ? acc * TreasureSystem.getTagCostMultiplier(tag) : acc
+			, base);
 	return Math.round(val);
 }
 
@@ -2636,9 +2637,9 @@ isDamagePower(this: Usable): boolean {
 
 statusesAdded(this: Usable, deepTagList = true): StatusEffectId[] {
 	const options : GetEffectsOptions = {deepTags: deepTagList};
-		const effects= this.getEffects(null, options).flatMap( (eff) => eff.consequences.flatMap( cons => 
-			cons.type == "combat-effect" && cons.combatEffect == 'addStatus'? [cons.statusName] : []));
-		return effects;
+	const effects= this.getEffects(null, options).flatMap( (eff) => eff.consequences.flatMap( cons => 
+		cons.type == "combat-effect" && cons.combatEffect == 'addStatus'? [cons.statusName] : []));
+	return effects;
 }
 
 statusesRemoved(this: Usable): StatusEffectId[] {
@@ -2697,14 +2698,23 @@ canUseConsumable(this: Consumable, user: ValidAttackers) : boolean {
 	return true;
 }
 
+async increaseRarity(this: Power) {
+	await this.alterRarity(-1);
 }
 
-/** Handlebars keeps turning my arrays inside an object into an object with numeric keys, this fixes that */
-export function ArrayCorrector<T>(obj: T[] | DeepNoArray<T[]>): T[] {
-	const x=  ConditionalEffectManager.ArrayCorrector(obj);
-	return x;
+private async alterRarity(this: Power, amt: number) {
+	const rarity = this.system.rarity;
+	const newProb = changeProbability(rarity, amt);
+	if (newProb != rarity) {
+		await this.update({"system.rarity": newProb});
+	}
 }
 
+async reduceRarity(this: Power) {
+	await this.alterRarity(1);
+}
+
+}
 
 declare global {
 	type CClass = Subtype<PersonaItem, 'characterClass'>;

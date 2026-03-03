@@ -98,7 +98,6 @@ export class CombatResult  {
 		}
 		let damageCalc : DamageCalculation;
 		if (damageType == undefined) {
-			// eslint-disable-next-line no-debugger
 			debugger;
 			PersonaError.softFail("Damage Type is undefined on this consequence", cons, effect, situation);
 			return undefined;
@@ -150,7 +149,6 @@ export class CombatResult  {
 				break;
 			}
 			case "constant":
-				// eslint-disable-next-line no-fallthrough
 			default: {
 				if (cons.amount != undefined && typeof cons.amount == "object") {
 					const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons as typeof cons & {amount: ConsequenceAmount});
@@ -628,7 +626,6 @@ export class CombatResult  {
 			const aDamage = ret[key]!;
 			if (!bDamage.isMergeable(aDamage)) {
 				PersonaError.softFail("Unmergable value, this shoudln't hapepn", original, b);
-				// eslint-disable-next-line no-debugger
 				debugger;
 			}
 			aDamage.merge(bDamage);
@@ -699,7 +696,6 @@ function resolveStatusDurationAnchor (anchor: ConsequenceTarget, atkResult: Atta
 			break;
 		case "owner":
 			console.warn("Using owner in status duration anchors is unsupported and just resolves to 'user'");
-		// eslint-disable-next-line no-fallthrough
 		case "user": {
 			const userAcc = atkResult.situation.user;
 			if (userAcc)

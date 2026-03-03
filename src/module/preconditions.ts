@@ -82,7 +82,6 @@ export function testPrecondition (condition: SourcedPrecondition, situation:Situ
 				return false;
 			} else {return true;}
 		case "diagnostic": {
-			// eslint-disable-next-line no-debugger
 			debugger;
 			return true;
 		}

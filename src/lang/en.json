@@ -1188,6 +1188,8 @@
 	"persona.roll.rolltag.deep-conversation" : "Deep Conversation",
 	"persona.roll.rolltag.smalltalk" : "Smalltalk",
 	"persona.roll.rolltag.free-event" : "+1 Event",
+	"persona.roll.rolltag.secondary-attack" : "Secondary Atttack",
+	"persona.roll.rolltag.reflected-attack" : "Reflected Attack",
 
 	"persona.comparison.tagType.power": "Power Tag",
 	"persona.comparison.tagType.actor": "Actor Tag",
@@ -1211,6 +1213,16 @@
 	"persona.probability.rare": "Very Rare",
 	"persona.probability.never": "Never",
 	"persona.probability.always": "Always",
+
+	"persona.probability.powerRarity.common": "Basic Power",
+	"persona.probability.powerRarity.common-minus": "Common++",
+	"persona.probability.powerRarity.normal-plus": "Common+",
+	"persona.probability.powerRarity.normal": "Common",
+	"persona.probability.powerRarity.normal-minus": "Uncommon",
+	"persona.probability.powerRarity.rare-plus": "Rare",
+	"persona.probability.powerRarity.rare": "Exotic",
+	"persona.probability.powerRarity.never": "Unique",
+	"persona.probability.powerRarity.always": "Universal",
 
 	"persona.treasureTable.label.none": "N/A",
 	"persona.treasureTable.label.trinkets": "Trinkets",

@@ -254,7 +254,6 @@ export class SearchMenu {
 				case 4:
 				case 5:
 					val = Math.min(6, val + (options.treasureFindBonus ?? 0));
-				// eslint-disable-next-line no-fallthrough
 				case 6:
 					result= (7 - options.treasureRemaining <= val) ? "treasure" : "nothing";
 					break;

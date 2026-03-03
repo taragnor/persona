@@ -136,7 +136,7 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> {
 
 	override async _updateObject(_event: JQuery.SubmitEvent, formData: Record<string, unknown>) {
 		try {
-			const ret = await this.#refreshEventTag( () =>
+			await this.#refreshEventTag( () =>
 				this.event.update(formData)
 			);
 			// await this._card.sheet.render(false);

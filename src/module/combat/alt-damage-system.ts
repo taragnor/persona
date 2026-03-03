@@ -12,18 +12,19 @@ import {ConvertableDamageLevel, DamageSystemBase, NewDamageParams} from "./damag
 
 export class AltDamageSystem extends DamageSystemBase {
 
+	private PERCENT_PADDING = 5 as const;
 	// private ENDURANCE_DR_MULTIPLIER = 0.01 as const;
 	private BASE_MAGIC_DMG = 10 as const;
 	private BASE_WEAPON_DMG = 10 as const;
-	private WEAPON_STRENGTH_DAMAGE_MULT = 1 as const;
-	private MAGIC_DAMAGE_MULT = 1 as const;
+	private WEAPON_STRENGTH_DAMAGE_MULT = 0.333 as const;
+	private MAGIC_DAMAGE_MULT = 0.333 as const;
 	private HEALING_MAGIC_MULT = 1 as const;
 	private END_DIFF_PERCENTAGE_MULT = 0.8 as const;
 	private BASE_VARIANCE = 2 as const;
 	private ARMOR_TO_DAMAGE_DIVISOR = 1.0 as const;
 	private ALL_OUT_ATTACK_HELPER_DIVISOR = 1/3;
-	private BASIC_ATTACK_LEVEL_DIVISOR = 1.00 as const;
-	private BASE_DAMAGE_LEVEL_DIVISOR = 0.25 as const;
+	private BASIC_ATTACK_LEVEL_DIVISOR = 1.0 as const;
+	private BASE_DAMAGE_LEVEL_DIVISOR = 0.666 as const;
 	// private STAT_DIFF_DAMAGE_BOOST_PERCENT = 0.02;
 	private _weaponDmgGrowth = new GrowthCalculator(1.20, 11, 4.5);
 
@@ -136,20 +137,30 @@ export class AltDamageSystem extends DamageSystemBase {
 		return 0;
 	}
 
+	//experimental version
 	protected getPercentModifier(attackStat: number, endurance: number) : number {
-		const PERCENT_PADDING = 5 as const;
+		const PERCENT_PADDING = this.PERCENT_PADDING;
 		let percent = (PERCENT_PADDING + attackStat) / (PERCENT_PADDING + endurance);
-		const deviance = 1- percent;
-		percent += deviance * (1 - this.END_DIFF_PERCENTAGE_MULT);
+		percent = Math.clamp(percent, 0.1, 5);
 		percent = Math.round(percent * 100) / 100;
 		return percent;
 	}
+
+	//classic version
+	// protected getPercentModifier(attackStat: number, endurance: number) : number {
+	// 	const PERCENT_PADDING = this.PERCENT_PADDING;
+	// 	let percent = (PERCENT_PADDING + attackStat) / (PERCENT_PADDING + endurance);
+	// 	const deviance = 1 - percent;
+	// 	percent += deviance * (1 - this.END_DIFF_PERCENTAGE_MULT);
+	// 	percent = Math.round(percent * 100) / 100;
+	// 	return percent;
+	// }
 
 	protected physDR(attackerPersona : Persona, targetPersona: Persona): DamageCalculation {
 		const calc = new DamageCalculation(null);
 		const attackStat = attackerPersona.combatStats.strength;
 		const endurance = targetPersona.combatStats.endurance;
-		const percent= this.getPercentModifier(attackStat, endurance);
+		const percent = this.getPercentModifier(attackStat, endurance);
 		const armorDR = this.armorDR(targetPersona);
 		calc.merge(armorDR);
 		calc.add("stackMult", percent, "Strength vs Endurance Difference");
@@ -296,11 +307,11 @@ const DAMAGE_LEVEL_NEW = {
 	"none": {extraVariance: 0, baseAmt: 0, mult: 0, healMult: 0},
 	"miniscule": {extraVariance: 0, baseAmt: 0, mult: 0.5, healMult: 0.25},
 	"basic": {extraVariance: 0, baseAmt: 0, mult: 1, healMult: 0.5},
-	"light": {extraVariance: 0, baseAmt: 10, mult: 1.10, healMult: 1.25},
-	"medium": {extraVariance: 0, baseAmt: 25, mult: 1.20, healMult: 2},
-	"heavy": {extraVariance: 0, baseAmt: 35, mult: 1.50, healMult: 3},
-	"severe": {extraVariance: 0, baseAmt: 50, mult: 1.75, healMult: 4},
-	"colossal": {extraVariance: 0, baseAmt: 60, mult: 2.0, healMult :5},
+	"light": {extraVariance: 0, baseAmt: 10, mult: 1.15, healMult: 1.25},
+	"medium": {extraVariance: 0, baseAmt: 20, mult: 1.35, healMult: 2},
+	"heavy": {extraVariance: 0, baseAmt: 30, mult: 1.75, healMult: 3},
+	"severe": {extraVariance: 0, baseAmt: 40, mult: 2.25, healMult: 4},
+	"colossal": {extraVariance: 0, baseAmt: 55, mult: 2.666, healMult :5},
 } as const satisfies Readonly<Record< ConvertableDamageLevel, ExtraDamageParams>>;
 
 export const ALT_DAMAGE_SYSTEM = new AltDamageSystem();

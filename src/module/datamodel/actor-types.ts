@@ -18,7 +18,7 @@ import { shadowOnlyCombatAbilities } from "../../config/actor-parts.js";
 import { encounterDataSchema } from "../../config/actor-parts.js";
 import { sharedAbilities } from "../../config/actor-parts.js";
 import { personalBio } from "../../config/actor-parts.js";
-import { CreatureTag, InternalCreatureTag } from "../../config/creature-tags.js";
+import { InternalCreatureTag } from "../../config/creature-tags.js";
 const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, NumberField: num, SchemaField: sch, ArrayField: arr, DocumentIdField: id, ObjectField: obj} = foundry.data.fields;
 import { SHADOW_CREATURE_TYPE_LIST } from "../../config/shadow-types.js";
 import { SHADOW_ROLE_LIST } from "../../config/shadow-types.js";
@@ -28,7 +28,6 @@ import { combatCommonStats } from "../../config/actor-parts.js";
 import {PersonaStat} from "../../config/persona-stats.js";
 import {NavigatorTrigger} from "../navigator/nav-voice-lines.js";
 import {PROBABILITY_LIST} from "../../config/probability.js";
-import {PersonaActor} from "../actor/persona-actor.js";
 
 abstract class BaseStuff extends window.foundry.abstract.DataModel {
 
@@ -37,7 +36,6 @@ abstract class BaseStuff extends window.foundry.abstract.DataModel {
 			locked: new bool( { initial: false}),
 			short_desc: new txt(),
 			// flags: new arr(new obj<FlagData>()),
-			// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 			creatureTags: new arr(new txt<InternalCreatureTag | Tag["id"]>()),
 		};
 	}
@@ -85,7 +83,7 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 
 	static override migrateData(data: any) {
 		data = talentConversion(data);
-		const system = data as PC["system"];
+		// const system = data as PC["system"];
 		return data;
 	}
 }
