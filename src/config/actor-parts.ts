@@ -9,7 +9,6 @@ import { TokenSpend } from "./social-card-config.js";
 import { TAROT_DECK } from "./tarot.js";
 import { DEFENSE_CATEGORY_LIST } from "./defense-categories.js";
 import { TarotCard } from "./tarot.js";
-import { StatusDuration } from "../module/active-effect.js";
 const {EmbeddedDataField: embedded, StringField:txt, BooleanField: bool, ObjectField:obj, NumberField: num, SchemaField: sch, HTMLField: html , ArrayField: arr, DocumentIdField: id } = foundry.data.fields;
 import { ResistType } from "./damage-types.js";
 import { RESIST_STRENGTH_LIST } from "./damage-types.js";
@@ -17,6 +16,7 @@ import { ResistStrength } from "./damage-types.js";
 import { STUDENT_SKILLS_LIST } from "./student-skills.js";
 import {PersonaActor} from "../module/actor/persona-actor.js";
 import {PersonaItem} from "../module/item/persona-item.js";
+import {StatusDuration} from "../module/persona-ae.js";
 
 export type FlagData = {
 	flagId: string,

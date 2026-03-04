@@ -1,8 +1,8 @@
 import {NonDeprecatedConsequence} from "../../config/consequence-types.js";
 import {DamageType} from "../../config/damage-types.js";
 import {StatusEffectId} from "../../config/status-effects.js";
-import {StatusDuration} from "../active-effect.js";
 import {InstantKillLevel} from "../combat/damage-calc.js";
+import {StatusDuration} from "../persona-ae.js";
 export abstract class CostCalculator {
 
 	static combineModifiers (this: void, mods: CostModifier[]) : number {

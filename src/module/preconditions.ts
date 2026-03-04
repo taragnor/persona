@@ -28,11 +28,11 @@ import { StatusEffectId } from "../config/status-effects.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import {ConsequenceAmountResolver} from "./conditionalEffects/consequence-amount.js";
 import {PreconditionConverter} from "./migration/convertPrecondition.js";
-import {PersonaAE} from "./active-effect.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {ResolvedActorChange} from "./combat/finalized-combat-result.js";
 import {PersonaItem} from "./item/persona-item.js";
 import {CombatEngine} from "./combat/combat-engine.js";
+import {PersonaAE} from "./persona-ae.js";
 
 /** @deprecated Use ConditionalEffectC.getActiveConsequences instead */
 export function getActiveConsequences(condEffect: ConditionalEffectC, situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {

@@ -8,10 +8,10 @@ import { StatusEffectId } from "./status-effects";
 import { AttackResult, CombatResult } from "../module/combat/combat-result.js";
 import { CombatTriggerTypes } from "./triggers.js";
 import {RealDamageType} from "./damage-types.js";
-import {PersonaAE} from "../module/active-effect.js";
 import {FinalizedCombatResult} from "../module/combat/finalized-combat-result.js";
 import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js";
 import {AttackRollType} from "../module/combat/combat-engine.js";
+import {PersonaAE} from "../module/persona-ae.js";
 
 export type UserSituation = {
 	user: UniversalActorAccessor<ValidAttackers>;

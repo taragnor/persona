@@ -5,13 +5,13 @@ import { BASIC_PC_POWER_NAMES } from "../../config/basic-powers.js";
 import { PersonaError } from "../persona-error.js";
 import { TurnAlert } from "../utility/turnAlert.js";
 import { PersonaActor } from "../actor/persona-actor.js";
-import { PersonaAE } from "../active-effect.js";
 import { StatusEffectId } from "../../config/status-effects.js";
 import { PToken } from "./persona-combat.js";
 import { PersonaSounds } from "../persona-sounds.js";
 import { RealDamageType } from "../../config/damage-types.js";
 import {PersonaAnimation} from "./persona-animations.js";
 import {AttackResult} from "./combat-result.js";
+import {PersonaAE} from "../persona-ae.js";
 
 const DoomDoor : DoorSound= {
 	close: "systems/persona/sound/doom/dsdorcls.wav",

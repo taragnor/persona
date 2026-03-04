@@ -20,7 +20,6 @@ import { DamageType } from '../../config/damage-types.js';
 import { EQUIPMENT_TAGS, EquipmentTag } from '../../config/equipment-tags.js';
 import { Consequence } from '../../config/consequence-types.js';
 import { CreatureTag, InternalCreatureTag } from '../../config/creature-tags.js';
-import { PersonaAE } from '../active-effect.js';
 import { removeDuplicates } from '../utility/array-tools.js';
 import { PowerTag } from '../../config/power-tags.js';
 import { ConditionalEffectManager } from '../conditional-effect-manager.js';
@@ -45,6 +44,7 @@ import {Calculation} from '../utility/calculation.js';
 import {DamageInterface} from '../combat/damage-system.js';
 import {ConditionalEffectC} from '../conditionalEffects/conditional-effect-class.js';
 import {changeProbability} from '../../config/probability.js';
+import {PersonaAE} from '../persona-ae.js';
 
 declare global {
 	type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;

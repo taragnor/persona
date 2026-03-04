@@ -46,8 +46,6 @@ import { ModifierContainer } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
 import { ACTORMODELS } from "../datamodel/actor-types.js";
 import { PersonaItem } from "../item/persona-item.js";
-import { PersonaAE } from "../active-effect.js";
-import { StatusDuration } from "../active-effect.js";
 import {Calculation} from "../utility/calculation.js";
 import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {Defense} from "../../config/defense-types.js";
@@ -57,6 +55,7 @@ import {PersonaCompendium} from "../persona-compendium.js";
 import {ActorHooks} from "./actor-hooks.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 import {lockObject} from "../utility/anti-loop.js";
+import {PersonaAE, StatusDuration} from "../persona-ae.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 

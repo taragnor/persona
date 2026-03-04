@@ -5,7 +5,6 @@ import { ConsequenceAmount, NewDamageConsequence, SetFlagEffect } from "../../co
 import { DamageCalculation } from "./damage-calc.js";
 import { PostAttackRollSituation } from "../../config/situation.js";
 import { PersonaItem} from "../item/persona-item.js";
-import { PersonaAE, StatusDuration } from "../active-effect.js";
 import { getSocialLinkTarget, multiCheckToArray } from "../preconditions.js";
 import { Consequence } from "../../config/consequence-types.js";
 import { SocialCardActionConsequence } from "../../config/consequence-types.js";
@@ -22,6 +21,7 @@ import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amoun
 import {ConsequenceTarget} from "../../config/precondition-types.js";
 import {SocialActionExecutor} from "../social/exec-social-action.js";
 import {ATTACK_RESULT} from "../../config/attack-result-config.js";
+import {PersonaAE, StatusDuration} from "../persona-ae.js";
 
 declare global {
 	interface SocketMessage {

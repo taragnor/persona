@@ -1,8 +1,8 @@
 import {ConsequenceAmount, ConsequenceAmountV2} from "../../config/consequence-types.js";
-import {PersonaAE} from "../active-effect.js";
 import {PersonaCombat} from "../combat/persona-combat.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
 import {PersonaItem} from "../item/persona-item.js";
+import {PersonaAE} from "../persona-ae.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaVariables} from "../persona-variables.js";

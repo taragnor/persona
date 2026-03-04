@@ -22,11 +22,11 @@ import { StudentSkill } from "./student-skills.js";
 import { ResistType } from "./damage-types.js";
 import { ResistStrength } from "./damage-types.js";
 import { OtherConsequence } from "../module/datamodel/other-effects.js";
-import { StatusDuration } from "../module/active-effect.js";
 import { StatusEffectId } from "./status-effects.js";
 import { ItemProperty, ModifierCategory, ModifierTarget } from "./item-modifiers.js";
 import {AttackResult} from "../module/combat/combat-result.js";
 import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js";
+import {StatusDuration} from "../module/persona-ae.js";
 
 type ExpendOtherEffect = {
 	type: "expend-item";
