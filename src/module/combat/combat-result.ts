@@ -286,6 +286,9 @@ export class CombatResult  {
 						type: cons.combatEffect,
 					});
 					break;
+				case "set-cooldown": 
+					effect.otherEffects.push( cons);
+					break;
 				default:
 					cons satisfies never;
 			}

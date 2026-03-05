@@ -986,25 +986,26 @@ knowsPowerInnately(power : Power)  : boolean {
 		return this.getBonuses("hpCostMult");
 	}
 
-	canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
-		const msg =
-			this._consumableCheck(usable)
-			|| this._explorationCheck(usable)
-			|| this._downtimeCheck(usable)
-			|| this._powerInhibitingStatusCheck(usable)
-			|| this._powerTooStrong(usable)
-			|| this._deadCheck(usable)
-			|| this._isTrulyUsable(usable)
-			|| this._canPayActivationCostCheck(usable)
-			|| this._checkConditionals(usable)
-			|| this._checkTeamworkMove(usable)
-		;
-		if (msg === null) {return true;}
-		if (outputReason) {
-			ui.notifications.warn(msg);
-		}
-		return false;
+canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
+	const msg =
+		this._consumableCheck(usable)
+		|| this._explorationCheck(usable)
+		|| this._downtimeCheck(usable)
+		|| this._powerInhibitingStatusCheck(usable)
+		|| this._powerTooStrong(usable)
+		|| this._deadCheck(usable)
+		|| this._isTrulyUsable(usable)
+		|| this._canPayActivationCostCheck(usable)
+		|| this._checkConditionals(usable)
+		|| this._checkTeamworkMove(usable)
+		|| this._checkCooldown(usable)
+	;
+	if (msg === null) {return true;}
+	if (outputReason) {
+		ui.notifications.warn(msg);
 	}
+	return false;
+}
 
 	private _checkTeamworkMove(power: UsableAndCard) :N<FailReason> {
 		if (!power.isTeamwork() ) {return null;}
@@ -1096,6 +1097,18 @@ knowsPowerInnately(power : Power)  : boolean {
 				throw new PersonaError("Unknown Type");
 		}
 	}
+
+private _checkCooldown(usable: UsableAndCard) : N<FailReason> {
+	if (!usable.isPower()) {return null;}
+	if (this.user.isPowerOnCooldown(usable)) {
+		return "Power is on cooldown";
+	}
+	return null;
+}
+
+public isPowerOnCooldown(power: Power) : boolean {
+	return this.user.isPowerOnCooldown(power);
+}
 
 	private _checkConditionals(usable: UsableAndCard) : N<FailReason> {
 		const effects= usable.getTriggeredEffects(this.user, {triggerType: "on-power-usage-check"});

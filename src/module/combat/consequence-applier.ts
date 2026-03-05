@@ -3,6 +3,7 @@ import {PersonaActor} from "../actor/persona-actor.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
 import {Metaverse} from "../metaverse.js";
 import {NavigatorVoiceLines} from "../navigator/nav-voice-lines.js";
+import {StatusDuration} from "../persona-ae.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaSounds} from "../persona-sounds.js";
@@ -252,13 +253,12 @@ export class ConsequenceApplier {
 				}
 				break;
 			case "combat-effect":
-				if (PersonaCombat.combat && otherEffect.combatEffect == "auto-end-turn" && actor == game.combat?.combatant?.actor) {
-					await PersonaCombat.combat.setForceEndTurn(true);
-				}
+				await this._applyCombatEffect(otherEffect, actor);
 				break;
 			case "alter-fatigue-lvl":
 				await actor.alterFatigueLevel(otherEffect.amount);
 				break;
+
 			case "alter-variable": {
 				const varCons = otherEffect;
 				switch (varCons.varType) {
@@ -387,6 +387,42 @@ export class ConsequenceApplier {
 					content: html,
 					style: CONST?.CHAT_MESSAGE_STYLES.OTHER,
 				});
+				break;
+			}
+		}
+	}
+
+	static async _applyCombatEffect(effect: OtherEffect & {type: "combat-effect"}, actor: ValidAttackers) {
+		switch (effect.combatEffect) {
+			case "auto-end-turn":
+				if (PersonaCombat.combat
+					&& actor == game.combat?.combatant?.actor
+				) {
+					await PersonaCombat.combat.setForceEndTurn(true);
+				}
+				break;
+			case "alter-energy":
+			case "scan":
+			case "alter-theurgy":
+			case "extraTurn":
+			case "damage":
+			case "addStatus":
+			case "removeStatus":
+			case "extraAttack":
+			case "apply-recovery":
+				//handled elsewhere by other code
+				break;
+			case "set-cooldown": {
+				const power = actor.powers.find( pwr=> pwr.id == effect.powerId);
+				if (!power) {
+					PersonaError.softFail(`Can't find Power id on ${actor.name}: ${effect.powerId} to apply cooldown`);
+					break;
+				}
+				const duration : StatusDuration = {
+					dtype: "X-rounds",
+					amount: effect.durationRounds,
+				};
+				await actor.addPowerCooldown(power, duration);
 				break;
 			}
 		}

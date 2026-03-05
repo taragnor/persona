@@ -1124,6 +1124,8 @@ export class ConditionalEffectManager {
 				return `Apply Recovery`;
 			case "alter-theurgy":
 				return `Alter Theurgy Amount`;
+			case "set-cooldown":
+				return `Set Power Cooldown : ${cons.durationRounds} rounds`;
 			default:
 				cons satisfies never;
 				return "ERROR";

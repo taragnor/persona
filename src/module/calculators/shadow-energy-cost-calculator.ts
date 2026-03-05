@@ -8,15 +8,39 @@ import { CostCalculator } from "./cost-calculator.js";
 import { EnergyCostBase } from "./energy-cost-base.js";
 
 export class EnergyClassCalculator extends CostCalculator {
-	static calcEnergyCost(pwr: Power, shadow: Shadow) : {energyRequired: number, energyCost: number} {
-		const emptyCost = { energyRequired:0, energyCost:0 };
-		if (pwr.isPassive()) {return emptyCost;}
-		if (pwr.isBasicPower()) {return emptyCost;}
-		const baseCost = this.calcBaseEnergyCost(pwr);
-		return this.personalizedCostForShadow(baseCost, shadow);
-	}
+	 static calcEnergyCost(pwr: Power, shadow: Shadow) : {energyRequired: number, energyCost: number, cooldown: number} {
+			// const emptyCost = { energyRequired:0, energyCost:0, cooldown: 0 };
+			// if (pwr.isPassive()) {return emptyCost;}
+			// if (pwr.isBasicPower()) {return emptyCost;}
+			// const baseCost = this.calcBaseEnergyCost(pwr);
+			const baseCost = this.calcBasePowerCost(pwr);
+			if (baseCost == null) {
+				 const emptyCost = { energyRequired:0, energyCost:0, cooldown: 0 };
+				 return emptyCost;
+			}
+			return this.personalizedCostForShadow(baseCost, shadow);
+	 }
 
-	static personalizedCostForShadow(basePowerLevel: EnergyCostBase, shadow: Shadow) : {energyRequired: number, energyCost: number} {
+	 private static calcBasePowerCost(pwr: Power)  {
+			if (pwr.isPassive()) {return null;}
+			if (pwr.isBasicPower()) {return null;}
+			const baseCost = this.calcBaseEnergyCost(pwr);
+			return baseCost;
+	 }
+
+	 static calcCooldown(pwr: Power, shadow: Shadow) : number {
+			const baseCost = this.calcBasePowerCost(pwr);
+			if (baseCost == null) {return 0;}
+			const {energyRequired} = baseCost;
+			const shadow_lvl = shadow.level;
+			const effectiveER  = this.BASE_COST + energyRequired - shadow_lvl;
+			const RawCD = Math.max(0, effectiveER - 30) / 30;
+			const MinCD = pwr.system.defense == "ail" || pwr.system.defense == "kill" ? 1 : 0;
+			const cooldown = Math.clamp( Math.round(RawCD), MinCD, 3);
+			return Math.max(cooldown, pwr.system.cooldown ?? 0);
+	 }
+
+	static personalizedCostForShadow(basePowerLevel: EnergyCostBase, shadow: Shadow) : {energyRequired: number, energyCost: number, cooldown: number} {
 		const shadow_lvl = shadow.level;
 		let {energyRequired, energyCost} = basePowerLevel;
 
@@ -29,10 +53,11 @@ export class EnergyClassCalculator extends CostCalculator {
 		energyCost  = Math.floor(Math.max(0, effectiveCost / 10));
 		const minReq = Math.max(0, energyCost-5);
 		energyRequired  = Math.floor(Math.clamp(effectiveER / 10, minReq, shadow.maxEnergy));
+		 const cooldown = Math.clamp( effectiveER/10 - 50, 0, 3);
 		if (energyCost <= 0) {
-			return { energyRequired: 0, energyCost: 0, };
+			return { energyRequired: 0, energyCost: 0, cooldown };
 		}
-		const ret = { energyRequired, energyCost, };
+		const ret = { energyRequired, energyCost, cooldown};
 		return ret;
 	}
 

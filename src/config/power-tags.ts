@@ -78,6 +78,7 @@ export const POWER_TAGS_LIST = [
 	"basicatk",
 	"status-removal",
 	"resurrection",
+	 "cooldown",
 	...RESTRICTION_TAGS,
 	...STATUS_AILMENT_POWER_TAGS,
 	...POWER_TYPE_TAGS,

@@ -12,6 +12,7 @@ import {ModifierListItem} from "./combat/modifier-list.js";
 import {TriggeredEffect} from "./triggered-effect.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 
+const POWER_COOLDOWN_FLAG_NAME =   "cooldownPowerId" as const;
 
 export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implements ModifierContainer<PersonaAE> {
 
@@ -422,7 +423,13 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 				return true;
 			case "X-rounds":
 			case "3-rounds":
-				if (this.duration.startRound + duration.amount >= (game.combat!.round ?? 0)) {
+				// if (this.duration.startRound + duration.amount >= (game.combat!.round ?? 0) || this.duration.startTurn) {
+				// 	return false;
+				// }
+				// await this.endStatusTimeout();
+				if (duration.amount > 1) {
+					duration.amount -= 1;
+					await this.setDuration(duration);
 					return false;
 				}
 				await this.endStatusTimeout();
@@ -807,6 +814,18 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		await this.setFlag("persona", "flagId", id);
 	}
 
+	async setCooldown(power: Power, duration: StatusDuration, durationOptions ?: DurationOptions)  {
+		await this.setFlag("persona", POWER_COOLDOWN_FLAG_NAME, power.id);
+		await this.setDuration(duration, durationOptions);
+	}
+
+	isCooldown(power ?: Power) : boolean {
+		const flag =  this.getFlag("persona", POWER_COOLDOWN_FLAG_NAME);
+		if (!flag) {return false;}
+		if (!power) {return true;}
+		return power.id == flag;
+	}
+
 	get flagId() : string | undefined {
 		const flag = this.getFlag<string>("persona", "flagId");
 		if (flag == undefined) {return undefined;}
@@ -822,6 +841,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		if (!flagId)  {return true;}
 		return flagId.toLowerCase() == this.flagId;
 	}
+
+
 
 	async AEtestEffect() {
 		let changes= this.changes;

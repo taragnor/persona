@@ -260,17 +260,17 @@ input.single-digit {
 }
 
 .tooltip .tooltiptext {
-  visibility: hidden;
-  width: 120px;
-  background-color: black;
-  color: #fff;
-  text-align: center;
-  padding: 5px 0;
-  border-radius: 6px;
-  position: absolute;
-  z-index: 1;
-  /* right: 105%; */
-  top: -200%;
+	visibility: hidden;
+	width: 120px;
+	background-color: black;
+	color: #fff;
+	text-align: center;
+	padding: 5px 0;
+	border-radius: 6px;
+	position: absolute;
+	z-index: 1;
+	/* right: 105%; */
+	top: -200%;
 }
 
 .social-link .name {
@@ -301,35 +301,35 @@ div.social-card {
 .qualifier input.name,
 input.baseRelationship
 {
-  width: 10em;
+	width: 10em;
 }
 
 .social-link {
-  padding-top:10px;
+	padding-top:10px;
 }
 
 .social-link img.portrait,
 .social-list img.portrait,
 .job img.portrait {
-  max-width: 40px;
-  min-width: 40px;
-  width: 40px;
-  height: 40px;
-  max-height: 40px;
-  min-height: 40px;
+	max-width: 40px;
+	min-width: 40px;
+	width: 40px;
+	height: 40px;
+	max-height: 40px;
+	min-height: 40px;
 }
 
 div.social-link {
-  display:flex;
-  align-items:center;
+	display:flex;
+	align-items:center;
 }
 
 .social-link .name ,
 .job .name {
-  font-size: 1.5em;
-  margin-left: 8px;
-  margin-right: 8px;
-  font-family: Serif;
+	font-size: 1.5em;
+	margin-left: 8px;
+	margin-right: 8px;
+	font-family: Serif;
 }
 
 section.qualifiers {
@@ -438,9 +438,9 @@ section.qualifiers {
 
 .card-roll select,
 .card-roll input {
-font-size: 1rem;      /* match your text size */
-  line-height: 1.2;     /* gives breathing room */
-  height: auto;         /* let it grow naturally */
+	font-size: 1rem;      /* match your text size */
+	line-height: 1.2;     /* gives breathing room */
+	height: auto;         /* let it grow naturally */
 }
 
 .event-choice .chosen {
@@ -918,7 +918,7 @@ span.skill-card img {
 }
 
 .hidden {
-  display: none;
+	display: none;
 }
 
 
@@ -1119,31 +1119,31 @@ a.powerName {
 }
 
 span.pretty-power-name {
-display: inline-flex;       /* let span size itself to contents */
-  align-items: center;        /* vertically align text + image */
-  background: #333;           /* example background */
-  color: white;               /* text color */
-  border-radius: 6px;         /* rounded corners */
-  padding: 0.2em 0.5em; 
+	display: inline-flex;       /* let span size itself to contents */
+	align-items: center;        /* vertically align text + image */
+	background: #333;           /* example background */
+	color: white;               /* text color */
+	border-radius: 6px;         /* rounded corners */
+	padding: 0.2em 0.5em; 
 }
 
 
 .add-five-to-all {
-display: inline-block;      /* lets you add padding/box styles */
-  background-color: #333;     /* dark grey background */
-  color: #fff;                /* white text for contrast */
-  padding: 0.4em 0.8em;       /* spacing inside */
-  border-radius: 6px;         /* rounded corners */
-  text-decoration: none;      /* remove underline */
-  font-weight: 500;           /* slightly bolder text */
+	display: inline-block;      /* lets you add padding/box styles */
+	background-color: #333;     /* dark grey background */
+	color: #fff;                /* white text for contrast */
+	padding: 0.4em 0.8em;       /* spacing inside */
+	border-radius: 6px;         /* rounded corners */
+	text-decoration: none;      /* remove underline */
+	font-weight: 500;           /* slightly bolder text */
 }
 
 a.add-five-to-all:hover {
-  background-color: #555;     /* lighter grey on hover */
+	background-color: #555;     /* lighter grey on hover */
 }
 
 a.add-five-to-all:active {
-  background-color: #111;     /* darker when clicked */
+	background-color: #111;     /* darker when clicked */
 }
 .power-type-icon img {
 	height: 1em;          /* scale image to text size */
@@ -1198,16 +1198,16 @@ nav.inventory-tabs a {
 
 nav.secondary-tabs a:hover,
 nav.inventory-tabs a:hover {
-  background-color: #6D9AC7;    /* calmer sky-blue blend */
-  color: #FFFFFF;
-  box-shadow: 0 6px 8px rgba(18, 105, 204, 0.4);
+	background-color: #6D9AC7;    /* calmer sky-blue blend */
+	color: #FFFFFF;
+	box-shadow: 0 6px 8px rgba(18, 105, 204, 0.4);
 }
 
 nav.secondary-tabs a:active,
 nav.inventory-tabs a:active {
-  background-color: #1269CC;    /* full-depth navy for pressed state */
-  color: #E0F7FF;               /* very pale cyan text */
-  box-shadow: 0 2px 4px rgba(18, 105, 204, 0.5);
+	background-color: #1269CC;    /* full-depth navy for pressed state */
+	color: #E0F7FF;               /* very pale cyan text */
+	box-shadow: 0 2px 4px rgba(18, 105, 204, 0.5);
 }
 
 .combat-sidebar.sidebar-tab .combat-tracker .combatant {
@@ -1242,13 +1242,13 @@ nav.inventory-tabs a:active {
 }
 
 .chat-message.message.other button {
-display: inline-block;   /* makes it size to its content */
-  width: auto;             /* don’t force a fixed width */
-  height: auto;
-  white-space: wrap;     /* prevent breaking text in weird ways */
-  overflow: visible;       /* make sure text isn’t clipped */
-  padding: 0.5em 1em;      /* add space around text */
-  box-sizing: border-box;  /* padding/border included in width */
+	display: inline-block;   /* makes it size to its content */
+	width: auto;             /* don’t force a fixed width */
+	height: auto;
+	white-space: wrap;     /* prevent breaking text in weird ways */
+	overflow: visible;       /* make sure text isn’t clipped */
+	padding: 0.5em 1em;      /* add space around text */
+	box-sizing: border-box;  /* padding/border included in width */
 }
 
 
@@ -1274,7 +1274,7 @@ display: inline-block;   /* makes it size to its content */
 }
 
 section.simulated-persona {
-font-family: "Consolas", "Lucida Console", "Courier New", monospace;
+	font-family: "Consolas", "Lucida Console", "Courier New", monospace;
 }
 
 .window-app select {
@@ -1292,19 +1292,19 @@ font-family: "Consolas", "Lucida Console", "Courier New", monospace;
 
 /* Style the options inside the dropdown */
 .window-app select option {
-  color: #FFFFFF;             /* text color inside the dropdown */
-  background-color: #123B6B;  /* dropdown option background */
+	color: #FFFFFF;             /* text color inside the dropdown */
+	background-color: #123B6B;  /* dropdown option background */
 
 }
 
 .window-app input {
-  color: #FFFFFF;             /* text color inside the dropdown */
-  background-color: #123B6B;  /* dropdown option background */
+	color: #FFFFFF;             /* text color inside the dropdown */
+	background-color: #123B6B;  /* dropdown option background */
 }
 
 .window-app textarea,
 .window-app input {
-  color: #FFFFFF; 
+	color: #FFFFFF; 
 }
 
 
@@ -1323,22 +1323,22 @@ input.character-name {
 }
 
 .window-app .sheet.journal-entry .journal-entry-content {
-background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%) !important;
-  color: #E6F8FF !important; /* pale cyan for readable text */
+	background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%) !important;
+	color: #E6F8FF !important; /* pale cyan for readable text */
 
 }
 
 
 .window-app .item-piles-child-even-color {
-background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%) !important;
-  color: #E6F8FF !important; /* pale cyan for readable text */
+	background: linear-gradient(135deg, #0B1E3F 0%, #123B6B 40%, #1D5B99 100%) !important;
+	color: #E6F8FF !important; /* pale cyan for readable text */
 }
 
 
 .window-app .item-piles-even-color:nth-child(even),
 .window-app .item-piles-item-row.svelte-ip-64vjsm.item-piles-child-even-color > * {
-background: initial !important;
-  color: #E6F8FF !important; /* pale cyan for readable text */
+	background: initial !important;
+	color: #E6F8FF !important; /* pale cyan for readable text */
 
 }
 
@@ -1358,9 +1358,9 @@ img.inline {
 
 .social-list,
 .item-list {
-  display: flex;
-  flex-wrap: wrap;        /* allow items to wrap onto new rows */
-  gap: 1em;               /* consistent spacing between items */
+	display: flex;
+	flex-wrap: wrap;        /* allow items to wrap onto new rows */
+	gap: 1em;               /* consistent spacing between items */
 
 }
 
@@ -1462,41 +1462,41 @@ button.crunch-party-button {
 }
 
 .toolTip {
-  position: fixed;
-  background: rgba(0, 0, 0, 0.85); /* dark background */
-  color: #fff;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  pointer-events: none;  /* don’t block clicks */
-  white-space: pre-line; /* support line breaks */
-  z-index: 99999;
-  display: none;         /* hidden by default */
+	position: fixed;
+	background: rgba(0, 0, 0, 0.85); /* dark background */
+	color: #fff;
+	padding: 6px 10px;
+	border-radius: 6px;
+	font-size: 0.9rem;
+	pointer-events: none;  /* don’t block clicks */
+	white-space: pre-line; /* support line breaks */
+	z-index: 99999;
+	display: none;         /* hidden by default */
 }
 
 #tooltip-root {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: none; /* allows clicks through when tooltip isn't interactive */
-  z-index: 99999; /* above everything */
+	position: fixed;
+	top: 0; left: 0;
+	width: 100%; height: 100%;
+	pointer-events: none; /* allows clicks through when tooltip isn't interactive */
+	z-index: 99999; /* above everything */
 }
 
 .tooltip-box {
-  position: absolute;
-  background: rgba(0,0,0,0.9);
-  color: #fff;
-  padding: 0.5em 0.75em;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  white-space: nowrap;
-  font-size: 14px;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  pointer-events: auto; /* if you want links/buttons inside */
+	position: absolute;
+	background: rgba(0,0,0,0.9);
+	color: #fff;
+	padding: 0.5em 0.75em;
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+	white-space: nowrap;
+	font-size: 14px;
+	opacity: 0;
+	transition: opacity 0.15s ease;
+	pointer-events: auto; /* if you want links/buttons inside */
 }
 .tooltip-box.visible {
-  opacity: 1;
+	opacity: 1;
 }
 
 i.red {
@@ -1505,28 +1505,28 @@ i.red {
 
 
 i.gold {
-  position: relative;
-  font-weight: 700;
-  color: #fceabb;
-  background: linear-gradient(45deg, #fff7c0, #d4af37, #b8860b);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 10px rgba(255, 230, 150, 0.8);
+	position: relative;
+	font-weight: 700;
+	color: #fceabb;
+	background: linear-gradient(45deg, #fff7c0, #d4af37, #b8860b);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 0 10px rgba(255, 230, 150, 0.8);
 }
 
 
 i.gold::after {
-  content: "✨";
-  position: absolute;
-  animation: sparkle 2s infinite ease-in-out;
-  font-size: 0.8em;
-  color: #fff8dc;
-  opacity: 0;
+	content: "✨";
+	position: absolute;
+	animation: sparkle 2s infinite ease-in-out;
+	font-size: 0.8em;
+	color: #fff8dc;
+	opacity: 0;
 }
 
 @keyframes sparkle {
-  0%, 80%, 100% { opacity: 0; transform: translate(-20%, -50%) scale(0.8); }
-  10% { opacity: 1; transform: translate(100%, -50%) scale(1.2); }
+	0%, 80%, 100% { opacity: 0; transform: translate(-20%, -50%) scale(0.8); }
+	10% { opacity: 1; transform: translate(100%, -50%) scale(1.2); }
 }
 
 img.greyed-out {
@@ -1684,19 +1684,19 @@ div.message-content .answers {
 	
 	transition: background 0.4s ease;
 
-animation:
-    theurgy-shimmer 2.5s linear infinite,
-    theurgy-breathe 1.8s ease-in-out infinite;
+	animation:
+	theurgy-shimmer 2.5s linear infinite,
+	theurgy-breathe 1.8s ease-in-out infinite;
 }
 
 @keyframes theurgy-shimmer {
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    /* background-position: 200% 50%; */
-    background-position: 25% 50%;
-  }
+	0% {
+		background-position: 0% 50%;
+	}
+	100% {
+		/* background-position: 200% 50%; */
+		background-position: 25% 50%;
+	}
 }
 
 .combat-panel > *{
@@ -1705,52 +1705,52 @@ animation:
 }
 
 @keyframes theurgy-breathe {
-  0%,
-  100% {
-    filter: brightness(1);
-    transform: scaleX(1);
-  }
-  50% {
-    filter: brightness(1.15);
-    transform: scaleX(1.25);
-  }
+	0%,
+	100% {
+		filter: brightness(1);
+		transform: scaleX(1);
+	}
+	50% {
+		filter: brightness(1.15);
+		transform: scaleX(1.25);
+	}
 }
 
 .shimmer {
-  position: relative;
-  overflow: hidden;
+	position: relative;
+	overflow: hidden;
 }
 
 /* shimmer overlay */
 .shimmer::after {
-  content: "";
-  position: absolute;
-  inset: 0;
+	content: "";
+	position: absolute;
+	inset: 0;
 
-  background: linear-gradient(
-    120deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.35) 45%,
-    rgba(255, 255, 255, 0.35) 55%,
-    transparent 70%
-  );
+	background: linear-gradient(
+	120deg,
+	transparent 30%,
+	rgba(255, 255, 255, 0.35) 45%,
+	rgba(255, 255, 255, 0.35) 55%,
+	transparent 70%
+	);
 
-  transform: translateX(-150%);
-  animation: shimmer-sweep 2.2s ease-in-out infinite;
+	transform: translateX(-150%);
+	animation: shimmer-sweep 2.2s ease-in-out infinite;
 
-  pointer-events: none;
+	pointer-events: none;
 }
 
 @keyframes shimmer-sweep {
-  0% {
-    transform: translateX(-150%);
-  }
-  50% {
-    transform: translateX(150%);
-  }
-  100% {
-    transform: translateX(150%);
-  }
+	0% {
+		transform: translateX(-150%);
+	}
+	50% {
+		transform: translateX(150%);
+	}
+	100% {
+		transform: translateX(150%);
+	}
 }
 
 .control-panel .active-statuses {
@@ -1818,57 +1818,61 @@ textarea.finale-input {
 
 .combat-roll-header h3 {
 	font-size: 1.2em;
- }
+}
 
- .combat-panel .follow-ups .follow-up {
-	 cursor: pointer;
- }
+.combat-panel .follow-ups .follow-up {
+	cursor: pointer;
+}
 
- .roll-block {
-	 max-height: 0;
-	 opacity: 0;
-	 overflow: hidden;
-	 transform: translateY(-0.5rem);
-	 transition:
-	 max-height 0.35s ease,
-	 opacity 0.25s ease,
-	 transform 0.35s ease;
- }
+.roll-block {
+	max-height: 0;
+	opacity: 0;
+	overflow: hidden;
+	transform: translateY(-0.5rem);
+	transition:
+	max-height 0.35s ease,
+	opacity 0.25s ease,
+	transform 0.35s ease;
+}
 
 .outer-roll-block.open .roll-block {
-	 max-height: 500px; /* large enough for content */
-	 opacity: 1;
-	 transform: translateY(0);
- }
+	max-height: 500px; /* large enough for content */
+	opacity: 1;
+	transform: translateY(0);
+}
 
- .simple-target {
-	 justify-content: center;
-	 font-weight: bold;
-	 font-size: larger;
-	 text-align: center;
- }
+.simple-target {
+	justify-content: center;
+	font-weight: bold;
+	font-size: larger;
+	text-align: center;
+}
 
- .outer-roll-block {
-	 cursor: help;
- }
+.outer-roll-block {
+	cursor: help;
+}
 
- .outer-roll-block.open .simple-target {
-	 visibility: hidden;
- }
+.outer-roll-block.open .simple-target {
+	visibility: hidden;
+}
 
- .active-control-panel button.end-turn {
-  visibility: visible;
- }
+.active-control-panel button.end-turn {
+	visibility: visible;
+}
 
- button.end-turn {
-		visibility: hidden;
- }
+button.end-turn {
+	visibility: hidden;
+}
 
- .printable-power-table .rarity {
+.printable-power-table .rarity {
 	cursor: pointer;
- }
+}
 
- .token-spends input.tokenspend {
-	 display: inline;
-	 width: 100%;
- }
+.token-spends input.tokenspend {
+	display: inline;
+	width: 100%;
+}
+
+.power-name-block.on-cooldown {
+	opacity: 50%;
+}

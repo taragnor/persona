@@ -71,19 +71,19 @@ export class AltDamageSystem extends DamageSystemBase {
 	public getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
 		const dtype = power.getDamageType(userPersona);
 		const calc = new DamageCalculation(dtype);
-		calc.add("base", this.BASE_WEAPON_DMG, "Base Weapon Damage");
-		const levelDivisor = power.isBasicPower() ? this.BASIC_ATTACK_LEVEL_DIVISOR : this.BASE_DAMAGE_LEVEL_DIVISOR;
-		const str = this.strDamageBonus(userPersona);
-		const weaponDmg = this.weaponDamage(userPersona);
+		// calc.add("base", this.BASE_WEAPON_DMG, "Base Weapon Damage");
 		const skillDamage = this.weaponSkillDamage(power);
+		calc.add('base', skillDamage.baseAmt, `${power.displayedName.toString()} Base`);
+		const levelDivisor = power.isBasicPower() ? this.BASIC_ATTACK_LEVEL_DIVISOR : this.BASE_DAMAGE_LEVEL_DIVISOR;
+		const weaponDmg = this.weaponDamage(userPersona);
 		const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
 		const bonusVariance = userPersona.getBonusVariance().total(situation);
-		const strRes = str.eval(situation);
+		// const str = this.strDamageBonus(userPersona);
+		// const strRes = str.eval(situation);
+		// calc.add('base', strRes.total, `${userPersona.publicName} Strength (${strRes.steps.join(" ,")})`);
 		calc.add('base', userPersona.user.level * levelDivisor, `Character Level * ${levelDivisor} `);
-		calc.add('base', strRes.total, `${userPersona.publicName} Strength (${strRes.steps.join(" ,")})`);
 		const weaponName = userPersona.user.isShadow() ? 'Unarmed Shadow Damage' : (userPersona.user.weapon?.displayedName ?? 'Unarmed');
 		calc.add('base', weaponDmg.baseAmt, weaponName.toString());
-		calc.add('base', skillDamage.baseAmt, `${power.displayedName.toString()} Power Bonus`);
 		calc.add('base', bonusDamage, 'Bonus Damage');
 		const variance  = (this.BASE_VARIANCE + weaponDmg.extraVariance + skillDamage.extraVariance + bonusVariance );
 		const varianceMult = userPersona.combatStats.getPhysicalVariance();
@@ -99,21 +99,21 @@ export class AltDamageSystem extends DamageSystemBase {
 		const isHealing = dtype == "healing";
 		const persona = userPersona;
 		const skillDamage = this.magicSkillDamage(power);
-		const magicDmg = this.magDamageBonus(userPersona);
 		if (isHealing) {
+			const magicDmg = this.magDamageBonus(userPersona);
 			magicDmg.mult(1, this.HEALING_MAGIC_MULT , "Healing Power");
 		}
 		const damageBonus = persona.getBonuses('magDmg').total(situation);
 		const bonusVariance = userPersona.getBonusVariance().total(situation);
 		const calc= new DamageCalculation(dtype);
-		calc.add("base", this.BASE_MAGIC_DMG, "Base Magic Damage");
-		const resMag = magicDmg.eval(situation);
+		const baseAmt = skillDamage.baseAmt;
+		calc.add('base', baseAmt, `${power.displayedName.toString()} Base Damage`);
+		// calc.add("base", this.BASE_MAGIC_DMG, "Base Magic Damage");
 		if (!isHealing) {
 			calc.add('base', userPersona.user.level * this.BASE_DAMAGE_LEVEL_DIVISOR, `Character Level * ${this.BASE_DAMAGE_LEVEL_DIVISOR} `);
 		}
-		calc.add('base', resMag.total, `${userPersona.publicName} Magic (${resMag.steps.join(" ,")})`, );
-		const baseAmt = skillDamage.baseAmt;
-		calc.add('base', baseAmt, `${power.displayedName.toString()} Damage`);
+		// const resMag = magicDmg.eval(situation);
+		// calc.add('base', resMag.total, `${userPersona.publicName} Magic (${resMag.steps.join(" ,")})`, );
 		calc.add('base', damageBonus, 'Bonus Damage');
 		const variance  = (this.BASE_VARIANCE + skillDamage.extraVariance + bonusVariance );
 		const varianceMult = userPersona.combatStats.getMagicalVariance();
@@ -306,9 +306,9 @@ export class AltDamageSystem extends DamageSystemBase {
 const DAMAGE_LEVEL_NEW = {
 	"none": {extraVariance: 0, baseAmt: 0, mult: 0, healMult: 0},
 	"miniscule": {extraVariance: 0, baseAmt: 0, mult: 0.5, healMult: 0.25},
-	"basic": {extraVariance: 0, baseAmt: 0, mult: 1, healMult: 0.5},
-	"light": {extraVariance: 0, baseAmt: 10, mult: 1.15, healMult: 1.25},
-	"medium": {extraVariance: 0, baseAmt: 20, mult: 1.35, healMult: 2},
+	"basic": {extraVariance: 0, baseAmt: 5, mult: 1, healMult: 0.5},
+	"light": {extraVariance: 0, baseAmt: 15, mult: 1.15, healMult: 1.25},
+	"medium": {extraVariance: 0, baseAmt: 25, mult: 1.35, healMult: 2},
 	"heavy": {extraVariance: 0, baseAmt: 30, mult: 1.75, healMult: 3},
 	"severe": {extraVariance: 0, baseAmt: 40, mult: 2.25, healMult: 4},
 	"colossal": {extraVariance: 0, baseAmt: 55, mult: 2.666, healMult :5},

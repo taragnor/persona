@@ -553,6 +553,10 @@ export class PersonaHandleBarsHelpers {
 			return power.system.slot > persona.highestPowerSlotUsable();
 		},
 
+		"isPowerOnCooldown":  function (persona: Persona, power: Power): boolean {
+			return persona.isPowerOnCooldown(power);
+		},
+
 		"canUseTalents": function (actor: PersonaActor) : boolean {
 			return actor.isValidCombatant();
 		},
@@ -619,11 +623,15 @@ export class PersonaHandleBarsHelpers {
 			return engine.getAttackBonus(persona, power, undefined).eval(situation).total;
 		},
 
-		"powerCostString": function (power: Power, persona: Persona)  : SafeString {
-			try {
-			return new Handlebars.SafeString(power.costString1(persona));
-			} catch {return new Handlebars.SafeString("ERROR");}
-		},
+		 "powerCostString": function (power: Power, persona: Persona)  : SafeString {
+				try {
+					 const costString = power.costString1(persona);
+					 if (costString.length == 0) {
+							return new Handlebars.SafeString("");
+					 }
+					 return new Handlebars.SafeString(`(${costString})`);
+				} catch {return new Handlebars.SafeString("ERROR");}
+		 },
 
 		"isExotic" : function (power: Power) : boolean {
 			return power.hasTag("exotic");

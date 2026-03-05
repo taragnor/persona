@@ -70,7 +70,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		mpCost: U<number>,
 		mpGrowthTable: U<GrowthCalculator>,
 		hpGrowthTable: U<GrowthCalculator>,
-		tags: U<(PowerTag | EquipmentTag)[]>,
+		tags: U<readonly (PowerTag | EquipmentTag)[]>,
 	};
 
 	static cacheStats = {
@@ -771,19 +771,23 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const itype = this.system.type;
 		switch (itype) {
 			case 'power': {
-				if (this.cache.tags == undefined) {
-					this.cache.tags = (this as Power).#autoTags_power();
-					return this.cache.tags;
-				}
-				//Safety check to see if there's cache corruption
-				if (PersonaSettings.debugMode()) {
-					const checkTags =  (this as Power).#autoTags_power();
-					if (checkTags.length != this.cache.tags.length) {
-						PersonaError.softFail(`Tag Length mismatch, possible cache corruption on ${this.name}`, checkTags, this.cache.tags);
-					}
+				const baseTags = this.#getUniformAutoTags();
+				const retTags = baseTags.slice();
+				//if (this.cache.tags == undefined) {
+				//	this.cache.tags = (this as Power).#autoTags_power();
+				//	return this.cache.tags;
+				//}
+				////Safety check to see if there's cache corruption
+				//if (PersonaSettings.debugMode()) {
+				//	const checkTags =  (this as Power).#autoTags_power();
+				//	if (checkTags.length != this.cache.tags.length) {
+				//		PersonaError.softFail(`Tag Length mismatch, possible cache corruption on ${this.name}`, checkTags, this.cache.tags);
+				//	}
+				//}
+				if ((this as Power).getCooldown(user ?? null)) {
+					retTags.pushUnique(`cooldown`);
 				}
 				const dmgTags = (this as Power).getWeaponDamageTypeTags(user ?? null);
-				const retTags = this.cache.tags.slice();
 				retTags.pushUnique(...dmgTags);
 				return retTags;
 			}
@@ -858,6 +862,21 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				// PersonaError.softFail(`Can't get tag list for ${itype as string}`);
 				return [];
 		}
+	}
+
+	#getUniformAutoTags() : NonNullable<typeof this.cache.tags> {
+		if (this.cache.tags == undefined) {
+			this.cache.tags = (this as Power).#autoTags_power();
+			return this.cache.tags;
+		}
+		//Safety check to see if there's cache corruption
+		if (PersonaSettings.debugMode()) {
+			const checkTags =  (this as Power).#autoTags_power();
+			if (checkTags.length != this.cache.tags.length) {
+				PersonaError.softFail(`Tag Length mismatch, possible cache corruption on ${this.name}`, checkTags, this.cache.tags);
+			}
+		}
+		return this.cache.tags;
 	}
 
 	#autoTags_power(this: Power): (PowerTag | EquipmentTag)[] {
@@ -990,11 +1009,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	}
 
 	powerCostString(this: Power, persona: Persona) : string {
-		if (persona.user.isShadow())
-		{return this.powerCostString_Shadow(persona);}
-		else  {
-			return this.powerCostString_PC(persona);
+		const costs : string[] = [];
+		const baseCost= persona.user.isShadow()
+			? this.powerCostString_Shadow(persona)
+			: this.powerCostString_PC(persona);
+		if (baseCost.length) {costs.push(baseCost);}
+		if (this.getCooldown(persona)) {
+			costs.push(`CD ${this.getCooldown(persona)}`);
 		}
+		return costs.join(", ");
 	}
 
 	static grantsPowers(eff: SourcedConditionalEffect) : boolean{
@@ -2712,6 +2735,18 @@ private async alterRarity(this: Power, amt: number) {
 
 async reduceRarity(this: Power) {
 	await this.alterRarity(1);
+}
+
+getCooldown(this:Power, user: N<ValidAttackers | Persona>) : number {
+	if (!user) {return this.system.cooldown ?? 0;}
+	if (user instanceof Persona) {
+		user = user.user;
+	}
+	if (!user.isShadow()) {
+		return this.system.cooldown ?? 0;
+	}
+	const cost= EnergyClassCalculator.calcCooldown(this, user);
+	return Math.max(cost, this.system.cooldown ?? 0);
 }
 
 }

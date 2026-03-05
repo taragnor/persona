@@ -3836,6 +3836,19 @@ async setEffectFlag(effect: DistributiveOmit<SetFlagEffect, "type">) {
 		await this.clearEffectFlag(effect.flagId);
 	}
 }
+
+async addPowerCooldown(power : Power, duration: StatusDuration) {
+		const newAE = {
+			name: `${power.name} cooldown`,
+		};
+	const cooldownEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
+	await cooldownEffect.setCooldown(power, duration);
+}
+
+isPowerOnCooldown(power: Power) : boolean {
+	return this.effects.contents.some( eff => eff.isCooldown(power));
+}
+
 async createEffectFlag(flagId: string,
 	flagName ?: string,
 	duration: StatusDuration = {dtype: "instant"},

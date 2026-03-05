@@ -52,6 +52,7 @@ export function powerCost() {
 		inspirationId: new id(),
 		inspirationCost: new num({initial: 0, max: 10, min:0, integer: true}),
 		reqHealthPercentage: new num( {initial: 100, min : 1, max: 100}),
+		cooldown: new num( {initial: 0, min: 0, max: 100}),
 	};
 }
 

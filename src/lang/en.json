@@ -457,6 +457,7 @@
 	"persona.power.tag.inaccurate": "Inaccurate",
 	"persona.power.tag.accurate": "Accurate",
 	"persona.power.tag.status-removal": "Status Removal",
+	"persona.power.tag.cooldown": "Cooldown",
 	"persona.power.tag.resurrection": "Resurrection",
 	"persona.power.tag.price-lower-for-shadow": "Shadow Favored",
 	"persona.power.tag.charm": "Charm",
@@ -725,7 +726,7 @@
 "persona.combat-effects-subtypes.alter-energy": "Alter Energy",
 "persona.combat-effects-subtypes.apply-recovery": "Apply Recovery",
 "persona.combat-effects-subtypes.alter-theurgy": "Alter Current Theurgy Score",
-
+"persona.combat-effects-subtypes.set-cooldown": "Set Cooldown to effect",
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",

@@ -124,6 +124,7 @@ type RecoveryEffect = {
 
 export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | AlterTheurgyEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | SetHPOtherEffect | InventoryActionOtherEffect | RecoveryEffect | setRollResultConsequence;
 
+
 type InventoryActionOtherEffect = Exclude<InventoryActionConsequence, {invAction: "add-card-item"}> | {
 	type: "inventory-action",
 	invAction: "add-card-item",
@@ -384,6 +385,11 @@ type CombatEffectConsequencesList =
 		applyTo : ConsequenceTarget,
 		subtype: AlterMPSubtype,
 		amount: number,
+	} | {
+		applyTo: ConsequenceTarget
+		powerId: Power["id"],
+		combatEffect: "set-cooldown",
+		durationRounds: number,
 	}
 ;
 

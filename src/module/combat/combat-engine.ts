@@ -1075,6 +1075,77 @@ export class CombatEngine {
 		return true;
 	}
 
+	async #processPowerCost (attacker: PToken, situation: Situation, power: Power, _costModifiers: OtherEffect[]) : Promise <CombatResult> {
+		const res = new CombatResult();
+		if (power.system.subtype == 'social-link') {
+			if (power.system.inspirationId) {
+				await res.addEffect(null, attacker.actor, {
+					type:'inspiration-cost',
+					amount: power.system.inspirationCost,
+					socialLinkIdOrTarot: power.system.inspirationId as unknown as AnyStringObject,
+					source: power,
+					owner: attacker.actor.accessor,
+					realSource: undefined,
+					applyTo: "attacker",
+				}, situation);
+			}
+		}
+		if (!attacker.actor.isShadow() && power.hpCost()) {
+			const deprecatedConvert = DamageCalculation.convertToNewFormConsequence({
+				type: 'hp-loss',
+				damageType: 'none',
+				amount: power.modifiedHpCost(attacker.actor.persona()),
+				source: power,
+				owner: attacker.actor.accessor,
+				realSource: undefined,
+				applyTo: "attacker",
+			}, power.getDamageType(attacker.actor));
+			await res.addEffect(null, attacker.actor, deprecatedConvert, situation );
+		}
+		if (!attacker.actor.isShadow()
+			&& power.system.subtype == 'magic'
+			&& power.mpCost(attacker.actor.persona()) > 0) {
+			await res.addEffect(null, attacker.actor, {
+				type: 'alter-mp',
+				subtype: 'direct',
+				amount: -power.mpCost(attacker.actor.persona()),
+				source: power,
+				owner: attacker.actor.accessor,
+				realSource: undefined,
+				applyTo: "attacker",
+			}, situation);
+		}
+		if (attacker.actor.isShadow()) {
+			const ecost = power.energyCost(attacker.actor.persona());
+			if (power.energyCost(attacker.actor.persona()) > 0) {
+				await res.addEffect(null, attacker.actor, {
+					type: "combat-effect",
+					combatEffect: 'alter-energy',
+					amount: -ecost,
+					source: power,
+					owner: attacker.actor.accessor,
+					realSource: undefined,
+					applyTo: "attacker",
+				}, situation);
+			}
+		}
+		const cooldown = power.getCooldown(attacker.actor);
+		if (power.isPower() && cooldown > 0) {
+				await res.addEffect(null, attacker.actor, {
+					type: "combat-effect",
+					combatEffect: 'set-cooldown',
+					powerId: power.id,
+					durationRounds: cooldown,
+					source: power,
+					owner: attacker.actor.accessor,
+					realSource: undefined,
+					applyTo: "attacker",
+				}, situation);
+
+		}
+		return res;
+	}
+
 	async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _costModifiers: OtherEffect[]) : Promise<CombatResult> {
 		const situation : Situation = {
 			user: attacker.actor.accessor,
@@ -1085,60 +1156,64 @@ export class CombatEngine {
 		switch (usableOrCard.system.type) {
 			case 'power': {
 				const power  = usableOrCard as Power;
-				if (power.system.subtype == 'social-link') {
-					if (power.system.inspirationId) {
-						await res.addEffect(null, attacker.actor, {
-							type:'inspiration-cost',
-							amount: power.system.inspirationCost,
-							socialLinkIdOrTarot: power.system.inspirationId as unknown as AnyStringObject,
-							source: usableOrCard,
-							owner: attacker.actor.accessor,
-							realSource: undefined,
-							applyTo: "attacker",
-						}, situation);
-					}
-				}
-				if (!attacker.actor.isShadow() && power.hpCost()) {
-					const deprecatedConvert = DamageCalculation.convertToNewFormConsequence({
-						type: 'hp-loss',
-						damageType: 'none',
-						amount: power.modifiedHpCost(attacker.actor.persona()),
-						source: usableOrCard,
-						owner: attacker.actor.accessor,
-						realSource: undefined,
-						applyTo: "attacker",
-					}, power.getDamageType(attacker.actor));
-					await res.addEffect(null, attacker.actor, deprecatedConvert, situation );
-				}
-				if (!attacker.actor.isShadow()
-					&& power.system.subtype == 'magic'
-					&& power.mpCost(attacker.actor.persona()) > 0) {
-					await res.addEffect(null, attacker.actor, {
-						type: 'alter-mp',
-						subtype: 'direct',
-						amount: -power.mpCost(attacker.actor.persona()),
-						source: usableOrCard,
-						owner: attacker.actor.accessor,
-						realSource: undefined,
-						applyTo: "attacker",
-					}, situation);
-				}
-				if (attacker.actor.isShadow()) {
-					const ecost = power.energyCost(attacker.actor.persona());
-					if (power.energyCost(attacker.actor.persona()) > 0) {
-						await res.addEffect(null, attacker.actor, {
-							type: "combat-effect",
-							combatEffect: 'alter-energy',
-							amount: -ecost,
-							source: usableOrCard,
-							owner: attacker.actor.accessor,
-							realSource: undefined,
-							applyTo: "attacker",
-						}, situation);
-					}
-				}
-			}
+				res.merge(await this.#processPowerCost(attacker, situation, power, _costModifiers));
 				break;
+			}
+				// if (power.system.subtype == 'social-link') {
+				// 	if (power.system.inspirationId) {
+				// 		await res.addEffect(null, attacker.actor, {
+				// 			type:'inspiration-cost',
+				// 			amount: power.system.inspirationCost,
+				// 			socialLinkIdOrTarot: power.system.inspirationId as unknown as AnyStringObject,
+				// 			source: usableOrCard,
+				// 			owner: attacker.actor.accessor,
+				// 			realSource: undefined,
+				// 			applyTo: "attacker",
+				// 		}, situation);
+				// 	}
+				// }
+				// if (!attacker.actor.isShadow() && power.hpCost()) {
+				// 	const deprecatedConvert = DamageCalculation.convertToNewFormConsequence({
+				// 		type: 'hp-loss',
+				// 		damageType: 'none',
+				// 		amount: power.modifiedHpCost(attacker.actor.persona()),
+				// 		source: usableOrCard,
+				// 		owner: attacker.actor.accessor,
+				// 		realSource: undefined,
+				// 		applyTo: "attacker",
+				// 	}, power.getDamageType(attacker.actor));
+				// 	await res.addEffect(null, attacker.actor, deprecatedConvert, situation );
+				// }
+				// if (!attacker.actor.isShadow()
+				// 	&& power.system.subtype == 'magic'
+				// 	&& power.mpCost(attacker.actor.persona()) > 0) {
+				// 	await res.addEffect(null, attacker.actor, {
+				// 		type: 'alter-mp',
+				// 		subtype: 'direct',
+				// 		amount: -power.mpCost(attacker.actor.persona()),
+				// 		source: usableOrCard,
+				// 		owner: attacker.actor.accessor,
+				// 		realSource: undefined,
+				// 		applyTo: "attacker",
+				// 	}, situation);
+				// }
+				// if (attacker.actor.isShadow()) {
+				// 	const ecost = power.energyCost(attacker.actor.persona());
+				// 	if (power.energyCost(attacker.actor.persona()) > 0) {
+				// 		await res.addEffect(null, attacker.actor, {
+				// 			type: "combat-effect",
+				// 			combatEffect: 'alter-energy',
+				// 			amount: -ecost,
+				// 			source: usableOrCard,
+				// 			owner: attacker.actor.accessor,
+				// 			realSource: undefined,
+				// 			applyTo: "attacker",
+				// 		}, situation);
+				// 	}
+				// }
+				// }
+				// break;
+				// }
 			case 'skillCard':
 			case 'consumable' :{
 				const consumable = usableOrCard as Consumable;
