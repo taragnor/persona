@@ -47,6 +47,7 @@ type EnableFlagEffect = {
 	duration: StatusDuration,
 	embeddedEffects: readonly SourcedConditionalEffect[],
 	clearOnDeath: boolean,
+	statusTagId: Tag["id"] | "",
 };
 
 type ClearFlagEffect = {
@@ -253,6 +254,7 @@ type CancelRequestConsequence = {
 type setRollResultConsequence = {
 	type: "set-roll-result";
 	result: AttackResult["result"];
+	priority ?: number; //not used yet but could be
 }
 
 type ExtraActionConsequence = {
@@ -406,7 +408,6 @@ export type NewDamageConsequence =
 
 type AddTagConsequence = {
 	type: "add-creature-tag",
-	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 	creatureTag: InternalCreatureTag | Tag["id"];
 }
 
@@ -415,12 +416,15 @@ type SetFlagConsequence = {
 	flagId : string,
 	flagState : boolean,
 } & (
-	{flagState: false}
+	{
+		flagState: false
+	}
 	| {
 		flagState : true,
 		flagName : string,
 		applyEmbedded: boolean,
 		clearOnDeath: boolean,
+		statusTagId: Tag["id"] | "",
 	}
 ) & DurationComponent;
 

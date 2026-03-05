@@ -27,7 +27,7 @@ import { CombatResult } from './combat-result.js';
 import { PersonaActor } from '../actor/persona-actor.js';
 import { AttackResult } from './combat-result.js';
 import { PersonaDB } from '../persona-db.js';
-import { RollBundle } from '../persona-roll.js';
+import { PersonaRoller, RollBundle } from '../persona-roll.js';
 import { EngagementList } from './engagementList.js';
 import {FinalizedCombatResult} from './finalized-combat-result.js';
 import {CombatScene} from './combat-scene.js';
@@ -480,7 +480,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		// if (openingReturn) {
 		// 	const {data, roll} = openingReturn;
 		// 	const openerMsg = await foundry.applications.handlebars.renderTemplate('systems/persona/parts/openers-list.hbs', {roll, openers: data, combatant});
-		const openingData= await this.openers.printOpenerList(combatant);
+		const openingData = await this.openers.printOpenerList(combatant);
 		if (openingData) {
 			startTurnMsg.push(openingData.openerMsg);
 			baseRolls.push(openingData.roll);
@@ -1784,11 +1784,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			const combatant = this.combatants.get(id as Combatant["id"]);
 			if ( !combatant?.isOwner ) {continue;}
 
-			// Produce an initiative roll for the Combatant
-			const roll = combatant.getInitiativeRoll(formula);
-			await roll.evaluate();
-			rolls.push({combatant, roll});
-			updates.push({_id: id, initiative: roll.total});
+			 // Produce an initiative roll for the Combatant
+			 const roll = combatant.getInitiativeRoll(formula);
+			 await roll.evaluate();
+			 PersonaRoller.hideAnimation(roll);
+			 rolls.push({combatant, roll});
+			 updates.push({_id: id, initiative: roll.total});
 
 		}
 		if ( !updates.length ) {return this;}

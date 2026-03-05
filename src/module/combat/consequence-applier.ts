@@ -420,7 +420,7 @@ export class ConsequenceApplier {
 				}
 				const duration : StatusDuration = {
 					dtype: "X-rounds",
-					amount: effect.durationRounds,
+					amount: Math.clamp(effect.durationRounds -1, 0, 10),
 				};
 				await actor.addPowerCooldown(power, duration);
 				break;

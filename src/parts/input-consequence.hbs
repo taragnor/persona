@@ -1,58 +1,68 @@
 <div class="consequence-block" data-consequence-index="{{consequence_index}}" data-path="{{namePrefix}}">
-	{{#if (neAll cons.type "alter-variable" "modifier" "modifier-new")}}
-	{{#if (ne cons.applyToSelf undefined)}}
-	<div>
-		<label>
-			Apply to Self
-		</label>
-		<input type="checkbox" name="{{strcat namePrefix 'applyToSelf'}}" {{checked cons.applyToSelf}}>
-	</div>
-	{{else}}
-	<div>
-		<label>
-			Apply To
-		</label>
-		<select name="{{strcat namePrefix 'applyTo'}}">
-			{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cons.applyTo}}
-		</select>
-	</div>
-	{{/if}}
-	{{/if}}
-	<div class="type-select">
-		<select name="{{strcat namePrefix 'type'}}">
-			{{selectOptions (deprecationList cons.type POWERSTUFF.NONDEP_CONSTYPES POWERSTUFF.CONSTYPES) localize=true selected=cons.type}}
-		</select>
-	</div>
-	{{#if (or (eq cons.type "addStatus") (eq cons.type "removeStatus"))}}
-	<select name="{{strcat namePrefix 'statusName' }}">
-		{{selectOptions POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
-	</select>
-	{{/if}}
-	{{#if (eqAny cons.type "addStatus" "set-flag")}}
-	<span>
-		<select name="{{strcat namePrefix 'statusDuration'}}">
-			{{selectOptions POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusDuration}}
-		</select>
-		{{#if (eqAny cons.statusDuration "save") }}
-		<select name="{{strcat namePrefix 'saveType'}}">
-			{{selectOptions POWERSTUFF.SAVE_DIFFICULTY localize=true selected=cons.saveType}}
-		</select>
-		{{/if}}
-		{{#if (eqAny cons.statusDuration "X-days" "X-rounds" "X-exploration-turns") }}
-		<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
-		{{/if}}
-		{{#if (eqAny cons.statusDuration "UEoNT" "USoNT" "UEoT") }}
-		<div>
+	 {{#if (neAll cons.type "alter-variable" "modifier" "modifier-new")}}
+	 {{#if (ne cons.applyToSelf undefined)}}
+	 <div>
 			<label>
-				Status Anchored to
+				 Apply to Self
 			</label>
-			<select name="{{strcat namePrefix 'durationApplyTo'}}">
-				{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cons.durationApplyTo}}
+			<input type="checkbox" name="{{strcat namePrefix 'applyToSelf'}}" {{checked cons.applyToSelf}}>
+	 </div>
+	 {{else}}
+	 <div>
+			<label>
+				 Apply To
+			</label>
+			<select name="{{strcat namePrefix 'applyTo'}}">
+				 {{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cons.applyTo}}
 			</select>
-		</div>
-		{{/if}}
-	</span>
-	{{/if}}
+	 </div>
+	 {{/if}}
+	 {{/if}}
+	 <div class="type-select">
+			<select name="{{strcat namePrefix 'type'}}">
+				 {{selectOptions (deprecationList cons.type POWERSTUFF.NONDEP_CONSTYPES POWERSTUFF.CONSTYPES) localize=true selected=cons.type}}
+			</select>
+	 </div>
+	 {{#if (or (eq cons.type "addStatus") (eq cons.type "removeStatus"))}}
+	 <select name="{{strcat namePrefix 'statusName' }}">
+			{{selectOptions POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
+	 </select>
+	 {{/if}}
+	 {{#if (eqAny cons.type "addStatus" "set-flag")}}
+	 <div>
+			<label>
+			Status Tag
+			</label>
+			<select name="{{strcat namePrefix 'statusTagId'}}">
+				 {{selectOptions POWERSTUFF.STATUS_TAGS localize=true selected=cons.statusTagId}}
+			</select>
+
+	 </div>
+
+	 <span>
+			<select name="{{strcat namePrefix 'statusDuration'}}">
+				 {{selectOptions POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusDuration}}
+			</select>
+			{{#if (eqAny cons.statusDuration "save") }}
+			<select name="{{strcat namePrefix 'saveType'}}">
+				 {{selectOptions POWERSTUFF.SAVE_DIFFICULTY localize=true selected=cons.saveType}}
+			</select>
+			{{/if}}
+			{{#if (eqAny cons.statusDuration "X-days" "X-rounds" "X-exploration-turns") }}
+			<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+			{{/if}}
+			{{#if (eqAny cons.statusDuration "UEoNT" "USoNT" "UEoT") }}
+			<div>
+				 <label>
+						Status Anchored to
+				 </label>
+				 <select name="{{strcat namePrefix 'durationApplyTo'}}">
+						{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cons.durationApplyTo}}
+				 </select>
+			</div>
+			{{/if}}
+	 </span>
+	 {{/if}}
 
 	{{#if (eqAny cons.type "dmg-mult" "revive" "escalationManipulation" "recover-slot" "alter-fatigue-lvl")}}
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">

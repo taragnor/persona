@@ -3659,7 +3659,9 @@ async onStartCombatTurn(this: ValidAttackers): Promise<string[]> {
 	const ret = [] as string[];
 	await this.setBatonLevel(0);
 	const promises = this.effects.contents.map( async (eff) => {
-		if ( await eff.onStartCombatTurn()) {
+		if ( await eff.onStartCombatTurn()
+			&& eff.displayOnEnd()
+		) {
 			return eff.displayedName;
 		}
 		return "";
@@ -3831,6 +3833,15 @@ async setEffectFlag(effect: DistributiveOmit<SetFlagEffect, "type">) {
 		const flag = await this.createEffectFlag(effect.flagId, effect.flagName, effect.duration, effect.clearOnDeath);
 		if (effect.embeddedEffects.length> 0) {
 			await flag.setEmbeddedEffects(effect.embeddedEffects);
+		}
+		if (effect.statusTagId) {
+			const tags = PersonaDB.tagsOfCategory("status");
+			const statusTag = tags.find(tag => tag.id == effect.statusTagId);
+			if (statusTag) {
+				await flag.update({
+					"img" : statusTag.img,
+					"statuses" : [statusTag.id]});
+			}
 		}
 	} else {
 		await this.clearEffectFlag(effect.flagId);

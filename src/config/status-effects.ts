@@ -243,7 +243,15 @@ CONFIG.statusEffects = STATUS_EFFECT_LIST
 	return {id, icon, tags, name:`persona.status.${id}`};
 });
 
-export type StatusEffectId = typeof STATUS_EFFECT_LIST[number]["id"];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const DEPRECATED_STATUS_EFFECTS = [
+	 // "blind", //becomes dizzy
+	 // "fear", //becomes confused
+] as const;
+
+export type DeprecatedStatusEffects = typeof DEPRECATED_STATUS_EFFECTS[number];
+
+export type StatusEffectId = Exclude<typeof STATUS_EFFECT_LIST[number]["id"], DeprecatedStatusEffects>;
 
 export type FatigueStatusId = Extract<StatusEffectId, "tired" | "exhausted" | "rested" | "fatigued">
 

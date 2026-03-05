@@ -108,7 +108,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 				return `${dur.saveType} save ends`;
 			case "3-rounds":
 			case "X-rounds":
-				return `Lasts ${dur.amount ?? 3} rounds`;
+				return `Duration: ${(dur.amount ?? 3) + 1} rounds`;
 			case "X-days":
 				return `Lasts ${dur.amount} days`;
 			case "UEoNT":
@@ -334,6 +334,12 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		}
 	}
 
+	/** inform player this has ended*/
+	displayOnEnd () : boolean {
+		if (this.isCooldown()) {return false;}
+		return true;
+	}
+
 	/** when the statuses natural duration ends*/
 	async endStatusTimeout() : Promise<void> {
 		if (this.parent instanceof PersonaActor && this.parent.isValidCombatant()) {
@@ -427,7 +433,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 				// 	return false;
 				// }
 				// await this.endStatusTimeout();
-				if (duration.amount > 1) {
+				if (duration.amount >= 1) {
 					duration.amount -= 1;
 					await this.setDuration(duration);
 					return false;

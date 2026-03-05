@@ -1,6 +1,7 @@
 import {StatusEffectId} from "../../config/status-effects.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
+import {PersonaRoller} from "../persona-roll.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
 
@@ -39,8 +40,8 @@ export class OpenerManager {
 		if (this.combat.isSocial) {return null;}
 		const actor = combatant.actor;
 		if (!actor) {return null;}
-		const openingRoll = new Roll('1d20');
-		await openingRoll.roll();
+		 const openingRoll = await PersonaRoller.hiddenRoll();
+		// const openingRoll = new Roll('1d20');
 		const rollValue = openingRoll.total;
 		const situation : Situation = {
 			user: actor.accessor,

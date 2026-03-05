@@ -1,6 +1,7 @@
 import { HTMLTools } from "../utility/HTMLTools.js";
 import { PersonaError } from "../persona-error.js";
 import { PersonaDB } from "../persona-db.js";
+import {CARD_DROP_RATE} from "../../config/probability.js";
 
 export class PowerPrinter extends Application {
 	static _instance : U<PowerPrinter>;
@@ -13,7 +14,7 @@ export class PowerPrinter extends Application {
 		return foundry.utils.mergeObject(super.defaultOptions, {
 			id: "power-list-printer",
 			template: "systems/persona/sheets/lists/power-printout.hbs",
-			width: 1200,
+			width: 1500,
 			height: 1200,
 			minimizable: true,
 			resizable: true,
@@ -85,6 +86,9 @@ export class PowerPrinter extends Application {
 	static sortPowerFn(this: void, a: Power, b: Power) : number {
 		const sort= a.system.slot - b.system.slot;
 		if (sort != 0) {return sort;}
+		if (b.system.rarity != a.system.rarity) {
+			return CARD_DROP_RATE[b.system.rarity] - CARD_DROP_RATE[a.system.rarity];
+		}
 		const exoticSort= (a.hasTag("exotic")? 1 : 0)
 			- (b.hasTag("exotic") ? 1 : 0);
 		if (exoticSort != 0) {return exoticSort;}
@@ -126,4 +130,9 @@ Hooks.on("DBrefresh", function () {
 	}
 });
 
+async function powerPrinter() {
+	await PowerPrinter.open();
+}
 
+//@ts-expect-error adding to global scope
+window.powerList = powerPrinter;

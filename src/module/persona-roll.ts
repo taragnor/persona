@@ -14,6 +14,23 @@ import {CombatEngine} from "./combat/combat-engine.js";
 
 
 export class PersonaRoller {
+
+	 /**  will not animate this roll */
+	 public static hideAnimation(r: Roll) : Roll{
+			r.dice
+				 .forEach(d => d.results
+						//@ts-expect-error dice so nice value
+						.forEach( r=>r.hidden = true)
+				 );
+			return r;
+	 }
+
+	 /**  will not animate this roll */
+	 public static async hiddenRoll() : Promise<Roll> {
+			const r = await new Roll("1d20").roll();
+			return this.hideAnimation(r);
+	 }
+
 	static async #makeRoll(rollName:string, mods: ModifierList, situation: Situation & {rollTags: NonNullable<Situation["rollTags"]>}, DC ?: number ): Promise<RollBundle & {modList: ResolvedMods}> {
 		const user = situation.user;
 		let playerRoll = !game.user.isGM;

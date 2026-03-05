@@ -18,7 +18,7 @@ export class AltDamageSystem extends DamageSystemBase {
 	private BASE_WEAPON_DMG = 10 as const;
 	private WEAPON_STRENGTH_DAMAGE_MULT = 0.333 as const;
 	private MAGIC_DAMAGE_MULT = 0.333 as const;
-	private HEALING_MAGIC_MULT = 1 as const;
+	private HEALING_MAGIC_MULT = 0.666 as const;
 	private END_DIFF_PERCENTAGE_MULT = 0.8 as const;
 	private BASE_VARIANCE = 2 as const;
 	private ARMOR_TO_DAMAGE_DIVISOR = 1.0 as const;
@@ -99,15 +99,17 @@ export class AltDamageSystem extends DamageSystemBase {
 		const isHealing = dtype == "healing";
 		const persona = userPersona;
 		const skillDamage = this.magicSkillDamage(power);
-		if (isHealing) {
-			const magicDmg = this.magDamageBonus(userPersona);
-			magicDmg.mult(1, this.HEALING_MAGIC_MULT , "Healing Power");
-		}
 		const damageBonus = persona.getBonuses('magDmg').total(situation);
 		const bonusVariance = userPersona.getBonusVariance().total(situation);
 		const calc= new DamageCalculation(dtype);
-		const baseAmt = skillDamage.baseAmt;
-		calc.add('base', baseAmt, `${power.displayedName.toString()} Base Damage`);
+		const baseAmt = skillDamage.baseAmt * (isHealing ? skillDamage.healMult : 1);
+		calc.add('base', baseAmt, `${power.displayedName.toString()} Base Power`);
+		if (isHealing) {
+			const magicDmg = this.magHealingBonus(userPersona);
+			const resMag = magicDmg.eval(situation);
+			calc.add('base', resMag.total, `${userPersona.publicName} Magic (${resMag.steps.join(" ,")})`, );
+		}
+
 		// calc.add("base", this.BASE_MAGIC_DMG, "Base Magic Damage");
 		if (!isHealing) {
 			calc.add('base', userPersona.user.level * this.BASE_DAMAGE_LEVEL_DIVISOR, `Character Level * ${this.BASE_DAMAGE_LEVEL_DIVISOR} `);
@@ -236,6 +238,14 @@ export class AltDamageSystem extends DamageSystemBase {
 		return calc
 			.add(0, magic, `${persona.displayedName} Magic`)
 			.mult(1, this.MAGIC_DAMAGE_MULT, `Magic Damage Multiplier`);
+	}
+
+	protected magHealingBonus(persona: Persona) : Calculation {
+		const magic = persona.combatStats.magic;
+		const calc = new Calculation(0);
+		return calc
+			.add(0, magic, `${persona.displayedName} Magic`)
+			.mult(1, this.HEALING_MAGIC_MULT, `Magic Healing Multiplier`);
 	}
 
 	protected weaponDamage(persona: Persona) : NewDamageParams {

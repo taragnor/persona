@@ -1181,13 +1181,15 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
 function rollPropertyIs(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "roll-property-is"}, situation: Situation) : U<boolean> {
 	switch (condition.rollProp) {
 		case "is-critical":
-			return CombatEngine.isCrit(situation) ?? false;
+			return CombatEngine.isCrit(situation);
 		case "is-hit":
-				return CombatEngine.isAnyHit(situation) === true;
+				return CombatEngine.isAnyHit(situation);
 		case "is-within-ailment-range":
 				return "withinAilmentRange" in situation ? situation.withinAilmentRange ?? false : false;
 		case "is-within-instant-death-range":
 				return "withinInstantKillRange" in situation ? situation.withinInstantKillRange ?? false : false;
+		case "is-fumble":
+			return CombatEngine.isFumble(situation);
 		default:
 				condition.rollProp satisfies never;
 			return undefined;

@@ -359,6 +359,7 @@ export class CombatResult  {
 					duration: dur,
 					embeddedEffects,
 					clearOnDeath: cons.flagState ? cons.clearOnDeath : false,
+					statusTagId: "statusTagId" in cons ? cons.statusTagId ?? "" : "",
 				} satisfies SetFlagEffect);
 				break;
 			}
@@ -497,14 +498,14 @@ export class CombatResult  {
 				const amount = this.resolveConsequenceAmount(cons, situation);
 				if (cons.invAction == "add-card-item") {
 					const treasureItem = "cardEventItem" in situation ? situation.cardEventItem : undefined;
-						if (!treasureItem) {break;}
-						effect.otherEffects.push( {
-							...cons,
-							amount,
-							treasureItem,
-						});
-						break;
-					}
+					if (!treasureItem) {break;}
+					effect.otherEffects.push( {
+						...cons,
+						amount,
+						treasureItem,
+					});
+					break;
+				}
 				if (cons.invAction != "add-treasure") {
 					const resolvedCons = {
 						...cons,

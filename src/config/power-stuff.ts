@@ -200,39 +200,42 @@ private static _powerStuffBase: Record<string, unknown>;
 		const UNIFIED_EQUIPMENT_TAGS = PersonaDB.createMergedTagLocList(["equipment", "enchantment"], EQUIPMENT_TAGS);
 
 		const UNIFIED_ROLL_AND_CARD_TAGS  = PersonaDB.createMergedTagLocList(["roll", "card"], ROLL_TAGS_AND_CARD_TAGS);
-
-		const TAGS = {
-			"": "-",
-			...PersonaDB.createMergedTagLocList( ["power", "equipment"], POWER_TAGS)
-		};
-		const data = {
-			...this.powerStuffBase(),
-			SOCIAL_LINKS,
-			TAGS,
-			AE_TIMEOUT_TARGETS,
-			COMPENDIUM_TALENTS: Object.fromEntries(
-				PersonaDB.allTalents().slice()
-				.sort((a,b) => a.name.localeCompare(b.name))
-				.map(t=> ([t.id, t.displayedName]))
-			),
-			COMPENDIUM_POWERS: Object.fromEntries(
-				PersonaDB.allPowersArr().slice()
-				.sort((a,b) => a.name.localeCompare(b.name))
-				.map(pwr=> ([pwr.id, pwr.displayedName]))
-			),
-			CLASSES,
-			CLOCKS,
-			STORES,
-			SCENES,
-			ITEMS,
-			ITEMS_PLUS_NULL,
-			EQUIPMENT_TAGS: UNIFIED_EQUIPMENT_TAGS,
-			CREATURE_TAGS: UNIFIED_CREATURE_TAGS,
-			RELATIONSHIP_TYPE_OBJECT,
-			SOCIAL_CARDS,
-			ROLL_TAGS_AND_CARD_TAGS: UNIFIED_ROLL_AND_CARD_TAGS,
-		};
-		return data;
+		 const STATUS_TAGS = { "" : "-",
+				...PersonaDB.tagsOfCategoryLoc("status")
+	};
+		 const TAGS = {
+				"": "-",
+				...PersonaDB.createMergedTagLocList( ["power", "equipment"], POWER_TAGS)
+		 };
+		 const data = {
+				...this.powerStuffBase(),
+				SOCIAL_LINKS,
+				TAGS,
+				AE_TIMEOUT_TARGETS,
+				COMPENDIUM_TALENTS: Object.fromEntries(
+					 PersonaDB.allTalents().slice()
+					 .sort((a,b) => a.name.localeCompare(b.name))
+					 .map(t=> ([t.id, t.displayedName]))
+				),
+				COMPENDIUM_POWERS: Object.fromEntries(
+					 PersonaDB.allPowersArr().slice()
+					 .sort((a,b) => a.name.localeCompare(b.name))
+					 .map(pwr=> ([pwr.id, pwr.displayedName]))
+				),
+				CLASSES,
+				CLOCKS,
+				STORES,
+				SCENES,
+				ITEMS,
+				ITEMS_PLUS_NULL,
+				EQUIPMENT_TAGS: UNIFIED_EQUIPMENT_TAGS,
+				CREATURE_TAGS: UNIFIED_CREATURE_TAGS,
+				RELATIONSHIP_TYPE_OBJECT,
+				SOCIAL_CARDS,
+				ROLL_TAGS_AND_CARD_TAGS: UNIFIED_ROLL_AND_CARD_TAGS,
+				STATUS_TAGS,
+		 };
+		 return data;
 	}
 
 }

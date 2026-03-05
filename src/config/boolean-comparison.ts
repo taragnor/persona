@@ -57,25 +57,25 @@ const ACTIVE_BOOLEAN_COMPARISON_TARGET_LIST = [
 ] as const;
 
 const DEPRECATED_BOOLEAN_COMPARISON_LIST = [
-	"has-creature-tag", // Deprecated
-	"metaverse-enhanced", // Deprecated
-	"power-target-type-is",
-	"power-type-is",
-	"power-slot-is",
-	"damage-type-is",
-	"is-consumable",
-	"is-critical",
-	"is-hit",
-	"is-within-ailment-range",
-	"is-within-instant-death-range",
-	"in-combat",
-	"is-dead",
-	"engaged",
-	"engaged-with",
-	"is-enemy",
-	"struck-weakness",
-	"is-resistant-to",
-	"is-distracted",
+	 "has-creature-tag", // Deprecated
+	 "metaverse-enhanced", // Deprecated
+	 "power-target-type-is",
+	 "power-type-is",
+	 "power-slot-is",
+	 "damage-type-is",
+	 "is-consumable",
+	 "is-critical",
+	 "is-hit",
+	 "is-within-ailment-range",
+	 "is-within-instant-death-range",
+	 "in-combat",
+	 "is-dead",
+	 "engaged",
+	 "engaged-with",
+	 "is-enemy",
+	 "struck-weakness",
+	 "is-resistant-to",
+	 "is-distracted",
 ] as const;
 
 const BOOLEAN_COMPARISON_TARGET_LIST = [
@@ -95,10 +95,11 @@ const POWER_COMPARISON_SUBLIST_LIST = [
 ] as const;
 
 const ROLL_COMPARISON_SUBLIST_LIST = [
-	"is-hit",
-	"is-critical",
-	"is-within-ailment-range",
-	"is-within-instant-death-range",
+	 "is-hit",
+	 "is-fumble",
+	 "is-critical",
+	 "is-within-ailment-range",
+	 "is-within-instant-death-range",
 ] as const;
 
 const COMBAT_COMPARISON_SUBLIST_LIST = [
@@ -178,7 +179,7 @@ type RollPropertyComparison = {
 
 type SimpleRollComparison = {
 	//simple Roll Comparisons
-	rollProp: Extract< typeof ROLL_COMPARISON_SUBLIST_LIST[number], "is-critical" | "is-hit" | "is-within-ailment-range" | "is-within-instant-death-range">;
+	rollProp: Extract< typeof ROLL_COMPARISON_SUBLIST_LIST[number], "is-critical" | "is-hit" | "is-within-ailment-range" | "is-within-instant-death-range" | "is-fumble">;
 };
 
 type PowerComparisonsSub = {

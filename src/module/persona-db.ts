@@ -235,12 +235,14 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.tagsArr().filter( x=> cat.includes(x.system.tagType));
 	}
 
-	tagsOfCategoryLoc(cat: MaybeArray<Tag["system"]["tagType"]>): Record<Tag["id"], Tag["name"]> {
-		const tags = this.tagsOfCategory(cat);
-		return Object.fromEntries(
-			tags.map( tag => [tag.id, tag.name])
-		);
-	}
+	 tagsOfCategoryLoc(cat: MaybeArray<Tag["system"]["tagType"]>): Record<Tag["id"], Tag["name"]> {
+			const tags = this.tagsOfCategory(cat);
+			return Object.fromEntries(
+				 tags
+				 .sort( (a,b) => a.name.localeCompare(b.name))
+				 .map( tag => [tag.id, tag.name])
+			);
+	 }
 
 	createMergedTagLocList(cat: MaybeArray<Tag["system"]["tagType"]>, originalLocObject: Record<string, string>) : Record<string, string> {
 		const tags = this.tagsOfCategory(cat);

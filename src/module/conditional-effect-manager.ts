@@ -730,6 +730,8 @@ export class ConditionalEffectManager {
 				return `Attack Roll hits and is ${not} within ailment range`;
 			case "is-within-instant-death-range":
 				return `Attack roll hits and is ${not} within instant death range`;
+			case "is-fumble":
+				return `is ${not} Fumble`;
 			default:
 				cond.rollProp satisfies never;
 				return "ERROR";
