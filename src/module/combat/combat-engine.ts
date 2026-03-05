@@ -763,6 +763,10 @@ export class CombatEngine {
 		const consequences = sourcedEffects.flatMap( eff => eff.getActiveConsequences(situation));
 		const res = await ConsequenceProcessor.consequencesToResult(consequences, power,  situation, attacker, target, atkResult);
 		CombatRes.merge(res);
+		if (PersonaSettings.debugMode() && game.user.isGM) {
+			console.log(res);
+			Debug(res);
+		}
 		return CombatRes;
 	}
 
@@ -1121,7 +1125,7 @@ export class CombatEngine {
 	}
 
 	static isAnyHit(situation: Situation) : boolean{
-		return (situation.result == "hit" || situation.result == "crit");
+		return (situation.result == "hit" || situation.result == "crit" || situation.result == "absorb");
 	}
 
 	static isFumble( situation: Situation) : boolean {
