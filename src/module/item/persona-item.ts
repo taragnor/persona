@@ -120,7 +120,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	static #newEffectsCache() : AdvancedEffectsCache {
 		const cache : AdvancedEffectsCache = {
-			allNonEmbeddedEffects: {
+			allMainEffects: {
 				actors: new WeakMap(),
 				nullActor: undefined,
 			},
@@ -144,6 +144,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 				actors: new WeakMap(),
 				nullActor: undefined,
 			},
+			auraEffects: {
+				actors: new WeakMap(),
+				nullActor: undefined,
+			}
 		};
 		return cache;
 	}
@@ -772,19 +776,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const itype = this.system.type;
 		switch (itype) {
 			case 'power': {
-				const baseTags = this.#getUniformAutoTags();
-				const retTags = baseTags.slice();
-				//if (this.cache.tags == undefined) {
-				//	this.cache.tags = (this as Power).#autoTags_power();
-				//	return this.cache.tags;
-				//}
-				////Safety check to see if there's cache corruption
-				//if (PersonaSettings.debugMode()) {
-				//	const checkTags =  (this as Power).#autoTags_power();
-				//	if (checkTags.length != this.cache.tags.length) {
-				//		PersonaError.softFail(`Tag Length mismatch, possible cache corruption on ${this.name}`, checkTags, this.cache.tags);
-				//	}
-				//}
+				const retTags = this._getUniformAutoTags().slice();
 				if ((this as Power).getCooldown(user ?? null)) {
 					retTags.pushUnique(`cooldown`);
 				}
@@ -865,20 +857,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 	}
 
-	#getUniformAutoTags() : NonNullable<typeof this.cache.tags> {
-		if (this.cache.tags == undefined) {
-			this.cache.tags = (this as Power).#autoTags_power();
-			return this.cache.tags;
-		}
-		//Safety check to see if there's cache corruption
-		if (PersonaSettings.debugMode()) {
-			const checkTags =  (this as Power).#autoTags_power();
-			if (checkTags.length != this.cache.tags.length) {
-				PersonaError.softFail(`Tag Length mismatch, possible cache corruption on ${this.name}`, checkTags, this.cache.tags);
-			}
-		}
-		return this.cache.tags;
-	}
 
 	#autoTags_power(this: Power): (PowerTag | EquipmentTag)[] {
 		const list : (PowerTag | EquipmentTag) [] = [];
@@ -924,6 +902,22 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		const resolved= list.map ( x=> PersonaItem.resolveTag(x));
 		resolved.pushUnique(...innateTags);
 		return resolved as (PowerTag | EquipmentTag)[];
+	}
+
+	// getting weird warning if made private saying its never used
+	_getUniformAutoTags() : NonNullable<typeof this.cache.tags> {
+		if (this.cache.tags == undefined) {
+			this.cache.tags = (this as Power).#autoTags_power();
+			return this.cache.tags;
+		}
+		//Safety check to see if there's cache corruption
+		if (PersonaSettings.debugMode()) {
+			const checkTags =  (this as Power).#autoTags_power();
+			if (checkTags.length != this.cache.tags.length) {
+				PersonaError.softFail(`Tag Length mismatch, possible cache corruption on ${this.name}`, checkTags, this.cache.tags);
+			}
+		}
+		return this.cache.tags;
 	}
 
 	//this can vary by user so has to be in its own function
@@ -2039,9 +2033,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			const effectsGetterFn = () => {
 				const proxyItem = options.proxyItem ? options.proxyItem : this;
 				return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
-					.filter (ce => !ce.isEmbedded);
+					.filter (ce => ce.isMainModifier);
 			};
-			return this.#accessEffectsCache('allNonEmbeddedEffects', sourceActor, options, effectsGetterFn)
+			return this.#accessEffectsCache('allMainEffects', sourceActor, options, effectsGetterFn)
 				.concat(tagEffects);
 		} else {
 			const effects: ConditionalEffectC[] = [];
@@ -2084,6 +2078,21 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		return embedded
 			.filter( x=> CETypes.includes(x.conditionalType));
 	}
+
+getAuraEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options: GetEffectsOptions = {}) : readonly ConditionalEffectC[] {
+	if (this.isSkillCard()) { return []; }
+	const effects = this.system.effects;
+	const effectsGetterFn = () => {
+		const proxyItem = options.proxyItem ?? this;
+		return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
+			.filter (ce => ce.isAura);
+	};
+	const auras= this.#accessEffectsCache('auraEffects', sourceActor, options, effectsGetterFn);
+	const {CETypes} = options;
+	if (CETypes == undefined || CETypes.length == 0) {return auras;}
+	return auras
+		.filter( x=> CETypes.includes(x.conditionalType));
+}
 
 
 #accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, options: GetEffectsOptions, refresherFn: () => ConditionalEffectC[]) : ConditionalEffectC[] {
@@ -2792,7 +2801,8 @@ export type ItemModifierContainer = ItemContainers;
 export type ContainerTypes = ItemContainers | PersonaAE;
 
 export interface ModifierContainer <T extends Actor | TokenDocument | Item | ActiveEffect = ContainerTypes> {
-	getEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions) : ConditionalEffectC[];
+	getEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions) : readonly ConditionalEffectC[];
+	getAuraEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions): readonly ConditionalEffectC[];
 	getEmbeddedEffects ?: (sourceActor : PersonaActor | null, options ?: GetEffectsOptions) => readonly SourcedConditionalEffect[];
 	parent: T["parent"];
 	name: string;
@@ -2836,11 +2846,12 @@ export type ItemSubtype <I extends Power, X extends I['system']['subtype']> = I 
 type SystemSubtype<X extends string> = {system: {subytpe : X }};
 
 type AdvancedEffectsCache = {
-	allNonEmbeddedEffects: WeakMapPlus,
+	allMainEffects: WeakMapPlus,
 	passiveEffects: WeakMapPlus,
 	triggeredEffects: WeakMapPlus,
 	defensiveEffects: WeakMapPlus,
-	onUseEffects: WeakMapPlus
+	onUseEffects: WeakMapPlus,
+	auraEffects: WeakMapPlus,
 	embeddedEffects: WeakMapPlus,
 }
 

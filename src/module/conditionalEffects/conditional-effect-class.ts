@@ -16,6 +16,8 @@ export class ConditionalEffectC {
 	_original : CondEffectObject | SkillCard;
 	_conditionalType: typeof CETypes[number];
 	_isDefensiveRaw: boolean;
+	_isMainModifier: boolean;
+	_isAura: boolean;
 
 	constructor (card: SkillCard);
 	constructor (ce: CondEffectObject, sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem);
@@ -28,11 +30,13 @@ export class ConditionalEffectC {
 		this._preconditions = ConditionalEffectManager.getConditionals(ce.conditions, sourceItem!, sourceActor!, realSource);
 		this._consequences = ConditionalEffectManager.getConsequences(ce.consequences, sourceItem!, sourceActor!, realSource);
 		this._isEmbedded = ce.isEmbedded ?? false;
+		this._isAura = ce.isAura ?? false;
 		this._conditionalType = this.#determineConditionalType(ce, this._preconditions, this._consequences, sourceItem!);
 		this._owner= sourceActor?.accessor;
 		this._source= sourceItem != null ? sourceItem : undefined;
 		this._realSource= realSource;
 		this._isDefensiveRaw = ce.isDefensive ?? false;
+		this._isMainModifier = !this._isEmbedded && !this._isAura;
 	}
 
 	get conditionalType () {
@@ -59,6 +63,7 @@ export class ConditionalEffectC {
 		const ret: ConditionalEffect = {
 			isDefensive: this._isDefensiveRaw,
 			isEmbedded: this._isEmbedded,
+			isAura: this._isAura,
 			conditions,
 			consequences,
 		};
@@ -85,8 +90,16 @@ export class ConditionalEffectC {
 		return this._conditionalType == "defensive";
 	}
 
+	get isMainModifier() :boolean {
+		return this._isMainModifier;
+	}
+
 	get isEmbedded(): boolean {
 		return this._isEmbedded;
+	}
+
+	get isAura() : boolean {
+		return false;
 	}
 
 	get source() { return this._source;}
@@ -116,11 +129,12 @@ export class ConditionalEffectC {
 			: false;
 		const isDefensive= (ce.isDefensive || forceDefensive) ?? false;
 		const isEmbedded = ce.isEmbedded ?? false;
+		const isAura = ce.isAura ?? false;
 		switch (true) {
 			case forceDefensive || ce.isDefensive:
 				return "defensive";
 			default:
-				condType = !forceDefensive ? ConditionalEffectManager.getConditionalType({conditions, consequences, isDefensive, isEmbedded}, sourceItem): "defensive";
+				condType = !forceDefensive ? ConditionalEffectManager.getConditionalType({conditions, consequences, isDefensive, isEmbedded, isAura}, sourceItem): "defensive";
 
 				if (condType == "unknown" && sourceItem) {
 					return (sourceItem.defaultConditionalEffectType) ? sourceItem.defaultConditionalEffectType() : "passive";

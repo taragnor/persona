@@ -9,7 +9,7 @@ import { Trigger } from "../../config/triggers.js";
 import { PersonaRoller } from "../persona-roll.js";
 import { RollSituation } from "../../config/situation.js";
 import { randomSelect } from "../utility/array-tools.js";
-import { Persona } from "../persona-class.js";
+import { MainModifierOptions, Persona } from "../persona-class.js";
 import { SHADOW_CREATURE_TYPE, SHADOW_ROLE } from "../../config/shadow-types.js";
 import { PowerTag } from "../../config/power-tags.js";
 import { POWER_TAGS_LIST } from "../../config/power-tags.js";
@@ -2041,141 +2041,148 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return modList;
 	}
 
-	actorMainModifiers(options ?: {omitTags ?: boolean}): readonly ModifierContainer[] {
+	activeAuras(options ?: MainModifierOptions) : ConditionalEffectC[] {
+		if (!this.isAlive()) {return [];}
+		if (!this.isValidCombatant()) {return [];}
+		return this.persona().myAuraEffects(options);
+	}
+
+	actorMainModifiers(options ?: MainModifierOptions): readonly ModifierContainer[] {
 		const tags = (options && options.omitTags) ? [] : this.realTags();
-		return [
+		const ret : readonly ModifierContainer[] = [
 			...this.passiveItems(),
 			...this.getAllSocialFocii(),
 			...this.equippedItems(),
 			...tags,
 			...this.statusModifiers(),
 		];
+		return ret;
 	}
 
 	statusModifiers() : ModifierContainer[]{
 		return this.effects.filter( eff => eff.hasEffects());
 	}
 
-	get downtimeMinorActions() : (Usable | SocialCard)[] {
-		const list = [
-			...this.powers,
-			...this.consumables,
-		];
-		const allUsable = list.filter ( pwr => pwr.hasTag("downtime-minor"));
-		return [
-			...PersonaDB.downtimeActions(),
-			...allUsable,
-		];
-	}
+get downtimeMinorActions() : (Usable | SocialCard)[] {
+	const list = [
+		...this.powers,
+		...this.consumables,
+	];
+	const allUsable = list.filter ( pwr => pwr.hasTag("downtime-minor"));
+	return [
+		...PersonaDB.downtimeActions(),
+		...allUsable,
+	];
+}
 
-	get usableDowntimeMinorActions(): (Usable | SocialCard)[] {
-		if (!this.isPC()) {return [];};
-		return this.downtimeMinorActions.filter( action=>  {
-			if (action.isUsableType()) {
-				return this.persona().canUsePower(action, false);
+get usableDowntimeMinorActions(): (Usable | SocialCard)[] {
+	if (!this.isPC()) {return [];};
+	return this.downtimeMinorActions.filter( action=>  {
+		if (action.isUsableType()) {
+			return this.persona().canUsePower(action, false);
+		}
+		if (action.isSocialCard()) {
+			return PersonaSocial.isActivitySelectable(action, this);
+		}
+	})
+		.sort( (a,b) => a.displayedName.localeCompare(b.displayedName));
+}
+
+/** treasure multiplier on PCs wealth gained */
+get treasureMultiplier () : number {
+	if (!this.isValidCombatant()) {return 1;}
+	switch (this.system.type) {
+		case "pc": case "npcAlly": {
+			const situation :Situation = {
+				user: (this as PC | NPCAlly).accessor
+			};
+			const bonus= this.persona().getBonuses("shadowMoneyBoostPercent").total(situation, "percentage");
+			return !Number.isNaN(bonus) ? bonus : 1;
+		}
+		default:
+			return 1;
+	}
+}
+
+getFatigueStatus() : FatigueStatusId | undefined {
+	const eff = this.effects.contents.find( x=> x.getFatigueStatus() != undefined);
+	return eff?.getFatigueStatus();
+}
+
+get fatigueLevel() : number {
+	if (this.system.type != "pc") {return 0;}
+	const st = this.getFatigueStatus();
+	return statusToFatigueLevel(st);
+}
+
+hasAlteredFatigueToday(this:PC): boolean {
+	return this.system.fatigue.hasAlteredFatigueToday ?? false;
+}
+
+hasMadeFatigueRollToday(this:PC) : boolean {
+	return this.system.fatigue.hasMadeFatigueRollToday ?? false;
+}
+
+async setAlteredFatigue(val = true) {
+	await this.update({"system.fatigue.hasAlteredFatigueToday": val});
+}
+
+async setFatigueLevel(lvl: number,log = true) : Promise<FatigueStatusId | undefined> {
+	const oldLvl = this.fatigueLevel;
+	const oldId = fatigueLevelToStatus(oldLvl);
+	const newId = fatigueLevelToStatus(lvl);
+	for (const eff of this.effects.contents) {
+		if (eff.isFatigueStatus) {
+			if (!eff.statuses.has(newId!))
+			{await eff.delete();}
+		}
+	}
+	if (newId) {
+		await this.addStatus( {
+			id: newId,
+			duration: {
+				dtype:"permanent",
 			}
-			if (action.isSocialCard()) {
-				return PersonaSocial.isActivitySelectable(action, this);
+		}, true);
+	}
+	if (lvl < statusToFatigueLevel("exhausted")) {
+		await this.addStatus( {
+			id: "crippled",
+			duration: {
+				dtype:"permanent",
 			}
-		})
-			.sort( (a,b) => a.displayedName.localeCompare(b.displayedName));
+		}, true);
 	}
-
-	/** treasure multiplier on PCs wealth gained */
-	get treasureMultiplier () : number {
-		if (!this.isValidCombatant()) {return 1;}
-		switch (this.system.type) {
-			case "pc": case "npcAlly": {
-				const situation :Situation = {
-					user: (this as PC | NPCAlly).accessor
-				};
-				const bonus= this.persona().getBonuses("shadowMoneyBoostPercent").total(situation, "percentage");
-				return !Number.isNaN(bonus) ? bonus : 1;
-			}
-			default:
-				return 1;
-		}
+	// const newId = await this.setFatigueLevel(st);
+	if (log && (oldId != newId || lvl < -1)) {
+		const oldName = oldId ? localize(statusMap.get(oldId)!.name as LocalizationString) : "Normal";
+		const newName = newId ? localize(statusMap.get(newId)!.name as LocalizationString): "Normal";
+		const hospital = lvl < statusToFatigueLevel("exhausted") ? `${this.displayedName} is over-fatigued and need to be hospitalized!`: "";
+		await Logger.sendToChat(`${this.displayedName}  fatigue changed from ${oldName} to ${newName}. ${hospital}`);
 	}
+	return newId;
+}
 
-	getFatigueStatus() : FatigueStatusId | undefined {
-		const eff = this.effects.contents.find( x=> x.getFatigueStatus() != undefined);
-		return eff?.getFatigueStatus();
-	}
+async alterFatigueLevel(amt: number, log=true) : Promise<FatigueStatusId | undefined> {
+	const oldLvl = this.fatigueLevel;
+	const newLvl = oldLvl + amt;
+	return await this.setFatigueLevel(newLvl, log);
+}
 
-	get fatigueLevel() : number {
-		if (this.system.type != "pc") {return 0;}
-		const st = this.getFatigueStatus();
-		return statusToFatigueLevel(st);
-	}
+getUnarmedDamageType(): RealDamageType {
+	if (this.system.type == "shadow") {return this.system.combat.baseDamageType ?? "physical";}
+	return "physical";
+}
 
-	hasAlteredFatigueToday(this:PC): boolean {
-		return this.system.fatigue.hasAlteredFatigueToday ?? false;
-	}
+listComplementRatings(this: Shadow, list: Shadow[]) : string[] {
+	return list.map( shadow => {
+		const rating = Math.round(this.complementRating(shadow) * 10) / 10;
+		return {rating, name: shadow.name};
+	})
+		.sort( (a,b) => b.rating - a.rating)
+		.map(x => `${x.name}: ${x.rating}`);
 
-	hasMadeFatigueRollToday(this:PC) : boolean {
-		return this.system.fatigue.hasMadeFatigueRollToday ?? false;
-	}
-
-	async setAlteredFatigue(val = true) {
-		await this.update({"system.fatigue.hasAlteredFatigueToday": val});
-	}
-
-	async setFatigueLevel(lvl: number,log = true) : Promise<FatigueStatusId | undefined> {
-		const oldLvl = this.fatigueLevel;
-		const oldId = fatigueLevelToStatus(oldLvl);
-		const newId = fatigueLevelToStatus(lvl);
-		for (const eff of this.effects.contents) {
-			if (eff.isFatigueStatus) {
-				if (!eff.statuses.has(newId!))
-				{await eff.delete();}
-			}
-		}
-		if (newId) {
-			await this.addStatus( {
-				id: newId,
-				duration: {
-					dtype:"permanent",
-				}
-			}, true);
-		}
-		if (lvl < statusToFatigueLevel("exhausted")) {
-			await this.addStatus( {
-				id: "crippled",
-				duration: {
-					dtype:"permanent",
-				}
-			}, true);
-		}
-		// const newId = await this.setFatigueLevel(st);
-		if (log && (oldId != newId || lvl < -1)) {
-			const oldName = oldId ? localize(statusMap.get(oldId)!.name as LocalizationString) : "Normal";
-			const newName = newId ? localize(statusMap.get(newId)!.name as LocalizationString): "Normal";
-			const hospital = lvl < statusToFatigueLevel("exhausted") ? `${this.displayedName} is over-fatigued and need to be hospitalized!`: "";
-			await Logger.sendToChat(`${this.displayedName}  fatigue changed from ${oldName} to ${newName}. ${hospital}`);
-		}
-		return newId;
-	}
-
-	async alterFatigueLevel(amt: number, log=true) : Promise<FatigueStatusId | undefined> {
-		const oldLvl = this.fatigueLevel;
-		const newLvl = oldLvl + amt;
-		return await this.setFatigueLevel(newLvl, log);
-	}
-
-	getUnarmedDamageType(): RealDamageType {
-		if (this.system.type == "shadow") {return this.system.combat.baseDamageType ?? "physical";}
-		return "physical";
-	}
-
-	listComplementRatings(this: Shadow, list: Shadow[]) : string[] {
-		return list.map( shadow => {
-			const rating = Math.round(this.complementRating(shadow) * 10) / 10;
-			return {rating, name: shadow.name};
-		})
-			.sort( (a,b) => b.rating - a.rating)
-			.map(x => `${x.name}: ${x.rating}`);
-
-	}
+}
 
 complementRating (this: Shadow, other: Shadow) : number {
 	const cachedRating = this.cache.complementRating.get(other.id);
@@ -2279,7 +2286,7 @@ instantKillResistanceMultiplier(this: ValidAttackers, attacker: ValidAttackers) 
 	return this.persona().getBonuses("instantDeathResistanceMult").total(situation, "percentage");
 }
 
-mainModifiers(...args: Parameters<Persona["mainModifiers"]>): ConditionalEffectC[] {
+mainModifiers(...args: Parameters<Persona["mainModifiers"]>): readonly ConditionalEffectC[] {
 	if (!this.isValidCombatant()) {return [];}
 	return this.persona().mainModifiers(...args);
 }
@@ -2935,7 +2942,7 @@ getAllSocialFocii() : Focus[] {
 	}
 }
 
-getEffects(this: ValidAttackers, CETypes ?: TypedConditionalEffect['conditionalType'][] ) : ConditionalEffectC [] {
+getEffects(this: ValidAttackers, CETypes ?: TypedConditionalEffect['conditionalType'][] ) : readonly ConditionalEffectC [] {
 	const mods =  this.persona().mainModifiers();
 	if (!CETypes || CETypes.length == 0) {
 		return mods;
@@ -3849,9 +3856,9 @@ async setEffectFlag(effect: DistributiveOmit<SetFlagEffect, "type">) {
 }
 
 async addPowerCooldown(power : Power, duration: StatusDuration) {
-		const newAE = {
-			name: `${power.name} cooldown`,
-		};
+	const newAE = {
+		name: `${power.name} cooldown`,
+	};
 	const cooldownEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
 	await cooldownEffect.setCooldown(power, duration);
 }
@@ -4197,7 +4204,7 @@ get tagListPartial() : (InternalCreatureTag | Tag["id"] | PersonaTag)[] {
 		);
 	}
 	if (this.isValidCombatant()) {
-		const extraTags = this.mainModifiers({omitPowers:true, omitTalents: true, omitTags: true})
+		const extraTags = this.mainModifiers({omitPowers:true, omitTalents: true, omitTags: true, omitAuras: true})
 			.flatMap( CE=> PersonaItem.getConferredTags(CE , this as ValidAttackers));
 		for (const tag of extraTags) {
 			if (!list.includes(tag))

@@ -50,6 +50,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			mainModifiers: undefined,
 			passivePowers: undefined,
 			defensiveModifiers : undefined,
+			nearbyAuras: undefined,
 		};
 	}
 
@@ -60,7 +61,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	get token() : N<PToken> {
 		const combat = PersonaCombat.combat;
 		const user = this.user;
-	const comb = combat?.getCombatantByActor(user);
+		const comb = combat?.getCombatantByActor(user);
 		if (comb && comb.token) {return comb.token as PToken;}
 		const tok = game.scenes.current.tokens.find( x=> x.actor == user);
 		if (tok) {return tok as PToken;}
@@ -93,7 +94,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 
 	get bonusPowers() : readonly Power [] {
 		const bonusPowers : Power[] =
-			this.mainModifiers({omitPowers:true, omitTalents: true})
+			this.mainModifiers({omitPowers:true, omitTalents: true, omitAuras: true})
 			.filter(trait => PersonaItem.grantsPowers(trait))
 			.flatMap(powerGranter=> PersonaItem.getAllGrantedPowers(powerGranter, this.user))
 			.filter( pwr=> !pwr.hasTag("opener"))
@@ -133,7 +134,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	get talents() : readonly Talent[] {
-		const extraTalents = this.mainModifiers({omitTalents: true, omitPowers: true})
+		const extraTalents = this.mainModifiers({omitTalents: true, omitPowers: true, omitAuras: true})
 			.filter( CE=> PersonaItem.grantsTalents(CE))
 			.flatMap(CE => PersonaItem.getGrantedTalents(CE, this.user));
 		;
@@ -176,24 +177,24 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		}
 	}
 
-knowsPowerInnately(power : Power)  : boolean {
-	const source = this.source;
-	const powers = source.system.combat.powers;
-	if (powers.includes(power.id)) {
-		return true;
-	}
-	if (!this.user.isShadow()) {
-		const sideboard =  this.user.system.combat.powers_sideboard;
-		if (sideboard.includes(power.id)) {
+	knowsPowerInnately(power : Power)  : boolean {
+		const source = this.source;
+		const powers = source.system.combat.powers;
+		if (powers.includes(power.id)) {
 			return true;
 		}
+		if (!this.user.isShadow()) {
+			const sideboard =  this.user.system.combat.powers_sideboard;
+			if (sideboard.includes(power.id)) {
+				return true;
+			}
+		}
+		const buffer= source.system.combat.learnedPowersBuffer;
+		if (buffer.includes(power.id)) {
+			return true;
+		}
+		return false;
 	}
-	const buffer= source.system.combat.learnedPowersBuffer;
-	if (buffer.includes(power.id)) {
-		return true;
-	}
-	return false;
-}
 
 	get trueName() {
 		switch (this.source.system.type) {
@@ -506,10 +507,19 @@ knowsPowerInnately(power : Power)  : boolean {
 		return this.mainModifiers().filter ( x=>x.conditionalType == "passive");
 	}
 
-	mainModifiers(options?: MainModifierOptions ): ConditionalEffectC[] {
-		//NOTE: this could be a risky operation
-		const canCache = !options && this.canCache;
-		if (canCache && this.#cache.mainModifiers) {
+	mainModifiers(options?: MainModifierOptions ): readonly ConditionalEffectC[] {
+		const personal = this.personalMainModifiers(options);
+		const ret = personal.slice();
+		if (!options?.omitAuras) {
+			ret.push(...this.aurasInRange());
+			return ret;
+		}
+		return ret;
+	}
+
+	private personalMainModifiers(options?: MainModifierOptions ): ConditionalEffectC[] {
+		const canCache = this.canCache(options);
+		if (this.canCache(options) && this.#cache.mainModifiers != undefined) {
 			return this.#cache.mainModifiers;
 		}
 		const mainMods = this._mainModifiers(options);
@@ -519,7 +529,7 @@ knowsPowerInnately(power : Power)  : boolean {
 		return mainMods;
 	}
 
-	private _mainModifiers(options?: MainModifierOptions): ConditionalEffectC[] {
+	private _mainModifiersList(options?: MainModifierOptions): readonly ModifierContainer[] {
 		const user = this.user;
 		const roomModifiers : UniversalModifier[] = [];
 		if (game.combat) {
@@ -538,13 +548,46 @@ knowsPowerInnately(power : Power)  : boolean {
 			...PersonaDB.getGlobalPassives(),
 			...PersonaDB.navigatorModifiers(),
 		];
-		return mainModsList
+		return mainModsList;
+		// return mainModsList
+		// 	.flatMap( x=> x.getEffects(this.user));
+	}
+
+	private _mainModifiers(options?: MainModifierOptions): ConditionalEffectC[] {
+		return this._mainModifiersList(options)
 			.flatMap( x=> x.getEffects(this.user));
 	}
 
+	myAuraEffects(options : MainModifierOptions = {}) : ConditionalEffectC[] {
+		return this._mainModifiersList(options)
+			.flatMap( x=> x.getAuraEffects(this.user));
+	}
+
+	private aurasInRange() : ConditionalEffectC[] {
+		if (!this.canCache(undefined)) {
+			return this._aurasInRange();
+		}
+		if (this.#cache.nearbyAuras == undefined) {
+			this.#cache.nearbyAuras = this._aurasInRange();
+		}
+		return this.#cache.nearbyAuras;
+	}
+
+	private _aurasInRange() : ConditionalEffectC[] {
+		const combat = PersonaCombat.combat;
+		if (combat && !combat.isSocial) {
+			return combat.combatants.contents.flatMap(
+				comb => comb.actor ? comb.actor.activeAuras() : []);
+		}
+		if (this.user.isPC() || this.user.isNPCAlly()) {
+			return PersonaDB.PCParty().flatMap( actor => actor.activeAuras());
+		}
+		return [];
+	}
+
 	passiveOrTriggeredPowers() : readonly Power[] {
-		const PersonaCaching = this.canCache;
-		if (!this.#cache.passivePowers || !PersonaCaching) {
+		const PersonaCaching = this.canCache({});
+		if (this.#cache.passivePowers == undefined || !PersonaCaching) {
 			const val =  this.powers
 				.filter( power => power.isPassive() || power.isDefensive())
 				.filter( power=> power.hasPassiveEffects(this.user) || power.hasTriggeredEffects(this.user));
@@ -820,7 +863,7 @@ knowsPowerInnately(power : Power)  : boolean {
 		return retdata;
 	}
 
-	statusResist(status: StatusEffectId, modifiers ?: ConditionalEffectC[]) : ResistStrength {
+	statusResist(status: StatusEffectId, modifiers ?: readonly ConditionalEffectC[]) : ResistStrength {
 		const actor= this.source;
 		if (!modifiers) {
 			modifiers = this.mainModifiers();
@@ -986,26 +1029,26 @@ knowsPowerInnately(power : Power)  : boolean {
 		return this.getBonuses("hpCostMult");
 	}
 
-canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
-	const msg =
-		this._consumableCheck(usable)
-		|| this._explorationCheck(usable)
-		|| this._downtimeCheck(usable)
-		|| this._powerInhibitingStatusCheck(usable)
-		|| this._powerTooStrong(usable)
-		|| this._deadCheck(usable)
-		|| this._isTrulyUsable(usable)
-		|| this._canPayActivationCostCheck(usable)
-		|| this._checkConditionals(usable)
-		|| this._checkTeamworkMove(usable)
-		|| this._checkCooldown(usable)
-	;
-	if (msg === null) {return true;}
-	if (outputReason) {
-		ui.notifications.warn(msg);
+	canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
+		const msg =
+			this._consumableCheck(usable)
+			|| this._explorationCheck(usable)
+			|| this._downtimeCheck(usable)
+			|| this._powerInhibitingStatusCheck(usable)
+			|| this._powerTooStrong(usable)
+			|| this._deadCheck(usable)
+			|| this._isTrulyUsable(usable)
+			|| this._canPayActivationCostCheck(usable)
+			|| this._checkConditionals(usable)
+			|| this._checkTeamworkMove(usable)
+			|| this._checkCooldown(usable)
+		;
+		if (msg === null) {return true;}
+		if (outputReason) {
+			ui.notifications.warn(msg);
+		}
+		return false;
 	}
-	return false;
-}
 
 	private _checkTeamworkMove(power: UsableAndCard) :N<FailReason> {
 		if (!power.isTeamwork() ) {return null;}
@@ -1034,8 +1077,8 @@ canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
 
 	private _powerTooStrong(usable: UsableAndCard) : N<FailReason> {
 		if (usable.isPower() && this.highestPowerSlotUsable() < usable.system.slot) {
-				return "Power is too advanced for you to use";
-			}
+			return "Power is too advanced for you to use";
+		}
 		return null;
 	}
 
@@ -1059,7 +1102,7 @@ canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
 	private _downtimeCheck(usable: UsableAndCard) : N<FailReason> {
 		if (usable.hasTag("downtime") || usable.hasTag("downtime-minor")) {
 			if (!game.combat || !(game.combat as PersonaCombat).isSocial) {
-					return "Can only use this item during downtime in social rounds";
+				return "Can only use this item during downtime in social rounds";
 			}
 		}
 		return null;
@@ -1098,17 +1141,17 @@ canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
 		}
 	}
 
-private _checkCooldown(usable: UsableAndCard) : N<FailReason> {
-	if (!usable.isPower()) {return null;}
-	if (this.user.isPowerOnCooldown(usable)) {
-		return "Power is on cooldown";
+	private _checkCooldown(usable: UsableAndCard) : N<FailReason> {
+		if (!usable.isPower()) {return null;}
+		if (this.user.isPowerOnCooldown(usable)) {
+			return "Power is on cooldown";
+		}
+		return null;
 	}
-	return null;
-}
 
-public isPowerOnCooldown(power: Power) : boolean {
-	return this.user.isPowerOnCooldown(power);
-}
+	public isPowerOnCooldown(power: Power) : boolean {
+		return this.user.isPowerOnCooldown(power);
+	}
 
 	private _checkConditionals(usable: UsableAndCard) : N<FailReason> {
 		const effects= usable.getTriggeredEffects(this.user, {triggerType: "on-power-usage-check"});
@@ -1328,7 +1371,15 @@ public isPowerOnCooldown(power: Power) : boolean {
 		return this.isHypothetical;
 	}
 
-	get canCache() : boolean {
+	canCache(options: U<MainModifierOptions> ) : boolean {
+		if (!this.cachingEnabled) {return false;}
+		if (options?.omitPowers) {return false;}
+		if (options?.omitTalents) {return false;}
+		if (options?.omitTags) {return false;}
+		return true;
+
+	}
+	get cachingEnabled() : boolean {
 		const PersonaCaching = PersonaSettings.agressiveCaching();
 		return !this.isPartial && PersonaCaching;
 	}
@@ -1359,12 +1410,14 @@ interface PersonaClassCache {
 	mainModifiers: U<ConditionalEffectC[]>;
 	passivePowers: U<readonly Power[]>;
 	defensiveModifiers: U<ConditionalEffectC[]>;
+	nearbyAuras:  U<ConditionalEffectC[]>;
 }
 
-interface MainModifierOptions {
+export interface MainModifierOptions {
 	omitPowers?: boolean;
 	omitTalents?: boolean;
 	omitTags ?: boolean;
+	omitAuras ?: boolean;
 }
 
 type FailReason = string;

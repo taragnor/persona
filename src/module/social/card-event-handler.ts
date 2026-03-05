@@ -246,6 +246,7 @@ export class SocialCardEventHandler {
 			}] satisfies typeof effects[number]["consequences"];
 			effects.push({
 				isDefensive: false,
+				isAura: false,
 				conditions: [{type: "always"}],
 				consequences: responseEffects,
 				isEmbedded: false,

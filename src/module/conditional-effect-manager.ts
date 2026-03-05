@@ -1389,6 +1389,7 @@ export class EMAccessor<T> {
 			effect= {
 				isDefensive: false,
 				isEmbedded: false,
+				isAura: false,
 				conditions: [ {
 					type: "always"
 				}],
@@ -1529,6 +1530,7 @@ declare global{
 	interface ConditionalEffect {
 		isDefensive: boolean;
 		isEmbedded: boolean;
+		isAura: boolean;
 		conditions: Precondition[];
 		consequences: Consequence[];
 	}
@@ -1538,6 +1540,7 @@ declare global{
 		consequences: SourcedConsequence<NonDeprecatedConsequence>[];
 		isDefensive: boolean;
 		isEmbedded: boolean;
+		isAura: boolean;
 	}
 
 	// type SourcedConditionalEffects = SourcedConditionalEffect[];

@@ -471,6 +471,12 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return await Promise.allSettled(promises);
 	}
 
+	PCParty() : (PC | NPCAlly)[] {
+		return game.scenes.active.tokens.contents
+			.map( x=> x.actor as PersonaActor)
+			.filter( actor=> actor && (actor.isPC() || actor.isNPCAlly()));
+	}
+
 }
 
 export const PersonaDB = new PersonaDatabase();

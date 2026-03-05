@@ -347,6 +347,7 @@ export class ConditionalEffectDM extends foundry.abstract.DataModel {
 		return {
 			isEmbedded: new bool(),
 			isDefensive: new bool(),
+			isAura: new bool(),
 			conditions: new arr(new obj<Precondition>({required: true})),
 			consequences: new arr(new obj<Consequence>({required: true})),
 		};

@@ -294,6 +294,11 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 			.map( x=> new ConditionalEffectC(x, this, sourceActor, this));
 	}
 
+	getAuraEffects(sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
+		return this.getEmbeddedEffects(sourceActor, options).filter( x=> x.isAura)
+			.map( x=> new ConditionalEffectC(x, this, sourceActor, this));
+	}
+
 	get accessor() : UniversalAEAccessor<this> {
 		return PersonaDB.getUniversalAEAccessor(this);
 	}

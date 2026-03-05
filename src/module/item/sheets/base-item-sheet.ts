@@ -43,6 +43,7 @@ export class PersonaItemSheetBase extends foundry.appv1.sheets.ItemSheet<Persona
 		const effect : ConditionalEffect = {
 			isDefensive: false,
 			isEmbedded: false,
+			isAura: false,
 			conditions: [{
 				type: "always",
 			}],

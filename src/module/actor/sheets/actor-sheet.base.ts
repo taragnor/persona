@@ -209,6 +209,7 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 		const effect : ConditionalEffect = {
 			isEmbedded: false,
 			isDefensive: false,
+			isAura: false,
 			conditions: [{
 				type: "always",
 			}],
