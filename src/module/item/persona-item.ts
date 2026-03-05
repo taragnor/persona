@@ -45,6 +45,7 @@ import {DamageInterface} from '../combat/damage-system.js';
 import {ConditionalEffectC} from '../conditionalEffects/conditional-effect-class.js';
 import {changeProbability} from '../../config/probability.js';
 import {PersonaAE} from '../persona-ae.js';
+import {CombatEngine} from '../combat/combat-engine.js';
 
 declare global {
 	type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -1691,10 +1692,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			&& this.system.ailmentChance == 'none'
 			&& !this.isInstantDeathAttack()) {
 			if (this.isWeaponSkill()) {
-				return 2;
+				return CombatEngine.BASE_WEAPON_CRIT_BOOST;
 			}
 			if (this.isMagicSkill()) {
-				return 1;
+				return CombatEngine.BASE_MAGIC_CRIT_BOOST;
 			}
 		}
 		return 0;

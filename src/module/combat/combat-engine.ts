@@ -30,6 +30,9 @@ export class CombatEngine {
 	static LUCK_DIFF_MULTIPLIER = (1/6);
 	startTime: number;
 
+	static BASE_WEAPON_CRIT_BOOST = 2;
+	static BASE_MAGIC_CRIT_BOOST = 1;
+
 	constructor (combat: U<PersonaCombat> = game.combat as U<PersonaCombat>) {
 		this.combat = combat;
 	}
@@ -765,7 +768,6 @@ export class CombatEngine {
 		CombatRes.merge(res);
 		if (PersonaSettings.debugMode() && game.user.isGM) {
 			console.log(res);
-			Debug(res);
 		}
 		return CombatRes;
 	}
@@ -892,7 +894,6 @@ export class CombatEngine {
 			type: "critical",
 			possible: total > -3,
 		};
-
 	}
 
 	static calculateInstantDeathRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation?: N<Situation>) : U<CalculatedRange> {
