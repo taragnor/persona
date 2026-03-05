@@ -54,7 +54,7 @@ export class PersonaHandleBarsHelpers {
 		}
 	}
 
-	static helpers : Record<string, (...args: unknown[])=> unknown>  = {
+	static helpers : Record<string, (...args: unknown[])=> unknown> = {
 		"caps" : (str: string) => str?.toUpperCase?.() || str,
 
 		"getMaxSlotsAt": (_actor: PersonaActor, _lvl:number) => {

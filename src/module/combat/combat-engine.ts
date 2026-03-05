@@ -492,10 +492,14 @@ export class CombatEngine {
 		if (testNullify) {
 			return this.getWeaknessSitRep(attacker, target, power, testNullify);
 		}
-		const canCrit = typeof situation.rollType == 'number' || situation.rollType == 'iterative' ? false : true;
+		// const canCrit = typeof situation.rollType == 'number' || situation.rollType == 'iterative' ? false : true;
 		const def = power.system.defense;
 		if (def == 'none') {
-			return this.getWeaknessSitRep(attacker, target, power, "hit");
+			if (this.checkCritical(attacker, target, power, situation)) {
+				return this.getWeaknessSitRep(attacker, target, power, "crit");
+			} else {
+				return this.getWeaknessSitRep(attacker, target, power, "hit");
+			}
 		}
 		if (this.checkFumble(attacker, target, power, situation)) {
 			return this.getWeaknessSitRep(attacker, target, power, "fumble");
@@ -503,16 +507,29 @@ export class CombatEngine {
 		if (this.checkMiss(attacker, target, power, situation)) {
 			return this.getWeaknessSitRep(attacker, target, power, "miss");
 		}
-		if (situation.withinCritRange
+		// if (situation.withinCritRange
+		// 	&& situation.rollTotal >= situation.DC
+		// 	&& (!power.isMultiTarget() || situation.naturalRoll % 2 == 0)
+		// 	&& !target.user.hasStatus('blocking')
+		// 	&& !power.hasTag('no-crit')
+		// 	&& canCrit
+		// ) {
+		if (this.checkCritical(attacker, target, power, situation)) {
+			return this.getWeaknessSitRep(attacker, target, power, "crit");
+		}
+		return this.getWeaknessSitRep(attacker, target, power, "hit");
+	}
+
+	private checkCritical( _attacker: Persona, target: Persona,  power: Usable, situation: ProtoResultAttackSituation): boolean {
+		const canCrit = typeof situation.rollType == 'number' || situation.rollType == 'iterative' ? false : true;
+		return !!(
+			situation.withinCritRange
 			&& situation.rollTotal >= situation.DC
 			&& (!power.isMultiTarget() || situation.naturalRoll % 2 == 0)
 			&& !target.user.hasStatus('blocking')
 			&& !power.hasTag('no-crit')
 			&& canCrit
-		) {
-			return this.getWeaknessSitRep(attacker, target, power, "crit");
-		}
-			return this.getWeaknessSitRep(attacker, target, power, "hit");
+		);
 	}
 
 	private checkMiss( attacker: Persona, _target: Persona,  power: Usable, situation: ProtoResultAttackSituation) : boolean {
@@ -886,7 +903,7 @@ export class CombatEngine {
 		calc.add(1, luckDiff, "Luck Difference Mod");
 		const {total, steps} = calc.eval(situation);
 		const high =20;
-		const low = high -total;
+		const low = high - total;
 		return {
 			high,
 			low: low > -10 ? Math.max(low, 11): low,

@@ -452,24 +452,9 @@ static async processAmbush(encounter: Encounter) {
 			return "standard";
 		}
 		return choice;
-
-		// const DIE_SIZE = 16 + mixed;
-		// const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
-		// switch (true) {
-		// 	case sizeRoll <= 11 - hardMod:
-		// 		return "standard";
-		// 	case sizeRoll <= 13:
-		// 		return "tough";
-		// 	case sizeRoll == 14:
-		// 		return "treasure";
-		// 	case sizeRoll >= 15:
-		// 		return "mixed";
-		// 	default:
-		// 		return "standard";
-		// }
 	}
 
-public static getRandomEncounterListFromDiffLevel(difficultyLevel: number, lowRange=3, highRange = 3) {
+public static getRandomEncounterListFromDiffLevel(difficultyLevel: number, lowRange = 3, highRange = 3) {
 	const CR = difficultyLevel;
 	const shadows = PersonaDB.shadows()
 		.filter( x => x.isEligibleForRandomEncounter())
