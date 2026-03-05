@@ -17,7 +17,7 @@ export class TarotPrinter extends Application {
 			height: 1200,
 			minimizable: true,
 			resizable: true,
-			title: game.i18n.localize("persona.applications.tarotPrinter"),
+			title: game.i18n.localize("persona.applications.tarotPrinter" as LocalizationString),
 		});
 	}
 

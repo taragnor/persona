@@ -73,5 +73,3 @@ interface DoorSound {
 }
 
 type FileNameAndPath = string;
-
-type LocalizationString = string;

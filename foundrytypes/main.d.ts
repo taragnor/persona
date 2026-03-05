@@ -66,7 +66,7 @@ declare interface Game {
 
 
 interface Localization{
-	localize(localizationString: string) : string;
+	localize(localizationString: LocalizationString) : string;
 	/** replaces {X} with substitution data using X as a keylookup*/
 	format(localizationString: string, substitutionData: Record<string, string>): string;
 }
@@ -135,4 +135,5 @@ type N<T> = T | undefined;
 
 type UN<T> = T | undefined | null;
 
-ActorSheet
+
+type LocalizationString = Foundry.Branded<string, "localization_brand">

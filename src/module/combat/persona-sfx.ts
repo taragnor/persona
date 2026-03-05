@@ -16,7 +16,7 @@ import {PersonaAE} from "../persona-ae.js";
 const DoomDoor : DoorSound= {
 	close: "systems/persona/sound/doom/dsdorcls.wav",
 	open: "systems/persona/sound/doom/dsdoropn.wav",
-	label: "WALLS.DoorSound.doom",
+	label: "WALLS.DoorSound.doom" as LocalizationString,
 	lock: "",
 	test: "systems/persona/sound/doom/dsnoway.wav",
 	unlock: ""

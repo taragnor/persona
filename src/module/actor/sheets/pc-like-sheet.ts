@@ -74,7 +74,7 @@ export class PCLikeSheet extends CombatantSheetBase {
 		} as const;
 		for (const [k,v] of Object.entries(typeTable)) {
 			if (div.hasClass(k)) {
-				itemType = localize(v);
+				itemType = localize(v as LocalizationString);
 			}
 		}
 		await Logger.sendToChat(`${this.actor.name} changed ${itemType} ${item?.name ?? "ERROR"}` , this.actor);

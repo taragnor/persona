@@ -14,6 +14,7 @@ import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-s
 import {EncounterOptions, RandomEncounter} from "../exploration/random-encounters.js";
 import {randomSelect, removeDuplicates} from "../utility/array-tools.js";
 import {RegionPanel} from "../exploration/region-panel.js";
+import {HTMLTools} from "../utility/HTMLTools.js";
 
 declare global {
 	interface SocketMessage {
@@ -47,9 +48,11 @@ const SPECIAL_MOD_LIST = [
 
 type SpecialMod = typeof SPECIAL_MOD_LIST[number];
 
-const SPECIAL_MODS = Object.fromEntries(
-	SPECIAL_MOD_LIST.map( x=> [x, `persona.specialRoomMods.${x}`])
-);
+// const SPECIAL_MODS = Object.fromEntries(
+// 	SPECIAL_MOD_LIST.map( x=> [x, `persona.specialRoomMods.${x}`])
+// );
+
+const SPECIAL_MODS = HTMLTools.createLocalizationObject(SPECIAL_MOD_LIST, "persona.specialRoomMods");
 
 const SECRET_CHOICES_LIST = [
 	"found",
@@ -61,9 +64,11 @@ const SECRET_CHOICES_LIST = [
 
 type SecretChoice = typeof SECRET_CHOICES_LIST[number];
 
-const SECRET_CHOICES = Object.fromEntries(
-	SECRET_CHOICES_LIST.map( x=> [x, `persona.secretChoices.${x}`])
-);
+// const SECRET_CHOICES = Object.fromEntries(
+// 	SECRET_CHOICES_LIST.map( x=> [x, `persona.secretChoices.${x}`])
+// );
+const SECRET_CHOICES = HTMLTools.createLocalizationObject( SECRET_CHOICES_LIST , "persona.secretChoices");
+
 
 type RegionData = {
 	ignore: boolean,
@@ -411,7 +416,7 @@ export class PersonaRegion extends RegionDocument {
 	formEntryField(field: keyof RegionData) {
 		const element = $("<div>");
 		element.append($("<label>").text(
-			game.i18n.localize(`persona.roomAttribute.${field}`)
+			game.i18n.localize(`persona.roomAttribute.${field}` as LocalizationString)
 		));
 		const fieldClass = `field-${field}`;
 		switch (field) {

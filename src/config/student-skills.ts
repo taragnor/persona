@@ -8,7 +8,8 @@ export const STUDENT_SKILLS_LIST = [
 ] as const;
 
 export const STUDENT_SKILLS = Object.fromEntries(STUDENT_SKILLS_LIST.map( x=> [x, `persona.skills.${x}.name`])
- ) as Record<typeof STUDENT_SKILLS_LIST[number], string>;
+ ) as Record<typeof STUDENT_SKILLS_LIST[number], LocalizationString>;
+
 
 export type SocialStat = typeof STUDENT_SKILLS_LIST[number];
 

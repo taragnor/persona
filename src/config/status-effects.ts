@@ -257,7 +257,7 @@ export type FatigueStatusId = Extract<StatusEffectId, "tired" | "exhausted" | "r
 
 export const STATUS_EFFECT_TRANSLATION_TABLE = Object.fromEntries(
 	CONFIG.statusEffects.map( ({id, name}) => [id, name])
-) as Record<StatusEffectId, string>;
+) as Record<StatusEffectId, LocalizationString>;
 
 export const statusMap = new Map(CONFIG.statusEffects.map( k => ([k.id, k])) );
 
@@ -290,8 +290,8 @@ export const STATUS_EFFECT_DURATION_TYPES = HTMLTools.createLocalizationObject(S
 Hooks.on("ready", () => {
 	console.log("Sorting status effects");
 	CONFIG.statusEffects.sort( (a,b) =>  {
-		const la = game.i18n.localize(a.name);
-		const lb = game.i18n.localize(b.name);
+		const la = game.i18n.localize(a.name as LocalizationString);
+		const lb = game.i18n.localize(b.name as LocalizationString);
 		return la.localeCompare(lb);
 	});
 });
@@ -312,7 +312,7 @@ export function localizeStatusId(id: StatusEffectId) : string {
 		PersonaError.softFail(`couldn't find statusId ${id}`);
 		return "ERROR";
 	}
-	return game.i18n.localize(st.name);
+	return game.i18n.localize(st.name as LocalizationString);
 }
 
 

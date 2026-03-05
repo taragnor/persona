@@ -1754,7 +1754,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				const s = [id];
 				const newState = {
 					...stateData,
-					name: game.i18n.localize(stateData.name),
+					name: game.i18n.localize(stateData.name as LocalizationString),
 					statuses: s
 				};
 				if (await this.checkStatusNullificaton(id)) {return false;}
@@ -2148,8 +2148,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		// const newId = await this.setFatigueLevel(st);
 		if (log && (oldId != newId || lvl < -1)) {
-			const oldName = oldId ? localize(statusMap.get(oldId)!.name) : "Normal";
-			const newName = newId ? localize(statusMap.get(newId)!.name): "Normal";
+			const oldName = oldId ? localize(statusMap.get(oldId)!.name as LocalizationString) : "Normal";
+			const newName = newId ? localize(statusMap.get(newId)!.name as LocalizationString): "Normal";
 			const hospital = lvl < statusToFatigueLevel("exhausted") ? `${this.displayedName} is over-fatigued and need to be hospitalized!`: "";
 			await Logger.sendToChat(`${this.displayedName}  fatigue changed from ${oldName} to ${newName}. ${hospital}`);
 		}
@@ -2457,7 +2457,7 @@ async tryToAddToMain(this: ValidAttackers, power: Power, logChanges = true) : Pr
 			await this.addLearnedPower(power, this.level);
 		}
 		if (logChanges && this.hasPlayerOwner) {
-			await Logger.sendToChat(`${this.name} learned Power: ${power.name}`);
+			await Logger.sendToChat(`${this.name} learned Power: ${power.detailedName}`);
 		}
 		return true;
 	}
@@ -2471,7 +2471,7 @@ async tryToAddToSideboard(this: ValidAttackers, power: Power, logChanges: boolea
 		sideboard.push(power.id);
 		await this.update( {"system.combat.powers_sideboard": sideboard});
 		if (logChanges && this.hasPlayerOwner) {
-			await Logger.sendToChat(`${this.name} learned Power: ${power.name} (placed in sideboard)`);
+			await Logger.sendToChat(`${this.name} learned Power: ${power.detailedName} (placed in sideboard)`);
 		}
 		return true;
 	}
@@ -2573,7 +2573,7 @@ async deletefromLearnBuffer(this: ValidAttackers, id: Power["id"]) : Promise<boo
 	if (buffer.includes(id)) {
 		buffer = buffer.filter( x=> x != id);
 		await this.update( {"system.combat.learnedPowersBuffer": buffer});
-		await Logger.sendToChat(`${this.name} chose to forget new power:  ${power.name}` , this);
+		await Logger.sendToChat(`${this.name} chose to forget new power:  ${power.detailedName}` , this);
 		return true;
 	}
 	return false;
@@ -2587,7 +2587,7 @@ async deleteFromMainPowers(this: ValidAttackers, id: Power["id"]) {
 		await this.update( {"system.combat.powers": powers});
 		// await this.checkMainPowerEmptySpace();
 		if (this.hasPlayerOwner) {
-			await Logger.sendToChat(`${this.name} deleted power ${power.name}` , this);
+			await Logger.sendToChat(`${this.name} deleted power ${power.detailedName}` , this);
 		}
 		return true;
 	}
@@ -2600,7 +2600,7 @@ async deleteFromSideboard(this: PC | NPCAlly, id: Power["id"]) {
 		const power = PersonaDB.getItemById(id) as Power;
 		sideboard = sideboard.filter( x=> x != id);
 		await this.update( {"system.combat.powers_sideboard": sideboard});
-		await Logger.sendToChat(`${this.name} deleted sideboard power ${power.name}` , this);
+		await Logger.sendToChat(`${this.name} deleted sideboard power ${power.detailedName}` , this);
 		return true;
 	}
 	return false;

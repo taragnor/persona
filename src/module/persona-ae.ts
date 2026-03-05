@@ -25,7 +25,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 	}
 
 	get displayedName() {
-		return game.i18n.localize(this.name);
+		return game.i18n.localize(this.name as LocalizationString);
 	}
 
 	override apply( actor: Actor, change: Foundry.AEChange) {

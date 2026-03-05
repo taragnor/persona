@@ -16,7 +16,7 @@ export class PersonaPrinter extends Application {
 			height: 1200,
 			minimizable: true,
 			resizable: true,
-			title: game.i18n.localize("persona.applications.talentPrinter"),
+			title: game.i18n.localize("persona.applications.talentPrinter" as LocalizationString),
 		});
 	}
 

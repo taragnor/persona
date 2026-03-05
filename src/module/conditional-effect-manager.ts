@@ -497,13 +497,13 @@ export class ConditionalEffectManager {
 		}
 	}
 
-	static translate<const T extends string>(items: MultiCheck<T> | T, translationTable?: Record<T, string>) : string {
+	static translate<const T extends string>(items: MultiCheck<T> | T, translationTable?: Record<T, LocalizationString | string>) : string {
 		if (typeof items == "string")  {
-			return translationTable ? localize(translationTable[items]) : items;
+			return translationTable ? localize(translationTable[items] as LocalizationString) : items;
 		}
 		return Object.entries(items)
 			.flatMap( ([k,v]) => v ? [k] : [])
-			.map( (x:T)=> translationTable ? localize(translationTable[x]) : x)
+			.map( (x:T)=> translationTable ? localize(translationTable[x] as LocalizationString) : x)
 			.join(", ");
 	}
 

@@ -214,11 +214,11 @@ export class HTMLTools {
 	}
 
 	/** creates a localiation object from an array. The localization header should contain all of the locatization string except for the ending '.name'*/
-	static createLocalizationObject<const T extends readonly string[]> ( array: T, localizationHeader: string) : Readonly<Record<T[number], string>> {
+	static createLocalizationObject<const T extends readonly string[]> ( array: T, localizationHeader: string) : Readonly<Record<T[number], LocalizationString>> {
 		const obj = Object.fromEntries(
 			array.map( x=> [x, `${localizationHeader}.${x}`])
 		);
-		return obj as Readonly<Record<T[number], string>>;
+		return obj as Readonly<Record<T[number], LocalizationString>>;
 	}
 
 
@@ -299,7 +299,7 @@ static generateDefaultData<T extends HTMLDataInputDefinition>(definition: T) : H
 					case "table" in v: {
 						const options = Object.entries(v.table)
 							.map( ([key,tv]) => {
-								const displayedName = v.type == "localizedString" ? game.i18n.localize(tv) : tv;
+								const displayedName = v.type == "localizedString" ? game.i18n.localize(tv as LocalizationString) : tv;
 								return `<option value='${key}'` + 
 									(data[k] == key ? "selected" : "")
 									+ `${disabled}>`

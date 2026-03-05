@@ -43,7 +43,7 @@ import {EnchantedTreasureFormat, TreasureSystem} from '../exploration/treasure-s
 import {Calculation} from '../utility/calculation.js';
 import {DamageInterface} from '../combat/damage-system.js';
 import {ConditionalEffectC} from '../conditionalEffects/conditional-effect-class.js';
-import {changeProbability} from '../../config/probability.js';
+import {changeProbability, PROBABILITIES_POWER_RARITY} from '../../config/probability.js';
 import {PersonaAE} from '../persona-ae.js';
 import {CombatEngine} from '../combat/combat-engine.js';
 
@@ -604,7 +604,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			}
 		}
 		return tags
-			.map(tag => typeof tag == "string" ? localize(localizeTable[tag]) : tag.name)
+			.map(tag => typeof tag == "string" ? localize(localizeTable[tag] as LocalizationString) : tag.name)
 			.join(', ');
 	}
 
@@ -1340,6 +1340,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 		return this.name;
 	}
+
+	get detailedName() : string {
+		switch (this.system.type) {
+			case "power":
+				const rarity = localize(PROBABILITIES_POWER_RARITY[this.system.rarity]);
+				return `${this.name} (${rarity})`;
+			default: return this.name;
+		}
+	}
+
 
 	get displayedNameHTML() : SafeString {
 		switch (this.system.type) {

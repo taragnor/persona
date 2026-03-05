@@ -1,4 +1,4 @@
-export const TAROT_DECK = {
+const TAROT_DECK_RAW = {
 	"Fool": "persona.tarot.0.name",
 	"Magician": "persona.tarot.1.name",
 	"HighPriestess": "persona.tarot.2.name",
@@ -24,4 +24,8 @@ export const TAROT_DECK = {
 	"": "-",
 } as const;
 
-export type TarotCard = keyof typeof TAROT_DECK;
+export type TarotCard = keyof typeof TAROT_DECK_RAW;
+
+//A simple retyping
+export const TAROT_DECK = TAROT_DECK_RAW as Record<TarotCard, LocalizationString>;
+

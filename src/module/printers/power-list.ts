@@ -18,7 +18,7 @@ export class PowerPrinter extends Application {
 			height: 1200,
 			minimizable: true,
 			resizable: true,
-			title: game.i18n.localize("persona.applications.powerPrinter"),
+			title: game.i18n.localize("persona.applications.powerPrinter" as LocalizationString),
 		});
 	}
 

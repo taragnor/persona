@@ -43,7 +43,7 @@ import {OriginalDamageSystem} from "./combat/original-damage-system.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaCompendium} from "./persona-compendium.js";
 import {CombatPanel} from "./combat/combat-panel.js";
-import {PROBABILITIES, PROBABILITIES_POWER_RARITY, ProbabilityRate} from "../config/probability.js";
+import {PROBABILITIES_POWER_RARITY, ProbabilityRate} from "../config/probability.js";
 import {CardData} from "./social/social-card-executor.js";
 
 
@@ -180,7 +180,7 @@ export class PersonaHandleBarsHelpers {
 
 		"getTalentLevel": (persona: Persona, talent: Talent) : string => {
 			const numLevel = persona.getTalentLevel(talent);
-			return game.i18n.localize(`persona.talentLevels.${numLevel}.name`);
+			return game.i18n.localize(`persona.talentLevels.${numLevel}.name` as LocalizationString);
 		},
 
 		"meetsSLRequirement": ( owner: PC, focus: Focus) => {
@@ -406,12 +406,12 @@ export class PersonaHandleBarsHelpers {
 			const selected= Object.entries(checkedTable ?? {})
 				.filter (([_k,v]) => v == true)
 				.map( ([k, _v])=> list[k] ? list[k] : k)
-				.map( k => hash?.localize ? localize(k) : k )
+				.map( k => hash?.localize ? localize(k as LocalizationString) : k )
 				.join (", ");
 			html += `<span class="selected micro-text"> ${selected.length ? selected : "NONE SELECTED"} </span>`;
 			html+= `<div class="MC-selectors ${(selected.length && ConditionalEffectManager.lastClick != name) ? 'hidden': ''}">`;
 			for (const [key, val] of Object.entries(list)) {
-				const valName = hash?.localize ? localize(val) : val;
+				const valName = hash?.localize ? localize(val as LocalizationString) : val;
 				html += `<span class="small-box">`;
 				html += `<label class="micro-text">  ${valName} </label>`;
 				let checked = false;
@@ -771,7 +771,7 @@ export class PersonaHandleBarsHelpers {
 		"displayStatusIcon": function (statusId: StatusEffectId) : SafeString {
 			const status = CONFIG.statusEffects.find( x=> x.id == statusId);
 			if (status) {
-				const locName = localize(status.name);
+				const locName = localize(status.name as LocalizationString);
 				const icon = status.icon;
 				return new Handlebars.SafeString(`
 				<img class="status-icon" src='${icon}' title='${locName}'>`);
