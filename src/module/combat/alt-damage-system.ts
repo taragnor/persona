@@ -23,7 +23,7 @@ export class AltDamageSystem extends DamageSystemBase {
 	private BASE_VARIANCE = 2 as const;
 	private ARMOR_TO_DAMAGE_DIVISOR = 1.0 as const;
 	private ALL_OUT_ATTACK_HELPER_DIVISOR = 1/3;
-	private BASIC_ATTACK_LEVEL_DIVISOR = 1.0 as const;
+	private BASIC_ATTACK_LEVEL_DIVISOR = 0.85 as const;
 	private BASE_DAMAGE_LEVEL_DIVISOR = 0.666 as const;
 	// private STAT_DIFF_DAMAGE_BOOST_PERCENT = 0.02;
 	private _weaponDmgGrowth = new GrowthCalculator(1.20, 11, 4.5);
@@ -316,7 +316,7 @@ export class AltDamageSystem extends DamageSystemBase {
 const DAMAGE_LEVEL_NEW = {
 	"none": {extraVariance: 0, baseAmt: 0, mult: 0, healMult: 0},
 	"miniscule": {extraVariance: 0, baseAmt: 0, mult: 0.5, healMult: 0.25},
-	"basic": {extraVariance: 0, baseAmt: 5, mult: 1, healMult: 0.5},
+	"basic": {extraVariance: 0, baseAmt: 8, mult: 1, healMult: 0.5},
 	"light": {extraVariance: 0, baseAmt: 15, mult: 1.10, healMult: 1.25},
 	"medium": {extraVariance: 0, baseAmt: 25, mult: 1.30, healMult: 2},
 	"heavy": {extraVariance: 0, baseAmt: 30, mult: 1.65, healMult: 3},
