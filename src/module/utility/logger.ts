@@ -1,3 +1,5 @@
+import {PersonaSettings} from "../../config/persona-settings.js";
+
 export class Logger {
 
 	static log(txt: string) {
@@ -32,4 +34,31 @@ export class Logger {
 		return messageData;
 	}
 
+}
+
+export class TimeLog {
+	static time : number;
+	private time: number;
+
+	constructor() {
+		this.time = Date.now();
+	}
+
+	static reset() {
+		this.time = Date.now();
+	}
+
+	static log(txt: string) {
+		if (!PersonaSettings.debugMode()) {return;}
+		const elapsed = (Date.now() - this.time);
+		const msg = `${elapsed} ms : ${txt}`;
+		console.log(msg);
+	}
+
+	log(txt : string) {
+		const elapsed = (Date.now() - this.time);
+		const msg = `${elapsed} ms : ${txt}`;
+		console.log(msg);
+		// await Logger.sendToChat(msg);
+	}
 }

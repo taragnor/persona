@@ -17,6 +17,7 @@ import {sleep} from "../utility/async-wait.js";
 import {Calculation} from "../utility/calculation.js";
 import {Helpers} from "../utility/helpers.js";
 import {CanceledDialgogError, HTMLTools} from "../utility/HTMLTools.js";
+import {TimeLog} from "../utility/logger.js";
 import {AttackResult, CombatResult} from "./combat-result.js";
 import {AILMENT_LEVELS, DamageCalculation, INSTANT_KILL_LEVELS, InstantKillLevel} from "./damage-calc.js";
 import {FinalizedCombatResult} from "./finalized-combat-result.js";
@@ -37,21 +38,22 @@ export class CombatEngine {
 		this.combat = combat;
 	}
 
-	static getTokenFromActor(actor: ValidAttackers) : PToken {
-		let token : PToken | undefined;
-		if (actor.token) {
-			token = actor.token as PToken;
-		} else {
-			const combat= game.combat as U<PersonaCombat>;
-			const combToken = combat?.getPToken(actor);
-			if (combToken) { return combToken;}
-			token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
-			if (token) {return token;}
-			const tokens = actor._dependentTokens.get(game.scenes.current)!;
-			//THIS IS PROBABLY A bad idea to iterate over weakset
-			//@ts-expect-error not sure what type tokens are
-			token = Array.from(tokens)[0];
-		}
+	 static getTokenFromActor(actor: ValidAttackers) : PToken {
+			let token : PToken | undefined;
+			if (actor.token) {
+				 token = actor.token as PToken;
+			} else {
+				 const combat= game.combat as U<PersonaCombat>;
+				 const combToken = combat?.getPToken(actor);
+				 if (combToken) { return combToken;}
+				 token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
+				 if (token) {return token;}
+				 // const tokens = actor._dependentTokens.get(game.scenes.current)!;
+				 //THIS IS PROBABLY A bad idea to iterate over weakset
+				 // token = Array.from(tokens)[0];
+				 token = actor.getDependentTokens()
+						.find( tok => tok.parent == game.scenes.current) as U<PToken>;
+			}
 
 		if (!token) {
 			throw new PersonaError(`Can't find token for ${actor.name}: ${actor.id}` );
@@ -87,6 +89,7 @@ export class CombatEngine {
 	}
 
 	async usePower(attacker: PToken, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) : Promise<FinalizedCombatResult> {
+		TimeLog.reset();
 		this.startTime = Date.now();
 		if (attacker instanceof foundry.canvas.placeables.Token) {
 			throw new Error('Actual token found instead of token document');
@@ -109,8 +112,11 @@ export class CombatEngine {
 				await attacker.actor.expendAction();
 			}
 			await attacker.actor.removeStatusesOfType("out-of-turn-action");
+			TimeLog.log(`Finished Status Removal and Action Management`);
 			await finalizedResult.toMessage(power.name, attacker.actor);
+			TimeLog.log(`Finished toMessage`);
 			await this.postActionCleanup(attacker, finalizedResult);
+			TimeLog.log(`Finished using power ${power.name}`);
 			return finalizedResult;
 		} catch(e) {
 			if (e instanceof CanceledDialgogError) {
@@ -434,7 +440,7 @@ export class CombatEngine {
 				}, null);
 			if (!finalResult) {return null;}
 			if (PersonaSettings.debugMode()) {
-				console.log(`Override to ${finalResult.result}`);
+				console.debug(`Override to ${finalResult.result}`);
 			}
 			return this.getWeaknessSitRep(attacker, target, power, finalResult.result);
 		}
@@ -784,7 +790,7 @@ export class CombatEngine {
 		const res = await ConsequenceProcessor.consequencesToResult(consequences, power,  situation, attacker, target, atkResult);
 		CombatRes.merge(res);
 		if (PersonaSettings.debugMode() && game.user.isGM) {
-			console.log(res);
+			console.debug(res);
 		}
 		return CombatRes;
 	}

@@ -1663,26 +1663,32 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		fill.style.setProperty('--hue', hue);
 	}
 
-	async updateOpacity(this: ValidAttackers, hp: number) {
-		if (this.isPC() && !this.isRealPC()) {return;}
-		const opacity = hp > 0 ? 1.0 : (this.isFullyFaded(hp) ? this.FULL_FADE_OPACITY : this.DOWNED_OPACITY);
-		if (this.token) {
-			await this.token.update({"alpha": opacity});
-		} else {
-			//@ts-expect-error dependent tokens not in foundrytypes
+	 async updateOpacity(this: ValidAttackers, hp: number) {
+			console.log(`Changing opacity for ${this.name}`);
+			if (this.isPC() && !this.isRealPC()) {return;}
+			const opacity = hp > 0 ? 1.0 : (this.isFullyFaded(hp) ? this.FULL_FADE_OPACITY : this.DOWNED_OPACITY);
+			// if (this.token) {
+			// 	await this.token.update({"alpha": opacity});
+			// } else {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-			for (const iterableList of this._dependentTokens.values()) {
-				for (const tokDoc of iterableList) {
-					try {
-						await (tokDoc as TokenDocument<PersonaActor>).update({"alpha": opacity});
-					} catch {
-						//throw away errors from tokens that have gone out of scope as this is expected
-						continue;
-					}
-				}
-			}
-		}
-	}
+			//for (const iterableList of this._dependentTokens.values()) {
+			//	for (const tokDoc of iterableList) {
+			//		try {
+			//			await (tokDoc as TokenDocument<PersonaActor>).update({"alpha": opacity});
+			//		} catch {
+			//			//throw away errors from tokens that have gone out of scope as this is expected
+			//			continue;
+			//		}
+			//	}
+			//}
+			const promises = this.getDependentTokens().map ( token=> {
+				 if (token.alpha != opacity) {
+						return (token as TokenDocument<PersonaActor>).update({"alpha": opacity});
+				 }
+				 return Promise.resolve();
+			});
+			await Promise.allSettled(promises);
+	 }
 
 	async isStatusResisted( id : StatusEffect["id"]) : Promise<boolean> {
 		if (!this.isValidCombatant()) {return false;}
@@ -1885,15 +1891,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	get tokens() : TokenDocument<this>[] {
-		if (this.token) {
-			return [this.token];
-		}
-		//@ts-expect-error not in foundrytypes
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument
-		const dependentTokens : TokenDocument<PersonaActor>[] = Array.from(this._dependentTokens.values()).flatMap(x=> Array.from(x.values()));
+	 get tokens() : TokenDocument<this>[] {
+			if (this.token) {
+				 return [this.token];
+			}
+			return this.getDependentTokens() as TokenDocument<this>[];
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument
+			// const dependentTokens : TokenDocument<PersonaActor>[] = Array.from(this._dependentTokens.values()).flatMap(x=> Array.from(x.values()));
 
-		return dependentTokens.filter( x=> x.actorLink == true) as TokenDocument<this>[];
+		// return dependentTokens.filter( x=> x.actorLink == true) as TokenDocument<this>[];
 	}
 
 	/** returns true if nullfied **/

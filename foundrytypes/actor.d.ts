@@ -33,10 +33,11 @@ namespace Foundry {
 			isToken: boolean;
 			get inCompendium(): boolean;
 			getTokenDocument(extraData: Record<string, any>, sceneData : {parent: Scene}) : Promise<TokenDocument<Actor<T, ItemType, AEType>>>;
-			_dependentTokens:WeakMap<Scene, WeakSet<TokenDocument<typeof Actor<T, ItemType, AEType>>>> ;
+			 getDependentTokens() : TokenDocument[];
+			private _dependentTokens: WeakMap<Scene, WeakSet<TokenDocument<typeof Actor<T, ItemType, AEType>>>> ;
 			/** Retrieve an iterator over all effects that can apply to the actor.
   The effect might exist on the Actor, or it might exist on one of the Actor's Items.
-  If it's the latter, then its transfer value will be true.
+		 If it's the latter, then its transfer value will be true.
 			 */
 			allApplicableEffects() : Generator<AEType>
 			getActiveTokens(linked?: boolean, document?: boolean) : Token<Actor<T, ItemType, AEType>>[];

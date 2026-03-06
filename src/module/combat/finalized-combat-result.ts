@@ -20,6 +20,7 @@ import {CombatOutput} from "./combat-output.js";
 import {ConsequenceApplier} from "./consequence-applier.js";
 import {PersonaSFX} from "./persona-sfx.js";
 import {TriggeredEffect} from "../triggered-effect.js";
+import {TimeLog} from "../utility/logger.js";
 
 export class FinalizedCombatResult {
 	static pendingPromises: Map< CombatResult["id"], (val: unknown) => void> = new Map();
@@ -235,6 +236,7 @@ export class FinalizedCombatResult {
 		const output = new CombatOutput(this, initiatorToken);
 		try {
 			await this.autoApplyResult();
+			TimeLog.log("Finished Applying Result");
 			void output.renderMessage(effectNameOrHeader, initiator);
 			return;
 		} catch (e) {
@@ -265,6 +267,7 @@ export class FinalizedCombatResult {
 			try {
 				if (power && attacker) {
 					void PersonaSFX.onUsePowerStart(this.power, attacker);
+					TimeLog.log("Finished on Use Power Start SFX");
 				}
 				await this.#apply();
 			} catch (e) {
@@ -319,6 +322,7 @@ export class FinalizedCombatResult {
 	async #apply(): Promise<void> {
 		try {
 			await this.#processAttacks();
+			TimeLog.log("Finished processAttacks");
 			await this.#applyCosts();
 			await this.#applyGlobalOtherEffects();
 			await this.#onUsePowerTriggered();
@@ -363,11 +367,17 @@ export class FinalizedCombatResult {
 		for (const {atkResult, changes} of this.attacks ) {
 			const {attacker, target, power}  = this.getAttackData(atkResult);
 			await PersonaSFX.onUsePowerOn(power, attacker, target, atkResult.result);
+			TimeLog.log(`Finished Executing Special Effect for ${power.name} on ${target.name}`);
 			for (const change of changes) {
+				const actor = PersonaDB.findActor(change.actor);
+				TimeLog.log(`Processing change on ${actor.name}`);
 				const chained = await ConsequenceApplier.applyActorChange(change, power, atkResult.attacker!);
+				TimeLog.log(`Finished ApplyActor Change change on ${actor.name}`);
 				this.addChained(...chained);
+				TimeLog.log(`Adding Chained Effects`);
 			}
 		}
+		//TODO: this is the time sink
 	}
 
 	addChained( ...otherResults : U<FinalizedCombatResult>[]) : this {

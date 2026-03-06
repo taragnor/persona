@@ -9,6 +9,7 @@ import {PersonaError} from "../persona-error.js";
 import {PersonaSounds} from "../persona-sounds.js";
 import {PersonaVariables} from "../persona-variables.js";
 import {TriggeredEffect} from "../triggered-effect.js";
+import {TimeLog} from "../utility/logger.js";
 import {EvaluatedDamage} from "./damage-calc.js";
 import {FinalizedCombatResult, ResolvedActorChange} from "./finalized-combat-result.js";
 import {PersonaCombat, PToken} from "./persona-combat.js";
@@ -24,6 +25,7 @@ export class ConsequenceApplier {
 		const actor = PersonaDB.findActor(change.actor);
 		const token  = change.actor.token ? PersonaDB.findToken(change.actor.token) as PToken: undefined;
 		for (const status of change.addStatus) {
+			TimeLog.log(`AddingStatus ${status.id} to ${actor.name}`);
 			const statusAdd = await actor.addStatus(status);
 			if (statusAdd && attacker) {
 				const attackerActor = PersonaDB.findToken(attacker)?.actor;
@@ -50,14 +52,19 @@ export class ConsequenceApplier {
 						}
 					}
 				}
+				TimeLog.log(`Finished Calling Triggers ${status.id} to ${actor.name}`);
 			}
 			if (statusAdd && token) {
 				Hooks.callAll("onAddStatus", token, status);
+				TimeLog.log(`Finished Hooks for  ${status.id} to ${actor.name}`);
 			}
+			TimeLog.log(`Finished Adding ${status.id} to ${actor.name}`);
 		}
 		for (const dmg of change.damage)  {
 			try {
+				TimeLog.log(`Applyign Damage to ${actor.name}`);
 				chained.push(...await this._applyDamage(actor, token, dmg, power, attacker));
+				TimeLog.log(`Finshed Applyign Damage to ${actor.name}`);
 			} catch (e) {
 				PersonaError.softFail(`Error applying Damage to ${actor.name}`, e);
 			}
@@ -70,6 +77,7 @@ export class ConsequenceApplier {
 			mpCost: 0,
 			theurgy: 0,
 		} satisfies MutableActorState;
+		TimeLog.log(`Applying Other effects to ${actor.name}`);
 		for (const otherEffect of change.otherEffects) {
 			try {
 				await this._applyOtherEffect(actor, token, otherEffect, mutableState);
@@ -77,6 +85,7 @@ export class ConsequenceApplier {
 				PersonaError.softFail(`Error trying to execute ${otherEffect.type} on ${actor.name}`, e);
 			}
 		}
+		TimeLog.log(`Finished Applying Other effects to ${actor.name}`);
 		if (mutableState.theurgy != 0 && !actor.isShadow()) {
 			console.log(`Modify Theurgy: ${mutableState.theurgy}`);
 			await actor.modifyTheurgy(mutableState.theurgy);
@@ -120,7 +129,10 @@ export class ConsequenceApplier {
 			if (CR) { ret.push(CR);}
 		}
 		if (power) {
+			TimeLog.log("About to exec SFX onDamage");
+
 			PersonaSFX.onDamage(token, dmg.hpChange, dmg.damageType, power);
+			TimeLog.log("Finished with onDamage");
 		}
 		if (token) {
 			if (power && !power.isAoE()) {

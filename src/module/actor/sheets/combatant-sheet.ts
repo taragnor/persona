@@ -212,43 +212,47 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			inUseMsg: "Can't use another power now, as a power is already in process"
 		};
 
-		await lockObject( this, async () => {
-			const actor = this.actor;
-			let token : PToken | undefined;
-			if (actor.token) {
-				token = actor.token as PToken;
-			} else {
-				const tokens = this.actor._dependentTokens.get(game.scenes.current)!;
-				//THIS IS PROBABLY A bad idea to iterate over weakset
-				//@ts-expect-error not sure what type tokens are
-				token = Array.from(tokens)[0];
-			}
-			token = token ? token : game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
-			if (!token) {
-				throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` );
-			}
-			try {
-				const combat = PersonaCombat.combat && PersonaCombat.combat.findCombatant(token) ? PersonaCombat.combat : undefined;
-				const engine = new CombatEngine(combat);
-				await engine.usePower(token, power );
-			} catch (e) {
-				switch (true) {
-					case e instanceof CanceledDialgogError: {
-						break;
-					}
-					case e instanceof TargettingError: {
-						break;
-					}
-					case e instanceof Error: {
-						console.error(e);
-						console.error(e.stack);
-						PersonaError.softFail("Problem with Using Item or Power", e, e.stack);
-						break;
-					}
-					default: break;
+		 await lockObject( this, async () => {
+				const actor = this.actor;
+				let token : PToken | undefined;
+				if (actor.token) {
+					 token = actor.token as PToken;
+				} else {
+					 // const tokens = this.actor._dependentTokens.get(game.scenes.current)!;
+					 //THIS IS PROBABLY A bad idea to iterate over weakset
+					 //@ts-expect-error not sure what type tokens are
+					 // token = Array.from(tokens)[0];
+					 token = this.actor.getDependentTokens()
+							.find( tok => tok.parent == game.scenes.current);
 				}
-			}
-		}, lockOptions);
+				if (!token) {
+					 token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
+				}
+				if (!token) {
+					 throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` );
+				}
+				try {
+					 const combat = PersonaCombat.combat && PersonaCombat.combat.findCombatant(token) ? PersonaCombat.combat : undefined;
+					 const engine = new CombatEngine(combat);
+					 await engine.usePower(token, power );
+				} catch (e) {
+					 switch (true) {
+							case e instanceof CanceledDialgogError: {
+								 break;
+							}
+							case e instanceof TargettingError: {
+								 break;
+							}
+							case e instanceof Error: {
+								 console.error(e);
+								 console.error(e.stack);
+								 PersonaError.softFail("Problem with Using Item or Power", e, e.stack);
+								 break;
+							}
+							default: break;
+					 }
+				}
+		 }, lockOptions);
 	}
 
 	async useItem(event: Event) {
