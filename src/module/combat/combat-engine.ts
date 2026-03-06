@@ -88,44 +88,44 @@ export class CombatEngine {
 		}
 	}
 
-	async usePower(attacker: PToken, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) : Promise<FinalizedCombatResult> {
-		TimeLog.reset();
-		this.startTime = Date.now();
-		if (attacker instanceof foundry.canvas.placeables.Token) {
-			throw new Error('Actual token found instead of token document');
-		}
-		if (!options.ignorePrereqs && !await this.checkPowerPreqs(attacker, power)) {
-			return new CombatResult().finalize();
-		}
-		try {
-			const targets = presetTargets ? presetTargets :  PersonaCombat.getTargets(attacker, power);
-			this.ensureCombatCheck(power, attacker, targets);
-			await this.handlePlayerInputModifier(options);
-			// await PersonaSFX.onUsePowerStart(power, attacker);
-			const result = new CombatResult();
-			result.merge(await this.usePowerOn(attacker, power, targets, 'standard', options));
-			const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
-			result.merge(costs);
-			const finalizedResult = result.finalize();
-			if (options.simulated) { return finalizedResult;}
-			if (!power.isOpener())  {
-				await attacker.actor.expendAction();
+	 async usePower(attacker: PToken, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) : Promise<FinalizedCombatResult> {
+			TimeLog.reset();
+			this.startTime = Date.now();
+			if (attacker instanceof foundry.canvas.placeables.Token) {
+				 throw new Error('Actual token found instead of token document');
 			}
-			await attacker.actor.removeStatusesOfType("out-of-turn-action");
-			TimeLog.log(`Finished Status Removal and Action Management`);
-			await finalizedResult.toMessage(power.name, attacker.actor);
-			TimeLog.log(`Finished toMessage`);
-			await this.postActionCleanup(attacker, finalizedResult);
-			TimeLog.log(`Finished using power ${power.name}`);
-			return finalizedResult;
-		} catch(e) {
-			if (e instanceof CanceledDialgogError) {
-				throw e;
+			if (!options.ignorePrereqs && !await this.checkPowerPreqs(attacker, power)) {
+				 return new CombatResult().finalize();
 			}
-			console.log(e);
-			throw e;
-		}
-	}
+			try {
+				 const targets = presetTargets ? presetTargets :  PersonaCombat.getTargets(attacker, power);
+				 this.ensureCombatCheck(power, attacker, targets);
+				 await this.handlePlayerInputModifier(options);
+				 // await PersonaSFX.onUsePowerStart(power, attacker);
+				 const result = new CombatResult();
+				 result.merge(await this.usePowerOn(attacker, power, targets, 'standard', options));
+				 const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
+				 result.merge(costs);
+				 const finalizedResult = result.finalize();
+				 if (options.simulated) { return finalizedResult;}
+				 if (!power.isOpener())  {
+						await attacker.actor.expendAction();
+				 }
+				 await attacker.actor.removeStatusesOfType("out-of-turn-action");
+				 // TimeLog.log(`Finished Status Removal and Action Management`);
+				 await finalizedResult.toMessage(power.name, attacker.actor);
+				 // TimeLog.log(`Finished toMessage`);
+				 await this.postActionCleanup(attacker, finalizedResult);
+				 // TimeLog.log(`Finished using power ${power.name}`);
+				 return finalizedResult;
+			} catch(e) {
+				 if (e instanceof CanceledDialgogError) {
+						throw e;
+				 }
+				 console.log(e);
+				 throw e;
+			}
+	 }
 
 	/** throws error if there's no combat*/
 	ensureCombatCheck(power: UsableAndCard, attacker: PToken, targets: PToken[]) {

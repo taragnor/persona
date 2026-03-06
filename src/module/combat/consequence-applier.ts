@@ -25,7 +25,7 @@ export class ConsequenceApplier {
 		const actor = PersonaDB.findActor(change.actor);
 		const token  = change.actor.token ? PersonaDB.findToken(change.actor.token) as PToken: undefined;
 		for (const status of change.addStatus) {
-			TimeLog.log(`AddingStatus ${status.id} to ${actor.name}`);
+			// TimeLog.log(`AddingStatus ${status.id} to ${actor.name}`);
 			const statusAdd = await actor.addStatus(status);
 			if (statusAdd && attacker) {
 				const attackerActor = PersonaDB.findToken(attacker)?.actor;
@@ -52,19 +52,19 @@ export class ConsequenceApplier {
 						}
 					}
 				}
-				TimeLog.log(`Finished Calling Triggers ${status.id} to ${actor.name}`);
+				// TimeLog.log(`Finished Calling Triggers ${status.id} to ${actor.name}`);
 			}
 			if (statusAdd && token) {
 				Hooks.callAll("onAddStatus", token, status);
-				TimeLog.log(`Finished Hooks for  ${status.id} to ${actor.name}`);
+				// TimeLog.log(`Finished Hooks for  ${status.id} to ${actor.name}`);
 			}
-			TimeLog.log(`Finished Adding ${status.id} to ${actor.name}`);
+			// TimeLog.log(`Finished Adding ${status.id} to ${actor.name}`);
 		}
 		for (const dmg of change.damage)  {
 			try {
-				TimeLog.log(`Applyign Damage to ${actor.name}`);
+				// TimeLog.log(`Applyign Damage to ${actor.name}`);
 				chained.push(...await this._applyDamage(actor, token, dmg, power, attacker));
-				TimeLog.log(`Finshed Applyign Damage to ${actor.name}`);
+				// TimeLog.log(`Finshed Applyign Damage to ${actor.name}`);
 			} catch (e) {
 				PersonaError.softFail(`Error applying Damage to ${actor.name}`, e);
 			}
@@ -77,7 +77,7 @@ export class ConsequenceApplier {
 			mpCost: 0,
 			theurgy: 0,
 		} satisfies MutableActorState;
-		TimeLog.log(`Applying Other effects to ${actor.name}`);
+		// TimeLog.log(`Applying Other effects to ${actor.name}`);
 		for (const otherEffect of change.otherEffects) {
 			try {
 				await this._applyOtherEffect(actor, token, otherEffect, mutableState);
@@ -85,7 +85,7 @@ export class ConsequenceApplier {
 				PersonaError.softFail(`Error trying to execute ${otherEffect.type} on ${actor.name}`, e);
 			}
 		}
-		TimeLog.log(`Finished Applying Other effects to ${actor.name}`);
+		// TimeLog.log(`Finished Applying Other effects to ${actor.name}`);
 		if (mutableState.theurgy != 0 && !actor.isShadow()) {
 			console.log(`Modify Theurgy: ${mutableState.theurgy}`);
 			await actor.modifyTheurgy(mutableState.theurgy);
@@ -129,10 +129,10 @@ export class ConsequenceApplier {
 			if (CR) { ret.push(CR);}
 		}
 		if (power) {
-			TimeLog.log("About to exec SFX onDamage");
+			// TimeLog.log("About to exec SFX onDamage");
 
 			PersonaSFX.onDamage(token, dmg.hpChange, dmg.damageType, power);
-			TimeLog.log("Finished with onDamage");
+			// TimeLog.log("Finished with onDamage");
 		}
 		if (token) {
 			if (power && !power.isAoE()) {
@@ -142,7 +142,7 @@ export class ConsequenceApplier {
 		}
 		await actor.modifyHP(dmg.hpChange);
 		if (actor.hp <= 0 && token) {
-			await this.#onDefeatOpponent(token, attackerToken);
+			ret.push(... await this.#onDefeatOpponent(token, attackerToken));
 		}
 		return ret;
 	}
@@ -443,9 +443,7 @@ export class ConsequenceApplier {
 	static async #onDefeatOpponent(target: PToken, attacker ?: U<PToken>) : Promise<FinalizedCombatResult[]> {
 		const combat = PersonaCombat.combat;
 		if (!combat) {return [];}
-		if (!await combat?.markTokenDefeated(target)) {
-			return []; // the token is already defeated
-		}
+		await combat.markTokenDefeated(target);
 		const attackerActor = attacker?.actor;
 		const ret : FinalizedCombatResult[] = [];
 		if (attackerActor) {
@@ -461,7 +459,6 @@ export class ConsequenceApplier {
 				if (!comb.actor) {continue;}
 				situation.user = comb.actor.accessor;
 				ret.push((await TriggeredEffect.onTrigger("on-kill-target", comb.actor, situation)).finalize());
-				// this.addChained((await TriggeredEffect.onTrigger("on-kill-target", comb.actor, situation)).finalize());
 			}
 		}
 		void NavigatorVoiceLines.onTargetKilled(target.actor, combat);

@@ -28,6 +28,7 @@ import {ConsequenceProcessor} from "../conditionalEffects/consequence-processor.
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 import {SocialCardExecutor} from "./social-card-executor.js";
 import {weightedChoice} from "../utility/array-tools.js";
+import {ConditionalEffectPrinter} from "../conditionalEffects/conditional-effect-printer.js";
 
 export class PersonaSocial {
 	static allowMetaverse: boolean = true;
@@ -457,7 +458,7 @@ export class PersonaSocial {
 			return;
 		}
 		if (!this.meetsConditionsToStartLink(initiator, target)) {
-			const requirements = ConditionalEffectManager.printConditions((target as NPC).system?.conditions ?? []);
+			const requirements = ConditionalEffectPrinter.printConditions((target as NPC).system?.conditions ?? []);
 			ui.notifications.warn(`You don't meet the prerequisites to start a relationship with this Link: ${requirements}`);
 			return;
 		}

@@ -5,6 +5,7 @@ import {CETypes, ConditionalEffectManager} from "../conditional-effect-manager.j
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
 import {PersonaAE} from "../persona-ae.js";
 import {testPrecondition} from "../preconditions.js";
+import {ConditionalEffectPrinter} from "./conditional-effect-printer.js";
 
 export class ConditionalEffectC {
 	_preconditions : SourcedPrecondition<NonDeprecatedPrecondition<Precondition>>[];
@@ -56,6 +57,11 @@ export class ConditionalEffectC {
 		}
 		return ret;
 	}
+
+	 toString() : string {
+			const text = ConditionalEffectPrinter.printEffect(this);
+			return `${this.name} : ${text}`;
+	 }
 
 	toJSON() : ConditionalEffect {
 		const conditions = this._conditionsRaw();

@@ -23,7 +23,7 @@ import {Defense} from "../config/defense-types.js";
 import {PersonaStat} from "../config/persona-stats.js";
 import {Calculation, EvaluatedCalculation} from "./utility/calculation.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
-import {ConditionalEffectManager} from "./conditional-effect-manager.js";
+import {ConditionalEffectPrinter} from "./conditionalEffects/conditional-effect-printer.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
 	#combatStats: U<PersonaCombatStats>;
@@ -547,11 +547,12 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	private _mainModifiersListGen(options?: MainModifierOptions): readonly ModifierContainer[] {
 		const user = this.user;
 		const roomModifiers : UniversalModifier[] = [];
-		if (PersonaCombat.combat) {
-			roomModifiers.push(...PersonaCombat.combat.getRoomEffects());
-		} else {
-			roomModifiers.push(...(Metaverse.getRegion()?.allRoomEffects ?? []));
-		}
+		// if (PersonaCombat.combat) {
+		// 	roomModifiers.push(...PersonaCombat.combat.getRoomEffects());
+		// } else {
+		// 	roomModifiers.push(...(Metaverse.getRegion()?.allRoomEffects ?? []));
+		// }
+		roomModifiers.push(...Metaverse.activeRoomModifiers());
 		const passiveOrTriggeredPowers = (options && options.omitPowers) ? [] : this.passiveOrTriggeredPowers();
 		const talents = (options && options?.omitTalents) ? [] : this.talents;
 		const mainModsList : ModifierContainer[]= [
@@ -1182,7 +1183,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			const cons = eff.getActiveConsequences(situation);
 			const cancelEffect = cons.find(cons => cons.type =="cancel");
 			if (cancelEffect) {
-				return `Failed due to Conditional ${ConditionalEffectManager.printConditions(eff.conditions)}`;
+				return `Failed due to Conditional ${ConditionalEffectPrinter.printConditions(eff.conditions)}`;
 			}
 		}
 		return null;

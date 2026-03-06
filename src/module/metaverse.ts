@@ -24,6 +24,7 @@ import {RandomEncounter} from "./exploration/random-encounters.js";
 import {RandomDungeonGenerator} from "./exploration/random-dungeon-generator.js";
 import {HTMLTools} from "./utility/HTMLTools.js";
 import {RandomDungeonOutput} from "./exploration/random-dungeon-output.js";
+import {PersonaCombat} from "./combat/persona-combat.js";
 
 export class Metaverse {
 	static lastCrunch : number = 0;
@@ -473,6 +474,15 @@ export class Metaverse {
 			PersonaError.softFail("Crunch request recieved by non-GM, this is in error");
 		}
 	}
+
+	 static activeRoomModifiers() : UniversalModifier[] {
+			if (PersonaCombat.combat) {
+				 return PersonaCombat.combat.getRoomEffects();
+			} else {
+				 return Metaverse.getRegion()?.allRoomEffects ?? [];
+			}
+	 }
+
 }
 
 Hooks.on("socketsReady", () => {

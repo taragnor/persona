@@ -10,13 +10,33 @@ import { PersonaDB } from "./persona-db.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import {ConsequenceProcessor} from "./conditionalEffects/consequence-processor.js";
 import {CombatEngine} from "./combat/combat-engine.js";
-import {PersonaItem} from "./item/persona-item.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
+import {PersonaSettings} from "../config/persona-settings.js";
 
 export class TriggeredEffect {
 
 	static async onTrigger<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation ) : Promise<CombatResult> {
 		const result = new CombatResult();
+		 const situationCopy = this._setupSituation(trigger, actor, situation);
+		 if (situationCopy == null) {return result;}
+		const triggers = this.getTriggerList(trigger, actor, situationCopy);
+		 if (PersonaSettings.debugMode()) {
+				console.debug( `${actor?.name ?? "void actor"} triggerList (${trigger}) : \n${triggers.map( trig=> trig.toString()).join("\n")}`);
+		 }
+		for (const eff of triggers) {
+			try {
+				const validCons = eff.getActiveConsequences(situationCopy);
+				const res = await ConsequenceProcessor.consequencesToResult(validCons ,undefined, situationCopy, actor, actor, null);
+				result.merge(res);
+			} catch (e) {
+				PersonaError.softFail(`Problem with triggered effects ${eff.source?.name ?? "Unknown source"} running on actor ${actor?.name ?? "none"}`, e);
+				continue;
+			}
+		}
+	return result;
+}
+
+private static _setupSituation< T extends Trigger>( trigger: T, actor ?: ValidAttackers, situation ?: Situation ) : N<Situation>{
 		if (!situation) {
 			switch (trigger) {
 				case "on-damage":
@@ -25,7 +45,7 @@ export class TriggeredEffect {
 				case "end-turn": {
 					if (!actor) {
 						PersonaError.softFail("NO Actor givent o trigger ${trigger}");
-						return result;
+						return null;
 					}
 					const newSit = {
 						trigger: trigger,
@@ -41,7 +61,7 @@ export class TriggeredEffect {
 					//required its own thing for some reason since was giving TS errors
 					if (!actor) {
 						PersonaError.softFail("NO Actor givent o trigger ${trigger}");
-						return result;
+						return null;
 					}
 					const newSit = {
 						trigger: trigger,
@@ -99,30 +119,19 @@ export class TriggeredEffect {
 				case "on-event-start":
 				case "on-event-end":
 					PersonaError.softFail(`Must proivide a situation with this trigger:  ${trigger}`);
-					return result;
+					return null;
 				default:
 					trigger satisfies never;
 					PersonaError.softFail(`Bad TRigger ${trigger}`);
-					return result;
+					return null;
 			}
 		}
 		if (situation == undefined) {
 			PersonaError.softFail(`Cant' resolve trigger, no situation for ${trigger}`);
-			return result;
+			return null;
 		}
 		const situationCopy = { ...situation, trigger } as Situation; //copy the object so it doesn't permanently change it
-		const triggers = this.getTriggerList(trigger, actor, situation);
-		for (const eff of triggers) {
-			try {
-				const validCons = eff.getActiveConsequences(situationCopy);
-				const res = await ConsequenceProcessor.consequencesToResult(validCons ,undefined, situationCopy, actor, actor, null);
-				result.merge(res);
-			} catch (e) {
-				PersonaError.softFail(`Problem with triggered effects ${eff.source?.name ?? "Unknown source"} running on actor ${actor?.name ?? "none"}`, e);
-				continue;
-			}
-		}
-	return result;
+	 return situationCopy;
 }
 
 static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Situation) :  ConditionalEffectC[] {
@@ -138,24 +147,34 @@ static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Sit
 		const power = PersonaDB.findItem(situation.usedPower);
 		const user = situation.user ? PersonaDB.findActor(situation.user) : null;
 		const PowerTriggers = power.getTriggeredEffects(user, {triggerType: trigger});
-			// .filter ( ce => PersonaItem.triggersOn(ce, trigger));
+		// .filter ( ce => PersonaItem.triggersOn(ce, trigger));
 		triggers.push(...PowerTriggers);
 	}
-	if (game.combat) {
-		const roomEffects = (game.combat as PersonaCombat)?.getRoomEffects() ?? [];
-		triggers.push(
-			...roomEffects.flatMap (RE=> RE.getEffects(null))
-		);
-	} else {
-		const arr = Metaverse.getRegion()?.allRoomEffects ?? [];
-		triggers.push(
-			...arr.flatMap (RE=> RE.getEffects(null))
-		);
+	if (!actor) {
+		const rm = Metaverse.activeRoomModifiers()
+			.flatMap (mod => mod.getEffects(null));
+		triggers.push(...rm);
 		const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
 		triggers.push(...PCTriggers);
 	}
+	// if (PersonaCombat.combat) {
+	// 	const roomEffects = PersonaCombat.combat?.getRoomEffects() ?? [];
+	// 	triggers.push(
+	// 		...roomEffects.flatMap (RE=> RE.getEffects(null))
+	// 	);
+	// } else {
+	// 	const arr = Metaverse.getRegion()?.allRoomEffects ?? [];
+	// 	triggers.push(
+	// 		...arr.flatMap (RE=> RE.getEffects(null))
+	// 	);
+	// 	const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
+	// 	triggers.push(...PCTriggers);
+	// }
 	const filteredEffects = removeDuplicates(triggers
-		.filter ( x=> x.conditionalType == "triggered")
+		.filter ( x=>
+			x.conditionalType == "triggered"
+			&& x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == trigger)
+		)
 	);
 	return filteredEffects;
 }

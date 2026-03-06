@@ -375,16 +375,16 @@ export class CombatResult  {
 				break;
 			}
 			case "display-msg":
-				if (effect) {
+				if (effect && !cons.newChatMsg) {
 					effect.otherEffects.push( {
 						type: "display-message",
-						newChatMsg: cons.newChatMsg ?? false,
+						newChatMsg: false,
 						msg: cons.msg ?? "",
 					});
 				} else {
 					this.globalOtherEffects.push({
 						type: "display-message",
-						newChatMsg: cons.newChatMsg ?? false,
+						newChatMsg: true,
 						msg: cons.msg ?? "",
 					});
 				}

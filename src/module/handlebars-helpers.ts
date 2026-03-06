@@ -45,6 +45,7 @@ import {PersonaCompendium} from "./persona-compendium.js";
 import {CombatPanel} from "./combat/combat-panel.js";
 import {PROBABILITIES_POWER_RARITY, ProbabilityRate} from "../config/probability.js";
 import {CardData} from "./social/social-card-executor.js";
+import {ConditionalEffectPrinter} from "./conditionalEffects/conditional-effect-printer.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -463,20 +464,20 @@ export class PersonaHandleBarsHelpers {
 		},
 
 		"printEffects": function(effects: ConditionalEffect[]) : SafeString {
-			return new Handlebars.SafeString(ConditionalEffectManager.printEffects(effects)
+			return new Handlebars.SafeString(ConditionalEffectPrinter.printEffects(effects)
 				.map( x=> `<div class="printed-effect"> ${x} </div>`)
 				.join("<br>")
 			);
 		},
 
 		"printConditionals": function (cond: Precondition[]) {
-			const str=ConditionalEffectManager.printConditions(cond);
+			const str=ConditionalEffectPrinter.printConditions(cond);
 			return new Handlebars.SafeString( `<div class="printed-conditional">${str}</div>`
 			);
 		},
 
 		"printConsequences": function (cons: Consequence[]) {
-			const str= ConditionalEffectManager.printConsequences(cons);
+			const str= ConditionalEffectPrinter.printConsequences(cons);
 			return new Handlebars.SafeString( `<div class="printed-consequence">${str}</div>`
 			);
 		},
