@@ -137,8 +137,8 @@ static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Sit
 	if (situation.usedPower) {
 		const power = PersonaDB.findItem(situation.usedPower);
 		const user = situation.user ? PersonaDB.findActor(situation.user) : null;
-		const PowerTriggers = power.getTriggeredEffects(user)
-			.filter ( ce => PersonaItem.triggersOn(ce, trigger));
+		const PowerTriggers = power.getTriggeredEffects(user, {triggerType: trigger});
+			// .filter ( ce => PersonaItem.triggersOn(ce, trigger));
 		triggers.push(...PowerTriggers);
 	}
 	if (game.combat) {

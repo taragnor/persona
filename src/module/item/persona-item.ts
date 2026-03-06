@@ -2022,6 +2022,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 	getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options : GetEffectsOptions = {}): ConditionalEffectC[] {
 		//proxy item is used for tags to redirect their source to their parent item (for purposes of reading item level)
+		if (!PersonaDB.isLoaded) {throw new PersonaError("DB not loaded yet");}
 		const {CETypes} = options;
 		if (this.isSkillCard()) {
 			return [new ConditionalEffectC(this)];
@@ -2096,14 +2097,19 @@ getAuraEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, o
 
 
 #accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, options: GetEffectsOptions, refresherFn: () => ConditionalEffectC[]) : ConditionalEffectC[] {
-	if (!PersonaDB.isLoaded) {return [];}
+	// if (this.name == "Spin Kick" && cacheType == "triggeredEffects") {
+	// 	debugger;
+	// }
+	if (!PersonaDB.isLoaded) {
+		throw new PersonaError("DB not loaded yet!");
+	}
 	if (options.deepTags === false) {return refresherFn();}
 	if (options.proxyItem) {return refresherFn();}
 	if (options.CETypes && options.CETypes.length > 0) {return refresherFn();}
 	PersonaItem.cacheStats.total++;
 	const cache = this.cache.effects[cacheType];
 	if (sourceActor == null) {
-		if (!cache.nullActor) {
+		if (cache.nullActor == undefined) {
 			PersonaItem.cacheStats.miss++;
 			cache.nullActor = refresherFn();
 		}
@@ -2120,10 +2126,12 @@ getAuraEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, o
 
 getTriggeredEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
 	options = {...options, CETypes: []};
-	return this.#accessEffectsCache('triggeredEffects', sourceActor, options, () => this.getEffects(sourceActor, options)
+	const data= this.#accessEffectsCache('triggeredEffects', sourceActor, options, () => this.getEffects(sourceActor, options)
 		.filter( x => x.conditionalType === 'triggered')
-		.filter( x=> options.triggerType != undefined ? x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == options.triggerType) : true)
 	);
+	if (!options.triggerType) {return data;}
+	return data
+		.filter( x=> x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == options.triggerType));
 }
 
 hasTriggeredEffects(this: ItemModifierContainer, actor: PersonaActor) : boolean {

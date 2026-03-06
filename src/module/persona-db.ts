@@ -55,6 +55,10 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return newCache;
 	}
 
+	override postLoadActions() {
+		this.#resetCache();
+	}
+
 	clearCache() {
 		this.#resetCache();
 	}
@@ -136,6 +140,9 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	allUniversalModifierTypes() : readonly UniversalModifier[] {
+		if (!this.isLoaded) {
+			throw new PersonaError("Trying to access universl mods before PersonaDB is loaded");
+		}
 		if (this.#cache.allUniversalModifierTypes == undefined) {
 		const items = this.getAllByType("Item") as PersonaItem[];
 		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
@@ -280,6 +287,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	allTags() :  Map<Tag["id"],Tag> {
+		if (!PersonaDB.isLoaded) {throw new PersonaError("DB not loaded yet");}
 		if (this.#cache.tags) {return this.#cache.tags;}
 		const tags= this.allItems()
 		.filter (x=> x.isTag())

@@ -25,7 +25,12 @@ private allItemsMap : Map<string, ItemType> = new Map();
 			this._initHooks();
 			console.log("Database initialized");
 			this._loaded = true;
+			this.postLoadActions();
 		});
+	}
+
+	postLoadActions () {
+		//designed to be overriden
 	}
 
 	get isLoaded(): boolean {

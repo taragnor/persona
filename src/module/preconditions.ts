@@ -64,7 +64,7 @@ export function testPrecondition (condition: SourcedPrecondition, situation:Situ
 			return triggerComparison(condition, situation);
 		case "is-hit": {
 			//deliberate duplication
-			return (CombatEngine.isAnyHit(situation))  === condition.booleanState;
+			return CombatEngine.isAnyHit(situation) == condition.booleanState;
 		}
 		case "numeric": {
 			return numericComparison(condition, situation);
@@ -802,7 +802,6 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
 }
 
 function booleanComparison(condition : SourcedPrecondition & {type: "boolean"}, situation: Situation): boolean {
-	// if (condition.type != "boolean") {throw new PersonaError("Not a boolean comparison");}
 	const testState = getBoolTestState(condition, situation);
 	if (testState === undefined) {return false;}
 	const targetState = condition.booleanState ?? false;
@@ -1183,13 +1182,13 @@ function rollPropertyIs(condition : SourcedPrecondition  & {type: "boolean"; boo
 		case "is-critical":
 			return CombatEngine.isCrit(situation);
 		case "is-hit":
-				return CombatEngine.isAnyHit(situation);
+			return CombatEngine.isAnyHit(situation);
 		case "is-within-ailment-range":
-				return "withinAilmentRange" in situation ? situation.withinAilmentRange ?? false : false;
+			return "withinAilmentRange" in situation ? situation.withinAilmentRange ?? false : false;
 		case "is-within-instant-death-range":
 				return "withinInstantKillRange" in situation ? situation.withinInstantKillRange ?? false : false;
 		case "is-fumble":
-			return CombatEngine.isFumble(situation);
+				return CombatEngine.isFumble(situation);
 		default:
 				condition.rollProp satisfies never;
 			return undefined;
