@@ -317,7 +317,7 @@ const DAMAGE_LEVEL_NEW = {
 	"none": {extraVariance: 0, baseAmt: 0, mult: 0, healMult: 0},
 	"miniscule": {extraVariance: 0, baseAmt: 0, mult: 0.5, healMult: 0.25},
 	"basic": {extraVariance: 0, baseAmt: 5, mult: 1, healMult: 0.5},
-	"light": {extraVariance: 0, baseAmt: 20, mult: 1.10, healMult: 1.25},
+	"light": {extraVariance: 0, baseAmt: 15, mult: 1.10, healMult: 1.25},
 	"medium": {extraVariance: 0, baseAmt: 25, mult: 1.30, healMult: 2},
 	"heavy": {extraVariance: 0, baseAmt: 30, mult: 1.65, healMult: 3},
 	"severe": {extraVariance: 0, baseAmt: 40, mult: 2, healMult: 4},
