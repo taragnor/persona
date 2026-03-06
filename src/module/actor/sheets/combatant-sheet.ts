@@ -13,7 +13,7 @@ import { PersonaItem } from "../../item/persona-item.js";
 import { PersonaActorSheetBase } from "./actor-sheet.base.js";
 import {Persona} from "../../persona-class.js";
 import {CombatEngine} from "../../combat/combat-engine.js";
-import {lockObject} from "../../utility/anti-loop.js";
+import {antiLoop} from "../../utility/anti-loop.js";
 
 export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	declare actor: ValidAttackers;
@@ -212,7 +212,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			inUseMsg: "Can't use another power now, as a power is already in process"
 		};
 
-		 await lockObject( this, async () => {
+		 await antiLoop( this, async () => {
 				const actor = this.actor;
 				let token : PToken | undefined;
 				if (actor.token) {

@@ -66,7 +66,7 @@ export class CombatEngine {
 			Helpers.ownerCheck(actor);
 			Helpers.pauseCheck();
 			const attacker = this.getTokenFromActor(actor);
-			const combat= game.combat as U<PersonaCombat>;
+			const combat = game.combat as U<PersonaCombat>;
 			const engine = combat ? combat.combatEngine : new CombatEngine(undefined);
 			return await engine.usePower(attacker, power, presetTargets, options );
 		} catch (e) {

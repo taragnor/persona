@@ -54,7 +54,7 @@ import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-s
 import {PersonaCompendium} from "../persona-compendium.js";
 import {ActorHooks} from "./actor-hooks.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
-import {lockObject} from "../utility/anti-loop.js";
+import {antiLoop} from "../utility/anti-loop.js";
 import {PersonaAE, StatusDuration} from "../persona-ae.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
@@ -64,10 +64,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	declare sheet: PersonaActorSheetBase;
 
 	DOWNED_OPACITY = 0.5 as const;
-
 	FULL_FADE_OPACITY = 0.2 as const;
 
-	_antiloop : boolean = false;
+	private _antiloop : boolean = false;
 	// private _trackerAntiLoop : boolean = false;
 
 	static MPMap = new Map<number, number>;
@@ -273,7 +272,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	async #refreshHpTracker(this:ValidAttackers, persona: Persona)  : Promise<void> {
 		if (!game.user.isGM) {return;}
 		//anti-loop
-		await lockObject(this, async ()  => {
+		await antiLoop(this, async ()  => {
 			const mhp = persona.mhp;
 			if (this.hp > mhp) {
 				await this.update({"system.combat.hp": mhp});
@@ -288,7 +287,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						"system.combat.hpTracker.max": mhp
 					});
 			}
-		});
+		}, {inUseMsg: `trying to refresh HP but ${this.name} is locked`}) ;
 	}
 
 	async treasureRoll(this: Shadow) : Promise<TreasureItem[]> {
@@ -1610,33 +1609,35 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	//** changed to use setHP instead of newval functionality */
-	async refreshHpStatus(this: ValidAttackers, persona ?: Persona) : Promise<void> {
-		if (this._antiloop) {return;}
-		this._antiloop = true;
-		const hp = this.system.combat.hp;
-		const mhp = persona ?.mhp ?? this.mhp;
-		try {
-			// console.debug(`Refreshing HP status on ${this.name}`);
-			if (hp > 0) {
-				await this.clearFadingState();
-			}
-			if (hp > mhp) {
-				await this.update( {"system.combat.hp": mhp});
-			}
-			if (this.theurgyVal < 0 || this.theurgyVal > this.theurgyMax) {
-				await this.update( {"system.combat.theurgy.value": Math.clamp (this.theurgyVal, 0, this.theurgyMax)});
-			}
-			this.refreshTheurgyBarStyle();
-			if (this.hasStatus("full-fade") && hp != 0) {
-				await this.update( {"system.combat.hp": 0});
-			}
-			await this.updateOpacity(hp);
-		} catch (e) {
-			PersonaError.softFail(`Error on Refresh HP Status for ${this.name}, ${this.id}, hp: ${hp}, mhp: ${mhp}`, e);
-		}
-		this._antiloop = false;
-	}
+	 //** changed to use setHP instead of newval functionality */
+	 async refreshHpStatus(this: ValidAttackers, persona ?: Persona) : Promise<void> {
+			// if (this._antiloop) {return;}
+			await antiLoop( this, async() => {
+				 // this._antiloop = true;
+				 const hp = this.system.combat.hp;
+				 const mhp = persona ?.mhp ?? this.mhp;
+				 try {
+						// console.debug(`Refreshing HP status on ${this.name}`);
+						if (hp > 0) {
+							 await this.clearFadingState();
+						}
+						if (hp > mhp) {
+							 await this.update( {"system.combat.hp": mhp});
+						}
+						if (this.theurgyVal < 0 || this.theurgyVal > this.theurgyMax) {
+							 await this.update( {"system.combat.theurgy.value": Math.clamp (this.theurgyVal, 0, this.theurgyMax)});
+						}
+						this.refreshTheurgyBarStyle();
+						if (this.hasStatus("full-fade") && hp != 0) {
+							 await this.update( {"system.combat.hp": 0});
+						}
+						// void this.updateOpacity(hp);
+				 } catch (e) {
+						PersonaError.softFail(`Error on Refresh HP Status for ${this.name}, ${this.id}, hp: ${hp}, mhp: ${mhp}`, e);
+				 }
+			}, {inUseMsg : `Aboring Refreshing HP Status for ${this.name} (anti-loop)`, maxDepth : 3});
+			// this._antiloop = false;
+	 }
 
 	async resetTheurgy() {
 		if (this.theurgyVal == 0) {return;}
@@ -1663,32 +1664,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		fill.style.setProperty('--hue', hue);
 	}
 
-	 async updateOpacity(this: ValidAttackers, hp: number) {
-			console.log(`Changing opacity for ${this.name}`);
-			if (this.isPC() && !this.isRealPC()) {return;}
-			const opacity = hp > 0 ? 1.0 : (this.isFullyFaded(hp) ? this.FULL_FADE_OPACITY : this.DOWNED_OPACITY);
-			// if (this.token) {
-			// 	await this.token.update({"alpha": opacity});
-			// } else {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-			//for (const iterableList of this._dependentTokens.values()) {
-			//	for (const tokDoc of iterableList) {
-			//		try {
-			//			await (tokDoc as TokenDocument<PersonaActor>).update({"alpha": opacity});
-			//		} catch {
-			//			//throw away errors from tokens that have gone out of scope as this is expected
-			//			continue;
-			//		}
-			//	}
-			//}
-			const promises = this.getDependentTokens().map ( token=> {
-				 if (token.alpha != opacity) {
-						return (token as TokenDocument<PersonaActor>).update({"alpha": opacity});
-				 }
-				 return Promise.resolve();
-			});
-			await Promise.allSettled(promises);
-	 }
+	 // async updateOpacity(this: ValidAttackers, hp: number) {
+			// if (this.isPC() && !this.isRealPC()) {return;}
+			// const opacity = hp > 0 ? 1.0 : (this.isFullyFaded() ? this.FULL_FADE_OPACITY : this.DOWNED_OPACITY);
+			// const promises = this.getDependentTokens().map ( token=> {
+				 // if (token._source.alpha != opacity) {
+						// console.log(`Changing opacity for ${this.name} (${opacity} != ${token._source?.alpha as number})`);
+						// return (token as TokenDocument<PersonaActor>).update({"alpha": opacity});
+				 // }
+				 // return Promise.resolve();
+			// });
+			// await Promise.allSettled(promises);
+	 // }
 
 	async isStatusResisted( id : StatusEffect["id"]) : Promise<boolean> {
 		if (!this.isValidCombatant()) {return false;}
@@ -3197,10 +3184,10 @@ meetsSLRequirement (this: PC, focus: Focus) {
 	);
 }
 
-isFullyFaded(this: ValidAttackers, newhp?:number) : boolean {
+isFullyFaded(this: ValidAttackers) : boolean {
 	switch (this.system.type) {
 		case "shadow":
-			return (newhp ?? this.hp) <= 0;
+			return (this.hp) <= 0;
 		case "pc":
 		case "npcAlly":
 				return this.hasStatus("full-fade");

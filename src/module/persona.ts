@@ -53,6 +53,7 @@ import {TagPrinter} from "./printers/tag-printer.js";
 import {EnhancedActorDirectory} from "./enhanced-directory/enhanced-directory.js";
 import {PersonaPrinter} from "./printers/persona-list.js";
 import {RandomDungeonGenerator} from "./exploration/random-dungeon-generator.js";
+import {PersonaToken} from "./persona-token.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -62,13 +63,14 @@ function registerDataModels() {
 }
 
 function registerDocumentClasses() {
-	CONFIG.Actor.documentClass = PersonaActor;
-	CONFIG.Item.documentClass = PersonaItem;
-	CONFIG.ActiveEffect.documentClass = PersonaAE;
-	// CONFIG.Dice.rolls.push(PersonaRoll);
-	CONFIG.Combat.documentClass = PersonaCombat;
-	CONFIG.Region.documentClass = PersonaRegion;
-	CONFIG.Scene.documentClass = PersonaScene;
+	 CONFIG.Actor.documentClass = PersonaActor;
+	 CONFIG.Item.documentClass = PersonaItem;
+	 CONFIG.Token.documentClass = PersonaToken;
+	 CONFIG.ActiveEffect.documentClass = PersonaAE;
+	 // CONFIG.Dice.rolls.push(PersonaRoll);
+	 CONFIG.Combat.documentClass = PersonaCombat;
+	 CONFIG.Region.documentClass = PersonaRegion;
+	 CONFIG.Scene.documentClass = PersonaScene;
 }
 
 function registerSheetApplications() {

@@ -7,6 +7,9 @@ declare interface CONFIG {
 		dataModels: Record<string, typeof foundry.abstract.DataModel>;
 		documentClass: typeof Item<any>;
 	};
+	 Token: {
+			documentClass: typeof TokenDocument<any>;
+	 }
 	statusEffects: StatusEffectObject[];
 	ActiveEffect: {
 		documentClass: typeof ActiveEffect<any, any>;

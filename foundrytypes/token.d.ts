@@ -70,6 +70,8 @@ class Token<Act extends Actor = Actor<any,any,any>> extends PlaceableObject {
 	get w():number;
 	get h():number;
 	static create<A extends Actor>(td: TokenDocument<A>,parendData: {parent: Scene}): Promise<Token<A>>;
+	 /** sets token to be redrawn on next animation frame */
+	 refresh(): void;
 
 }
 
