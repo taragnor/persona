@@ -19,7 +19,8 @@ export class ActorHooks {
 					const newHp = changes?.system?.combat?.hp as number | undefined;
 					if (newHp == undefined)
 					{return;}
-					await (actor as ValidAttackers).refreshHpStatus(newHp);
+					await (actor as ValidAttackers).refreshHpStatus();
+					// await (actor as ValidAttackers).refreshHpStatus(newHp);
 					return ;
 				}
 				default:
@@ -81,6 +82,7 @@ export class ActorHooks {
 			if (!game.user.isGM) {return;}
 			if (!actor.isOwner) {return;}
 			if (!actor.isValidCombatant()) {return;}
+			const persona = actor.persona();
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 			const lvl =changes?.system?.combat?.personaStats?.pLevel as U<number>;
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -99,7 +101,7 @@ export class ActorHooks {
 				}
 				await actor.basePersona.resetCombatStats(true);
 				if (actor.isPC() || actor.isNPCAlly()) {
-					await actor.refreshMaxMP();
+					await actor.refreshMaxMP(persona);
 				}
 				await actor.refreshHpStatus();
 				//NEEd to refresh stat points on level change
@@ -131,7 +133,7 @@ export class ActorHooks {
 				default:
 					actor.system satisfies never;
 			}
-			await	actor.refreshTrackers();
+			await	actor.refreshTrackers(persona);
 		});
 
 		Hooks.on("createToken", async function (token: TokenDocument<PersonaActor>)  {

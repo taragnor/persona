@@ -22,12 +22,13 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	override async getData() {
 		const data= await super.getData();
+		const persona = this.actor.persona();
 		if (this.actor.isNPCAlly() || this.actor.isRealPC()) {
-			await this.actor.refreshMaxMP();
+			await this.actor.refreshMaxMP(persona);
 		}
-		await this.actor.refreshHpStatus();
+		await this.actor.refreshHpStatus(persona);
+		data.persona = persona;
 		data.selectedPersona = this.selectedPersona;
-		data.persona = this.actor.persona();
 		const personas = this.actor.personaList
 			.map( x=> [x.source.id, x.name]);
 		const PERSONA_LIST = Object.fromEntries(personas) as Record<string, string>;
@@ -65,6 +66,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".persona-list li .persona-name").rightclick(this.activatePersona.bind(this));
 		html.find(".active-statuses .status-effect").rightclick(this.removeStatus.bind(this));
 		html.find(".copy-to-compendium").on("click", this.copyToCompendium.bind(this));
+		html.find(".cooldown").on("contextmenu", ev => void this.removeCooldown(ev));
 	}
 
 	override async _onDropActor(_event: JQuery.Event, actorD: unknown) {
@@ -176,8 +178,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 	}
 
-	async usePower(event: Event) {
-		Helpers.ownerCheck(this.actor);
+	getPower(event: JQuery.ClickEvent | JQuery.ContextMenuEvent) : Power {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		const power = this.actor.powers.find(power => power.id == powerId);
 		if (!power) {
@@ -186,6 +187,20 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const ptype = power.system.type;
 		if (ptype != "power" && ptype != "consumable")
 		{throw new PersonaError(`powerId pointed to unsualbe power ${powerId}`);}
+		return power;
+	}
+
+	async usePower(event: JQuery.ClickEvent) {
+		Helpers.ownerCheck(this.actor);
+		const power = this.getPower(event);
+		// const powerId = HTMLTools.getClosestData(event, "powerId");
+		// const power = this.actor.powers.find(power => power.id == powerId);
+		// if (!power) {
+		// 	throw new PersonaError(`Can't find Power Id:${powerId}`);
+		// }
+		// const ptype = power.system.type;
+		// if (ptype != "power" && ptype != "consumable")
+		// {throw new PersonaError(`powerId pointed to unsualbe power ${powerId}`);}
 		await this._useItemOrPower(power);
 	}
 
@@ -501,6 +516,14 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 		if (!await HTMLTools.confirmBox("COnfirm Compendium Write", `Really copy ${shadow.name} level ${shadow.level} to the compendium?`)) {return;}
 		await shadow.copyToCompendium();
+	}
+
+	removeCooldown(ev: JQuery.ContextMenuEvent) {
+		ev.preventDefault();
+		const power = this.getPower(ev);
+		if (!game.user.isGM) {return;}
+		ev.stopPropagation();
+		this.actor.clearCooldown(power);
 	}
 
 }

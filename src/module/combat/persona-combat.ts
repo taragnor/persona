@@ -1574,14 +1574,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		});
 	}
 
-	static getRoomModifiers(persona: Persona) {
-		const user = persona.user;
-		return (game.combats.contents as PersonaCombat[])
-			.filter(combat => combat.combatants.contents
-				.some( comb => comb.actor == user)
-			).flatMap( combat=> combat.getRoomEffects());
-	}
-
 	async alterRoomEffects() {
 		const initial = this.getRoomEffects().map( x=> x.id);
 		const result = await this.roomEffectsDialog(initial, false);

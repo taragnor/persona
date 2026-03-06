@@ -1,7 +1,7 @@
 <section class="combat-section {{#if (isSimulated persona)}} simulated-persona {{/if}} f-col">
 	<div class="combat-stats f-col">
 		<div class="f-row">
-			<div class="hp" title="{{hpBreakdown actor}}">
+			<div class="hp" title="{{hpBreakdown persona}}">
 				<label>
 					HP:
 				</label>
@@ -17,7 +17,7 @@
 					{{/if}}
 				</span>
 				<span class="max-hp">
-					/ {{actor.mhpEstimate}}
+					/ {{persona.mhp}}
 				</span>
 				{{#if actor.system.combat.bonusHP}}
 				<span class="bonus-HP">
@@ -26,7 +26,7 @@
 				{{/if}}
 			</div>
 			{{#if (hasMP actor)}}
-			<div class="mp" title="{{mpBreakdown actor}}">
+			<div class="mp" title="{{mpBreakdown persona}}">
 				<label> MP </label>
 				<span>
 					{{#if (isGM)}}
@@ -36,7 +36,7 @@
 					{{/if}}
 				</span>
 				<span>
-					/ {{actor.mmp}}
+					/ {{persona.mmp}}
 				</span>
 				{{#if actor.system.combat.bonusMP}}
 				<span class="bonus-MP">

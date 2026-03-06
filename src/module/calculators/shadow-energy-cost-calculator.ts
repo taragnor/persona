@@ -6,9 +6,10 @@ import { InstantKillLevel } from "../combat/damage-calc.js";
 import { PersonaItem} from "../item/persona-item.js";
 import { CostCalculator } from "./cost-calculator.js";
 import { EnergyCostBase } from "./energy-cost-base.js";
+import {Persona} from "../persona-class.js";
 
 export class EnergyClassCalculator extends CostCalculator {
-	 static calcEnergyCost(pwr: Power, shadow: Shadow) : {energyRequired: number, energyCost: number, cooldown: number} {
+	 static calcEnergyCost(pwr: Power, shadow: Persona) : {energyRequired: number, energyCost: number, cooldown: number} {
 			// const emptyCost = { energyRequired:0, energyCost:0, cooldown: 0 };
 			// if (pwr.isPassive()) {return emptyCost;}
 			// if (pwr.isBasicPower()) {return emptyCost;}
@@ -40,14 +41,14 @@ export class EnergyClassCalculator extends CostCalculator {
 			return Math.max(cooldown, pwr.system.cooldown ?? 0);
 	 }
 
-	static personalizedCostForShadow(basePowerLevel: EnergyCostBase, shadow: Shadow) : {energyRequired: number, energyCost: number, cooldown: number} {
+	static personalizedCostForShadow(basePowerLevel: EnergyCostBase, shadow: Persona) : {energyRequired: number, energyCost: number, cooldown: number} {
 		const shadow_lvl = shadow.level;
 		let {energyRequired, energyCost} = basePowerLevel;
 
 		const situation = {
-			user: shadow.accessor,
+			user: shadow.user.accessor,
 		};
-		const modifiers = shadow.persona().getBonuses("power-energy-cost").total(situation);
+		const modifiers = shadow.getBonuses("power-energy-cost").total(situation);
 		const effectiveCost  = this.BASE_COST + energyCost + modifiers - shadow_lvl;
 		const effectiveER  = this.BASE_COST + energyRequired + modifiers - shadow_lvl;
 		energyCost  = Math.floor(Math.max(0, effectiveCost / 10));

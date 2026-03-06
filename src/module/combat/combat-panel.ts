@@ -1,6 +1,7 @@
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaActorSheetBase} from "../actor/sheets/actor-sheet.base.js";
+import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {SidePanel} from "../side-panel.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
@@ -205,11 +206,13 @@ export class CombatPanel extends SidePanel {
 		};
 	}
 
-	static init() {
+	static override async init() {
+		this.setPrereq( () => PersonaDB.isLoaded);
 		if (!this.instance) {
 			this.instance = new CombatPanel();
 			this.initHooks();
 		}
+		await super.init();
 	}
 
 	private async _onInventoryButton(_ev: JQuery.ClickEvent) {

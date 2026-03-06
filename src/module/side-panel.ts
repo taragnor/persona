@@ -1,12 +1,26 @@
 import {PersonaError} from "./persona-error.js";
+import {waitUntilTrue} from "./utility/async-wait.js";
 
 export abstract class SidePanel {
 	panelName: string;
 	HTMLPanel: U<JQuery<HTMLElement>>;
 	iterations : number = 0;
+	private static _ready : boolean = false;
+	private static readyPrereqs : (() => boolean)[] = [];
 
 	get CSSClassName() : string {
 		return `.${this.panelName}`;
+	}
+
+	static setPrereq(fn : ()=> boolean) {
+		this.readyPrereqs.push(fn);
+	}
+
+	static async init() {
+		for (const prereq of this.readyPrereqs) {
+			await waitUntilTrue(prereq, 100);
+		}
+		this._ready = true;
 	}
 
 	abstract get templatePath() : string;
@@ -33,6 +47,7 @@ export abstract class SidePanel {
 	}
 
 	async updatePanel(templateData: Record<string, unknown> = {}) : Promise<void> {
+		await waitUntilTrue(() => SidePanel._ready, 250);
 		if (!this.doesPanelExist()) {
 			this.createContainer();
 		}
@@ -47,6 +62,7 @@ export abstract class SidePanel {
 			_iteration : this.iterations,
 		};
 		this.iterations++;
+		if (!this.templatePath) { return;}
 		const html = await foundry.applications.handlebars.renderTemplate(this.templatePath, templateData);
 		panel.html(html);
 		this.activateListeners($(panel));
@@ -75,3 +91,8 @@ export abstract class SidePanel {
 	}
 
 }
+
+
+Hooks.on("ready", async () => {
+	await SidePanel.init();
+});

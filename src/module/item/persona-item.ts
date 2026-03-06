@@ -1197,14 +1197,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 			|| combatTags.some( tag => this.hasTag(tag));
 	}
 
-	estimateShadowCosts(this: Power, user: ValidAttackers) : Power["system"]["energy"] {
-		if (!user.isShadow()) {return {
+	estimateShadowCosts(this: Power, persona: Persona) : Power["system"]["energy"] {
+		if (!persona.user.isShadow()) {return {
 			cost: 0,
 			required: 0,
 			newForm: true,
 		};
 		}
-		const cost= EnergyClassCalculator.calcEnergyCost(this, user);
+		const cost= EnergyClassCalculator.calcEnergyCost(this, persona);
 		return {
 			cost: cost.energyCost,
 			required: cost.energyRequired,
@@ -1244,7 +1244,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		if (this.customCost) {
 			return this.system.energy;
 		}
-		return this.estimateShadowCosts(persona.user);
+		return this.estimateShadowCosts(persona);
 	}
 
 	energyCost(this: UsableAndCard, persona:Persona) : number {

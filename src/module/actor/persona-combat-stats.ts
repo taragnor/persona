@@ -37,13 +37,73 @@ export class PersonaCombatStats {
 		return this.persona.source.system.combat.personaStats;
 	}
 
+	mhpCalculation() {
+		const user = this.persona.user;
+		const sit ={user: user.accessor};
+		try {
+			if (user.system == undefined) {return new Calculation().eval();}
+			const lvlbase = user.baseClassHP;
+			const calc = new Calculation(lvlbase);
+			const persona = this.persona;
+			const nonMultbonuses = persona.getBonusesIgnoreAuras("maxhp");
+			const newForm = persona.getBonusesIgnoreAuras("maxhpMult-new");
+			const hpAdjustPercent = user.hpAdjustPercent();
+			const hpAdjust = user.system.hp_adjust;
+			calc.mult(0, hpAdjustPercent,`HP Adjust (${hpAdjust})`);
+			const multmods = persona.getBonusesIgnoreAuras("maxhpMult");
+			if (user.isPC() || user.isNPCAlly()) {
+				const ArmorHPBoost = user.equippedItems().find(x=> x.isOutfit())?.armorHPBoost ?? 0;
+				if (ArmorHPBoost > 0)
+				{
+					calc.add(0, ArmorHPBoost, "Armor HP Bonus");
+				}
+			}
+			calc.add(0, user.system.combat.bonusHP ?? 0, "Permanent Bonus HP");
+			calc.mult(0, newForm, "Mod List");
+			calc.mult(0, multmods, "Old Form Mods", true);
+			calc.add(0, nonMultbonuses, "Adds");
+			const mhp = calc.eval(sit);
+			// console.log(`MHP: ${mhp.total}`);
+			return mhp;
+		}	 catch(e) {
+			PersonaError.softFail(`Error in calculating ${user.name} MHP`, e);
+		}
+		const mhp = new Calculation().eval(sit);
+		return mhp;
+	}
+
+	mmpCalculation() {
+		const user = this.persona.user;
+		if (user.isShadow()) {return new Calculation().eval();}
+		try {
+			const lvlmaxMP = user.class.getClassMMP(user.level);
+			const x = new Calculation(lvlmaxMP);
+			const persona = this.persona;
+			const sit ={user: user.accessor};
+			const mpAdjustPercent = user.mpAdjustPercent();
+			const mpAdjust = user.system.mp_adjust;
+			const bonuses = persona.getBonusesIgnoreAuras("maxmp");
+			const maxMult = persona.getBonusesIgnoreAuras("maxmpMult");
+			const nonMultMPBonus = user.system.combat.bonusMP ?? 0;
+			x.mult(0, mpAdjustPercent, `MP adjust (${mpAdjust})`);
+			x.add(0, bonuses, "additive bonuses");
+			x.mult(0, maxMult, "Multiplier Bonuses" , true);
+			x.add(0, nonMultMPBonus, "Permanent Bonus MP");
+			return x.eval(sit);
+
+		} catch {
+			return new Calculation().eval();
+		}
+
+	}
+
 	getStatValue(stat: PersonaStat) : number {
 		const permaBonus = this.combatStats.permanentStatsBonuses[stat];
 		const situation = {
 			user: this.persona.user.accessor,
 		};
 		const modBonuses = this.persona
-			.getBonuses(stat)
+			.getBonusesIgnoreAuras(stat)
 			.total(situation);
 		const statTotal = Math.round( permaBonus + this.getBaseStatValue(stat) + modBonuses);
 		return Math.min(99, statTotal);

@@ -63,6 +63,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	declare statuses: Set<StatusEffectId>;
 	declare sheet: PersonaActorSheetBase;
 
+	DOWNED_OPACITY = 0.5 as const;
+
+	FULL_FADE_OPACITY = 0.2 as const;
+
 	_antiloop : boolean = false;
 	// private _trackerAntiLoop : boolean = false;
 
@@ -189,29 +193,29 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.system.personaleLevel;
 	}
 
-	mmpCalculation(this: ValidAttackers) {
-		if (this.isShadow()) {return new Calculation().eval();}
-		try {
-			const lvlmaxMP = this.class.getClassMMP(this.level);
-			const x = new Calculation(lvlmaxMP);
-			const persona = this.persona();
-			const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
-			const mpAdjustPercent = this.#mpAdjustPercent();
-			const mpAdjust = this.system.mp_adjust;
-			const bonuses = persona.getBonuses("maxmp");
-			const maxMult = persona.getBonuses("maxmpMult");
-			const nonMultMPBonus = this.system.combat.bonusMP ?? 0;
-			x.mult(0, mpAdjustPercent, `MP adjust (${mpAdjust})`);
-			x.add(0, bonuses, "additive bonuses");
-			x.mult(0, maxMult, "Multiplier Bonuses" , true);
-			x.add(0, nonMultMPBonus, "Permanent Bonus MP");
-			return x.eval(sit);
+	// mmpCalculation(this: ValidAttackers) {
+	// 	if (this.isShadow()) {return new Calculation().eval();}
+	// 	try {
+	// 		const lvlmaxMP = this.class.getClassMMP(this.level);
+	// 		const x = new Calculation(lvlmaxMP);
+	// 		const persona = this.persona();
+	// 		const sit ={user: PersonaDB.getUniversalActorAccessor(this as PC)};
+	// 		const mpAdjustPercent = this.#mpAdjustPercent();
+	// 		const mpAdjust = this.system.mp_adjust;
+	// 		const bonuses = persona.getBonuses("maxmp");
+	// 		const maxMult = persona.getBonuses("maxmpMult");
+	// 		const nonMultMPBonus = this.system.combat.bonusMP ?? 0;
+	// 		x.mult(0, mpAdjustPercent, `MP adjust (${mpAdjust})`);
+	// 		x.add(0, bonuses, "additive bonuses");
+	// 		x.mult(0, maxMult, "Multiplier Bonuses" , true);
+	// 		x.add(0, nonMultMPBonus, "Permanent Bonus MP");
+	// 		return x.eval(sit);
 
-		} catch {
-			return new Calculation().eval();
-		}
+	// 	} catch {
+	// 		return new Calculation().eval();
+	// 	}
 
-	}
+	// }
 
 	get mmp() : number {
 		if (!this.isValidCombatant()) {return 0;}
@@ -224,9 +228,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				this.system satisfies never;
 				return 0;
 		}
-		const val = Math.round(this.mmpCalculation().total);
-		void (this as PC | NPCAlly).refreshMaxMP(val);
-		return val;
+		return this.persona().mmp;
+		// const val = Math.round(this.persona().combatStats.mmpCalculation().total);
+		// void (this as PC | NPCAlly).refreshMaxMP(val);
+		// return val;
 	}
 
 
@@ -242,30 +247,34 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return MP;
 	}
 
-	async refreshMaxMP(this: PC | NPCAlly, amt = this.mmp) {
+	async refreshMaxMP(this: PC | NPCAlly, persona: Persona): Promise<void>;
+	async refreshMaxMP(this: PC | NPCAlly, amt: number): Promise<void>;
+	async refreshMaxMP(this: PC | NPCAlly, amtOrPersona: number | Persona): Promise<void> {
+		if (amtOrPersona instanceof Persona) {
+			amtOrPersona = amtOrPersona.combatStats.mmpCalculation().total;
+		}
+		const amt = amtOrPersona;
 		if (amt == this.system.combat.mp.max) {return;}
 		await this.update( { "system.combat.mp.max": amt});
 	}
 
 
-	async refreshTrackers(this: ValidAttackers) {
+	async refreshTrackers(this: ValidAttackers, persona : Persona) {
 		if (this.isNPCAlly() || this.isRealPC()) {
-			await this.#refreshMPTracker();
+			await this.#refreshMPTracker(persona);
 		}
-		await this.#refreshHpTracker();
+		await this.#refreshHpTracker(persona);
 	}
 
-	async #refreshMPTracker(this:PC | NPCAlly) : Promise<void> {
-		await this.refreshMaxMP();
+	async #refreshMPTracker(this:PC | NPCAlly, persona: Persona) : Promise<void> {
+		await this.refreshMaxMP(persona);
 	}
 
-	async #refreshHpTracker(this:ValidAttackers)  : Promise<void> {
+	async #refreshHpTracker(this:ValidAttackers, persona: Persona)  : Promise<void> {
 		if (!game.user.isGM) {return;}
 		//anti-loop
 		await lockObject(this, async ()  => {
-			// if (this._trackerAntiLoop) {return;}
-			// this._trackerAntiLoop = true;
-			const mhp = this.mhp;
+			const mhp = persona.mhp;
 			if (this.hp > mhp) {
 				await this.update({"system.combat.hp": mhp});
 			}
@@ -278,12 +287,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						"system.combat.hpTracker.value" : this.hp,
 						"system.combat.hpTracker.max": mhp
 					});
-				// if (PersonaSettings.debugMode()) {
-				// 	console.log(`Tracker Value: ${this.system.combat.hpTracker.max}`);
-				// }
 			}
 		});
-		// this._trackerAntiLoop = false;
 	}
 
 	async treasureRoll(this: Shadow) : Promise<TreasureItem[]> {
@@ -778,10 +783,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async setHP(newval: number) {
 		if (!this.isValidCombatant()) {return;}
+		const startingHP = this.system.combat.hp;
 		if (this.system.combat.hp == newval) {return;}
 		newval = Math.clamp(newval, 0, this.mhp);
 		await this.update({"system.combat.hp": newval});
-		await (this as PC | Shadow).refreshHpStatus(newval);
+		if (newval != undefined) {
+			if (startingHP > 0  && newval <= 0) {
+				await this.onKO();
+			}
+			if (startingHP <= 0 && newval > 0) {
+				await this.onRevive();
+			}
+		}
+		await (this as PC | Shadow).refreshHpStatus();
 	}
 
 
@@ -835,39 +849,39 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return this.class.getClassMHP(this.level);
 	}
 
-	mhpCalculation(this: ValidAttackers) {
-		const sit ={user: this.accessor};
-		try {
-			if (this.system == undefined) {return new Calculation().eval();}
-			const lvlbase = this.baseClassHP;
-			const calc = new Calculation(lvlbase);
-			const persona = this.persona();
-			const nonMultbonuses = persona.getBonuses("maxhp");
-			const newForm = persona.getBonuses("maxhpMult-new");
-			const hpAdjustPercent = this.#hpAdjustPercent();
-			const hpAdjust = this.system.hp_adjust;
-			calc.mult(0, hpAdjustPercent,`HP Adjust (${hpAdjust})`);
-			const multmods = persona.getBonuses("maxhpMult");
-			if (this.isPC() || this.isNPCAlly()) {
-				const ArmorHPBoost = this.equippedItems().find(x=> x.isOutfit())?.armorHPBoost ?? 0;
-				if (ArmorHPBoost > 0)
-				{
-					calc.add(0, ArmorHPBoost, "Armor HP Bonus");
-				}
-			}
-			calc.add(0, this.system.combat.bonusHP ?? 0, "Permanent Bonus HP");
-			calc.mult(0, newForm, "Mod List");
-			calc.mult(0, multmods, "Old Form Mods", true);
-			calc.add(0, nonMultbonuses, "Adds");
-			const mhp = calc.eval(sit);
-			// console.log(`MHP: ${mhp.total}`);
-			return mhp;
-		}	 catch(e) {
-			PersonaError.softFail(`Error in calculating ${this.name} MHP`, e);
-		}
-		const mhp = new Calculation().eval(sit);
-		return mhp;
-	}
+	// mhpCalculation(this: ValidAttackers) {
+	// 	const sit ={user: this.accessor};
+	// 	try {
+	// 		if (this.system == undefined) {return new Calculation().eval();}
+	// 		const lvlbase = this.baseClassHP;
+	// 		const calc = new Calculation(lvlbase);
+	// 		const persona = this.persona();
+	// 		const nonMultbonuses = persona.getBonuses("maxhp");
+	// 		const newForm = persona.getBonuses("maxhpMult-new");
+	// 		const hpAdjustPercent = this.#hpAdjustPercent();
+	// 		const hpAdjust = this.system.hp_adjust;
+	// 		calc.mult(0, hpAdjustPercent,`HP Adjust (${hpAdjust})`);
+	// 		const multmods = persona.getBonuses("maxhpMult");
+	// 		if (this.isPC() || this.isNPCAlly()) {
+	// 			const ArmorHPBoost = this.equippedItems().find(x=> x.isOutfit())?.armorHPBoost ?? 0;
+	// 			if (ArmorHPBoost > 0)
+	// 			{
+	// 				calc.add(0, ArmorHPBoost, "Armor HP Bonus");
+	// 			}
+	// 		}
+	// 		calc.add(0, this.system.combat.bonusHP ?? 0, "Permanent Bonus HP");
+	// 		calc.mult(0, newForm, "Mod List");
+	// 		calc.mult(0, multmods, "Old Form Mods", true);
+	// 		calc.add(0, nonMultbonuses, "Adds");
+	// 		const mhp = calc.eval(sit);
+	// 		// console.log(`MHP: ${mhp.total}`);
+	// 		return mhp;
+	// 	}	 catch(e) {
+	// 		PersonaError.softFail(`Error in calculating ${this.name} MHP`, e);
+	// 	}
+	// 	const mhp = new Calculation().eval(sit);
+	// 	return mhp;
+	// }
 
 	hasBuiltInPersona() : boolean {
 		if (!this.isShadow()) {return false;}
@@ -877,10 +891,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get mhp() : number {
 		if (!this.isValidCombatant()) {return 0;}
-		return Math.round(this.mhpCalculation().total);
+		return Math.round(this.persona().combatStats.mhpCalculation().total);
 	}
 
-	#hpAdjustPercent(this: ValidAttackers) : number {
+	hpAdjustPercent(this: ValidAttackers) : number {
 		switch (this.system.hp_adjust) {
 			case "pathetic":
 				return 0.70;
@@ -895,7 +909,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	#mpAdjustPercent(this: ValidAttackers) : number {
+	mpAdjustPercent(this: ValidAttackers) : number {
 		switch (this.system.mp_adjust) {
 			case "pathetic":
 				return 0.40;
@@ -1565,17 +1579,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	async modifyHP( this: ValidAttackers, delta: number) {
+		const startingHP = this.system.combat.hp;
 		if (delta == 0) {return;}
-		let hp = this.system.combat.hp;
-		hp += delta;
-		if (hp < 0 ) {
-			hp = 0;
-		}
-		const mhp = this.mhp;
-		if (hp >= mhp) {
-			hp = mhp;
-		}
+		const hp = Math.clamp(startingHP + delta, 0, this.mhp);
 		await this.update( {"system.combat.hp": hp});
+		const newval = hp;
+		if (hp != undefined) {
+			if (startingHP > 0  && newval <= 0) {
+				await this.onKO();
+			}
+			if (startingHP <= 0 && newval > 0) {
+				await this.onRevive();
+			}
+		}
+		await (this as PC | Shadow).refreshHpStatus();
 	}
 
 	async modifyMP( this: PC | NPCAlly, delta: number) {
@@ -1593,45 +1610,30 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	}
 
-	async refreshHpStatus(this: ValidAttackers, newval?: number) : Promise<void> {
+	//** changed to use setHP instead of newval functionality */
+	async refreshHpStatus(this: ValidAttackers, persona ?: Persona) : Promise<void> {
 		if (this._antiloop) {return;}
 		this._antiloop = true;
-		const startingHP = this.system.combat.hp;
-		const hp = newval ?? this.system.combat.hp;
-		let debugMarker = 0;
-		const mhp = this.mhp;
+		const hp = this.system.combat.hp;
+		const mhp = persona ?.mhp ?? this.mhp;
 		try {
 			// console.debug(`Refreshing HP status on ${this.name}`);
 			if (hp > 0) {
-				debugMarker = 1;
 				await this.clearFadingState();
 			}
 			if (hp > mhp) {
-				debugMarker = 2;
 				await this.update( {"system.combat.hp": mhp});
 			}
 			if (this.theurgyVal < 0 || this.theurgyVal > this.theurgyMax) {
 				await this.update( {"system.combat.theurgy.value": Math.clamp (this.theurgyVal, 0, this.theurgyMax)});
 			}
 			this.refreshTheurgyBarStyle();
-			if (this.hasStatus("full-fade") && this.system.combat.hp != 0) {
-				debugMarker = 3;
+			if (this.hasStatus("full-fade") && hp != 0) {
 				await this.update( {"system.combat.hp": 0});
 			}
-			if (newval != undefined) {
-				if (startingHP > 0  && newval <= 0) {
-					debugMarker = 4;
-					await this.onKO();
-				}
-				if (startingHP <= 0 && newval > 0) {
-					debugMarker = 5;
-					await this.onRevive();
-				}
-			}
-			debugMarker = 6;
 			await this.updateOpacity(hp);
 		} catch (e) {
-			PersonaError.softFail(`Error on Refresh HP Status for ${this.name}, ${this.id}, hp: ${hp}, mhp: ${mhp}, debug:${debugMarker}`, e);
+			PersonaError.softFail(`Error on Refresh HP Status for ${this.name}, ${this.id}, hp: ${hp}, mhp: ${mhp}`, e);
 		}
 		this._antiloop = false;
 	}
@@ -1663,7 +1665,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	async updateOpacity(this: ValidAttackers, hp: number) {
 		if (this.isPC() && !this.isRealPC()) {return;}
-		const opacity = hp > 0 ? 1.0 : (this.isFullyFaded(hp) ? 0.2 : 0.6);
+		const opacity = hp > 0 ? 1.0 : (this.isFullyFaded(hp) ? this.FULL_FADE_OPACITY : this.DOWNED_OPACITY);
 		if (this.token) {
 			await this.token.update({"alpha": opacity});
 		} else {
@@ -3055,14 +3057,15 @@ isCapableOfAction() : boolean {
 
 async fullHeal() {
 	if (this.isValidCombatant()) {
-		await this.setHP(this.mhp);
+		const persona = this.persona();
+		await this.setHP(persona.mhp);
 		if (this.system.type == "pc" || this.system.type == "npcAlly") {
-			const mmp = this.mmp;
+			const mmp = persona.mmp;
 			if (this.system.combat.mp.value != mmp) {
 				await this.update({"system.combat.mp.value" : mmp});
 			}
 		}
-		await this.refreshTrackers();
+		await this.refreshTrackers(persona);
 	}
 }
 
@@ -3855,6 +3858,20 @@ async setEffectFlag(effect: DistributiveOmit<SetFlagEffect, "type">) {
 	}
 }
 
+async resetAllCooldowns() {
+	for (const eff of this.effects) {
+		if (eff.isCooldown()) {
+			await eff.delete();
+		}
+	}
+}
+
+clearCooldown(power: Power) : void {
+	this.effects.contents
+		.filter(eff => eff.isCooldown(power))
+		.forEach( eff=> void eff.delete());
+}
+
 async addPowerCooldown(power : Power, duration: StatusDuration) {
 	const newAE = {
 		name: `${power.name} cooldown`,
@@ -4009,7 +4026,7 @@ async setDefaultShadowCosts(this: Shadow, power: Power) {
 		ui.notifications.warn("Shadow can't edit power it doesn't own");
 		return;
 	}
-	const {cost, required} = power.estimateShadowCosts(this);
+	const {cost, required} = power.estimateShadowCosts(this.persona());
 	return await power.setPowerCost(cost, required);
 }
 
@@ -4086,12 +4103,14 @@ async clearScanLevel(this:Shadow) {
 
 get maxEnergy() : number {
 	if (!this.isShadow()) {return 0;}
-	const BASE_MAX_ENERGY = 10;
-	const situation = {
-		user: this.accessor,
-	};
-	const maxEnergy = BASE_MAX_ENERGY + this.basePersona.getBonuses("max-energy").total(situation);
-	return maxEnergy;
+	return this.persona().maxEnergy;
+	// if (!this.isShadow()) {return 0;}
+	// const BASE_MAX_ENERGY = 10;
+	// const situation = {
+	// 	user: this.accessor,
+	// };
+	// const maxEnergy = BASE_MAX_ENERGY + this.basePersona.getBonuses("max-energy").total(situation);
+	// return maxEnergy;
 }
 
 get energy() : number {
@@ -4618,3 +4637,4 @@ declare global {
 }
 
 type RealPC = PC & {tarot : Tarot};
+

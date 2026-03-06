@@ -830,15 +830,15 @@ export class PersonaHandleBarsHelpers {
 			return persona.printableResistanceString;
 		},
 
-		"hpBreakdown": function (actor: ValidAttackers) {
+		"hpBreakdown": function (persona: Persona) {
 			return new Handlebars.SafeString(
-				actor.mhpCalculation().steps.join("\n")
+				persona.combatStats.mhpCalculation().steps.join("\n")
 			);
 		},
 
-		"mpBreakdown": function (actor: ValidAttackers) {
-			return new Handlebars.SafeString( 
-				actor.mmpCalculation().steps.join("\n")
+		"mpBreakdown": function (persona: Persona) {
+			return new Handlebars.SafeString(
+				persona.combatStats.mmpCalculation().steps.join("\n")
 			);
 		},
 		"localizeDefenseTarget": function (power:Power ) : string {

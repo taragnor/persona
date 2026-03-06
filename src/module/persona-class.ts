@@ -51,6 +51,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			passivePowers: undefined,
 			defensiveModifiers : undefined,
 			nearbyAuras: undefined,
+			mainModifiersList : undefined,
 		};
 	}
 
@@ -487,6 +488,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.getBonuses(modNames, this.defensiveModifiers());
 	}
 
+	getBonusesIgnoreAuras (modNames : MaybeArray<NonDeprecatedModifierType>): ModifierList {
+		return this.getBonuses( modNames, this.mainModifiers({omitAuras: true}));
+	}
+
 	getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, usedPower: Usable, attacker: Persona) : ModifierList;
 	getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, sources?: readonly SourcedConditionalEffect[]): ModifierList;
 	getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, sources: (readonly SourcedConditionalEffect[] | Usable) = this.passiveCEs(), attacker?: Persona): ModifierList {
@@ -530,10 +535,20 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	private _mainModifiersList(options?: MainModifierOptions): readonly ModifierContainer[] {
+		if (!this.canCache(options)) {
+			return this._mainModifiersListGen(options);
+		}
+		if (this.#cache.mainModifiersList == undefined) {
+			this.#cache.mainModifiersList = this._mainModifiersListGen(options);
+		}
+		return this.#cache.mainModifiersList;
+	}
+
+	private _mainModifiersListGen(options?: MainModifierOptions): readonly ModifierContainer[] {
 		const user = this.user;
 		const roomModifiers : UniversalModifier[] = [];
-		if (game.combat) {
-			roomModifiers.push(...PersonaCombat.getRoomModifiers(this));
+		if (PersonaCombat.combat) {
+			roomModifiers.push(...PersonaCombat.combat.getRoomEffects());
 		} else {
 			roomModifiers.push(...(Metaverse.getRegion()?.allRoomEffects ?? []));
 		}
@@ -574,15 +589,17 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	private _aurasInRange() : ConditionalEffectC[] {
-		const combat = PersonaCombat.combat;
-		if (combat && !combat.isSocial) {
-			return combat.combatants.contents.flatMap(
-				comb => comb.actor ? comb.actor.activeAuras() : []);
-		}
-		if (this.user.isPC() || this.user.isNPCAlly()) {
-			return PersonaDB.PCParty().flatMap( actor => actor.activeAuras());
-		}
+		//TODO: temporary code to fix performance
 		return [];
+		// const combat = PersonaCombat.combat;
+		// if (combat && !combat.isSocial) {
+		// 	return combat.combatants.contents.flatMap(
+		// 		comb => comb.actor ? comb.actor.activeAuras() : []);
+		// }
+		// if (this.user.isPC() || this.user.isNPCAlly()) {
+		// 	return PersonaDB.PCParty().flatMap( actor => actor.activeAuras());
+		// }
+		// return this.myAuraEffects();
 	}
 
 	passiveOrTriggeredPowers() : readonly Power[] {
@@ -910,7 +927,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				return 0;
 			case "pc": {
 				if (!this.source.class.system.canUsePowerSideboard) {return 0;}
-				const extraMaxPowers = this.getBonuses("extraMaxPowers");
+				const extraMaxPowers = this.getBonusesIgnoreAuras("extraMaxPowers");
 				return extraMaxPowers
 				.total ( {user: this.user.accessor});
 			}
@@ -940,7 +957,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			user: this.user.accessor,
 			target: this.user.accessor,
 		};
-		const bonusBoosts =this.getBonuses("max-defense-boosts").total(situation);
+		const bonusBoosts =this.getBonusesIgnoreAuras("max-defense-boosts").total(situation);
 		return baseBoosts + bonusBoosts;
 	}
 
@@ -964,7 +981,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			user: this.user.accessor,
 			target: this.user.accessor,
 		};
-		const bonusBoosts = this.getBonuses("max-resist-boosts").total(situation);
+		const bonusBoosts = this.getBonusesIgnoreAuras("max-resist-boosts").total(situation);
 		return baseResists + bonusBoosts;
 	}
 
@@ -1384,6 +1401,27 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return !this.isPartial && PersonaCaching;
 	}
 
+	get maxEnergy() : number {
+		if (!this.user.isShadow()) {return 0;}
+		const BASE_MAX_ENERGY = 10;
+		const situation = {
+			user: this.user.accessor,
+		};
+		const maxEnergy = BASE_MAX_ENERGY + this.getBonusesIgnoreAuras("max-energy").total(situation);
+		return maxEnergy;
+	}
+
+	get mhp() : number {
+		return Math.round(this.combatStats.mhpCalculation().total);
+	}
+
+	get mmp() : number {
+		if (this.user.isShadow()) {return 0;}
+		const val = Math.round(this.combatStats.mmpCalculation().total);
+		void this.user.refreshMaxMP(val);
+		return val;
+	}
+
 	possibleElementTypes(): RealDamageType[] {
 		return this.powers
 			.filter (pwr => pwr.system.damageLevel != "none")
@@ -1411,6 +1449,7 @@ interface PersonaClassCache {
 	passivePowers: U<readonly Power[]>;
 	defensiveModifiers: U<ConditionalEffectC[]>;
 	nearbyAuras:  U<ConditionalEffectC[]>;
+	mainModifiersList: U<readonly ModifierContainer[]>;
 }
 
 export interface MainModifierOptions {

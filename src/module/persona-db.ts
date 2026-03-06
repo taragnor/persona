@@ -48,6 +48,8 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			classes: undefined,
 			possiblePersonas: undefined,
 			personaCompendium: undefined,
+			allUniversalModifierTypes: undefined,
+			roomModifiers: undefined,
 		};
 		Hooks.callAll("DBrefresh");
 		return newCache;
@@ -117,25 +119,34 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	getGlobalModifiers() : readonly UniversalModifier [] {
 		if (this.#cache.worldModifiers == undefined) {
-		const items = this.getAllByType("Item") as PersonaItem[];
-		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
+		const UMs = this.allUniversalModifierTypes();
 		this.#cache.worldModifiers = UMs.filter(um=> um.system.scope == "global");
 		}
 		return this.#cache.worldModifiers;
 	}
 
 	getRoomModifiers() : readonly UniversalModifier [] {
-		const items = this.getAllByType("Item") as PersonaItem[];
-		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
-		return UMs
+		if (this.#cache.roomModifiers == undefined) {
+		const UMs = this.allUniversalModifierTypes();
+		this.#cache.roomModifiers = UMs
 			.filter(um=> um.system.scope == "room")
 			.sort ( (a,b) => a.name.localeCompare(b.name));
+		}
+		return this.#cache.roomModifiers;
+	}
+
+	allUniversalModifierTypes() : readonly UniversalModifier[] {
+		if (this.#cache.allUniversalModifierTypes == undefined) {
+		const items = this.getAllByType("Item") as PersonaItem[];
+		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
+			this.#cache.allUniversalModifierTypes = UMs;
+		}
+		return this.#cache.allUniversalModifierTypes;
 	}
 
 	getSceneModifiers() : readonly UniversalModifier [] {
 		if (this.#cache.sceneModifiers == undefined) {
-		const items = this.getAllByType("Item") as PersonaItem[];
-		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
+		const UMs = this.allUniversalModifierTypes();
 			this.#cache.sceneModifiers = UMs
 			.filter(um=> um.system.scope == "scene")
 			.sort ( (a,b) => a.name.localeCompare(b.name));
@@ -144,11 +155,15 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	getSceneAndRoomModifiers() : readonly UniversalModifier[] {
-		const items = this.getAllByType("Item") as PersonaItem[];
-		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
-		return UMs
-			.filter(um=> um.system.scope == "scene" || um.system.scope == "room")
-			.sort ( (a,b) => a.name.localeCompare(b.name));
+		return [
+			... this.getRoomModifiers(),
+			... this.getSceneModifiers()
+		] .sort ( (a,b) => a.name.localeCompare(b.name));
+		// const items = this.getAllByType("Item") as PersonaItem[];
+		// const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
+		// return UMs
+		// 	.filter(um=> um.system.scope == "scene" || um.system.scope == "room")
+		// 	.sort ( (a,b) => a.name.localeCompare(b.name));
 	}
 
 
@@ -505,9 +520,11 @@ type PersonaDBCache =	{
 	personalSocialLink: NPC | undefined;
 	NPCAllies: U<NPCAlly[]>;
 	sceneModifiers: U<UniversalModifier[]>;
+	roomModifiers: U<UniversalModifier[]>;
 	worldModifiers: U<UniversalModifier[]>;
 	worldPassives: U<UniversalModifier[]>;
 	worldDefensives: U<UniversalModifier[]>;
+	allUniversalModifierTypes: U<UniversalModifier[]>;
 	tags: U<Map<Tag["id"], Tag>>;
 	tagNames: U<Map<Tag["name"], Tag>>;
 	tagsArr: U<Tag[]>;

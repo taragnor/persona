@@ -830,6 +830,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 		await this.setDuration(duration, durationOptions);
 	}
 
+
 	isCooldown(power ?: Power) : boolean {
 		const flag =  this.getFlag("persona", POWER_COOLDOWN_FLAG_NAME);
 		if (!flag) {return false;}
