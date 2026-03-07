@@ -79,13 +79,13 @@ export class HPCostCalculator extends CostCalculator {
     if (pwr.system.instantKillChance == "none") {return this.i(0);}
     switch (pwr.system.instantKillChance) {
       case "low":
-        return {mult: 1.1, add: 2};
+        return {mult: 1.1, add: 5};
       case "medium":
-        return {mult: 1.5, add: 3};
+        return {mult: 1.2, add: 8};
       case "high":
-        return {mult: 2, add: 5};
+        return {mult: 1.3, add: 11};
       case "always":
-        return {mult: 3, add: 10};
+        return {mult: 1.4, add: 14};
     }
   }
 

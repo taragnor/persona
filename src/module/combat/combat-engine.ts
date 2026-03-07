@@ -295,11 +295,13 @@ export class CombatEngine {
 		}
 	}
 
-	private getRollName(attacker: Persona, power: Usable, target: Persona, defenseVal: number) {
-		const cssClass= (!target.user.isPC()) ? 'gm-only' : '';
-		const defenseStr =`<span class="${cssClass}">(${defenseVal})</span>`;
-		const rollName =  `${attacker.combatName} (${power.name}) ->  ${target.combatName} vs. ${power.targettedDefenseLocalized()} ${defenseStr}`;
-		return rollName;
+	private getRollNameGenFn(attacker: Persona, power: Usable, target: Persona)  : (rollB: RollBundle) => string{
+		return (rollB : RollBundle) => {
+			const cssClass= (!target.user.isPC()) ? 'gm-only' : '';
+			const defenseStr =`<span class="${cssClass}">(${rollB?.DC ?? 0})</span>`;
+			const rollName =  `${attacker.combatName} (${power.name}) ->  ${target.combatName} vs. ${power.targettedDefenseLocalized()} ${defenseStr}`;
+			return rollName;
+		};
 	}
 
 	private getBaseAttackResult(roll: RollBundle, attacker: Persona, target:Persona, power: Usable ): Pick<AttackResult, 'attacker' | 'target'  | 'power' | 'roll'>  {
@@ -312,11 +314,18 @@ export class CombatEngine {
 		return baseData;
 	}
 
-	static withinRange(range: U<CalculatedRange>, roll: AttackRollData) : boolean {
+	static withinRange(range: U<CalculatedRange>, roll: AttackRollData, situation: ProtoResultAttackSituation) : boolean {
 		if (!range) {return false;}
+		switch (range.type) {
+			case "instantKill":
+				const target = PersonaDB.findActor(situation.target);
+				if (situation.rollTotal < target.getDefense("kill").eval(situation).total) {return false;}
+		}
 		return range.possible
+			&& !roll.rollTags.includes("secondary-attack")
 			&& roll.natural >= range.low
 			&& roll.natural <= range.high;
+
 	}
 
 	generateAttackSituation (attacker: Persona, target: Persona, power: Usable, rollData: AttackRollData, rollTotal: number, _options: CombatOptions = {}): ProtoResultAttackSituation {
@@ -333,9 +342,9 @@ export class CombatEngine {
 		};
 
 		const {ailmentRange, instantKillRange, critRange} = CombatEngine.calculateRanges(attacker, target, power, partialSituation);
-		const withinAilmentRange = CombatEngine.withinRange(ailmentRange, rollData);
-		const withinCritRange = CombatEngine.withinRange(critRange, rollData);
-		const withinInstantKillRange = CombatEngine.withinRange(instantKillRange, rollData);
+		const withinAilmentRange = CombatEngine.withinRange(ailmentRange, rollData, partialSituation);
+		const withinCritRange = CombatEngine.withinRange(critRange, rollData, partialSituation);
+		const withinInstantKillRange = CombatEngine.withinRange(instantKillRange, rollData, partialSituation);
 		const protoSituation : ProtoResultAttackSituation = {
 			...partialSituation,
 			ailmentRange, instantKillRange, critRange,
@@ -348,7 +357,7 @@ export class CombatEngine {
 
 	makeRollBundle (rollData: AttackRollData, attacker: Persona, target: Persona, power: Usable, situation: Situation & RollSituation, options: RollOptions ) : RollBundle {
 		const attackBonus = this.getAttackBonus(attacker, power, target, options);
-		const rollName = this.getRollName(attacker, power, target, situation.DC ?? 0);
+		const rollName = this.getRollNameGenFn(attacker, power, target);
 		const bundle = new RollBundle(rollName, rollData.roll, attacker.user.isPC(), attackBonus, situation);
 		return bundle;
 	}
@@ -378,6 +387,7 @@ export class CombatEngine {
 		const baseSituation = this.getBaseSituation(attacker, target, power, rollData);
 		const rollBundle = this.makeRollBundle(rollData, attacker, target, power, baseSituation, options );
 		const situation = this.generateAttackSituation(attacker, target, power, rollData, rollBundle.total, options);
+		rollBundle.DC = situation?.DC;
 		return await this.generateAttackResult(attacker, target, power, rollBundle, situation);
 	}
 

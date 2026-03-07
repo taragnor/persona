@@ -158,11 +158,11 @@ export class PersonaRoller {
 export class RollBundle {
 	roll: Roll;
 	modList: UnresolvedMods | ResolvedMods;
-	name: string;
+	name: string | ((b: RollBundle) => string);
 	DC ?: number;
 	_playerRoll: boolean;
 
-	constructor (rollName: string,roll : Roll, playerRoll : boolean,  modList ?: ModifierList | Calculation, situation ?: Situation, DC ?: number) {
+	constructor (rollName: typeof this["name"] ,roll : Roll, playerRoll : boolean,  modList ?: ModifierList | Calculation, situation ?: Situation, DC ?: number) {
 		this._playerRoll = playerRoll;
 		if (!roll._evaluated)
 		{throw new Error("Can't construct a Roll bundle with unevaluated roll");}
@@ -175,11 +175,14 @@ export class RollBundle {
 		this.DC = DC;
 	}
 
-	setName(newName: string): void {
+	setName(newName: typeof this["name"] ): void {
 		this.name = newName;
 	}
 
 	resolveMods() : ResolvedMods {
+		if (typeof this.name == "function") {
+			this.name = this.name(this);
+		}
 		if ("modtotal" in this.modList) {
 			return this.modList;
 		}
