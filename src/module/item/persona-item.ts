@@ -1339,7 +1339,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		switch (this.system.type) {
 			case "power":
 				const rarity = localize(PROBABILITIES_POWER_RARITY[this.system.rarity]);
-				return `${this.name} (${rarity})`;
+				const slot = localize(SLOTTYPES[ this.system.slot]);
+				return `${this.name} (${rarity} ${slot})`;
 			default: return this.name;
 		}
 	}
@@ -1369,9 +1370,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 	static getModifier( effects: readonly SourcedConditionalEffect[], bonusTypes: MaybeArray<ModifierTarget>) : ModifierListItem[] {
 		bonusTypes = Array.isArray(bonusTypes) ? bonusTypes : [bonusTypes];
 		return bonusTypes.flatMap( btype => {
-			if (!ConditionalEffectManager.canModifyStat(effects, btype)) {return [];}
+			// if (!ConditionalEffectManager.canModifyStat(effects, btype)) {return [];}
 			return effects
-				.filter( eff => eff.consequences.some( cons => 'modifiedFields' in cons || 'modifiedField' in cons))
+				.filter( eff => eff.consequences.some( cons => ('modifiedFields' in cons && cons.modifiedFields[btype] == true) || ('modifiedField' in cons && cons.modifiedField == btype)))
+				// && !ConditionalEffectManager.canModifyStat(eff, btype))
 				.map(eff =>
 					({
 						name: eff.source?.name ?? "Unknown Source",

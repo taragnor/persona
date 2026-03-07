@@ -64,6 +64,7 @@ export class PowerPrinter extends Application {
 			PowerPrinter.filterByType("weapon" ,"physical"),
 			PowerPrinter.filterByType("weapon" ,"gun"),
 			PowerPrinter.filterByType("weapon" ,"by-power"),
+			PowerPrinter.filterByType("weapon" ,["fire", "cold", "lightning", "wind", "dark", "light" ]),
 			...untypedSkills,
 			passiveSkills,
 			// PowerPrinter.filterByType("passive"),
@@ -76,10 +77,13 @@ export class PowerPrinter extends Application {
 		};
 	}
 
-	static filterByType (subtype: Power["system"]["subtype"], powerType ?: Power["system"]["dmg_type"]) : Power[] {
+	static filterByType (subtype: Power["system"]["subtype"], powerType ?: Power["system"]["dmg_type"] | Power["system"]["dmg_type"][]) : Power[] {
+		if (powerType && !Array.isArray(powerType)) {
+			powerType = [powerType];
+		}
 		return PersonaDB.allPowersArr()
 			.filter( pwr => pwr.system.subtype == subtype && !pwr.isTeamwork() && !pwr.isOpener() && !pwr.isNavigator())
-			.filter( pwr=> powerType ? pwr.system.dmg_type == powerType: true)
+			.filter( pwr=> powerType ? powerType.includes(pwr.system.dmg_type) : true)
 			.filter( x=> !x.hasTag("shadow-only"));
 	}
 
