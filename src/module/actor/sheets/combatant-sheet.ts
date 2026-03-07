@@ -99,8 +99,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				switch (actorType) {
 					case "shadow":
 						if (this.isOnLearningTab())
-						{await this.actor.addLearnedPower(power);}
-						else {await this.actor._learnPower(power);}
+						{await this.actor.powerLearning().addLearnedPower(power);}
+						else {await this.actor.powerLearning().learnPower(power);}
 						return power;
 					case "pc":
 					case "npcAlly": {
@@ -114,7 +114,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 							return;
 						}
 						if (this.isOnLearningTab()) {
-							await this.actor.addLearnedPower(power);
+							await this.actor.powerLearning().addLearnedPower(power);
 							return power;
 						}
 						if (this.isOnPersonaListTab()) {

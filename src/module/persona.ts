@@ -67,7 +67,6 @@ function registerDocumentClasses() {
 	 CONFIG.Item.documentClass = PersonaItem;
 	 CONFIG.Token.documentClass = PersonaToken;
 	 CONFIG.ActiveEffect.documentClass = PersonaAE;
-	 // CONFIG.Dice.rolls.push(PersonaRoll);
 	 CONFIG.Combat.documentClass = PersonaCombat;
 	 CONFIG.Region.documentClass = PersonaRegion;
 	 CONFIG.Scene.documentClass = PersonaScene;
@@ -89,7 +88,7 @@ function registerSheetApplications() {
 	Items.registerSheet("persona", PersonaTalentSheet, {types: ["talent"], makeDefault: true});
 	Items.registerSheet("persona", PersonaFocusSheet, {types: ["focus"], makeDefault: true});
 	Items.registerSheet("persona", ConsumableSheet, {types: ["consumable"], makeDefault: true});
-		Items.registerSheet("persona", PersonaTagSheet, {types: ["tag"], makeDefault: true});
+	Items.registerSheet("persona", PersonaTagSheet, {types: ["tag"], makeDefault: true});
 	Items.registerSheet("persona", UniversalModifierSheet, {types: ["universalModifier"], makeDefault: true});
 	Items.registerSheet("persona", PersonaSocialCardSheet, {types: ["socialCard"], makeDefault: true});
 }

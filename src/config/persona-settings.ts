@@ -268,7 +268,7 @@ const SETTINGS = {
 		default:{},
 	},
 
-} as const satisfies Record<string, SettingConfig<any>>;
+} as const satisfies Record<string, SettingConfig>;
 
 type SETTINGKEYS = keyof typeof SETTINGS;
 

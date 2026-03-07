@@ -52,7 +52,7 @@ export class NPCAllySheet extends PCLikeSheet {
 				const power = item as Power;
 				const actor = this.actor;
 				if (power.isNavigator() && !this.isOnLearningTab()) {
-					await actor.addNavigatorSkill(power);
+					await actor.powerLearning().addNavigatorSkill(power);
 					return power;
 				}
 			}

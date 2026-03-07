@@ -37,4 +37,23 @@
 	</div>
 </section>
 {{/if}}
+
+{{#if persona.source.nextElectiveToLearn}}
+	<div>Next Power to Learn: </div>
+	<div class="powers-table">
+		<div class="next-power-to-learn powers-table-item">
+			<div class="power-name-block">
+				<a class="powerName">
+					{{persona.source.nextElectiveToLearn.txt}}
+				</a>
+				<span class="level-to-learn">
+					at L {{persona.source.nextElectiveToLearn.level}}
+				</span>
+			</div>
+		</div>
+	</div>
+
 {{/if}}
+
+{{/if}}
+

@@ -1,4 +1,5 @@
 import {PersonaActor} from "./actor/persona-actor.js";
+import {PersonaDB} from "./persona-db.js";
 
 export class PersonaToken extends TokenDocument<PersonaActor> {
 	 DOWNED_OPACITY = 0.55 as const;
@@ -17,6 +18,9 @@ export class PersonaToken extends TokenDocument<PersonaActor> {
 			return this._oldAlpha ?? (this._source.alpha as number) ?? 1;
 	 }
 
+	get accessor() : UniversalTokenAccessor<typeof this> {
+		return PersonaDB.getUniversalTokenAccessor(this);
+	}
 	 override set alpha(val: number) {
 			if (Number.isNaN(val)) {
 				 debugger;

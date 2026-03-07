@@ -11,7 +11,7 @@ export const PROBABILITY_LIST = [
 	"always",
 ] as const;
 
-type Probability = typeof PROBABILITY_LIST[number];
+export type Probability = typeof PROBABILITY_LIST[number];
 
 export const PROBABILITIES = HTMLTools.createLocalizationObject(PROBABILITY_LIST, "persona.probability");
 

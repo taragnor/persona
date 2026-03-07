@@ -131,7 +131,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	async learnPower(power: Power, logChanges = true) {
-		await this.source._learnPower(power, logChanges);
+		await this.source.powerLearning().learnPower(power, logChanges);
 	}
 
 	get talents() : readonly Talent[] {
@@ -379,7 +379,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			multiplier = Math.clamp(multiplier, 0, 1);
 			amt *= multiplier;
 		}
-		if (amt == 0) {return undefined;}
+		if (amt <= 0) {return undefined;}
 		return this.increaseXP(amt);
 	}
 
@@ -547,11 +547,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	private _mainModifiersListGen(options?: MainModifierOptions): readonly ModifierContainer[] {
 		const user = this.user;
 		const roomModifiers : UniversalModifier[] = [];
-		// if (PersonaCombat.combat) {
-		// 	roomModifiers.push(...PersonaCombat.combat.getRoomEffects());
-		// } else {
-		// 	roomModifiers.push(...(Metaverse.getRegion()?.allRoomEffects ?? []));
-		// }
 		roomModifiers.push(...Metaverse.activeRoomModifiers());
 		const passiveOrTriggeredPowers = (options && options.omitPowers) ? [] : this.passiveOrTriggeredPowers();
 		const talents = (options && options?.omitTalents) ? [] : this.talents;
@@ -565,8 +560,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			...PersonaDB.navigatorModifiers(),
 		];
 		return mainModsList;
-		// return mainModsList
-		// 	.flatMap( x=> x.getEffects(this.user));
 	}
 
 	private _mainModifiers(options?: MainModifierOptions): ConditionalEffectC[] {

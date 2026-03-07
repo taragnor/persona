@@ -107,7 +107,7 @@ export class ActorHooks {
 				//NEEd to refresh stat points on level change
 			}
 			if (lvl != undefined) {
-				await actor.onLevelUp_checkLearnedPowers(lvl, !actor.isShadow());
+				await actor.powerLearning().onLevelUp_checkLearnedPowers(lvl, !actor.isShadow());
 			}
 			switch (actor.system.type) {
 				case "npcAlly": {
