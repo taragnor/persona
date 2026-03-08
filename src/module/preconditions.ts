@@ -838,25 +838,15 @@ export function getSubjectActors<K extends string, T extends Sourced<Record<K, C
 }
 
 function getSubjectPersonas<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K) : Persona[] {
-  // let memory = PersonaCache.get(situation);
-  // if (!memory) {
-  // const memcell = {};
-  // PersonaCache.set(situation, memcell);
-  // memory = memcell;
-  // }
-  // if (memory[field]) {return memory[field]; }
-  return accessPersonaCache(situation, field, ()=> {
-    const subjects = getSubjects(cond, situation, field)
+  return accessPersonaCache(situation, field, () => {
+    return getSubjects(cond, situation, field)
       .map( subject => {
         if (subject instanceof TokenDocument) {
           subject = subject.actor;
         }
         return subject.persona();
       });
-    return subjects;
   });
-  // memory[field] = subjects;
-  // return subjects;
 }
 
 function accessPersonaCache(situation: Situation, dataLoc: string, creatorFn: () => Persona[]) : Persona[] {
