@@ -2,6 +2,9 @@
 	<table class="printable-power-table">
 		<thead>
 			<tr>
+        {{#if targetPersona}}
+        <th>Learn</th>
+        {{/if}}
 				<th> Name</th>
 				<th> Level </th>
 				<th> Rarity </th>
@@ -18,37 +21,44 @@
 		<tbody>
 			{{#each powers as |power i|}}
 			<tr data-power-id="{{power.id}}">
-				<td class="power-name">
-					{{#if (isExotic power)}}
-					*
-					{{/if}}
-					{{power.name}}
-				</td>
-				<td> {{power.slotLocalized}} </td>
-				<td class="rarity"> {{localizeRarity power.system.rarity}} </td>
-				<td class="targets"> {{powerTargetsAbbrev power}}</td>
-				<td> {{getItemTagList power}} </td>
-				<td> {{simplePowerCost power}} </td>
-				<td> {{baseShadowCostString power}} </td>
-				{{#if (canUseShortFormPower power)}}
-				<td class="description" colspan="4">
-					{{power.description}}
-				</td>
-				{{else}}
-				<td> {{localizeDamageLevel power}}</td>
-				<td> {{localizeDefenseTarget power}}</td>
-				<td> {{localizeKillLevel power}}</td>
-				<td> {{localizeAilmentLevel power}}</td>
-				{{/if}}
-			</tr>
-			{{#if (and (hasDescriptionText power) (not (canUseShortFormPower power)))}}
-			<tr>
-				<td class="description" colspan="9">
-					{{power.description}}
-				</td>
-			</tr>
-			{{/if}}
-			{{/each}}
-		</tbody>
-	</table>
+        {{#if ../targetPersona}}
+        <td class="actions">
+          <a class="learn-power" title="Add to {{../targetPersona.name}} Power List">
+            <i class="fa-solid fa-circle-plus"></i>
+          </a>
+        </td>
+        {{/if}}
+        <td class="power-name">
+          {{#if (isExotic power)}}
+          *
+          {{/if}}
+          {{power.name}}
+        </td>
+        <td> {{power.slotLocalized}} </td>
+        <td class="rarity"> {{localizeRarity power.system.rarity}} </td>
+        <td class="targets"> {{powerTargetsAbbrev power}}</td>
+        <td> {{getItemTagList power}} </td>
+        <td> {{simplePowerCost power}} </td>
+        <td> {{baseShadowCostString power}} </td>
+        {{#if (canUseShortFormPower power)}}
+        <td class="description" colspan="4">
+          {{power.description}}
+        </td>
+        {{else}}
+        <td> {{localizeDamageLevel power}}</td>
+        <td> {{localizeDefenseTarget power}}</td>
+        <td> {{localizeKillLevel power}}</td>
+        <td> {{localizeAilmentLevel power}}</td>
+        {{/if}}
+      </tr>
+      {{#if (and (hasDescriptionText power) (not (canUseShortFormPower power)))}}
+      <tr>
+        <td class="description" colspan="9">
+          {{power.description}}
+        </td>
+      </tr>
+      {{/if}}
+      {{/each}}
+    </tbody>
+  </table>
 </div>

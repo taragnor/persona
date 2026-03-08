@@ -15,6 +15,8 @@ import {Persona} from "../../persona-class.js";
 import {CombatEngine} from "../../combat/combat-engine.js";
 import {antiLoop} from "../../utility/anti-loop.js";
 import {sleep} from "../../utility/async-wait.js";
+import {PROBABILITIES_POWER_RARITY} from "../../../config/probability.js";
+import {localize} from "../../persona.js";
 
 export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	declare actor: ValidAttackers;
@@ -36,6 +38,14 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		data["PERSONA_LIST"]= PERSONA_LIST;
 		return data;
 	}
+
+  override render(force: boolean = false, options?: Record<string, unknown>) {
+    const ret= super.render(force, options);
+    if (PowerPrinter._instance) {
+      PowerPrinter._instance.setTargetPersona(this.actor.persona());
+    }
+    return ret;
+  }
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
@@ -122,8 +132,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 							ui.notifications.warn("Can't add powers from this tab");
 							return undefined;
 						}
-						if (!game.user.isGM && power.hasTag("exotic")) {
-							ui.notifications.warn(`Can't directly take exotic power : ${item.name}`);
+            const localizedRarity = localize(PROBABILITIES_POWER_RARITY[power.system.rarity]);
+						if (!game.user.isGM && (power.system.rarity != "normal" && power.system.rarity != "normal-minus")) {
+							ui.notifications.warn(`Can't directly take a ${localizedRarity} power: ${item.name}`);
 							return;
 						}
 						await actor.persona().learnPower(item as Power);
@@ -393,6 +404,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async showPowersTable(_ev: JQuery.ClickEvent) {
 		await PowerPrinter.open();
+    PowerPrinter._instance?.setTargetPersona(this.actor.persona());
 	}
 
 	isOnPersonaListTab() : boolean {

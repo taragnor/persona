@@ -1,6 +1,6 @@
 <form class="print-out">
 {{#each powerLists as |list i|}}
-		{{> "systems/persona/parts/power-list.hbs" powers=list}}
+		{{> "systems/persona/parts/power-list.hbs" powers=list targetPersona=../targetPersona}}
 		<hr>
 {{/each}}
 

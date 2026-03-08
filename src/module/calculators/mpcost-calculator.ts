@@ -20,23 +20,23 @@ export class MPCostCalculator extends CostCalculator {
 		return Math.max(0, Math.round(this.combineModifiers(mods)));
 	}
 
-	static mpCost_damagePower(pwr : Power) : CostModifier {
-		const baselevel = pwr.system.damageLevel;
-		if (baselevel == "none") {return this.i(0);}
-		const baseCost = this.BASE_MP_COSTS["directDamage"];
-		const levelMult = this.DAMAGE_LEVEL_MULTIPLIERS_MP[baselevel];
-		const dmgType = pwr.system.dmg_type;
-		let cost = baseCost * levelMult;
-		{
-			const {mult, add} = this.DAMAGE_TYPE_MODIFIER[dmgType];
-			cost = cost * mult + add;
-		}
-		if (pwr.isAoE()) {
-			cost *= 1.5;
-			cost += 4;
-		}
-		return this.i(cost);
-	}
+  static mpCost_damagePower(pwr : Power) : CostModifier {
+    const baselevel = pwr.system.damageLevel;
+    if (baselevel == "none") {return this.i(0);}
+    const baseCost = this.BASE_MP_COSTS["directDamage"];
+    const levelMult = this.DAMAGE_LEVEL_MULTIPLIERS_MP[baselevel];
+    let cost = baseCost * levelMult;
+    // {
+    //   const dmgType = pwr.system.dmg_type;
+    //   const {mult, add} = this.DAMAGE_TYPE_MODIFIER[dmgType];
+    //   cost = cost * mult + add;
+    // }
+    if (pwr.isAoE()) {
+      cost *= 1.5;
+      cost += 4;
+    }
+    return this.i(cost);
+  }
 
 	static #modifiers(pwr: Power) : CostModifier {
 		const situation: Situation = {
@@ -152,7 +152,6 @@ export class MPCostCalculator extends CostCalculator {
 
 	static TAG_ADJUST_MP_MULT : Partial<Record<Exclude<PowerTag, Tag>, number>> = {
 		"half-on-miss": 1.1,
-		"pierce": 1.5,
 		"high-crit":1.25,
 		"accurate": 1.15,
 		"inaccurate": 0.80,
@@ -167,12 +166,12 @@ export class MPCostCalculator extends CostCalculator {
 		light: 1,
 		medium: 2,
 		heavy: 3,
-		severe: 9,
-		colossal: 24,
+		severe: 5,
+		colossal: 8,
 	};
 
 	static BASE_MP_COSTS = {
-		"directDamage": 4,
+		"directDamage": 6,
 	} as const;
 
 }

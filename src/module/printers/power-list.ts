@@ -1,10 +1,14 @@
 import { HTMLTools } from "../utility/HTMLTools.js";
 import { PersonaError } from "../persona-error.js";
 import { PersonaDB } from "../persona-db.js";
-import {CARD_DROP_RATE} from "../../config/probability.js";
+import {CARD_DROP_RATE, PROBABILITIES_POWER_RARITY} from "../../config/probability.js";
+import {Persona} from "../persona-class.js";
+import {localize} from "../persona.js";
 
 export class PowerPrinter extends Application {
 	static _instance : U<PowerPrinter>;
+
+  targetPersona: U<Persona>;
 
 	static init() {
 
@@ -27,6 +31,8 @@ export class PowerPrinter extends Application {
 		html.find(".power-name").on("click", ev => void this.openPower(ev));
 		html.find(".rarity").on ("click", ev => void this.changeRarityLeftClick(ev));
 		html.find(".rarity").on ("contextmenu", ev => void this.changeRarityRightClick(ev));
+		html.find(".learn-power").on ("click", ev => void this.learnPower(ev));
+		html.find(".learn-power").on ("contextmenu", ev => void this.addToLearningList(ev));
 	}
 
 	static async open() {
@@ -38,6 +44,11 @@ export class PowerPrinter extends Application {
 
 		return this._instance;
 	}
+
+  setTargetPersona(persona : Persona) {
+    this.targetPersona = persona;
+    this.render();
+  }
 
 	override async getData(options: Record<string, unknown>) {
 		await PersonaDB.waitUntilLoaded();
@@ -52,6 +63,8 @@ export class PowerPrinter extends Application {
 			PowerPrinter.filterByType("defensive"),
 		].flat();
 
+    const targetPersona = this.targetPersona && this.targetPersona.source.sheet._state > 0 ? this.targetPersona : undefined;
+
 		const powers : Power[][] = [
 			PowerPrinter.filterByType("magic" ,"fire"),
 			PowerPrinter.filterByType("magic" , "cold"),
@@ -64,7 +77,7 @@ export class PowerPrinter extends Application {
 			PowerPrinter.filterByType("weapon" ,"physical"),
 			PowerPrinter.filterByType("weapon" ,"gun"),
 			PowerPrinter.filterByType("weapon" ,"by-power"),
-			PowerPrinter.filterByType("weapon" ,["fire", "cold", "lightning", "wind", "dark", "light" ]),
+			PowerPrinter.filterByType("weapon" ,["fire", "cold", "lightning", "wind", "dark", "light", "untyped" ]),
 			...untypedSkills,
 			passiveSkills,
 			// PowerPrinter.filterByType("passive"),
@@ -74,6 +87,7 @@ export class PowerPrinter extends Application {
 		return {
 			...data,
 			powerLists: powers,
+      targetPersona,
 		};
 	}
 
@@ -125,6 +139,35 @@ export class PowerPrinter extends Application {
 		return power;
 	}
 
+  async learnPower(ev: JQuery.ClickEvent) {
+    const power = this.fetchPower(ev);
+    if (!this.targetPersona) {
+      throw new PersonaError("No Target is selected, open a sheet to select a target");
+    }
+    if (!game.user.isGM) {
+      if (!this.targetPersona.user.isOwner || !this.targetPersona.source.isOwner) {
+        throw new PersonaError("You don't own this.");
+      }
+      if (!this.targetPersona.isCustomPersona) {
+        throw new PersonaError("Only Custom Persona's can learn powers");
+      }
+      if (power.system.rarity != "normal" && power.system.rarity != "normal-minus") {
+        const localizedRarity = localize(PROBABILITIES_POWER_RARITY[power.system.rarity]);
+        throw new PersonaError(`Can't learn ${localizedRarity} power this way.`);
+      }
+    }
+    await this.targetPersona.learnPower(power);
+  }
+
+  async addToLearningList(ev: JQuery.ContextMenuEvent) {
+    const power = this.fetchPower(ev);
+    if (!game.user.isGM) {return;}
+    if (!this.targetPersona) {
+      throw new PersonaError("No Target is selected, open a sheet to select a target");
+    }
+    await this.targetPersona.source.powerLearning().addLearnedPower(power);
+  }
+
 }
 
 Hooks.on("DBrefresh", function () {
@@ -136,6 +179,7 @@ Hooks.on("DBrefresh", function () {
 
 async function powerPrinter() {
 	await PowerPrinter.open();
+  return PowerPrinter._instance;
 }
 
 //@ts-expect-error adding to global scope

@@ -1,7 +1,7 @@
 class Application {
 	constructor (options?: ApplicationV1Options);
 	get element(): JQuery<HTMLElement>;
-	render(force: boolean, options: Record<string, unknown> = {}) : this;
+	render(force ?: boolean, options: Record<string, unknown> = {}) : this;
 	static get defaultOptions() : ApplicationV1Options;
 	activateListeners(html: JQuery<HTMLElement>): void;
 	async getData(options : Record<string, unknown> = {}): Promise<Record<string, unknown>>;

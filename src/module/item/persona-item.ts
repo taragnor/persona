@@ -877,8 +877,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		}
 		switch (this.system.rarity) {
 			case "rare":
-			case "rare-plus":
 				list.pushUnique("exotic");
+        break;
+			case "rare-plus":
+				// list.pushUnique("exotic");
 				break;
 			case "never":
 				list.pushUnique("non-inheritable");

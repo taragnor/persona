@@ -122,8 +122,8 @@ export class EnergyClassCalculator extends CostCalculator {
 
 	static #energyLevel_damage(pwr: Power) : EnergyCostBase {
 		const base = this.DAMAGE_LEVEL_BASE_ENERGY[pwr.system.damageLevel] ?? 0;
-		const modifier = this.SHADOW_DAMAGE_TYPE_MODIFIER[pwr.system.dmg_type] ?? 0;
-		const cost = base + modifier;
+		// const modifier = this.SHADOW_DAMAGE_TYPE_MODIFIER[pwr.system.dmg_type] ?? 0;
+		const cost = base;
 		return new EnergyCostBase(cost, cost);
 	}
 
@@ -213,7 +213,6 @@ export class EnergyClassCalculator extends CostCalculator {
 
 	static TAG_ENERGY_COST_MODS : Partial<Record<Exclude<PowerTag, Tag>, number>> = {
 		"half-on-miss": 10,
-		"pierce": 25,
 		"high-crit": 15,
 		"accurate": 10,
 		"inaccurate": -20,

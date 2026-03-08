@@ -123,6 +123,5 @@ const TAG_ADJUST_HP : Partial<Record<Exclude<PowerTag, Tag>, number>> = {
   "price-lower-for-shadow": 0,
   mobile: 5,
   "half-on-miss": 3,
-  "pierce": 5,
 };
 
