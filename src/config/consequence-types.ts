@@ -361,6 +361,7 @@ type CombatEffectConsequencesList =
 	| ({
 		combatEffect : "addStatus",
 		statusName: StatusEffect["id"],
+    potency: number,
 	} & DurationComponent)
 	| {
 		combatEffect: "removeStatus",

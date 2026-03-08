@@ -26,30 +26,31 @@
 
 {{#if (eqAny cons.combatEffect "addStatus")}}
 <select name="{{strcat namePrefix 'statusName' }}">
-	{{selectOptions POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
+  {{selectOptions POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
 </select>
+<input class="short" type=number name="{{strcat namePrefix 'potency'}}" value="{{defVal cons.potency 1}}">
 <span>
-	<select name="{{strcat namePrefix 'statusDuration'}}">
-		{{selectOptions POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusDuration}}
-	</select>
-	{{#if (eqAny cons.statusDuration "save") }}
-	<select name="{{strcat namePrefix 'saveType'}}">
-		{{selectOptions POWERSTUFF.SAVE_DIFFICULTY localize=true selected=cons.saveType}}
-	</select>
-	{{/if}}
-	{{#if (eqAny cons.statusDuration "X-days" "X-rounds" "X-exploration-turns") }}
-	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
-	{{/if}}
-	{{#if (eqAny cons.statusDuration "UEoNT" "USoNT" "UEoT") }}
-	<div>
-		<label>
-			Status Anchored to
-		</label>
-		<select name="{{strcat namePrefix 'durationApplyTo'}}">
-			{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cons.durationApplyTo}}
-		</select>
-	</div>
-	{{/if}}
+  <select name="{{strcat namePrefix 'statusDuration'}}">
+    {{selectOptions POWERSTUFF.STATUSDURATIONS localize=true selected=cons.statusDuration}}
+  </select>
+  {{#if (eqAny cons.statusDuration "save") }}
+  <select name="{{strcat namePrefix 'saveType'}}">
+    {{selectOptions POWERSTUFF.SAVE_DIFFICULTY localize=true selected=cons.saveType}}
+  </select>
+  {{/if}}
+  {{#if (eqAny cons.statusDuration "X-days" "X-rounds" "X-exploration-turns") }}
+  <input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+  {{/if}}
+  {{#if (eqAny cons.statusDuration "UEoNT" "USoNT" "UEoT") }}
+  <div>
+    <label>
+      Status Anchored to
+    </label>
+    <select name="{{strcat namePrefix 'durationApplyTo'}}">
+      {{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cons.durationApplyTo}}
+    </select>
+  </div>
+  {{/if}}
 </span>
 {{/if}}
 

@@ -1,43 +1,43 @@
 <div class="consequence-block" data-consequence-index="{{consequence_index}}" data-path="{{namePrefix}}">
-	 {{#if (neAll cons.type "alter-variable" "modifier" "modifier-new")}}
-	 {{#if (ne cons.applyToSelf undefined)}}
-	 <div>
-			<label>
-				 Apply to Self
-			</label>
-			<input type="checkbox" name="{{strcat namePrefix 'applyToSelf'}}" {{checked cons.applyToSelf}}>
-	 </div>
-	 {{else}}
-	 <div>
-			<label>
-				 Apply To
-			</label>
-			<select name="{{strcat namePrefix 'applyTo'}}">
-				 {{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cons.applyTo}}
-			</select>
-	 </div>
-	 {{/if}}
-	 {{/if}}
-	 <div class="type-select">
-			<select name="{{strcat namePrefix 'type'}}">
-				 {{selectOptions (deprecationList cons.type POWERSTUFF.NONDEP_CONSTYPES POWERSTUFF.CONSTYPES) localize=true selected=cons.type}}
-			</select>
-	 </div>
-	 {{#if (or (eq cons.type "addStatus") (eq cons.type "removeStatus"))}}
-	 <select name="{{strcat namePrefix 'statusName' }}">
-			{{selectOptions POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
-	 </select>
-	 {{/if}}
-	 {{#if (eqAny cons.type "addStatus" "set-flag")}}
-	 <div>
-			<label>
-			Status Tag
-			</label>
-			<select name="{{strcat namePrefix 'statusTagId'}}">
-				 {{selectOptions POWERSTUFF.STATUS_TAGS localize=true selected=cons.statusTagId}}
-			</select>
-
-	 </div>
+  {{#if (neAll cons.type "alter-variable" "modifier" "modifier-new")}}
+  {{#if (ne cons.applyToSelf undefined)}}
+  <div>
+    <label>
+      Apply to Self
+    </label>
+    <input type="checkbox" name="{{strcat namePrefix 'applyToSelf'}}" {{checked cons.applyToSelf}}>
+  </div>
+  {{else}}
+  <div>
+    <label>
+      Apply To
+    </label>
+    <select name="{{strcat namePrefix 'applyTo'}}">
+      {{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cons.applyTo}}
+    </select>
+  </div>
+  {{/if}}
+  {{/if}}
+  <div class="type-select">
+    <select name="{{strcat namePrefix 'type'}}">
+      {{selectOptions (deprecationList cons.type POWERSTUFF.NONDEP_CONSTYPES POWERSTUFF.CONSTYPES) localize=true selected=cons.type}}
+    </select>
+  </div>
+  {{#if (or (eq cons.type "addStatus") (eq cons.type "removeStatus"))}}
+  <select name="{{strcat namePrefix 'statusName' }}">
+    {{selectOptions POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusName}}
+  </select>
+  <input class="short" type=number name="{{strcat namePrefix 'potency'}}" value="{{defVal cons.potency 1}}">
+  {{/if}}
+  {{#if (eqAny cons.type "addStatus" "set-flag")}}
+  <div>
+    <label>
+      Status Tag
+    </label>
+    <select name="{{strcat namePrefix 'statusTagId'}}">
+      {{selectOptions POWERSTUFF.STATUS_TAGS localize=true selected=cons.statusTagId}}
+    </select>
+  </div>
 
 	 <span>
 			<select name="{{strcat namePrefix 'statusDuration'}}">

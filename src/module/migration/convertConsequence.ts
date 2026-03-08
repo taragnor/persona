@@ -42,6 +42,7 @@ export class ConsequenceConverter {
 					durationApplyTo: dep.durationApplyTo,
 					statusDuration: dep.statusDuration,
 					saveType: dep.saveType,
+          potency: dep.amount ?? 1,
 					applyTo,
 				};
 			case "removeStatus":

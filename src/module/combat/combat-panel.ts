@@ -24,12 +24,10 @@ export class CombatPanel extends SidePanel {
 		this.mode = "main";
 	}
 
-	get combat() : PersonaCombat {
-		const combat = game.combat as PersonaCombat;
-		if (!combat) {
-			ui.notifications.warn("No combat running");
-		}
-		return combat;
+	get combat() : U<PersonaCombat> {
+    const combat= PersonaCombat.combat;
+    if (combat && !combat.isSocial) {return combat;}
+    return undefined;
 	}
 
 	get allowGMPCControl () {
@@ -186,7 +184,8 @@ export class CombatPanel extends SidePanel {
 		const actor = this.target?.actor;
 		const persona = actor?.persona();
 		const token = this.target;
-		const combatant = this.combat.getCombatantByActor(actor as ValidAttackers);
+    if (!this.combat) {return {};}
+		const combatant = this.combat?.getCombatantByActor(actor as ValidAttackers);
 		let engagedList : PersonaCombatant[] = [];
 		if (combatant && PersonaCombat.isPersonaCombatant(combatant))  {
 		engagedList = this.combat.getAllEngagedEnemies(combatant);
@@ -220,6 +219,11 @@ export class CombatPanel extends SidePanel {
 		await this.updatePanel({});
 	}
 
+  override async updatePanel(templateData: Record<string, unknown> = {}) {
+    if (this.combat == undefined) {this.clearPanel(); return;}
+    return await super.updatePanel(templateData);
+  }
+
 	private async _onReturnToMainButton(ev: JQuery.ClickEvent) {
 		if (this.mode == "main") {return;}
 		ev.stopPropagation();
@@ -250,8 +254,8 @@ export class CombatPanel extends SidePanel {
 	}
 
 	private async _onSelectEndTurn( _ev: JQuery.ClickEvent) {
-		if (this._target != this.combat.combatant?.token) {return;}
-		await this.combat.nextTurn();
+		if (this._target != this.combat?.combatant?.token) {return;}
+		await this.combat?.nextTurn();
 	}
 
 	private async _onSelectFollowUp(ev: JQuery.ClickEvent) {

@@ -207,7 +207,7 @@ export class CombatResult  {
 						 }
 						 effect.addStatus.push({
 							 id,
-							 potency: Math.abs(status_damage ?? cons.amount ?? 0),
+							 potency: Math.abs(status_damage ?? cons.potency ?? 1),
 							 duration,
 						 });
 					 }
