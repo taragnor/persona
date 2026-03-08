@@ -1262,7 +1262,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.tagListPartial().includes(tag);
 	}
 
-  private getCacheValue<T extends keyof PersonaClassCache> (key: T, refreshFn: ( ()=> PersonaClassCache[T])): NonNullable<PersonaClassCache[T]> {
+  private getCacheValue<T extends keyof PersonaClassCache> (key: T, refreshFn: ( ()=> NonNullable<PersonaClassCache[T]>)): NonNullable<PersonaClassCache[T]> {
+    if (!PersonaSettings.agressiveCaching()) {
+      return refreshFn();
+    }
     const data = this.#cache[key];
     if (data != undefined) {
       return data;

@@ -271,8 +271,6 @@ type SituationUniversal = {
 	"triggering-character" ?: never;
 } & (RollSituation | NonRollSituation);
 
-
-
 declare global {
 	type Situation = SituationType;
 }

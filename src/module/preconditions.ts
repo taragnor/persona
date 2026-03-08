@@ -837,23 +837,42 @@ export function getSubjectActors<K extends string, T extends Sourced<Record<K, C
 	return subjects;
 }
 
-export function getSubjectPersonas<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K) : Persona[] {
-    let memory = PersonaMemory.get(situation);
+function getSubjectPersonas<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K) : Persona[] {
+  // let memory = PersonaCache.get(situation);
+  // if (!memory) {
+  // const memcell = {};
+  // PersonaCache.set(situation, memcell);
+  // memory = memcell;
+  // }
+  // if (memory[field]) {return memory[field]; }
+  return accessPersonaCache(situation, field, ()=> {
+    const subjects = getSubjects(cond, situation, field)
+      .map( subject => {
+        if (subject instanceof TokenDocument) {
+          subject = subject.actor;
+        }
+        return subject.persona();
+      });
+    return subjects;
+  });
+  // memory[field] = subjects;
+  // return subjects;
+}
+
+function accessPersonaCache(situation: Situation, dataLoc: string, creatorFn: () => Persona[]) : Persona[] {
+  if (!PersonaSettings.agressiveCaching()) {
+    return creatorFn();
+  }
+  let memory = PersonaCache.get(situation);
   if (!memory) {
     const memcell = {};
-    PersonaMemory.set(situation, memcell);
+    PersonaCache.set(situation, memcell);
     memory = memcell;
   }
-  if (memory[field]) {return memory[field]; }
-	const subjects = getSubjects(cond, situation, field)
-  .map( subject => {
-    if (subject instanceof TokenDocument) {
-      subject = subject.actor;
-    }
-    return subject.persona();
-  });
-  memory[field] = subjects;
-  return subjects;
+  if (memory[dataLoc]) {return memory[dataLoc]; }
+  const newData = creatorFn();
+  memory[dataLoc] = newData;
+  return newData;
 }
 
 export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, situation: Situation, source: N<Sourced<object>["source"]>): NPC | PC | undefined {
@@ -1369,6 +1388,6 @@ function resolveSocialAvailabilityCheck(condition: SourcedPrecondition & {type: 
 	}
 }
 
-const PersonaMemory : WeakMap<Situation, PersonaData>= new WeakMap();
+const PersonaCache : WeakMap<Situation, PersonaData>= new WeakMap();
 
 type PersonaData = Record<string, U<Persona[]>>;
