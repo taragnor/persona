@@ -4,6 +4,8 @@ import { PersonaError } from "../module/persona-error.js";
 
 const PERSONA_ICONS_PATH = "systems/persona/img/icon" as const;
 
+export const BUFF_MAX_POTENCY = 2;
+
 export const STATUS_EFFECT_LIST = [
 	{
 		id: "burn",
@@ -87,14 +89,14 @@ export const STATUS_EFFECT_LIST = [
 		id: "mouse",
 		icon: "icons/creatures/mammals/rodent-rat-green.webp",
 		tags: ["baneful", "distracting"],
-	}, {
-		id: "buffed",
-		icon:  "icons/svg/upgrade.svg",
-		tags: [],
-	}, {
-		id: "debuffed",
-		icon:  "icons/svg/downgrade.svg",
-		tags: [],
+	// }, {
+		// id: "buffed",
+		// icon:  "icons/svg/upgrade.svg",
+		// tags: [],
+	// }, {
+		// id: "debuffed",
+		// icon:  "icons/svg/downgrade.svg",
+		// tags: [],
 	}, {
 		id: "defense-boost",
 		icon:  "icons/svg/mountain.svg",

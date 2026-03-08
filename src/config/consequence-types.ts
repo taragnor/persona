@@ -812,10 +812,19 @@ type GenericActorProperty = {
 	property: Exclude<ConsAmountActorProperty, SpecificActorProperty["property"]>
 }
 
-type SpecificActorProperty = {
+type SpecificActorProperty =
+  LinkLevelProperty
+  | StatusPotency;
+
+type LinkLevelProperty = {
 	property : "linkLevelWith",
 	socialLinkIdOrTarot : SocialLinkIdOrTarot,
 };
+
+type StatusPotency = {
+  property: "statusPotency",
+  statusId: StatusEffectId,
+}
 
 
 export type AmountOperation = {
@@ -875,6 +884,7 @@ const CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST = [
 	"theurgyVal",
 	"linkLevelWith",
 	"batonPassLevel",
+  "statusPotency",
 ] as const;
 
 type ConsAmountActorProperty = typeof CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST[number];

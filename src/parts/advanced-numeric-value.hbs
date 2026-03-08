@@ -61,6 +61,12 @@
 	</select>
 {{/if}}
 
+{{#if (eqAny cons.property "statusPotency")}}
+	<select name="{{strcat namePrefix 'statusId'}}">
+		{{selectOptions POWERSTUFF.STATUS_EFFECT_TRANSLATION_TABLE localize=true selected=cons.statusId}}
+	</select>
+{{/if}}
+
 {{/if}}
 
 </span>

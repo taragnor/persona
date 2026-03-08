@@ -1746,67 +1746,65 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return PersonaAE.durationLessThanOrEqualTo(status.duration, {dtype: "combat"});
 	}
 
-	/** returns true if status is added*/
-	async addStatus(statusEffect: StatusEffect, ignoreFatigue= false): Promise<boolean> {
-		const {id, potency, duration} = statusEffect;
-		try {
-			if (!ignoreFatigue && statusMap?.get(id)?.tags.includes("fatigue")) {
-				const lvl = statusToFatigueLevel(id as FatigueStatusId);
-				const oldLvl = this.fatigueLevel;
-				await this.setFatigueLevel(lvl);
-				const newLvl = this.fatigueLevel;
-				return oldLvl != newLvl;
-			}
-			if (this.downResistNewStatus(statusEffect)) {
-				return false;
-			}
-			if (await this.isStatusResisted(id)) {return false;}
-			const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
-			if (!stateData) {
-				throw new Error(`Couldn't find status effect Id: ${id}`);
-			}
-			const eff = this.effects.find( eff => eff.statuses.has(id));
-			if (!eff) {
-				const s = [id];
-				const newState = {
-					...stateData,
-					name: game.i18n.localize(stateData.name as LocalizationString),
-					statuses: s
-				};
-				if (await this.checkStatusNullificaton(id)) {return false;}
-				if (this.isValidCombatant()) {
-					const situation: Situation ={
-						triggeringCharacter: this.accessor,
-						triggeringUser: game.user,
-						user: this.accessor,
-						statusEffect: id,
-						target: this.accessor,
-					};
-					const ret = (await TriggeredEffect.onTrigger("pre-inflict-status", this, situation)).finalize();
-					await ret
-						.emptyCheck()
-						?.toMessage("Response to acquiring Status", this);
-					if (ret.hasCancelRequest()) {return false;}
-					const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
-					if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
-						await this.setHP(0);
-					}
-				}
-				const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
-				await newEffect.setPotency(potency ?? 0);
-				const adjustedDuration = this.getAdjustedDuration(duration, id);
-				await newEffect.setDuration(adjustedDuration);
-				return true;
-			} else  {
-				await eff.mergeDuration(duration);
-			}
-			//TODO: update the effect
-			return false;
-		} catch (e) {
-			PersonaError.softFail(`Error adding status :${id}`, e);
-			return false;
-		}
-	}
+  /** returns true if status is added*/
+  async addStatus(statusEffect: StatusEffect, ignoreFatigue= false): Promise<boolean> {
+    const {id, duration} = statusEffect;
+    try {
+      if (!ignoreFatigue && statusMap?.get(id)?.tags.includes("fatigue")) {
+        const lvl = statusToFatigueLevel(id as FatigueStatusId);
+        const oldLvl = this.fatigueLevel;
+        await this.setFatigueLevel(lvl);
+        const newLvl = this.fatigueLevel;
+        return oldLvl != newLvl;
+      }
+      if (this.downResistNewStatus(statusEffect)) {
+        return false;
+      }
+      if (await this.isStatusResisted(id)) {return false;}
+      const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
+      if (!stateData) {
+        throw new Error(`Couldn't find status effect Id: ${id}`);
+      }
+      const eff = this.effects.find( eff => eff.statuses.has(id));
+      if (eff) {
+        await eff.mergeStatus(statusEffect);
+        return false;
+      }
+      if (await this.checkStatusNullificaton(statusEffect)) {return false;}
+      if (this.isValidCombatant()) {
+        const situation: Situation ={
+          triggeringCharacter: this.accessor,
+          triggeringUser: game.user,
+          user: this.accessor,
+          statusEffect: id,
+          target: this.accessor,
+        };
+        const ret = (await TriggeredEffect.onTrigger("pre-inflict-status", this, situation)).finalize();
+        await ret
+          .emptyCheck()
+          ?.toMessage("Response to acquiring Status", this);
+        if (ret.hasCancelRequest()) {return false;}
+        const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
+        if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
+          await this.setHP(0);
+        }
+      }
+      const newState = {
+        ...stateData,
+        name: game.i18n.localize(stateData.name as LocalizationString),
+        statuses: [id]
+      };
+      const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
+      //potency can change in checkStatusNullification so its important to wait to unpack it until here
+      await newEffect.setPotency(statusEffect.potency || 1);
+      const adjustedDuration = this.getAdjustedDuration(duration, id);
+      await newEffect.setDuration(adjustedDuration);
+      return true;
+    } catch (e) {
+      PersonaError.softFail(`Error adding status :${id}`, e);
+      return false;
+    }
+  }
 
 	getAdjustedDuration( duration: StatusDuration, id: StatusEffect["id"]) : StatusDuration {
 		if (!this.isValidCombatant()) {return duration;}
@@ -1907,9 +1905,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	/** returns true if nullfied **/
-	async checkStatusNullificaton(statusId: StatusEffectId) : Promise<boolean> {
+	private async checkStatusNullificaton(newStatus: StatusEffect) : Promise<boolean> {
 		let cont = false;
 		const remList : StatusEffectId[] = [];
+    const {id: statusId, potency} = newStatus;
 		switch (statusId) {
 			case "defense-boost":
 				remList.push("defense-nerf");
@@ -1938,14 +1937,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 		let removed =0;
 
-		for (const id of remList) {
-			if (this.hasStatus(id)) {
-				removed++;
-				await this.removeStatus(id);
-			}
-		}
-		return removed > 0 && !cont;
-	}
+    for (const id of remList) {
+      if (this.hasStatus(id)) {
+        const newPotency = await this.getStatus(id)!.reducePotency(potency || 1);
+        if (this.hasStatus(id) || newPotency == 0) {
+          removed++;
+        }
+        newStatus.potency = newPotency;
+        // await this.removeStatus(id);
+      }
+    }
+    return removed > 0 && !cont;
+  }
 
 	/** removes all statuses that have a given status tag*/
 	async removeStatusesOfType( statusPropertyTag: typeof STATUS_EFFECT_LIST[number]["tags"][number])  : Promise<void> {
