@@ -46,6 +46,7 @@ import {ConditionalEffectC} from '../conditionalEffects/conditional-effect-class
 import {changeProbability, PROBABILITIES_POWER_RARITY} from '../../config/probability.js';
 import {PersonaAE} from '../persona-ae.js';
 import {CombatEngine} from '../combat/combat-engine.js';
+import {sleep} from '../utility/async-wait.js';
 
 declare global {
 	type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -1585,37 +1586,37 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 		`;
 	}
 
-	async estimateDamage(this: Usable, user: ValidAttackers, target: N<PToken>) : Promise<{low: number, high: number}> {
-		switch (this.system.subtype) {
-			case 'social-link':
-			case 'passive':
-			case 'other':
-			case 'none':
-			case 'defensive':
-			case 'downtime':
-				return {high: 0, low:0};
-			case 'reusable':
-			case 'consumable':
-			case 'standalone': {
-				return {
-					high: Math.abs((await this.generateSimulatedDamageObject(user, 6, target))?.damage.hpChange ?? 0),
-					low: Math.abs((await this.generateSimulatedDamageObject(user, 5, target))?.damage.hpChange ?? 0) ,
-				};
-			}
-			case 'weapon':
-			case 'magic':
-				if (this.system.damageLevel == 'none') {
-					return {high: 0, low:0};
-				}
-				return {
-					high: Math.abs((await this.generateSimulatedDamageObject(user, 6, target))?.damage?.hpChange ?? 0),
-					low: Math.abs((await this.generateSimulatedDamageObject(user, 5, target))?.damage?.hpChange ?? 0) ,
-				};
-			default:
-				this.system satisfies never;
-				return {high: -1, low:-1};
-		}
-	}
+  async estimateDamage(this: Usable, user: ValidAttackers, target: N<PToken>) : Promise<{low: number, high: number}> {
+    if ("damageLevel" in this.system && this.system.damageLevel == "none") {
+      return {high: 0, low:0};
+    }
+    switch (this.system.subtype) {
+      case 'social-link':
+      case 'passive':
+      case 'other':
+      case 'none':
+      case 'defensive':
+      case 'downtime':
+        return {high: 0, low:0};
+      case 'reusable':
+      case 'consumable':
+      case 'standalone':
+      case 'weapon':
+      case 'magic': {
+        const high = await this.generateSimulatedDamageObject(user, 6, target);
+        //allow wait period to make it slightly more performant
+        await sleep(10);
+        const low = await this.generateSimulatedDamageObject(user, 5, target);
+        return {
+          high: Math.abs(high?.damage.hpChange ?? 0),
+          low: Math.abs(low?.damage.hpChange ?? 0) ,
+        };
+      }
+      default:
+        this.system satisfies never;
+        return {high: -1, low:-1};
+    }
+  }
 
 	isMinorActionItem() : boolean {
 		if (this.isSocialCard() && this.system.cardType == "minor") {return true;}
@@ -2470,7 +2471,7 @@ async setPowerCost(this: Power, required: number, cost: number) {
 
 targetMeetsConditions(this: UsableAndCard, user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
 	if (target.hasStatus('protected') && user != target) {return false;}
-	if (this.system.type == 'skillCard') {return target.canLearnNewSkill();}
+	if (this.system.type == 'skillCard') {return target.powerLearning().canLearnNewSkill();}
 	const usable = this as Usable;
 	if (!usable.system.validTargetConditions) {return true;}
 	const conditions  = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user, this);

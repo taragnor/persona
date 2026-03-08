@@ -26,6 +26,7 @@ export class PersonaSettings {
 		const cache = {
 			debugMode: undefined as U<boolean>,
 			aggressiveCaching: undefined as U<boolean>,
+      aurasEnabled: undefined as U<boolean>,
 		};
 		this.cache = cache;
 		return cache;
@@ -45,11 +46,23 @@ export class PersonaSettings {
 		return !realGame && debugMode;
 	}
 
+  static aurasEnabled() : boolean {
+		const aurasMode  = this._aurasMode();
+		return aurasMode;
+  }
+
 	private static _debugModeSetting() : boolean {
 		if (this.cache.debugMode == undefined) {
 			this.cache.debugMode = this.get("debugMode").valueOf();
 		}
 		return this.cache.debugMode;
+	}
+
+	private static _aurasMode() : boolean {
+		if (this.cache.aurasEnabled == undefined) {
+			this.cache.aurasEnabled = this.get("aurasEnabled").valueOf();
+		}
+		return this.cache.aurasEnabled;
 	}
 
 	 static combatPanel(): boolean {
@@ -143,6 +156,17 @@ const SETTINGS = {
 		config: true,
 		type :Boolean,
 		default: true,
+	},
+
+	"aurasEnabled": {
+		name: "Aura Effects",
+		hint: "Check for aura effects (Performance drain)",
+		scope: "world",
+		restricted: true,
+		config: true,
+		type: Boolean,
+		default:false,
+		onChange: (_newVal) => {PersonaSettings.resetCache();}
 	},
 
 	"debugMode" : {

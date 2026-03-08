@@ -273,7 +273,6 @@ type SituationUniversal = {
 
 
 
-
 declare global {
 	type Situation = SituationType;
 }

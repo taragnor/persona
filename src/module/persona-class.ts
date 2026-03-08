@@ -24,6 +24,7 @@ import {PersonaStat} from "../config/persona-stats.js";
 import {Calculation, EvaluatedCalculation} from "./utility/calculation.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {ConditionalEffectPrinter} from "./conditionalEffects/conditional-effect-printer.js";
+import {PersonaAura} from "./persona-auras.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
 	#combatStats: U<PersonaCombatStats>;
@@ -52,6 +53,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 			defensiveModifiers : undefined,
 			nearbyAuras: undefined,
 			mainModifiersList : undefined,
+      tagListPartial: undefined,
 		};
 	}
 
@@ -420,7 +422,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		};
 	}
 
-
 	get pLevel() : number {
 		return this.source.system.combat.personaStats.pLevel;
 	}
@@ -582,19 +583,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.#cache.nearbyAuras;
 	}
 
-	private _aurasInRange() : ConditionalEffectC[] {
-		//TODO: temporary code to fix performance
-		return [];
-		// const combat = PersonaCombat.combat;
-		// if (combat && !combat.isSocial) {
-		// 	return combat.combatants.contents.flatMap(
-		// 		comb => comb.actor ? comb.actor.activeAuras() : []);
-		// }
-		// if (this.user.isPC() || this.user.isNPCAlly()) {
-		// 	return PersonaDB.PCParty().flatMap( actor => actor.activeAuras());
-		// }
-		// return this.myAuraEffects();
-	}
+  private _aurasInRange() : ConditionalEffectC[] {
+    if (!PersonaSettings.aurasEnabled()) {
+    //TODO: temporary code to fix performance
+      return [];
+    }
+    return PersonaAura.activeAuras(this);
+  }
 
 	passiveOrTriggeredPowers() : readonly Power[] {
 		const PersonaCaching = this.canCache({});
@@ -1230,7 +1225,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				}
 				break;
 			case "skillCard":
-				if(!this.user.canLearnNewSkill()) {
+				if(!this.user.powerLearning().canLearnNewSkill()) {
 					return "You have no space left to learn";
 				}
 		}
@@ -1267,13 +1262,31 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.tagListPartial().includes(tag);
 	}
 
-	tagListPartial() : (PersonaTag | Tag["id"] | InternalCreatureTag)[] {
-		type ret = (PersonaTag | Tag["id"] | InternalCreatureTag)[];
-		const base = this.source.system.combat.personaTags.slice() as ret;
-		base.pushUnique (...this.source.system.creatureTags);
-		base.pushUnique(...this._autoTags());
-		return base;
-	}
+  private getCacheValue<T extends keyof PersonaClassCache> (key: T, refreshFn: ( ()=> PersonaClassCache[T])): NonNullable<PersonaClassCache[T]> {
+    const data = this.#cache[key];
+    if (data != undefined) {
+      return data;
+    }
+    this.#cache[key] = refreshFn();
+    return this.#cache[key]!;
+  }
+
+  tagListPartial() : (PersonaTag | Tag["id"] | InternalCreatureTag)[] {
+    return this.getCacheValue("tagListPartial", () => {
+      type ret = (PersonaTag | Tag["id"] | InternalCreatureTag)[];
+      const base = this.source.system.combat.personaTags.slice() as ret;
+      base.pushUnique (...this.source.system.creatureTags);
+      base.pushUnique(...this._autoTags());
+      base.pushUnique(...this._getConferredTags());
+      return base;
+    });
+  }
+
+  private _getConferredTags() {
+    const extraTags = this.mainModifiers({omitPowers:true, omitTalents: true, omitTags: true, omitAuras: true})
+      .flatMap( CE=> PersonaItem.getConferredTags(CE , this.user));
+    return extraTags;
+  }
 
 	private _autoTags() : PersonaTag[] {
 		const autoPTags :PersonaTag[]= [];
@@ -1405,6 +1418,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return maxEnergy;
 	}
 
+  get hp() : number {
+    return this.user.hp;
+  }
+
 	get mhp() : number {
 		return Math.round(this.combatStats.mhpCalculation().total);
 	}
@@ -1435,6 +1452,19 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		return this.source.compendiumEntry;
 	}
 
+  get maxPowers() : number {
+    if (this.source.isNPCAlly()) {
+      return 8;
+    }
+    const extraMaxPowers = this.getBonusesIgnoreAuras("extraMaxPowers");
+    return 8 + extraMaxPowers.total ( {user: this.user.accessor});
+  }
+
+  get sideboardPowers() : Power[] {
+    return this.user.sideboardPowers;
+  }
+
+
 } // end of class
 
 
@@ -1444,6 +1474,7 @@ interface PersonaClassCache {
 	defensiveModifiers: U<ConditionalEffectC[]>;
 	nearbyAuras:  U<ConditionalEffectC[]>;
 	mainModifiersList: U<readonly ModifierContainer[]>;
+  tagListPartial: U<(PersonaTag | Tag["id"] | InternalCreatureTag)[]>;
 }
 
 export interface MainModifierOptions {

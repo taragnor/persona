@@ -14,6 +14,7 @@ import { PersonaActorSheetBase } from "./actor-sheet.base.js";
 import {Persona} from "../../persona-class.js";
 import {CombatEngine} from "../../combat/combat-engine.js";
 import {antiLoop} from "../../utility/anti-loop.js";
+import {sleep} from "../../utility/async-wait.js";
 
 export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	declare actor: ValidAttackers;
@@ -381,6 +382,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!power) {return;}
 		const persona = this.actor.persona();
 		const damage = await CombatantSheetBase.getDamage(persona, power);
+    await sleep(10);//allow Async break to allow rendering (smooth behavior)
 		const balanceReport = await this.getBalanceTest(power as Usable);
 		const ailmentRange = CombatEngine.calculateAilmentRange(persona, persona, power as Usable, null);
 		const instantDeathRange = CombatEngine.calculateInstantDeathRange(persona, persona, power as Usable, null);

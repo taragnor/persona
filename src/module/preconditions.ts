@@ -33,6 +33,7 @@ import {ResolvedActorChange} from "./combat/finalized-combat-result.js";
 import {PersonaItem} from "./item/persona-item.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaAE} from "./persona-ae.js";
+import {Persona} from "./persona-class.js";
 
 /** @deprecated Use ConditionalEffectC.getActiveConsequences instead */
 export function getActiveConsequences(condEffect: ConditionalEffectC, situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {
@@ -51,7 +52,7 @@ export function testPreconditions(conditionArr: readonly SourcedPrecondition[], 
 	}
 }
 
-export function testPrecondition (condition: SourcedPrecondition, situation:Situation) : boolean {
+export function testPrecondition (condition: SourcedPrecondition, situation: Situation) : boolean {
 	switch (condition.type) {
 		case "always":
 			return true;
@@ -836,6 +837,25 @@ export function getSubjectActors<K extends string, T extends Sourced<Record<K, C
 	return subjects;
 }
 
+export function getSubjectPersonas<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K) : Persona[] {
+    let memory = PersonaMemory.get(situation);
+  if (!memory) {
+    const memcell = {};
+    PersonaMemory.set(situation, memcell);
+    memory = memcell;
+  }
+  if (memory[field]) {return memory[field]; }
+	const subjects = getSubjects(cond, situation, field)
+  .map( subject => {
+    if (subject instanceof TokenDocument) {
+      subject = subject.actor;
+    }
+    return subject.persona();
+  });
+  memory[field] = subjects;
+  return subjects;
+}
+
 export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, situation: Situation, source: N<Sourced<object>["source"]>): NPC | PC | undefined {
 	if (socialLinkIdOrTarot == undefined ) {return undefined;}
 	let targetIdOrTarot : SocialLinkIdOrTarot | undefined = socialLinkIdOrTarot;
@@ -1202,9 +1222,9 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
 		if (combat && !combat.isSocial) {return true;}
 		return false;
 	}
-	const subjects = getSubjects(condition, situation, "conditionTarget");
+	const subjects = getSubjectPersonas(condition, situation, "conditionTarget");
 	if (!subjects || !subjects.at(0)) {return undefined;}
-	const combat = game.combat as PersonaCombat;
+	const combat = PersonaCombat.combat;
 	switch (condition.combatProp) {
 		case "engaged": {
 			if (!combat) {return undefined;}
@@ -1212,7 +1232,7 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
 				if (subject instanceof PersonaActor) {
 					if (subject.isNPC()) {return false;}
 				}
-				const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken((subject).accessor);
+				const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken((subject.user).accessor);
 				if (!subjectToken) {
 					// PersonaError.softFail(`Can't find token for ${subject?.name}`);
 					return false;
@@ -1222,8 +1242,9 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
 		}
 		case "is-dead": {
 			return subjects.some( target => {
-				const targetActor = target instanceof PersonaActor ? target : target.actor;
-				return targetActor.hp <= 0;
+        return target.hp <= 0;
+				// const targetActor = target instanceof PersonaActor ? target : target.actor;
+				// return targetActor.hp <= 0;
 			});
 		}
 		case "struck-weakness": {
@@ -1231,21 +1252,21 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
 				return false;
 			}
 			for (const target of subjects) {
-				const targetActor = target instanceof PersonaActor ? target : target.actor;
+				// const targetActor = target instanceof PersonaActor ? target : target.actor;
 				const power = PersonaDB.findItem(situation.usedPower);
-				if (targetActor.system.type == "npc") {continue;}
 				if (power.system.type == "skillCard") {continue;}
 				if (!situation.attacker) {continue;}
 				const attacker = PersonaDB.findActor(situation?.attacker);
-				const resist = (targetActor as PC | Shadow).persona().elemResist((power as Usable).getDamageType(attacker));
+				const resist = target.elemResist((power as Usable).getDamageType(attacker));
 				if (resist == "weakness") {return true;}
 			}
 			return false;
 		}
 		case "is-distracted": {
-			const target = getSubjectActors(condition, situation,  "conditionTarget")[0];
+      const target= subjects.at(0);
+			// const target = getSubjectActors(condition, situation,  "conditionTarget")[0];
 			if (!target) {return undefined;}
-			return target.isDistracted();
+			return target.user.isDistracted();
 		}
 		case "engaged-with" : {
 			if (!combat) {return undefined;}
@@ -1267,7 +1288,7 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
 		}
 		case "is-resistant-to": {
 			return subjects.some( target => {
-				const targetActor = target instanceof PersonaActor ? target : target.actor;
+				// const targetActor = target instanceof PersonaActor ? target : target.actor;
 				const arr = typeof condition.powerDamageType == "string" ? [condition.powerDamageType] : multiCheckToArray(condition.powerDamageType);
 				return arr.some( dtype => {
 					if (dtype == "by-power") {
@@ -1278,8 +1299,8 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
 						const attacker = PersonaDB.findActor(situation?.attacker);
 						dtype = (power as Usable).getDamageType(attacker);
 					}
-					if (targetActor.system.type == "npc") {return undefined;}
-					const resist = (targetActor as PC | Shadow).persona().elemResist(dtype);
+					// if (targetActor.system.type == "npc") {return undefined;}
+					const resist = target.elemResist(dtype);
 					switch (resist) {
 						case "resist": case "block": case "absorb": case "reflect": return true;
 						case "weakness": case "normal": return  false;
@@ -1302,7 +1323,6 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
 		default:
 			condition satisfies never;
 	}
-
 
 }
 
@@ -1348,3 +1368,7 @@ function resolveSocialAvailabilityCheck(condition: SourcedPrecondition & {type: 
 			return undefined;
 	}
 }
+
+const PersonaMemory : WeakMap<Situation, PersonaData>= new WeakMap();
+
+type PersonaData = Record<string, U<Persona[]>>;

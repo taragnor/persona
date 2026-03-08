@@ -408,7 +408,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	hasTag(this: ValidAttackers ,tag : CreatureTag  ): boolean {
-		return this.tagListPartial.some( (t : string | Tag) => t instanceof PersonaItem ? t.system.linkedInternalTag == tag : tag == t);
+		return this.tagListRaw.some( (t : string | Tag) => t instanceof PersonaItem ? t.system.linkedInternalTag == tag : tag == t);
 	}
 
 	get nonUsableInventory() : (SkillCard | InvItem | Weapon)[] {
@@ -1365,21 +1365,21 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	get maxPowers() : number {
-		if (!this.isValidCombatant()) {return 0;}
-		switch (this.system.type) {
-			case "npcAlly":
-				return 8;
-			case "pc":
-			case "shadow": {
-				const extraMaxPowers = this.persona().getBonuses("extraMaxPowers");
-				return 8 + extraMaxPowers.total ( {user: (this as PC | Shadow).accessor});
-			}
-			default:
-				this.system satisfies never;
-				return -1;
-		}
-	}
+	// get maxPowers() : number {
+	// 	if (!this.isValidCombatant()) {return 0;}
+	// 	switch (this.system.type) {
+	// 		case "npcAlly":
+	// 			return 8;
+	// 		case "pc":
+	// 		case "shadow": {
+	// 			const extraMaxPowers = this.persona().getBonuses("extraMaxPowers");
+	// 			return 8 + extraMaxPowers.total ( {user: (this as PC | Shadow).accessor});
+	// 		}
+	// 		default:
+	// 			this.system satisfies never;
+	// 			return -1;
+	// 	}
+	// }
 
 	// async addNavigatorSkill(this: NPCAlly, pwr: Power) {
 	// 	this.system.combat.navigatorSkills.pushUnique(pwr.id);
@@ -2702,20 +2702,20 @@ async  setClass(this: ValidAttackers, cClass: CClass) {
 	await Logger.sendToChat(`${this.displayedName} changes class to ${cClass.name}`);
 }
 
-canLearnNewSkill() : boolean {
-	switch (this.system.type) {
-		case "shadow":
-		case "npc":
-		case "tarot":
-			return false;
-		case "npcAlly":
-		case "pc":
-			return this.maxPowers - this.mainPowers.length - this.sideboardPowers.length >= 0;
-		default:
-			this.system satisfies never;
-			return false;
-	}
-}
+// canLearnNewSkill() : boolean {
+// 	switch (this.system.type) {
+// 		case "shadow":
+// 		case "npc":
+// 		case "tarot":
+// 			return false;
+// 		case "npcAlly":
+// 		case "pc":
+// 			return this.maxPowers - this.mainPowers.length - this.sideboardPowers.length >= 0;
+// 		default:
+// 			this.system satisfies never;
+// 			return false;
+// 	}
+// }
 
 getSocialStat(this: PC, socialStat: SocialStat) : ModifierList {
 	const stat = this.system.skills[socialStat];
@@ -4255,7 +4255,7 @@ onRevive() : Promise<void> {
 
 
 get tagListNames(): string[] {
-	return this.tagListPartial
+	return this.tagListRaw
 		.map( tag=> {
 			return PersonaDB.allTags().get(tag as Tag["id"])?.displayedName?.toString()
 				?? tag;
@@ -4263,7 +4263,7 @@ get tagListNames(): string[] {
 }
 
 realTags() : Tag[] {
-	const ret =  this.tagListPartial.flatMap( tag => {
+	const ret =  this.tagListRaw.flatMap( tag => {
 		const x = PersonaItem.searchForPotentialTagMatch(tag);
 		if (x) {return [x];}
 		else {return [];}
@@ -4271,57 +4271,56 @@ realTags() : Tag[] {
 	return ret;
 }
 
-get tagListPartial() : (InternalCreatureTag | Tag["id"] | PersonaTag)[] {
-	//NOTE: This is a candidate for caching
-	if (this.isTarot()) { return []; }
-	const list : (Tag["id"] | InternalCreatureTag | PersonaTag)[] = this.system.creatureTags.slice();
-	if (this.isValidCombatant()) {
-		list.pushUnique(...this.persona().tagListPartial()
-		);
-	}
-	if (this.isValidCombatant()) {
-		const extraTags = this.mainModifiers({omitPowers:true, omitTalents: true, omitTags: true, omitAuras: true})
-			.flatMap( CE=> PersonaItem.getConferredTags(CE , this as ValidAttackers));
-		for (const tag of extraTags) {
-			if (!list.includes(tag))
-			{list.pushUnique(tag);}
-		}
-	}
-	switch (this.system.type) {
-		case "pc":
-			if (!list.includes("pc")) {
-				list.pushUnique("pc");
-			}
-			return list;
-		case "npcAlly":
-			if (!list.includes("npc-ally")) {
-				list.pushUnique("npc-ally");
-			}
-			return list;
-		case "npc": return list;
-		case "shadow": {
-			list.pushUnique(this.system.creatureType as InternalCreatureTag);
-			if (this.system.creatureType == "d-mon" && this.hasPlayerOwner) {
-				list.pushUnique("pc-d-mon");
-			}
-			return list;
-		}
-		case "tarot":
-			return [];
-		default:
-			this.system satisfies never;
-			return [];
-	}
+get tagListRaw() : (InternalCreatureTag | Tag["id"] | PersonaTag)[] {
+  //NOTE: This is a candidate for caching
+  if (this.isTarot()) { return []; }
+  const list : (Tag["id"] | InternalCreatureTag | PersonaTag)[] = this.system.creatureTags.slice();
+  if (this.isValidCombatant()) {
+    const persona = this.persona();
+    list.pushUnique(...persona.tagListPartial()
+    );
+    // const extraTags = persona.mainModifiers({omitPowers:true, omitTalents: true, omitTags: true, omitAuras: true})
+    //   .flatMap( CE=> PersonaItem.getConferredTags(CE , this as ValidAttackers));
+    // for (const tag of extraTags) {
+    //   if (!list.includes(tag))
+    //   {list.pushUnique(tag);}
+    // }
+  }
+  switch (this.system.type) {
+    case "pc":
+      if (!list.includes("pc")) {
+        list.pushUnique("pc");
+      }
+      return list;
+    case "npcAlly":
+      if (!list.includes("npc-ally")) {
+        list.pushUnique("npc-ally");
+      }
+      return list;
+    case "npc": return list;
+    case "shadow": {
+      list.pushUnique(this.system.creatureType as InternalCreatureTag);
+      if (this.system.creatureType == "d-mon" && this.hasPlayerOwner) {
+        list.pushUnique("pc-d-mon");
+      }
+      return list;
+    }
+    case "tarot":
+      return [];
+    default:
+      this.system satisfies never;
+      return [];
+  }
 }
 
 get tagList() : (Tag | InternalCreatureTag)[] {
-	return this.tagListPartial
+	return this.tagListRaw
 		.map(tag => PersonaItem.searchForPotentialTagMatch(tag) ?? (tag as InternalCreatureTag));
 }
 
 hasCreatureTag(tagOrTagName: CreatureTag | Tag["id"]) : boolean{
 	const tag = tagOrTagName instanceof PersonaItem ? tagOrTagName : PersonaDB.allTags().get(tagOrTagName as Tag["id"]);
-	const tagList : string[] = this.tagListPartial;
+	const tagList : string[] = this.tagListRaw;
 	if (!tag) {
 		return tagList.includes(tagOrTagName as typeof tagList[number]);
 	}

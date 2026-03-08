@@ -159,6 +159,12 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 		return false;
 	}
 
+  canLearnNewSkill() : boolean {
+    const actor = this.actor;
+    const persona = actor.basePersona;
+    return persona.maxPowers - persona.mainPowers.length - persona.sideboardPowers.length >= 0;
+  }
+
 	async tryToAddToSideboard( power: Power, logChanges: boolean) : Promise<boolean> {
 		const actor = this.actor;
 		if (actor.isShadow()) {return false;}
@@ -177,10 +183,11 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 	async tryToAddToLearnedPowersBuffer( power: Power, logChanges: boolean) : Promise<boolean> {
 
 		const actor = this.actor;
+    const persona = actor.basePersona;
 		const buffer= actor.system.combat.learnedPowersBuffer;
 		buffer.push(power.id);
 		await actor.update( {"system.combat.learnedPowersBuffer": buffer});
-		const maxMsg = `<br>${actor.name} has exceeded their allowed number of powers (${actor.maxPowers})  and must forget one or more powers.`;
+		const maxMsg = `<br>${persona.name} has exceeded their allowed number of powers (${persona.maxPowers})  and must forget one or more powers.`;
 		if (logChanges) {
 			await Logger.sendToChat(`${actor.name} learned ${power.name} ${maxMsg}` , actor);
 		}

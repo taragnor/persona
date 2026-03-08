@@ -133,14 +133,15 @@ export class ConditionalEffectC {
 		const forceDefensive = (sourceItem?.isDefensive)
 			? sourceItem.isDefensive()
 			: false;
-		const isDefensive= (ce.isDefensive || forceDefensive) ?? false;
-		const isEmbedded = ce.isEmbedded ?? false;
-		const isAura = ce.isAura ?? false;
+		// const isDefensive= (ce.isDefensive || forceDefensive) ?? false;
+		// const isEmbedded = ce.isEmbedded ?? false;
+		// const isAura = ce.isAura ?? false;
 		switch (true) {
 			case forceDefensive || ce.isDefensive:
 				return "defensive";
 			default:
-				condType = !forceDefensive ? ConditionalEffectManager.getConditionalType({conditions, consequences, isDefensive, isEmbedded, isAura}, sourceItem): "defensive";
+				// condType = !forceDefensive ? ConditionalEffectManager.getConditionalType({conditions, consequences, isDefensive, isEmbedded, isAura}, sourceItem): "defensive";
+				condType = !forceDefensive ? ConditionalEffectManager.getConditionalType(ce, sourceItem): "defensive";
 
 				if (condType == "unknown" && sourceItem) {
 					return (sourceItem.defaultConditionalEffectType) ? sourceItem.defaultConditionalEffectType() : "passive";

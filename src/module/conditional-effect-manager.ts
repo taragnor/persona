@@ -26,6 +26,14 @@ import {PersonaAE} from "./persona-ae.js";
 
 export class ConditionalEffectManager {
 
+  static cache = {
+    preconditions: new WeakMap() as DataCache<NonDeprecatedPrecondition<Precondition>[]>,
+    consequences: new WeakMap() as DataCache<NonDeprecatedConsequence[]>,
+    conditionalEffectType: new WeakMap() as DataCache<TypedConditionalEffect["conditionalType"]>,
+    hits: 0,
+    misses: 0,
+  };
+
 	static lastClick: string;
 
 	static clipboard: {
@@ -306,6 +314,19 @@ export class ConditionalEffectManager {
 	}
 
 	static getConditionalType<I extends ConditonalEffectHolderItem>( ce: ConditionalEffect, sourceItem ?: I | null ) : TypedConditionalEffect["conditionalType"] {
+
+    const cached = this.cache.conditionalEffectType.get(ce);
+    if (cached) {
+      ++this.cache.hits;
+      return cached;
+    }
+    const data =  this._getConditionalType(ce, sourceItem);
+    ++this.cache.misses;
+    this.cache.conditionalEffectType.set(ce, data);
+    return data;
+  }
+
+	private static _getConditionalType<I extends ConditonalEffectHolderItem>( ce: ConditionalEffect, sourceItem ?: I | null ) : TypedConditionalEffect["conditionalType"] {
 		if (ce.isDefensive) {return "defensive";}
 		for (const cond of ce.conditions) {
 			if (this.isTriggeredCondition(cond)) {
@@ -356,37 +377,91 @@ export class ConditionalEffectManager {
 		return (cond.type == "on-trigger");
 	}
 
-	static getConditionals<T extends PersonaActor, I extends ModifierContainer & (Item | ActiveEffect)>
-		(
-			condObject: DeepNoArray<ConditionalEffect["conditions"]>,
-			sourceItem: I | null,
-			sourceActor: T | null, realSource: null | U<ModifierContainer>
-		)
-		: SourcedConditionalEffect["conditions"] {
-			const conditionalEffects = this.ArrayCorrector(condObject);
-			return conditionalEffects.map( maybeDeprecatedEff=> {
-				const eff = PreconditionConverter.convertDeprecated (maybeDeprecatedEff);
-				return {
-					...eff,
-					owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : undefined) as UniversalActorAccessor<ValidAttackers>,
-					source: sourceItem != null ? sourceItem : undefined,
-					realSource: realSource ? realSource : undefined,
-				};
-			});
-		}
+  static getConditionals<T extends PersonaActor, I extends ModifierContainer & (Item | ActiveEffect)>
+    (
+      condObject: DeepNoArray<ConditionalEffect["conditions"]>,
+      sourceItem: I | null,
+      sourceActor: T | null, realSource: null | U<ModifierContainer>
+    ) : SourcedConditionalEffect["conditions"] {
+      return this.getUnsourcedConditionals(condObject)
+      .map( eff =>
+        this.applySourceInformation(eff, sourceItem, sourceActor, realSource)
+      );
+      // const conditionalEffects = this.ArrayCorrector(condObject);
+      // return conditionalEffects.map( maybeDeprecatedEff=> {
+      //   const eff = PreconditionConverter.convertDeprecated (maybeDeprecatedEff);
+      //   return this.applySourceInformation(eff, sourceItem, sourceActor, realSource);
+      // });
+        // return {
+        //   ...eff,
+        //   owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : undefined) as UniversalActorAccessor<ValidAttackers>,
+        //   source: sourceItem != null ? sourceItem : undefined,
+        //   realSource: realSource ? realSource : undefined,
+        // };
+      // });
+    }
+
+  static getUnsourcedConditionals
+    (
+      condObject: DeepNoArray<ConditionalEffect["conditions"]>,
+    ) : NonDeprecatedPrecondition<Precondition>[] {
+      const cached = this.cache.preconditions.get(condObject);
+      if (cached) {
+        ++this.cache.hits;
+        return cached;
+      }
+      const conditionalEffects = this.ArrayCorrector(condObject);
+      const data =  conditionalEffects.map( maybeDeprecatedEff=> {
+        const eff = PreconditionConverter.convertDeprecated (maybeDeprecatedEff);
+        return eff;
+      });
+        ++this.cache.misses;
+      this.cache.preconditions.set(condObject, data);
+      return data;
+    }
+
+  static getUnsourcedConsequences<I extends (ModifierContainer & (PersonaItem | PersonaAE))>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null): NonDeprecatedConsequence[] {
+      const cached = this.cache.consequences.get(consObject);
+    if (cached) {
+      ++this.cache.hits;
+      return cached;
+    }
+    const consequences = this.ArrayCorrector(consObject);
+    const data=  consequences.map( eff=> {
+      const nondep = ConsequenceConverter.convertDeprecated(eff as DeprecatedConsequence, sourceItem instanceof Item ? sourceItem : null);
+      return nondep;
+    });
+    ++this.cache.misses;
+    this.cache.consequences.set(consObject, data);
+    return data;
+  }
+
 
 	static getConsequences<T extends PersonaActor, I extends (ModifierContainer & (PersonaItem | PersonaAE))>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null, realSource: null | U<ModifierContainer>): SourcedConditionalEffect["consequences"] {
-		const consequences = this.ArrayCorrector(consObject);
-		return consequences.map( eff=> {
-			const nondep = ConsequenceConverter.convertDeprecated(eff as DeprecatedConsequence, sourceItem instanceof Item ? sourceItem : null);
-			return {
-				...nondep,
-				owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner) as UniversalActorAccessor<ValidAttackers>,
-				source: sourceItem != null ? sourceItem: undefined,
-				realSource: realSource ? realSource : undefined,
-			};
-		});
+    return this.getUnsourcedConsequences(consObject, sourceItem)
+    .map(cons=> this.applySourceInformation(cons, sourceItem, sourceActor, realSource));
+		// const consequences = this.ArrayCorrector(consObject);
+		// return consequences.map( eff=> {
+		// 	const nondep = ConsequenceConverter.convertDeprecated(eff as DeprecatedConsequence, sourceItem instanceof Item ? sourceItem : null);
+        // return this.applySourceInformation(nondep, sourceItem, sourceActor, realSource);
+			// return {
+			// 	...nondep,
+			// 	owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner) as UniversalActorAccessor<ValidAttackers>,
+			// 	source: sourceItem != null ? sourceItem: undefined,
+			// 	realSource: realSource ? realSource : undefined,
+			// };
+		// });
 	}
+
+
+  static applySourceInformation <T extends object, ActorType extends PersonaActor, ItemType extends ModifierContainer & (Item | ActiveEffect)>( obj: T, sourceItem: N<ItemType>, sourceActor: N<ActorType>, realSource: UN<ModifierContainer>) : Sourced<T> {
+    return {
+      ...obj,
+      owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : undefined) as UniversalActorAccessor<ValidAttackers>,
+      source: sourceItem != null ? sourceItem : undefined,
+      realSource: realSource ? realSource : undefined,
+    };
+  }
 
 	static ArrayCorrector<T>(obj: T[] | DeepNoArray<T[]>) : T[] {
 		try {
@@ -713,3 +788,7 @@ declare global{
 }
 
 
+type DataCache<T> = WeakMap<object, T>;
+
+//@ts-expect-error adding to global state for debug
+window.ConditionalEffectManager = ConditionalEffectManager;
