@@ -45,11 +45,11 @@ export class ActorHooks {
 			}
 		});
 
-		Hooks.on("updateActor", async function (actor: PersonaActor) {
+		Hooks.on("updateActor", function (actor: PersonaActor) {
 			if (!actor.isNPC() || !actor.tarot) { return; }
 			for (const PC of PersonaDB.PCs()) {
 				PC.clearCache();
-				await PC.sheet.render(false);
+				PC.sheet.render(false);
 			}
 		});
 
@@ -107,7 +107,7 @@ export class ActorHooks {
 				//NEEd to refresh stat points on level change
 			}
 			if (lvl != undefined) {
-				await actor.powerLearning().onLevelUp_checkLearnedPowers(lvl, !actor.isShadow());
+				await actor.basePersona.powerLearning.onLevelUp_checkLearnedPowers(lvl, !actor.isShadow());
 			}
 			switch (actor.system.type) {
 				case "npcAlly": {

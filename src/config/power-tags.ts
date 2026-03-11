@@ -36,6 +36,7 @@ export const POWER_TYPE_TAGS = [
 	"usable-while-dead",
 	"usable-while-sealed",
 	"theurgy",
+  "swappable",
 ] as const;
 
 const RESTRICTION_TAGS = [

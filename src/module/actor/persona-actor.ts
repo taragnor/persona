@@ -80,6 +80,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		// triggers: U<ModifierContainer[]>;
 		socialData: U<readonly SocialLinkData[]>;
 		isDMon: U<boolean>;
+    tagList: U<{data: (Tag | InternalCreatureTag)[], time: number}>;
+    tagListRaw: U<{data: (InternalCreatureTag | Tag["id"] | PersonaTag)[], time: number}>;
 	};
 
 	constructor(...arr: unknown[]) {
@@ -96,6 +98,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			socialData: undefined,
 			// triggers: undefined,
 			isDMon: undefined,
+      tagList : undefined,
+      tagListRaw: undefined,
 		};
 	}
 
@@ -556,7 +560,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				return;
 			}
 		} else {
-			// await Logger.sendToChat(`${this.name} switches to Persona ${persona.publicName}`);
 			let msg = "";
 			if (sourceId == this.id && !this.basePersona.img) {
 				msg = `<div class="persona-switch">
@@ -577,19 +580,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
-	get basePersona() : Persona<ValidAttackers> {
-		if (this.isNPC()) {
-			const proxy = this.getNPCAllyProxy();
-			if (!proxy) {
-				throw new PersonaError("Can't call basePersona getter on non combatant");
-			}
-			return proxy.basePersona;
-		}
-		if (!this.isValidCombatant() && !this.isPC()) {
-			throw new PersonaError("Can't call basePersona getter on non combatant");
-		}
-		return new Persona(this, this, this._mainPowers());
-	}
+  get basePersona() : Persona {
+    if (this.isNPC()) {
+      const proxy : U<NPCAlly> = this.getNPCAllyProxy();
+      if (!proxy) {
+        throw new PersonaError("Can't call basePersona getter on non combatant");
+      }
+      return new Persona(proxy, proxy, proxy._mainPowers());
+    }
+    if (!this.isValidCombatant() && !this.isPC()) {
+      throw new PersonaError("Can't call basePersona getter on non combatant");
+    }
+    return new Persona(this, this, this._mainPowers());
+  }
+
 
 	persona<T extends ValidAttackers | NPC>(this: T): Persona<T extends NPC ? NPCAlly : T> {
 		type returnType = Persona<T extends NPC ? NPCAlly : T>;
@@ -1387,14 +1391,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	// 	await Logger.sendToChat(`${this.name} added Navigator skill: ${pwr.name}` , this);
 	// }
 
-	async deleteNavigatorSkill(this: NPCAlly, powerId: Power["id"] ) : Promise<boolean> {
-		if (!this.system.combat.navigatorSkills.find( x=> powerId == x)) {return false;}
-		const power = this.navigatorSkills.find( x=> x.id == powerId);
-		this.system.combat.navigatorSkills= this.system.combat.navigatorSkills.filter(x=> x != powerId);
-		await this.update( {"system.combat.navigatorSkills" : this.system.combat.navigatorSkills});
-		await Logger.sendToChat(`${this.name} deleted Navigator skill ${power?.name ?? "unknown power"}` , this);
-		return true;
-	}
+	// async deleteNavigatorSkill(this: NPCAlly, powerId: Power["id"] ) : Promise<boolean> {
+	// 	if (!this.system.combat.navigatorSkills.find( x=> powerId == x)) {return false;}
+	// 	const power = this.navigatorSkills.find( x=> x.id == powerId);
+	// 	this.system.combat.navigatorSkills= this.system.combat.navigatorSkills.filter(x=> x != powerId);
+	// 	await this.update( {"system.combat.navigatorSkills" : this.system.combat.navigatorSkills});
+	// 	await Logger.sendToChat(`${this.name} deleted Navigator skill ${power?.name ?? "unknown power"}` , this);
+	// 	return true;
+	// }
 
 	get navigatorSkills(): Power[] {
 		switch (this.system.type) {
@@ -1464,7 +1468,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get powerLearningListFull() : readonly Readonly<{power: Power, level: number}>[] {
 		if (!this.isValidCombatant()) {return [];}
-		return this.powerLearning().powerLearningListFull();
+		return this.basePersona.powerLearning.powerLearningListFull();
 	}
 
 	// get powerLearningListFull() : readonly Readonly<{power: Power, level: number}>[] {
@@ -1493,7 +1497,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	get powerLearningList() : readonly Readonly<{power: Power, level: number}>[] {
 		if (!this.isValidCombatant()) {return [];}
-		return this.powerLearning().powerLearningList();
+		return this.basePersona.powerLearning.powerLearningList();
 	}
 
 	// get powerLearningList() : readonly Readonly<{power: Power, level: number}>[] {
@@ -1521,7 +1525,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		if (!this.isValidCombatant()
 			|| !this.isCustomPersona()
 		) {return undefined;}
-		const learn : PowerLearningSystem = this.powerLearning();
+		const learn : PowerLearningSystem = this.basePersona.powerLearning;
 		const entry = learn.customPersonaLearningList().at(0);
 		if (!entry) {return undefined;}
 		return entry;
@@ -2569,64 +2573,64 @@ isUsingMetaPod(this: ValidAttackers): boolean {
 // }
 
 
-async deletePower(this: ValidAttackers, id: Power["id"] ) {
-	const item = this.items.find(x => x.id == id);
-	if (item) {
-		await item.delete();
-		return true;
-	}
-	const result = await this.deletefromLearnBuffer(id)
-		|| await this.deleteFromMainPowers(id)
-		|| (this.isNPCAlly() ? await this.deleteNavigatorSkill(id) : undefined)
-		|| (!this.isShadow() ? await this.deleteFromSideboard(id) : false) ;
-	await this.powerLearning().promotePowers();
-	return result;
-}
+// async deletePower(this: ValidAttackers, id: Power["id"] ) {
+// 	constjitem = this.items.find(x => x.id == id);
+// 	if (item) {
+// 		await item.delete();
+// 		return true;
+// 	}
+// 	const result = await this.deletefromLearnBuffer(id)
+// 		|| await this.deleteFromMainPowers(id)
+// 		|| (this.isNPCAlly() ? await this.deleteNavigatorSkill(id) : undefined)
+// 		|| (!this.isShadow() ? await this.deleteFromSideboard(id) : false) ;
+// 	await this.powerLearning().promotePowers();
+// 	return result;
+// }
 
-async deleteLearnablePower(this: ValidAttackers, id: Power["id"])  {
-	let learnables = this.system.combat.powersToLearn;
-	learnables = learnables.filter(x=> x.powerId != id);
-	await this.update({"system.combat.powersToLearn": learnables});
-}
+// async deleteLearnablePower(this: ValidAttackers, id: Power["id"])  {
+// 	let learnables = this.system.combat.powersToLearn;
+// 	learnables = learnables.filter(x=> x.powerId != id);
+// 	await this.update({"system.combat.powersToLearn": learnables});
+// }
 
-async deletefromLearnBuffer(this: ValidAttackers, id: Power["id"]) : Promise<boolean> {
-	let buffer = this.system.combat.learnedPowersBuffer;
-	const power = PersonaDB.getItemById(id) as Power;
-	if (buffer.includes(id)) {
-		buffer = buffer.filter( x=> x != id);
-		await this.update( {"system.combat.learnedPowersBuffer": buffer});
-		await Logger.sendToChat(`${this.name} chose to forget new power:  ${power.detailedName}` , this);
-		return true;
-	}
-	return false;
-}
+// async deletefromLearnBuffer(this: ValidAttackers, id: Power["id"]) : Promise<boolean> {
+// 	let buffer = this.system.combat.learnedPowersBuffer;
+// 	const power = PersonaDB.getItemById(id) as Power;
+// 	if (buffer.includes(id)) {
+// 		buffer = buffer.filter( x=> x != id);
+// 		await this.update( {"system.combat.learnedPowersBuffer": buffer});
+// 		await Logger.sendToChat(`${this.name} chose to forget new power:  ${power.detailedName}` , this);
+// 		return true;
+// 	}
+// 	return false;
+// }
 
-async deleteFromMainPowers(this: ValidAttackers, id: Power["id"]) {
-	let powers = this.system.combat.powers;
-	const power = PersonaDB.getItemById(id) as Power;
-	if (powers.includes(id)) {
-		powers = powers.filter( x=> x != id);
-		await this.update( {"system.combat.powers": powers});
-		// await this.checkMainPowerEmptySpace();
-		if (this.hasPlayerOwner) {
-			await Logger.sendToChat(`${this.name} deleted power ${power.detailedName}` , this);
-		}
-		return true;
-	}
-	return false;
-}
+// async deleteFromMainPowers(this: ValidAttackers, id: Power["id"]) {
+// 	let powers = this.system.combat.powers;
+// 	const power = PersonaDB.getItemById(id) as Power;
+// 	if (powers.includes(id)) {
+// 		powers = powers.filter( x=> x != id);
+// 		await this.update( {"system.combat.powers": powers});
+// 		// await this.checkMainPowerEmptySpace();
+// 		if (this.hasPlayerOwner) {
+// 			await Logger.sendToChat(`${this.name} deleted power ${power.detailedName}` , this);
+// 		}
+// 		return true;
+// 	}
+// 	return false;
+// }
 
-async deleteFromSideboard(this: PC | NPCAlly, id: Power["id"]) {
-	let sideboard = this.system.combat.powers_sideboard;
-	if (sideboard && sideboard.includes(id)) {
-		const power = PersonaDB.getItemById(id) as Power;
-		sideboard = sideboard.filter( x=> x != id);
-		await this.update( {"system.combat.powers_sideboard": sideboard});
-		await Logger.sendToChat(`${this.name} deleted sideboard power ${power.detailedName}` , this);
-		return true;
-	}
-	return false;
-}
+// async deleteFromSideboard(this: PC | NPCAlly, id: Power["id"]) {
+// 	let sideboard = this.system.combat.powers_sideboard;
+// 	if (sideboard && sideboard.includes(id)) {
+// 		const power = PersonaDB.getItemById(id) as Power;
+// 		sideboard = sideboard.filter( x=> x != id);
+// 		await this.update( {"system.combat.powers_sideboard": sideboard});
+// 		await Logger.sendToChat(`${this.name} deleted sideboard power ${power.detailedName}` , this);
+// 		return true;
+// 	}
+// 	return false;
+// }
 
 async checkSideboardEmptySpace(this: ValidAttackers) {
 	if (this.isShadow()) {return;}
@@ -3209,12 +3213,12 @@ async onLevelUp_BasePersona(this: ValidAttackers, newLevel: number) : Promise<vo
 	if (this.isNPCAlly() || this.isShadow()) {
 		await this.basePersona.combatStats.autoSpendStatPoints();
 	}
-	await this.powerLearning().onLevelUp_checkLearnedPowers(newLevel);
+	await this.basePersona.powerLearning.onLevelUp_checkLearnedPowers(newLevel);
 }
 
-powerLearning<T extends ValidAttackers>(this: T) : PowerLearningSystem<T> {
-	return new PowerLearningSystem(this);
-}
+// powerLearning<T extends ValidAttackers>(this: T) : PowerLearningSystem<T> {
+// 	return new PowerLearningSystem(this);
+// }
 
 async levelUp_manual(this: ValidAttackers) : Promise<void> {
 	if (this.isPC()) {
@@ -4274,7 +4278,20 @@ realTags() : Tag[] {
 	return ret;
 }
 
-get tagListRaw() : (InternalCreatureTag | Tag["id"] | PersonaTag)[] {
+get tagListRaw() : (InternalCreatureTag | Tag["id"] | PersonaTag)[]
+{
+  const CACHE_EXPIRATION_THRESHOLD_TIME = 1000;
+  const now = Date.now();
+  if (!this.cache.tagListRaw || (now - this.cache.tagListRaw.time > CACHE_EXPIRATION_THRESHOLD_TIME)) {
+    this.cache.tagListRaw = {
+      data: this._tagListRawGen(),
+      time: now,
+    };
+  }
+  return this.cache.tagListRaw.data;
+}
+
+private _tagListRawGen() : (InternalCreatureTag | Tag["id"] | PersonaTag)[] {
   //NOTE: This is a candidate for caching
   if (this.isTarot()) { return []; }
   const list : (Tag["id"] | InternalCreatureTag | PersonaTag)[] = this.system.creatureTags.slice();
@@ -4317,8 +4334,22 @@ get tagListRaw() : (InternalCreatureTag | Tag["id"] | PersonaTag)[] {
 }
 
 get tagList() : (Tag | InternalCreatureTag)[] {
-	return this.tagListRaw
+  const CACHE_EXPIRATION_THRESHOLD_TIME = 1000;
+  const now = Date.now();
+  if (!this.cache.tagList || (now - this.cache.tagList.time > CACHE_EXPIRATION_THRESHOLD_TIME)) {
+    this.cache.tagList = {
+      data: this._tagListGen(),
+      time: now,
+    };
+  }
+  return this.cache.tagList.data;
+}
+
+_tagListGen() : (Tag | InternalCreatureTag)[] {
+  const tagList = this.tagListRaw
 		.map(tag => PersonaItem.searchForPotentialTagMatch(tag) ?? (tag as InternalCreatureTag));
+  return tagList;
+
 }
 
 hasCreatureTag(tagOrTagName: CreatureTag | Tag["id"]) : boolean{

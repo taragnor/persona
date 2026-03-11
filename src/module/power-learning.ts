@@ -180,6 +180,16 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 		return false;
 	}
 
+  isSwappable(pwr: Power) : boolean {
+    if (pwr.hasTag("swappable")) {
+      return true;
+    }
+    if (!this.actor.isCustomPersona()) {
+      return false;
+    }
+    return true; //TOOD: put actual restriction
+  }
+
 	async tryToAddToLearnedPowersBuffer( power: Power, logChanges: boolean) : Promise<boolean> {
 
 		const actor = this.actor;
@@ -301,6 +311,82 @@ async checkForMissingLearnedPowers() {
 		await this.addLearnedPower(pwr, actor.system.personaConversion.startingLevel ?? actor.system.combat.personaStats.pLevel);
 	}
 }
+
+async deletePower(id: Power["id"] ) {
+	const actor = this.actor;
+  const item = actor.items.find(x => x.id == id);
+  if (item) {
+    await item.delete();
+    return true;
+  }
+  const result = await this.deletefromLearnBuffer(id)
+    || await this.deleteFromMainPowers(id)
+    || (actor.isNPCAlly() ? await this.deleteNavigatorSkill(id) : undefined)
+    || (!actor.isShadow() ? await this.deleteFromSideboard(id) : false) ;
+  await this.promotePowers();
+  return result;
+}
+
+async deleteLearnablePower( id: Power["id"]) : Promise<void> {
+	const actor = this.actor;
+	let learnables = actor.system.combat.powersToLearn;
+	learnables = learnables.filter(x=> x.powerId != id);
+	await actor.update({"system.combat.powersToLearn": learnables});
+}
+
+async deletefromLearnBuffer( id: Power["id"]) : Promise<boolean> {
+	const actor = this.actor;
+	let buffer = actor.system.combat.learnedPowersBuffer;
+	const power = PersonaDB.getItemById(id) as Power;
+	if (buffer.includes(id)) {
+		buffer = buffer.filter( x=> x != id);
+		await actor.update( {"system.combat.learnedPowersBuffer": buffer});
+		await Logger.sendToChat(`${actor.name} chose to forget new power:  ${power.detailedName}` , actor);
+		return true;
+	}
+	return false;
+}
+
+async deleteFromMainPowers( id: Power["id"]) : Promise<boolean> {
+	const actor = this.actor;
+	let powers = actor.system.combat.powers;
+	const power = PersonaDB.getItemById(id) as Power;
+	if (powers.includes(id)) {
+		powers = powers.filter( x=> x != id);
+		await actor.update( {"system.combat.powers": powers});
+		// await this.checkMainPowerEmptySpace();
+		if (actor.hasPlayerOwner) {
+			await Logger.sendToChat(`${actor.name} deleted power ${power.detailedName}` , actor);
+		}
+		return true;
+	}
+	return false;
+}
+
+async deleteFromSideboard( id: Power["id"]) : Promise<boolean> {
+	const actor = this.actor;
+  if (!actor.isPC()) {return false;}
+	let sideboard = actor.system.combat.powers_sideboard;
+	if (sideboard && sideboard.includes(id)) {
+		const power = PersonaDB.getItemById(id) as Power;
+		sideboard = sideboard.filter( x=> x != id);
+		await actor.update( {"system.combat.powers_sideboard": sideboard});
+		await Logger.sendToChat(`${actor.name} deleted sideboard power ${power.detailedName}` , actor);
+		return true;
+	}
+	return false;
+}
+
+	async deleteNavigatorSkill(powerId: Power["id"] ) : Promise<boolean> {
+	const actor = this.actor;
+    if (!actor.isNPCAlly()){ return false;}
+		if (!actor.system.combat.navigatorSkills.find( x=> powerId == x)) {return false;}
+		const power = actor.navigatorSkills.find( x=> x.id == powerId);
+		actor.system.combat.navigatorSkills= actor.system.combat.navigatorSkills.filter(x=> x != powerId);
+		await actor.update( {"system.combat.navigatorSkills" : actor.system.combat.navigatorSkills});
+		await Logger.sendToChat(`${actor.name} deleted Navigator skill ${power?.name ?? "unknown power"}` , actor);
+		return true;
+	}
 
 }
 

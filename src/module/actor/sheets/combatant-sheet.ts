@@ -110,8 +110,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				switch (actorType) {
 					case "shadow":
 						if (this.isOnLearningTab())
-						{await this.actor.powerLearning().addLearnedPower(power);}
-						else {await this.actor.powerLearning().learnPower(power);}
+						{await this.actor.basePersona.powerLearning.addLearnedPower(power);}
+						else {await this.actor.basePersona.powerLearning.learnPower(power);}
 						return power;
 					case "pc":
 					case "npcAlly": {
@@ -125,7 +125,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 							return;
 						}
 						if (this.isOnLearningTab()) {
-							await this.actor.powerLearning().addLearnedPower(power);
+							await this.actor.basePersona.powerLearning.addLearnedPower(power);
 							return power;
 						}
 						if (this.isOnPersonaListTab()) {
@@ -302,7 +302,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new Error(err);
 		}
 		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this power?")) {
-			await this.actor.deletePower(powerId);
+			await this.actor.basePersona.powerLearning.deletePower(powerId);
 		}
 	}
 
@@ -315,11 +315,11 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new Error(err);
 		}
 		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this power?")) {
-			await this.actor.deleteLearnablePower(powerId as Power["id"]);
+			await this.actor.basePersona.powerLearning.deleteLearnablePower(powerId as Power["id"]);
 		}
 	}
 
-	async openPower(event: Event) {
+	openPower(event: Event) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		if (powerId == undefined) {
 			throw new PersonaError(`Can't find power`);
@@ -328,10 +328,10 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!power) {
 			throw new PersonaError(`Can't find power id ${powerId}`);
 		}
-		await power.sheet.render(true);
+		power.sheet.render(true);
 	}
 
-	async openTalent(event: Event) {
+	openTalent(event: Event) {
 		const itemType = "Talent";
 		const talentId = HTMLTools.getClosestData(event, "talentId");
 		if (talentId == undefined) {
@@ -342,17 +342,17 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!talent) {
 			throw new PersonaError(`Can't find ${itemType} id ${talentId}`);
 		}
-		await talent.sheet.render(true);
+		talent.sheet.render(true);
 	}
 
-	async openItem(event: Event) {
+	openItem(event: Event) {
 		const itemType = "Inventory Item";
 		const itemId = HTMLTools.getClosestData(event, "itemId");
 		const item = this.actor.inventory.find(x=> x.id == itemId);
 		if (!item) {
 			throw new PersonaError(`Can't find ${itemType} id ${itemId}`);
 		}
-		await item.sheet.render(true);
+		item.sheet.render(true);
 	}
 
 	async rollSave(_event: Event) {
@@ -484,13 +484,13 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 	}
 
-	async openPersona(event: JQuery.ClickEvent) {
+	openPersona(event: JQuery.ClickEvent) {
 		const personaId = HTMLTools.getClosestData(event, "personaId");
 		const persona = PersonaDB.getActorById(personaId);
 		if (!persona) {
 			throw new PersonaError(`Can't find persona ${personaId}`);
 		}
-		await persona.sheet.render(true);
+		persona.sheet.render(true);
 	}
 
 	async getBalanceTest(power: Usable) : Promise<U<string>> {

@@ -10,6 +10,7 @@ import { PCLikeSheet } from "./pc-like-sheet.js";
 import { Logger } from "../../utility/logger.js";
 import { NAVIGATOR_TRIGGERS } from "../../navigator/nav-voice-lines.js";
 import {PersonaSounds} from "../../persona-sounds.js";
+import {Persona} from "../../persona-class.js";
 
 
 export class NPCAllySheet extends PCLikeSheet {
@@ -52,7 +53,7 @@ export class NPCAllySheet extends PCLikeSheet {
 				const power = item as Power;
 				const actor = this.actor;
 				if (power.isNavigator() && !this.isOnLearningTab()) {
-					await actor.powerLearning().addNavigatorSkill(power);
+					await (actor.basePersona as Persona<NPCAlly, NPCAlly>).powerLearning.addNavigatorSkill(power);
 					return power;
 				}
 			}
@@ -67,7 +68,7 @@ export class NPCAllySheet extends PCLikeSheet {
 		if (!await HTMLTools.confirmBox("Really Delete", `Really Delete ${power.name}`)) {return;}
 		switch (true) {
 			case power.isNavigator(): {
-				return await this.actor.deleteNavigatorSkill(power.id);
+				return await this.actor.basePersona.powerLearning.deleteNavigatorSkill(power.id);
 			}
 			default: {
 				throw new PersonaError("Can't delete skill of this stype");

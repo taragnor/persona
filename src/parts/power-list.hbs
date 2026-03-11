@@ -22,10 +22,17 @@
 			{{#each powers as |power i|}}
 			<tr data-power-id="{{power.id}}">
         {{#if ../targetPersona}}
+
         <td class="actions">
+          {{#if ../swapPower}}
+          <a class="swap-power" title="Swap {{../swapPower.name}} with this power">
+            <i class="fa-solid fa-retweet"></i>
+          </a>
+        {{else}}
           <a class="learn-power" title="Add to {{../targetPersona.name}} Power List">
             <i class="fa-solid fa-circle-plus"></i>
           </a>
+        {{/if}}
         </td>
         {{/if}}
         <td class="power-name">

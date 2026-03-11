@@ -16,6 +16,7 @@ class Application {
 	template: string;
 	get title(): string;
 	setPosition(posData: Partial<PositionData>) : U<PositionData>;
+  close(options?: Record<string, unknown>) : Promise<void>;
 } ;
 
 

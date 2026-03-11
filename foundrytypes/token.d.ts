@@ -14,8 +14,8 @@ namespace Foundry {
 				 parent: Scene;
 				 name: string;
 				 baseActor: T;
-				 get object(): Token<T> | null
-				 private _object: Token<T>;
+				 get object(): Token<T> | null;
+				 _object: Token<T>;
 				 documentName: "token";
 				 get inCombat(): boolean;
 				 get combatant(): Combatant;

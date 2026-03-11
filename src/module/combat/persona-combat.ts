@@ -302,12 +302,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return false;
 	}
 
-	async refreshActorSheets(): Promise<void> {
+	refreshActorSheets(): void {
 		for (const comb of this.combatants) {
 			const actor= comb.token?.actor;
 			if (!actor) {continue;}
 			if (actor.sheet._state > 0) {
-				await actor.sheet?.render(true);
+				actor.sheet?.render(true);
 			}
 		}
 	}
@@ -1926,7 +1926,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return false;
 	}
 
-
 	static get instance() : U<PersonaCombat> {
 		if (game.combat) {
 			return game.combat as PersonaCombat;
@@ -2038,7 +2037,7 @@ export interface CombatOptions {
 	modifiers?: ModifierList;
 }
 
-CombatPanel.init();
+void CombatPanel.init();
 
 export interface StartCombatOptions {
 	roomMods?: UniversalModifier["id"][];

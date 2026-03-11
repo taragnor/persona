@@ -51,7 +51,7 @@ export class HTMLTools {
 	}
 
 	static async editItemWindow<T extends Item>(item: T):  Promise<Option<T>> {
-		await item.sheet.render(true);
+		item.sheet.render(true);
 		return await new Promise ( (keep, _brk) => {
 			const checker = () =>  {
 				const isOpen = item.sheet._state != -1; //window state check
@@ -162,7 +162,8 @@ export class HTMLTools {
 				title: `Prompt`,
 				content: html,
 				render: (html: string) => {
-					$(html).find(".numInput").focus();
+					// $(html).find(".numInput").focus();
+					$(html).find(".numInput").trigger("focus");
 				},
 				buttons: {
 					one: {

@@ -161,7 +161,7 @@ export class ActorConverters {
 			"system.combat.lastLearnedLevel": 0,
 			"system.combat.powers": original.startingPowers,
 		});
-		await convert.powerLearning().onLevelUp_checkLearnedPowers(baseLevel, false);
+		await convert.basePersona.powerLearning.onLevelUp_checkLearnedPowers(baseLevel, false);
 	}
 
 	static async convertOldLevelToNew( actor: ValidAttackers): Promise<number> {
@@ -185,7 +185,7 @@ export class ActorConverters {
 		if (actor.isNPCAlly() || actor.isShadow()) {
 			await actor.basePersona.combatStats.autoSpendStatPoints();
 			if (actor.isShadow()) {
-				await actor.powerLearning().checkForMissingLearnedPowers();
+				await actor.basePersona.powerLearning.checkForMissingLearnedPowers();
 			}
 		}
 		return lvl;

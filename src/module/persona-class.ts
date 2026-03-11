@@ -25,11 +25,12 @@ import {Calculation, EvaluatedCalculation} from "./utility/calculation.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {ConditionalEffectPrinter} from "./conditionalEffects/conditional-effect-printer.js";
 import {PersonaAura} from "./persona-auras.js";
+import {PowerLearningSystem} from "./power-learning.js";
 
-export class Persona<T extends ValidAttackers = ValidAttackers> implements PersonaI {
+export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidAttackers = ValidAttackers> implements PersonaI {
 	#combatStats: U<PersonaCombatStats>;
 	user: T;
-	source: ValidAttackers;
+	source: S;
 	_powers: Power[];
 	#cache: PersonaClassCache;
 
@@ -39,12 +40,17 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		XP_GROWTH: 200, //added XP for additional level ups
 	};
 
-	constructor (source: ValidAttackers, user: T, powers?: Power[]) {
+	constructor (source: S, user: T, powers?: Power[]) {
 		this.user = user;
 		this.source = source;
-		this._powers = powers == undefined ? source._mainPowers(): powers;
+		this._powers = powers == undefined ? this.loadPowers(): powers;
 		this.resetCache();
 	}
+
+  loadPowers() {
+    this._powers = this.source._mainPowers();
+    return this._powers;
+  }
 
 	resetCache() {
 		this.#cache = {
@@ -133,8 +139,34 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	async learnPower(power: Power, logChanges = true) {
-		await this.source.powerLearning().learnPower(power, logChanges);
+		const ret= await this.powerLearning.learnPower(power, logChanges);
+    if (ret) { this.loadPowers();}
+    return ret;
 	}
+
+  async deletePower(power: Power) {
+    const ret= await this.powerLearning.deletePower(power.id);
+    if (ret) { this.loadPowers();}
+    return ret;
+  }
+
+  async swapPower(oldPower: Power, newPower: Power) {
+    if (!this.powerLearning.isSwappable(oldPower)) {
+      throw new PersonaError("Can't swap this power");
+    }
+    if (!game.user.isGM && !PersonaCombat.combat?.isSocial){
+      throw new PersonaError("Can't swap powers now");
+    }
+    if (this.source.knowsPowerInnately(newPower)) {
+      throw new PersonaError(`You already know ${newPower.name}`);
+    }
+    if ( await this.deletePower(oldPower)) {;
+      await this.learnPower(newPower);
+      await Logger.sendToChat(`${this.name} swaps power ${oldPower.name} with ${newPower.name}`);
+    } else {
+      ui.notifications.error(`Problem deleting ${oldPower.name}. Is this power a bonus from somewhere else and not actually innate?`);
+    }
+  }
 
 	get talents() : readonly Talent[] {
 		const extraTalents = this.mainModifiers({omitTalents: true, omitPowers: true, omitAuras: true})
@@ -475,6 +507,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 		if (source.isShadow() && source.hasCreatureTag("d-mon")) {return true;}
 		return false;
 	}
+
+  get powerLearning() : PowerLearningSystem<typeof this.source> {
+    return new PowerLearningSystem(this.source);
+  }
 
 	numOfWeaknesses(): number {
 		return Object.values(this.resists)
@@ -843,7 +879,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 	}
 
 	get isBasePersona(): boolean {
-		return this.source == this.user;
+    //TS seemed to have an issue with this for some reason
+		return this.source as unknown == this.user;
 	}
 
 	get printableResistanceString() : string {
@@ -1225,7 +1262,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers> implements Perso
 				}
 				break;
 			case "skillCard":
-				if(!this.user.powerLearning().canLearnNewSkill()) {
+				if(!this.powerLearning.canLearnNewSkill()) {
 					return "You have no space left to learn";
 				}
 		}

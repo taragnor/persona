@@ -14,6 +14,8 @@ import { PCLikeSheet } from "./pc-like-sheet.js";
 import { Persona } from "../../persona-class.js";
 import {HypotheticalPersona} from "../../pre-fusion-persona.js";
 import {PersonaCompendium} from "../../persona-compendium.js";
+import {PowerPrinter} from "../../printers/power-list.js";
+import {PersonaCombat} from "../../combat/persona-combat.js";
 
 export class PCSheet extends PCLikeSheet {
 	declare actor: Subtype<PersonaActor, "pc">;
@@ -105,6 +107,7 @@ export class PCSheet extends PCLikeSheet {
 		html.find(".fusions-list .persona-viewer .fuse-persona").on("click", ev => void this._initiateFusion(ev));
 		html.find(".persona-viewer .summon-persona").on("click", ev => void this._summonPersona(ev));
 		html.find(".persona-compendium .persona-viewer .back").on("click", ev => void this.clearCompendiumSelect(ev));
+    html.find(".powerName").middleclick(ev=> void this.swapPower(ev));
 	}
 
 	async rollSocial (ev: JQuery.Event) {
@@ -258,19 +261,19 @@ export class PCSheet extends PCLikeSheet {
 
 
 
-	async openSL(ev: Event) {
+	openSL(ev: Event) {
 		const linkId= String(HTMLTools.getClosestData(ev, "linkId"));
 		const link = this.actor.socialLinks.find( link=> link.actor.id == linkId);
 		if (link && link.actor != this.actor) {
-			await link.actor.sheet.render(true);
+			link.actor.sheet.render(true);
 		}
 	}
 
-	async openJob(ev: Event) {
+	openJob(ev: Event) {
 		const jobId= String(HTMLTools.getClosestData(ev, "activityId"));
 		const job = PersonaDB.allActivities().find(x=> x.id == jobId);
 		if (job){
-			await job.sheet.render(true);
+			job.sheet.render(true);
 		}
 	}
 
@@ -349,12 +352,12 @@ export class PCSheet extends PCLikeSheet {
 		if (!persona) {return;}
 		if (this.personaMoveSelector == undefined) {
 			this.personaMoveSelector = persona;
-			await this.render(false);
+			this.render(false);
 			return;
 		}
 		if (this.personaMoveSelector.equals(persona)) {
 			this.personaMoveSelector = undefined;
-			await this.render(false);
+			this.render(false);
 			return;
 		}
 		const target1= this.personaMoveSelector;
@@ -362,7 +365,7 @@ export class PCSheet extends PCLikeSheet {
 		await this.actor.swapPersona(target1, persona);
 	}
 
-	async fusionOptionSelect (ev: JQuery.ClickEvent) {
+	fusionOptionSelect (ev: JQuery.ClickEvent) {
 		const shadowId = HTMLTools.getClosestData(ev, "shadowId");
 		const shadow = PersonaDB.getActorById(shadowId) as Shadow;
 		if (!shadow) {
@@ -385,22 +388,22 @@ export class PCSheet extends PCLikeSheet {
 			throw new PersonaError("Error getting shadow components for fusion");
 		}
 		this.selectedFusion = new HypotheticalPersona(shadow, this.actor, components);
-		await this.render(false);
+		this.render(false);
 	}
 
-	async compendiumOptionSelect(ev: JQuery.ClickEvent) {
+	compendiumOptionSelect(ev: JQuery.ClickEvent) {
 		const shadowId = HTMLTools.getClosestData(ev, "personaId");
 		const shadow = PersonaDB.getActorById(shadowId) as Shadow;
 		if (!shadow) {
 			throw new PersonaError(`Couldn't find Shadow ${shadowId}`);
 	}
 		this.selectedCompendium = new Persona(shadow, this.actor, shadow.startingPowers);
-		await this.render(false);
+		this.render(false);
 	}
 
-	async clearFusionSelect (_ev ?: JQuery.ClickEvent) {
+	clearFusionSelect (_ev ?: JQuery.ClickEvent) {
 		this.selectedFusion = undefined;
-		await this.render(false);
+		this.render(false);
 	}
 
 	private async _initiateFusion(_ev: JQuery.ClickEvent) {
@@ -411,12 +414,12 @@ export class PCSheet extends PCLikeSheet {
 		const fused = await fusion.fusionProcess(this);
 		if (!fused) {return;}
 		this.selectedFusion = undefined;
-		await this.render(false);
+		this.render(false);
 	}
 
-	async clearCompendiumSelect(_ev ?: JQuery.ClickEvent) {
+	clearCompendiumSelect(_ev ?: JQuery.ClickEvent) {
 		this.selectedCompendium = undefined;
-		await this.render(false);
+		this.render(false);
 	}
 
 	async _summonPersona (_ev ?: JQuery.ClickEvent) {
@@ -433,7 +436,19 @@ export class PCSheet extends PCLikeSheet {
 		await this.actor.spendMoney(cost);
 		const summoned = await PersonaCompendium.retrieveFromCompendium(selected.source, this.actor);
 		await this.actor.addPersona(summoned);
-		await this.render(false);
+		this.render(false);
 		await Logger.sendToChat(`${this.actor.name} summoned ${summoned.name} L${summoned.level} from Compendium for ${cost}.`);
 	}
+
+  swapPower(ev: JQuery.ClickEvent) {
+    const power = this.getPower(ev);
+    if (!this.actor.persona().powerLearning.isSwappable(power)) {
+      throw new PersonaError("Can't swap this power");
+    }
+    if (!game.user.isGM && !PersonaCombat.combat?.isSocial){
+      throw new PersonaError("Can't swap powers now");
+    }
+    PowerPrinter.openSwap(power, this.actor.persona());
+  }
+
 }
