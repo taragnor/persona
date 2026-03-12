@@ -91,7 +91,7 @@ export class PowerPrinter extends Application {
   static swappablePowers(highestSlot: Power["system"]["slot"], bestRarity: Power["system"]["rarity"]) : Power[] {
     const powerArr = PersonaDB.allPowersArr();
     let slot = highestSlot;
-    let rarity = bestRarity;
+    let rarity : typeof bestRarity = bestRarity == "rare-plus" ? "normal-minus" : bestRarity;
     const P = RANDOM_POWER_RATE;
     const powers : Power[][] = [];
     while (slot >= 0) {
@@ -163,7 +163,7 @@ export class PowerPrinter extends Application {
   }
 
   private async delayedFilter(subtype: Power["system"]["subtype"], powerType ?: Power["system"]["dmg_type"] | Power["system"]["dmg_type"][]) : Promise<Power[]> {
-    const data=  this.filterByType(subtype, powerType);
+    const data =  this.filterByType(subtype, powerType);
     await sleep(2); //sleep delay for more responsiveness
     return data;
   }

@@ -487,7 +487,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	}
 
 	async recalcShadowStatMods() {
-		const promises= this.shadows()
+		const promises= [...this.shadows(), ...this.NPCAllies()]
 			.map (x=> x.basePersona)
 			.filter( p=> p.canAutoSpendStatPoints())
 			.map( p=> p.resetCombatStats(true));

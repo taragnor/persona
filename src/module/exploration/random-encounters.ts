@@ -454,11 +454,11 @@ static async processAmbush(encounter: Encounter) {
 		return choice;
 	}
 
-public static getRandomEncounterListFromDiffLevel(difficultyLevel: number, lowRange = 3, highRange = 3) {
+public static getRandomEncounterListFromDiffLevel(difficultyLevel: number, lowRange = 4, highRange = 3) {
 	const CR = difficultyLevel;
 	const shadows = PersonaDB.shadows()
 		.filter( x => x.isEligibleForRandomEncounter())
-		.filter(x=> x.level >= CR - lowRange &&  x.level<= CR +highRange)
+		.filter(x=> x.level >= CR - lowRange &&  x.level<= CR + highRange)
 		.filter( x=> !x.isBossOrMiniBossType());
 	return shadows;
 }
@@ -469,7 +469,7 @@ public static getRandomEncounterListFromDiffLevel(difficultyLevel: number, lowRa
 			return undefined;
 		}
 		if (encounterList.length <= 0) {return pick1;}
-		if (Math.random() < 0.3333) {return pick1;} //favor weights less heavily
+		if (Math.random() < 0.5) {return pick1;} //favor weights less heavily
 		const p1score = encounterList
 			.reduce ( (acc, shadow) => acc + shadow.complementRating(pick1), 0);
 		const p2score = encounterList

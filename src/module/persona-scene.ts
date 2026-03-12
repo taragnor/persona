@@ -42,26 +42,29 @@ export class PersonaScene extends Scene {
 		const diff = Math.floor(shadow.level - this.difficultyLevel);
 		let prob : keyof ProbabilityRate;
 		switch (true) {
-			case diff <= -3 :
+      case diff <= -4:
 				prob= "rare";
+        break;
+			case diff <= -3 :
+				prob= "rare-plus";
 				break;
 			case diff == -2 :
-				prob= "rare-plus";
+				prob= "normal";
 				break;
 			case diff == -1 :
 				prob= "normal";
 				break;
 			case diff == 0 :
-				prob= "normal-plus";
-				break;
-			case diff == 1 :
 				prob= "normal";
 				break;
-			case diff == 2 :
+			case diff == 1 :
 				prob= "normal-minus";
 				break;
-			case diff <= 3 :
+			case diff == 2 :
 				prob = "rare-plus";
+				break;
+			case diff <= 3 :
+				prob = "rare";
 				break;
 			default:
 				prob = "rare";

@@ -1314,8 +1314,10 @@
 	"persona.affinity.ranking.standard": "Standard",
 	"persona.affinity.ranking.weak": "Weak",
 
+  "persona.persona.combatStats.deviation.very-low": "Very Low",
   "persona.persona.combatStats.deviation.low": "Low",
   "persona.persona.combatStats.deviation.medium": "Medium",
-  "persona.persona.combatStats.deviation.high": "High"
+  "persona.persona.combatStats.deviation.high": "High",
+  "persona.persona.combatStats.deviation.very-high": "Very High"
 }
 

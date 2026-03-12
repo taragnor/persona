@@ -31,9 +31,11 @@ export class PersonaCombatStats {
 	static MAX_STAT_DIVISOR_CUSTOM = 8 as const;
 
   static STAT_DEVIATION = {
-    "low": 0.25,
+    "very-low": 0.15,
+    "low": 0.333,
     "medium": 0.666,
     "high" : 1.2,
+    "very-high": 1.6,
   } as const;
 
 	constructor (persona: Persona) {
@@ -263,16 +265,17 @@ export class PersonaCombatStats {
 
 	private baseStatPoints() : number {
 		const persona = this.persona;
-		if (persona.isCustomPersona || persona.source.isNPCAlly()) {
+		// if (persona.isCustomPersona || persona.source.isNPCAlly()) {
+		if (persona.isCustomPersona) {
 			return 5;
 		}
 		const sl = persona.startingLevel;
 		switch (true) {
 			case (sl < 20) :return 2;
 			case (sl < 40): return 5;
-			case (sl < 60): return 10;
-			case (sl < 80): return 15;
-			default: return 20;
+			case (sl < 60): return 8;
+			case (sl < 80): return 12;
+			default: return 16;
 		}
 	}
 
@@ -292,10 +295,9 @@ export class PersonaCombatStats {
   }
 
   private _adjustment(lvl: number) : number {
-    if (lvl <= 10) {return 1.5;}
-    if (lvl <= 20) {return 1.15;}
-    if (lvl <= 30) {return 1;}
-    if (lvl <= 50) {return 0.75;}
+    if (lvl <= 20) {return 1.5;}
+    if (lvl <= 50) {return 1;}
+    if (lvl <= 80) {return 0.80;}
     return 0.5;
   }
 
