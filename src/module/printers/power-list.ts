@@ -5,9 +5,10 @@ import {CARD_DROP_RATE, PROBABILITIES_POWER_RARITY, RANDOM_POWER_RATE} from "../
 import {Persona} from "../persona-class.js";
 import {localize} from "../persona.js";
 import {PowerTag} from "../../config/power-tags.js";
+import {sleep} from "../utility/async-wait.js";
 
 export class PowerPrinter extends Application {
-	static _instance : U<PowerPrinter>;
+  static _instance : U<PowerPrinter>;
 
   targetPersona: U<Persona>;
 
@@ -18,56 +19,67 @@ export class PowerPrinter extends Application {
 
   static init() {
 
-	}
-
-  constructor(baseSlot ?: Power["system"]["slot"],  baseRarity ?: Power["system"]["rarity"]) {
-    super();
-    this.highestSlot = baseSlot;
-    this.baseRarity = baseRarity;
   }
 
-	static override get defaultOptions() {
-		return foundry.utils.mergeObject(super.defaultOptions, {
-			id: "power-list-printer",
-			template: "systems/persona/sheets/lists/power-printout.hbs",
-			width: 1500,
-			height: 1200,
-			minimizable: true,
-			resizable: true,
-			title: game.i18n.localize("persona.applications.powerPrinter" as LocalizationString),
-		});
-	}
+  constructor();
+  constructor(swapPower: Power, persona : Persona);
+  constructor(swapPower?: Power, persona ?: Persona) {
+    super();
+    if (swapPower && persona) {
+      this.highestSlot = swapPower.system.slot;
+      let rarity = swapPower.system.rarity;
+      switch (rarity) {
+        case "never":
+          break;
+        case "rare":
+          rarity = "rare-plus";
+          break;
+      }
+      this.baseRarity = rarity;
+      this._swapPower = swapPower;
+      this.setTargetPersona(persona);
+    }
+  }
 
-	override activateListeners(html: JQuery) {
-		super.activateListeners(html);
-		html.find(".power-name").on("click", ev => void this.openPower(ev));
-		html.find(".rarity").on ("click", ev => void this.changeRarityLeftClick(ev));
-		html.find(".rarity").on ("contextmenu", ev => void this.changeRarityRightClick(ev));
-		html.find(".learn-power").on ("click", ev => void this.learnPower(ev));
-		html.find(".learn-power").on ("contextmenu", ev => void this.addToLearningList(ev));
-		html.find(".swap-power").on ("click", ev => void this.onSwapPower(ev));
-	}
+  static override get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, {
+      id: "power-list-printer",
+      template: "systems/persona/sheets/lists/power-printout.hbs",
+      width: 1500,
+      height: 1200,
+      minimizable: true,
+      resizable: true,
+      title: game.i18n.localize("persona.applications.powerPrinter" as LocalizationString),
+    });
+  }
+
+  override activateListeners(html: JQuery) {
+    super.activateListeners(html);
+    html.find(".power-name").on("click", ev => void this.openPower(ev));
+    html.find(".rarity").on ("click", ev => void this.changeRarityLeftClick(ev));
+    html.find(".rarity").on ("contextmenu", ev => void this.changeRarityRightClick(ev));
+    html.find(".learn-power").on ("click", ev => void this.learnPower(ev));
+    html.find(".learn-power").on ("contextmenu", ev => void this.addToLearningList(ev));
+    html.find(".swap-power").on ("click", ev => void this.onSwapPower(ev));
+  }
 
   static async open(): Promise<PowerPrinter> {
     await PersonaDB.waitUntilLoaded();
     return this.createGeneralizedInstance();
   }
 
-	static openSwap(power: Power, persona: Persona) : PowerPrinter {
-    const printer = new PowerPrinter(power.system.slot, power.system.rarity);
-    printer._swapPower = power;
-    printer.setTargetPersona(persona);
+  static openSwap(power: Power, persona: Persona) : PowerPrinter {
+    const printer = new PowerPrinter(power, persona);
     printer.render(true);
-    Debug(printer);
     return printer;
   }
 
   private static createGeneralizedInstance() {
-		if (!this._instance) {
-			this._instance = new PowerPrinter();
-		}
-		this._instance.render(true);
-		return this._instance;
+    if (!this._instance) {
+      this._instance = new PowerPrinter();
+    }
+    this._instance.render(true);
+    return this._instance;
   }
 
 
@@ -101,50 +113,59 @@ export class PowerPrinter extends Application {
     return powers.flat();
   }
 
-	override async getData(options: Record<string, unknown>) {
-		await PersonaDB.waitUntilLoaded();
-		const data = await super.getData(options);
+  override async getData(options: Record<string, unknown>) {
+    await PersonaDB.waitUntilLoaded();
+    const data = await super.getData(options);
     const targetPersona = this.targetPersona && this.targetPersona.source.sheet._state > 0 ? this.targetPersona : undefined;
-    const powers = this.mainPowerList()
+    const powers = (await this.mainPowerList())
       .filter( x=> x!= undefined && x.length > 0)
       .map( list => list.sort(PowerPrinter.sortPowerFn));
     if (powers.length == 0) {
       throw new PersonaError("No Powers to display");
     }
-		return {
-			...data,
-			powerLists: powers,
+    return {
+      ...data,
+      powerLists: powers,
       targetPersona,
       swapPower: this._swapPower,
-		};
-	}
+    };
+  }
 
-  private mainPowerList () : Power[][] {
+  private async mainPowerList () : Promise<Power[][]> {
     const untypedSkills = [
-      this.filterByType("magic" ,"none").filter( x=> x.isSupport()),
-      this.filterByType("magic" ,"none").filter( x=> x.isAilment()),
-      this.filterByType("magic" ,"none").filter( x=> !x.isAilment() && !x.isSupport()),
+      (await this.delayedFilter("magic" ,"none"))
+      .filter( x=> x.isSupport()),
+      (await this.delayedFilter("magic" ,"none"))
+      .filter( x=> x.isAilment()),
+      (await this.delayedFilter("magic" ,"none"))
+      .filter( x=> !x.isAilment() && !x.isSupport()),
     ].filter( x=> x.length > 0);
     const passiveSkills = [
-      this.filterByType("passive"),
-      this.filterByType("defensive"),
+      await this.delayedFilter("passive"),
+      await this.delayedFilter("defensive"),
     ].flat();
     return [
-      this.filterByType("magic" ,"fire"),
-      this.filterByType("magic" , "cold"),
-      this.filterByType("magic" , "lightning"),
-      this.filterByType("magic" , "wind"),
-      this.filterByType("magic" ,"light"),
-      this.filterByType("magic" ,"dark"),
-      this.filterByType("magic" ,"healing"),
-      this.filterByType("magic" ,"untyped"),
-      this.filterByType("weapon" ,"physical"),
-      this.filterByType("weapon" ,"gun"),
-      this.filterByType("weapon" ,"by-power"),
-      this.filterByType("weapon" ,["fire", "cold", "lightning", "wind", "dark", "light", "untyped" ]),
+      await this.delayedFilter("magic" ,"fire"),
+      await this.delayedFilter("magic" , "cold"),
+      await this.delayedFilter("magic" , "lightning"),
+      await this.delayedFilter("magic" , "wind"),
+      await this.delayedFilter("magic" ,"light"),
+      await this.delayedFilter("magic" ,"dark"),
+      await this.delayedFilter("magic" ,"healing"),
+      await this.delayedFilter("magic" ,"untyped"),
+      await this.delayedFilter("weapon" ,"physical"),
+      await this.delayedFilter("weapon" ,"gun"),
+      await this.delayedFilter("weapon" ,"by-power"),
+      await this.delayedFilter("weapon" ,["fire", "cold", "lightning", "wind", "dark", "light", "untyped" ]),
       ...untypedSkills,
       passiveSkills,
     ] ;
+  }
+
+  private async delayedFilter(subtype: Power["system"]["subtype"], powerType ?: Power["system"]["dmg_type"] | Power["system"]["dmg_type"][]) : Promise<Power[]> {
+    const data=  this.filterByType(subtype, powerType);
+    await sleep(2); //sleep delay for more responsiveness
+    return data;
   }
 
   filterByType (subtype: Power["system"]["subtype"], powerType ?: Power["system"]["dmg_type"] | Power["system"]["dmg_type"][]) : Power[] {
@@ -159,8 +180,8 @@ export class PowerPrinter extends Application {
 
   powerList() : readonly Power[] {
     let powerArr =  (this.highestSlot != undefined) 
-    ? PowerPrinter.swappablePowers(this.highestSlot ?? 0, this.baseRarity ?? "normal")
-    : PersonaDB.allPowersArr();
+      ? PowerPrinter.swappablePowers(this.highestSlot ?? 0, this.baseRarity ?? "normal")
+      : PersonaDB.allPowersArr();
     if (this.allowedTags) {
       const allowedTags = Array.isArray(this.allowedTags) ? this.allowedTags : [this.allowedTags];
       powerArr = powerArr
@@ -170,43 +191,43 @@ export class PowerPrinter extends Application {
     return powerArr;
   }
 
-	static sortPowerFn(this: void, a: Power, b: Power) : number {
-		const sort= a.system.slot - b.system.slot;
-		if (sort != 0) {return sort;}
-		if (b.system.rarity != a.system.rarity) {
-			return CARD_DROP_RATE[b.system.rarity] - CARD_DROP_RATE[a.system.rarity];
-		}
-		const exoticSort= (a.hasTag("exotic")? 1 : 0)
-			- (b.hasTag("exotic") ? 1 : 0);
-		if (exoticSort != 0) {return exoticSort;}
-		return a.name.localeCompare(b.name);
-	}
+  static sortPowerFn(this: void, a: Power, b: Power) : number {
+    const sort= a.system.slot - b.system.slot;
+    if (sort != 0) {return sort;}
+    if (b.system.rarity != a.system.rarity) {
+      return CARD_DROP_RATE[b.system.rarity] - CARD_DROP_RATE[a.system.rarity];
+    }
+    const exoticSort= (a.hasTag("exotic")? 1 : 0)
+      - (b.hasTag("exotic") ? 1 : 0);
+    if (exoticSort != 0) {return exoticSort;}
+    return a.name.localeCompare(b.name);
+  }
 
-	openPower(event: JQuery.ClickEvent) {
-		this.fetchPower(event).sheet.render(true);
-	}
+  openPower(event: JQuery.ClickEvent) {
+    this.fetchPower(event).sheet.render(true);
+  }
 
-	private async changeRarityLeftClick(event: JQuery.ClickEvent) {
-		if (!game.user.isGM) {return;}
-		await this.fetchPower(event).increaseRarity();
-	}
+  private async changeRarityLeftClick(event: JQuery.ClickEvent) {
+    if (!game.user.isGM) {return;}
+    await this.fetchPower(event).increaseRarity();
+  }
 
-	private async changeRarityRightClick(event: JQuery.ContextMenuEvent) {
-		if (!game.user.isGM) {return;}
-		await this.fetchPower(event).reduceRarity();
-	}
+  private async changeRarityRightClick(event: JQuery.ContextMenuEvent) {
+    if (!game.user.isGM) {return;}
+    await this.fetchPower(event).reduceRarity();
+  }
 
-	private fetchPower(event: JQuery.Event) : Power {
-		const powerId = HTMLTools.getClosestData(event, "powerId");
-		if (powerId == undefined) {
-			throw new PersonaError(`Can't find power`);
-		}
-		const power = PersonaDB.allPowers().get(powerId);
-		if (!power) {
-			throw new PersonaError(`Can't find power id ${powerId}`);
-		}
-		return power;
-	}
+  private fetchPower(event: JQuery.Event) : Power {
+    const powerId = HTMLTools.getClosestData(event, "powerId");
+    if (powerId == undefined) {
+      throw new PersonaError(`Can't find power`);
+    }
+    const power = PersonaDB.allPowers().get(powerId);
+    if (!power) {
+      throw new PersonaError(`Can't find power id ${powerId}`);
+    }
+    return power;
+  }
 
   async learnPower(ev: JQuery.ClickEvent) {
     const power = this.fetchPower(ev);
@@ -249,14 +270,14 @@ export class PowerPrinter extends Application {
 }
 
 Hooks.on("DBrefresh", function () {
-	const instance = PowerPrinter._instance;
-	if (instance && instance._state >= 2) {
-		instance.render(false);
-	}
+  const instance = PowerPrinter._instance;
+  if (instance && instance._state >= 2) {
+    instance.render(false);
+  }
 });
 
 async function powerPrinter() {
-	await PowerPrinter.open();
+  await PowerPrinter.open();
   return PowerPrinter._instance;
 }
 

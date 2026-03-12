@@ -3,6 +3,7 @@ import { SeededRandom } from "../utility/seededRandom.js";
 import { Persona } from "../persona-class.js";
 import {PersonaStat} from "../../config/persona-stats.js";
 import {Calculation} from "../utility/calculation.js";
+import {HTMLTools} from "../utility/HTMLTools.js";
 
 export class PersonaCombatStats {
 
@@ -22,12 +23,18 @@ export class PersonaCombatStats {
 	static BASE_AILMENT_DEFENSE = 18 as const;
 	static INSTANT_DEATH_DIVISOR = 5 as const;
 	static CRITICAL_HIT_DIVISOR = 5 as const;
-	static FAVORED_STAT_WEIGHT_INCREASE = 2.0 as const;
-	static DISFAVORED_STAT_WEIGHT_DECREASE = 0.5 as const;
-	static FAVORED_TAROT_STAT_WEIGHT_INCREASE = 1.33 as const;
+	// static FAVORED_STAT_WEIGHT_INCREASE = 2.0 as const;
+	// static DISFAVORED_STAT_WEIGHT_DECREASE = 0.5 as const;
+	static FAVORED_TAROT_STAT_WEIGHT_INCREASE = 1.25 as const;
 	static DISFAVORED_TAROT_STAT_WEIGHT_DECREASE = 0.8 as const;
-	static MAX_STAT_DIVISOR_WILD = 8 as const;
-	static MAX_STAT_DIVISOR_CUSTOM = 9 as const;
+	static MAX_STAT_DIVISOR_WILD = 5.5 as const;
+	static MAX_STAT_DIVISOR_CUSTOM = 8 as const;
+
+  static STAT_DEVIATION = {
+    "low": 0.25,
+    "medium": 0.666,
+    "high" : 1.2,
+  } as const;
 
 	constructor (persona: Persona) {
 		this.persona = persona;
@@ -275,6 +282,23 @@ export class PersonaCombatStats {
 
 	}
 
+  private statDeviation() : number {
+    return PersonaCombatStats.STAT_DEVIATION[this.combatStats.statDeviation ?? "medium"];
+  }
+
+  private adjustedStatDeviation(totalPts: number) : number {
+    const lvl = Math.floor(totalPts / PersonaCombatStats.STAT_POINTS_PER_LEVEL);
+    return 1 + (this.statDeviation() * this._adjustment(lvl));
+  }
+
+  private _adjustment(lvl: number) : number {
+    if (lvl <= 10) {return 1.5;}
+    if (lvl <= 20) {return 1.15;}
+    if (lvl <= 30) {return 1;}
+    if (lvl <= 50) {return 0.75;}
+    return 0.5;
+  }
+
 	#autoSpendPoints(pointsToSpend: number = this.persona.unspentStatPoints) : StatGroup {
 		const persona = this.persona;
 		const isCustomPersona = persona.isCustomPersona;
@@ -304,12 +328,14 @@ export class PersonaCombatStats {
 		};
 		let statsToBeChosen = pointsToSpend;
 		while (statsToBeChosen > 0) {
+				const totalStatPoints = Object.values(stblk).reduce ((acc, x) => acc + x, 0);
 			const slist = (Object.keys(stblk) as PersonaStatType[])
 				.filter(( st) => PersonaCombatStats.canRaiseStat(st, stblk, isCustomPersona))
 				.map( st => {
 					let weight = 1;
-					weight = favored.reduce( (acc, x)=> x == st ? acc * PersonaCombatStats.FAVORED_STAT_WEIGHT_INCREASE : acc, weight);
-					weight = disfavored.reduce( (acc, x)=> x == st ? acc * PersonaCombatStats.DISFAVORED_STAT_WEIGHT_DECREASE : acc, weight);
+          const statDeviation = this.adjustedStatDeviation(totalStatPoints);
+					weight = favored.reduce( (acc, x)=> x == st ? acc * statDeviation: acc, weight);
+					weight = disfavored.reduce( (acc, x)=> x == st ? acc / statDeviation : acc, weight);
 					weight = tarotFavored.reduce( (acc, x)=> x == st ? acc * PersonaCombatStats.FAVORED_TAROT_STAT_WEIGHT_INCREASE : acc, weight);
 					weight = tarotDisfavored.reduce( (acc, x)=> x == st ? acc * PersonaCombatStats.DISFAVORED_TAROT_STAT_WEIGHT_DECREASE : acc, weight);
 					return {
@@ -319,7 +345,6 @@ export class PersonaCombatStats {
 				});
 			try {
 				const seed = this._advancementSeed();
-				const totalStatPoints = Object.values(stblk).reduce ((acc, x) => acc + x, 0);
 				const rng = new SeededRandom(seed + String(totalStatPoints));
 				if (slist.length == 0) {
 					throw new PersonaError(`All stats unselectable for ${persona.source.name}`);
@@ -398,3 +423,5 @@ export class PersonaCombatStats {
 export type StatGroup = Record<PersonaStatType, number>;
 
 type PersonaStatType = keyof ValidAttackers["system"]["combat"]["personaStats"]["stats"];
+
+export const STAT_DEVIATION_LOCTABLE = HTMLTools.createLocalizationObject( Object.keys(PersonaCombatStats.STAT_DEVIATION), "persona.persona.combatStats.deviation") as Record<keyof typeof PersonaCombatStats.STAT_DEVIATION, LocalizationString>;

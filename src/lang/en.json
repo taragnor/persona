@@ -1312,6 +1312,10 @@
 	"persona.affinity.ranking.all": "All",
 	"persona.affinity.ranking.strong": "Strong",
 	"persona.affinity.ranking.standard": "Standard",
-	"persona.affinity.ranking.weak": "Weak"
+	"persona.affinity.ranking.weak": "Weak",
+
+  "persona.persona.combatStats.deviation.low": "Low",
+  "persona.persona.combatStats.deviation.medium": "Medium",
+  "persona.persona.combatStats.deviation.high": "High"
 }
 

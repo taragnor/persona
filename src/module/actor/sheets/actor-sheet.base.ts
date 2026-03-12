@@ -17,6 +17,7 @@ import {REAL_DEFENSE_TYPES} from "../../../config/defense-types.js";
 import {PersonaEffectContainerBaseSheet} from "../../item/sheets/effect-container.js";
 import {TarotPrinter} from "../../printers/tarot-list.js";
 import {TalentPrinter} from "../../printers/talent-list.js";
+import {STAT_DEVIATION_LOCTABLE} from "../persona-combat-stats.js";
 
 export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSheet<PersonaActor> {
 
@@ -78,6 +79,7 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 			PERSONA_STATS_PLUS_EMPTY,
 			USERS,
 			REAL_DEFENSE_TYPES,
+      STAT_DEVIATION: STAT_DEVIATION_LOCTABLE,
 		} as const;
 	}
 

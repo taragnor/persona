@@ -388,6 +388,13 @@ async deleteFromSideboard( id: Power["id"]) : Promise<boolean> {
 		return true;
 	}
 
+static PersonasThatKnowPower(power: Power) {
+  return PersonaDB.possiblePersonas()
+  .filter( persona => persona.powerLearningListFull
+    .some (x=> x.power == power)
+  );
+}
+
 }
 
 type CustomPersonaLearningList= Record<number, {slot: keyof typeof SLOTTYPES, rarity: keyof typeof PROBABILITIES_POWER_RARITY}>;

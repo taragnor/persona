@@ -89,7 +89,7 @@ export class MPCostCalculator extends CostCalculator {
 	}
 
 	static mpCost_buffOrDebuff(pwr: Power) : CostModifier {
-		const buffsGranted=  pwr.addsStatus(["attack-boost", "damage-boost", "defense-boost", "attack-nerf", "damage-nerf", "defense-nerf"]);
+		const buffsGranted=  pwr.addsStatus(["attack-boost", "damage-boost", "defense-boost", "attack-nerf", "damage-nerf", "defense-nerf"], true);
 		let baseCost = buffsGranted * 8;
 		if (buffsGranted >= 3) {baseCost += 6;}
 		if (pwr.isAoE()) {

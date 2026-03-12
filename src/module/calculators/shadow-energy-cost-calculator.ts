@@ -160,9 +160,9 @@ export class EnergyClassCalculator extends CostCalculator {
 	static #energyLevel_statusAdd(pwr: Power) : EnergyCostBase {
 		const statusesAdded = pwr.statusesAdded()
 			.filter( status => (STATUS_EFFECT_LIST
-				.find(x=> x.id == status)?.tags as U<string[]>)
+				.find(x=> x.id == status.status)?.tags as U<string[]>)
 				?.includes("beneficial"))
-			.map (status => this.BENEFICIAL_STATUS_VALUES[status] ?? 0);
+			.map (status => this.BENEFICIAL_STATUS_VALUES[status.status] ?? 0);
 		// const numStatuses = statusesAdded.length;
 		// const cost = numStatuses * 35;
 		const cost = statusesAdded

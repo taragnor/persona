@@ -46,6 +46,7 @@ import {CombatPanel} from "./combat/combat-panel.js";
 import {PROBABILITIES_POWER_RARITY, ProbabilityRate} from "../config/probability.js";
 import {CardData} from "./social/social-card-executor.js";
 import {ConditionalEffectPrinter} from "./conditionalEffects/conditional-effect-printer.js";
+import {PowerLearningSystem} from "./power-learning.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -836,6 +837,12 @@ export class PersonaHandleBarsHelpers {
 				persona.combatStats.mhpCalculation().steps.join("\n")
 			);
 		},
+
+    "personasThatKnow" : function (power: Power) : string {
+      const personas= PowerLearningSystem.PersonasThatKnowPower(power);
+      const tooltip = personas.map( x=> x.name).join(", ");
+      return `<span title='${tooltip}'> ${personas.length} </title>`;
+    },
 
 		"mpBreakdown": function (persona: Persona) {
 			return new Handlebars.SafeString(

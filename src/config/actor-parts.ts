@@ -17,6 +17,7 @@ import { STUDENT_SKILLS_LIST } from "./student-skills.js";
 import {PersonaActor} from "../module/actor/persona-actor.js";
 import {PersonaItem} from "../module/item/persona-item.js";
 import {StatusDuration} from "../module/persona-ae.js";
+import {STAT_DEVIATION_LOCTABLE} from "../module/actor/persona-combat-stats.js";
 
 export type FlagData = {
 	flagId: string,
@@ -195,18 +196,11 @@ export function combatCommonStats() {
 		lastLearnedLevel: new num({initial: 0, integer: true, min: 0}),
 		powersToLearn: new arr( new obj<PowerToLearn>()),
 		learnedPowersBuffer: new arr( new id<Power>()),
-		// defenses :
-		// new sch({
-		// 	ref: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
-		// 	// will: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
-		// 	fort: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
-		// }),
 		personaImg: new txt(),
 		personaStats: new embedded(PersonaStatsDM),
 		initiative: new txt( {choices: DEFENSE_CATEGORY_LIST,  initial: "normal"}),
 		resists: elementalResists(),
 		hpTracker: new obj<HPTracking>(),
-		// fadingState: new num( {integer:true, initial:0}),
 		statusResists: statusResists(),
 		focuses: new arr( new id<Focus>(), {initial: []}),
 		talents: new arr( new id<Talent>(), {initial: []}),
@@ -396,6 +390,7 @@ class PersonaStatsDM extends foundry.abstract.DataModel {
 			disfavored_stat: new txt<PersonaStat | "">({initial:"" }),
 			preferred_stat2: new txt<PersonaStat | "">({initial:"" }),
 			disfavored_stat2: new txt<PersonaStat | "">({initial:"" }),
+      statDeviation: new txt( {initial: "medium", choices: STAT_DEVIATION_LOCTABLE}),
 			pLevel: new num({min: 1, max: 150, initial: 1}),
 			xp: new num({min:0, integer: true, initial: 0}),
 		};
