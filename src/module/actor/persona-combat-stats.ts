@@ -338,8 +338,8 @@ export class PersonaCombatStats {
           const statDeviation = this.adjustedStatDeviation(totalStatPoints);
 					weight = favored.reduce( (acc, x)=> x == st ? acc * statDeviation: acc, weight);
 					weight = disfavored.reduce( (acc, x)=> x == st ? acc / statDeviation : acc, weight);
-					weight = tarotFavored.reduce( (acc, x)=> x == st ? acc * PersonaCombatStats.FAVORED_TAROT_STAT_WEIGHT_INCREASE : acc, weight);
-					weight = tarotDisfavored.reduce( (acc, x)=> x == st ? acc * PersonaCombatStats.DISFAVORED_TAROT_STAT_WEIGHT_DECREASE : acc, weight);
+					weight = tarotFavored.reduce( (acc, x)=> x == st ? acc * statDeviation : acc, weight);
+					weight = tarotDisfavored.reduce( (acc, x)=> x == st ? acc / statDeviation: acc, weight);
 					return {
 						weight,
 						item: st

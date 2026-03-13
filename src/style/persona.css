@@ -13,11 +13,17 @@ input.long-number {
 
 }
 
+input.short-text {
+	width: 10em;
+	max-width: 10em;
+}
+
 div.short{
 	width: 4em;
 	max-width: 5%;
 	min-width: 1%;
 }
+
 
 div.resistance-block {
 	display:flex;
@@ -1875,4 +1881,12 @@ button.end-turn {
 
 .power-name-block.on-cooldown {
 	opacity: 50%;
+}
+
+.persona-list.print-out {
+  text-align: left;
+}
+
+.persona-list.print-out th {
+  text-align: left;
 }

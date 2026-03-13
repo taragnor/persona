@@ -16,6 +16,8 @@ export class PowerPrinter extends Application {
   baseRarity ?: Power["system"]["rarity"];
   highestSlot ?: Power["system"]["slot"];
   _swapPower ?: Power;
+  filterString : string = "";
+  showUnique: boolean = false;
 
   static init() {
 
@@ -25,6 +27,9 @@ export class PowerPrinter extends Application {
   constructor(swapPower: Power, persona : Persona);
   constructor(swapPower?: Power, persona ?: Persona) {
     super();
+    if (game.user.isGM) {
+      this.showUnique = true;
+    }
     if (swapPower && persona) {
       this.highestSlot = swapPower.system.slot;
       let rarity = swapPower.system.rarity;
@@ -61,6 +66,20 @@ export class PowerPrinter extends Application {
     html.find(".learn-power").on ("click", ev => void this.learnPower(ev));
     html.find(".learn-power").on ("contextmenu", ev => void this.addToLearningList(ev));
     html.find(".swap-power").on ("click", ev => void this.onSwapPower(ev));
+    html.find("input.filter-text").on("change", ev => void this.onFilterStringChange(ev));
+    html.find("input.show-unique").on("change", ev => void this.onChangeShowUnique(ev));
+    //fix for it automatically reloading the page on filter
+    html.find('input').on('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        this.setFilterString(html.find("input.filter-text").val() as string);
+      }
+    });
+    //fix for it automatically reloading the page on filter
+    html.find('form').on('submit', function (e) {
+      e.preventDefault();
+    });
+    // html.find("input.filter-text").trigger("focus");
   }
 
   static async open(): Promise<PowerPrinter> {
@@ -120,7 +139,7 @@ export class PowerPrinter extends Application {
     const powers = (await this.mainPowerList())
       .filter( x=> x!= undefined && x.length > 0)
       .map( list => list.sort(PowerPrinter.sortPowerFn));
-    if (powers.length == 0) {
+    if (powers.length == 0 && this.filterString.length == 0) {
       throw new PersonaError("No Powers to display");
     }
     return {
@@ -128,6 +147,8 @@ export class PowerPrinter extends Application {
       powerLists: powers,
       targetPersona,
       swapPower: this._swapPower,
+      filterString: this.filterString,
+      showUnique: this.showUnique,
     };
   }
 
@@ -182,11 +203,19 @@ export class PowerPrinter extends Application {
     let powerArr =  (this.highestSlot != undefined) 
       ? PowerPrinter.swappablePowers(this.highestSlot ?? 0, this.baseRarity ?? "normal")
       : PersonaDB.allPowersArr();
+    if (this.filterString.length > 0) {
+      const filterStr = this.filterString.toLowerCase();
+      powerArr = powerArr.filter( pwr=> pwr.name.toLowerCase().includes(filterStr));
+    }
     if (this.allowedTags) {
       const allowedTags = Array.isArray(this.allowedTags) ? this.allowedTags : [this.allowedTags];
       powerArr = powerArr
         .filter(pwr => allowedTags.some ( tag => pwr.hasTag(tag))
         );
+    }
+    if (!this.showUnique) {
+      powerArr = powerArr
+        .filter(pwr => pwr.system.rarity != "never");
     }
     return powerArr;
   }
@@ -267,6 +296,25 @@ export class PowerPrinter extends Application {
     await this.close();
   }
 
+  onFilterStringChange(ev: JQuery.ChangeEvent) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    this.setFilterString($(ev.currentTarget).val() as string);
+  }
+
+  onChangeShowUnique(ev: JQuery.ChangeEvent) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    this.showUnique = ($(ev.currentTarget).prop("checked") as boolean);
+    this.render(false);
+}
+
+  setFilterString(newval: string) {
+    this.filterString = newval;
+    console.log(`Search string changed to ${newval}`);
+    this.render(false);
+  }
+
 }
 
 Hooks.on("DBrefresh", function () {
@@ -280,6 +328,7 @@ async function powerPrinter() {
   await PowerPrinter.open();
   return PowerPrinter._instance;
 }
+
 
 //@ts-expect-error adding to global scope
 window.powerList = powerPrinter;

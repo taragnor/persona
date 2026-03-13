@@ -1,8 +1,18 @@
 <form class="print-out">
-{{#each powerLists as |list i|}}
-		{{> "systems/persona/parts/power-list.hbs" powers=list targetPersona=../targetPersona swapPower=../swapPower}}
-		<hr>
-{{/each}}
+  <div class="f-row">
+    <span>
+      <label> Filter </label>
+      <input type="text" class="filter-text short-text" value="{{filterString}}" title="Filter For this text" placeholder="Search String">
+    </span>
+    <span>
+      <label> show Unique Skills </label>
+      <input type="checkbox" class="show-unique" {{checked showUnique}}>
+    </span>
+  </div>
+  {{#each powerLists as |list i|}}
+  {{> "systems/persona/parts/power-list.hbs" powers=list targetPersona=../targetPersona swapPower=../swapPower}}
+  <hr>
+  {{/each}}
 
 </form>
 
