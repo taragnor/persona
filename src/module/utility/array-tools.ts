@@ -76,9 +76,16 @@ type WeightedChoiceItem<T>= {
 // 	console.log( `C: ${x["C"]}`);
 // }
 
+interface EqualityDetector  {
+  equals(this: this, x: typeof this): boolean;
+}
+
+type PushUniqueTypes = number | string | EqualityDetector;
+
 declare global {
 	interface Array<T> {
-		pushUnique<R extends T>(...x: R[]): this;
+		pushUnique<R extends T & PushUniqueTypes>(...x: R[]): this;
+		// pushUnique<R extends T>(...x: R[]): this;
 		pushUniqueS<R extends T>(equalityTestFn: (a:R, b:R) => boolean, ...list: R[]) : this ;
 	}
 }
@@ -91,8 +98,14 @@ Array.prototype.pushUniqueS = function<T>(this: Array<T>, equalityTestFn: (a:T, 
 	return this;
 };
 
-Array.prototype.pushUnique = function<T>(this: Array<T>, ...list: T[]) {
+Array.prototype.pushUnique = function<T extends PushUniqueTypes>(this: Array<T>, ...list: T[]) {
+  if (typeof list[0] == "object") {
+    return pushUniqueEqualityObject(this as EqualityDetector[], ...list as EqualityDetector[]);
+  }
 	for (const x of list) {
+    if (typeof x == "object") {
+      pushUniqueEqualityObject(list, x as (T & EqualityDetector));
+    }
 		if (this.includes(x)) {continue;}
 		if (Array.isArray(x)) {
 			if (this.some( elem => Array.isArray(elem) && ArrayEq(elem, x))) {
@@ -103,6 +116,15 @@ Array.prototype.pushUnique = function<T>(this: Array<T>, ...list: T[]) {
 	}
 	return this;
 };
+
+function pushUniqueEqualityObject<T extends PushUniqueTypes>(arr: T[], ...adds: (T & EqualityDetector)[]) : typeof arr {
+  for (const item of adds) {
+    if (arr.every( elem => typeof elem != "object" || !elem.equals(item))) {
+      arr.push(item);
+    }
+  }
+  return arr;
+}
 
 export function ArrayEq (a: unknown[], b: unknown[]) : boolean {
 	return a.every( (elem, i) => elem == b[i]);

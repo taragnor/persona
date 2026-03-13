@@ -639,7 +639,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.#cache.passivePowers;
   }
 
-  defensiveModifiers(): readonly SourcedConditionalEffect[] {
+  defensiveModifiers(): readonly ConditionalEffectC[] {
     if (!this.#cache.defensiveModifiers || !this.canCache) {
       const val =  this.mainModifiers().filter ( eff => eff.conditionalType == "defensive");
       if (!this.canCache) {return val;}

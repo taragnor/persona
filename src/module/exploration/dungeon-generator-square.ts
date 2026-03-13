@@ -44,6 +44,10 @@ export class DungeonSquare {
 		return this.parent.difficultyLevel;
 	}
 
+  equals(ds: DungeonSquare) {
+    return this == ds;
+  }
+
 	isStartPoint(): boolean {
 		return this.specials.includes("entrance");
 	}

@@ -113,7 +113,10 @@ export class ConditionalEffectC {
 	get owner() { return this._owner; }
 
 	equals( other: ConditionalEffectC) : boolean {
-		return this._original == other._original;
+		return this._original == other._original &&
+      this._realSource == other._realSource
+    && this._source == other._source;
+    ;
 	}
 
 	getActiveConsequences(situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {

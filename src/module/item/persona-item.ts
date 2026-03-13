@@ -764,6 +764,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return list.some(t=> t instanceof PersonaItem ? t.system.linkedInternalTag == tag : t == tag );
   }
 
+  equals(other: PersonaItem) : boolean {
+    return this == other;
+  }
+
   tagList(this : Power, user: ValidAttackers | null): readonly (PowerTag | EquipmentTag)[];
   tagList(this: UsableAndCard, user: ValidAttackers | null) : readonly PowerTag[];
   tagList(this : Weapon, user ?: null ): readonly EquipmentTag[];

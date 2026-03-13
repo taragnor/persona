@@ -629,6 +629,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return actorList.map( source=> new Persona(source, this));
 	}
 
+  equals(other: PersonaActor) : boolean {
+    return this == other;
+  }
+
 	async addPersona(this: PC | Shadow, shadow: Shadow) {
 		if (this.isPC() && (!shadow.hasPlayerOwner || !shadow.isOwner)) {
 			PersonaError.softFail("Can't add this, doesn't have a player owner");
