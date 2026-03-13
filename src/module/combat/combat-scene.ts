@@ -12,12 +12,12 @@ import {PersonaCombat, StartCombatOptions} from "./persona-combat.js";
 export class CombatScene {
 	static instance : U<CombatScene>;
 	_previous : Scene["id"];
-	encounter: Encounter;
+	encounter: Pick<Encounter, "enemies">;
 	promiseData: U<{resolve: (value: unknown) => unknown, reject: (reason ?: unknown) => unknown}>;
 	combatOver : boolean = false;
 	region: U<PersonaRegion>;
 
-	constructor (previous: Scene, encounter: Encounter) {
+	constructor (previous: Scene, encounter: Pick<Encounter, "enemies">) {
 		this._previous = previous.id;
 		this.encounter = encounter;
 	}
@@ -26,7 +26,7 @@ export class CombatScene {
 		return game.scenes.get(this._previous) as PersonaScene;
 	}
 
-	async resolve(options :CombatSetupOptions) : Promise<EncounterResult> {
+	async resolve(options :CombatSetupOptions = {}) : Promise<EncounterResult> {
 		await this.scene.setFlag("persona", "previousScene", this._previous);
 		await this.setupCombat();
 		const promise = new Promise( (res, rej) => {
@@ -73,13 +73,31 @@ export class CombatScene {
 	}
 
 	async setupCombat() {
-		const INITIAL_OFFSET = { x: 6, y: 6} as const;
-		const SPACING_BLOCKS = 4 as const;
 		const scene= this.scene;
 		await scene.activate();
 		await scene.view();
 		await waitUntilTrue( () => game.scenes.current == scene && game.canvas.scene == scene && game.canvas.ready);
-		const gridsize = scene.grid.size;
+		// const gridsize = scene.grid.size;
+		// let x = INITIAL_OFFSET.x * gridsize;
+		// const y = INITIAL_OFFSET.y * gridsize;
+		// const tokens : Token<PersonaActor>[] = [];
+		// for (const shadow of this.encounter.enemies) {
+		// 	const token = await CreateToken.create(shadow, {x,y}, this.scene);
+		// 	if (token) {
+		// 		tokens.push(token.object!);
+		// 	}
+		// 	x += SPACING_BLOCKS * gridsize;
+		// }
+		const tokens : Token<PersonaActor>[] = await this.setupShadows();
+    const playerTokens = await this.setupPCs();
+		tokens.push(...playerTokens);
+		await this.addTokensToCombat(tokens);
+	}
+
+  private async setupShadows() : Promise<Token<PersonaActor>[]> {
+		const INITIAL_OFFSET = { x: 6, y: 6} as const;
+		const SPACING_BLOCKS = 4 as const;
+		const gridsize = this.scene.grid.size;
 		let x = INITIAL_OFFSET.x * gridsize;
 		const y = INITIAL_OFFSET.y * gridsize;
 		const tokens : Token<PersonaActor>[] = [];
@@ -90,10 +108,23 @@ export class CombatScene {
 			}
 			x += SPACING_BLOCKS * gridsize;
 		}
+    return tokens;
+  }
+
+  private async setupPCs() : Promise<Token<PersonaActor>[]> {
 		const playerTokens = this.getPlayerTokens();
-		tokens.push(...playerTokens);
-		await this.addTokensToCombat(tokens);
-	}
+		const INITIAL_OFFSET = { x: 6, y: 12} as const;
+		const SPACING_BLOCKS = 4 as const;
+		const gridsize = this.scene.grid.size;
+		let x = INITIAL_OFFSET.x * gridsize;
+		const y = INITIAL_OFFSET.y * gridsize;
+
+    for (const token of playerTokens) {
+      await token.document.update( {x, y});
+			x += SPACING_BLOCKS * gridsize;
+    }
+    return playerTokens;
+  }
 
 	getPlayerTokens() : Token<PersonaActor>[] {
 		const playerTokens = this.scene.tokens
@@ -171,7 +202,7 @@ export class CombatScene {
 				hidden: t?.document?.hidden
 			};
 		});
-		const sanitizedData = createData.filter( x=> 
+		const sanitizedData = createData.filter( x=>
 			x.tokenId && x.sceneId && x.actorId);
 		if (sanitizedData.length < createData.length) {
 			Debug(tokens);

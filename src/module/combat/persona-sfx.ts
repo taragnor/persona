@@ -94,7 +94,7 @@ export class PersonaSFX {
 		const damageType = usableOrCard.getDamageType(attacker.actor);
 		const power = usableOrCard;
 		if (power.system.sound) {
-			const snd = PersonaSounds.playFile(power.system.sound, 0.5);
+			const snd = PersonaSounds.playFile(power.system.sound, 0.5, game.users.contents.map(x=> x.id));
 			return snd;
 		}
 		if (!power.isAoE()) {return;}

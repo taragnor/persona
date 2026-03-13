@@ -175,11 +175,11 @@ static avgLevelOfEncounter (encounter: Encounter) {
 static getLevelDiffString(encounter: Encounter) : string {
 	const levelDiff = this.avgPartyLevel() - this.avgLevelOfEncounter(encounter);
 	switch (true) {
-		case (levelDiff >= 10):  return "Very Easy";
-		case (levelDiff >= 5): return "Easy";
+		case (levelDiff >= 8):  return "Very Easy";
+		case (levelDiff >= 4): return "Easy";
 		case (levelDiff >= 0): return "Moderate";
-		case (levelDiff >= -5): return "Strong";
-		case (levelDiff >= -10): return "Very Strong";
+		case (levelDiff >= -4): return "Strong";
+		case (levelDiff >= -8): return "Very Strong";
 		default: return "Overwhelming";
 	}
 }

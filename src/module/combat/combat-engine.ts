@@ -721,7 +721,7 @@ export class CombatEngine {
 		return res;
 	}
 
-  static getStatModifier( attackStat: number, defenseStat: number) : Calculation {
+  static getStatModifier( attackStat: number, defenseStat: number, bonusMult = 1) : Calculation {
     const calc = new Calculation();
     const comparison =  PersonaCombatStats.statComparison(attackStat, defenseStat);
     const sign = Math.sign(comparison);
@@ -729,14 +729,14 @@ export class CombatEngine {
     switch (true) {
       case diffPercent > 1 : {
         const over = diffPercent - 1;
-        const mod = Math.round(over * 20); //each 20% over 100% counts as a +1 modifier;
+        const mod = Math.floor(over * 100 / 25 * bonusMult); //each 25% over 100% counts as a +1 modifier;
         diffPercent = 1;
-        calc.add(0, mod * sign, `(Over 100%) stat diff ${attackStat} vs ${defenseStat}`);
+        calc.add(0, mod * sign , `(Over 100%) stat diff ${attackStat} vs ${defenseStat}`);
       }
       // eslint-disable-next-line no-fallthrough
-      case diffPercent > 0.30: {
+      case diffPercent >= 0.1: {
         const over = diffPercent;
-        const mod = Math.round(over * 10); //each 10% counts as a +1 modifier up to 100%;
+        const mod = Math.floor(over * 100 / 10 * bonusMult); //each 10% counts as a +1 modifier up to 100%;
         diffPercent = 0.1;
         calc.add(0, mod * sign, `(Under 100%) stat diff ${attackStat} vs ${defenseStat}`);
       }
@@ -967,7 +967,7 @@ export class CombatEngine {
 	}
 
 	static luckDiff( attackerPersona: Persona, targetPersona: Persona) : Calculation {
-    return this.getStatModifier(attackerPersona.combatStats.luck, targetPersona.combatStats.luck);
+    return this.getStatModifier(attackerPersona.combatStats.luck, targetPersona.combatStats.luck, 0.5);
 		// const calc = new Calculation(0, 3);
 		// calc.setFinalizeStep("rounded");
 		// const attackerLuck = attackerPersona.combatStats.luck;
