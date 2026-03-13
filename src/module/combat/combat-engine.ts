@@ -5,6 +5,7 @@ import {ModifierTarget, NonDeprecatedModifierType} from "../../config/item-modif
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {AnyStringObject} from "../../config/precondition-types.js";
 import {AttackRollSituation, BaseAttackRollSituation, PostAttackRollSituation, RollSituation} from "../../config/situation.js";
+import {PersonaCombatStats} from "../actor/persona-combat-stats.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 import {ConsequenceProcessor} from "../conditionalEffects/consequence-processor.js";
 import {PersonaItem} from "../item/persona-item.js";
@@ -31,8 +32,11 @@ export class CombatEngine {
 	static LUCK_DIFF_MULTIPLIER = (1/6);
 	startTime: number;
 
-	static BASE_WEAPON_CRIT_BOOST = 2;
-	static BASE_MAGIC_CRIT_BOOST = 1;
+  static BASE_DEFENSE_DMG_ATTACK = 4 as const;
+  static BASE_DEFENSE_INSTANT_KILL = 20 as const;
+  static BASE_DEFENSE_AILMENT = 18 as const;
+	static BASE_WEAPON_CRIT_BOOST = 2 as const;
+	static BASE_MAGIC_CRIT_BOOST = 1 as const;
 
 	constructor (combat: U<PersonaCombat> = game.combat as U<PersonaCombat>) {
 		this.combat = combat;
@@ -564,7 +568,7 @@ export class CombatEngine {
 		return false;
 	}
 
-	private checkFumble( attacker: Persona, _target: Persona,  power: Usable, situation: ProtoResultAttackSituation) : boolean {
+	private checkFumble( _attacker: Persona, _target: Persona,  _power: Usable, _situation: ProtoResultAttackSituation) : boolean {
 		return false;
 		//testing program based solution
 		// if (
@@ -586,9 +590,11 @@ export class CombatEngine {
 			}
 			case 'block': {
 				if (!pierce) {return "block";}
+        break;
 			}
 			case 'absorb' : {
 				if (!pierce) {return "absorb";}
+        break;
 			}
 		}
 		if (target.user.hasStatus('phys-shield') && this.canBeReflectedByPhysicalShield(power, attacker)) {
@@ -715,8 +721,71 @@ export class CombatEngine {
 		return res;
 	}
 
-	getAttackBonus(attackerP: Persona, power: Usable, target: Persona | undefined, options : CombatOptions = {}) : Calculation {
-		const attackBonus = this.getBaseAttackBonus(attackerP, power);
+  static getStatModifier( attackStat: number, defenseStat: number) : Calculation {
+    const calc = new Calculation();
+    const comparison =  PersonaCombatStats.statComparison(attackStat, defenseStat);
+    const sign = Math.sign(comparison);
+    let diffPercent = Math.abs(comparison) - 1;
+    switch (true) {
+      case diffPercent > 1 : {
+        const over = diffPercent - 1;
+        const mod = Math.round(over * 20); //each 20% over 100% counts as a +1 modifier;
+        diffPercent = 1;
+        calc.add(0, mod * sign, `(Over 100%) stat diff ${attackStat} vs ${defenseStat}`);
+      }
+      // eslint-disable-next-line no-fallthrough
+      case diffPercent > 0.30: {
+        const over = diffPercent;
+        const mod = Math.round(over * 10); //each 10% counts as a +1 modifier up to 100%;
+        diffPercent = 0.1;
+        calc.add(0, mod * sign, `(Under 100%) stat diff ${attackStat} vs ${defenseStat}`);
+      }
+      // eslint-disable-next-line no-fallthrough
+      case diffPercent > 0 : {
+        const mod = 1; //the larger score gets an automatic +1 mod
+        calc.add(0, mod * sign, "Greater Stat Modifier");
+      }
+    }
+    return calc;
+  }
+
+   getStatModifier (attacker: Persona, target: Persona, power: Usable) : Calculation {
+    const attackStat = CombatEngine.getAttackStat(attacker, power);
+    const defenseStat =CombatEngine.getDefenseStat(target, power);
+     return CombatEngine.getStatModifier(attackStat, defenseStat);
+    // const comparison =  PersonaCombatStats.statComparison(attackStat, defenseStat);
+    // const sign = Math.sign(comparison);
+    // let diffPercent = Math.abs(comparison) - 1;
+    // switch (true) {
+    //   case diffPercent > 1 : {
+    //     const over = diffPercent - 1;
+    //     const mod = Math.round(over * 20); //each 20% over 100% counts as a +1 modifier;
+    //     diffPercent = 1;
+    //     calc.add(0, mod * sign, `(Over 100%) stat diff ${attackStat} vs ${defenseStat}`);
+    //   }
+    //   // eslint-disable-next-line no-fallthrough
+    //   case diffPercent > 0.30: {
+    //     const over = diffPercent;
+    //     const mod = Math.round(over * 10); //each 10% counts as a +1 modifier up to 100%;
+    //     diffPercent = 0.1;
+    //     calc.add(0, mod * sign, `(Under 100%) stat diff ${attackStat} vs ${defenseStat}`);
+    //   }
+    //   // eslint-disable-next-line no-fallthrough
+    //   case diffPercent > 0 : {
+    //     const mod = 1; //the larger score gets an automatic +1 mod
+    //     calc.add(0, mod * sign, "Greater Stat Modifier");
+    //   }
+    // }
+    // return calc;
+  }
+
+  getAttackBonus(attacker: Persona, power: Usable, target: Persona | undefined, options : CombatOptions = {}) : Calculation {
+    const attackBonus = target ? this.getStatModifier(attacker, target, power) : new Calculation();
+    if (target) {
+      const bonuses = this.getAttackRollModifiers(attacker, target, power);
+      attackBonus.merge(bonuses);
+    }
+		// const attackBonus = this.getBaseAttackBonus(attacker, power);
 		attackBonus.add(1, this.customAtkBonus ?? 0, 'Custom modifier');
 		const defense = this.getDefenderAttackModifiers(target, power.system.defense, power);
 		attackBonus.add(1, defense, "Defense Mods");
@@ -725,6 +794,56 @@ export class CombatEngine {
 		}
 		return attackBonus;
 	}
+
+  private static getAttackStat(attacker: Persona, power: Usable) : number {
+    switch (power.system.defense) {
+      case "none": return 0;
+      case "fort": return attacker.combatStats.agility;
+      case "ref": return attacker.combatStats.agility;
+      case "kill": return attacker.combatStats.luck;
+      case "ail": return attacker.combatStats.luck;
+    }
+  }
+
+  private static getDefenseStat(target: Persona, power: Usable) : number {
+    switch (power.system.defense) {
+      case "none": return 0;
+      case "fort": return target.combatStats.agility;
+      case "ref": return target.combatStats.agility;
+      case "kill": return target.combatStats.luck;
+      case "ail": return target.combatStats.luck;
+    }
+  }
+
+  getAttackRollModifiers(attacker: Persona, target: Persona, power: Usable)  : Calculation {
+    const calc= new Calculation();
+    const mods : NonDeprecatedModifierType[] = ["allAtk"];
+    switch (power.system.defense) {
+      case "fort":
+        mods.push("magAtk");
+        break;
+      case "ref":
+        mods.push("wpnAtk");
+        break;
+      case "kill":
+        mods.push("instantDeathRange");
+        break;
+      case "ail":
+        mods.push("afflictionRange");
+        break;
+      case "none":
+        break;
+      default:
+        power.system.defense satisfies never;
+    }
+    const attackerBonuses = attacker.getBonuses(mods);
+    const powerBonuses = new ModifierList(power.getModifier(mods, attacker.user));
+    const targetMods = target.getBonuses(mods, target.defensiveModifiers());
+    calc.add(1, attackerBonuses, "Attacker bonuses");
+    calc.add(1, powerBonuses, "Power Bonuses");
+    calc.subtract(1, targetMods, "Target Modifiers");
+    return calc;
+  }
 
 	getDefenderAttackModifiers(target: Persona | undefined, defense : Defense, power: Usable) : ModifierList {
 		if (!target || defense == "none") {return new ModifierList();}
@@ -744,44 +863,43 @@ export class CombatEngine {
 		return defenseMod;
 	}
 
-	getBaseAttackBonus(attackerPersona: Persona, power:Usable): Calculation {
-		let modList = new ModifierList();
-		const calc = new Calculation(0, 3);
-		calc.add(1, power.system.atk_bonus,`${power.name} attack bonus`);
-
-		switch (power.system.defense) {
-			case "none":
-				return calc;
-			case "ref": {// weapon attack
-				calc.merge(attackerPersona.wpnAtkBonus());
-				modList =  modList.concat(new ModifierList(power.getModifier('wpnAtk', attackerPersona.user)));
-				break;
-			}
-			case "fort": //magic attack
-				calc.merge(attackerPersona.magAtkBonus());
-				modList = modList.concat(new ModifierList(power.getModifier('magAtk', attackerPersona.user)));
-				break;
-			case "kill": {
-				calc.merge(attackerPersona.instantDeathAtkBonus());
-				const ID_Bonus = CombatEngine.baseInstantKillBonus(power);
-				modList.add(`${power.displayedName.toString()} Bonus`, ID_Bonus);
-				modList = modList.concat(new ModifierList(power.getModifier('instantDeathRange', attackerPersona.user)));
-				break;
-			}
-			case "ail": {
-				calc.merge(attackerPersona.ailmentAtkBonus());
-				const Ail_Bonus = CombatEngine.baseAilmentAttackBonus(power);
-				modList.add(`${power.displayedName.toString()} Bonus`, Ail_Bonus);
-				modList = modList.concat(new ModifierList(power.getModifier('afflictionRange', attackerPersona.user)));
-				break;
-			}
-			default:
-				power.system.defense satisfies never;
-		}
-		modList =  modList.concat(new ModifierList(power.getModifier('allAtk', attackerPersona.user)));
-		return calc.add(1, modList, "Mods");
-		// return modList;
-	}
+	// private getBaseAttackBonus(attackerPersona: Persona, power:Usable): Calculation {
+	// 	let modList = new ModifierList();
+	// 	const calc = new Calculation(0, 3);
+	// 	calc.add(1, power.system.atk_bonus,`${power.name} attack bonus`);
+	// 	switch (power.system.defense) {
+	// 		case "none":
+	// 			return calc;
+	// 		case "ref": {// weapon attack
+	// 			calc.merge(attackerPersona.wpnAtkBonus());
+	// 			modList =  modList.concat(new ModifierList(power.getModifier('wpnAtk', attackerPersona.user)));
+	// 			break;
+	// 		}
+	// 		case "fort": //magic attack
+	// 			calc.merge(attackerPersona.magAtkBonus());
+	// 			modList = modList.concat(new ModifierList(power.getModifier('magAtk', attackerPersona.user)));
+	// 			break;
+	// 		case "kill": {
+	// 			calc.merge(attackerPersona.instantDeathAtkBonus());
+	// 			const ID_Bonus = CombatEngine.baseInstantKillBonus(power);
+	// 			modList.add(`${power.displayedName.toString()} Bonus`, ID_Bonus);
+	// 			modList = modList.concat(new ModifierList(power.getModifier('instantDeathRange', attackerPersona.user)));
+	// 			break;
+	// 		}
+	// 		case "ail": {
+	// 			calc.merge(attackerPersona.ailmentAtkBonus());
+	// 			const Ail_Bonus = CombatEngine.baseAilmentAttackBonus(power);
+	// 			modList.add(`${power.displayedName.toString()} Bonus`, Ail_Bonus);
+	// 			modList = modList.concat(new ModifierList(power.getModifier('afflictionRange', attackerPersona.user)));
+	// 			break;
+	// 		}
+	// 		default:
+	// 			power.system.defense satisfies never;
+	// 	}
+	// 	modList =  modList.concat(new ModifierList(power.getModifier('allAtk', attackerPersona.user)));
+	// 	return calc.add(1, modList, "Mods");
+	// 	// return modList;
+	// }
 
 	async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<CombatResult> {
 		const {situation} = atkResult;
@@ -849,14 +967,15 @@ export class CombatEngine {
 	}
 
 	static luckDiff( attackerPersona: Persona, targetPersona: Persona) : Calculation {
-		const calc = new Calculation(0, 3);
-		calc.setFinalizeStep("rounded");
-		const attackerLuck = attackerPersona.combatStats.luck;
-		const targetLuck = targetPersona.combatStats.luck;
-		calc.add(0,attackerLuck, "Attacker Luck");
-		calc.add(0,-targetLuck, "Target Luck");
-		calc.mult(1, this.LUCK_DIFF_MULTIPLIER, "Luck Diff Multiplier");
-		return calc;
+    return this.getStatModifier(attackerPersona.combatStats.luck, targetPersona.combatStats.luck);
+		// const calc = new Calculation(0, 3);
+		// calc.setFinalizeStep("rounded");
+		// const attackerLuck = attackerPersona.combatStats.luck;
+		// const targetLuck = targetPersona.combatStats.luck;
+		// calc.add(0,attackerLuck, "Attacker Luck");
+		// calc.add(0,-targetLuck, "Target Luck");
+		// calc.mult(1, this.LUCK_DIFF_MULTIPLIER, "Luck Diff Multiplier");
+		// return calc;
 	}
 
 	static calculateAilmentRange( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: N<Situation>) : U<CalculatedRange> {
@@ -903,6 +1022,15 @@ export class CombatEngine {
 		return attackerMods.concat(targetDefense);
 	}
 
+  static getBaseDefense(defense: Defense) : number {
+    switch (defense) {
+      case "fort": return this.BASE_DEFENSE_DMG_ATTACK;
+      case "ref": return this.BASE_DEFENSE_DMG_ATTACK;
+      case "kill": return this.BASE_DEFENSE_INSTANT_KILL;
+      case "ail": return this.BASE_DEFENSE_AILMENT;
+      case "none": return 0;
+    }
+  }
 
 	static calculateCriticalRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation?: N<Situation>) : U<CalculatedRange> {
 		const powerMod = power.baseCritBoost();
@@ -976,12 +1104,19 @@ export class CombatEngine {
 		};
 	}
 
-	calcCritModifier( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation, ) : Calculation {
-		const critBoostMod = power.critBoost(attackerPersona);
-		const critResist = targetPersona.critResist().eval(situation).total;
-		critBoostMod.add(1, -critResist, 'Enemy Critical Resistance');
-		return critBoostMod;
-	}
+	// calcCritModifier( attackerPersona: Persona, targetPersona: Persona, power: Usable, situation: Situation, ) : Calculation {
+    // const critMod = CombatEngine.luckDiff(attackerPersona, targetPersona);
+    // const targetResist =targetPersona.getDefensiveBonuses(["critResist"]);
+    // // const attackerBonus = attackerPersona.getBonuses("critBoost");
+    // // critMod.add(1, attackerBonus, "Attacker modifiers");
+    // critMod.add(1, power.critBoost(attackerPersona), "Critical Boost");
+    // critMod.subtract(1, targetResist, "Target Critical Resistance");
+    // // const targetResist = this.getDefensiveBonuses()(this.mainModifiers(), "critResist");
+	// 	// const critBoostMod = power.critBoost(attackerPersona);
+	// 	// const critResist = targetPersona.critResist().eval(situation).total;
+	// 	// critBoostMod.add(1, -critResist, 'Enemy Critical Resistance');
+	// 	return critMod;
+	// }
 
 	async checkPowerPreqs(attacker: PToken, power: UsableAndCard) : Promise<boolean> {
 		const combat = this.combat;

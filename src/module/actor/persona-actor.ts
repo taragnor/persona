@@ -4179,7 +4179,7 @@ async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: num
 				luk: 0,
 			};
 			const newObj = {...bonuses};
-			if (this.hasSoloPersona) {amt = Math.max(1, Math.round(amt / 2));}
+			// if (this.hasSoloPersona) {amt = Math.max(1, Math.round(amt / 2));}
 			newObj[buffType] += amt;
 			await this.update({ "system.combat.personaStats.permanentStatsBonuses": newObj});
 		}

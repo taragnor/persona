@@ -392,13 +392,16 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const CONST = PersonaActorSheetBase.CONST();
 		if (!power) {return;}
 		const persona = this.actor.persona();
+		const target= PersonaCombat.targettedPTokens()
+			.filter( x=> x.actor.persona().effectiveScanLevel >=2 ).at(0) ?? null ;
+    const targetPersona  : Persona = target ? target.actor.persona() : persona;
 		const damage = await CombatantSheetBase.getDamage(persona, power);
     await sleep(10);//allow Async break to allow rendering (smooth behavior)
 		const balanceReport = await this.getBalanceTest(power as Usable);
-		const ailmentRange = CombatEngine.calculateAilmentRange(persona, persona, power as Usable, null);
-		const instantDeathRange = CombatEngine.calculateInstantDeathRange(persona, persona, power as Usable, null);
-		const critRange = CombatEngine.calculateCriticalRange(persona, persona, power as Usable, null);
-		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona(), damage, balanceReport, ailmentRange, instantDeathRange, critRange});
+		const ailmentRange = CombatEngine.calculateAilmentRange(persona, targetPersona, power as Usable, null);
+		const instantDeathRange = CombatEngine.calculateInstantDeathRange(persona, targetPersona, power as Usable, null);
+		const critRange = CombatEngine.calculateCriticalRange(persona, targetPersona, power as Usable, null);
+		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona(), damage, balanceReport, ailmentRange, instantDeathRange, critRange, targetPersona});
 		$(ev.currentTarget).prop('title', html);
 	}
 

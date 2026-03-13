@@ -26,6 +26,7 @@ import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.
 import {ConditionalEffectPrinter} from "./conditionalEffects/conditional-effect-printer.js";
 import {PersonaAura} from "./persona-auras.js";
 import {PowerLearningSystem} from "./power-learning.js";
+import {CombatEngine} from "./combat/combat-engine.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidAttackers = ValidAttackers> implements PersonaI {
   #combatStats: U<PersonaCombatStats>;
@@ -334,21 +335,21 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return 3;
   }
 
-  critResist(): Calculation {
-    const mods = PersonaItem.getModifier(this.mainModifiers(), "critResist");
-    const list =  new ModifierList(mods);
-    const calc = this.combatStats.lukCriticalResist();
-    calc.add(1, list, "Mods");
-    return calc;
-  }
+  // critResist(): Calculation {
+  //   const mods = PersonaItem.getModifier(this.mainModifiers(), "critResist");
+  //   const list =  new ModifierList(mods);
+  //   const calc = this.combatStats.lukCriticalResist();
+  //   calc.add(1, list, "Mods");
+  //   return calc;
+  // }
 
-  critBoost() : Calculation {
-    const mods = PersonaItem.getModifier(this.mainModifiers(), "criticalBoost");
-    const list= new ModifierList(mods);
-    const calc = this.combatStats.lukCriticalBoost();
-    calc.add(1, list, "Mods");
-    return calc;
-  }
+  // critBoost() : Calculation {
+  //   const mods = PersonaItem.getModifier(this.mainModifiers(), "criticalBoost");
+  //   const list= new ModifierList(mods);
+  //   const calc = this.combatStats.lukCriticalBoost();
+  //   calc.add(1, list, "Mods");
+  //   return calc;
+  // }
 
   equals(other: Persona) : boolean {
     return this.source == other.source;
@@ -720,30 +721,31 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   getDefense(defense: Defense) : Calculation {
-    let calc : Calculation; 
+    const calc= new Calculation(CombatEngine.getBaseDefense(defense));
+    if (defense == "none") {return calc;}
     // const mods = new ModifierList();
-    switch (defense) {
-      case "ref": {
-        calc =this.combatStats.baseWpnDefense();
-        break;
-      }
-      case "fort": {
-        calc = this.combatStats.baseMagDefense();
-        break;
-      }
-      case "kill":
-        calc = this.combatStats.instantDeathDefense();
-        break;
-      case "ail":
-        calc = this.combatStats.ailmentDefense();
-        break;
-      case "none":
-        return new Calculation(0);
-      default:
-        defense satisfies never;
-        ui.notifications.warn(`Attmept to access nonsense Defense :${defense as string}`);
-        return new Calculation(0);
-    }
+    // switch (defense) {
+    //   case "ref": {
+    //     calc =this.combatStats.baseWpnDefense();
+    //     break;
+    //   }
+    //   case "fort": {
+    //     calc = this.combatStats.baseMagDefense();
+    //     break;
+    //   }
+    //   case "kill":
+    //     calc = this.combatStats.instantDeathDefense();
+    //     break;
+    //   case "ail":
+    //     calc = this.combatStats.ailmentDefense();
+    //     break;
+    //   case "none":
+    //     return new Calculation(0);
+    //   default:
+    //     defense satisfies never;
+    //     ui.notifications.warn(`Attmept to access nonsense Defense :${defense as string}`);
+    //     return new Calculation(0);
+    // }
     const modifiers = [
       ...this.passiveCEs(),
     ];
@@ -1031,29 +1033,29 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.source.totalResists() > this.maxResists();
   }
 
-  wpnAtkBonus() : Calculation {
-    const mods = this.getBonuses(["allAtk", "wpnAtk"]);
-    const wpnAtk = this.combatStats.baseWpnAttackBonus();
-    return wpnAtk.add(1, mods, "Mods");
-  }
+  // wpnAtkBonus() : Calculation {
+  //   const mods = this.getBonuses(["allAtk", "wpnAtk"]);
+  //   const wpnAtk = this.combatStats.baseWpnAttackBonus();
+  //   return wpnAtk.add(1, mods, "Mods");
+  // }
 
-  magAtkBonus() : Calculation {
-    const mods = this.getBonuses(["allAtk", "magAtk"]);
-    const magAtk = this.combatStats.baseMagAttackBonus();
-    return magAtk.add(1, mods, "Mods");
-  }
+  // magAtkBonus() : Calculation {
+  //   const mods = this.getBonuses(["allAtk", "magAtk"]);
+  //   const magAtk = this.combatStats.baseMagAttackBonus();
+  //   return magAtk.add(1, mods, "Mods");
+  // }
 
-  instantDeathAtkBonus() : Calculation {
-    const mods = this.getBonuses(["instantDeathRange"]);
-    const deathAtk = this.combatStats.baseDeathAtkBonus();
-    return deathAtk.add(1, mods, "Mods");
-  }
+  // instantDeathAtkBonus() : Calculation {
+  //   const mods = this.getBonuses(["instantDeathRange"]);
+  //   const deathAtk = this.combatStats.baseDeathAtkBonus();
+  //   return deathAtk.add(1, mods, "Mods");
+  // }
 
-  ailmentAtkBonus() : Calculation {
-    const mods = this.getBonuses("afflictionRange");
-    const ailAtk = this.combatStats.baseAilmentAtkBonus();
-    return ailAtk.add(1, mods, "Mods");
-  }
+  // ailmentAtkBonus() : Calculation {
+  //   const mods = this.getBonuses("afflictionRange");
+  //   const ailAtk = this.combatStats.baseAilmentAtkBonus();
+  //   return ailAtk.add(1, mods, "Mods");
+  // }
 
   itemAtkBonus(item : Consumable) : Calculation {
     const calc=new Calculation();

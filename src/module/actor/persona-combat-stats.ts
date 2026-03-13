@@ -8,25 +8,26 @@ import {HTMLTools} from "../utility/HTMLTools.js";
 export class PersonaCombatStats {
 
 	persona : Persona;
-	static AILMENT_RESIST_DIVISOR = 5 as const;
-	static INSTANT_DEATH_RESIST_DIVISOR = 5 as const;
-	static INSTANT_DEATH_BONUS_DIVISOR = 5 as const;
-	static INSTANT_DEATH_ATTACK_DIVISOR = 5 as const;
+  static PERCENT_PADDING = 10 as const; //padding onto stats when determining percentage difference;
+	// static AILMENT_RESIST_DIVISOR = 5 as const;
+	// static INSTANT_DEATH_RESIST_DIVISOR = 5 as const;
+	// static INSTANT_DEATH_BONUS_DIVISOR = 5 as const;
+	// static INSTANT_DEATH_ATTACK_DIVISOR = 5 as const;
 	static STAT_POINTS_PER_LEVEL = 3 as const;
 	static INIT_DIVISOR = 3 as const;
 	static MINIMUM_MAX_STAT_GAP = 10 as const;
 	static MAX_STAT_VAL = 99 as const;
 	static MIN_STAT_VAL = 1 as const;
-	static DEFENSE_DIVISOR = 3 as const;
-	static BASE_INSTANT_DEATH_DEFENSE = 20 as const;
-	static BASE_DEFENSE = 4 as const;
-	static BASE_AILMENT_DEFENSE = 18 as const;
-	static INSTANT_DEATH_DIVISOR = 5 as const;
-	static CRITICAL_HIT_DIVISOR = 5 as const;
+	// static DEFENSE_DIVISOR = 3 as const;
+	// static BASE_INSTANT_DEATH_DEFENSE = 20 as const;
+	// static BASE_DEFENSE = 4 as const;
+	// static BASE_AILMENT_DEFENSE = 18 as const;
+	// static INSTANT_DEATH_DIVISOR = 5 as const;
+	// static CRITICAL_HIT_DIVISOR = 5 as const;
 	// static FAVORED_STAT_WEIGHT_INCREASE = 2.0 as const;
 	// static DISFAVORED_STAT_WEIGHT_DECREASE = 0.5 as const;
-	static FAVORED_TAROT_STAT_WEIGHT_INCREASE = 1.25 as const;
-	static DISFAVORED_TAROT_STAT_WEIGHT_DECREASE = 0.8 as const;
+	// static FAVORED_TAROT_STAT_WEIGHT_INCREASE = 1.25 as const;
+	// static DISFAVORED_TAROT_STAT_WEIGHT_DECREASE = 0.8 as const;
 	static MAX_STAT_DIVISOR_WILD = 5.5 as const;
 	static MAX_STAT_DIVISOR_CUSTOM = 8 as const;
 
@@ -128,59 +129,59 @@ export class PersonaCombatStats {
 	get agility(): number { return this.getStatValue("agi"); }
 	get luck(): number { return this.getStatValue("luk");}
 
-	baseMagDefense() : Calculation {
-		const calc = new Calculation(PersonaCombatStats.BASE_DEFENSE);
-		const subCalc = new Calculation();
-		subCalc.add(0, this.endurance, `${this.persona.displayedName} Endurance`);
-		subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
-		subCalc.mult(1, 1/(PersonaCombatStats.DEFENSE_DIVISOR * 2), `Defense Divisor`);
-		return calc.add(0, subCalc, "Endurance Mod");
-	}
+	// baseMagDefense() : Calculation {
+	// 	const calc = new Calculation(PersonaCombatStats.BASE_DEFENSE);
+	// 	const subCalc = new Calculation();
+	// 	subCalc.add(0, this.endurance, `${this.persona.displayedName} Endurance`);
+	// 	subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
+	// 	subCalc.mult(1, 1/(PersonaCombatStats.DEFENSE_DIVISOR * 2), `Defense Divisor`);
+	// 	return calc.add(0, subCalc, "Endurance Mod");
+	// }
 
-	baseWill() : Calculation {
-		const calc = new Calculation(PersonaCombatStats.BASE_DEFENSE, 2);
-		const subCalc = new Calculation();
-		subCalc.add(0, this.luck, `${this.persona.displayedName} Luck`);
-		subCalc.mult(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Defense Divisor`);
-		return calc.add(0, subCalc, "Luck Modifier");
-	}
+	// baseWill() : Calculation {
+	// 	const calc = new Calculation(PersonaCombatStats.BASE_DEFENSE, 2);
+	// 	const subCalc = new Calculation();
+	// 	subCalc.add(0, this.luck, `${this.persona.displayedName} Luck`);
+	// 	subCalc.mult(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Defense Divisor`);
+	// 	return calc.add(0, subCalc, "Luck Modifier");
+	// }
 
-	baseWpnDefense() : Calculation {
-		const calc = new Calculation(PersonaCombatStats.BASE_DEFENSE, 2);
-		const subCalc = new Calculation();
-		subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
-		subCalc.mult(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Defense Divisor`);
-		return calc.add(0, subCalc, "Agility Modifier");
-	}
+	// baseWpnDefense() : Calculation {
+	// 	const calc = new Calculation(PersonaCombatStats.BASE_DEFENSE, 2);
+	// 	const subCalc = new Calculation();
+	// 	subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
+	// 	subCalc.mult(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Defense Divisor`);
+	// 	return calc.add(0, subCalc, "Agility Modifier");
+	// }
 
-	baseWpnAttackBonus() : Calculation {
-		const calc = new Calculation(0, 2);
-		const subCalc = new Calculation();
-		subCalc.add(0, this.strength, `${this.persona.displayedName} Strength`);
-		subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
-		subCalc.mult(1, 1/(PersonaCombatStats.DEFENSE_DIVISOR * 2), `Attack Divisor`);
-		return calc.add(0, subCalc, "Strength/Agility Modifier");
-	}
+	// baseWpnAttackBonus() : Calculation {
+	// 	const calc = new Calculation(0, 2);
+	// 	const subCalc = new Calculation();
+	// 	subCalc.add(0, this.strength, `${this.persona.displayedName} Strength`);
+	// 	subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
+	// 	subCalc.mult(1, 1/(PersonaCombatStats.DEFENSE_DIVISOR * 2), `Attack Divisor`);
+	// 	return calc.add(0, subCalc, "Strength/Agility Modifier");
+	// }
 
-	baseMagAttackBonus(): Calculation {
-		const calc = new Calculation(0, 2);
-		const subCalc = new Calculation();
-		subCalc.add(0, this.magic, `${this.persona.displayedName} Magic`);
-		subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
-		subCalc.mult(1, 1/(PersonaCombatStats.DEFENSE_DIVISOR * 2), `Attack Divisor`);
-		return calc.add(0, subCalc, "Magic Modifer") ;
-	}
+	// baseMagAttackBonus(): Calculation {
+	// 	const calc = new Calculation(0, 2);
+	// 	const subCalc = new Calculation();
+	// 	subCalc.add(0, this.magic, `${this.persona.displayedName} Magic`);
+	// 	subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
+	// 	subCalc.mult(1, 1/(PersonaCombatStats.DEFENSE_DIVISOR * 2), `Attack Divisor`);
+	// 	return calc.add(0, subCalc, "Magic Modifer") ;
+	// }
 
-	baseAilmentAtkBonus(): Calculation {
-		return this.ailmentBonus();
-	}
+	// baseAilmentAtkBonus(): Calculation {
+	// 	return this.ailmentBonus();
+	// }
 
-	baseDeathAtkBonus() : Calculation {
-		const calc = new Calculation(0, 2);
-		calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 2`);
-		calc.mult(1, 1/PersonaCombatStats.INSTANT_DEATH_ATTACK_DIVISOR, `Instant Kill Attack Divisor`);
-		return calc;
-	}
+	// baseDeathAtkBonus() : Calculation {
+	// 	const calc = new Calculation(0, 2);
+	// 	calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 2`);
+	// 	calc.mult(1, 1/PersonaCombatStats.INSTANT_DEATH_ATTACK_DIVISOR, `Instant Kill Attack Divisor`);
+	// 	return calc;
+	// }
 
 	baseInit() : Calculation {
 		const calc = new Calculation(0, 2);
@@ -193,57 +194,57 @@ export class PersonaCombatStats {
 		return Math.floor(this.endurance);
 	}
 
-	lukCriticalResist() : Calculation {
-		const calc = new Calculation(0, 2);
-		return calc
-			.add(0, this.luck + 0, `${this.persona.displayedName} Luck`)
-			.mult(1, 1/PersonaCombatStats.CRITICAL_HIT_DIVISOR, `Critical Hit Divisor`);
-	}
+	// lukCriticalResist() : Calculation {
+	// 	const calc = new Calculation(0, 2);
+	// 	return calc
+	// 		.add(0, this.luck + 0, `${this.persona.displayedName} Luck`)
+	// 		.mult(1, 1/PersonaCombatStats.CRITICAL_HIT_DIVISOR, `Critical Hit Divisor`);
+	// }
 
-	lukCriticalBoost() : Calculation {
-		const calc = new Calculation(0, 2);
-		return calc
-			.add(0, this.luck + 1, `${this.persona.displayedName} Luck + 1`)
-			.mult(1, 1/PersonaCombatStats.CRITICAL_HIT_DIVISOR, `Critical Hit Divisor`);
-	}
+	// lukCriticalBoost() : Calculation {
+	// 	const calc = new Calculation(0, 2);
+	// 	return calc
+	// 		.add(0, this.luck + 1, `${this.persona.displayedName} Luck + 1`)
+	// 		.mult(1, 1/PersonaCombatStats.CRITICAL_HIT_DIVISOR, `Critical Hit Divisor`);
+	// }
 
-	instantDeathBonus() : Calculation {
-		const calc = new Calculation(0, 2);
-		calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 2`);
-		calc.mult(1, 1/PersonaCombatStats.INSTANT_DEATH_BONUS_DIVISOR, `Instant Kill Attack Divisor`);
-		return calc;
-	}
+	// instantDeathBonus() : Calculation {
+	// 	const calc = new Calculation(0, 2);
+	// 	calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 2`);
+	// 	calc.mult(1, 1/PersonaCombatStats.INSTANT_DEATH_BONUS_DIVISOR, `Instant Kill Attack Divisor`);
+	// 	return calc;
+	// }
 
-	instantDeathResist() : Calculation {
-		const calc = new Calculation(0, 2);
-		calc.add(0, this.luck + 3, `${this.persona.displayedName} Luck + 3`);
-		calc.mult(1, 1/PersonaCombatStats.INSTANT_DEATH_RESIST_DIVISOR, `Instant Kill Defense Divisor`);
-		return calc;
-	}
+	// instantDeathResist() : Calculation {
+	// 	const calc = new Calculation(0, 2);
+	// 	calc.add(0, this.luck + 3, `${this.persona.displayedName} Luck + 3`);
+	// 	calc.mult(1, 1/PersonaCombatStats.INSTANT_DEATH_RESIST_DIVISOR, `Instant Kill Defense Divisor`);
+	// 	return calc;
+	// }
 
-	instantDeathDefense() : Calculation {
-		const calc = new Calculation(PersonaCombatStats.BASE_INSTANT_DEATH_DEFENSE, 2);
-		return calc.add(0, this.instantDeathResist(), "Instant DeathResist");
-	}
+	// instantDeathDefense() : Calculation {
+	// 	const calc = new Calculation(PersonaCombatStats.BASE_INSTANT_DEATH_DEFENSE, 2);
+	// 	return calc.add(0, this.instantDeathResist(), "Instant DeathResist");
+	// }
 
-	ailmentDefense(): Calculation {
-		const calc = new Calculation(PersonaCombatStats.BASE_AILMENT_DEFENSE, 2);
-		return calc.add(0, this.ailmentResist(), "Ailment Resist");
-	}
+	// ailmentDefense(): Calculation {
+	// 	const calc = new Calculation(PersonaCombatStats.BASE_AILMENT_DEFENSE, 2);
+	// 	return calc.add(0, this.ailmentResist(), "Ailment Resist");
+	// }
 
-	private ailmentResist(): Calculation {
-		const calc = new Calculation(0, 2);
-		calc.add(0, this.luck + 4, `${this.persona.displayedName} Luck + 3`);
-		calc.mult(1, 1/PersonaCombatStats.AILMENT_RESIST_DIVISOR, `Ailment resist Divisor`);
-		return calc;
-	}
+	// private ailmentResist(): Calculation {
+	// 	const calc = new Calculation(0, 2);
+	// 	calc.add(0, this.luck + 4, `${this.persona.displayedName} Luck + 3`);
+	// 	calc.mult(1, 1/PersonaCombatStats.AILMENT_RESIST_DIVISOR, `Ailment resist Divisor`);
+	// 	return calc;
+	// }
 
-	private ailmentBonus(): Calculation {
-		const calc = new Calculation(0, 2);
-		calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 4`);
-		calc.mult(1, 1/PersonaCombatStats.AILMENT_RESIST_DIVISOR, `Ailment resist Divisor`);
-		return calc;
-	}
+	// private ailmentBonus(): Calculation {
+	// 	const calc = new Calculation(0, 2);
+	// 	calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 4`);
+	// 	calc.mult(1, 1/PersonaCombatStats.AILMENT_RESIST_DIVISOR, `Ailment resist Divisor`);
+	// 	return calc;
+	// }
 
 	getPhysicalVariance() : number {
 		return 2 + Math.floor(this.strength / 5);
@@ -420,6 +421,12 @@ export class PersonaCombatStats {
 		return increases;
 	}
 
+  /** returns the percentage of how much bigger one stat is than the other, returning negative if the defenseStat is larger.*/
+  static statComparison(attackStat: number, defenseStat: number) : number {
+		const PERCENT_PADDING = this.PERCENT_PADDING;
+    if (defenseStat > attackStat) {return -this.statComparison(defenseStat, attackStat);}
+    return (attackStat + PERCENT_PADDING)  / (defenseStat + PERCENT_PADDING);
+  }
 }
 
 export type StatGroup = Record<PersonaStatType, number>;

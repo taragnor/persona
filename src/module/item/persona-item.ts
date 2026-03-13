@@ -1688,8 +1688,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   critBoost(this: Usable, userPersona: Persona) : Calculation {
-    const calc = userPersona.critBoost();
-    let powerCrit = (this.system.crit_boost ?? 0);
+    const attackerBonus = userPersona.getBonuses("criticalBoost");
+    const powerMods= this.getBonuses("criticalBoost");
+    const calc = new Calculation();
+    calc.add(1, attackerBonus, "Attacker modifiers");
+    let powerCrit = this.baseCritBoost();
     if (this.isWeaponSkill()
       && !this.isBasicPower()
       && this.system.ailmentChance == 'none'
@@ -1697,6 +1700,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       powerCrit += 2;
     }
     calc.add(1, powerCrit, 'Power Modifier');
+    calc.add(1, powerMods, "Power Mods");
     return calc;
   }
 

@@ -63,8 +63,11 @@ export class PersonaHandleBarsHelpers {
 			return 0;
 		},
 
-		"getCritResist": (persona: Persona) => {
-			return persona.critResist().eval({user: persona.user.accessor, target:persona.user.accessor}).total;
+		"getCritResist": (persona: Persona) : number => {
+      const situation = {user: persona.user.accessor, target:persona.user.accessor};
+      const x= persona.getBonuses("critResist");
+      return x.total(situation);
+			// return persona.getBonuses("critResist").eval({user: persona.user.accessor, target:persona.user.accessor}).total;
 		},
 
 		"getDefense" : (actorOrPersona: ValidAttackers | Persona, defense: Defense): number => {
@@ -219,18 +222,18 @@ export class PersonaHandleBarsHelpers {
 			return DR.eval().str.join("\n");
 		},
 
-		"getCriticalBoostEstimate" : function (actor: PC | Shadow, power: Usable) : number {
-			const situation : Situation = {
-				usedPower: power.accessor,
-				attacker: actor.accessor,
-				user: actor.accessor,
-			};
-			const engine = new CombatEngine(undefined);
-			const critBonus = engine.calcCritModifier(actor.persona(), actor.persona(), power, situation);
-			return critBonus.eval(situation).total;
-		},
-		"getTokenAccName" : (tokenAcc: UniversalTokenAccessor<PToken> | UniversalActorAccessor<PC | Shadow>) =>  {
+		// "getCriticalBoostEstimate" : function (actor: PC | Shadow, power: Usable) : number {
+		// 	const situation : Situation = {
+		// 		usedPower: power.accessor,
+		// 		attacker: actor.accessor,
+		// 		user: actor.accessor,
+		// 	};
+		// 	const engine = new CombatEngine(undefined);
+		// 	const critBonus = engine.calcCritModifier(actor.persona(), actor.persona(), power, situation);
+		// 	return critBonus.eval(situation).total;
+		// },
 
+		"getTokenAccName" : (tokenAcc: UniversalTokenAccessor<PToken> | UniversalActorAccessor<PC | Shadow>) =>  {
 			if ("actorId" in tokenAcc) {
 				const token = PersonaDB.findToken(tokenAcc.token);
 				return token?.name ?? PersonaDB.findActor(tokenAcc).name ?? "Unknown Token";

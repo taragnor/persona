@@ -1,4 +1,5 @@
 import {DAMAGE_LEVELS, RealDamageType} from "../../config/damage-types.js";
+import {PersonaCombatStats} from "../actor/persona-combat-stats.js";
 import {ItemSubtype} from "../item/persona-item.js";
 import {Persona} from "../persona-class.js";
 import {PersonaDB} from "../persona-db.js";
@@ -12,10 +13,10 @@ import {ConvertableDamageLevel, DamageSystemBase, NewDamageParams} from "./damag
 
 export class AltDamageSystem extends DamageSystemBase {
 
-	private PERCENT_PADDING = 5 as const;
+	// private PERCENT_PADDING = 5 as const;
 	// private ENDURANCE_DR_MULTIPLIER = 0.01 as const;
-	private BASE_MAGIC_DMG = 10 as const;
-	private BASE_WEAPON_DMG = 10 as const;
+	// private BASE_MAGIC_DMG = 10 as const;
+	// private BASE_WEAPON_DMG = 10 as const;
 	private WEAPON_STRENGTH_DAMAGE_MULT = 0.333 as const;
 	private MAGIC_DAMAGE_MULT = 0.333 as const;
 	private HEALING_MAGIC_MULT = 0.666 as const;
@@ -141,7 +142,7 @@ export class AltDamageSystem extends DamageSystemBase {
 
 	//experimental version
 	protected getPercentModifier(attackStat: number, endurance: number) : number {
-		const PERCENT_PADDING = this.PERCENT_PADDING;
+		const PERCENT_PADDING = PersonaCombatStats.PERCENT_PADDING;
 		let percent = (PERCENT_PADDING + attackStat) / (PERCENT_PADDING + endurance);
 		percent = Math.clamp(percent, 0.1, 5);
 		percent = Math.round(percent * 100) / 100;
