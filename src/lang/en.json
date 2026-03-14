@@ -128,10 +128,10 @@
 	"persona.statistic.talents": "Talents",
 	"persona.statistic.initiative": "Initiative",
 
-	"persona.statistic.stat.description.str": "Increases accuracy and damage of weapon skills",
-	"persona.statistic.stat.description.mag": "Increases accuracy and damage of magic skills",
-	"persona.statistic.stat.description.end": "Determines Magic defense and provides general damage reduction",
-	"persona.statistic.stat.description.agi": "Determines Initiative and Weapon Defense",
+	"persona.statistic.stat.description.str": "Increases damage of weapon skills",
+	"persona.statistic.stat.description.mag": "Increases damage of magic skills",
+	"persona.statistic.stat.description.end": "Reduces damage taken",
+	"persona.statistic.stat.description.agi": "Determines accuracy/dodge and initiative",
 	"persona.statistic.stat.description.luk": "Determines ailment and instant death resistance, as well as aiding with critical hits and increasing the chances of landing an ailment or instant death attack",
 
 	"persona.statistic.stat.str": "Strength",
