@@ -850,19 +850,21 @@ function getSubjectPersonas<K extends string, T extends Sourced<Record<K, Condit
 }
 
 function accessPersonaCache(situation: Situation, dataLoc: string, creatorFn: () => Persona[]) : Persona[] {
-  if (!PersonaSettings.agressiveCaching()) {
-    return creatorFn();
-  }
-  let memory = PersonaCache.get(situation);
-  if (!memory) {
-    const memcell = {};
-    PersonaCache.set(situation, memcell);
-    memory = memcell;
-  }
-  if (memory[dataLoc]) {return memory[dataLoc]; }
-  const newData = creatorFn();
-  memory[dataLoc] = newData;
-  return newData;
+  return creatorFn();
+  //TODO: thsi cache produced in accurate results may have to cache by a different value as different conditons with condition targetsmay produce different values
+  // if (!PersonaSettings.agressiveCaching()) {
+  //   return creatorFn();
+  // }
+  // let memory = PersonaCache.get(situation);
+  // if (!memory) {
+  //   const memcell = {};
+  //   PersonaCache.set(situation, memcell);
+  //   memory = memcell;
+  // }
+  // if (memory[dataLoc]) {return memory[dataLoc]; }
+  // const newData = creatorFn();
+  // memory[dataLoc] = newData;
+  // return newData;
 }
 
 export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, situation: Situation, source: N<Sourced<object>["source"]>): NPC | PC | undefined {
