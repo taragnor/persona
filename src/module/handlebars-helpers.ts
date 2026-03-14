@@ -47,6 +47,7 @@ import {PROBABILITIES_POWER_RARITY, ProbabilityRate} from "../config/probability
 import {CardData} from "./social/social-card-executor.js";
 import {ConditionalEffectPrinter} from "./conditionalEffects/conditional-effect-printer.js";
 import {PowerLearningSystem} from "./power-learning.js";
+import {TARGETING} from "../config/effect-types.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -716,6 +717,10 @@ export class PersonaHandleBarsHelpers {
       return actor.persona();
     },
 
+    "getPowerTargetsL": function (power: Usable) : string {
+      return TARGETING[power.system.targets];
+    },
+
     "elemResist": function (actorOrPersona: ValidAttackers | Persona, resistType: Exclude<DamageType, "by-power">) : string {
       const persona = (actorOrPersona instanceof PersonaActor) ? actorOrPersona.persona() : actorOrPersona;
       const resist= persona.elemResist(resistType);
@@ -1111,5 +1116,6 @@ export class PersonaHandleBarsHelpers {
     }
 
   };
+
 
 } //end of class
