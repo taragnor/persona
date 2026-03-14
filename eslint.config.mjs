@@ -30,6 +30,7 @@ export default [
 			// "indent": ["error", 2],
 			"@typescript-eslint/no-namespace": "off",
 			"@typescript-eslint/restrict-plus-operands": "error",
+      "no-case-declarations": "error",
 			"@typescript-eslint/restrict-template-expressions": [
 				"error",
 				{

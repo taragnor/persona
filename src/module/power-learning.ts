@@ -81,12 +81,72 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 	}
 
 	customPersonaLearningList () {
+		// const common : CustomPersonaLearningList[number]["rarity"] = "normal" as const;
+		// const uncommon : CustomPersonaLearningList[number]["rarity"] = "normal-minus" as const;
+		// const capstone : CustomPersonaLearningList[number]["rarity"] = "never" as const;
+		// const rare : CustomPersonaLearningList[number]["rarity"] = "rare-plus" as const;
+		const actor = this.actor;
+		const lastLearn = actor.system.combat.lastLearnedLevel <= 1 ? actor.startingLevel: actor.system.combat.lastLearnedLevel;
+		// const baseList : CustomPersonaLearningList= {
+		// 	1: {slot: 0, rarity: common},
+		// 	7: {slot: 0, rarity: common},
+		// 	14: {slot: 0, rarity: uncommon},
+		// 	21: {slot: 1, rarity: common},
+		// 	28: {slot: 1, rarity: common},
+		// 	35: {slot: 1, rarity: uncommon},
+		// 	42: {slot: 2, rarity: common},
+		// 	49: {slot: 2, rarity: common},
+		// 	56: {slot: 2, rarity: uncommon},
+		// 	63: {slot: 3, rarity: common},
+		// 	70: {slot: 3, rarity: common},
+		// 	77: {slot: 3, rarity: uncommon},
+		// 	84: {slot: 3, rarity: rare},
+		// 	92: {slot: 3, rarity: capstone},
+		// 	100: {slot :3, rarity: "rare"},
+		// } as const;
+    const baseList = this.actor.basePersona.hasTag("lone-persona") ? PowerLearningSystem.lonePersonaCustomLearningList() : PowerLearningSystem.multiPersonaCustomList();
+		const retList = Object.entries(baseList)
+			.map( ([k,v]) => ({ level: Number(k), ...v, txt: this.prettyPrintCustomPower(v)}))
+			.filter( x=> x.level > lastLearn)
+			.sort( (a,b) => a.level - b.level);
+		return retList;
+	}
+
+  private static lonePersonaCustomLearningList() : CustomPersonaLearningList{
 		const common : CustomPersonaLearningList[number]["rarity"] = "normal" as const;
 		const uncommon : CustomPersonaLearningList[number]["rarity"] = "normal-minus" as const;
 		const capstone : CustomPersonaLearningList[number]["rarity"] = "never" as const;
 		const rare : CustomPersonaLearningList[number]["rarity"] = "rare-plus" as const;
-		const actor = this.actor;
-		const lastLearn = actor.system.combat.lastLearnedLevel <= 1 ? actor.startingLevel: actor.system.combat.lastLearnedLevel;
+		const exotic : CustomPersonaLearningList[number]["rarity"] = "rare" as const;
+		const baseList : CustomPersonaLearningList= {
+			1: {slot: 0, rarity: common},
+			6: {slot: 0, rarity: common},
+			12: {slot: 0, rarity: uncommon},
+			18: {slot: 0, rarity: rare},
+			24: {slot: 1, rarity: common},
+			30: {slot: 1, rarity: uncommon},
+			36: {slot: 1, rarity: rare},
+			42: {slot: 2, rarity: common},
+			48: {slot: 2, rarity: uncommon},
+			54: {slot: 2, rarity: rare},
+			60: {slot: 3, rarity: common},
+			66: {slot: 3, rarity: common},
+			72: {slot: 3, rarity: uncommon},
+			78: {slot: 3, rarity: rare},
+			82: {slot: 3, rarity: rare},
+			88: {slot: 3, rarity: capstone},
+      94: {slot: 3, rarity: exotic} ,
+      98: {slot: 3, rarity: exotic},
+		} as const;
+    return baseList;
+  }
+
+  private static multiPersonaCustomList() : CustomPersonaLearningList{
+		const common : CustomPersonaLearningList[number]["rarity"] = "normal" as const;
+		const uncommon : CustomPersonaLearningList[number]["rarity"] = "normal-minus" as const;
+		const capstone : CustomPersonaLearningList[number]["rarity"] = "never" as const;
+		const rare : CustomPersonaLearningList[number]["rarity"] = "rare-plus" as const;
+		const exotic : CustomPersonaLearningList[number]["rarity"] = "rare" as const;
 		const baseList : CustomPersonaLearningList= {
 			1: {slot: 0, rarity: common},
 			7: {slot: 0, rarity: common},
@@ -102,14 +162,10 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 			77: {slot: 3, rarity: uncommon},
 			84: {slot: 3, rarity: rare},
 			92: {slot: 3, rarity: capstone},
-			100: {slot :3, rarity: "rare"},
+			100: {slot :3, rarity: exotic},
 		} as const;
-		const retList = Object.entries(baseList)
-			.map( ([k,v]) => ({ level: Number(k), ...v, txt: this.prettyPrintCustomPower(v)}))
-			.filter( x=> x.level > lastLearn)
-			.sort( (a,b) => a.level - b.level);
-		return retList;
-	}
+    return baseList;
+  }
 
 	async learnPower(power: Power, logChanges = true): Promise<boolean> {
 		const actor = this.actor;

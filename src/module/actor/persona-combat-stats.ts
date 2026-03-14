@@ -7,29 +7,15 @@ import {HTMLTools} from "../utility/HTMLTools.js";
 
 export class PersonaCombatStats {
 
-	persona : Persona;
+  persona : Persona;
   static PERCENT_PADDING = 10 as const; //padding onto stats when determining percentage difference;
-	// static AILMENT_RESIST_DIVISOR = 5 as const;
-	// static INSTANT_DEATH_RESIST_DIVISOR = 5 as const;
-	// static INSTANT_DEATH_BONUS_DIVISOR = 5 as const;
-	// static INSTANT_DEATH_ATTACK_DIVISOR = 5 as const;
-	static STAT_POINTS_PER_LEVEL = 3 as const;
-	static INIT_DIVISOR = 3 as const;
-	static MINIMUM_MAX_STAT_GAP = 10 as const;
-	static MAX_STAT_VAL = 99 as const;
-	static MIN_STAT_VAL = 1 as const;
-	// static DEFENSE_DIVISOR = 3 as const;
-	// static BASE_INSTANT_DEATH_DEFENSE = 20 as const;
-	// static BASE_DEFENSE = 4 as const;
-	// static BASE_AILMENT_DEFENSE = 18 as const;
-	// static INSTANT_DEATH_DIVISOR = 5 as const;
-	// static CRITICAL_HIT_DIVISOR = 5 as const;
-	// static FAVORED_STAT_WEIGHT_INCREASE = 2.0 as const;
-	// static DISFAVORED_STAT_WEIGHT_DECREASE = 0.5 as const;
-	// static FAVORED_TAROT_STAT_WEIGHT_INCREASE = 1.25 as const;
-	// static DISFAVORED_TAROT_STAT_WEIGHT_DECREASE = 0.8 as const;
-	static MAX_STAT_DIVISOR_WILD = 5.5 as const;
-	static MAX_STAT_DIVISOR_CUSTOM = 8 as const;
+  static STAT_POINTS_PER_LEVEL = 3 as const;
+  static INIT_DIVISOR = 3 as const;
+  static MINIMUM_MAX_STAT_GAP = 10 as const;
+  static MAX_STAT_VAL = 99 as const;
+  static MIN_STAT_VAL = 1 as const;
+  static MAX_STAT_DIVISOR_WILD = 5.5 as const;
+  static MAX_STAT_DIVISOR_CUSTOM = 8 as const;
 
   static STAT_DEVIATION = {
     "very-low": 0.15,
@@ -39,252 +25,146 @@ export class PersonaCombatStats {
     "very-high": 1.6,
   } as const;
 
-	constructor (persona: Persona) {
-		this.persona = persona;
-	}
+  constructor (persona: Persona) {
+    this.persona = persona;
+  }
 
-	get combatStats() {
-		return this.persona.source.system.combat.personaStats;
-	}
+  get combatStats() {
+    return this.persona.source.system.combat.personaStats;
+  }
 
-	mhpCalculation() {
-		const user = this.persona.user;
-		const sit ={user: user.accessor};
-		try {
-			if (user.system == undefined) {return new Calculation().eval();}
-			const lvlbase = user.baseClassHP;
-			const calc = new Calculation(lvlbase);
-			const persona = this.persona;
-			const nonMultbonuses = persona.getBonusesIgnoreAuras("maxhp");
-			const newForm = persona.getBonusesIgnoreAuras("maxhpMult-new");
-			const hpAdjustPercent = user.hpAdjustPercent();
-			const hpAdjust = user.system.hp_adjust;
-			calc.mult(0, hpAdjustPercent,`HP Adjust (${hpAdjust})`);
-			const multmods = persona.getBonusesIgnoreAuras("maxhpMult");
-			if (user.isPC() || user.isNPCAlly()) {
-				const ArmorHPBoost = user.equippedItems().find(x=> x.isOutfit())?.armorHPBoost ?? 0;
-				if (ArmorHPBoost > 0)
-				{
-					calc.add(0, ArmorHPBoost, "Armor HP Bonus");
-				}
-			}
-			calc.add(0, user.system.combat.bonusHP ?? 0, "Permanent Bonus HP");
-			calc.mult(0, newForm, "Mod List");
-			calc.mult(0, multmods, "Old Form Mods", true);
-			calc.add(0, nonMultbonuses, "Adds");
-			const mhp = calc.eval(sit);
-			// console.log(`MHP: ${mhp.total}`);
-			return mhp;
-		}	 catch(e) {
-			PersonaError.softFail(`Error in calculating ${user.name} MHP`, e);
-		}
-		const mhp = new Calculation().eval(sit);
-		return mhp;
-	}
+  mhpCalculation() {
+    const user = this.persona.user;
+    const sit ={user: user.accessor};
+    try {
+      if (user.system == undefined) {return new Calculation().eval();}
+      const lvlbase = user.baseClassHP;
+      const calc = new Calculation(lvlbase);
+      const persona = this.persona;
+      const nonMultbonuses = persona.getBonusesIgnoreAuras("maxhp");
+      const newForm = persona.getBonusesIgnoreAuras("maxhpMult-new");
+      const hpAdjustPercent = user.hpAdjustPercent();
+      const hpAdjust = user.system.hp_adjust;
+      calc.mult(0, hpAdjustPercent,`HP Adjust (${hpAdjust})`);
+      const multmods = persona.getBonusesIgnoreAuras("maxhpMult");
+      if (user.isPC() || user.isNPCAlly()) {
+        const ArmorHPBoost = user.equippedItems().find(x=> x.isOutfit())?.armorHPBoost ?? 0;
+        if (ArmorHPBoost > 0)
+        {
+          calc.add(0, ArmorHPBoost, "Armor HP Bonus");
+        }
+      }
+      calc.add(0, user.system.combat.bonusHP ?? 0, "Permanent Bonus HP");
+      calc.mult(0, newForm, "Mod List");
+      calc.mult(0, multmods, "Old Form Mods", true);
+      calc.add(0, nonMultbonuses, "Adds");
+      const mhp = calc.eval(sit);
+      // console.log(`MHP: ${mhp.total}`);
+      return mhp;
+    }	 catch(e) {
+      PersonaError.softFail(`Error in calculating ${user.name} MHP`, e);
+    }
+    const mhp = new Calculation().eval(sit);
+    return mhp;
+  }
 
-	mmpCalculation() {
-		const user = this.persona.user;
-		if (user.isShadow()) {return new Calculation().eval();}
-		try {
-			const lvlmaxMP = user.class.getClassMMP(user.level);
-			const x = new Calculation(lvlmaxMP);
-			const persona = this.persona;
-			const sit ={user: user.accessor};
-			const mpAdjustPercent = user.mpAdjustPercent();
-			const mpAdjust = user.system.mp_adjust;
-			const bonuses = persona.getBonusesIgnoreAuras("maxmp");
-			const maxMult = persona.getBonusesIgnoreAuras("maxmpMult");
-			const nonMultMPBonus = user.system.combat.bonusMP ?? 0;
-			x.mult(0, mpAdjustPercent, `MP adjust (${mpAdjust})`);
-			x.add(0, bonuses, "additive bonuses");
-			x.mult(0, maxMult, "Multiplier Bonuses" , true);
-			x.add(0, nonMultMPBonus, "Permanent Bonus MP");
-			return x.eval(sit);
+  mmpCalculation() {
+    const user = this.persona.user;
+    if (user.isShadow()) {return new Calculation().eval();}
+    try {
+      const lvlmaxMP = user.class.getClassMMP(user.level);
+      const x = new Calculation(lvlmaxMP);
+      const persona = this.persona;
+      const sit ={user: user.accessor};
+      const mpAdjustPercent = user.mpAdjustPercent();
+      const mpAdjust = user.system.mp_adjust;
+      const bonuses = persona.getBonusesIgnoreAuras("maxmp");
+      const maxMult = persona.getBonusesIgnoreAuras("maxmpMult");
+      const nonMultMPBonus = user.system.combat.bonusMP ?? 0;
+      x.mult(0, mpAdjustPercent, `MP adjust (${mpAdjust})`);
+      x.add(0, bonuses, "additive bonuses");
+      x.mult(0, maxMult, "Multiplier Bonuses" , true);
+      x.add(0, nonMultMPBonus, "Permanent Bonus MP");
+      return x.eval(sit);
 
-		} catch {
-			return new Calculation().eval();
-		}
+    } catch {
+      return new Calculation().eval();
+    }
 
-	}
+  }
 
-	getStatValue(stat: PersonaStat) : number {
-		const permaBonus = this.combatStats.permanentStatsBonuses[stat];
-		const situation = {
-			user: this.persona.user.accessor,
-		};
-		const modBonuses = this.persona
-			.getBonusesIgnoreAuras(stat)
-			.total(situation);
-		const statTotal = Math.round( permaBonus + this.getBaseStatValue(stat) + modBonuses);
-		return Math.min(99, statTotal);
-	}
+  getStatValue(stat: PersonaStat) : number {
+    const permaBonus = this.combatStats.permanentStatsBonuses[stat];
+    const situation = {
+      user: this.persona.user.accessor,
+    };
+    const modBonuses = this.persona
+      .getBonusesIgnoreAuras(stat)
+      .total(situation);
+    const statTotal = Math.round( permaBonus + this.getBaseStatValue(stat) + modBonuses);
+    return Math.min(99, statTotal);
+  }
 
-	getBaseStatValue(stat: PersonaStat) : number {
-		return this.combatStats.stats[stat];
-	}
+  getBaseStatValue(stat: PersonaStat) : number {
+    return this.combatStats.stats[stat];
+  }
 
-	get strength() : number { return this.getStatValue("str");}
-	get magic() : number { return this.getStatValue("mag"); }
-	get endurance() : number { return this.getStatValue("end"); }
-	get agility(): number { return this.getStatValue("agi"); }
-	get luck(): number { return this.getStatValue("luk");}
+  get strength() : number { return this.getStatValue("str");}
+  get magic() : number { return this.getStatValue("mag"); }
+  get endurance() : number { return this.getStatValue("end"); }
+  get agility(): number { return this.getStatValue("agi"); }
+  get luck(): number { return this.getStatValue("luk");}
 
-	// baseMagDefense() : Calculation {
-	// 	const calc = new Calculation(PersonaCombatStats.BASE_DEFENSE);
-	// 	const subCalc = new Calculation();
-	// 	subCalc.add(0, this.endurance, `${this.persona.displayedName} Endurance`);
-	// 	subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
-	// 	subCalc.mult(1, 1/(PersonaCombatStats.DEFENSE_DIVISOR * 2), `Defense Divisor`);
-	// 	return calc.add(0, subCalc, "Endurance Mod");
-	// }
+  baseInit() : Calculation {
+    const calc = new Calculation(0, 2);
+    return calc
+      .add(0, this.agility + 1, `${this.persona.displayedName} Agility + 1`)
+      .mult(1, 1/PersonaCombatStats.INIT_DIVISOR, `Initiative Divisor`);
+  }
 
-	// baseWill() : Calculation {
-	// 	const calc = new Calculation(PersonaCombatStats.BASE_DEFENSE, 2);
-	// 	const subCalc = new Calculation();
-	// 	subCalc.add(0, this.luck, `${this.persona.displayedName} Luck`);
-	// 	subCalc.mult(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Defense Divisor`);
-	// 	return calc.add(0, subCalc, "Luck Modifier");
-	// }
+  baseEnduranceDR() : number{
+    return Math.floor(this.endurance);
+  }
 
-	// baseWpnDefense() : Calculation {
-	// 	const calc = new Calculation(PersonaCombatStats.BASE_DEFENSE, 2);
-	// 	const subCalc = new Calculation();
-	// 	subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
-	// 	subCalc.mult(1, 1/PersonaCombatStats.DEFENSE_DIVISOR, `Defense Divisor`);
-	// 	return calc.add(0, subCalc, "Agility Modifier");
-	// }
+  getPhysicalVariance() : number {
+    return 2 + Math.floor(this.strength / 5);
+  }
 
-	// baseWpnAttackBonus() : Calculation {
-	// 	const calc = new Calculation(0, 2);
-	// 	const subCalc = new Calculation();
-	// 	subCalc.add(0, this.strength, `${this.persona.displayedName} Strength`);
-	// 	subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
-	// 	subCalc.mult(1, 1/(PersonaCombatStats.DEFENSE_DIVISOR * 2), `Attack Divisor`);
-	// 	return calc.add(0, subCalc, "Strength/Agility Modifier");
-	// }
+  getMagicalVariance() : number {
+    return 2 + Math.floor(this.magic / 5);
+  }
 
-	// baseMagAttackBonus(): Calculation {
-	// 	const calc = new Calculation(0, 2);
-	// 	const subCalc = new Calculation();
-	// 	subCalc.add(0, this.magic, `${this.persona.displayedName} Magic`);
-	// 	subCalc.add(0, this.agility, `${this.persona.displayedName} Agility`);
-	// 	subCalc.mult(1, 1/(PersonaCombatStats.DEFENSE_DIVISOR * 2), `Attack Divisor`);
-	// 	return calc.add(0, subCalc, "Magic Modifer") ;
-	// }
+  unspentStatPoints() : number {
+    const total = Object.values(this.combatStats.stats).reduce( (a,x) => a+x, 0);
+    const expected_total = this.totalStatPoints();
+    return expected_total - total;
+  }
 
-	// baseAilmentAtkBonus(): Calculation {
-	// 	return this.ailmentBonus();
-	// }
+  private statPointsPerLevel() : number {
+    return PersonaCombatStats.STAT_POINTS_PER_LEVEL;
+  }
 
-	// baseDeathAtkBonus() : Calculation {
-	// 	const calc = new Calculation(0, 2);
-	// 	calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 2`);
-	// 	calc.mult(1, 1/PersonaCombatStats.INSTANT_DEATH_ATTACK_DIVISOR, `Instant Kill Attack Divisor`);
-	// 	return calc;
-	// }
+  private baseStatPoints() : number {
+    const persona = this.persona;
+    // if (persona.isCustomPersona || persona.source.isNPCAlly()) {
+    if (persona.isCustomPersona) {
+      return 5;
+    }
+    const sl = persona.startingLevel;
+    switch (true) {
+      case (sl < 20) :return 2;
+      case (sl < 40): return 5;
+      case (sl < 60): return 8;
+      case (sl < 80): return 12;
+      default: return 16;
+    }
+  }
 
-	baseInit() : Calculation {
-		const calc = new Calculation(0, 2);
-		return calc
-			.add(0, this.agility + 1, `${this.persona.displayedName} Agility + 1`)
-			.mult(1, 1/PersonaCombatStats.INIT_DIVISOR, `Initiative Divisor`);
-	}
+  private totalStatPoints() : number {
+    const expected_total = this.persona.level * this.statPointsPerLevel() + this.baseStatPoints();
+    return Math.max(5, Math.round(expected_total));
 
-	baseEnduranceDR() : number{
-		return Math.floor(this.endurance);
-	}
-
-	// lukCriticalResist() : Calculation {
-	// 	const calc = new Calculation(0, 2);
-	// 	return calc
-	// 		.add(0, this.luck + 0, `${this.persona.displayedName} Luck`)
-	// 		.mult(1, 1/PersonaCombatStats.CRITICAL_HIT_DIVISOR, `Critical Hit Divisor`);
-	// }
-
-	// lukCriticalBoost() : Calculation {
-	// 	const calc = new Calculation(0, 2);
-	// 	return calc
-	// 		.add(0, this.luck + 1, `${this.persona.displayedName} Luck + 1`)
-	// 		.mult(1, 1/PersonaCombatStats.CRITICAL_HIT_DIVISOR, `Critical Hit Divisor`);
-	// }
-
-	// instantDeathBonus() : Calculation {
-	// 	const calc = new Calculation(0, 2);
-	// 	calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 2`);
-	// 	calc.mult(1, 1/PersonaCombatStats.INSTANT_DEATH_BONUS_DIVISOR, `Instant Kill Attack Divisor`);
-	// 	return calc;
-	// }
-
-	// instantDeathResist() : Calculation {
-	// 	const calc = new Calculation(0, 2);
-	// 	calc.add(0, this.luck + 3, `${this.persona.displayedName} Luck + 3`);
-	// 	calc.mult(1, 1/PersonaCombatStats.INSTANT_DEATH_RESIST_DIVISOR, `Instant Kill Defense Divisor`);
-	// 	return calc;
-	// }
-
-	// instantDeathDefense() : Calculation {
-	// 	const calc = new Calculation(PersonaCombatStats.BASE_INSTANT_DEATH_DEFENSE, 2);
-	// 	return calc.add(0, this.instantDeathResist(), "Instant DeathResist");
-	// }
-
-	// ailmentDefense(): Calculation {
-	// 	const calc = new Calculation(PersonaCombatStats.BASE_AILMENT_DEFENSE, 2);
-	// 	return calc.add(0, this.ailmentResist(), "Ailment Resist");
-	// }
-
-	// private ailmentResist(): Calculation {
-	// 	const calc = new Calculation(0, 2);
-	// 	calc.add(0, this.luck + 4, `${this.persona.displayedName} Luck + 3`);
-	// 	calc.mult(1, 1/PersonaCombatStats.AILMENT_RESIST_DIVISOR, `Ailment resist Divisor`);
-	// 	return calc;
-	// }
-
-	// private ailmentBonus(): Calculation {
-	// 	const calc = new Calculation(0, 2);
-	// 	calc.add(0, this.luck + 2, `${this.persona.displayedName} Luck + 4`);
-	// 	calc.mult(1, 1/PersonaCombatStats.AILMENT_RESIST_DIVISOR, `Ailment resist Divisor`);
-	// 	return calc;
-	// }
-
-	getPhysicalVariance() : number {
-		return 2 + Math.floor(this.strength / 5);
-	}
-
-	getMagicalVariance() : number {
-		return 2 + Math.floor(this.magic / 5);
-	}
-
-	unspentStatPoints() : number {
-		const total = Object.values(this.combatStats.stats).reduce( (a,x) => a+x, 0);
-		const expected_total = this.totalStatPoints();
-		return expected_total - total;
-	}
-
-	private statPointsPerLevel() : number {
-		return PersonaCombatStats.STAT_POINTS_PER_LEVEL;
-	}
-
-	private baseStatPoints() : number {
-		const persona = this.persona;
-		// if (persona.isCustomPersona || persona.source.isNPCAlly()) {
-		if (persona.isCustomPersona) {
-			return 5;
-		}
-		const sl = persona.startingLevel;
-		switch (true) {
-			case (sl < 20) :return 2;
-			case (sl < 40): return 5;
-			case (sl < 60): return 8;
-			case (sl < 80): return 12;
-			default: return 16;
-		}
-	}
-
-	private totalStatPoints() : number {
-		const expected_total = this.persona.level * this.statPointsPerLevel() + this.baseStatPoints();
-		return Math.max(5, Math.round(expected_total));
-
-	}
+  }
 
   private statDeviation() : number {
     return PersonaCombatStats.STAT_DEVIATION[this.combatStats.statDeviation ?? "medium"];
@@ -302,128 +182,128 @@ export class PersonaCombatStats {
     return 0.5;
   }
 
-	#autoSpendPoints(pointsToSpend: number = this.persona.unspentStatPoints) : StatGroup {
-		const persona = this.persona;
-		const isCustomPersona = persona.isCustomPersona;
-		const favored = [
-			this.combatStats.preferred_stat,
-			this.combatStats.preferred_stat2,
-		];
-		const tarotFavored = [
-			persona?.tarot?.system?.preferred_stat ?? "",
-		];
-		const tarotDisfavored = [
-			persona?.tarot?.system?.disfavored_stat ?? "",
-		];
-		const disfavored = [
-			this.combatStats.disfavored_stat,
-			this.combatStats.disfavored_stat2,
-		];
-		const stIncreases : StatGroup = {
-			str: 0,
-			mag: 0,
-			end: 0,
-			agi: 0,
-			luk: 0
-		};
-		const stblk : StatGroup = {
-			...this.combatStats.stats
-		};
-		let statsToBeChosen = pointsToSpend;
-		while (statsToBeChosen > 0) {
-				const totalStatPoints = Object.values(stblk).reduce ((acc, x) => acc + x, 0);
-			const slist = (Object.keys(stblk) as PersonaStatType[])
-				.filter(( st) => PersonaCombatStats.canRaiseStat(st, stblk, isCustomPersona))
-				.map( st => {
-					let weight = 1;
+  #autoSpendPoints(pointsToSpend: number = this.persona.unspentStatPoints) : StatGroup {
+    const persona = this.persona;
+    const isCustomPersona = persona.isCustomPersona;
+    const favored = [
+      this.combatStats.preferred_stat,
+      this.combatStats.preferred_stat2,
+    ];
+    const tarotFavored = [
+      persona?.tarot?.system?.preferred_stat ?? "",
+    ];
+    const tarotDisfavored = [
+      persona?.tarot?.system?.disfavored_stat ?? "",
+    ];
+    const disfavored = [
+      this.combatStats.disfavored_stat,
+      this.combatStats.disfavored_stat2,
+    ];
+    const stIncreases : StatGroup = {
+      str: 0,
+      mag: 0,
+      end: 0,
+      agi: 0,
+      luk: 0
+    };
+    const stblk : StatGroup = {
+      ...this.combatStats.stats
+    };
+    let statsToBeChosen = pointsToSpend;
+    while (statsToBeChosen > 0) {
+      const totalStatPoints = Object.values(stblk).reduce ((acc, x) => acc + x, 0);
+      const slist = (Object.keys(stblk) as PersonaStatType[])
+        .filter(( st) => PersonaCombatStats.canRaiseStat(st, stblk, isCustomPersona))
+        .map( st => {
+          let weight = 1;
           const statDeviation = this.adjustedStatDeviation(totalStatPoints);
-					weight = favored.reduce( (acc, x)=> x == st ? acc * statDeviation: acc, weight);
-					weight = disfavored.reduce( (acc, x)=> x == st ? acc / statDeviation : acc, weight);
-					weight = tarotFavored.reduce( (acc, x)=> x == st ? acc * statDeviation : acc, weight);
-					weight = tarotDisfavored.reduce( (acc, x)=> x == st ? acc / statDeviation: acc, weight);
-					return {
-						weight,
-						item: st
-					};
-				});
-			try {
-				const seed = this._advancementSeed();
-				const rng = new SeededRandom(seed + String(totalStatPoints));
-				if (slist.length == 0) {
-					throw new PersonaError(`All stats unselectable for ${persona.source.name}`);
-				}
-				const stat = rng.weightedChoice(slist);
-				if (stat) {
-					stblk[stat] += 1;
-					stIncreases[stat] += 1;
-					statsToBeChosen -= 1;
-				}
-			} catch (e) {
-				if (e instanceof Error) {
-					PersonaError.softFail(e.message, e.stack);
-					return stIncreases;
-				}
-			}
-		}
-		return stIncreases;
-	}
+          weight = favored.reduce( (acc, x)=> x == st ? acc * statDeviation: acc, weight);
+          weight = disfavored.reduce( (acc, x)=> x == st ? acc / statDeviation : acc, weight);
+          weight = tarotFavored.reduce( (acc, x)=> x == st ? acc * statDeviation : acc, weight);
+          weight = tarotDisfavored.reduce( (acc, x)=> x == st ? acc / statDeviation: acc, weight);
+          return {
+            weight,
+            item: st
+          };
+        });
+      try {
+        const seed = this._advancementSeed();
+        const rng = new SeededRandom(seed + String(totalStatPoints));
+        if (slist.length == 0) {
+          throw new PersonaError(`All stats unselectable for ${persona.source.name}`);
+        }
+        const stat = rng.weightedChoice(slist);
+        if (stat) {
+          stblk[stat] += 1;
+          stIncreases[stat] += 1;
+          statsToBeChosen -= 1;
+        }
+      } catch (e) {
+        if (e instanceof Error) {
+          PersonaError.softFail(e.message, e.stack);
+          return stIncreases;
+        }
+      }
+    }
+    return stIncreases;
+  }
 
-	private _advancementSeed() : string {
-		const sourceName = this.persona.source.name;
-		const tarotName = this.persona.tarot?.name;
-		if (!tarotName) {
-			throw new PersonaError(`No Tarot Card for ${this.persona.source.name}`);
-		}
-		return `${sourceName}${tarotName}`;
-	}
+  private _advancementSeed() : string {
+    const sourceName = this.persona.source.name;
+    const tarotName = this.persona.tarot?.name;
+    if (!tarotName) {
+      throw new PersonaError(`No Tarot Card for ${this.persona.source.name}`);
+    }
+    return `${sourceName}${tarotName}`;
+  }
 
-	canRaiseStat(st: PersonaStatType, statBlock: StatGroup = this.combatStats.stats) : boolean {
-		return statBlock[st] < PersonaCombatStats.maxStatAmount(statBlock, this.persona.isCustomPersona);
-	}
+  canRaiseStat(st: PersonaStatType, statBlock: StatGroup = this.combatStats.stats) : boolean {
+    return statBlock[st] < PersonaCombatStats.maxStatAmount(statBlock, this.persona.isCustomPersona);
+  }
 
-	static canRaiseStat(st: PersonaStatType, statBlock: StatGroup, isCustomPersona: boolean) : boolean {
-		return statBlock[st] < PersonaCombatStats.maxStatAmount(statBlock, isCustomPersona);
-	}
+  static canRaiseStat(st: PersonaStatType, statBlock: StatGroup, isCustomPersona: boolean) : boolean {
+    return statBlock[st] < PersonaCombatStats.maxStatAmount(statBlock, isCustomPersona);
+  }
 
-	static canLowerStat(st: PersonaStatType, statBlock: StatGroup, isCustomPersona: boolean) : boolean {
-		return statBlock[st] > PersonaCombatStats.minStatAmount(statBlock, isCustomPersona);
-	}
+  static canLowerStat(st: PersonaStatType, statBlock: StatGroup, isCustomPersona: boolean) : boolean {
+    return statBlock[st] > PersonaCombatStats.minStatAmount(statBlock, isCustomPersona);
+  }
 
-	static maxStatGap(statBlock: StatGroup, isCustomPersona: boolean): number {
-		const totalPoints = Object.values(statBlock).reduce ( (a, x) => a+x, 0);
-		const statGapDivisor = isCustomPersona ? this.MAX_STAT_DIVISOR_CUSTOM : this.MAX_STAT_DIVISOR_WILD;
-		const MaxStatGap = Math.max(this.MINIMUM_MAX_STAT_GAP, Math.floor(totalPoints / statGapDivisor)) ;
-		return MaxStatGap;
-	}
+  static maxStatGap(statBlock: StatGroup, isCustomPersona: boolean): number {
+    const totalPoints = Object.values(statBlock).reduce ( (a, x) => a+x, 0);
+    const statGapDivisor = isCustomPersona ? this.MAX_STAT_DIVISOR_CUSTOM : this.MAX_STAT_DIVISOR_WILD;
+    const MaxStatGap = Math.max(this.MINIMUM_MAX_STAT_GAP, Math.floor(totalPoints / statGapDivisor)) ;
+    return MaxStatGap;
+  }
 
-	static minStatAmount(statBlock: StatGroup, isCustomPersona: boolean) : number {
-		const maxStatGap = this.maxStatGap(statBlock, isCustomPersona);
-		const maxStat = Object.values(statBlock).reduce ( (a, x) => Math.max(a, x));
-		return Math.max(this.MIN_STAT_VAL, maxStat - maxStatGap);
-	}
+  static minStatAmount(statBlock: StatGroup, isCustomPersona: boolean) : number {
+    const maxStatGap = this.maxStatGap(statBlock, isCustomPersona);
+    const maxStat = Object.values(statBlock).reduce ( (a, x) => Math.max(a, x));
+    return Math.max(this.MIN_STAT_VAL, maxStat - maxStatGap);
+  }
 
-	static maxStatAmount(statBlock: StatGroup, isCustomPersona: boolean): number {
-		const maxStatGap = this.maxStatGap(statBlock, isCustomPersona);
-		const minStat = Object.values(statBlock).reduce ( (a, x) => Math.min(a, x));
-		return Math.min(this.MAX_STAT_VAL, minStat + maxStatGap);
-	}
+  static maxStatAmount(statBlock: StatGroup, isCustomPersona: boolean): number {
+    const maxStatGap = this.maxStatGap(statBlock, isCustomPersona);
+    const minStat = Object.values(statBlock).reduce ( (a, x) => Math.min(a, x));
+    return Math.min(this.MAX_STAT_VAL, minStat + maxStatGap);
+  }
 
-	async autoSpendStatPoints() : Promise<StatGroup> {
-		const increases = this.#autoSpendPoints();
-		const stats = this.persona.source.system.combat.personaStats.stats;
-		for (const k of Object.keys(stats)) {
-			const stat = k as keyof typeof increases;
-			stats[stat] += increases[stat];
-		}
-		await this.persona.source.update({
-			"system.combat.personaStats.stats": stats,
-		});
-		return increases;
-	}
+  async autoSpendStatPoints() : Promise<StatGroup> {
+    const increases = this.#autoSpendPoints();
+    const stats = this.persona.source.system.combat.personaStats.stats;
+    for (const k of Object.keys(stats)) {
+      const stat = k as keyof typeof increases;
+      stats[stat] += increases[stat];
+    }
+    await this.persona.source.update({
+      "system.combat.personaStats.stats": stats,
+    });
+    return increases;
+  }
 
   /** returns the percentage of how much bigger one stat is than the other, returning negative if the defenseStat is larger.*/
   static statComparison(attackStat: number, defenseStat: number) : number {
-		const PERCENT_PADDING = this.PERCENT_PADDING;
+    const PERCENT_PADDING = this.PERCENT_PADDING;
     if (defenseStat > attackStat) {return -this.statComparison(defenseStat, attackStat);}
     return (attackStat + PERCENT_PADDING)  / (defenseStat + PERCENT_PADDING);
   }

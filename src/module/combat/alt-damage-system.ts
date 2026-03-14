@@ -19,7 +19,7 @@ export class AltDamageSystem extends DamageSystemBase {
 	// private BASE_WEAPON_DMG = 10 as const;
 	private WEAPON_STRENGTH_DAMAGE_MULT = 0.333 as const;
 	private MAGIC_DAMAGE_MULT = 0.333 as const;
-	private HEALING_MAGIC_MULT = 0.666 as const;
+	private HEALING_MAGIC_MULT = 0.5 as const;
 	private END_DIFF_PERCENTAGE_MULT = 0.8 as const;
 	private BASE_VARIANCE = 2 as const;
 	private ARMOR_TO_DAMAGE_DIVISOR = 1.0 as const;

@@ -335,22 +335,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return 3;
   }
 
-  // critResist(): Calculation {
-  //   const mods = PersonaItem.getModifier(this.mainModifiers(), "critResist");
-  //   const list =  new ModifierList(mods);
-  //   const calc = this.combatStats.lukCriticalResist();
-  //   calc.add(1, list, "Mods");
-  //   return calc;
-  // }
-
-  // critBoost() : Calculation {
-  //   const mods = PersonaItem.getModifier(this.mainModifiers(), "criticalBoost");
-  //   const list= new ModifierList(mods);
-  //   const calc = this.combatStats.lukCriticalBoost();
-  //   calc.add(1, list, "Mods");
-  //   return calc;
-  // }
-
   equals(other: Persona) : boolean {
     return this.source == other.source;
   }
@@ -723,29 +707,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   getDefense(defense: Defense) : Calculation {
     const calc= new Calculation(CombatEngine.getBaseDefense(defense));
     if (defense == "none") {return calc;}
-    // const mods = new ModifierList();
-    // switch (defense) {
-    //   case "ref": {
-    //     calc =this.combatStats.baseWpnDefense();
-    //     break;
-    //   }
-    //   case "fort": {
-    //     calc = this.combatStats.baseMagDefense();
-    //     break;
-    //   }
-    //   case "kill":
-    //     calc = this.combatStats.instantDeathDefense();
-    //     break;
-    //   case "ail":
-    //     calc = this.combatStats.ailmentDefense();
-    //     break;
-    //   case "none":
-    //     return new Calculation(0);
-    //   default:
-    //     defense satisfies never;
-    //     ui.notifications.warn(`Attmept to access nonsense Defense :${defense as string}`);
-    //     return new Calculation(0);
-    // }
     const modifiers = [
       ...this.passiveCEs(),
     ];

@@ -2,7 +2,6 @@ import { waitUntilTrue } from "./utility/async-wait.js";
 import { Helpers } from "./utility/helpers.js";
 
 const SOUNDS = {
-
 	"fire": "atk-fire.mp3",
 	"absorb": "atk-absorb.m4a.mp3",
 	"dark": "atk-dark.m4a.mp3",

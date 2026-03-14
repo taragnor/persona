@@ -39,6 +39,7 @@ export class PersonaAnimation {
 				case "reflect":
 				case "block":
 				case "absorb":
+          await anim.play();
 					await anim.onNullAttack();
 			}
 		} catch(e) {
@@ -48,7 +49,7 @@ export class PersonaAnimation {
 
 	private async showWeakness() {
 		if (!this.target.actor.persona().isWeakTo(this.damageType)) { return;}
-		let seq : SequencerBase= new Sequence().effect()
+		let seq: Sequence= new Sequence().effect()
 			.file(BROKEN_SHIELD)
 			.atLocation(this.target)
 			.delay(250)
@@ -58,7 +59,7 @@ export class PersonaAnimation {
 		seq = PersonaAnimation.appendScrollingText(seq, "WEAK", this.target)
 			.delay(100)
 			.duration(3000);
-		await seq.play();
+		await seq.play({preload: true});
 	}
 
 	private async onMiss() {
@@ -67,42 +68,46 @@ export class PersonaAnimation {
 			.play();
 	}
 
-	private async onNullAttack() {
-		switch (this.result) {
-			case "absorb":
-				await new Sequence().effect()
-					.file(ABSORB)
-					.duration(1000)
-					.atLocation(this.target)
-					.scaleToObject(1)
-					.play();
-				break;
-			case "reflect":
-				await new Sequence().effect()
-					.file("jb2a.icon.shield.green")
-					.duration(2000)
-					.atLocation(this.target)
-					.scaleToObject(1)
-					.play();
-				break;
-			case "block": {
-				const eff= new Sequence().effect()
-				.file("jb2a.icon.shield.green")
-				.duration(2000)
-				.atLocation(this.target)
-				.scaleToObject(1);
-				await PersonaAnimation.appendScrollingText(eff, "BLOCK", this.target).delay(300).play();
-				break;
-			}
-			case "miss":
-			case "hit":
-			case "crit":
-			case "fumble":
-				throw new PersonaError(`${this.result} shoiuldn't be called in the null attack context`);
-			default:
-				this.result satisfies never;
-		}
-	}
+  private async onNullAttack() {
+    switch (this.result) {
+      case "absorb":
+        await new Sequence().effect()
+          .file(ABSORB)
+          .duration(1000)
+          .atLocation(this.target)
+          .scaleToObject(1)
+          .play({preload: true});
+        break;
+      case "reflect":{
+        const eff = new Sequence().effect()
+        .file("jb2a.icon.shield.green")
+        .duration(2000)
+        .atLocation(this.target)
+        .scaleToObject(1)
+        .file(REFLECT)
+        .atLocation(this.target)
+        .scaleToObject(1.25);
+        await PersonaAnimation.appendScrollingText(eff, "REFLECT", this.target).delay(300).play({preload: true});
+        break;
+      }
+      case "block": {
+        const eff= new Sequence().effect()
+        .file("jb2a.icon.shield.green")
+        .duration(2000)
+        .atLocation(this.target)
+        .scaleToObject(1);
+        await PersonaAnimation.appendScrollingText(eff, "BLOCK", this.target).delay(300).play({preload: true});
+        break;
+      }
+      case "miss":
+      case "hit":
+      case "crit":
+      case "fumble":
+        throw new PersonaError(`${this.result} shoiuldn't be called in the null attack context`);
+      default:
+        this.result satisfies never;
+    }
+  }
 
 	protected get target() { return this.targets.at(0)!;}
 
@@ -135,13 +140,13 @@ export class PersonaAnimation {
 				.map( x=> this.result == "miss" ? this.appendMiss(x) : x)
 				.map( x=> this.result == "crit" ? this.appendCriticalHit(x) : x)
 				.map ( x=> x.delay(500))
-				.map( x=> x.play());
+				.map( x=> x.play({preload: true}));
 			;
 		});
 		await Promise.allSettled(promises);
 	}
 
-	private appendCriticalHit<T extends SequencerBase>(seq: T) {
+	private appendCriticalHit<T extends Sequence>(seq: T) {
 		return seq.effect()
 			.file(CRITICAL_HIT)
 			.delay(750)
@@ -173,21 +178,21 @@ export class PersonaAnimation {
 					.atLocation(this.target)
 					.file(SWIRLING_SPARKLES)
 					.scaleToObject(1.5)
-					.play();
+					.play({preload: true});
 				break;
 			case usable.hasTag("buff"):
 				await new Sequence().effect()
 					.atLocation(this.target)
 					.file(BUFF)
 					.scaleToObject(1)
-					.play();
+					.play({preload: true});
 				break;
 			case usable.hasTag("debuff"):
 				await new Sequence().effect()
 					.atLocation(this.target)
 					.file(DEBUFF)
 					.scaleToObject(1)
-					.play();
+					.play({preload: true});
 				break;
 		}
 	}
@@ -204,7 +209,7 @@ export class PersonaAnimation {
 				.map( seq => seq.delay(x * 900));
 			sequences.push(...cycleSeq);
 		}
-		const promises = sequences.map (x=> x.play());
+		const promises = sequences.map (x=> x.play({preload: true}));
 		await Promise.allSettled(promises);
 	}
 
@@ -217,7 +222,7 @@ export class PersonaAnimation {
 			.atLocation(target, locationData);
 	}
 
-	private loadAnimationData (animData: BasicAnimationData, sequence : SequencerBase | Sequence = new Sequence()) {
+	private loadAnimationData (animData: BasicAnimationData, sequence : Sequence = new Sequence()) {
 		const scale = this.scale(animData);
 		let seq = sequence.effect();
 		const fileName : string =
@@ -299,7 +304,7 @@ export class PersonaAnimation {
 			.play();
 	}
 
-	private static appendScrollingText<T extends SequencerBase | Sequence>(seq: T, txt: string, location: PToken, color = "white") {
+	private static appendScrollingText<T extends Sequence>(seq: T, txt: string, location: PToken, color = "white") {
 		const style = {
 			fill: color,
 			// fontFamily: "Arial Black",
@@ -512,6 +517,7 @@ const SCALE_MULT : Record<keyof typeof DAMAGE_LEVELS, number> = {
 
 const BUFF = "jb2a.healing_generic.03.burst.bluegreen";
 
+const REFLECT= "jb2a.shimmer.01.blue";
 const ABSORB = "jb2a.cast_generic.01";
 const IMPACT = "jb2a.impact";
 const FIREWORK = "jb2a.firework";

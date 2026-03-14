@@ -1,14 +1,8 @@
-class Sequence implements SequencerBase {
-	effect() : EffectProxy;
+class Sequence {
 	scrollingText(): ScrollingTextProxy;
-	play() : Promise<void>;
-	delay(randomLow: number, randomHigh: number): this;
-	delay(num: number): this;
-}
-
-interface SequencerBase {
 	effect() : EffectProxy;
-	play() : Promise<void>;
+  sound() : SoundProxy;
+	play(inOptions?: InOptions) : Promise<void>;
 	delay(randomLow: number, randomHigh: number): this;
 	delay(num: number): this;
 	scrollingText(): ScrollingTextProxy;
@@ -16,7 +10,8 @@ interface SequencerBase {
 	addSequence <T extends SequencerBase>( seq : T) : T;
 }
 
-interface EffectProxy extends SequencerBase {
+
+interface EffectProxy extends Sequence {
 	file(name: string) : this;
 	atLocation(token: Token | TokenDocument, options?: LocationOptions) : this;
 	scale(scale: number): this;
@@ -39,6 +34,12 @@ interface EffectProxy extends SequencerBase {
 	missed(): this;
 }
 
+interface SoundProxy extends Sequence {
+  file(name: string) : this;
+  fadeInAudio(ms: number) : this;
+  fadeOutAudio(ms: number) : this;
+}
+
 interface FadeOptions {
 	ease: "linear",
 	delay: number,
@@ -48,9 +49,15 @@ interface LocationOptions {
 	randomOffset ?: number | boolean;
 }
 
-interface ScrollingTextProxy extends SequencerBase {
+interface ScrollingTextProxy extends Sequence {
 	text(txt: string, style?: TextStyle) : this;
 	atLocation(token: Token | TokenDocument, options?: LocationOptions) : this;
+}
+
+interface InOptions {
+  remote ?: boolean;
+  preload ?: boolean;
+  local ?: boolean;
 }
 
 interface TextStyle {
