@@ -1211,6 +1211,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
+  get hasNoTreasure() : boolean {
+    if (!this.isShadow()) {return true;}
+    const treasure = this.system.encounter.treasure;
+    if (!treasure.cardPowerId && !treasure.item0 && !treasure.item1 && !treasure.item2 && !treasure.item3) {
+      return true;
+    }
+    return false;
+  }
+
 	get mainPowers() : Power[] {
 		switch (this.system.type) {
 			case "npc": case "tarot": return [];

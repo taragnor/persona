@@ -199,27 +199,6 @@ export class Metaverse {
 		});
 	}
 
-	static async printTreasure(treasure : Treasure) {
-		const {money, items} = treasure;
-		const speaker = ChatMessage.getSpeaker({alias: "Treasure Generator"});
-		const treasureListHTML = items
-			.map( item => `<li> ${item.displayedName.toString()} </li>`)
-			.join("");
-		const text = `
-		<b>Money:</b> ${money} <br>
-		<ul class="treasure-list">
-		${treasureListHTML}
-		</ul>
-		`;
-		const messageData = {
-			speaker: speaker,
-			content: text,
-			whisper: game.users.filter(usr => usr.isGM),
-			style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
-		};
-		await ChatMessage.create(messageData, {});
-	}
-
 	static async distributeMoney(money: number, players: PersonaActor[]) {
 		if (players.length <= 0) {return;}
 		const moneyShare = Math.floor(money / players.length);
@@ -550,9 +529,5 @@ Hooks.on("updateClock", async function (clock: ProgressClock, _newAmt: number, _
 //@ts-expect-error adding to window
 window.Metaverse = Metaverse;
 
-type Treasure = {
-	money : number,
-	items: TreasureItem[],
-};
 
 

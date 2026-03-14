@@ -141,8 +141,8 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 	}
 
 	static reviseTreasure(treasure: Shadow["system"]["encounter"]["treasure"]) {
-		if (treasure.cardProb_v == undefined) {
-			treasure.cardProb_v = this.probConvert(treasure.cardProb);
+		if (treasure.item0prob_v == undefined) {
+			// treasure.cardProb_v = this.probConvert(treasure.cardProb);
 			treasure.item0prob_v = this.probConvert(treasure.item0prob);
 			treasure.item1prob_v = this.probConvert(treasure.item1prob);
 			treasure.item2prob_v = this.probConvert(treasure.item2prob);

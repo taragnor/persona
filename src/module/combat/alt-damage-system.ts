@@ -13,14 +13,10 @@ import {ConvertableDamageLevel, DamageSystemBase, NewDamageParams} from "./damag
 
 export class AltDamageSystem extends DamageSystemBase {
 
-	// private PERCENT_PADDING = 5 as const;
-	// private ENDURANCE_DR_MULTIPLIER = 0.01 as const;
-	// private BASE_MAGIC_DMG = 10 as const;
-	// private BASE_WEAPON_DMG = 10 as const;
 	private WEAPON_STRENGTH_DAMAGE_MULT = 0.333 as const;
 	private MAGIC_DAMAGE_MULT = 0.333 as const;
 	private HEALING_MAGIC_MULT = 0.5 as const;
-	private END_DIFF_PERCENTAGE_MULT = 0.8 as const;
+	// private END_DIFF_PERCENTAGE_MULT = 0.8 as const;
 	private BASE_VARIANCE = 2 as const;
 	private ARMOR_TO_DAMAGE_DIVISOR = 1.0 as const;
 	private ALL_OUT_ATTACK_HELPER_DIVISOR = 1/3;
@@ -316,7 +312,7 @@ export class AltDamageSystem extends DamageSystemBase {
 
 const DAMAGE_LEVEL_NEW = {
 	"none": {extraVariance: 0, baseAmt: 0, mult: 0, healMult: 0},
-	"miniscule": {extraVariance: 0, baseAmt: 0, mult: 0.5, healMult: 0.25},
+	"miniscule": {extraVariance: 0, baseAmt: 0, mult: 0.333, healMult: 0.25},
 	"basic": {extraVariance: 0, baseAmt: 8, mult: 1, healMult: 0.5},
 	"light": {extraVariance: 0, baseAmt: 15, mult: 1.10, healMult: 1.25},
 	"medium": {extraVariance: 0, baseAmt: 25, mult: 1.30, healMult: 2},

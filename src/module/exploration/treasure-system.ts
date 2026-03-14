@@ -281,7 +281,9 @@ export class TreasureSystem {
 		}, [] as TreasureItem[]);
 		const cardId = treasure["cardPowerId"];
 		if (cardId) {
-			const prob = treasure["cardProb_v"];
+			// const prob = treasure["cardProb_v"];
+      const power = PersonaDB.getPower(cardId as Power["id"]);
+      const prob = power?.system?.rarity ? power.system.rarity : "never";
 			const percentage = CARD_DROP_RATE[prob] * size;
 			const card = await this.considerSkillCard(cardId, percentage);
 			if (card.length > 0) {
@@ -363,6 +365,28 @@ export class TreasureSystem {
 		}
 		return item.isTag() ? 0 : 1;
 	}
+
+	static async printTreasure(treasure : BattleTreasure) {
+		const {money, items} = treasure;
+		const speaker = ChatMessage.getSpeaker({alias: "Treasure Generator"});
+		const treasureListHTML = items
+			.map( item => `<li> ${item.displayedName.toString()} </li>`)
+			.join("");
+		const text = `
+		<b>Money:</b> ${money} <br>
+		<ul class="treasure-list">
+		${treasureListHTML}
+		</ul>
+		`;
+		const messageData = {
+			speaker: speaker,
+			content: text,
+			whisper: game.users.filter(usr => usr.isGM),
+			style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
+		};
+		await ChatMessage.create(messageData, {});
+	}
+
 }
 
 type TreasureItem = ReturnType<typeof PersonaDB["treasureItems"]>[number];
@@ -393,5 +417,4 @@ type BattleTreasure = {
 	money : number,
 	items: TreasureItem[],
 };
-
 

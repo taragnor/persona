@@ -1718,6 +1718,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return 0;
   }
 
+
   isWeaponSkill(): this is PowerSub<'weapon'> {
     if (!this.isUsableType()) {return false;}
     if (this.isSkillCard()) {return false;}

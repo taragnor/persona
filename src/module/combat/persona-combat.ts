@@ -1695,7 +1695,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		}
 		try {
 			const treasure = await TreasureSystem.generateBattleTreasure(defeatedFoes);
-			await Metaverse.printTreasure(treasure);
+			await TreasureSystem.printTreasure(treasure);
 			await Metaverse.distributeMoney(treasure.money, pcs);
 		} catch (e)  {
 			PersonaError.softFail('Problem with generating treasure', e);

@@ -382,7 +382,7 @@ export class PersonaScene extends Scene {
 			if (!shadow) {return $("");}
 			const div = $(`<div class="encounter" data-shadow-id="${shadow.id}"></div>`);
 			div.append( $(`<span class="shadow-name">
-							L${shadow.level} ${shadow.name} (${shadow.roleString.toString()}) [${entry.frequency}]
+							L${shadow.level} ${shadow.name} (${shadow.roleString.toString()}) [${entry.frequency}] ${shadow.hasNoTreasure ? "(missing treasure)" : ""}
 				</span>
 `).on("click", (ev) => {
 	const id = HTMLTools.getClosestData(ev, "shadowId");
@@ -492,8 +492,18 @@ Hooks.on("updateScene", async (_scene: PersonaScene, diff) => {
 
 
 Hooks.on("renderHandlebarsApplication", (app, html) => {
-	const htm = $(html);
-	if (app.document instanceof PersonaScene) {
-		app.document._addExtraSheetHTML(htm);
-	}
+  const htm = $(html);
+  if (app.document instanceof PersonaScene) {
+    app.document._addExtraSheetHTML(htm);
+  }
+  // htm.find(".encounter .shadow-name").on( "click", ev => {
+  //   const shadowId = HTMLTools.getClosestData<Shadow["id"]>(ev, "shadowId");
+  //   if (shadowId) {
+  //     const shadow = game.actors.get(shadowId);
+  //     if (shadow) {
+  //       shadow.sheet.render(true);
+  //     }
+  //   }
+  // });
+
 });
