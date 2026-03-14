@@ -928,6 +928,7 @@ export class PersonaHandleBarsHelpers {
 
     "baseShadowCostString": function (power: Power) : string {
       if (!power.isPower()) {return "";}
+      if (power.isPassive()) {return "-";}
       const cost = EnergyClassCalculator.calcBaseEnergyCost(power);
       return `${Math.round(cost.energyCost)}R${Math.round(cost.energyRequired)}`;
 

@@ -1191,8 +1191,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			case "pc": {
 				const powerIds = this.system.combat.powers;
 				const pcPowers : Power[] = powerIds.flatMap( id=> {
-					const i = PersonaDB.getItemById(id);
-					return (i ? [i as Power] : []);
+					const i = PersonaDB.getPower(id);
+					return (i ? [i] : []);
 				});
 				return pcPowers;
 			}
