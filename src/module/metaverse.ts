@@ -29,40 +29,81 @@ import {PersonaCombat} from "./combat/persona-combat.js";
 export class Metaverse {
 	static lastCrunch : number = 0;
 
-	static async randomizeMementos (lvl?: number) {
-		if (!game.user.isGM) {return;}
-		const scene = game.scenes.current as PersonaScene;
-		if (!scene.allowsRandomGenerator()) {
-			ui.notifications.warn(`${scene.name} doesn't support random generation`);
-			return;
-		}
-		if (!(await HTMLTools.confirmBox("reset Mementos?", "Reset Mementos dungeon?"))) {
-			return;
-		}
-		if (lvl == undefined) {
-			lvl = await HTMLTools.getNumber(" Level of Dungeon to set");
-		}
-		if (lvl < 0) {
-			return;
-		}
-		const gen = new RandomDungeonGenerator(scene, "Wonderland Depths", lvl);
-		const squares = Math.floor(25 + (Math.random() * 30));
-		//squares was 55
-		gen.generate(squares, `${lvl}ARGFDSS` + String(Date.now()));
-		await RandomDungeonOutput.outputToScene(gen, scene);
-		await TensionPool._instance.clear();
-	}
-	static async enterMetaverse() {
-		if (!game.user.isGM) {return;}
-		(game.actors as Collection<PersonaActor>)
-			.filter( (x: PersonaActor)=> (x.isRealPC()) || x.system.type == "npcAlly")
-			.forEach( (pc: PC | NPCAlly) => void pc.onEnterMetaverse());
-		(game.scenes.contents as PersonaScene[])
-			.forEach( sc => void sc.onEnterMetaverse());
-		await TensionPool.instance.clear();
-		Hooks.callAll("enterMetaverse");
-		await Logger.sendToChat(`Entering Metaverse...`);
-	}
+  static async generateMementos(lvl : number, squares ?: number, stepDebug =false) {
+    await PersonaDB.waitUntilLoaded();
+    if (lvl < 0) {
+      return;
+    }
+    if (!game.user.isGM) {return;}
+    const scene = game.scenes.current as PersonaScene;
+    if (!scene.allowsRandomGenerator()) {
+      ui.notifications.warn(`${scene.name} doesn't support random generation`);
+      return;
+    }
+    const gen = new RandomDungeonGenerator(scene, TreasureSystem, "Wonderland Depths", lvl);
+    gen.stepDebug = stepDebug;
+    try {
+      if (!squares) {
+        squares = Math.floor(35 + (Math.random() * 20));
+      }
+      //squares was 55
+      gen.generate(squares, `${lvl}ARGFDSS` + String(Date.now()));
+    } catch (e) {
+      if (e instanceof Error) {
+        throw new PersonaError(e);
+      }
+    }
+    for (const err of gen.errorLog) {
+      PersonaError.softFail(err);
+    }
+
+    return gen;
+  }
+
+  static async randomizeMementos (lvl?: number) {
+    //if (!game.user.isGM) {return;}
+    // const scene = game.scenes.current as PersonaScene;
+    //if (!scene.allowsRandomGenerator()) {
+    //	ui.notifications.warn(`${scene.name} doesn't support random generation`);
+    //	return;
+    //}
+    //if (!(await HTMLTools.confirmBox("reset Mementos?", "Reset Mementos dungeon?"))) {
+    //	return;
+    //}
+    //if (lvl == undefined) {
+    //	lvl = await HTMLTools.getNumber(" Level of Dungeon to set");
+    //}
+    //if (lvl < 0) {
+    //	return;
+    //}
+    //const gen = new RandomDungeonGenerator(scene, "Wonderland Depths", lvl);
+    //const squares = Math.floor(35 + (Math.random() * 20));
+    ////squares was 55
+    //gen.generate(squares, `${lvl}ARGFDSS` + String(Date.now()) + `DFDFDS`);
+    if (!(await HTMLTools.confirmBox("reset Mementos?", "Reset Mementos dungeon?"))) {
+      return;
+    }
+    if (lvl == undefined) {
+      lvl = await HTMLTools.getNumber(" Level of Dungeon to set");
+    }
+    const gen = await this.generateMementos(lvl);
+    const scene = game.scenes.current as PersonaScene;
+    if (gen) {
+      await RandomDungeonOutput.outputToScene(gen, scene);
+      await TensionPool._instance.clear();
+    }
+  }
+  static async enterMetaverse() {
+    if (!game.user.isGM) {return;}
+    (game.actors as Collection<PersonaActor>)
+      .filter( (x: PersonaActor)=> (x.isRealPC()) || x.system.type == "npcAlly")
+      .forEach( (pc: PC | NPCAlly) => void pc.onEnterMetaverse());
+    (game.scenes.contents as PersonaScene[])
+      .forEach( sc => void sc.onEnterMetaverse());
+    await TensionPool.instance.clear();
+    Hooks.callAll("enterMetaverse");
+    await Logger.sendToChat(`Entering Metaverse...`);
+  }
 
 	static async exitMetaverse() {
 		(game.actors as Collection<PersonaActor>)

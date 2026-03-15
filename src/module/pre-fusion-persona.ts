@@ -79,7 +79,7 @@ export class HypotheticalPersona extends Persona<PC> {
 		await this.destroyComponents();
 		await this.user.addPersona(shadow);
 		await this.fusionMsg(shadow);
-		await this.user.sheet.render(false);
+		this.user.sheet.render(false);
 		return shadow;
 	}
 

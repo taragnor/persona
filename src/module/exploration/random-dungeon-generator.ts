@@ -1,13 +1,11 @@
-import {PersonaDB} from "../persona-db.js";
-import {PersonaError} from "../persona-error.js";
-import {PersonaScene} from "../persona-scene.js";
 import {ArrayEq} from "../utility/array-tools.js";
 import {SeededRandom} from "../utility/seededRandom.js";
 import {DungeonSquare, Point} from "./dungeon-generator-square.js";
 
 export class RandomDungeonGenerator {
 	seedString: string;
-	scene: PersonaScene;
+	// scene: PersonaScene;
+  scene: SceneData; //generally a persona scene
 	gridSize: number;
 	gridX: number;
 	gridY: number;
@@ -24,17 +22,21 @@ export class RandomDungeonGenerator {
 	lenientMode: boolean;
 	_baseDiff: number;
 	wallData: ReturnType<DungeonSquare["walls"]> = [];
-	sceneModifiers : UniversalModifier[] = [];
+	sceneModifiers : DungeonModifier[] = [];
 	SCENEMODS = SCENE_MOD_NAMES;
+  errorLog: (string | Error)[] = [];
+  treasureSystem : GeneratorTreasureSystem;
+  stepDebug: boolean = false;
 
 	static SPECIAL_FLOORS = ["tough-enemy", "revealed", "treasure-shadow", "dark"] as const;
 
 	static init() {}
 
-	constructor(scene: PersonaScene, dungeonName: string = "Unnamed Dungeon", depth: number = 1, baseDiff ?: number) {
+	constructor(scene: RandomDungeonGenerator["scene"], treasureSystem: GeneratorTreasureSystem, dungeonName: string = "Unnamed Dungeon", depth: number = 1, baseDiff ?: number ) {
 		this.squaresTaken = 0;
 		this.scene = scene;
 		this.gridSize = scene.grid.size;
+    this.treasureSystem = treasureSystem;
 		const rect = scene.dimensions.sceneRect;
 		this.gridX= rect.x;
 		this.gridY= rect.y;
@@ -48,7 +50,7 @@ export class RandomDungeonGenerator {
 		this.wallData = [];
 		this._baseDiff = (this.scene.baseDungeonLevel || baseDiff) ?? 0;
 		if (this._baseDiff == 0) {
-			throw new PersonaError(`${scene.name} has no inset Difficulty`);
+			throw new GenerationError(`${scene.name} has no inset Difficulty`);
 		}
 	}
 
@@ -61,19 +63,28 @@ export class RandomDungeonGenerator {
 
 	get currentDepth() : number {return this._depth;}
 
-	print() : string {
+	print(description : boolean = false) : string {
 
-		let ret = `Dungeon Lvl ${this.currentDepth} Seed: ${this.seedString}`;
-		for (const column of this.squares) {
-			ret += column
-				.map(sq=> sq ? sq.print() : " ")
-				.join("");
-			ret += "\n";
-		}
-		return `
-		${ret}
-		`;
-	}
+    let ret = "";
+    if (description) {
+      ret += `Dungeon Lvl ${this.currentDepth} Seed: ${this.seedString}`;
+    }
+    for (const column of this.squares) {
+      ret += column
+        .map(sq=> sq ? sq.print() : " ")
+        .join("");
+      ret += "\n";
+    }
+    return `
+    ${ret}
+    `;
+  }
+
+  printErrorLog() {
+    for (const err of this.errorLog) {
+      console.log(err);
+    }
+  }
 
 	get difficultyLevel() {
 		return this._baseDiff + Math.floor(this.currentDepth / 2);
@@ -161,7 +172,6 @@ export class RandomDungeonGenerator {
 		const randLoc = this.randomEmptySquareCoords();
 		const sq = this.constructSquareAt(randLoc, "room");
 		sq.makeStairsUp();
-
 	}
 
 	numOfAdjacentCorridors(pt: Point) : number {
@@ -175,38 +185,39 @@ export class RandomDungeonGenerator {
 	}
 
 
-	createDungeonCorridors(numOfSquares : number) {
-		let breakout = 0;
-		const rng = this.rng;
-		while (numOfSquares > 0) {
-			const pts = this.squareList
-				.filter( sq => sq.isLegalToExpand(this.lenientMode))
-				.map( sq => [sq, sq
-					.getEmptyAdjoiningPoints()
-					.filter(pt => this.numOfAdjacentCorridors(pt) <= 1)
-				])
-				.filter( data => (data.at(1) as DungeonSquare[]).length > 0)
-			;
-			if (pts.length == 0) {
-				console.log("Early break out of corridors");
-				return;
-			}
-			const origin = rng.randomArraySelect(pts);
-			if (!origin) {
-				if (breakout++ > 10000) {
-					Debug(this);
-					throw new InvalidDungeonError("corridor create breakout trap");
-				}
-				continue;
-			}
-			const pt = rng.randomArraySelect(origin.at(1) as DungeonSquare[]);
-			if (pt) {
-				numOfSquares -= this.startCorridorAt(pt, origin.at(0) as DungeonSquare);
-			}
-		}
-	}
+  createDungeonCorridors(numOfSquares : number) : boolean {
+    let breakout = 0;
+    const rng = this.rng;
+    while (numOfSquares > 0) {
+      const pts = this.squareList
+        .filter( sq => sq.isLegalToExpand(this.lenientMode))
+        .map( sq => [sq, sq
+          .getEmptyAdjoiningPoints()
+          .filter(pt => this.numOfAdjacentCorridors(pt) <= 1)
+        ])
+        .filter( data => (data.at(1) as DungeonSquare[]).length > 0)
+      ;
+      if (pts.length == 0) {
+        // console.log("Early break out of corridors");
+        return false;
+      }
+      const origin = rng.randomArraySelect(pts);
+      if (!origin) {
+        if (breakout++ > 10000) {
+          Debug(this);
+          throw new InvalidDungeonError("corridor create breakout trap");
+        }
+        continue;
+      }
+      const pt = rng.randomArraySelect(origin.at(1) as DungeonSquare[]);
+      if (pt) {
+        numOfSquares -= this.startCorridorAt(pt, origin.at(0) as DungeonSquare);
+      }
+    }
+    return true;
+  }
 
-	createDungeonRooms(numOfSquares: number) {
+	createDungeonRooms(numOfSquares: number) : boolean {
 		let breakout = 0;
 		const rng = this.rng;
 		while (numOfSquares > 0) {
@@ -219,8 +230,8 @@ export class RandomDungeonGenerator {
 				])
 				.filter( data => (data.at(1) as DungeonSquare[]).length > 0);
 			if (pts.length == 0) {
-				console.log("Early break out of rooms");
-				return;
+				// console.log("Early break out of rooms");
+				return false;
 			}
 			const origin = rng.randomArraySelect(pts);
 			if (!origin) {
@@ -235,6 +246,7 @@ export class RandomDungeonGenerator {
 				numOfSquares -= this.startRoomAt(pt, origin.at(0) as DungeonSquare);
 			}
 		}
+    return true;
 	}
 
 	/** returns number of squares used*/
@@ -275,7 +287,7 @@ export class RandomDungeonGenerator {
 
 	extendCorridor(sq: DungeonSquare, direction: Direction) : number {
 		const corridorParts= [sq];
-		const corridorLen = this.rng.die(1,4)+1;
+		const corridorLen = this.rng.die(1,2)+1;
 		let corridorsMade = 0;
 		while (corridorsMade < corridorLen && sq.isLegalToExpand(this.lenientMode)) {
 			const nextPt = sq[direction];
@@ -291,7 +303,7 @@ export class RandomDungeonGenerator {
 		for (const pt of corridorParts) {
 			pt.addToGroup(corridorParts);
 		}
-		console.log(`corridor Parts: ${corridorParts.map(x=> x.print()).join("")}`);
+		// console.log(`corridor Parts: ${corridorParts.map(x=> x.print()).join("")}`);
 		return corridorsMade;
 	}
 
@@ -377,53 +389,83 @@ export class RandomDungeonGenerator {
 		}
 	}
 
-	generate(numSquares: number, originalSeedString: string = "TEST") {
-		this.init(numSquares, originalSeedString);
-		let timeout = 0;
-		while (timeout < 100) {
-			try {
-				this.createFloorplan(numSquares);
-				this.assignExit();
-				this.assignSpecialFloors();
-				this.assignSpecials();
-				this.assignTreasures();
-				this.assignFlavorText();
-				this.finalizeSquares();
-				console.log( this.print());
-				return this;
-			} catch (e) {
-				timeout ++;
-				if (e instanceof UnexpectedResultError) {
-					PersonaError.softFail("Unexpected Behavior from dungeon generator", e);
-				}
-				this.seedString += this.rng.randomLetter();
-				// this.seedString += "A";
-			}
-		}
-		if (timeout >= 100) {
-			throw new InvalidDungeonError("Generation had too many errrors and had to bail out");
-		}
-	}
+  generate(numSquares: number, originalSeedString: string = "TEST") {
+    this.init(numSquares, originalSeedString);
+    for (let timeout = 0; timeout < 30; ++timeout) {
+      try {
+        this.createFloorplan(numSquares);
+        this.assignExit();
+        this.assignSpecialFloors();
+        this.assignSpecials();
+        this.assignTreasures();
+        this.assignFlavorText();
+        this.finalizeSquares();
+        console.log( this.print());
+        return this;
+      } catch (e) {
+        if (e instanceof UnexpectedResultError) {
+          this.errorLog.push(e);
+        }
+        if (this.stepDebug) {
+          console.log(e);
+          return;
+        }
+        this.seedString += this.rng.randomLetter();
+      }
+    }
+    throw new InvalidDungeonError("Generation had too many errrors and had to bail out");
+  }
 
-	private createFloorplan(numSquares: number) {
-		this.lenientMode = false;
-		this.rng = new SeededRandom(this.seedString);
-		this.#resetSquares();
-		this.placeStartingRoom();
-		let emergencyBrake = 0;
-		while (this.squareList.length < numSquares) {
-			const corridors = this.rng.die(2,3)+1;
-			this.createDungeonCorridors(corridors );
-			const rooms = this.rng.die(1,2);
-			this.createDungeonRooms(rooms);
-			if (emergencyBrake > 500) {
-				this.lenientMode = true;
-			}
-			if (emergencyBrake++ > 10000) {
-				throw new GenerationBailOutError("Had To bail out on generation, too many retries");
-			}
-		}
-	}
+  randomLetterTest() {
+    if (!this.rng) {
+      this.rng = new SeededRandom(this.seedString);
+    }
+    let str= "";
+    for (let i = 0; i < 10; i++ ) {
+      str+= this.rng.randomLetter();
+    }
+    console.log(str);
+    return str;
+  }
+
+  private createFloorplan(numSquares: number) {
+    this.lenientMode = false;
+    this.rng = new SeededRandom(this.seedString);
+    this.#resetSquares();
+    this.placeStartingRoom();
+    if (this.stepDebug) {
+      this.print();
+    }
+    let emergencyBrake = 0;
+    while (this.squareList.length < numSquares) {
+      const corridors = this.rng.die(2,3)+1;
+      const corridorMade= this.createDungeonCorridors(corridors );
+      if (corridorMade && this.stepDebug) {
+        this.print();
+      }
+      const rooms = this.rng.die(1,2);
+      const roomMade = this.createDungeonRooms(rooms);
+      if (roomMade && this.stepDebug) {
+        this.print();
+      }
+      if (!corridorMade && !roomMade) {
+        if (this.lenientMode == false) {
+          this.lenientMode = true;
+        } else {
+          throw new GenerationBailOutError("Deadlocked, no rooms or corridor made");
+        }
+      }
+      if (emergencyBrake > 200) {
+        this.lenientMode = true;
+      }
+      if (emergencyBrake++ > 5000 && this.squareList.length < 20) {
+        if (this.squareList.length < 20) {
+          throw new GenerationBailOutError("Had To bail out on generation, too many retries");
+        }
+        console.error(`Dungeon Generatiuon troubles, only ${this.squareList.length} squares`);
+      }
+    }
+  }
 
 	finalizeSquares() {
 		this.squareList.forEach( sq=> sq.finalize());
@@ -454,10 +496,12 @@ export class RandomDungeonGenerator {
 			.flatMap (x=> this.getSceneMod(x));
 	}
 
-	getSceneMod ( mod : keyof RandomDungeonGenerator["SCENEMODS"]) : UniversalModifier[] {
-		const item = PersonaDB.getSceneModifiers().find( x=> x.name == this.SCENEMODS[mod]);
+	getSceneMod ( mod : keyof RandomDungeonGenerator["SCENEMODS"]) : DungeonModifier[] {
+    const modName =this.SCENEMODS[mod];
+    const item = this.scene.getSceneModifiers().find (x=> x.name == modName);
+		// const itemx = PersonaDB.getSceneModifiers().find( x=> x.name == this.SCENEMODS[mod]);
 		if (item) {return [item];}
-		PersonaError.softFail(`Can't find modifier ${this.SCENEMODS[mod]}`);
+      this.errorLog.push(`Can't find modifier ${this.SCENEMODS[mod]}`);
 		return [];
 	}
 
@@ -466,15 +510,17 @@ export class RandomDungeonGenerator {
 			.flatMap( x=> x.walls());
 		const dupeRemover = ([] as typeof wallData).pushUniqueS((a, b) => ArrayEq(a.c ?? [], b.c ?? []) , ...wallData);
 		if (wallData.length == dupeRemover.length) {
-			PersonaError.softFail("Create walls seems to have failed to remove duplicates");
+			this.errorLog.push("Create walls seems to have failed to remove duplicates");
 		}
 		this.wallData = dupeRemover;
 	}
 
 }
 
-//@ts-expect-error adding to glboal scope for test
-window.DG = RandomDungeonGenerator;
+//if (window) {
+//  //@ts-expect-error adding to glboal scope for test
+//  window.DG = RandomDungeonGenerator;
+//}
 
 type Direction = "up" | "down" | "left" |"right";
 
@@ -587,3 +633,33 @@ const CORRIDOR_FLAVORS : CorridorFlavorText[] = [
 		weight: 0.333,
 	}
 ] as const;
+
+
+interface SceneData {
+  name: string;
+  baseDungeonLevel: number;
+  grid : {
+    size: number;
+  };
+  getSceneModifiers() : readonly UniversalModifier[];
+  dimensions: {
+    sceneRect: {x: number, y: number, width: number, height: number};
+  }
+
+}
+
+
+interface DungeonModifier {
+  name: string;
+  id: string;
+}
+
+
+
+export class GenerationError extends Error{
+
+}
+
+interface GeneratorTreasureSystem  {
+  generate (diffLevel: number, modifier: number): unknown[];
+}

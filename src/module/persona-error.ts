@@ -2,7 +2,18 @@ import { PersonaSockets } from "./persona.js";
 
 export class PersonaError extends Error {
 
-	 constructor (errortxt: string, ...debugArgs: unknown[]) {
+  constructor (e: Error);
+	 constructor (errortxt: string, ...debugArgs: unknown[]);
+	 constructor (error: string | Error, ...debugArgs: unknown[]) {
+     if (error instanceof Error) {
+       super(error.message);
+       if (error.stack) {
+       this.stack = error.stack;
+       }
+       this.name = error.name;
+       return;
+     }
+     const errortxt = error;
 			super(errortxt);
 			PersonaError.notifyGM(errortxt, this.stack, debugArgs);
 			ui.notifications.error(errortxt);
@@ -10,22 +21,30 @@ export class PersonaError extends Error {
 			debugArgs.forEach(x=> Debug(x));
 	 }
 
-	 static softFail(errortxt: string, ...debugArgs: unknown[]) {
-			try {
-				 ui.notifications.error(errortxt);
-				 const trace = this.getTrace();
-				 this.notifyGM(errortxt, trace, debugArgs);
-				 console.error(`${errortxt} \n ${trace}`);
-			} catch (e) {
-				 this.notifyGM(errortxt, undefined, debugArgs);
-				 PersonaError.softFail("Error with softFail error reporting");
-				 if (e instanceof Error)
-				 {throw e;}
-			}
-			if (debugArgs) {
-				 debugArgs.forEach( arg=> Debug(arg));
-			}
-	 }
+  static softFail(error: string | Error, ...debugArgs: unknown[]) : void {
+    try {
+      if (error instanceof Error) {
+        this.notifyGM(error.message, error.stack, debugArgs);
+        ui.notifications.error(error.message);
+        console.error(`${error.message} \n ${error.stack}`);
+        return;
+      }
+      const errortxt = error;
+      ui.notifications.error(errortxt);
+      const trace = this.getTrace();
+      this.notifyGM(errortxt, trace, debugArgs);
+      console.error(`${errortxt} \n ${trace}`);
+    } catch (e) {
+
+      this.notifyGM(error instanceof Error ? error.message : error, undefined, debugArgs);
+      PersonaError.softFail("Error with softFail error reporting");
+      if (e instanceof Error)
+      {throw e;}
+    }
+    if (debugArgs) {
+      debugArgs.forEach( arg=> Debug(arg));
+    }
+  }
 
 	 static logTrace() : void {
 			console.log(this.getTrace());

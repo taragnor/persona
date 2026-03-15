@@ -16,7 +16,7 @@ export class RandomEncounter {
 
 	static encounterChoices = [
 		"fight",
-		"evade",
+		"retreat",
 		"sneak",
 		"ambush",
 	] as const;
@@ -219,7 +219,7 @@ static async processPlayerPreCombatAction(action: typeof this.encounterChoices[n
 			return await this.processFight(encounter);
 		case "ambush":
 			return await this.processAmbush(encounter);
-		case "evade":
+		case "retreat":
 			return await this.processEvade(encounter);
 		case "sneak":
 			return await this.processSneak(encounter);
@@ -556,7 +556,7 @@ static #getEncounterSize(etype: EncounterDifficulty) : number {
 	}
 
 static async testVote() {
-	return await this.takePlayerVote(["fight", "evade", "sneak", "ambush"]);
+	return await this.takePlayerVote(["fight", "retreat", "sneak", "ambush"]);
 }
 
 static async testPlaceToken(x: number, y: number) {
@@ -582,13 +582,13 @@ export interface EncounterOptions {
 }
 
 export type EncounterAction = {
-	action: "fight" | "ambush" | "evade" | "sneak";
+	action: "fight" | "ambush" | "retreat" | "sneak";
 }
 
 const VALID_CHOICES : Record<PresenceRollData["encounterType"], typeof RandomEncounter["encounterChoices"][number][]> = {
-	room: ["fight", "evade", "ambush"],
+	room: ["fight", "retreat", "ambush"],
 	secondary: ["fight"],
-	wandering: ["fight", "evade", "sneak", "ambush"],
+	wandering: ["fight", "retreat", "sneak", "ambush"],
 };
 
 //@ts-expect-error adding to global

@@ -1,8 +1,10 @@
 export class SeededRandom {
-	#state : [number, number, number, number];
-	constructor (seed: string) {
-		this.#state = SeededRandom.hash(seed);
-	}
+  #state : [number, number, number, number];
+  _lastzero = false;
+
+  constructor (seed: string) {
+    this.#state = SeededRandom.hash(seed);
+  }
 
 	die(num : number, sides: number) : number {
 		let total = 0;
@@ -19,7 +21,7 @@ export class SeededRandom {
 		// throw new Error("NOt yet implemented");
 		// const MAX_INT = 2147483612; // based on tests this seemsto be the largest integer produced;
 		// return Math.clamp(this.getRandom() / MAX_INT, 0, 1);
-		return this.getRandom() % 1000000 / 1000000;
+		return (this.getRandom() % 1000000) / 1000000;
 	}
 
 	getRandom() : number {
@@ -30,11 +32,15 @@ export class SeededRandom {
 		state[2] = state[1];
 		state[1] = s;
 
-		t ^= t << 11;
-		t ^= t >> 8;
-		state[0] = t ^ s ^ (s >> 19);
-		return state[0];
-	}
+    t ^= t << 11;
+    t ^= t >> 8;
+    state[0] = t ^ s ^ (s >> 19);
+    // if (state[0] == 0 && this._lastzero) {
+    //   if (this._lastzero) {throw new Error("ZERO ERROR");}
+    // }
+    // this._lastzero = state[0] == 0;
+    return state[0];
+  }
 
 	randomArraySelect<T>(arr: T[]) : T | undefined {
 		if (arr.length ==0) {return undefined;}
@@ -45,7 +51,8 @@ export class SeededRandom {
 
 	randomLetter() : string {
 		const str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		const index = this.random() % str.length;
+		const index = Math.floor(this.getRandom()) % str.length;
+    // console.log(index);
 		return str.at(index)!;
 	}
 

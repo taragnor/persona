@@ -812,6 +812,12 @@ export class CombatEngine {
       default:
         power.system.defense satisfies never;
     }
+    if (power.system.defense == "ail") {
+      calc.add(1, CombatEngine.baseAilmentAttackBonus(power), "Base Ailment bonus");
+    }
+    if (power.system.defense == "kill") {
+      calc.add(1, CombatEngine.baseInstantKillBonus(power), "Base Instant Kill bonus");
+    }
     const attackerBonuses = attacker.getBonuses(mods);
     const powerBonuses = new ModifierList(power.getModifier(mods, attacker.user));
     const targetMods = target.getBonuses(mods, target.defensiveModifiers());

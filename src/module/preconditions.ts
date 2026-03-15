@@ -1215,9 +1215,9 @@ function rollPropertyIs(condition : SourcedPrecondition  & {type: "boolean"; boo
 		case "is-hit":
 			return CombatEngine.isAnyHit(situation);
 		case "is-within-ailment-range":
-			return "withinAilmentRange" in situation ? situation.withinAilmentRange ?? false : false;
+			return CombatEngine.isAnyHit(situation) && "withinAilmentRange" in situation ? situation.withinAilmentRange ?? false : false;
 		case "is-within-instant-death-range":
-				return "withinInstantKillRange" in situation ? situation.withinInstantKillRange ?? false : false;
+				return CombatEngine.isAnyHit(situation) && "withinInstantKillRange" in situation ? situation.withinInstantKillRange ?? false : false;
 		case "is-fumble":
 				return CombatEngine.isFumble(situation);
 		default:

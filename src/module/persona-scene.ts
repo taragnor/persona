@@ -27,6 +27,10 @@ export class PersonaScene extends Scene {
 		return 0;
 	}
 
+  getSceneModifiers() : readonly UniversalModifier[] {
+		return PersonaDB.getSceneModifiers();
+  }
+
 	allFoes() : Shadow[] {
 		return PersonaDB.shadows()
 			.filter ( shadow=> shadow.system.encounter.dungeonEncounters.some( x=> x.dungeonId == this.id)) ;

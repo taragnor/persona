@@ -1,6 +1,5 @@
-import {PersonaRegion} from "../region/persona-region.js";
 import {FlavorText, RandomDungeonGenerator} from "./random-dungeon-generator.js";
-import {EnchantedTreasureFormat, TreasureSystem} from "./treasure-system.js";
+// import {EnchantedTreasureFormat, TreasureSystem} from "./treasure-system.js";
 
 export class DungeonSquare {
 	parent: RandomDungeonGenerator;
@@ -11,14 +10,14 @@ export class DungeonSquare {
 	type: "corridor" | "room";
 	group: DungeonSquare[];
 	connections: DungeonSquare[] = [];
-	specials: RoomSpecial[];
-	treasures: EnchantedTreasureFormat[] = [];
+	specials: RoomSpecial[] = [];
+	treasures: unknown[] = [];
 	region: UN<RegionData>;
-	regionData: PersonaRegion["regionData"];
+  flavorText: FlavorText[] = [];
 
 	constructor(generator: RandomDungeonGenerator, x: number, y:number, type: typeof this["type"]) {
 		this.parent = generator;
-		this.x= x;
+		this.x = x;
 		this.y = y;
 		this.type = type;
 		this.group = [this];
@@ -69,6 +68,9 @@ export class DungeonSquare {
 	}
 
 	generateRegionName() : string {
+    const definedName = this.flavorText
+      .find( ft => ft.newName)?.newName;
+    if (definedName) {return definedName;}
 		switch (this.type) {
 			case "corridor":
 				if (this.isDeadEnd()) {
@@ -128,7 +130,7 @@ export class DungeonSquare {
 	}
 
 	finalize() {
-		this.makeRegionData();
+    this.makeRegionData();
 	}
 
 	makeRegionData() : RegionData {
@@ -141,7 +143,6 @@ export class DungeonSquare {
 		};
 		this.group.forEach( member => member.region = null);
 		this.region = regionConstructionInfo;
-		this.prepPersonaRegionData();
 
 	}
 
@@ -149,7 +150,7 @@ export class DungeonSquare {
 		return Math.floor(Math.random() * sides) + 1;
 	}
 
-	private maxTreasures(): number {
+	public maxTreasures(): number {
 		if (this.isCorridor()) {
 			if (this.isDeadEnd()) {
 				return this.die(3);
@@ -277,7 +278,7 @@ export class DungeonSquare {
 		return wallData;
 	}
 
-	private shadowPresence() : number {
+	public shadowPresence() : number {
 		switch (true) {
 			case this.isStartPoint():  return 0;
 			case this.isDeadEnd(): {return 1;}
@@ -288,93 +289,6 @@ export class DungeonSquare {
 			}
 			default: return 2;
 		}
-	}
-
-	private region_pointsOfInterest() : string []{
-		const ret = [];
-		switch (true) {
-			case this.isStartPoint():
-				if (this.parent.currentDepth == 0) {
-					ret.push("Exit: An exit leads back to Wonderland");
-				} else {
-					ret.push("Ascend Point: You can ascend towards the higher level here.");
-				}
-				break;
-			case this.isStairsDown():
-				ret.push("Descend Point: You can descend even deeper into this strange realm.");
-				break;
-			case this.isTeleporter():
-				ret.push("Access Terminal: You can use this to return back to the entrance of Wonderland");
-				break;
-		}
-		return ret;
-	}
-
-	private region_specialMods() : DungeonSquare["regionData"]["specialMods"] {
-		const mods : DungeonSquare["regionData"]["specialMods"] = [];
-		if (this.isTeleporter()) {
-			return ["safe" ,"compendium-access"];
-		}
-		if (this.isStartPoint()) {
-			return ["safe"];
-		}
-		if (this.isRoom()) {
-			const x = Math.floor(Math.random() * 10 + 1);
-			if (x>= 9) {
-				mods.push("treasure-rich");
-			}
-		}
-		if (this.isCorridor()) {
-			const x = Math.floor(Math.random() * 10 + 1);
-			if (x< 5) {
-				mods.push("treasure-poor");
-			}
-		}
-		return mods;
-	}
-
-	private region_secret() : {status: DungeonSquare["regionData"]["secret"], details: string} {
-		let status : DungeonSquare["regionData"]["secret"];
-		const details = "";
-
-		switch (true) {
-			default:
-				status= "none";
-		}
-		return {status, details};
-	}
-
-	private region_hazard() : {status: DungeonSquare["regionData"]["hazard"], details: string} {
-		let status : DungeonSquare["regionData"]["secret"];
-		const details = "";
-		switch (true) {
-			default:
-				status= "none";
-		}
-		return {status, details};
-	}
-
-	private prepPersonaRegionData() {
-		const secret = this.region_secret();
-		const hazard = this.region_hazard();
-		const regionData: DungeonSquare["regionData"]  = {
-			ignore: false,
-			secret: secret.status,
-			hazard: hazard.status,
-			secretDetails: secret.details,
-			hazardDetails: hazard.details,
-			treasures: {
-				found: 0,
-				max: this.maxTreasures(),
-			},
-			roomEffects: [],
-			pointsOfInterest: this.region_pointsOfInterest(),
-			specialMods: this.region_specialMods(),
-			shadowPresence: this.shadowPresence(),
-			secretNotes: "",
-			challengeLevel: 0
-		};
-		this.regionData = regionData;
 	}
 
 	addToGroup(sq: DungeonSquare[]) {
@@ -510,11 +424,13 @@ export class DungeonSquare {
 			&& this.getEmptyAdjoiningPoints().length == 3;
 	}
 
-	isEmptyRoom() : boolean {
-		return this.isRoom()
-			&& this.specials.length == 0
-			&& this.regionData.pointsOfInterest.length == 0;
-	}
+  isEmptyRoom() : boolean {
+    return this.isRoom()
+      && this.specials.length == 0
+      && !this.isStartPoint()
+      && !this.isStairsDown()
+      && !this.isTeleporter();
+  }
 
 	isHiddenRoom() : boolean {
 		return this.specials.includes("hidden-room");
@@ -568,32 +484,14 @@ export class DungeonSquare {
 				modifier = -50;
 		}
 		while (amt -- > 0) {
-			const treasure = TreasureSystem.generate(this.difficultyLevel, modifier);
+			const treasure = this.parent.treasureSystem.generate(this.difficultyLevel, modifier);
+			// const treasure = TreasureSystem.generate(this.difficultyLevel, modifier);
 			this.treasures.push(...treasure);
 		}
 	}
 
 	addFlavorText(flavor: FlavorText)  {
-		if (flavor.newName && this.region) {
-			this.region.name = flavor.newName;
-		}
-		this.regionData.pointsOfInterest.push(flavor.text);
-		if (flavor.secret) {
-			this.regionData.secret = "hidden";
-			this.regionData.secretNotes = flavor.secret;
-		}
-		if (flavor.hazard) {
-			this.regionData.hazard = "hidden";
-			this.regionData.hazardDetails = flavor.hazard;
-		}
-		if (flavor.ultraRichTreasure) {
-			const mods = this.regionData.specialMods;
-			if (mods.includes("treasure-rich") || mods.includes("treasure-poor")) {
-				this.regionData.specialMods = mods
-				.filter ( x=> x != "treasure-poor" && x != "treasure-rich");
-			}
-			this.regionData.specialMods.push("treasure-ultra");
-		}
+    this.flavorText.push(flavor);
 	}
 
 }

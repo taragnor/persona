@@ -405,6 +405,9 @@ export class ConditionalEffectManager {
     (
       condObject: DeepNoArray<ConditionalEffect["conditions"]>,
     ) : NonDeprecatedPrecondition<Precondition>[] {
+      if (!condObject) {
+        return [];
+      }
       const cached = this.cache.preconditions.get(condObject);
       if (cached) {
         ++this.cache.hits;

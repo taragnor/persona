@@ -54,6 +54,7 @@ import {EnhancedActorDirectory} from "./enhanced-directory/enhanced-directory.js
 import {PersonaPrinter} from "./printers/persona-list.js";
 import {RandomDungeonGenerator} from "./exploration/random-dungeon-generator.js";
 import {PersonaToken} from "./persona-token.js";
+import {SeededRandom} from "./utility/seededRandom.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -189,4 +190,8 @@ Hooks.on("renderChatMessageHTML", (msg, html) => {
 			break;
 		}
 });
+
+
+//@ts-expect-error adding to global
+window.seededRandom = SeededRandom;
 

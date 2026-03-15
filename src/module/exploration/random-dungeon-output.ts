@@ -1,9 +1,11 @@
 import {PersonaActor} from "../actor/persona-actor.js";
+import {PersonaItem} from "../item/persona-item.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
 import {PersonaRegion} from "../region/persona-region";
 import {DungeonSquare, WallData} from "./dungeon-generator-square.js";
 import {RandomDungeonGenerator} from "./random-dungeon-generator.js";
+import {EnchantedTreasureFormat, TreasureSystem} from "./treasure-system.js";
 
 export class RandomDungeonOutput {
 
@@ -101,13 +103,116 @@ export class RandomDungeonOutput {
 	}
 
 
-	private async createRegions() {
-		for (const sq of this.squareList) {
-			const rdata = sq.region;
-			if (!rdata) {continue;}
-			const region = (await this.scene.createEmbeddedDocuments<PersonaRegion>("Region", [rdata as Record<string, unknown>]))[0];
-			await region.setRegionData(sq.regionData);
+  private async createRegions() {
+    for (const sq of this.squareList) {
+      const rdata = sq.region;
+      if (!rdata) {continue;}
+      const region = (await this.scene.createEmbeddedDocuments<PersonaRegion>("Region", [rdata as Record<string, unknown>]))[0];
+      const regionData = this.prepPersonaRegionData(sq);
+      await region.setRegionData(regionData);
+    }
+  }
+
+	private prepPersonaRegionData(sq: DungeonSquare) : RegionData {
+		const secret = this.region_secret(sq);
+		const hazard = this.region_hazard(sq);
+		const regionData: RegionData = {
+			ignore: false,
+			secret: secret.status,
+			hazard: hazard.status,
+			secretDetails: secret.details,
+			hazardDetails: hazard.details,
+			treasures: {
+				found: 0,
+				max: sq.maxTreasures(),
+			},
+			roomEffects: [],
+			pointsOfInterest: this.region_pointsOfInterest(sq),
+			specialMods: this.region_specialMods(sq),
+			shadowPresence: sq.shadowPresence(),
+			secretNotes: "",
+			challengeLevel: 0
+		};
+    return regionData;
+	}
+
+  private region_specialMods(sq: DungeonSquare) : RegionData["specialMods"] {
+    let mods : RegionData["specialMods"] = [];
+    if (sq.isTeleporter()) {
+      return ["safe" ,"compendium-access"];
+    }
+    if (sq.isStartPoint()) {
+      return ["safe"];
+    }
+    if (sq.isRoom()) {
+      const x = Math.floor(Math.random() * 10 + 1);
+      if (x>= 9) {
+        mods.push("treasure-rich");
+      }
+    }
+    if (sq.isCorridor()) {
+      const x = Math.floor(Math.random() * 10 + 1);
+      if (x< 5) {
+        mods.push("treasure-poor");
+      }
+    }
+    if (sq.flavorText.some(x=> x.ultraRichTreasure)) {
+      if (mods.includes("treasure-rich") || mods.includes("treasure-poor")) {
+        mods = mods
+          .filter ( x=> x != "treasure-poor" && x != "treasure-rich");
+      }
+      mods.push("treasure-ultra");
+    }
+
+    return mods;
+
+	}
+
+	private region_secret(sq: DungeonSquare) : {status: RegionData["secret"], details: string} {
+		let status : RegionData["secret"] = "none";
+		let details = "";
+    const ft = sq.flavorText.find( x=> x.secret);
+    if (ft) {
+      status = "hidden";
+      details = ft.secret!;
+    }
+		return {status, details};
+	}
+
+private region_hazard(sq: DungeonSquare) : {status: RegionData["hazard"], details: string} {
+		let status : RegionData["hazard"] = "none";
+		let details = "";
+    const ft = sq.flavorText.find( x=> x.hazard);
+    if (ft) {
+      status = "hidden";
+      details = ft.hazard!;
+    }
+		return {status, details};
+	}
+
+
+	private region_pointsOfInterest(sq: DungeonSquare) : string []{
+		const ret = [];
+		switch (true) {
+			case sq.isStartPoint():
+				if (sq.parent.currentDepth == 0) {
+					ret.push("Exit: An exit leads back to Wonderland");
+				} else {
+					ret.push("Ascend Point: You can ascend towards the higher level here.");
+				}
+				break;
+			case sq.isStairsDown():
+				ret.push("Descend Point: You can descend even deeper into this strange realm.");
+				break;
+			case sq.isTeleporter():
+				ret.push("Access Terminal: You can use this to return back to the entrance of Wonderland");
+				break;
 		}
+    ret.push(... sq
+      .flavorText.filter( x=> x.text)
+      .map (x => x.text)
+    );
+		return ret;
 	}
 
 
@@ -133,7 +238,10 @@ export class RandomDungeonOutput {
 				PersonaError.softFail(`Cant' find token ${pile?.tokenUuid}`);
 				return;
 			}
-			for (const treasure of sq.treasures) {
+      if (this._generator?.treasureSystem != TreasureSystem) {
+        PersonaError.softFail("Treasure system in generator is not correct");
+      }
+			for (const treasure of (sq.treasures as EnchantedTreasureFormat[])) {
 				await pileActor.actor.addTreasureItem(treasure, true);
 			}
 		}
@@ -152,9 +260,16 @@ export class RandomDungeonOutput {
 		await this.scene.setDifficulty(this.generator.difficultyLevel);
 	}
 
-	private async writeSceneModifiers() {
-		await this.scene.setSceneModifiers(this.generator.sceneModifiers);
-	}
+  private async writeSceneModifiers() {
+    const mods = this.generator.sceneModifiers;
+    const mod0= mods.at(0);
+    if (mod0 == undefined) {return;}
+    if (mod0 instanceof PersonaItem) {
+      await this.scene.setSceneModifiers(mods as UniversalModifier[]);
+    } else {
+      throw new PersonaError("Modifiers aren't of type PersonaItem UniversalModifier");
+    }
+  }
 
 	static wallToLineConvert( wd: Pick<WallData, "door" | "c">) : U<Partial<Foundry.DrawingData>> {
 		if (wd.door == 1) {return undefined;}
@@ -183,3 +298,5 @@ export class RandomDungeonOutput {
 	}
 
 }
+
+type RegionData = PersonaRegion["regionData"];
