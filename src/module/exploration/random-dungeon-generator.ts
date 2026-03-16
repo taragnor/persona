@@ -1,6 +1,6 @@
 import {ArrayEq} from "../utility/array-tools.js";
 import {SeededRandom} from "../utility/seededRandom.js";
-import {DungeonSquare, Point} from "./dungeon-generator-square.js";
+import {DungeonSquare, FinalizedDungeonSquare, Point} from "./dungeon-generator-square.js";
 
 export class RandomDungeonGenerator {
 	seedString: string;
@@ -11,8 +11,8 @@ export class RandomDungeonGenerator {
 	gridY: number;
 	width: number;
 	height: number;
-	squares: U<DungeonSquare>[][];
-	squareList: DungeonSquare[];
+	private squares: U<DungeonSquare>[][];
+	private squareList: DungeonSquare[];
 	maxSquaresWidth : number;
 	maxSquaresHeight : number;
 	rng: SeededRandom;
@@ -27,6 +27,7 @@ export class RandomDungeonGenerator {
   errorLog: (string | Error)[] = [];
   treasureSystem : GeneratorTreasureSystem;
   stepDebug: boolean = false;
+  public finalizedSquareList: FinalizedDungeonSquare[];
 
 	static SPECIAL_FLOORS = ["tough-enemy", "revealed", "treasure-shadow", "dark"] as const;
 
@@ -97,7 +98,7 @@ export class RandomDungeonGenerator {
 			);
 	}
 
-	#makeRows() : typeof this["squares"] {
+	#makeRows() : U<DungeonSquare>[][] {
 		let size = this.maxSquaresWidth;
 		const arr : U<DungeonSquare>[][] = [];
 		while (size-- > 0) {
@@ -468,7 +469,7 @@ export class RandomDungeonGenerator {
   }
 
 	finalizeSquares() {
-		this.squareList.forEach( sq=> sq.finalize());
+    this.finalizedSquareList = this.squareList.map( sq=> sq.finalize());
 		this.prepareWallData();
 	}
 

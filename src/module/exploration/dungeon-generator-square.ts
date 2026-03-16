@@ -12,7 +12,8 @@ export class DungeonSquare {
 	connections: DungeonSquare[] = [];
 	specials: RoomSpecial[] = [];
 	treasures: unknown[] = [];
-	region: UN<RegionData>;
+  canBeRegion= true;
+	// region: UN<RegionData>;
   flavorText: FlavorText[] = [];
 
 	constructor(generator: RandomDungeonGenerator, x: number, y:number, type: typeof this["type"]) {
@@ -92,7 +93,7 @@ export class DungeonSquare {
 						return "Access Point (down)";
 					}
 					case this.isTeleporter(): {
-						return "Remote Access Terminal";
+						return "Remote Access Terminal (Teleporter)";
 					}
 					default:
 						return "Miscellaneous Room";
@@ -129,21 +130,22 @@ export class DungeonSquare {
 		};
 	}
 
-	finalize() {
-    this.makeRegionData();
+	finalize() : FinalizedDungeonSquare {
+    const fds = this as (this & {region: RegionData});
+    fds.region = fds.makeRegionData();
+    return fds;
 	}
 
-	makeRegionData() : RegionData {
-		if (this.region === null) {return;}
+	private makeRegionData() : RegionData {
+		if (this.canBeRegion === false) {return;}
 		const name = this.generateRegionName();
 		const shapes = this.group.map( x=> x.rect());
 		const regionConstructionInfo : RegionData = {
 			name,
 			shapes,
 		};
-		this.group.forEach( member => member.region = null);
-		this.region = regionConstructionInfo;
-
+		this.group.forEach( member => member.canBeRegion = false);
+		return regionConstructionInfo;
 	}
 
 	die (sides: number) {
@@ -429,7 +431,9 @@ export class DungeonSquare {
       && this.specials.length == 0
       && !this.isStartPoint()
       && !this.isStairsDown()
-      && !this.isTeleporter();
+      && !this.isTeleporter()
+      && this.flavorText.length == 0;
+
   }
 
 	isHiddenRoom() : boolean {
@@ -524,3 +528,7 @@ type RegionData = U<Pick<RegionDocument, "name" | "shapes">>;
 
 export type WallData = Pick<Foundry.WallDocument, "door" | "c" | "ds" | "light" | "sound" | "move" | "sight" | "animation">;
 
+
+export type FinalizedDungeonSquare = DungeonSquare & {
+  region: RegionData;
+}

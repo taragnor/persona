@@ -44,7 +44,7 @@ export class Metaverse {
     gen.stepDebug = stepDebug;
     try {
       if (!squares) {
-        squares = Math.floor(35 + (Math.random() * 20));
+        squares = Math.floor(25 + (Math.random() * 20));
       }
       //squares was 55
       gen.generate(squares, `${lvl}ARGFDSS` + String(Date.now()));
@@ -61,25 +61,6 @@ export class Metaverse {
   }
 
   static async randomizeMementos (lvl?: number) {
-    //if (!game.user.isGM) {return;}
-    // const scene = game.scenes.current as PersonaScene;
-    //if (!scene.allowsRandomGenerator()) {
-    //	ui.notifications.warn(`${scene.name} doesn't support random generation`);
-    //	return;
-    //}
-    //if (!(await HTMLTools.confirmBox("reset Mementos?", "Reset Mementos dungeon?"))) {
-    //	return;
-    //}
-    //if (lvl == undefined) {
-    //	lvl = await HTMLTools.getNumber(" Level of Dungeon to set");
-    //}
-    //if (lvl < 0) {
-    //	return;
-    //}
-    //const gen = new RandomDungeonGenerator(scene, "Wonderland Depths", lvl);
-    //const squares = Math.floor(35 + (Math.random() * 20));
-    ////squares was 55
-    //gen.generate(squares, `${lvl}ARGFDSS` + String(Date.now()) + `DFDFDS`);
     if (!(await HTMLTools.confirmBox("reset Mementos?", "Reset Mementos dungeon?"))) {
       return;
     }

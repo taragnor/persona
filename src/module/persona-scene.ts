@@ -79,7 +79,7 @@ export class PersonaScene extends Scene {
 
 	async setSceneModifiers(mods : UniversalModifier[]) {
 		mods.forEach( mod => {
-			if (mod.system.scope == "scene") {
+			if (mod.system.scope != "scene") {
 				ui.notifications.warn(`${mod.name} is not a scene modifier`);
 			}
 		});

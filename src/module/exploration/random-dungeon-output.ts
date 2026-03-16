@@ -30,7 +30,7 @@ export class RandomDungeonOutput {
 	}
 
 	get squareList() {
-		return this.generator.squareList;
+		return this.generator.finalizedSquareList;
 	}
 
 	constructor (scene: PersonaScene, generator: RandomDungeonGenerator) {
@@ -130,11 +130,22 @@ export class RandomDungeonOutput {
 			pointsOfInterest: this.region_pointsOfInterest(sq),
 			specialMods: this.region_specialMods(sq),
 			shadowPresence: sq.shadowPresence(),
-			secretNotes: "",
+			secretNotes: this.region_notes(sq),
 			challengeLevel: 0
 		};
     return regionData;
 	}
+
+
+  private region_notes (sq: DungeonSquare) : string {
+    let notes= "";
+    notes += sq.flavorText
+      .filter( ft => ft.gmNote)
+      .map (ft=> ft.gmNote)
+      .join( "\n");
+    return notes;
+
+  }
 
   private region_specialMods(sq: DungeonSquare) : RegionData["specialMods"] {
     let mods : RegionData["specialMods"] = [];
