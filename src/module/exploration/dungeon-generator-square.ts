@@ -8,41 +8,23 @@ export class DungeonSquare {
 	static WIDTH = 5 as const;
 	static HEIGHT = 5 as const;
 	type: "corridor" | "room";
-	group: DungeonSquare[];
+	group: SquareGroup;
 	connections: DungeonSquare[] = [];
 	specials: RoomSpecial[] = [];
-	treasures: unknown[] = [];
-  canBeRegion= true;
-	// region: UN<RegionData>;
+  canBeRegion = true;
   flavorText: FlavorText[] = [];
+  numOfTreasures: number = 0;
 
 	constructor(generator: RandomDungeonGenerator, x: number, y:number, type: typeof this["type"]) {
 		this.parent = generator;
 		this.x = x;
 		this.y = y;
 		this.type = type;
-		this.group = [this];
+		this.group = new SquareGroup(this);
 		this.connections = [];
 		this.specials = [];
-		this.treasures = [];
 	}
 
-	AdjacenciesToGroup() {
-		const parent = this.parent;
-		const group = this.group;
-		const val = this.group.reduce( (acc, sq) =>
-			acc + sq.getLegalAdjoiningPoints()
-			.map (pt=> parent.sq(pt.x, pt.y))
-			.filter(pt => pt != undefined &&
-				!group.includes(pt))
-			.length
-			, 0 );
-		return val;
-	}
-
-	get difficultyLevel() : number {
-		return this.parent.difficultyLevel;
-	}
 
   equals(ds: DungeonSquare) {
     return this == ds;
@@ -65,7 +47,7 @@ export class DungeonSquare {
 	}
 
 	hasTreasure() : boolean {
-		return this.treasures.length > 0;
+		return this.numOfTreasures > 0;
 	}
 
 	generateRegionName() : string {
@@ -95,58 +77,15 @@ export class DungeonSquare {
 					case this.isTeleporter(): {
 						return "Remote Access Terminal (Teleporter)";
 					}
+          case this.isHiddenRoom(): {
+            return "Secret Area";
+          }
 					default:
 						return "Miscellaneous Room";
 				}
 		}
 	}
 
-	realCoordinates() : Point {
-		const parent = this.parent;
-		const x = parent.gridX + (parent.gridSize * this.x * DungeonSquare.WIDTH);
-		const y = parent.gridY + (parent.gridSize * this.y * DungeonSquare.HEIGHT);
-		return {x, y};
-	}
-
-	treasurePosition(): Point {
-		let {x,y} = this.realCoordinates();
-		const GS = this.parent.gridSize;
-		x += Math.floor(DungeonSquare.HEIGHT /2) * GS;
-		y += Math.floor(DungeonSquare.WIDTH /2) * GS;
-		return {x,y};
-	}
-
-	rect() : RegionDocument["shapes"][number] {
-		const {x,y} = this.realCoordinates();
-		const width = DungeonSquare.WIDTH;
-		const height = width;
-		return {
-			type :"rectangle",
-			x, y,
-			width: this.parent.gridSize * width,
-			height: this.parent.gridSize * height,
-			hole: false,
-			rotation: 0,
-		};
-	}
-
-	finalize() : FinalizedDungeonSquare {
-    const fds = this as (this & {region: RegionData});
-    fds.region = fds.makeRegionData();
-    return fds;
-	}
-
-	private makeRegionData() : RegionData {
-		if (this.canBeRegion === false) {return;}
-		const name = this.generateRegionName();
-		const shapes = this.group.map( x=> x.rect());
-		const regionConstructionInfo : RegionData = {
-			name,
-			shapes,
-		};
-		this.group.forEach( member => member.canBeRegion = false);
-		return regionConstructionInfo;
-	}
 
 	die (sides: number) {
 		return Math.floor(Math.random() * sides) + 1;
@@ -163,12 +102,6 @@ export class DungeonSquare {
 			return 0;
 		}
 		return Math.floor(1 + this.die(4));
-	}
-
-	getDoorCoords(other: Point): WallData["c"][] {
-		const wallCoords = this.getWallCoords(other);
-		const doorCoords = DungeonSquare.splitLine(wallCoords, 3);
-		return doorCoords;
 	}
 
 	static flipCoordsIfNecessary (c: WallData["c"]) : WallData["c"] {
@@ -191,93 +124,6 @@ export class DungeonSquare {
 			x = nx; y =ny;
 		}
 		return arr;
-	}
-
-	getWallCoords(other: Point): WallData["c"] {
-		const parent = this.parent;
-		const GS = parent.gridSize * DungeonSquare.HEIGHT;
-		let {x, y} = this.realCoordinates();
-		const direction = parent.getDirectionBetween(this, other);
-		let x2 = x;
-		let y2 = y;
-		switch (direction) {
-			case "left":  y2 +=GS; break;
-			case "right": x += GS; x2+= GS;y2 +=GS; break;
-			case "up": x2 += GS;break;
-			case "down": y += GS ; y2 += GS; x2+=GS; break;
-		}
-		return [ x, y, x2, y2];
-	}
-
-	walls() {
-		const walls = [] as ReturnType<DungeonSquare["generateWallData"]>[];
-		const adj = this.getAdjoiningPoints();
-		const outOfBounds = adj
-			.filter( pt => this.parent.sq(pt.x, pt.y) == undefined);
-		const possibles = adj
-			.map( pt => this.parent.sq(pt.x, pt.y))
-			.filter( sq=> sq != undefined);
-
-		for (const OB of outOfBounds) {
-			walls.push(...this.generateWall(OB));
-		}
-		for (const poss of possibles) {
-			if (!this.connections.includes(poss)) {
-				walls.push(...this.generateWall(poss));
-				continue;
-			}
-			if (poss.type != this.type)  {
-				const isSecret = poss.isHiddenRoom() || this.isHiddenRoom();
-				walls.push(...this.generateDoor(poss, isSecret));
-				continue;
-			}
-		}
-		return walls;
-	}
-
-	generateDoor(other: Point, isSecret : boolean) {
-		const [wall1, door, wall2] = this.getDoorCoords(other);
-		return [
-			this.generateWallData(wall1),
-			this.generateWallData(door, isSecret ? "secret" : true),
-			this.generateWallData(wall2),
-		];
-	}
-
-	generateWall(other: Point) {
-		const coords = this.getWallCoords(other);
-		return [this.generateWallData(coords)];
-	}
-
-
-	generateWallData ( c : WallData["c"], isDoor : "secret" | boolean = false) {
-		const texture = isDoor == true
-			? "canvas/doors/small/Door_Metal_Gray_E1_1x1.webp"
-			:   "canvas/doors/small/Door_Stone_Volcanic_B1_1x1.webp";
-		const animation = {
-			direction :1,
-			double :  false,
-			duration :  750,
-			flip :  false,
-			strength : 1,
-			texture : texture,
-			type :  "descend",
-		};
-
-		const doorVal = (isDoor === "secret") ? 2
-		: isDoor == true ? 1
-		:0 ;
-		const wallData = {
-			c,
-			door: doorVal, // 2 is secret door, used for walling
-			ds: doorVal == 2 ? 2 : 0, //0 is closed, 1 open, 2 locked
-			light: 20,
-			move: 20,
-			sight: 20,
-			sound: 20,
-			animation: doorVal == 1 ? animation : undefined,
-		} satisfies Partial<WallData>;
-		return wallData;
 	}
 
 	public shadowPresence() : number {
@@ -330,7 +176,7 @@ export class DungeonSquare {
 		];
 	}
 
-	private getAdjoiningPoints() : Point[] {
+	getAdjoiningPoints() : Point[] {
 		// const p = function (x: number, y:number) { return {x, y};};
 		return [
 			this.left,
@@ -351,10 +197,10 @@ export class DungeonSquare {
 		switch (this.type) {
 			case "corridor" :
 				return emptyAdjacent.length >= 2 &&
-					this.AdjacenciesToGroup() <= (lenientBonus + this.group.length <= 3 ? 3 : 4);
+					this.group.getNumberOfLegalAdjoiningPoints() <= (lenientBonus + this.group.length <= 3 ? 3 : 4);
 			case "room":
 				if (this.isStartPoint()) {
-					return this.AdjacenciesToGroup() <= lenientBonus + 0;
+					return this.group.getNumberOfLegalAdjoiningPoints() <= lenientBonus + 0;
 				}
 				return false;
 		}
@@ -407,7 +253,7 @@ export class DungeonSquare {
 					case this.isStartPoint(): return "S";
 					case this.isStairsDown(): return "X";
 					case this.isTeleporter(): return "t";
-					case this.hasTreasure(): return String(this.treasures.length);
+					case this.hasTreasure(): return String(this.numOfTreasures);
 					default: return "R";
 				}
 		}
@@ -421,10 +267,13 @@ export class DungeonSquare {
 		return this.type == "corridor";
 	}
 
-	isDeadEnd() : boolean {
-		return this.type == "corridor"
-			&& this.getEmptyAdjoiningPoints().length == 3;
-	}
+  isDeadEnd() : boolean {
+    return this.type == "corridor"
+      && this.connections
+      .filter( x=> !x.isHiddenRoom())
+      .length <= 1;
+    // && this.getEmptyAdjoiningPoints().length == 3;
+  }
 
   isEmptyRoom() : boolean {
     return this.isRoom()
@@ -444,7 +293,7 @@ export class DungeonSquare {
 		return this.isHiddenRoom()
 			|| (
 				this.isCorridor()
-				&& this.connections.some( c => c.isHiddenRoom())
+				&& this.connections.some( c => c.group.isHiddenRoom())
 			)
 		;
 	}
@@ -465,34 +314,22 @@ export class DungeonSquare {
 	assignRoomSpecials() {
 		const die = this.die(100);
 		switch (true) {
-			case die > 90:
+			case die > 85:
 				this.specials.push("checkpoint");
+        console.log("teleporter created");
 				break;
-			case die > 80 : {
+			case die > 70 : {
 				this.specials.push("hidden-room");
+        console.log("Hidden room created");
 				break;
 			}
 		}
 	}
 
-	addTreasure(amt: number) {
-		let modifier: number;
-		switch (true) {
-			case this.isDeadEnd():
-				modifier = -25;
-				break;
-			case this.isRoom():
-				modifier = 1;
-				break;
-			default:
-				modifier = -50;
-		}
-		while (amt -- > 0) {
-			const treasure = this.parent.treasureSystem.generate(this.difficultyLevel, modifier);
-			// const treasure = TreasureSystem.generate(this.difficultyLevel, modifier);
-			this.treasures.push(...treasure);
-		}
-	}
+
+  setTreasures(amt: number) {
+    this.numOfTreasures = amt;
+  }
 
 	addFlavorText(flavor: FlavorText)  {
     this.flavorText.push(flavor);
@@ -531,4 +368,37 @@ export type WallData = Pick<Foundry.WallDocument, "door" | "c" | "ds" | "light" 
 
 export type FinalizedDungeonSquare = DungeonSquare & {
   region: RegionData;
+}
+
+
+class SquareGroup extends Array<DungeonSquare> {
+  getNumberOfLegalAdjoiningPoints() {
+    const val = this.reduce( (acc, sq) =>
+      acc + sq.getLegalAdjoiningPoints()
+      .map (pt=> sq.parent.sq(pt.x, pt.y))
+      .filter(pt => pt != undefined &&
+        !this.includes(pt))
+      .length
+      , 0 );
+    return val;
+  }
+
+  get connections() : DungeonSquare[] {
+    return this.reduce( (acc, sq) => {
+      const nonGroupConnections= sq.connections
+        .filter( c => !this.includes(c));
+      acc.push(...nonGroupConnections);
+      return acc;
+    }, [] as DungeonSquare[]);
+  }
+
+  hasHiddenDoor() : boolean {
+    return this.some(sq => sq.hasHiddenDoor());
+
+  }
+
+  isHiddenRoom() : boolean {
+    return this.some(sq => sq.isHiddenRoom());
+  }
+
 }

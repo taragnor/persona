@@ -1,66 +1,38 @@
-import {ArrayEq} from "../utility/array-tools.js";
 import {SeededRandom} from "../utility/seededRandom.js";
 import {DungeonSquare, FinalizedDungeonSquare, Point} from "./dungeon-generator-square.js";
 
 export class RandomDungeonGenerator {
 	seedString: string;
-	// scene: PersonaScene;
-  scene: SceneData; //generally a persona scene
-	gridSize: number;
-	gridX: number;
-	gridY: number;
-	width: number;
-	height: number;
 	private squares: U<DungeonSquare>[][];
-	private squareList: DungeonSquare[];
-	maxSquaresWidth : number;
-	maxSquaresHeight : number;
+	squareList: DungeonSquare[];
+  sceneModifierPossibilities : readonly GeneratorSceneModifier[] = [];
 	rng: SeededRandom;
 	squaresTaken: number;
 	_depth: number;
-	_name : string;
 	lenientMode: boolean;
-	_baseDiff: number;
-	wallData: ReturnType<DungeonSquare["walls"]> = [];
-	sceneModifiers : DungeonModifier[] = [];
-	SCENEMODS = SCENE_MOD_NAMES;
+	sceneModifiers : unknown[] = [];
   errorLog: (string | Error)[] = [];
-  treasureSystem : GeneratorTreasureSystem;
   stepDebug: boolean = false;
   public finalizedSquareList: FinalizedDungeonSquare[];
+  dimensions : {width: number, height: number};
 
 	static SPECIAL_FLOORS = ["tough-enemy", "revealed", "treasure-shadow", "dark"] as const;
 
 	static init() {}
 
-	constructor(scene: RandomDungeonGenerator["scene"], treasureSystem: GeneratorTreasureSystem, dungeonName: string = "Unnamed Dungeon", depth: number = 1, baseDiff ?: number ) {
+	constructor(dimensions: {height: number, width:number}, depth: number = 1, sceneModifiers: GeneratorSceneModifier[]) {
 		this.squaresTaken = 0;
-		this.scene = scene;
-		this.gridSize = scene.grid.size;
-    this.treasureSystem = treasureSystem;
-		const rect = scene.dimensions.sceneRect;
-		this.gridX= rect.x;
-		this.gridY= rect.y;
-		this.width = rect.width;
-		this.height = rect.height;
-		this.calcmaxSquares();
+    this.dimensions = dimensions;
 		this.#resetSquares();
 		this._depth = depth;
-		this._name = dungeonName;
 		this.lenientMode = false;
-		this.wallData = [];
-		this._baseDiff = (this.scene.baseDungeonLevel || baseDiff) ?? 0;
-		if (this._baseDiff == 0) {
-			throw new GenerationError(`${scene.name} has no inset Difficulty`);
-		}
+    this.sceneModifierPossibilities = sceneModifiers;
 	}
 
 	#resetSquares() {
 		this.squares = this.#makeRows();
 		this.squareList = [];
 	}
-
-	get name () :string {return this._name;}
 
 	get currentDepth() : number {return this._depth;}
 
@@ -87,10 +59,6 @@ export class RandomDungeonGenerator {
     }
   }
 
-	get difficultyLevel() {
-		return this._baseDiff + Math.floor(this.currentDepth / 2);
-	}
-
 	getAdjacentX(pt: Point, type : DungeonSquare["type"]) : Point[] {
 		return DungeonSquare.getAdjoiningPoints(pt)
 			.filter( p=> this.isInBounds(p.x, p.y)
@@ -99,7 +67,7 @@ export class RandomDungeonGenerator {
 	}
 
 	#makeRows() : U<DungeonSquare>[][] {
-		let size = this.maxSquaresWidth;
+		let size = this.dimensions.width;
 		const arr : U<DungeonSquare>[][] = [];
 		while (size-- > 0) {
 			arr.push(this.#makeColumn());
@@ -108,7 +76,7 @@ export class RandomDungeonGenerator {
 	}
 
 	#makeColumn() : U<DungeonSquare>[] {
-		let size = this.maxSquaresHeight;
+		let size = this.dimensions.height;
 		const arr : U<DungeonSquare>[] = [];
 		while (size-- > 0) {
 			arr.push(undefined);
@@ -117,8 +85,8 @@ export class RandomDungeonGenerator {
 	}
 
 	isInBounds(sqx: number, sqy: number): boolean {
-		return sqx >= 0 && sqx < this.maxSquaresWidth
-			&& sqy >= 0 && sqy < this.maxSquaresHeight;
+		return sqx >= 0 && sqx < this.dimensions.width
+			&& sqy >= 0 && sqy < this.dimensions.height;
 	}
 
 	randomEmptySquareCoords() : {x:number , y:number} {
@@ -126,8 +94,8 @@ export class RandomDungeonGenerator {
 		let randy : number;
 		let safetyBreak = 0;
 		do {
-			randx = this.rng.die(1,this.maxSquaresWidth)  -1;
-			randy = this.rng.die(1, this.maxSquaresHeight)-1 ;
+			randx = this.rng.die(1,this.dimensions.width)  -1;
+			randy = this.rng.die(1, this.dimensions.height)-1 ;
 			if (!this.isInBounds(randx, randy)) {
 				throw new InvalidDungeonError("Out of bounds error, this shyouldn't happen");
 			}
@@ -159,14 +127,6 @@ export class RandomDungeonGenerator {
 	sq(x: number, y: number) : U<DungeonSquare> {
 		if (!this.isInBounds(x, y)) {return undefined;}
 		return this.squares[x][y];
-	}
-
-	calcmaxSquares() {
-		this.maxSquaresWidth= Math.floor(this.width / this.gridSize / DungeonSquare.WIDTH
-		);
-		this.maxSquaresHeight = Math.floor(
-			this.height / this.gridSize/ DungeonSquare.HEIGHT
-		);
 	}
 
 	placeStartingRoom() {
@@ -257,13 +217,13 @@ export class RandomDungeonGenerator {
 		const adjCorridors = firstSquare.getAdjacentCorridors();
 		if (adjCorridors.length > 0) {
 			const rndCorridor = this.rng.randomArraySelect(adjCorridors)!;
-			const direction = this.getDirectionBetween(rndCorridor, firstSquare);
+			const direction = RandomDungeonGenerator.getDirectionBetween(rndCorridor, firstSquare);
 			return 1 + this.extendCorridor(firstSquare, direction);
 		}
 		const adjRooms = firstSquare.getAdjacentRooms();
 		if (adjRooms.length > 0) {
 			const rndRoom = this.rng.randomArraySelect(adjRooms)!;
-			const direction = this.getDirectionBetween(rndRoom, firstSquare);
+			const direction = RandomDungeonGenerator.getDirectionBetween(rndRoom, firstSquare);
 			return 1 + this.extendCorridor(firstSquare, direction);
 		}
 		return 1;
@@ -276,7 +236,7 @@ export class RandomDungeonGenerator {
 	}
 
 	/** returns direction from a to b */
-	getDirectionBetween( a: Point, b: Point) : Direction {
+	static getDirectionBetween( a: Point, b: Point) : Direction {
 		switch (true) {
 			case a.x < b.x: return "right";
 			case a.x > b.x: return "left";
@@ -288,7 +248,7 @@ export class RandomDungeonGenerator {
 
 	extendCorridor(sq: DungeonSquare, direction: Direction) : number {
 		const corridorParts= [sq];
-		const corridorLen = this.rng.die(1,2)+1;
+		const corridorLen = this.rng.die(1,2);
 		let corridorsMade = 0;
 		while (corridorsMade < corridorLen && sq.isLegalToExpand(this.lenientMode)) {
 			const nextPt = sq[direction];
@@ -319,17 +279,19 @@ export class RandomDungeonGenerator {
 		rm.makeStairsDown();
 	}
 
-	private assignTreasures() {
-		const list = this.squareList
-			.filter(x=> x.isRoom() || x.isDeadEnd())
-			.filter (x=> !x.isStairs() && !x.isTeleporter());
-		const rng = this.rng;
-		for (const room of list) {
-			if (!this.percentChance(60)) {continue;}
-			const amount = rng.die(1,2);
-			room.addTreasure(amount);
-		}
-	}
+  private assignTreasures() {
+    const list = this.squareList
+      .filter(x=> x.isRoom() || x.isDeadEnd())
+      .filter (x=> !x.isStairs() && !x.isTeleporter());
+    const rng = this.rng;
+    for (const room of list) {
+      const hidden = room.group.isHiddenRoom();
+      const chance = hidden ? 100: 60;
+      if (!this.percentChance(chance)) {continue;}
+      const amount = hidden ? rng.die(2,3): rng.die(1,2);
+      room.setTreasures(amount);
+    }
+  }
 
 	private assignFlavorText() {
 		this.squareList
@@ -359,7 +321,7 @@ export class RandomDungeonGenerator {
 	private createFlavorEffectInCorridor (sq: DungeonSquare) : void {
 		const effect = this.rng.weightedChoice(
 			CORRIDOR_FLAVORS
-			.filter( fl => !fl.tellForHiddenDoor || sq.hasHiddenDoor() )
+			.filter( fl => !fl.tellForHiddenDoor || sq.group.hasHiddenDoor() )
 			.map( fl => ({weight: fl.weight ?? 1.0, item: fl}))
 		);
 		if (!effect) {return;}
@@ -384,7 +346,7 @@ export class RandomDungeonGenerator {
 
 	private init(numSquares: number, originalSeedString: string) {
 		this.seedString = originalSeedString;
-		const totalSquares = this.maxSquaresWidth * this.maxSquaresHeight;
+		const totalSquares = this.dimensions.width * this.dimensions.height;
 		if (numSquares > totalSquares) {
 			throw new InvalidDungeonError(`Too big, trying to request ${numSquares} with only ${totalSquares} available`);
 		}
@@ -400,7 +362,7 @@ export class RandomDungeonGenerator {
         this.assignSpecials();
         this.assignTreasures();
         this.assignFlavorText();
-        this.finalizeSquares();
+        // this.finalizeSquares();
         console.log( this.print());
         return this;
       } catch (e) {
@@ -468,73 +430,24 @@ export class RandomDungeonGenerator {
     }
   }
 
-	finalizeSquares() {
-    this.finalizedSquareList = this.squareList.map( sq=> sq.finalize());
-		this.prepareWallData();
-	}
-
-	assignSpecialFloors() {
-		const roll = this.rng.die(1,100);
-		const mods : (keyof typeof SCENE_MOD_NAMES)[] = [];
-		if (this.currentDepth < 2) {return;}
-		switch (true) {
-			case roll < 5: {
-				mods.push("hardShadowsFloor");
-				break;
-			}
-			case roll < 10: {
-				mods.push("treasureFloor");
-				break;
-			}
-			case roll < 14: {
-				mods.push("shadowDrops");
-				break;
-			}
-			default:
-				break;
-		}
-		this.sceneModifiers = mods
-			.flatMap (x=> this.getSceneMod(x));
-	}
-
-	getSceneMod ( mod : keyof RandomDungeonGenerator["SCENEMODS"]) : DungeonModifier[] {
-    const modName =this.SCENEMODS[mod];
-    const item = this.scene.getSceneModifiers().find (x=> x.name == modName);
-		// const itemx = PersonaDB.getSceneModifiers().find( x=> x.name == this.SCENEMODS[mod]);
-		if (item) {return [item];}
-      this.errorLog.push(`Can't find modifier ${this.SCENEMODS[mod]}`);
-		return [];
-	}
-
-	private prepareWallData() {
-		const wallData = this.squareList
-			.flatMap( x=> x.walls());
-		const dupeRemover = ([] as typeof wallData).pushUniqueS((a, b) => ArrayEq(a.c ?? [], b.c ?? []) , ...wallData);
-		if (wallData.length == dupeRemover.length) {
-			this.errorLog.push("Create walls seems to have failed to remove duplicates");
-		}
-		this.wallData = dupeRemover;
-	}
+  assignSpecialFloors() {
+    // const roll = this.rng.die(1,100);
+    if (this.sceneModifierPossibilities.length == 0) {return;}
+    const weighted = this.sceneModifierPossibilities.map(
+      p=> ({ item: p, weight: p.probability}));
+    const choice = this.rng.weightedChoice(weighted);
+    if (choice && choice.item) {
+      this.sceneModifiers.push(choice.item);
+    }
+  }
 
 }
-
-//if (window) {
-//  //@ts-expect-error adding to glboal scope for test
-//  window.DG = RandomDungeonGenerator;
-//}
 
 type Direction = "up" | "down" | "left" |"right";
 
 class GenerationBailOutError extends Error {
 
 }
-
-const SCENE_MOD_NAMES = {
-	"hardShadowsFloor": "Difficult Enemies",
-	"treasureFloor": "Treasure Floor",
-	"shadowDrops" : "Extra Shadow Drops",
-} as const;
-
 
 class InvalidDungeonError extends Error { }
 
@@ -559,11 +472,13 @@ type RoomFlavorText = FlavorText & {
 	hiddenRoomOnly?: true,
 }
 
+//TODO: check to see if secret doors/ rooms are being created
 const ROOM_FLAVORS : RoomFlavorText[] = [
 	{
 		newName: "Data Cache",
 		text: "There seems to be a collection of various data here. If you had the right implement, you might be able to extract some." ,
 		gmNote: "Can be mined with a Data Miner",
+    //need to detrmine what can be gained here
 	}, {
 		newName: "Gallery",
 		text: "Various Photos, (many of them of cats) are all over the walls of this room" ,
@@ -623,6 +538,7 @@ const ROOM_FLAVORS : RoomFlavorText[] = [
 const CORRIDOR_FLAVORS : CorridorFlavorText[] = [
 	{
 		text: "Many data cubes whizz by at great speed",
+    weight: 1.0,
 	} , {
 		text: "Many data cubes whizz by at great speed",
 		secret: "There is a Concordia packet inspector here. It seems to be gathering information. Can either be destroyed or tapped for data with the other action.",
@@ -636,31 +552,13 @@ const CORRIDOR_FLAVORS : CorridorFlavorText[] = [
 ] as const;
 
 
-interface SceneData {
-  name: string;
-  baseDungeonLevel: number;
-  grid : {
-    size: number;
-  };
-  getSceneModifiers() : readonly UniversalModifier[];
-  dimensions: {
-    sceneRect: {x: number, y: number, width: number, height: number};
-  }
-
-}
-
-
-interface DungeonModifier {
-  name: string;
-  id: string;
-}
-
-
-
 export class GenerationError extends Error{
 
 }
 
-interface GeneratorTreasureSystem  {
-  generate (diffLevel: number, modifier: number): unknown[];
-}
+
+export type GeneratorSceneModifier<itemType = unknown> = {
+  localName?: string;
+  item: N<itemType>;
+  probability: number;
+};

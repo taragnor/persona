@@ -1,5 +1,6 @@
 import {PersonaActor} from "../actor/persona-actor.js";
 import {Encounter} from "../exploration/random-encounters.js";
+import {BattleTreasure, EnchantedTreasureFormat} from "../exploration/treasure-system.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
@@ -228,6 +229,39 @@ export class CombatScene {
 		}
 		return combat;
 	}
+
+  static async createTreasure(treasure: BattleTreasure) {
+    if (game.scenes.current != this.scene)  {
+      return;
+    }
+		if (game.itempiles == undefined) {
+			PersonaError.softFail("No item piles, can't create treasures");
+			return;
+    }
+		const gridsize = this.scene.grid.size;
+    const cr = this.scene.dimensions.sceneRect;
+    const center =  {
+      x: Math.floor( (cr.x + cr.width)  / 2 / gridsize) * gridsize,
+      y: Math.floor( (cr.y + cr.height) / 2 / gridsize) * gridsize,
+    };
+    // const position = {
+    //   x: 12 * gridsize,
+    //   y: 12 * gridsize,
+    // };
+			const pile = await game.itempiles.API.createItemPile({position:center});
+			const pileActor = await foundry.utils.fromUuid(pile.tokenUuid) as TokenDocument<PersonaActor> ;
+			if (!pileActor || !(pileActor instanceof TokenDocument) || !pileActor.actor) {
+				PersonaError.softFail(`Cant' find token ${pile?.tokenUuid}`);
+				return;
+			}
+    for (const item of treasure.items) {
+      const itemFormatted : EnchantedTreasureFormat = {
+        item: item.accessor,
+        enchantments: [],
+      };
+      await pileActor.actor.addTreasureItem(itemFormatted);
+    }
+  }
 
 }
 

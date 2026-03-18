@@ -21,7 +21,7 @@ import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaScene } from "./persona-scene.js";
 import { EnchantedTreasureFormat, TreasureSystem } from "./exploration/treasure-system.js";
 import {RandomEncounter} from "./exploration/random-encounters.js";
-import {RandomDungeonGenerator} from "./exploration/random-dungeon-generator.js";
+import {GeneratorSceneModifier, RandomDungeonGenerator} from "./exploration/random-dungeon-generator.js";
 import {HTMLTools} from "./utility/HTMLTools.js";
 import {RandomDungeonOutput} from "./exploration/random-dungeon-output.js";
 import {PersonaCombat} from "./combat/persona-combat.js";
@@ -40,7 +40,8 @@ export class Metaverse {
       ui.notifications.warn(`${scene.name} doesn't support random generation`);
       return;
     }
-    const gen = new RandomDungeonGenerator(scene, TreasureSystem, "Wonderland Depths", lvl);
+    const dimensions = {height: 12, width: 12};
+    const gen = new RandomDungeonGenerator(dimensions, lvl, MEMENTOS_SCENE_MODS);
     gen.stepDebug = stepDebug;
     try {
       if (!squares) {
@@ -70,7 +71,7 @@ export class Metaverse {
     const gen = await this.generateMementos(lvl);
     const scene = game.scenes.current as PersonaScene;
     if (gen) {
-      await RandomDungeonOutput.outputToScene(gen, scene);
+      await RandomDungeonOutput.outputToScene(gen, scene, TreasureSystem, "WonderLand Depths");
       await TensionPool._instance.clear();
     }
   }
@@ -551,5 +552,25 @@ Hooks.on("updateClock", async function (clock: ProgressClock, _newAmt: number, _
 //@ts-expect-error adding to window
 window.Metaverse = Metaverse;
 
+
+const MEMENTOS_SCENE_MODS : GeneratorSceneModifier<UniversalModifier["name"]>[] = [
+  {
+    localName: "none",
+    item: null,
+    probability: 80,
+  }, {
+    localName: "hardShadowsFloor",
+    item: "Difficult Enemies",
+    probability: 5
+  }, {
+    localName: "treasureFloor",
+    item: "Treasure Floor",
+    probability: 5,
+  }, {
+    localName: "shadowDrops",
+    item: "Extra Shadow Drops",
+    probability: 4,
+  }
+];
 
 

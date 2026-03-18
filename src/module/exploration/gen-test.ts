@@ -34,7 +34,11 @@ function main() {
 
 function testWith(sq: number) {
   const lvl = 5;
-  const gen = new RandomDungeonGenerator(scene, TreasureSystem, "Wonderland Depths", lvl);
+  const dimensions = {
+    height: 10,
+    width: 10,
+  };
+  const gen = new RandomDungeonGenerator(dimensions, lvl, []);
   gen.generate(sq, `${lvl}ARGFDSS` + String(Date.now()));
 }
 

@@ -413,7 +413,7 @@ export type EnchantedTreasureFormat = {
 }
 
 
-type BattleTreasure = {
+export type BattleTreasure = {
 	money : number,
 	items: TreasureItem[],
 };
