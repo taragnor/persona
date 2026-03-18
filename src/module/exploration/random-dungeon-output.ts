@@ -37,6 +37,8 @@ export class RandomDungeonOutput <TreasureType> {
   SQUARE_HEIGHT = 5 as const;
   DOOR_TEXTURE  = "canvas/doors/small/Door_Metal_Gray_E1_1x1.webp";
   WALL_TEXTURE = "canvas/doors/small/Door_Stone_Volcanic_B1_1x1.webp";
+  WALL_COLOR = "#FF0000";
+  SECRET_DOOR_COLOR = "#DD0000";
 
 	static async outputToScene <T> (gen: RandomDungeonGenerator, scene: PersonaScene, treasureGenerator: TreasureGenerator<T>, dungeonName: string, baseDiff = 0 ) {
 		const outputter = new RandomDungeonOutput( scene, gen, treasureGenerator, baseDiff);
@@ -156,15 +158,13 @@ export class RandomDungeonOutput <TreasureType> {
 		}
 	}
 
-
 	private async createWalls() {
 		await this.addWalls(this.wallData);
 		const lines = this.wallData
-			.map(x=> RandomDungeonOutput.wallToLineConvert(x))
+			.map(x=> this.wallToLineConvert(x))
 			.filter (x => x != undefined);
 		await this.scene.createEmbeddedDocuments( "Drawing", lines);
 	}
-
 
   private async createRegions() {
     for (const sq of this.squareList) {
@@ -198,7 +198,6 @@ export class RandomDungeonOutput <TreasureType> {
 		};
     return regionData;
 	}
-
 
   private region_notes (sq: DungeonSquare) : string {
     let notes= "";
@@ -375,7 +374,7 @@ private region_hazard(sq: DungeonSquare) : {status: RegionData["hazard"], detail
     }
   }
 
-	static wallToLineConvert( wd: Pick<WallData, "door" | "c">) : U<Partial<Foundry.DrawingData>> {
+	wallToLineConvert( wd: Pick<WallData, "door" | "c">) : U<Partial<Foundry.DrawingData>> {
 		if (wd.door == 1) {return undefined;}
 		const [x1, y1, x2, y2] = DungeonSquare.flipCoordsIfNecessary(wd.c);
 		const dx = x2 - x1;
@@ -387,7 +386,7 @@ private region_hazard(sq: DungeonSquare) : {status: RegionData["hazard"], detail
 			radius: null,
 			points: [0, 0, Math.abs(dx), Math.abs(dy)]
 		};
-		const color = wd.door == 0 ? "#FF0000" : "#DD0000";
+		const color = wd.door == 0 ? this.WALL_COLOR: this.SECRET_DOOR_COLOR;
 		return {
 			x: x1,
 			y: y1,
