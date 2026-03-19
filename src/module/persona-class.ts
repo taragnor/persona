@@ -1468,6 +1468,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
 
+  get needsToDeleteMainPower() : boolean {
+    return this.mainPowers.length > this.maxPowers
+  || this.source.topLearnedBuffer != undefined ;
+  }
+
 } // end of class
 
 
