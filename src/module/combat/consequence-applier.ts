@@ -17,39 +17,44 @@ import {PersonaSFX} from "./persona-sfx.js";
 
 export class ConsequenceApplier {
 
-	static async applyActorChange (change: ResolvedActorChange<ValidAttackers>, power: U<UsableAndCard>, attacker ?: UniversalTokenAccessor<PToken>) : Promise<FinalizedCombatResult[]> {
-		if (!game.user.isGM) {
-			throw new PersonaError(`Non-GM ${game.user.name} trying to access the consequence applier`);
-		}
-		const chained : FinalizedCombatResult[] = [];
-		const actor = PersonaDB.findActor(change.actor);
-		const token  = change.actor.token ? PersonaDB.findToken(change.actor.token) as PToken: undefined;
-		for (const status of change.addStatus) {
-			// TimeLog.log(`AddingStatus ${status.id} to ${actor.name}`);
-			const statusAdd = await actor.addStatus(status);
-			if (statusAdd && attacker) {
-				const attackerActor = PersonaDB.findToken(attacker)?.actor;
-				if (attackerActor) {
-					const sitPartial ={
-						target: actor.accessor,
-						triggeringCharacter: attackerActor.accessor,
-						attacker: attackerActor.accessor,
-						trigger : "on-inflict-status",
-						usedPower: power?.accessor,
-						statusEffect: status.id,
-						triggeringUser: game.user,
-					} as const;
-					for (const user of [actor, attackerActor]) {
-						const situation : Situation =  {
-							...sitPartial,
-							user: user.accessor,
-						};
-						const eff = (await TriggeredEffect.onTrigger("on-inflict-status", user, situation))
-							.finalize()
-							.emptyCheck() ;
-						if (eff) {
-							chained.push(eff);
-						}
+  static async applyActorChange (change: ResolvedActorChange<ValidAttackers>, power: U<UsableAndCard>, attacker ?: UniversalTokenAccessor<PToken>) : Promise<FinalizedCombatResult[]> {
+    if (!game.user.isGM) {
+      throw new PersonaError(`Non-GM ${game.user.name} trying to access the consequence applier`);
+    }
+    const chained : FinalizedCombatResult[] = [];
+    const actor = PersonaDB.findActor(change.actor);
+    const token  = change.actor.token ? PersonaDB.findToken(change.actor.token) as PToken: undefined;
+    for (const status of change.addStatus) {
+      // TimeLog.log(`AddingStatus ${status.id} to ${actor.name}`);
+      const statusAdd = await actor.addStatus(status);
+      if (statusAdd && attacker) {
+        const attackerActor = PersonaDB.findToken(attacker)?.actor;
+        if (attackerActor) {
+          const sitPartial ={
+            target: actor.accessor,
+            triggeringCharacter: attackerActor.accessor,
+            attacker: attackerActor.accessor,
+            trigger : "on-inflict-status",
+            usedPower: power?.accessor,
+            statusEffect: status.id,
+            triggeringUser: game.user,
+          } as const;
+          for (const user of [actor, attackerActor]) {
+            const situation : Situation =  {
+              ...sitPartial,
+              user: user.accessor,
+            };
+            const eff = (await TriggeredEffect.onTrigger("on-inflict-status", user, situation))
+              .finalize()
+              .emptyCheck() ;
+            if (eff) {
+              chained.push(eff);
+            }
+            if ((status.id == "curse" || status.id == "expel") && token) {
+              const attackerToken = PersonaDB.findToken(attacker);
+              chained.push(...await this.#onDefeatOpponent(token, attackerToken));
+            }
+
 					}
 				}
 				// TimeLog.log(`Finished Calling Triggers ${status.id} to ${actor.name}`);
