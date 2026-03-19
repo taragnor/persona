@@ -208,7 +208,6 @@ export class CombatPanel extends SidePanel {
     };
   }
 
-
   static get instance() : CombatPanel {
     if (!this._instance) {
       this._instance = new CombatPanel();
@@ -217,9 +216,10 @@ export class CombatPanel extends SidePanel {
     return this._instance;
   }
 
-  override async init() {
-    this.setPrereq( () => PersonaDB.isLoaded);
-    await super.init();
+  override prereqs() {
+    return [
+      () => PersonaDB.isLoaded
+    ];
   }
 
   private async _onInventoryButton(_ev: JQuery.ClickEvent) {

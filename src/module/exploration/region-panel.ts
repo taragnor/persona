@@ -7,6 +7,7 @@ import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import { SidePanel } from "../side-panel/side-panel.js";
 import {PersonaCombat} from "../combat/persona-combat.js";
+import {PersonaDB} from "../persona-db.js";
 
 class RegionPanelComponent extends SidePanel {
   region: U<PersonaRegion>;
@@ -58,6 +59,13 @@ class RegionPanelComponent extends SidePanel {
       enabled : () => this.region != undefined && this.region.isSearchable && !PersonaCombat.combat,
     } ];
   }
+
+  override prereqs() {
+    return [
+      () => PersonaDB.isLoaded
+    ];
+  }
+
 }
 
 export class RegionPanel {

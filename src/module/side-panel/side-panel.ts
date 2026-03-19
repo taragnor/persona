@@ -7,7 +7,7 @@ export abstract class SidePanel {
   panelName: string;
   iterations : number = 0;
   private _ready : boolean = false;
-  private readyPrereqs : (() => boolean)[] = [];
+  // private readyPrereqs : (() => boolean)[] = [];
 
   protected get CSSClassName() : string {
     return `.${this.panelName}`;
@@ -34,9 +34,10 @@ export abstract class SidePanel {
     await SidePanelManager.activate(this);
   }
 
-  setPrereq(fn : ()=> boolean) {
-    this.readyPrereqs.push(fn);
+  protected prereqs() : (() => boolean)[] {
+    return [];
   }
+
 
   async waitUntilReady() : Promise<void> {
     if (!this._ready) {
@@ -45,7 +46,7 @@ export abstract class SidePanel {
   }
 
   async init() {
-    for (const prereq of this.readyPrereqs) {
+    for (const prereq of this.prereqs()) {
       await waitUntilTrue(prereq, 100);
     }
     this._ready = true;
