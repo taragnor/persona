@@ -16,8 +16,6 @@
 	</div>
 	{{/if}}
 
-	{{#if (or (not region.disabled) (isGM))}}
-
 	{{#if region.disabled}}
 	<h3>
 		DISABLED
@@ -108,14 +106,15 @@
 
 
 
-	<div class="buttons">
-		<button id="search-room-button" class="search-button" {{#if (or region.isSafe (inCombat))}} disabled {{/if}}>
-			Search Room
-		</button>
-		{{/if}}
-		<button id="crunch-party-button" class="crunch-button" {{#if (inCombat)}} disabled {{/if}}>
-			Crunch/Uncrunch Party
-		</button>
-	</div>
+  {{#if false}}
+  <div class="buttons">
+    <button id="search-room-button" class="search-button" {{#if (or region.isSafe (inCombat))}} disabled {{/if}}>
+      Search Room
+    </button>
+    <button id="crunch-party-button" class="crunch-button" {{#if (inCombat)}} disabled {{/if}}>
+      Crunch/Uncrunch Party
+    </button>
+  </div>
+  {{/if}}
 
 </section>

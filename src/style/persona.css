@@ -1890,3 +1890,7 @@ button.end-turn {
 .persona-list.print-out th {
   text-align: left;
 }
+
+.side-panel-buttons {
+  margin-top: 2em;
+}
