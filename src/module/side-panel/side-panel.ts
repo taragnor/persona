@@ -8,10 +8,18 @@ export abstract class SidePanel {
   iterations : number = 0;
   private _ready : boolean = false;
   private readyPrereqs : (() => boolean)[] = [];
-  private buttons : SidePanel.ButtonConfig[] = [];
 
   protected get CSSClassName() : string {
     return `.${this.panelName}`;
+  }
+
+  protected get buttons() : SidePanel.ButtonConfig[] {
+    return this.buttonConfig();
+  }
+
+  /** designed to be overridden*/
+  protected buttonConfig() : SidePanel.ButtonConfig[] {
+    return [];
   }
 
   async deactivate() {
@@ -85,7 +93,7 @@ export abstract class SidePanel {
     const buttonData = await this.resolveButtonData();
     const buttonHTML = buttonData
     .map( (button, i) =>
-      `<button class='side-panel-button ${button.cssClasses.join(" ")} data-button-index="${i}" ${button.enabled ? "" : "disabled"}'
+      `<button class='side-panel-button ${button.cssClasses.join(" ")}' data-button-index='${i}' ${button.enabled ? "" : "disabled"}'>
       ${button.label}
       </button>
       `
@@ -123,15 +131,11 @@ export abstract class SidePanel {
     return {};
   }
 
-  addButton (...buttonsConfig: SidePanel.ButtonConfig[]) {
-    buttonsConfig.forEach( buttonConfig => this.buttons.push(buttonConfig));
-  }
-
   private async resolveButtonData() : Promise<SidePanel.ResolvedButtonData[]> {
     const promises = this.buttons.map( async (button, i) => {
       if (button.visible != undefined) {
         try {
-          const visible = await this.resolveButtonDataVal(button.label);
+          const visible = await this.resolveButtonDataVal(button.visible);
           if (!visible) {return ;}
         } catch (e) {
           ui.notifications.error("Error on Trying to resolve SidePanel Button Visible status");

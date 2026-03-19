@@ -234,22 +234,25 @@ export class CombatScene {
     if (game.scenes.current != this.scene)  {
       return;
     }
-		if (game.itempiles == undefined) {
-			PersonaError.softFail("No item piles, can't create treasures");
-			return;
+    if (game.itempiles == undefined) {
+      PersonaError.softFail("No item piles, can't create treasures");
+      return;
     }
-		const gridsize = this.scene.grid.size;
+    const gridsize = this.scene.grid.size;
     const cr = this.scene.dimensions.sceneRect;
     const center =  {
       x: Math.floor( (cr.x + cr.width)  / 2 / gridsize) * gridsize,
       y: Math.floor( (cr.y + cr.height) / 2 / gridsize) * gridsize,
     };
-			const pile = await game.itempiles.API.createItemPile({position:center});
-			const pileActor = await foundry.utils.fromUuid(pile.tokenUuid) as TokenDocument<PersonaActor> ;
-			if (!pileActor || !(pileActor instanceof TokenDocument) || !pileActor.actor) {
-				PersonaError.softFail(`Cant' find token ${pile?.tokenUuid}`);
-				return;
-			}
+    if (treasure.items.length == 0) {
+      return;
+    }
+    const pile = await game.itempiles.API.createItemPile({position:center});
+    const pileActor = await foundry.utils.fromUuid(pile.tokenUuid) as TokenDocument<PersonaActor> ;
+    if (!pileActor || !(pileActor instanceof TokenDocument) || !pileActor.actor) {
+      PersonaError.softFail(`Cant' find token ${pile?.tokenUuid}`);
+      return;
+    }
     for (const item of treasure.items) {
       const itemFormatted : EnchantedTreasureFormat = {
         item: item.accessor,

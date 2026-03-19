@@ -181,6 +181,10 @@ export class PersonaRegion extends RegionDocument {
 		return this.hasModifier("safe");
 	}
 
+  get isSearchable() : boolean {
+    return !this.isSafe;
+  }
+
 	async secretFound() {
 		return await this.secretHazardFound("secret");
 	}

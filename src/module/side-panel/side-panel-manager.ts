@@ -14,7 +14,6 @@ export class SidePanelManager {
     if (this.buttons.length > 0) {
       this.buttons = [];
     }
-
   }
 
   static get panel()  {

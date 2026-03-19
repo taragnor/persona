@@ -6,6 +6,7 @@ import {Helpers} from "../utility/helpers.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import { SidePanel } from "../side-panel/side-panel.js";
+import {PersonaCombat} from "../combat/persona-combat.js";
 
 class RegionPanelComponent extends SidePanel {
   region: U<PersonaRegion>;
@@ -48,6 +49,14 @@ class RegionPanelComponent extends SidePanel {
       this.setRegion(region);
     }
     await super.updatePanel();
+  }
+
+  override buttonConfig() : SidePanel.ButtonConfig[] {
+    return [ {
+      label: "Search Room",
+      onPress : () => RegionPanel.searchButton(),
+      enabled : () => this.region != undefined && this.region.isSearchable && !PersonaCombat.combat,
+    } ];
   }
 }
 
@@ -92,7 +101,8 @@ export class RegionPanel {
 		// await this.panel.updatePanel( {region, data: region.regionData});
 	}
 
-	static searchButton(_ev: JQuery.ClickEvent) {
+
+	static searchButton(_ev ?: JQuery.ClickEvent) {
 		if (game.user.isGM) {
 			void Metaverse.searchRoom();
 			return;
