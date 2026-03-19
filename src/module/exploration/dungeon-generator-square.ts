@@ -339,8 +339,6 @@ export class DungeonSquare {
 
 }
 
-
-
 function up(pt: Point): Point {
 	return {x: pt.x, y: pt.y-1 };
 }

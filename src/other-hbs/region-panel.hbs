@@ -6,11 +6,13 @@
 	{{#if region.pointsOfInterest}}
 	<div class="points-of-interest">
 		<h3>Points of Interest</h3>
+    <ul class="poi">
 		{{#each region.pointsOfInterest as |poi|}}
 		<li>
 			{{poi}}
 		</li>
 		{{/each}}
+    </ul>
 	</div>
 	{{/if}}
 

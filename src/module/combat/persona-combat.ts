@@ -1726,8 +1726,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				element.find('div.region-treasures').append(`<span> Treasures Remaining ${treasures} </span>`);
 			}
 			element.find('div.weather-icon').append(weatherIcon);
-			// const escalationDie = String(this.getEscalationDie());
-			// element.find('.escalation-die').text(escalationDie);
 		} catch (e) {
 			PersonaError.softFail("Can't display Combat Tracker stuff", e);
 		}

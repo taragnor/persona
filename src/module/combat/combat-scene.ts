@@ -244,10 +244,6 @@ export class CombatScene {
       x: Math.floor( (cr.x + cr.width)  / 2 / gridsize) * gridsize,
       y: Math.floor( (cr.y + cr.height) / 2 / gridsize) * gridsize,
     };
-    // const position = {
-    //   x: 12 * gridsize,
-    //   y: 12 * gridsize,
-    // };
 			const pile = await game.itempiles.API.createItemPile({position:center});
 			const pileActor = await foundry.utils.fromUuid(pile.tokenUuid) as TokenDocument<PersonaActor> ;
 			if (!pileActor || !(pileActor instanceof TokenDocument) || !pileActor.actor) {

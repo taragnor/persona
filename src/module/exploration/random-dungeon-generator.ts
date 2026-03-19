@@ -302,7 +302,7 @@ export class RandomDungeonGenerator {
 
 		this.squareList
 			.filter( sq => sq.isCorridor())
-			.filter( _sq => this.percentChance(20))
+			.filter( sq => this.percentChance(sq.hasHiddenDoor() ? 80 : 25))
 			.forEach( sq=> this.createFlavorEffectInCorridor(sq));
 	}
 

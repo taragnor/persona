@@ -5,9 +5,11 @@ import {PersonaRegion} from "../region/persona-region.js";
 import {Helpers} from "../utility/helpers.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
-import {SidePanel} from "../side-panel.js";
+import { SidePanel } from "../side-panel/side-panel.js";
 
 class RegionPanelComponent extends SidePanel {
+  region: U<PersonaRegion>;
+
 	override get templatePath(): string {
 		return "systems/persona/other-hbs/region-panel.hbs";
 	}
@@ -16,11 +18,37 @@ class RegionPanelComponent extends SidePanel {
 		super("region-info-panel");
 	}
 
+  override get autoActivateOnUpdate() : boolean {
+    return true;
+  }
+
 	override activateListeners(html: JQuery<HTMLElement>): void {
 		super.activateListeners(html);
 		html.find(".search-button").on("click", (ev) => RegionPanel.searchButton(ev));
 		html.find(".crunch-button").on("click", (_ev) => void Metaverse.toggleCrunchParty());
 	}
+
+  setRegion(region: PersonaRegion) {
+    this.region = region;
+  }
+
+  override async getData() {
+    if (!this.region) {
+      throw new Error("No region defined");
+    }
+    return {
+      ...await super.getData(),
+      region: this.region,
+      data: this.region.regionData,
+    };
+  }
+
+  override async updatePanel( region?: PersonaRegion) {
+    if (region) {
+      this.setRegion(region);
+    }
+    await super.updatePanel();
+  }
 }
 
 export class RegionPanel {
@@ -35,7 +63,7 @@ export class RegionPanel {
 
 
 	static clearRegionDisplay() {
-		this.panel.clearPanel();
+		void this.panel.deactivate();
 	}
 
 	static async updateRegionDisplay(token: TokenDocument<PersonaActor>, tokenMove: boolean = true) {
@@ -60,7 +88,8 @@ export class RegionPanel {
 	}
 
 	static async _updateRegionDisplay (region: PersonaRegion) {
-		await this.panel.updatePanel( {region, data: region.regionData});
+		await this.panel.updatePanel(region);
+		// await this.panel.updatePanel( {region, data: region.regionData});
 	}
 
 	static searchButton(_ev: JQuery.ClickEvent) {

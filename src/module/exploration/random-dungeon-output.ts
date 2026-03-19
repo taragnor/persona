@@ -259,7 +259,6 @@ export class RandomDungeonOutput <TreasureType> {
     }
 
     return mods;
-
 	}
 
 	private region_secret(sq: DungeonSquare) : {status: RegionData["secret"], details: string} {
