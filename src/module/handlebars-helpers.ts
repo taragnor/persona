@@ -745,7 +745,7 @@ export class PersonaHandleBarsHelpers {
     },
 
     "canDeletePowers": function (persona: Persona): boolean {
-      return persona.user.isOwner && persona.isBasePersona;
+      return persona.user.isOwner && persona.source.isOwner && !persona.isHypothetical;
     },
 
     "getRollTags": function (cardRoll: CardRoll): string {

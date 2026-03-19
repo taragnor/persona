@@ -293,16 +293,24 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 	}
 
-	async deletePower(event: Event) {
-		const powerId = HTMLTools.getClosestData<Power["id"]>(event, "powerId");
-		if (powerId == undefined) {
-			const err = `Can't find power: Power Id is undefied`;
-			console.error(err);
-			ui.notifications.error(err);
-			throw new Error(err);
-		}
-		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this power?")) {
-			await this.actor.basePersona.powerLearning.deletePower(powerId);
+  async deletePower(event: Event) {
+    const powerId = HTMLTools.getClosestData<Power["id"]>(event, "powerId");
+    const personaId = HTMLTools.getClosestDataSafe<Persona["source"]["id"]>(event, "personaId", "" as Persona["source"]["id"]);
+    if (powerId == undefined) {
+      const err = `Can't find power: Power Id is undefied`;
+      console.error(err);
+      ui.notifications.error(err);
+      throw new Error(err);
+    }
+    let persona: Persona;
+    if (personaId.length> 0 ) {
+      persona = this.actor.personaList.find( x=> x.source.id == personaId) ?? this.actor.sideboardPersonas.find(x=> x.source.id == personaId)! ;
+    } else {
+      persona = this.actor.basePersona;
+    }
+
+		if (await HTMLTools.confirmBox("Confirm Delete", `Are you sure you want to delete this power from ${persona.name}?`)) {
+			await persona.powerLearning.deletePower(powerId);
 		}
 	}
 
