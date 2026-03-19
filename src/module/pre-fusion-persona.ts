@@ -31,6 +31,10 @@ export class HypotheticalPersona extends Persona<PC> {
 		return this.level <= this.user.level;
 	}
 
+  override get powerLearning() : never {
+    throw new Error("Hypothetical personas cannot learn powers");
+  }
+
 	async fusionProcess( sheetToUpdate: PCSheet) : Promise<U<Shadow>> {
 		const maxSkillsToPick = this.skillsToInherit();
 		while (this.inherited.length < maxSkillsToPick) {
