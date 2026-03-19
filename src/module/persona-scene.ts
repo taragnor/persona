@@ -206,7 +206,6 @@ export class PersonaScene extends Scene {
 		await Promise.allSettled(promises);
 	}
 
-
 	stats() : void {
 		if (!game.user.isGM) {return;}
 		type RelevantDamageTypes = Exclude<DamageType, "none"| "healing"| "all-out"| "untyped" | "by-power"> ;

@@ -329,7 +329,6 @@ export class DungeonSquare {
     }
   }
 
-
   setTreasures(amt: number) {
     this.numOfTreasures = amt;
   }
