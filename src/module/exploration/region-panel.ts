@@ -78,7 +78,6 @@ export class RegionPanel {
 		}
 	}
 
-
 	static clearRegionDisplay() {
 		void this.panel.deactivate();
 	}

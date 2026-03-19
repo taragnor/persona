@@ -7,7 +7,6 @@ export abstract class SidePanel {
   panelName: string;
   iterations : number = 0;
   private _ready : boolean = false;
-  // private readyPrereqs : (() => boolean)[] = [];
 
   protected get CSSClassName() : string {
     return `.${this.panelName}`;
@@ -176,7 +175,6 @@ export abstract class SidePanel {
         enabled,
         label,
         index: i,
-        // onPress: button.onPress,
         cssClasses,
       };
     });

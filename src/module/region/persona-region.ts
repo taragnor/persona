@@ -167,15 +167,12 @@ export class PersonaRegion extends RegionDocument {
 		);
 	}
 
-	// get concordiaPresence(): number {
-	// 	return Number(this.regionData.concordiaPresence ?? 0);
-	// }
-
-	get shadowPresence(): number {
-		if (this.regionData.shadowPresence)
-			{return Number(this.regionData.shadowPresence);}
-		else {return 0;}
-	}
+  get shadowPresence(): number {
+    if (this.regionData.shadowPresence) {
+      return Number(this.regionData.shadowPresence);
+    }
+    else {return 0;}
+  }
 
 	get isSafe() : boolean {
 		return this.hasModifier("safe");
