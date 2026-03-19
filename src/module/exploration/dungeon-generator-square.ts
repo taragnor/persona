@@ -53,7 +53,7 @@ export class DungeonSquare {
 	generateRegionName() : string {
     const definedName = this.flavorText
       .find( ft => ft.newName)?.newName;
-    if (definedName) {return definedName;}
+    if (definedName) {return `${definedName}${this.isHiddenRoom() ? " (Hidden)": ""}`;}
 		switch (this.type) {
 			case "corridor":
 				if (this.isDeadEnd()) {
@@ -268,7 +268,7 @@ export class DungeonSquare {
 	}
 
   isDeadEnd() : boolean {
-    return this.type == "corridor"
+    return this.isCorridor()
       && this.connections
       .filter( x=> !x.isHiddenRoom())
       .length <= 1;
@@ -277,7 +277,7 @@ export class DungeonSquare {
 
   isEmptyRoom() : boolean {
     return this.isRoom()
-      && this.specials.length == 0
+      // && this.specials.length == 0
       && !this.isStartPoint()
       && !this.isStairsDown()
       && !this.isTeleporter()
@@ -311,20 +311,23 @@ export class DungeonSquare {
 		}
 	}
 
-	assignRoomSpecials() {
-		const die = this.die(100);
-		switch (true) {
-			case die > 85:
-				this.specials.push("checkpoint");
-        console.log("teleporter created");
-				break;
-			case die > 70 : {
-				this.specials.push("hidden-room");
+  assignRoomSpecials() {
+    const die = this.die(100);
+    switch (true) {
+      case die > 90:
+        if (!this.parent.squareList.some( sq => sq.isTeleporter()) ) {
+          this.specials.push("checkpoint");
+          console.log("teleporter created");
+          break;
+        }
+      // eslint-disable-next-line no-fallthrough
+      case die > 75 : {
+        this.specials.push("hidden-room");
         console.log("Hidden room created");
-				break;
-			}
-		}
-	}
+        break;
+      }
+    }
+  }
 
 
   setTreasures(amt: number) {

@@ -334,7 +334,7 @@ export class RandomDungeonGenerator {
 		const list = this.squareList
 			.filter (x=> !x.isStairs());
 		for (const room of list) {
-			if (!this.percentChance(30)) {continue;}
+			if (!this.percentChance(60)) {continue;}
 			room.assignSpecials();
 		}
 	}
@@ -402,12 +402,12 @@ export class RandomDungeonGenerator {
     }
     let emergencyBrake = 0;
     while (this.squareList.length < numSquares) {
-      const corridors = this.rng.die(2,3)+1;
+      const corridors = this.rng.die(1,3)+1;
       const corridorMade= this.createDungeonCorridors(corridors );
       if (corridorMade && this.stepDebug) {
         this.print();
       }
-      const rooms = this.rng.die(1,2);
+      const rooms = this.rng.die(1,3);
       const roomMade = this.createDungeonRooms(rooms);
       if (roomMade && this.stepDebug) {
         this.print();
@@ -454,7 +454,6 @@ class InvalidDungeonError extends Error { }
 
 class UnexpectedResultError extends Error{ }
 
-
 export type FlavorText = {
 	newName ?: string,
 	text: string;
@@ -474,12 +473,9 @@ export type RoomFlavorText = FlavorText & {
   hiddenRoom?: boolean
 }
 
-
-
 export class GenerationError extends Error{
 
 }
-
 
 export type GeneratorSceneModifier<itemType = unknown> = {
   localName?: string;
