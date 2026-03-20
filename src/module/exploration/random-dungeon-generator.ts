@@ -16,24 +16,30 @@ export class RandomDungeonGenerator {
   stepDebug: boolean = false;
   public finalizedSquareList: FinalizedDungeonSquare[];
   dimensions : {width: number, height: number};
+  questSpecials : QuestSpecial[] = [];
 
 	static SPECIAL_FLOORS = ["tough-enemy", "revealed", "treasure-shadow", "dark"] as const;
 
 	static init() {}
 
-	constructor(dimensions: {height: number, width:number}, depth: number = 1, sceneModifiers: GeneratorSceneModifier[]) {
+	constructor(dimensions: {height: number, width:number}, constructionOptions: DungeonGeneratorOptions) {
 		this.squaresTaken = 0;
     this.dimensions = dimensions;
 		this.#resetSquares();
-		this._depth = depth;
+		this._depth = constructionOptions.depth ?? 1;
 		this.lenientMode = false;
-    this.sceneModifierPossibilities = sceneModifiers;
+    this.sceneModifierPossibilities = constructionOptions.sceneModifiers ?? [];
+    this.questSpecials = constructionOptions.questSpecials ?? [];
 	}
 
 	#resetSquares() {
 		this.squares = this.#makeRows();
 		this.squareList = [];
 	}
+
+  hasActiveQuest() : boolean {
+    return this.activeQuests.length > 0;
+  }
 
 	get currentDepth() : number {return this._depth;}
 
@@ -280,6 +286,36 @@ export class RandomDungeonGenerator {
 		rm.makeStairsDown();
 	}
 
+  get activeQuests() : QuestSpecial[] {
+    const activeQuests = this.questSpecials
+      .filter (spec => this._depth == spec.level - 1);
+    return activeQuests;
+  }
+
+  private assignQuestSpecials() {
+    let filter: (sq: DungeonSquare) => boolean = () => false;
+    for (const quest of this.activeQuests) {
+      switch (quest.requirement) {
+        case "room":
+          filter = x => x.isEmptyRoom();
+          break;
+        case "dead-end":
+          filter = x => x.isDeadEnd();
+          break;
+        case "either":
+          filter = x => x.isDeadEnd() || x.isEmptyRoom();
+          break;
+      }
+      const list = this.squareList
+        .filter (sq=> filter(sq) );
+      const rm = this.rng.randomArraySelect(list);
+      if (!rm) {
+        throw new InvalidDungeonError("Can't assign quest special");
+      }
+      rm.assignQuestSpecial(quest);
+    }
+  }
+
   private assignTreasures() {
     const list = this.squareList
       .filter(x=> x.isRoom() || x.isDeadEnd())
@@ -327,7 +363,6 @@ export class RandomDungeonGenerator {
 		);
 		if (!effect) {return;}
 		sq.addFlavorText(effect);
-
 	}
 
 	assignSpecials() {
@@ -359,6 +394,7 @@ export class RandomDungeonGenerator {
       try {
         this.createFloorplan(numSquares);
         this.assignExit();
+        this.assignQuestSpecials();
         this.assignSpecialFloors();
         this.assignSpecials();
         this.assignTreasures();
@@ -482,3 +518,21 @@ export type GeneratorSceneModifier<itemType = unknown> = {
   item: N<itemType>;
   probability: number;
 };
+
+
+export type QuestSpecial = {
+  level: number;
+  requirement: "room" | "dead-end" | "either";
+  poi: string;
+  roomName: string;
+  gmNotes ?: string;
+}
+
+
+export interface DungeonGeneratorOptions {
+  /** Defaults to 1 */
+  depth?: number;
+  sceneModifiers?: GeneratorSceneModifier[];
+  questSpecials ?: QuestSpecial[];
+}
+

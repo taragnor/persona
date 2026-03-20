@@ -106,7 +106,7 @@ export class PersonaVariables {
 	static async #set(data: VariableData, value: number) {
 		switch (data.varType) {
 			case "global":
-				await PersonaSettings.setGlobalVariable(data.variableId, value);
+				await this.setGlobalVariable(data.variableId, value);
 				break;
 			case "scene": {
 				const vars : Record<string, number> = data.scene.getFlag("persona", "variables") ?? {};
@@ -131,7 +131,7 @@ export class PersonaVariables {
 	static #get(data: VariableData) : number | undefined {
 		switch (data.varType) {
 			case "global": {
-				const globalVar = PersonaSettings.getGlobalVariable(data.variableId);
+				const globalVar = this.getGlobalVariable(data.variableId);
 				return globalVar ?? 0;
 			}
 			case "scene": {
@@ -146,7 +146,17 @@ export class PersonaVariables {
 		}
 	}
 
+  static getGlobalVariable(id: string) {
+    return PersonaSettings.getGlobalVariable(id);
+  }
+
+  static async setGlobalVariable(id: string, newVal: number) {
+    return await PersonaSettings.setGlobalVariable(id, newVal);
+
+  }
+
 }
+
 
 
 type VariableData = {

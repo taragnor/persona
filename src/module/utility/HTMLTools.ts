@@ -153,9 +153,9 @@ export class HTMLTools {
 		});
 	}
 
-	static async getNumber(comment: string) : Promise<number> {
+	static async getNumber(comment: string, defaultNumber = 0) : Promise<number> {
 		const html = `<div> ${comment} </div>
-		<input type='number' class='numInput' value=0>
+		<input type='number' class='numInput' value=${defaultNumber}>
 		`;
 		return await new Promise( (conf, reject) => {
 			const dialog = new Dialog({

@@ -1894,3 +1894,18 @@ button.end-turn {
 .side-panel-buttons {
   margin-top: 2em;
 }
+
+img.navigator-img  {
+  width: 100px;
+  height: auto;
+  max-width: 100px;
+  min-width: 100px;
+  flex-shrink: 0;
+  object-fit: contain; /* ensures no distortion if height is constrained */
+  align-self: flex-start; /* extra safety: don't stretch */
+}
+
+.navigator-speech {
+	font-style: italic;
+  flex:1;
+}

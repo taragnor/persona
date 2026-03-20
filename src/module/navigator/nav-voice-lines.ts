@@ -167,6 +167,28 @@ export class NavigatorVoiceLines {
 		return persona.elemResist(element);
 
 	}
+
+  static async navigatorTalk(this:void, text: string) {
+    const navigator = PersonaDB.getNavigator();
+    if (!navigator) {return;}
+    const speaker  = {
+      alias: navigator.name,
+    };
+    const content = `
+    <div class="f-row">
+    <img class="navigator-img" src=${navigator.img}>
+<div class="navigator-speech">
+      "${text}"
+</div>
+    </div>
+    `;
+    const messageData = {
+      speaker: speaker,
+      content,
+      style: CONST.CHAT_MESSAGE_STYLES.IC,
+    };
+    await ChatMessage.create(messageData, {});
+  }
 }
 
 Hooks.on("hoverToken", function (token: Token<PersonaActor>, hover: boolean) {
@@ -182,3 +204,6 @@ type NavigatorVoiceEvent = {
 	type: "vulnerable" | "immune"
 	elementType: RealDamageType,
 };
+
+//@ts-expect-error adding to global
+window.navTalk = NavigatorVoiceLines.navigatorTalk;

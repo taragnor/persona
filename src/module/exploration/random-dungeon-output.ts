@@ -200,12 +200,15 @@ export class RandomDungeonOutput <TreasureType> {
 	}
 
   private region_notes (sq: DungeonSquare) : string {
-    let notes= "";
-    notes += sq.flavorText
+    const notes :string[]= [];
+    if (sq.questSpecial && sq.questSpecial.gmNotes) {
+      notes.push(sq.questSpecial.gmNotes);
+    }
+    notes.push(... (sq.flavorText
       .filter( ft => ft.gmNote)
-      .map (ft=> ft.gmNote)
-      .join( "\n");
-    return notes;
+      .map (ft=> ft.gmNote ?? ""))
+    );
+    return notes.join("\n");
   }
 
   private checkDimensions() {
@@ -289,29 +292,32 @@ private region_hazard(sq: DungeonSquare) : {status: RegionData["hazard"], detail
 	}
 
 
-	private region_pointsOfInterest(sq: DungeonSquare) : string []{
-		const ret = [];
-		switch (true) {
-			case sq.isStartPoint():
-				if (sq.parent.currentDepth == 0) {
-					ret.push("Exit: An exit leads back to Wonderland");
-				} else {
-					ret.push("Ascend Point: You can ascend towards the higher level here.");
-				}
-				break;
-			case sq.isStairsDown():
-				ret.push("Descend Point: You can descend even deeper into this strange realm.");
-				break;
-			case sq.isTeleporter():
-				ret.push("Access Terminal: You can use this to return back to the entrance of Wonderland");
-				break;
-		}
+  private region_pointsOfInterest(sq: DungeonSquare) : string []{
+    const ret = [];
+    switch (true) {
+      case sq.isStartPoint():
+        if (sq.parent.currentDepth == 0) {
+          ret.push("Exit: An exit leads back to Wonderland");
+        } else {
+          ret.push("Ascend Point: You can ascend towards the higher level here.");
+        }
+        break;
+      case sq.isStairsDown():
+        ret.push("Descend Point: You can descend even deeper into this strange realm.");
+        break;
+      case sq.isTeleporter():
+        ret.push("Access Terminal: You can use this to return back to the entrance of Wonderland");
+        break;
+    }
+    if (sq.questSpecial && sq.questSpecial.poi) {
+      ret.push(sq.questSpecial.poi);
+    }
     ret.push(... sq
       .flavorText.filter( x=> x.text)
       .map (x => x.text)
     );
-		return ret;
-	}
+    return ret;
+  }
 
 
 	private async addWalls(wallData: Partial<WallData>[]) {

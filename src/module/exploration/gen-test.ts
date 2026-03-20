@@ -1,4 +1,4 @@
-import {RandomDungeonGenerator} from "./random-dungeon-generator.js";
+import {DungeonGeneratorOptions, RandomDungeonGenerator} from "./random-dungeon-generator.js";
 
   const scene = {
     name : "Test Scene",
@@ -38,7 +38,10 @@ function testWith(sq: number) {
     height: 10,
     width: 10,
   };
-  const gen = new RandomDungeonGenerator(dimensions, lvl, []);
+  const options : DungeonGeneratorOptions = {
+    depth: lvl,
+  };
+  const gen = new RandomDungeonGenerator(dimensions, options);
   gen.generate(sq, `${lvl}ARGFDSS` + String(Date.now()));
 }
 

@@ -1,4 +1,4 @@
-import {FlavorText, RandomDungeonGenerator} from "./random-dungeon-generator.js";
+import {FlavorText, QuestSpecial, RandomDungeonGenerator} from "./random-dungeon-generator.js";
 // import {EnchantedTreasureFormat, TreasureSystem} from "./treasure-system.js";
 
 export class DungeonSquare {
@@ -14,6 +14,7 @@ export class DungeonSquare {
   canBeRegion = true;
   flavorText: FlavorText[] = [];
   numOfTreasures: number = 0;
+  questSpecial : U<QuestSpecial> = undefined;
 
 	constructor(generator: RandomDungeonGenerator, x: number, y:number, type: typeof this["type"]) {
 		this.parent = generator;
@@ -51,6 +52,9 @@ export class DungeonSquare {
 	}
 
 	generateRegionName() : string {
+    if (this.questSpecial && this.questSpecial.roomName) {
+      return this.questSpecial.roomName;
+    }
     const definedName = this.flavorText
       .find( ft => ft.newName)?.newName;
     if (definedName) {return `${definedName}${this.isHiddenRoom() ? " (Hidden)": ""}`;}
@@ -177,7 +181,6 @@ export class DungeonSquare {
 	}
 
 	getAdjoiningPoints() : Point[] {
-		// const p = function (x: number, y:number) { return {x, y};};
 		return [
 			this.left,
 			this.right,
@@ -277,11 +280,12 @@ export class DungeonSquare {
 
   isEmptyRoom() : boolean {
     return this.isRoom()
-      // && this.specials.length == 0
+    // && this.specials.length == 0
       && !this.isStartPoint()
       && !this.isStairsDown()
       && !this.isTeleporter()
-      && this.flavorText.length == 0;
+      && this.flavorText.length == 0
+      && !this.questSpecial;
 
   }
 
@@ -297,6 +301,11 @@ export class DungeonSquare {
 			)
 		;
 	}
+
+  assignQuestSpecial( quest : QuestSpecial) {
+    ui.notifications.notify("Placed quest room on this level");
+    this.questSpecial = quest;
+  }
 
 	assignSpecials() {
 		if (this.isRoom()) {return this.assignRoomSpecials();}

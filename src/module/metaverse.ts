@@ -21,10 +21,12 @@ import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaScene } from "./persona-scene.js";
 import { EnchantedTreasureFormat, TreasureSystem } from "./exploration/treasure-system.js";
 import {RandomEncounter} from "./exploration/random-encounters.js";
-import {GeneratorSceneModifier, RandomDungeonGenerator} from "./exploration/random-dungeon-generator.js";
+import {DungeonGeneratorOptions, GeneratorSceneModifier, RandomDungeonGenerator} from "./exploration/random-dungeon-generator.js";
 import {HTMLTools} from "./utility/HTMLTools.js";
 import {RandomDungeonOutput} from "./exploration/random-dungeon-output.js";
 import {PersonaCombat} from "./combat/persona-combat.js";
+import {PersonaQuests} from "./exploration/persona-quests.js";
+import {NavigatorVoiceLines} from "./navigator/nav-voice-lines.js";
 
 export class Metaverse {
 	static lastCrunch : number = 0;
@@ -41,7 +43,12 @@ export class Metaverse {
       return;
     }
     const dimensions = {height: 12, width: 12};
-    const gen = new RandomDungeonGenerator(dimensions, lvl, MEMENTOS_SCENE_MODS);
+    const options :DungeonGeneratorOptions= {
+      depth: lvl,
+      sceneModifiers: MEMENTOS_SCENE_MODS,
+      questSpecials : PersonaQuests.questSpecials(),
+    };
+    const gen = new RandomDungeonGenerator(dimensions, options);
     gen.stepDebug = stepDebug;
     try {
       if (!squares) {
@@ -66,13 +73,16 @@ export class Metaverse {
       return;
     }
     if (lvl == undefined) {
-      lvl = await HTMLTools.getNumber(" Level of Dungeon to set");
+      lvl = await HTMLTools.getNumber("Level of Dungeon to set", 1);
     }
-    const gen = await this.generateMementos(lvl);
+    const gen = await this.generateMementos(lvl-1);
     const scene = game.scenes.current as PersonaScene;
     if (gen) {
       await RandomDungeonOutput.outputToScene(gen, scene, TreasureSystem, "WonderLand Depths");
       await TensionPool._instance.clear();
+      if (gen.hasActiveQuest()) {
+        void NavigatorVoiceLines.navigatorTalk("There looks like there's something interesting on this level");
+      }
     }
   }
   static async enterMetaverse() {
