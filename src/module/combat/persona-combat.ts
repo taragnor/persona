@@ -415,10 +415,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			if (comb != combatant && comb.actor && comb.actor.sheet._state >= 0)
 			{comb.actor.sheet.close();}
 		}
-		//NOTE: using the combat panel instead
-		// if (combatant.actor.sheet._state <= 0) {
-		// 	await combatant.actor.sheet.render(true);
-		// }
 		void CombatPanel.instance.setTarget(combatant.token as PToken);
 	}
 
@@ -476,10 +472,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			this.handleStartTurnEffects(combatant),
 		);
 		await this.execStartingTrigger(combatant);
-		// const openingReturn = await this.openers.execOpeningRoll(combatant);
-		// if (openingReturn) {
-		// 	const {data, roll} = openingReturn;
-		// 	const openerMsg = await foundry.applications.handlebars.renderTemplate('systems/persona/parts/openers-list.hbs', {roll, openers: data, combatant});
 		const openingData = await this.openers.printOpenerList(combatant);
 		if (openingData) {
 			startTurnMsg.push(openingData.openerMsg);
@@ -1539,23 +1531,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 		return this.getFoes(comb).filter ( c=> c.actor && c.actor.isAlive());
 	}
 
-	// static calculateAllOutAttackDamage(attacker: PToken, situation: AttackResult['situation']) :{contributor: ValidAttackers, amt: number, stack: EvaluatedDamage['str']}[] {
-	// 	const attackLeader = PersonaDB.findActor(situation.attacker!);
-	// 	const combat = game.combat as PersonaCombat | undefined;
-	// 	if (!combat)
-	// 	{return [];}
-	// 	const attackerComb = combat.findCombatant(attacker);
-	// 	if (!attackerComb) {return [];}
-	// 	const attackers = [
-	// 		attackerComb,
-	// 		...combat.getAllies(attackerComb)
-	// 	].flatMap (c=>c.actor?  [c.actor] : []);
-	// 	if (PersonaSettings.debugMode()) {
-	// 		console.debug(`All out attack leader ${attacker.name}`);
-	// 	}
-	// 	return PersonaSettings.getDamageSystem().calculateAllOutDamage(attackLeader, attackers, situation);
-	// }
-
 	getToken( acc: UniversalActorAccessor<PersonaActor>  | undefined): UniversalTokenAccessor<PToken> | undefined {
 		if (!acc) {return undefined;}
 		if (acc.token) {return acc.token as UniversalTokenAccessor<PToken>;}
@@ -1654,7 +1629,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	}
 
 	debug_engageList() {
-		const list = [] as string[];
+		const list : string[] = [];
 		const combs= this.combatants;
 		for (const comb of combs) {
 			const combAcc = PersonaDB.getUniversalTokenAccessor(comb.token as PToken);
@@ -1806,87 +1781,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			PersonaError.softFail("Problem with onFollowUpAction", e);
 		}
 	}
-
-	// async onFollowUpAction(token: PToken, activationRoll: number) {
-	// 	console.debug('Calling On Follow Up Action');
-	// 	const combatant = token.object ? this.getCombatantByToken(token): null;
-	// 	if (!combatant || !combatant.actor) {return;}
-	// 	if (combatant.actor && combatant.actor.hasStatus('down')) {return;}
-	// 	const combat = combatant.parent as PersonaCombat | undefined;
-	// 	if (!combat) {return;}
-	// 	const allies = this.getAllies(combatant as Combatant<ValidAttackers>)
-	// 		.filter (ally => ally.actor?.canTakeFollowUpAction());
-	// 	const followups = this.getUsableFollowUps(token, activationRoll).join('');
-	// 	const validTeamworkAllies = allies
-	// 		.flatMap( ally => {
-	// 			if (ally == combatant) {return [];}
-	// 			const actor = ally.actor;
-	// 			if (!actor || !actor.teamworkMove ) {return [];}
-	// 			if (!actor.persona().canUsePower(actor.teamworkMove, false)) {return [];}
-	// 			const situation : CombatRollSituation = {
-	// 				naturalRoll: activationRoll,
-	// 				rollTags: ['attack', 'activation'],
-	// 				rollTotal : activationRoll,
-	// 				user: actor.accessor,
-	// 			};
-	// 			if (!actor.teamworkMove.testTeamworkPrereqs(situation, actor)) {return [];}
-	// 			const targets = combat.getValidTargetsFor(actor.teamworkMove, combatant as Combatant<ValidAttackers>, situation);
-	// 			if (targets.length == 0) {return [];}
-	// 			return [ally];
-	// 		});
-	// 	const allout = (combat.getAllEnemiesOf(token)
-	// 		.every(enemy => enemy.actor.hasStatus('down'))
-	// 		&& combatant.actor.canAllOutAttack())
-	// 		? '<li> All out attack </li>'
-	// 		: '';
-	// 	const listItems = validTeamworkAllies
-	// 		.map( ally => {
-	// 			const power = ally.actor.teamworkMove!;
-	// 			return `<li>${power.name} (${ally.name})</li>`;
-	// 		}).join('');
-	// 	const teamworkList = !combatant.actor.isDistracted() ? listItems: '';
-	// 	const msg = `<h2> Valid Follow Up Actions </h2>
-// <ul>
-	// 		<li> Act again </li>
-	// 		${allout}
-	// 		${followups}
-	// 		${teamworkList}
-	// 		</ul>
-// `;
-	// 	const messageData: MessageData = {
-	// 		speaker: {alias: 'Follow Up Action'},
-	// 		content: msg,
-	// 		style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-	// 	};
-	// 	await ChatMessage.create(messageData, {});
-	// }
-
-	// getUsableFollowUps(token: PToken, activationRoll: number) : string []{
-	// 	const combatant = token.object ? this.getCombatantByToken(token): null;
-	// 	if (!combatant || !combatant.actor) {return [];}
-	// 	const actor = combatant.actor;
-	// 	const situation : CombatRollSituation = {
-	// 		naturalRoll: activationRoll,
-	// 		rollTags: ['attack', 'activation'],
-	// 		rollTotal: activationRoll,
-	// 		user: actor.accessor,
-	// 	};
-	// 	const persona = actor.persona();
-	// 	const followUpMoves = actor.powers
-	// 		.filter(pwr => pwr.isFollowUpMove()
-	// 			&& persona.canPayActivationCost(pwr)
-	// 			&& pwr.testFollowUpPrereqs(situation, actor)
-	// 		);
-	// 	const followup = followUpMoves
-	// 		.map(usable => {
-	// 			const targets =this.getValidTargetsFor(usable, combatant, situation)
-	// 				.map (x=> x.token.name);
-
-	// 			if (targets.length == 0) {return '';}
-	// 			return `<li> ${usable.name} (${targets.join(', ')})</li>`;
-	// 		});
-	// 	return followup;
-	// }
 
 	async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll: R}[], messageOptions: Foundry.MessageOptions = {}): Promise<ChatMessage<R>> {
 		const rollTransformer = function (roll: Roll) {
