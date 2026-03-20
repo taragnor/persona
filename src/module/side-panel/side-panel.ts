@@ -72,7 +72,10 @@ export abstract class SidePanel {
       _iteration : this.iterations,
     };
     this.iterations++;
-    if (!this.templatePath) { return "ERROR NO TEMPLATE PATH GIVEN";}
+    if (!this.templatePath) {
+      await this.deactivate();
+      return "";
+    }
 
     let html = await foundry.applications.handlebars.renderTemplate(this.templatePath, templateData);
     if (this.buttons.length) {
