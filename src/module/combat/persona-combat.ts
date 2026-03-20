@@ -275,6 +275,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				hit: PCsWin,
 				triggeringCharacter: comb.actor!.accessor,
 				user: comb.actor!.accessor,
+        combatOutcome: PCsWin ? "win" : "draw",
 			};
 			const CR =  await TriggeredEffect.autoTriggerToCR('on-combat-end', comb.actor, situation);
 			return await CR?.toMessage('End Combat Triggered Effect', comb.actor);
@@ -1935,3 +1936,11 @@ void CombatPanel.init();
 export interface StartCombatOptions {
 	roomMods?: UniversalModifier["id"][];
 }
+
+const COMBAT_OUTCOME_LIST = [
+  "win",
+  "draw",
+  "lose",
+] as const;
+
+export const COMBAT_OUTCOME = HTMLTools.createLocalizationObject(COMBAT_OUTCOME_LIST, "persona.combat.outcome");

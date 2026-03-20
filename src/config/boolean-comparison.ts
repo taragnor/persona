@@ -18,6 +18,7 @@ import { WeatherType } from "./weather-types.js";
 import {Defense} from "./defense-types.js";
 import {InternalCreatureTag} from "./creature-tags.js";
 import {PersonaItem} from "../module/item/persona-item.js";
+import {COMBAT_OUTCOME} from "../module/combat/persona-combat.js";
 
 const BASIC_BOOLEAN_COMPARISON_LIST = [
 	"cameo-in-scene",
@@ -112,6 +113,7 @@ const COMBAT_COMPARISON_SUBLIST_LIST = [
 	"struck-weakness",
 	"is-resistant-to",
 	"is-distracted",
+  "combat-result-is",
 ] as const;
 
 export const COMBAT_COMPARISON_SUBLIST = HTMLTools.createLocalizationObject(COMBAT_COMPARISON_SUBLIST_LIST, "persona.preconditions.comparison");
@@ -152,7 +154,10 @@ type PowerComparison = {
 	boolComparisonTarget: "power-has",
 } & PowerComparisonsSub;
 
-type CombatComparison = { boolComparisonTarget: "combat-comparison"} & CombatComparisonSub;
+type CombatComparison = {
+  boolComparisonTarget: "combat-comparison"
+  combatProp : typeof COMBAT_COMPARISON_SUBLIST_LIST[number],
+} & CombatComparisonSub;
 
 type CombatComparisonSub = {
 	combatProp: 	"engaged-with"  | "is-enemy" | "in-melee-with",
@@ -167,6 +172,9 @@ type CombatComparisonSub = {
 	combatProp:  "is-resistant-to",
 	powerDamageType : MultiCheckOrSingle<DamageType>,
 	conditionTarget : ConditionTarget,
+} | {
+  combatProp : "combat-result-is",
+  combatOutcome: keyof typeof COMBAT_OUTCOME;
 };
 
 

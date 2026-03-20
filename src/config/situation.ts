@@ -152,6 +152,7 @@ type CombatEndIndividual = {
 	trigger: "on-combat-end",
 	triggeringCharacter: UniversalActorAccessor<ValidAttackers>,
 	hit: boolean,
+  combatOutcome: "win" | "draw" | "lose",
 }
 
 type TriggerSituation_base = {

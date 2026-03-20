@@ -341,6 +341,8 @@ export class ConditionalEffectPrinter {
 			case "in-melee-with":
 				return `${target1} is ${not} in melee range of ${target2}`;
 
+      case "combat-result-is":
+				return `Combat Result is ${cond.combatOutcome}`;
 			default:
 				cond satisfies never;
 				return "ERROR";

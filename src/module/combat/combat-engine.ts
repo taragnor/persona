@@ -1215,9 +1215,18 @@ export class CombatEngine {
 		return boost;
 	}
 
-	static isAnyHit(situation: Situation) : boolean{
-		return (situation.result == "hit" || situation.result == "crit" || situation.result == "absorb");
-	}
+  static isAnyHit(situation: Situation) : boolean{
+    if (situation.result) {
+      return (situation.result == "hit" || situation.result == "crit" || situation.result == "absorb");
+    }
+    if ("combatOutcome" in situation) {
+      return situation.combatOutcome == "win";
+    }
+    if ("hit" in situation) {
+      return !!situation.hit;
+    }
+    return false;
+  }
 
 	static isFumble( situation: Situation) : boolean {
 		return situation.result == "fumble";

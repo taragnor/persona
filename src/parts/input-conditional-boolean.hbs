@@ -279,6 +279,12 @@
 </select>
 {{/if}}
 
+{{#if (eqAny cond.combatProp "combat-result-is")}}
+<select name="{{strcat namePrefix 'combatOutcome'}}">
+	{{selectOptions POWERSTUFF.COMBAT_OUTCOME localize=true selected=cond.combatOutcome}}
+</select>
+{{/if}}
+
 {{#if (eqAny cond.combatProp "is-resistant-to")}}
 {{multicheck (strcat namePrefix 'powerDamageType') POWERSTUFF.DAMAGETYPES checked=cond.powerDamageType localize=true}}
 {{/if}}

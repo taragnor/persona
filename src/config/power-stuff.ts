@@ -34,6 +34,7 @@ import {TREASURE_TABLES} from "./treasure-tables.js";
 import {PROBABILITIES} from "./probability.js";
 import {HTMLTools} from "../module/utility/HTMLTools.js";
 import { ATTACK_RESULT } from "./attack-result-config.js";
+import {COMBAT_OUTCOME} from "../module/combat/persona-combat.js";
 
 export class PowerStuff {
 private static _powerStuffBase: Record<string, unknown>;
@@ -120,6 +121,7 @@ private static _powerStuffBase: Record<string, unknown>;
 			WEAPON_TAGS,
 			CARD_TAGS,
 			ACTOR_PROPERTIES: CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES,
+      COMBAT_OUTCOME,
 			ROLL_TAGS_AND_CARD_TAGS,
 			VARIABLE_ACTIONS,
 			COMBAT_EFFECTS,

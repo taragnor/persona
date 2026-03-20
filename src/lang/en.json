@@ -875,6 +875,7 @@
 	"persona.preconditions.comparison.social-target-is-multi": "Social Target Is (multiple choice)",
 	"persona.preconditions.comparison.shadow-role-is": "Shadow Role is",
 	"persona.preconditions.comparison.is-distracted": "Is Distracted",
+	"persona.preconditions.comparison.combat-result-is": "Combat Result Is",
 	"persona.preconditions.comparison.active-scene-is": "Active Scene Is",
 	"persona.preconditions.comparison.is-gm": "Foundry User is GM",
 	"persona.preconditions.comparison.percentage-of-hp": "Percentage of HP",
@@ -1300,6 +1301,9 @@
 	"persona.consequenceAmount.sitProperties.damage-dealt": "Damage Dealt",
 	"persona.consequenceAmount.sitProperties.card-item-value": "Value of Card Item",
 
+  "persona.combat.outcome.win" : "PCs Win",
+  "persona.combat.outcome.draw" : "Draw",
+  "persona.combat.outcome.lose" : "PCs Lose",
 
 	"persona.attack.result.hit": "Hit",
 	"persona.attack.result.miss": "Miss",

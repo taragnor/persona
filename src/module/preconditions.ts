@@ -1233,6 +1233,12 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
 		if (combat && !combat.isSocial) {return true;}
 		return false;
 	}
+  if (condition.combatProp == "combat-result-is") {
+    if ("combatOutcome" in situation) {
+      return situation.combatOutcome == condition.combatOutcome;
+    }
+    return false;
+  }
 	const subjects = getSubjectPersonas(condition, situation, "conditionTarget");
 	if (!subjects || !subjects.at(0)) {return undefined;}
 	const combat = PersonaCombat.combat;
