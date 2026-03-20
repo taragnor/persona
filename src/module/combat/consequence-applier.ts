@@ -1,4 +1,4 @@
-import {OtherEffect} from "../../config/consequence-types.js";
+import {OtherEffect, StatusEffect} from "../../config/consequence-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
 import {Metaverse} from "../metaverse.js";
@@ -9,7 +9,6 @@ import {PersonaError} from "../persona-error.js";
 import {PersonaSounds} from "../persona-sounds.js";
 import {PersonaVariables} from "../persona-variables.js";
 import {TriggeredEffect} from "../triggered-effect.js";
-import {TimeLog} from "../utility/logger.js";
 import {EvaluatedDamage} from "./damage-calc.js";
 import {FinalizedCombatResult, ResolvedActorChange} from "./finalized-combat-result.js";
 import {PersonaCombat, PToken} from "./persona-combat.js";
@@ -25,82 +24,89 @@ export class ConsequenceApplier {
     const actor = PersonaDB.findActor(change.actor);
     const token  = change.actor.token ? PersonaDB.findToken(change.actor.token) as PToken: undefined;
     for (const status of change.addStatus) {
-      // TimeLog.log(`AddingStatus ${status.id} to ${actor.name}`);
-      const statusAdd = await actor.addStatus(status);
-      if (statusAdd && attacker) {
-        const attackerActor = PersonaDB.findToken(attacker)?.actor;
-        if (attackerActor) {
-          const sitPartial ={
-            target: actor.accessor,
-            triggeringCharacter: attackerActor.accessor,
-            attacker: attackerActor.accessor,
-            trigger : "on-inflict-status",
-            usedPower: power?.accessor,
-            statusEffect: status.id,
-            triggeringUser: game.user,
-          } as const;
-          for (const user of [actor, attackerActor]) {
-            const situation : Situation =  {
-              ...sitPartial,
-              user: user.accessor,
-            };
-            const eff = (await TriggeredEffect.onTrigger("on-inflict-status", user, situation))
-              .finalize()
-              .emptyCheck() ;
-            if (eff) {
-              chained.push(eff);
-            }
-            if ((status.id == "curse" || status.id == "expel") && token) {
-              const attackerToken = PersonaDB.findToken(attacker);
-              chained.push(...await this.#onDefeatOpponent(token, attackerToken));
-            }
+      try {
+        chained.push(...(await this._applyStatus(status, actor, power, attacker, token)));
+      } catch (e) {
+        PersonaError.softFail(`Error applying status: ${status.id}`, e);
+      }
+    }
+    for (const dmg of change.damage)  {
+      try {
+        chained.push(...await this._applyDamage(actor, token, dmg, power, attacker));
+      } catch (e) {
+        PersonaError.softFail(`Error applying Damage to ${actor.name}`, e);
+      }
+    }
+    for (const status of change.removeStatus) {
+      await actor.removeStatus(status);
+    }
+    const mpmult = 1;
+    const mutableState =  {
+      mpCost: 0,
+      theurgy: 0,
+    } satisfies MutableActorState;
+    for (const otherEffect of change.otherEffects) {
+      try {
+        await this._applyOtherEffect(actor, token, otherEffect, mutableState);
+      } catch (e) {
+        PersonaError.softFail(`Error trying to execute ${otherEffect.type} on ${actor.name}`, e);
+      }
+    }
+    if (mutableState.theurgy != 0 && !actor.isShadow()) {
+      console.log(`Modify Theurgy: ${mutableState.theurgy}`);
+      await actor.modifyTheurgy(mutableState.theurgy);
+    }
+    if (mutableState.mpCost != 0 && !actor.isShadow()) {
+      mutableState.mpCost *= mpmult;
+      await (actor as PC).modifyMP(mutableState.mpCost);
+    }
+    return chained;
+  }
 
-					}
-				}
-				// TimeLog.log(`Finished Calling Triggers ${status.id} to ${actor.name}`);
-			}
-			if (statusAdd && token) {
-				Hooks.callAll("onAddStatus", token, status);
-				// TimeLog.log(`Finished Hooks for  ${status.id} to ${actor.name}`);
-			}
-			// TimeLog.log(`Finished Adding ${status.id} to ${actor.name}`);
-		}
-		for (const dmg of change.damage)  {
-			try {
-				// TimeLog.log(`Applyign Damage to ${actor.name}`);
-				chained.push(...await this._applyDamage(actor, token, dmg, power, attacker));
-				// TimeLog.log(`Finshed Applyign Damage to ${actor.name}`);
-			} catch (e) {
-				PersonaError.softFail(`Error applying Damage to ${actor.name}`, e);
-			}
-		}
-		for (const status of change.removeStatus) {
-			await actor.removeStatus(status);
-		}
-		const mpmult = 1;
-		const mutableState =  {
-			mpCost: 0,
-			theurgy: 0,
-		} satisfies MutableActorState;
-		// TimeLog.log(`Applying Other effects to ${actor.name}`);
-		for (const otherEffect of change.otherEffects) {
-			try {
-				await this._applyOtherEffect(actor, token, otherEffect, mutableState);
-			} catch (e) {
-				PersonaError.softFail(`Error trying to execute ${otherEffect.type} on ${actor.name}`, e);
-			}
-		}
-		// TimeLog.log(`Finished Applying Other effects to ${actor.name}`);
-		if (mutableState.theurgy != 0 && !actor.isShadow()) {
-			console.log(`Modify Theurgy: ${mutableState.theurgy}`);
-			await actor.modifyTheurgy(mutableState.theurgy);
-		}
-		if (mutableState.mpCost != 0 && !actor.isShadow()) {
-			mutableState.mpCost *= mpmult;
-			await (actor as PC).modifyMP(mutableState.mpCost);
-		}
-		return chained;
-	}
+  private static async _applyStatus (status: StatusEffect, actor : ValidAttackers, power: U<UsableAndCard>,  attacker : U<UniversalTokenAccessor<PToken>>, token : U<PToken>) : Promise<FinalizedCombatResult[]> {
+    const statusAdd = await actor.addStatus(status);
+    const chained : FinalizedCombatResult[] = [];
+    if (statusAdd && attacker && token && power?.isUsableType()) {
+      chained.push(... (await this._resolveCombatStatus(token, attacker, status, power)));
+    }
+    if (statusAdd && token) {
+      Hooks.callAll("onAddStatus", token, status);
+    }
+    return chained;
+  }
+
+  private static async _resolveCombatStatus(targetToken: PToken, attacker: UniversalTokenAccessor<PToken>, status: StatusEffect, power: U<Usable>) : Promise<FinalizedCombatResult[]> {
+    const actor = targetToken.actor;
+    const chained : FinalizedCombatResult[] = [];
+    const attackerActor = PersonaDB.findToken(attacker)?.actor;
+    if (!attackerActor) {return [];}
+    const sitPartial ={
+      target: actor.accessor,
+      triggeringCharacter: attackerActor.accessor,
+      attacker: attackerActor.accessor,
+      trigger : "on-inflict-status",
+      usedPower: power?.accessor,
+      statusEffect: status.id,
+      triggeringUser: game.user,
+    } as const;
+    for (const user of [actor, attackerActor]) {
+      const situation : Situation =  {
+        ...sitPartial,
+        user: user.accessor,
+      };
+      const eff = (await TriggeredEffect.onTrigger("on-inflict-status", user, situation))
+        .finalize()
+        .emptyCheck() ;
+      if (eff) {
+        chained.push(eff);
+      }
+      if ((status.id == "curse" || status.id == "expel")) {
+        const attackerToken = PersonaDB.findToken(attacker);
+        chained.push(...await this.#onDefeatOpponent(targetToken, attackerToken));
+      }
+    }
+    return chained;
+  }
 
 	private static async _applyDamage(actor: ValidAttackers, token: PToken | undefined, dmg: EvaluatedDamage, power: U<UsableAndCard>, attackerTokenAcc ?: UniversalTokenAccessor<PToken>) : Promise<FinalizedCombatResult[]> {
 		const ret : FinalizedCombatResult[] = [];
@@ -134,10 +140,7 @@ export class ConsequenceApplier {
 			if (CR) { ret.push(CR);}
 		}
 		if (power) {
-			// TimeLog.log("About to exec SFX onDamage");
-
 			PersonaSFX.onDamage(token, dmg.hpChange, dmg.damageType, power);
-			// TimeLog.log("Finished with onDamage");
 		}
 		if (token) {
 			if (power && !power.isAoE()) {

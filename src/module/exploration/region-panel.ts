@@ -108,7 +108,6 @@ export class RegionPanel {
 		// await this.panel.updatePanel( {region, data: region.regionData});
 	}
 
-
 	static searchButton(_ev ?: JQuery.ClickEvent) {
 		if (game.user.isGM) {
 			void Metaverse.searchRoom();
