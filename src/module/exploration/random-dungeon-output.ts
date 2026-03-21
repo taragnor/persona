@@ -145,17 +145,6 @@ export class RandomDungeonOutput <TreasureType> {
       ...this.scene.regions.contents.map(x=> x.delete()),
       ...this.scene.drawings.contents.map(x=> x.delete()),
     ]);
-    // await Promise.all( this.scene.regions.contents.map(x=> x.delete()));
-    // await Promise.all( this.scene.drawings.contents.map(x=> x.delete()));
-    // for (const i of this.scene.walls) {
-    // 	await i.delete();
-    // }
-    // for (const i of this.scene.regions) {
-    // 	await i.delete();
-    // }
-    // for (const i of this.scene.drawings) {
-    // 	await i.delete();
-    // }
     for (const t of this.scene.tokens) {
       if (game.itempiles && game.itempiles.API.isValidItemPile(t)) {
         await t.delete();

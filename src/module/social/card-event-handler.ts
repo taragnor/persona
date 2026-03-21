@@ -440,7 +440,7 @@ export class SocialCardEventHandler {
 		return null;
 	}
 
-	eventList() : CardData["eventList"] { 
+	eventList() : CardData["eventList"] {
 		const cardData = this.cardData;
 		const situation = {
 			...cardData.situation,

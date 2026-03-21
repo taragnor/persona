@@ -14,588 +14,588 @@ import {TensionPool} from "./tension-pool.js";
 
 export class RandomEncounter {
 
-	static encounterChoices = [
-		"fight",
-		"retreat",
-		"sneak",
-		"ambush",
-	] as const;
+  static encounterChoices = [
+    "fight",
+    "retreat",
+    "sneak",
+    "ambush",
+  ] as const;
 
-	static async presenceCheck(encounterType: PresenceRollData["encounterType"], region ?: PersonaRegion, situation ?: Situation, modifier = 0) : Promise<PresenceCheckResult> {
-		if (!region) {
-			region = Metaverse.getRegion();
-			if (!region) {return null;}
-		}
-		if  (!situation) {
-			situation = {
-				trigger: "on-presence-check",
-				triggeringRegionId : region.id,
-				triggeringUser: game.user,
-			};
-		}
-		const sModifiers = new ModifierList(
-			PersonaDB.getGlobalModifiers()
-			.concat(region.allRoomEffects)
-			.flatMap(x=> x.getModifier("shadowPresence", null))
-		);
-		const sPresence = region.shadowPresence > 0 ? region.shadowPresence + sModifiers.total(situation) : 0;
-		if (sPresence > 0) {
-			if( await this.#enemyPresenceRoll(encounterType, sPresence + modifier, region)) {
-				return "shadows";
-			}
-		}
-		return null;
-	}
+  static async presenceCheck(encounterType: PresenceRollData["encounterType"], region ?: PersonaRegion, situation ?: Situation, modifier = 0) : Promise<PresenceCheckResult> {
+    if (!region) {
+      region = Metaverse.getRegion();
+      if (!region) {return null;}
+    }
+    if  (!situation) {
+      situation = {
+        trigger: "on-presence-check",
+        triggeringRegionId : region.id,
+        triggeringUser: game.user,
+      };
+    }
+    const sModifiers = new ModifierList(
+      PersonaDB.getGlobalModifiers()
+      .concat(region.allRoomEffects)
+      .flatMap(x=> x.getModifier("shadowPresence", null))
+    );
+    const sPresence = region.shadowPresence > 0 ? region.shadowPresence + sModifiers.total(situation) : 0;
+    if (sPresence > 0) {
+      if( await this.#enemyPresenceRoll(encounterType, sPresence + modifier, region)) {
+        return "shadows";
+      }
+    }
+    return null;
+  }
 
-	static async #enemyPresenceRoll ( encounterType: PresenceRollData["encounterType"], presenceValue:number, region: PersonaRegion): Promise<boolean> {
-		return await this.#presenceRoll({
-			presenceValue,
-			region,
-			encounterType,
-			label: "Enemy Presence",
-			rollString: "1d12",
-			atkText: "Enemies Attack!",
-		});
-	}
+  static async #enemyPresenceRoll ( encounterType: PresenceRollData["encounterType"], presenceValue:number, region: PersonaRegion): Promise<boolean> {
+    return await this.#presenceRoll({
+      presenceValue,
+      region,
+      encounterType,
+      label: "Enemy Presence",
+      rollString: "1d12",
+      atkText: "Enemies Attack!",
+    });
+  }
 
-static async #presenceRoll (data: PresenceRollData) : Promise<boolean> {
-	const roll = new Roll(data.rollString);
-	await roll.roll();
-	const isEncounter = roll.total <= data.presenceValue;
-	let html = `<h2> ${data.label} (${data.region.name})</h2>`;
-	html += `<div> Roll vs ${data.label} ${data.presenceValue}: ${roll.total} </div>`;
-	const result = isEncounter ? data.atkText ?? `Danger`: data.safeText ?? `Safe`;
-	html += `<div class="action-result">${result}</div>`;
-await ChatMessage.create({
-	speaker: {
-		alias: data.label
-	},
-	content: html,
-	rolls: [roll],
-	style: CONST.CHAT_MESSAGE_STYLES.OOC,
-});
-return roll.total <= data.presenceValue;
-}
+  static async #presenceRoll (data: PresenceRollData) : Promise<boolean> {
+    const roll = new Roll(data.rollString);
+    await roll.roll();
+    const isEncounter = roll.total <= data.presenceValue;
+    let html = `<h2> ${data.label} (${data.region.name})</h2>`;
+    html += `<div> Roll vs ${data.label} ${data.presenceValue}: ${roll.total} </div>`;
+    const result = isEncounter ? data.atkText ?? `Danger`: data.safeText ?? `Safe`;
+    html += `<div class="action-result">${result}</div>`;
+    await ChatMessage.create({
+      speaker: {
+        alias: data.label
+      },
+      content: html,
+      rolls: [roll],
+      style: CONST.CHAT_MESSAGE_STYLES.OOC,
+    });
+    return roll.total <= data.presenceValue;
+  }
 
-static encounterChoiceList(encounterType : PresenceRollData["encounterType"]) : string {
-	let html = "";
-	html += `<br><hr><div>Will you?</div>`;
-	html += `<ul>`;
-	html += `<li> Fight (1d10, 1: Enemy Ambush, 2-5: normal, 10: PC Ambush)</li>`;
-	switch (encounterType) {
-		case "wandering":
-			html+= `
-				<li> <b>Retreat</b> to previous area (1d10, 1: +1 tension 2-6: safe) </li>
-				<li> Try to <b>sneak</b> past (d6, 1: Enemy Ambush, 2-3: +1 tension, 4-6 safe)</li>
-				<li> <b>Ambush</b> (d12, +1 metaverse turn, 1-3 no effect, 4-12 PC Ambush) </li>
-			`;
-			break;
-		case "room":
-			html+= `
-				<li> Evade (Requires Guard): Leave by any door, +1 tension unless a guard rolls 3-6 on d6. Multiple guards means more rolls.</li>
-				<li> Ambush (Requires Guard + SL ability) </li>
-				`;
-			break;
-		case "secondary":
-			break;
-		default:
-			encounterType satisfies never;
-	}
-	html+= `</ul>`;
-	return html;
+  static encounterChoiceList(encounterType : PresenceRollData["encounterType"]) : string {
+    let html = "";
+    html += `<br><hr><div>Will you?</div>`;
+    html += `<ul>`;
+    html += `<li> Fight (1d10, 1: Enemy Ambush, 2-5: normal, 10: PC Ambush)</li>`;
+    switch (encounterType) {
+      case "wandering":
+        html+= `
+        <li> <b>Retreat</b> to previous area (1d10, 1: +1 tension 2-6: safe) </li>
+        <li> Try to <b>sneak</b> past (d6, 1: Enemy Ambush, 2-3: +1 tension, 4-6 safe)</li>
+        <li> <b>Ambush</b> (d12, +1 metaverse turn, 1-3 no effect, 4-12 PC Ambush) </li>
+      `;
+        break;
+      case "room":
+        html+= `
+        <li> Retreat (Requires Guard): Leave by any door, +1 tension unless a guard rolls 3-6 on d6. Multiple guards means more rolls.</li>
+        <li> Ambush (Requires Guard + SL ability) </li>
+        `;
+        break;
+      case "secondary":
+        break;
+      default:
+        encounterType satisfies never;
+    }
+    html+= `</ul>`;
+    return html;
 
-}
+  }
 
-	static async printRandomEncounterList(encounter: Omit<Encounter, "encounterType">) {
-		const {enemies, encounterDifficulty} = encounter;
-		const speaker = ChatMessage.getSpeaker({alias: "Encounter Generator"});
-		const enchtml = enemies.map( shadow =>
-			`<li class="shadow"> ${shadow.name} </div>`
-		).join("");
-		const text = `
-		<h2> ${encounterDifficulty} Encounter </h2>
-		<ul class="enc-list">
-		${enchtml}
-		</ul>
-		`;
-		const messageData = {
-			speaker: speaker,
-			content: text,
-			whisper: game.users.filter(usr => usr.isGM),
-			style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
-		};
-		await ChatMessage.create(messageData, {});
-	}
+  static async printRandomEncounterList(encounter: Omit<Encounter, "encounterType">) {
+    const {enemies, encounterDifficulty} = encounter;
+    const speaker = ChatMessage.getSpeaker({alias: "Encounter Generator"});
+    const enchtml = enemies.map( shadow =>
+      `<li class="shadow"> ${shadow.name} </div>`
+    ).join("");
+    const text = `
+    <h2> ${encounterDifficulty} Encounter </h2>
+    <ul class="enc-list">
+    ${enchtml}
+    </ul>
+    `;
+    const messageData = {
+      speaker: speaker,
+      content: text,
+      whisper: game.users.filter(usr => usr.isGM),
+      style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
+    };
+    await ChatMessage.create(messageData, {});
+  }
 
-	static getEncounterList(sceneOrRegion: PersonaScene | PersonaRegion, shadowType ?: Shadow["system"]["creatureType"]): Shadow[] {
-		return sceneOrRegion.encounterList()
-			.filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true);
-	}
+  static getEncounterList(sceneOrRegion: PersonaScene | PersonaRegion, shadowType ?: Shadow["system"]["creatureType"]): Shadow[] {
+    return sceneOrRegion.encounterList()
+      .filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true);
+  }
 
-/** queries player to determine if they will ambush, fight , etc.*/
-private static async queryPlayerResponse(encounter: Encounter, validChoices: typeof this.encounterChoices[number][]) : Promise<EncounterAction> {
-	await this.PlayerNotifyChatMsg(encounter);
-	return await this.takePlayerVote(validChoices, encounter.encounterDifficulty);
-}
+  /** queries player to determine if they will ambush, fight , etc.*/
+  private static async queryPlayerResponse(encounter: Encounter, validChoices: typeof this.encounterChoices[number][]) : Promise<EncounterAction> {
+    await this.PlayerNotifyChatMsg(encounter);
+    return await this.takePlayerVote(validChoices, encounter.encounterDifficulty);
+  }
 
-static async takePlayerVote( validChoices: typeof this.encounterChoices[number][], difficulty ?: string) : Promise<EncounterAction> {
-	if (!game.users.contents.some( x=> x.active && !x.isGM)) {
-		return {
-			action: "fight"
-		};
-	}
-	try {
-		const dialog = new VotingDialog(validChoices, `${difficulty ?? "???"} Encounter`);
-		const action = await dialog.majorityVote();
-		return {
-			action,
-		};
-	} catch (e) {
-		if (e instanceof Error) {
-			PersonaError.softFail("Error with Playuer Vote", e);
-		}
-		return {
-			action : "fight"
-		};
-	}
-}
+  static async takePlayerVote( validChoices: typeof this.encounterChoices[number][], difficulty ?: string) : Promise<EncounterAction> {
+    if (!game.users.contents.some( x=> x.active && !x.isGM)) {
+      return {
+        action: "fight"
+      };
+    }
+    try {
+      const dialog = new VotingDialog(validChoices, `${difficulty ?? "???"} Encounter`);
+      const action = await dialog.majorityVote();
+      return {
+        action,
+      };
+    } catch (e) {
+      if (e instanceof Error) {
+        PersonaError.softFail("Error with Playuer Vote", e);
+      }
+      return {
+        action : "fight"
+      };
+    }
+  }
 
-static avgPartyLevel () {
-	const pcs = game.scenes.active.tokens.filter( (x : TokenDocument<PersonaActor>)=>
-		x.actor != undefined && (x.actor.isRealPC() || x.actor.isNPCAlly()));
-	return Math.round(pcs.reduce( (acc,x : TokenDocument<PersonaActor>)=> acc + (x.actor?.level ?? 0), 0) / pcs.length);
+  static avgPartyLevel () {
+    const pcs = game.scenes.active.tokens.filter( (x : TokenDocument<PersonaActor>)=>
+      x.actor != undefined && (x.actor.isRealPC() || x.actor.isNPCAlly()));
+    return Math.round(pcs.reduce( (acc,x : TokenDocument<PersonaActor>)=> acc + (x.actor?.level ?? 0), 0) / pcs.length);
 
-}
+  }
 
-static avgLevelOfEncounter (encounter: Encounter) {
-	const total = encounter.enemies.reduce( (acc, sh) => acc + sh.level, 0);
-	return Math.round(total / encounter.enemies.length);
-}
+  static avgLevelOfEncounter (encounter: Encounter) {
+    const total = encounter.enemies.reduce( (acc, sh) => acc + sh.level, 0);
+    return Math.round(total / encounter.enemies.length);
+  }
 
-static getLevelDiffString(encounter: Encounter) : string {
-	const levelDiff = this.avgPartyLevel() - this.avgLevelOfEncounter(encounter);
-	switch (true) {
-		case (levelDiff >= 8):  return "Very Easy";
-		case (levelDiff >= 4): return "Easy";
-		case (levelDiff >= 0): return "Moderate";
-		case (levelDiff >= -4): return "Strong";
-		case (levelDiff >= -8): return "Very Strong";
-		default: return "Overwhelming";
-	}
-}
+  static getLevelDiffString(encounter: Encounter) : string {
+    const levelDiff = this.avgPartyLevel() - this.avgLevelOfEncounter(encounter);
+    switch (true) {
+      case (levelDiff >= 8):  return "Very Easy";
+      case (levelDiff >= 4): return "Easy";
+      case (levelDiff >= 0): return "Moderate";
+      case (levelDiff >= -4): return "Strong";
+      case (levelDiff >= -8): return "Very Strong";
+      default: return "Overwhelming";
+    }
+  }
 
-static async PlayerNotifyChatMsg(encounter : Encounter)  {
-	let html = `
-	<div>
-	${encounter.encounterDifficulty} Encounter
-	</div>`;
-	html += `<div>
-	Relative Strength Comparison: ${this.getLevelDiffString(encounter)}
-	</div> `;
-	html += this.encounterChoiceList(encounter.encounterType);
-	await ChatMessage.create({
-		speaker: {
-			alias: "Engagement Options",
-		},
-		content: html,
-		style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-	});
-}
+  static async PlayerNotifyChatMsg(encounter : Encounter)  {
+    let html = `
+  <div>
+  ${encounter.encounterDifficulty} Encounter
+  </div>`;
+    html += `<div>
+  Relative Strength Comparison: ${this.getLevelDiffString(encounter)}
+  </div> `;
+    html += this.encounterChoiceList(encounter.encounterType);
+    await ChatMessage.create({
+      speaker: {
+        alias: "Engagement Options",
+      },
+      content: html,
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+    });
+  }
 
-	static async encounterProcess(battleType: PresenceRollData["encounterType"], shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}) {
-		const encounter = {
-			...RandomEncounter.generateEncounter(shadowType, options),
-			encounterType : battleType,
-		};
-		await RandomEncounter.printRandomEncounterList(encounter);
-		const validChoices = VALID_CHOICES[battleType];
-		const choice = await RandomEncounter.queryPlayerResponse(encounter, validChoices);
-		return await this.processPlayerPreCombatAction(choice.action, encounter);
-	}
+  static async encounterProcess(battleType: PresenceRollData["encounterType"], shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}) {
+    const encounter = {
+      ...RandomEncounter.generateEncounter(shadowType, options),
+      encounterType : battleType,
+    };
+    await RandomEncounter.printRandomEncounterList(encounter);
+    const validChoices = VALID_CHOICES[battleType];
+    const choice = await RandomEncounter.queryPlayerResponse(encounter, validChoices);
+    return await this.processPlayerPreCombatAction(choice.action, encounter);
+  }
 
-static async processPlayerPreCombatAction(action: typeof this.encounterChoices[number], encounter: Encounter) {
-	switch (action) {
-		case "fight":
-			return await this.processFight(encounter);
-		case "ambush":
-			return await this.processAmbush(encounter);
-		case "retreat":
-			return await this.processEvade(encounter);
-		case "sneak":
-			return await this.processSneak(encounter);
-		default:
-			action satisfies never;
-			PersonaError.softFail(`Unknown Pre Combat choice ${action as string}`);
-	}
-}
+  static async processPlayerPreCombatAction(action: typeof this.encounterChoices[number], encounter: Encounter) {
+    switch (action) {
+      case "fight":
+        return await this.processFight(encounter);
+      case "ambush":
+        return await this.processAmbush(encounter);
+      case "retreat":
+        return await this.processEvade(encounter);
+      case "sneak":
+        return await this.processSneak(encounter);
+      default:
+        action satisfies never;
+        PersonaError.softFail(`Unknown Pre Combat choice ${action as string}`);
+    }
+  }
 
-	static async processEvade(_encounter: Encounter) {
-		const roll = await new Roll("1d10").evaluate();
-		let html = `<div>Evade</div>
-		<div> Roll : ${roll.total} </div>`;
-		if (roll.total == 1) {
-			void TensionPool._instance.inc();
-			html += `<div> Tension +1</div>`;
-		} else {
-			html += "Success (no consequences)";
-		}
-		await ChatMessage.create({
-			speaker: {
-				alias: "Player Decision"
-			},
-			content: html,
-			rolls: [roll],
-			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-		});
-	}
+  static async processEvade(_encounter: Encounter) {
+    const roll = await new Roll("1d10").evaluate();
+    let html = `<div>Evade</div>
+    <div> Roll : ${roll.total} </div>`;
+    if (roll.total == 1) {
+      void TensionPool._instance.inc();
+      html += `<div> Tension +1</div>`;
+    } else {
+      html += "Success (no consequences)";
+    }
+    await ChatMessage.create({
+      speaker: {
+        alias: "Player Decision"
+      },
+      content: html,
+      rolls: [roll],
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+    });
+  }
 
-	static async processFight(encounter: Encounter) {
-	// html += `<li> Fight (1d10, 1: Enemy Ambush, 2-5: normal, 10: PC Ambush)</li>`;
-		const roll = await new Roll("1d10").evaluate();
-		let html = `<div>Fight!</div>`;
-		const combatOptions: CombatSetupOptions = {};
-		switch (roll.total) {
-			case 1:
-				html += `<div> Enemy Ambush!</div>`;
-				combatOptions.advantage = "shadows";
-				break;
-			case 10:
-				html += `<div> PC Ambush!</div>`;
-				combatOptions.advantage = "PCs";
-				break;
-		}
-		await ChatMessage.create({
-			speaker: {
-				alias: "Player Decision"
-			},
-			content: html,
-			rolls: [roll],
-			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-		});
-		await CombatScene.create(encounter, combatOptions);
-	}
+  static async processFight(encounter: Encounter) {
+    // html += `<li> Fight (1d10, 1: Enemy Ambush, 2-5: normal, 10: PC Ambush)</li>`;
+    const roll = await new Roll("1d10").evaluate();
+    let html = `<div>Fight!</div>`;
+    const combatOptions: CombatSetupOptions = {};
+    switch (roll.total) {
+      case 1:
+        html += `<div> Enemy Ambush!</div>`;
+        combatOptions.advantage = "shadows";
+        break;
+      case 10:
+        html += `<div> PC Ambush!</div>`;
+        combatOptions.advantage = "PCs";
+        break;
+    }
+    await ChatMessage.create({
+      speaker: {
+        alias: "Player Decision"
+      },
+      content: html,
+      rolls: [roll],
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+    });
+    await CombatScene.create(encounter, combatOptions);
+  }
 
-static async processSneak(encounter: Encounter) {
-	const roll = await new Roll("1d6").evaluate();
-	const total = roll.total;
-	let html = `<div>Sneak</div>
-		<div> Roll : ${total} </div>`;
-	switch (true) {
-		case total == 1 : {
-			html += `<div> Failure (enemy advantage)!</div>`;
-			await CombatScene.create(encounter);
-			break;
-		}
-		case total >= 2 && total <= 3: {
-			void TensionPool._instance.inc();
-			html += `<div> Tension +1</div>`;
-			break;
-		}
-		default: {
-			html += `<div> Sneak Successful!</div>`;
-		}
-	}
-	await ChatMessage.create({
-		speaker: {
-			alias: "Player Decision"
-		},
-		content: html,
-		rolls: [roll],
-		style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-	});
-}
+  static async processSneak(encounter: Encounter) {
+    const roll = await new Roll("1d6").evaluate();
+    const total = roll.total;
+    let html = `<div>Sneak</div>
+    <div> Roll : ${total} </div>`;
+    switch (true) {
+      case total == 1 : {
+        html += `<div> Failure (enemy advantage)!</div>`;
+        await CombatScene.create(encounter);
+        break;
+      }
+      case total >= 2 && total <= 3: {
+        void TensionPool._instance.inc();
+        html += `<div> Tension +1</div>`;
+        break;
+      }
+      default: {
+        html += `<div> Sneak Successful!</div>`;
+      }
+    }
+    await ChatMessage.create({
+      speaker: {
+        alias: "Player Decision"
+      },
+      content: html,
+      rolls: [roll],
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+    });
+  }
 
-static async processAmbush(encounter: Encounter) {
-	// <li> <b>Ambush</b> (d12, +1 metaverse turn, 1-3 standard encounter, 4-12 PC Ambush) </li>
-	const roll = await new Roll("1d8").evaluate();
-	const total = roll.total;
-	let html = `<div>Ambush</div>
-		<div> +1 metaverse turn </div>
-		<div> Roll : ${total} </div>`;
-	await StepsClock.instance.inc();
-	const combatOptions: CombatSetupOptions = {};
-	switch (true) {
-		case total < 3 : {
-			html += `<div> standard Encounter</div>`;
-			break;
-		}
-		default: {
-			html += `<div> Player Advantage!</div>`;
-			combatOptions.advantage = "PCs";
-		}
-	}
-	await ChatMessage.create({
-		speaker: {
-			alias: "Player Decision"
-		},
-		content: html,
-		rolls: [roll],
-		style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-	});
-	await CombatScene.create(encounter, combatOptions);
-}
+  static async processAmbush(encounter: Encounter) {
+    // <li> <b>Ambush</b> (d12, +1 metaverse turn, 1-3 standard encounter, 4-12 PC Ambush) </li>
+    const roll = await new Roll("1d8").evaluate();
+    const total = roll.total;
+    let html = `<div>Ambush</div>
+    <div> +1 metaverse turn </div>
+    <div> Roll : ${total} </div>`;
+    await StepsClock.instance.inc();
+    const combatOptions: CombatSetupOptions = {};
+    switch (true) {
+      case total < 3 : {
+        html += `<div> standard Encounter</div>`;
+        break;
+      }
+      default: {
+        html += `<div> Player Advantage!</div>`;
+        combatOptions.advantage = "PCs";
+      }
+    }
+    await ChatMessage.create({
+      speaker: {
+        alias: "Player Decision"
+      },
+      content: html,
+      rolls: [roll],
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+    });
+    await CombatScene.create(encounter, combatOptions);
+  }
 
 
-	static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}): Omit<Encounter, "encounterType"> {
-		const region = Metaverse.getRegion();
-		const scene =  region ?  region.parent : game.scenes.current as PersonaScene;
-		const regionOrScene = region ? region : scene;
-		const baseList  = this.getEncounterList(regionOrScene); //allow for mixed daemon/shadow encounters
-		let enemyType : Shadow["system"]["creatureType"] | undefined = undefined;
-		const encounter : Shadow[] = [];
-		let bailout = 0;
-		let encounterList = baseList;
-		let encounterSizeRemaining: number;
-		if (baseList.length == 0) {
-			PersonaError.softFail(`Base Encounter List is empty for ${scene.name} ${shadowType ? "(" + shadowType+ ")"  :""}`);
-			return {
-				enemies: [],
-				encounterDifficulty: "error",
-			};
-		}
-		let etype : EncounterDifficulty;
-		do {
-			etype = options.encounterType ? options.encounterType : this.#getEncounterType(options.frequencies ?? {});
-			const size = this.#getEncounterSize(etype) + (options.sizeMod ?? 0);
-			encounterSizeRemaining = size;
-			encounterList = this.#filterByEncounterType(baseList, etype);
-		} while (encounterList.length <= 0);
+  static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}): Omit<Encounter, "encounterType"> {
+    const region = Metaverse.getRegion();
+    const scene =  region ?  region.parent : game.scenes.current as PersonaScene;
+    const regionOrScene = region ? region : scene;
+    const baseList  = this.getEncounterList(regionOrScene); //allow for mixed daemon/shadow encounters
+    let enemyType : Shadow["system"]["creatureType"] | undefined = undefined;
+    const encounter : Shadow[] = [];
+    let bailout = 0;
+    let encounterList = baseList;
+    let encounterSizeRemaining: number;
+    if (baseList.length == 0) {
+      PersonaError.softFail(`Base Encounter List is empty for ${scene.name} ${shadowType ? "(" + shadowType+ ")"  :""}`);
+      return {
+        enemies: [],
+        encounterDifficulty: "error",
+      };
+    }
+    let etype : EncounterDifficulty;
+    do {
+      etype = options.encounterType ? options.encounterType : this.#getEncounterType(options.frequencies ?? {});
+      const size = this.#getEncounterSize(etype) + (options.sizeMod ?? 0);
+      encounterSizeRemaining = size;
+      encounterList = this.#filterByEncounterType(baseList, etype);
+    } while (encounterList.length <= 0);
 
-		console.log(`Encounter list : ${encounterList.map( x=> x.name).join(", ")}`);
-		let weightedList = this.weightedEncounterList(encounterList, scene);
-		const minSize = encounterList.reduce ( (a, x) => Math.min(a, x.encounterSizeValue()), 10);
-		while (encounterSizeRemaining > 0) {
-			if (bailout > 500) {
-				PersonaError.softFail(`Had to bail out, couldn't find match for ${scene.name}`);
-				return {
-					enemies: encounter,
-					encounterDifficulty: "error"
-				};
-			}
-			if (bailout == 50) {
-				encounterList = encounterList
-					.filter ( x=>
-						x.encounterSizeValue() <= encounterSizeRemaining
-						&& x.system.creatureType == enemyType
-					);
-				if (encounterList.length == 0) {
-					console.log(`Encounter size remianing: ${encounterSizeRemaining} ${enemyType}`);
-					// PersonaError.softFail(`Error on encounter size value ${encounterSizeRemaining} for ${enemyType}`);
-					return {
-						enemies: encounter,
-						encounterDifficulty: etype
-					};
-				}
-				weightedList = this.weightedEncounterList(encounterList, scene);
-			}
-			if (bailout == 100) {
-				ui.notifications.warn("Over 100 fail attempts getting random encounter");
-				Debug(`Encounter Size remianing: ${encounterSizeRemaining}, enemyType: ${enemyType}, options: ${etype},\n Foes: ${encounter.map( x=> x.name).join(", ")}, minSize: ${minSize}`);
-				Debug(weightedList);
-				Debug(encounterList);
-			}
-			const pick1 = weightedChoice(weightedList);
-			const pick2 = weightedChoice(weightedList);
-			const pick  = this.#choosePick(pick1, pick2, encounter);
-			if (!pick) {
-				continue;
-			}
-			if (enemyType == undefined) {
-				enemyType = pick.system.creatureType;
-			}
-			if (pick.system.creatureType != enemyType) {
-				bailout++; //escape hatch for if it keeps screwing up
-				continue;
-			}
-			let amt = this.getSubgroupAmt(pick);
-			if (minSize > encounterSizeRemaining) {
-				break;
-			}
-			while (amt > 0) {
-				const sizeVal = pick.encounterSizeValue();
-				if (encounterSizeRemaining < 3 && minSize >= 3) {break;} //don't swamp them with solos
-				if (sizeVal > encounterSizeRemaining) {
-					break;
-				}
+    console.log(`Encounter list : ${encounterList.map( x=> x.name).join(", ")}`);
+    let weightedList = this.weightedEncounterList(encounterList, scene);
+    const minSize = encounterList.reduce ( (a, x) => Math.min(a, x.encounterSizeValue()), 10);
+    while (encounterSizeRemaining > 0) {
+      if (bailout > 500) {
+        PersonaError.softFail(`Had to bail out, couldn't find match for ${scene.name}`);
+        return {
+          enemies: encounter,
+          encounterDifficulty: "error"
+        };
+      }
+      if (bailout == 50) {
+        encounterList = encounterList
+          .filter ( x=>
+            x.encounterSizeValue() <= encounterSizeRemaining
+            && x.system.creatureType == enemyType
+          );
+        if (encounterList.length == 0) {
+          console.log(`Encounter size remianing: ${encounterSizeRemaining} ${enemyType}`);
+          // PersonaError.softFail(`Error on encounter size value ${encounterSizeRemaining} for ${enemyType}`);
+          return {
+            enemies: encounter,
+            encounterDifficulty: etype
+          };
+        }
+        weightedList = this.weightedEncounterList(encounterList, scene);
+      }
+      if (bailout == 100) {
+        ui.notifications.warn("Over 100 fail attempts getting random encounter");
+        Debug(`Encounter Size remianing: ${encounterSizeRemaining}, enemyType: ${enemyType}, options: ${etype},\n Foes: ${encounter.map( x=> x.name).join(", ")}, minSize: ${minSize}`);
+        Debug(weightedList);
+        Debug(encounterList);
+      }
+      const pick1 = weightedChoice(weightedList);
+      const pick2 = weightedChoice(weightedList);
+      const pick  = this.#choosePick(pick1, pick2, encounter);
+      if (!pick) {
+        continue;
+      }
+      if (enemyType == undefined) {
+        enemyType = pick.system.creatureType;
+      }
+      if (pick.system.creatureType != enemyType) {
+        bailout++; //escape hatch for if it keeps screwing up
+        continue;
+      }
+      let amt = this.getSubgroupAmt(pick);
+      if (minSize > encounterSizeRemaining) {
+        break;
+      }
+      while (amt > 0) {
+        const sizeVal = pick.encounterSizeValue();
+        if (encounterSizeRemaining < 3 && minSize >= 3) {break;} //don't swamp them with solos
+        if (sizeVal > encounterSizeRemaining) {
+          break;
+        }
 
-				if (sizeVal < 0.25) {
-					console.warn(`Size value of ${pick.name} less than 0.25`);
-				}
-				encounterSizeRemaining -= sizeVal;
-				encounter.push(pick);
-				amt -= 1;
-			}
-		}
-		encounter.sort( (a,b) => a.name.localeCompare(b.name));
-		return {enemies: encounter, encounterDifficulty: etype};
-	}
+        if (sizeVal < 0.25) {
+          console.warn(`Size value of ${pick.name} less than 0.25`);
+        }
+        encounterSizeRemaining -= sizeVal;
+        encounter.push(pick);
+        amt -= 1;
+      }
+    }
+    encounter.sort( (a,b) => a.name.localeCompare(b.name));
+    return {enemies: encounter, encounterDifficulty: etype};
+  }
 
-	static #getEncounterType(frequencies: {hard ?: number, mixed ?: number, treasure ?: number}): EncounterDifficulty {
-		const {hard, mixed, treasure} = frequencies;
-		const choices = [{
-			item: "standard",
-			weight: 10,
-		}, {
-			item: "tough",
-			weight: 2 + (hard ?? 0),
-		}, {
-			item: "treasure",
-			weight: 1 + (treasure?? 0),
-		}, {
-			item: "mixed",
-			weight: 1 + (mixed ?? 0),
-		},
-		] as const;
-		const choice =  weightedChoice(choices);
-		if (choice == undefined) {
-			PersonaError.softFail("Weighted Choice returned undefined");
-			return "standard";
-		}
-		return choice;
-	}
+  static #getEncounterType(frequencies: {hard ?: number, mixed ?: number, treasure ?: number}): EncounterDifficulty {
+    const {hard, mixed, treasure} = frequencies;
+    const choices = [{
+      item: "standard",
+      weight: 10,
+    }, {
+      item: "tough",
+      weight: 2 + (hard ?? 0),
+    }, {
+      item: "treasure",
+      weight: 1 + (treasure?? 0),
+    }, {
+      item: "mixed",
+      weight: 1 + (mixed ?? 0),
+    },
+    ] as const;
+    const choice =  weightedChoice(choices);
+    if (choice == undefined) {
+      PersonaError.softFail("Weighted Choice returned undefined");
+      return "standard";
+    }
+    return choice;
+  }
 
-public static getRandomEncounterListFromDiffLevel(difficultyLevel: number, lowRange = 4, highRange = 3) {
-	const CR = difficultyLevel;
-	const shadows = PersonaDB.shadows()
-		.filter( x => x.isEligibleForRandomEncounter())
-		.filter(x=> x.level >= CR - lowRange &&  x.level<= CR + highRange)
-		.filter( x=> !x.isBossOrMiniBossType());
-	return shadows;
-}
+  public static getRandomEncounterListFromDiffLevel(difficultyLevel: number, lowRange = 4, highRange = 3) {
+    const CR = difficultyLevel;
+    const shadows = PersonaDB.shadows()
+      .filter( x => x.isEligibleForRandomEncounter())
+      .filter(x=> x.level >= CR - lowRange &&  x.level<= CR + highRange)
+      .filter( x=> !x.isBossOrMiniBossType());
+    return shadows;
+  }
 
-	static #choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encounterList: Shadow[]): Shadow | undefined {
-		if (!pick1 || !pick2) {
-			PersonaError.softFail("Couldn't get a pick from choice list");
-			return undefined;
-		}
-		if (encounterList.length <= 0) {return pick1;}
-		if (Math.random() < 0.5) {return pick1;} //favor weights less heavily
-		const p1score = encounterList
-			.reduce ( (acc, shadow) => acc + shadow.complementRating(pick1), 0);
-		const p2score = encounterList
-			.reduce ( (acc, shadow) => acc + shadow.complementRating(pick2), 0);
-		const pick = p2score < p1score ? pick1 : pick2;
-		return pick;
-	}
+  static #choosePick (pick1: Shadow | undefined, pick2: Shadow | undefined, encounterList: Shadow[]): Shadow | undefined {
+    if (!pick1 || !pick2) {
+      PersonaError.softFail("Couldn't get a pick from choice list");
+      return undefined;
+    }
+    if (encounterList.length <= 0) {return pick1;}
+    if (Math.random() < 0.5) {return pick1;} //favor weights less heavily
+    const p1score = encounterList
+      .reduce ( (acc, shadow) => acc + shadow.complementRating(pick1), 0);
+    const p2score = encounterList
+      .reduce ( (acc, shadow) => acc + shadow.complementRating(pick2), 0);
+    const pick = p2score < p1score ? pick1 : pick2;
+    return pick;
+  }
 
-static #getEncounterSize(etype: EncounterDifficulty) : number {
-	const DIE_SIZE = 10;
-	const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
-	const addon = etype == "tough" || etype == "mixed" ? 1 : 0;
-	switch (sizeRoll)  {
-		case 1:
-			return 2.5 + addon;
-		case 2:
-			return 3 + addon;
-		case 3:
-			return 3.25 + addon;
-		case 4:
-			return 3.5 + addon;
-		case 5:
-			return 4 + addon;
-		case 6:
-			return 4.25 + addon;
-		case 7:
-			return 4.5 + addon;
-		case 8: case 9:
-			return 5 + addon;
-		case 10:
-			return 5.25 +addon;
-		default:
-			if (sizeRoll > DIE_SIZE) {
-				PersonaError.softFail(`Encounter number is ${sizeRoll}`);
-			}
-			return 4 + addon;
-	}
+  static #getEncounterSize(etype: EncounterDifficulty) : number {
+    const DIE_SIZE = 10;
+    const sizeRoll = Math.floor((Math.random() * DIE_SIZE) +1);
+    const addon = etype == "tough" || etype == "mixed" ? 1 : 0;
+    switch (sizeRoll)  {
+      case 1:
+        return 2.5 + addon;
+      case 2:
+        return 3 + addon;
+      case 3:
+        return 3.25 + addon;
+      case 4:
+        return 3.5 + addon;
+      case 5:
+        return 4 + addon;
+      case 6:
+        return 4.25 + addon;
+      case 7:
+        return 4.5 + addon;
+      case 8: case 9:
+        return 5 + addon;
+      case 10:
+        return 5.25 +addon;
+      default:
+        if (sizeRoll > DIE_SIZE) {
+          PersonaError.softFail(`Encounter number is ${sizeRoll}`);
+        }
+        return 4 + addon;
+    }
 
-	}
+  }
 
-	private static getSubgroupAmt(pick: Shadow) : number {
-		switch (true) {
-			case pick.hasRole("minion"):
-				return Math.floor(Math.random() * 3 + 3);
-			case pick.hasRole("duo"): return 1;
-			case pick.hasRole("solo"): return 1;
-			case pick.hasRole("elite"): return 1;
-			case pick.hasRole(["soldier", "artillery", "tank", "brute", "assassin"]): return Math.floor(Math.random() * 3 + 1);
-			case pick.hasRole("controller"):
-			case pick.hasRole("treasure-shadow"):
-			case pick.hasRole("lurker"):
-			case pick.hasRole("support"):
-				return Math.floor(Math.random() * 2 + 1);
-			default:
-				return Math.floor(Math.random() * 5 + 1);
-		}
-	}
+  private static getSubgroupAmt(pick: Shadow) : number {
+    switch (true) {
+      case pick.hasRole("minion"):
+        return Math.floor(Math.random() * 3 + 3);
+      case pick.hasRole("duo"): return 1;
+      case pick.hasRole("solo"): return 1;
+      case pick.hasRole("elite"): return 1;
+      case pick.hasRole(["soldier", "artillery", "tank", "brute", "assassin"]): return Math.floor(Math.random() * 3 + 1);
+      case pick.hasRole("controller"):
+      case pick.hasRole("treasure-shadow"):
+      case pick.hasRole("lurker"):
+      case pick.hasRole("support"):
+        return Math.floor(Math.random() * 2 + 1);
+      default:
+        return Math.floor(Math.random() * 5 + 1);
+    }
+  }
 
-	static #filterByEncounterType(shadowList : Shadow[], etype : EncounterDifficulty) : Shadow[] {
-		switch (etype) {
-			case "standard":
-				return shadowList.filter( x=> !x.hasRole(["treasure-shadow", "duo", "solo"]));
-			case "tough":
-				return shadowList.filter( x=> x.hasRole(["duo", "solo"]));
-			case "treasure":
-				return shadowList.filter( x=> x.hasRole(["treasure-shadow"]));
-			case "mixed":
-				return shadowList;
-			case "error":
-				return [];
-			default:
-				etype satisfies never;
-				return [];
-		}
-	}
+  static #filterByEncounterType(shadowList : Shadow[], etype : EncounterDifficulty) : Shadow[] {
+    switch (etype) {
+      case "standard":
+        return shadowList.filter( x=> !x.hasRole(["treasure-shadow", "duo", "solo"]));
+      case "tough":
+        return shadowList.filter( x=> x.hasRole(["duo", "solo"]));
+      case "treasure":
+        return shadowList.filter( x=> x.hasRole(["treasure-shadow"]));
+      case "mixed":
+        return shadowList;
+      case "error":
+        return [];
+      default:
+        etype satisfies never;
+        return [];
+    }
+  }
 
-	static weightedEncounterList(arr: Shadow[], scene: PersonaScene = game.scenes.current as PersonaScene) {
-		return arr
-			.map (shadow => {
-				const encounterWeight = shadow.getEncounterWeight(scene);
-				const weight = encounterWeight;
-				return { item: shadow, weight, };
-			});
-	}
+  static weightedEncounterList(arr: Shadow[], scene: PersonaScene = game.scenes.current as PersonaScene) {
+    return arr
+      .map (shadow => {
+        const encounterWeight = shadow.getEncounterWeight(scene);
+        const weight = encounterWeight;
+        return { item: shadow, weight, };
+      });
+  }
 
-static async testVote() {
-	return await this.takePlayerVote(["fight", "retreat", "sneak", "ambush"]);
-}
+  static async testVote() {
+    return await this.takePlayerVote(["fight", "retreat", "sneak", "ambush"]);
+  }
 
-static async testPlaceToken(x: number, y: number) {
-	const pixie = game.actors.getName("Pixie");
-	if (!pixie) {throw new Error("Can't find Pixie for test");}
-	await CreateToken.create(pixie, {x, y});
-}
+  static async testPlaceToken(x: number, y: number) {
+    const pixie = game.actors.getName("Pixie");
+    if (!pixie) {throw new Error("Can't find Pixie for test");}
+    await CreateToken.create(pixie, {x, y});
+  }
 
 } // End of Class
 
 export type Encounter =  {
-	enemies: Shadow[],
-	encounterDifficulty : EncounterDifficulty,
-	encounterType: PresenceRollData["encounterType"];
+  enemies: Shadow[],
+  encounterDifficulty : EncounterDifficulty,
+  encounterType: PresenceRollData["encounterType"];
 }
 
 type EncounterDifficulty = "standard" | "tough" | "treasure" | "mixed" | "error";
 
 export interface EncounterOptions {
-	sizeMod ?: number;
-	encounterType ?: EncounterDifficulty;
-	frequencies ?: {hard: number, mixed: number, treasure: number, normal: number},
+  sizeMod ?: number;
+  encounterType ?: EncounterDifficulty;
+  frequencies ?: {hard: number, mixed: number, treasure: number, normal: number},
 }
 
 export type EncounterAction = {
-	action: "fight" | "ambush" | "retreat" | "sneak";
+  action: "fight" | "ambush" | "retreat" | "sneak";
 }
 
 const VALID_CHOICES : Record<PresenceRollData["encounterType"], typeof RandomEncounter["encounterChoices"][number][]> = {
-	room: ["fight", "retreat", "ambush"],
-	secondary: ["fight"],
-	wandering: ["fight", "retreat", "sneak", "ambush"],
+  room: ["fight", "retreat", "ambush"],
+  secondary: ["fight"],
+  wandering: ["fight", "retreat", "sneak", "ambush"],
 };
 
 //@ts-expect-error adding to global
 window.RandomEncounter = RandomEncounter;
 
 type PresenceCheckResult = null
-	| "shadows"
-	| "daemons"
-	| "any";
+  | "shadows"
+  | "daemons"
+  | "any";
 

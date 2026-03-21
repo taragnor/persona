@@ -435,7 +435,7 @@ export class SocialCardExecutor {
 					}
 				}
 				return "Choose One: <br>" +
-				[actor.perk, datePerk]
+				[link.perk, datePerk]
 				.filter ( x=> x != undefined)
 				.map( x=> `* ${x}`)
 				.join("<br>");
