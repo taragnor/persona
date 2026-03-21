@@ -13,7 +13,7 @@ import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaRoller} from "../persona-roll.js";
 import {PersonaSounds} from "../persona-sounds.js";
-import {testPreconditions} from "../preconditions.js";
+import {testPreconditions, unifiedTagList} from "../preconditions.js";
 import {shuffle, weightedChoice} from "../utility/array-tools.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {PersonaSocial} from "./persona-social.js";
@@ -94,14 +94,18 @@ export class SocialCardEventHandler {
 
 	async handleCardChoice(cardData: CardData, cardChoice: DeepNoArray<CardChoice>) {
 		const cardRoll = cardChoice.roll;
-		const rollTags = this.getCardRollTags(cardRoll);
+		// const rollTagsBase = this.getCardRollTags(cardRoll);
+    const rollTagsBase = cardData.extraCardTags.slice();
 		if (cardData.currentEvent) {
-			rollTags.push(...cardData.currentEvent.eventTags);
+			rollTagsBase.push(...cardData.currentEvent.eventTags);
 		}
-		rollTags.push(...cardData.extraCardTags);
+		// rollTagsBase.push(...cardData.extraCardTags);
 		if (!cardData.currentEvent) {
 			PersonaError.softFail(`No current event for Card ${cardData.card.name}`);
 		}
+    const rollTags = rollTagsBase
+			.map (t => PersonaItem.resolveTag(t))
+    .concat (this.getCardRollTags(cardRoll));
 		const effectList = ConditionalEffectManager.getEffects(cardChoice?.postEffects?.effects ?? [], null, null);
 		if (cardChoice.resourceCost > 0) {
 			await cardData.actor.spendMoney(Math.abs(cardChoice.resourceCost ?? 0));
@@ -350,7 +354,14 @@ export class SocialCardEventHandler {
 			... cardData.situation,
 			rollTags,
 		};
-		return modifiers.total(situation);
+    const total = modifiers.total(situation);
+    if (total != 0) {
+      console.log(modifiers.list(situation));
+      const rollTagsPrintable = rollTags
+      .map( t=> t instanceof PersonaItem ? `${t.name} (Tag)` : t);
+      console.log(`RollTags: ${rollTagsPrintable.join(" ,")}`);
+    }
+		return total;
 	}
 
 	private getCardRollDCModifiers(cardData: CardData, cardRoll: CardRoll, rollTags : (RollTag | CardTag | Tag)[]) : ModifierList {
@@ -367,15 +378,16 @@ export class SocialCardEventHandler {
 		return modifiers;
 	}
 
-	private getCardModifiers(cardData: CardData, rollTags: (RollTag | CardTag | Tag)[] ) : ModifierList {
+	private getCardModifiers(cardData: CardData, baseRollTags: (RollTag | CardTag | Tag)[] ) : ModifierList {
 		const card = cardData.card;
 		const effects : SourcedConditionalEffect[] = [];
 		const globalMods = ConditionalEffectManager.getEffects(card.system.globalModifiers, null, null);
 		effects.push(...globalMods);
+    const rollTags = unifiedTagList(baseRollTags); 
 		const universal = PersonaDB.getGlobalModifiers().flatMap(x => x.getEffects(null));
 		effects.push(...universal);
 		if (cardData.activity instanceof PersonaActor) {
-			const link =cardData.activity;
+			const link = cardData.activity;
 			if (!rollTags.includes("on-cameo") && !rollTags.includes("on-other") && link instanceof PersonaActor) {
 				effects.push(...link.socialEffects());
 			}
@@ -558,16 +570,16 @@ export class SocialCardEventHandler {
 		}
 	}
 
-	private getRollTags(cardData: CardData, cardChoice: SocialCard["system"]["events"][number]["choices"][number]) : (RollTag | CardTag | Tag)[] {
-		const cardRoll = cardChoice.roll;
-		const rollTags = this.getCardRollTags(cardRoll);
-		rollTags.pushUnique(...cardData.extraCardTags);
-		rollTags.pushUnique(...cardData.card.cardTags);
-		if (cardData.currentEvent) {
-			rollTags.pushUnique(	...cardData.currentEvent.eventTags);
-		}
-		return rollTags.filter ( x=> x);
-	}
+  private getRollTags(cardData: CardData, cardChoice: SocialCard["system"]["events"][number]["choices"][number]) : (RollTag | CardTag | Tag)[] {
+    const cardRoll = cardChoice.roll;
+    const rollTags = this.getCardRollTags(cardRoll);
+    rollTags.pushUnique(...cardData.extraCardTags);
+    rollTags.pushUnique(...cardData.card.cardTags);
+    if (cardData.currentEvent) {
+      rollTags.pushUnique(	...cardData.currentEvent.eventTags);
+    }
+    return rollTags.filter ( x=> x);
+  }
 
 	async #onCardChoice(_cardData: CardData , _cardRoll: CardChoice["roll"], _rollTags: (RollTag | CardTag | Tag)[]) {
 

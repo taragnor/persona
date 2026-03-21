@@ -85,6 +85,7 @@ export class Metaverse {
       }
     }
   }
+
   static async enterMetaverse() {
     if (!game.user.isGM) {return;}
     (game.actors as Collection<PersonaActor>)

@@ -579,13 +579,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       .flatMap( tag => tag.getEffects(user));
   }
 
-  static resolveTag<T extends (string | Tag | Tag["id"])>(tag: string | Tag) : Tag | Exclude<T, Tag>  {
-    if (tag instanceof PersonaItem) {return tag;}
+  static resolveTag<const T extends (string | Tag | Tag["id"])>(tag: T) : Tag | Exclude<T, Tag | Tag["id"]>  {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    if (tag instanceof PersonaItem) {return tag as Tag;}
     const tagGetTest = PersonaDB.allTags().get(tag as Tag["id"]);
     if (tagGetTest) {return tagGetTest;}
     const linkTagTest = PersonaDB.allTagLinks().get(tag);
     if (linkTagTest) {return linkTagTest;}
-    return tag as Exclude<T, Tag>;
+    return tag as Exclude<T, Tag | Tag["id"]>;
   }
 
   tagListLocalized(this: Weapon | UsableAndCard | InvItem  , user: null  | ValidAttackers) : string {
@@ -667,7 +668,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       ];
       const tags = baseList
         .filter( tag=> tag)
-        .map(tag => PersonaItem.resolveTag<CardTag| RollTag>(tag));
+        .map(tag => PersonaItem.resolveTag(tag));
       return tags;
     }
     return [];
@@ -806,7 +807,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         }
         const subtype = this.system.subtype;
         list.pushUnique(subtype);
-        return list.map ( t=> PersonaItem.resolveTag<EquipmentTag | PowerTag>(t));
+        return list.map ( t=> PersonaItem.resolveTag(t));
       }
       case 'item': {
         const list= this.system.itemTags.slice();
@@ -829,7 +830,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
           default:
             subtype satisfies never;
         }
-        return list.map( t=> PersonaItem.resolveTag<EquipmentTag>(t));
+        return list.map( t=> PersonaItem.resolveTag(t));
       }
       case 'weapon': {
         const list = this.system.itemTags.slice();
@@ -838,7 +839,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
           list.pushUnique(this.system.dmg_type as any);
         }
         list.pushUnique(itype);
-        return list.map( t=> PersonaItem.resolveTag<EquipmentTag>(t));
+        return list.map( t=> PersonaItem.resolveTag(t));
       }
       case 'skillCard': {
         return [
@@ -853,7 +854,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         } else {
           list.pushUnique('passive');
         }
-        return list.map( t=> PersonaItem.resolveTag<PowerTag>(t as string));
+        return list.map( t=> PersonaItem.resolveTag(t));
       }
       default:
         itype satisfies never;
@@ -908,7 +909,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const innateTags : (PowerTag | EquipmentTag) [] = this.system.tags.map( x=> PersonaItem.resolveTag(x));
     const resolved= list.map ( x=> PersonaItem.resolveTag(x));
     resolved.pushUnique(...innateTags);
-    return resolved as (PowerTag | EquipmentTag)[];
+    return resolved;
   }
 
   // getting weird warning if made private saying its never used
@@ -953,7 +954,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       }
     }
     const resolved= list.map ( x=> PersonaItem.resolveTag(x));
-    return resolved as (PowerTag | EquipmentTag)[];
+    return resolved;
   }
 
   get amount() : number {
@@ -1344,10 +1345,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   get detailedName() : string {
     switch (this.system.type) {
-      case "power":
+      case "power": {
         const rarity = localize(PROBABILITIES_POWER_RARITY[this.system.rarity]);
         const slot = localize(SLOTTYPES[ this.system.slot]);
         return `${this.name} (${rarity} ${slot})`;
+      }
       default: return this.name;
     }
   }

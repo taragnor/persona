@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { damage, damageNew, effects, powerCost, powerOnlyUsableProps, powerSpecific, triEffects, UsablePowerProps } from "./power-dm.js";
 import { CONSUMABLE_SUBTYPE_LIST } from "../../config/equip-slots.js";
-import { ROLL_TAGS_AND_CARD_TAGS } from "../../config/roll-tags.js";
+import { ROLL_TAGS_AND_CARD_TAGS, RollTag } from "../../config/roll-tags.js";
 import { UNIVERSAL_MODIFIERS_TYPE_LIST } from "./universal-modifiers-types.js";
 import { FREQUENCY, frequencyConvert } from "../../config/frequency.js";
 import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
@@ -26,6 +26,7 @@ import {PersonaError} from "../persona-error.js";
 import {CardEventSheet} from "../item/sheets/card-event-sheet.js";
 import {SocialCardEventHandler} from "../social/card-event-handler.js";
 import {ConditionalEffectManager} from "../conditional-effect-manager.js";
+import {CardTag} from "../../config/card-tags.js";
 
 function itemBase() {
 	return {
@@ -283,7 +284,7 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 		const ret = {
 			cardType: new txt({initial: "social", choices: SOCIAL_CARD_TYPES_LIST}),
 			//for social cards
-			cardTags: new arr( new txt()),
+			cardTags: new arr( new txt<Item["id"] | CardTag | RollTag>()),
 			frequency: new num({initial: 1, integer: false}),
 			announceWhenAvailable: new bool({initial : false}),
 			qualifiers: new arr( new obj<{

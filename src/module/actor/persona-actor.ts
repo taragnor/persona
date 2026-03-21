@@ -42,7 +42,7 @@ import { StatusEffectId } from "../../config/status-effects.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { SetFlagEffect, StatusEffect } from "../../config/consequence-types.js";
 import { ModifierList } from "../combat/modifier-list.js";
-import { ModifierContainer } from "../item/persona-item.js";
+import { GetEffectsOptions, ModifierContainer } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
 import { ACTORMODELS } from "../datamodel/actor-types.js";
 import { PersonaItem } from "../item/persona-item.js";
@@ -3397,10 +3397,12 @@ socialEffects(this: SocialLink) : readonly SourcedConditionalEffect[] {
 	// weird bug where sometimes the this isn't set properly
 	const tags= this.tagList
 		.filter (tag => tag instanceof PersonaItem)
-		.flatMap (tag => tag.getEffects(this));
+		.flatMap (tag => {
+      return tag.getEffects(this);
+    });
 	return [
 		...tags,
-		...ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this )
+		...ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this ),
 	];
 }
 

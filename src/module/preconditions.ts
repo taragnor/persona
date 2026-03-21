@@ -764,6 +764,7 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
 			}
 			const extraTags = "addedTags" in situation ? situation.addedTags ?? [] : [];
 			const powerTags = power.tagList(user).concat(extraTags);
+      const tagList = unifiedTagList(powerTags);
 			if (condition.powerTag == undefined) {
 				//weird Sachi Error
 				const source = condition.source;
@@ -774,8 +775,8 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
 				}
 				return undefined;
 			}
-			const tagIds = powerTags.flatMap( x=> typeof x == "string" ? [x] : [x.id, x.system.linkedInternalTag]);
-			return multiCheckContains(condition.powerTag, tagIds);
+			// const tagIds = powerTags.flatMap( x=> typeof x == "string" ? [x] : [x.id, x.system.linkedInternalTag]);
+			return multiCheckContains(condition.powerTag, tagList);
 		}
 		case "actor": {
 			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
@@ -783,15 +784,18 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
 			return multiCheckTest(condition.creatureTag, x => target.hasCreatureTag(x));
 		}
 		case "roll": {
-			const rollTags = (situation.rollTags ?? [])
-			.flatMap (tag => typeof tag == "string"? [tag] : [tag.id, tag.system.linkedInternalTag]);
+      const rollTags = unifiedTagList(situation.rollTags);
+			// const rollTags = (situation.rollTags ?? [])
+			// .flatMap (tag => typeof tag == "string"? [tag] : [tag.id, tag.system.linkedInternalTag]);
 			return multiCheckContains(condition.rollTag, rollTags);
 		}
 		case "weapon":{
 			const target = getSubjectActors(condition, situation, "conditionTarget")[0];
 			if (!target || !target.weapon || target.isNPC()) {return undefined;}
 			const tagCheck = condition.rollTag;
-			const tagIds = target.weapon.tagList(target).flatMap( x=> typeof x == "string" ? [x] : [x.id, x.system.linkedInternalTag]);
+      const tagIds = unifiedTagList(target.weapon.tagList(target));
+      // const tagIds = unifiedTagList(baseTL);
+			// const tagIds = target.weapon.tagList(target).flatMap( x=> typeof x == "string" ? [x] : [x.id, x.system.linkedInternalTag]);
 			return multiCheckContains(tagCheck, tagIds);
 		}
 		default:  {
@@ -1343,6 +1347,12 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
 
 }
 
+export function unifiedTagList<T extends string>(tagList?: readonly (Tag | T)[]) : string[]{
+  if (tagList == undefined) {return [];}
+  return tagList.flatMap (tag => typeof tag == "string"? [tag] : [tag.id, tag.system.linkedInternalTag]);
+
+}
+
 
 function resolveSocialAvailabilityCheck(condition: SourcedPrecondition & {type: "boolean", boolComparisonTarget: "social-availability" }, situation: Situation) :U<boolean>{
 	if (!condition.conditionTarget) {
@@ -1389,3 +1399,5 @@ function resolveSocialAvailabilityCheck(condition: SourcedPrecondition & {type: 
 const PersonaCache : WeakMap<Situation, PersonaData>= new WeakMap();
 
 type PersonaData = Record<string, U<Persona[]>>;
+
+
