@@ -355,8 +355,8 @@ export class SocialCardEventHandler {
 			rollTags,
 		};
     const total = modifiers.total(situation);
-    if (total != 0) {
-      console.log(modifiers.list(situation));
+    if (total != 0 && PersonaSettings.debugMode()) {
+      // console.log(modifiers.list(situation));
       const rollTagsPrintable = rollTags
       .map( t=> t instanceof PersonaItem ? `${t.name} (Tag)` : t);
       console.log(`RollTags: ${rollTagsPrintable.join(" ,")}`);
