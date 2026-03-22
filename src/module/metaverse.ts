@@ -32,6 +32,7 @@ export class Metaverse {
 	static lastCrunch : number = 0;
 
   static async generateMementos(lvl : number, squares ?: number, stepDebug =false) {
+    if (!game.user.isGM) {return;}
     await PersonaDB.waitUntilLoaded();
     if (lvl < 0) {
       return;
@@ -69,11 +70,15 @@ export class Metaverse {
   }
 
   static async randomizeMementos (lvl?: number) {
+    if (!game.user.isGM) {return;}
     if (!(await HTMLTools.confirmBox("reset Mementos?", "Reset Mementos dungeon?"))) {
       return;
     }
     if (lvl == undefined) {
       lvl = await HTMLTools.getNumber("Level of Dungeon to set", 1);
+    }
+    if (lvl < 1) {
+      throw new PersonaError("Can't getnerate dungeon wtih a level less than 1");
     }
     const gen = await this.generateMementos(lvl-1);
     const scene = game.scenes.current as PersonaScene;
