@@ -1060,18 +1060,18 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				const cameo = 'cameo' in situation && situation.cameo ? PersonaDB.findActor(situation.cameo) : undefined;
 				return cameo ? [cameo] : []; }
 			case 'all-foes': {
-				const attacker = situation.attacker ? PersonaDB.findActor(situation.attacker) : undefined;
-				if (!attacker) {return [];}
-				const attackerToken = this.getPTokenFromActorAccessor(attacker.accessor);
-				if (!attackerToken) {return [];}
-				return this.getAllEnemiesOf(attackerToken).map( x=> x.actor);
+				const user = situation.user ? PersonaDB.findActor(situation.user) : undefined;
+				if (!user) {return [];}
+				const userToken = this.getPTokenFromActorAccessor(user.accessor);
+				if (!userToken) {return [];}
+				return this.getAllEnemiesOf(userToken).map( x=> x.actor);
 			}
 			case 'all-allies': {
-				const attacker = situation.user ? PersonaDB.findActor(situation.user) : undefined;
-				if (!attacker) {return [];}
-				const attackerToken = this.getPTokenFromActorAccessor(attacker.accessor);
-				if (!attackerToken) {return [];}
-				return this.getAllAlliesOf(attackerToken)
+				const user = situation.user ? PersonaDB.findActor(situation.user) : undefined;
+				if (!user) {return [];}
+				const userToken = this.getPTokenFromActorAccessor(user.accessor);
+				if (!userToken) {return [];}
+				return this.getAllAlliesOf(userToken)
 				.map( x=> x.actor);
 			}
 			case undefined: {
