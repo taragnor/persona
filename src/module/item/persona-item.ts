@@ -1383,16 +1383,23 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       return effects
         .filter( eff => eff.consequences.some( cons => ('modifiedFields' in cons && cons.modifiedFields[btype] == true) || ('modifiedField' in cons && cons.modifiedField == btype)))
       // && !ConditionalEffectManager.canModifyStat(eff, btype))
-        .map(eff =>
-          ({
-            name: eff.source?.name ?? "Unknown Source",
+        .map(eff => {
+          const ownerName = eff.owner ? PersonaDB.findActor(eff.owner)?.name ?? "" : "" ;
+        const name = eff.realSource && eff.realSource as unknown != this
+          ? `${ownerName} (${eff.realSource.name})`
+          : eff.source && eff.source as unknown != this
+          ? `${ownerName} (${eff.source.name})`
+          : this.name;
+          return ({
+            name,
+            // name: eff.source?.name ?? "Unknown Source",
             source: eff.source,
             owner: eff.owner,
             realSource: eff.realSource,
             conditions: ConditionalEffectManager.ArrayCorrector(eff.conditions),
             modifier: ModifierList.getModifierAmount(eff.consequences, btype),
-          })
-        );
+          });
+        });
     });
   }
 

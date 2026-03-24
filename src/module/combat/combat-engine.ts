@@ -793,7 +793,7 @@ export class CombatEngine {
   }
 
   getAttackRollModifiers(attacker: Persona, target: Persona, power: Usable)  : Calculation {
-    const calc= new Calculation();
+    const calc = new Calculation();
     const mods : NonDeprecatedModifierType[] = ["allAtk"];
     switch (power.system.defense) {
       case "fort":
@@ -803,9 +803,11 @@ export class CombatEngine {
         mods.push("wpnAtk");
         break;
       case "kill":
+        calc.add(1, CombatEngine.baseInstantKillBonus(power), "Base Instant Kill bonus");
         // mods.push("instantDeathRange");
         break;
       case "ail":
+        calc.add(1, CombatEngine.baseAilmentAttackBonus(power), "Base Ailment bonus");
         // mods.push("afflictionRange");
         break;
       case "none":
@@ -813,18 +815,20 @@ export class CombatEngine {
       default:
         power.system.defense satisfies never;
     }
-    if (power.system.defense == "ail") {
-      calc.add(1, CombatEngine.baseAilmentAttackBonus(power), "Base Ailment bonus");
-    }
     if (power.system.defense == "kill") {
-      calc.add(1, CombatEngine.baseInstantKillBonus(power), "Base Instant Kill bonus");
     }
-    // const attackerBonuses = attacker.getBonuses(mods);
-    const powerBonuses = new ModifierList(power.getModifier(mods, attacker.user));
-    const targetMods = target.getBonuses(mods, target.defensiveModifiers());
+    // const powerBonuses = new ModifierList(power.getModifier(mods, attacker.user));
+    // Debug(powerBonuses);
+    // console.log(powerBonuses);
+    const atkAndDefenderMods = CombatEngine.getAttackerAndDefenderModifiers(mods, attacker, target, power);
+    // const attackerBonuses = attacker.getBonuses(mods, power);
+    // const targetMods = target.getBonuses(mods, target.defensiveModifiers());
+    calc.add(1, atkAndDefenderMods, "Unified Mods");
+    Debug(atkAndDefenderMods);
+    console.log(atkAndDefenderMods);
     // calc.add(1, attackerBonuses, "Attacker bonuses");
-    calc.add(1, powerBonuses, "Power Bonuses");
-    calc.subtract(1, targetMods, "Target Modifiers");
+    // calc.add(1, powerBonuses, "Power Bonuses");
+    // calc.subtract(1, targetMods, "Target Modifiers");
     return calc;
   }
 
@@ -954,7 +958,7 @@ export class CombatEngine {
 	}
 
 	static getAttackerAndDefenderModifiers(modName: MaybeArray<NonDeprecatedModifierType>, attackerPersona: Persona, targetPersona: Persona, power: Usable) {
-		const attackerMods = attackerPersona.getBonuses(modName, power, attackerPersona);
+		const attackerMods = attackerPersona.getBonuses(modName, power);
 		const targetDefense = targetPersona.getDefensiveBonuses(modName) ;
 		return attackerMods.concat(targetDefense);
 	}
