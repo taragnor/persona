@@ -519,7 +519,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, sources: (readonly SourcedConditionalEffect[] | Usable) = this.passiveCEs()): ModifierList {
     if (sources instanceof PersonaItem) {
       const baseMods = this.getBonuses(modnames);
-      const usable= sources;
+      const usable = sources;
       const usableEffects = usable.getPassiveEffects(this.user);
       const mods = PersonaItem.getModifier(usableEffects, modnames);
       const modList = new ModifierList(mods);
