@@ -1067,7 +1067,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				return this.getAllEnemiesOf(attackerToken).map( x=> x.actor);
 			}
 			case 'all-allies': {
-				const attacker = situation.attacker ? PersonaDB.findActor(situation.attacker) : undefined;
+				const attacker = situation.user ? PersonaDB.findActor(situation.user) : undefined;
 				if (!attacker) {return [];}
 				const attackerToken = this.getPTokenFromActorAccessor(attacker.accessor);
 				if (!attackerToken) {return [];}

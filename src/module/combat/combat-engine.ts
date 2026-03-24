@@ -321,9 +321,10 @@ export class CombatEngine {
 	static withinRange(range: U<CalculatedRange>, roll: AttackRollData, situation: ProtoResultAttackSituation) : boolean {
 		if (!range) {return false;}
 		switch (range.type) {
-			case "instantKill":
+			case "instantKill": {
 				const target = PersonaDB.findActor(situation.target);
 				if (situation.rollTotal < target.getDefense("kill").eval(situation).total) {return false;}
+      }
 		}
 		return range.possible
 			&& !roll.rollTags.includes("secondary-attack")
@@ -802,10 +803,10 @@ export class CombatEngine {
         mods.push("wpnAtk");
         break;
       case "kill":
-        mods.push("instantDeathRange");
+        // mods.push("instantDeathRange");
         break;
       case "ail":
-        mods.push("afflictionRange");
+        // mods.push("afflictionRange");
         break;
       case "none":
         break;
@@ -818,10 +819,10 @@ export class CombatEngine {
     if (power.system.defense == "kill") {
       calc.add(1, CombatEngine.baseInstantKillBonus(power), "Base Instant Kill bonus");
     }
-    const attackerBonuses = attacker.getBonuses(mods);
+    // const attackerBonuses = attacker.getBonuses(mods);
     const powerBonuses = new ModifierList(power.getModifier(mods, attacker.user));
     const targetMods = target.getBonuses(mods, target.defensiveModifiers());
-    calc.add(1, attackerBonuses, "Attacker bonuses");
+    // calc.add(1, attackerBonuses, "Attacker bonuses");
     calc.add(1, powerBonuses, "Power Bonuses");
     calc.subtract(1, targetMods, "Target Modifiers");
     return calc;

@@ -350,9 +350,9 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	socialLinks(): readonly (PC | NPC)[] {
 		if (this.#cache.socialLinks) {return this.#cache.socialLinks;}
 		return this.#cache.socialLinks = game.actors.filter( (actor :PersonaActor) =>
-			(actor.system.type == "npc"
-				|| actor.system.type == "pc" )
-			&& Boolean(actor.tarot)
+			(actor.isNPC()
+				|| actor.isPC())
+			&& actor.tarot != undefined
 		) as (PC | NPC)[];
 	}
 
@@ -375,15 +375,15 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	getAllStores(): TokenDocument<PersonaActor>[] {
 		if (!game.itempiles) {return [];}
 		const IP = game.itempiles.API;
-		return game.scenes.contents.flatMap( sc => 
+		return game.scenes.contents.flatMap( sc =>
 			sc.tokens
 			.filter(  (tok) => IP.isItemPileMerchant(tok))
 		) as TokenDocument<PersonaActor>[];
 	}
 
 	stockableItems() : Carryable[] {
-		return game.items.filter ( (x: PersonaItem)=> 
-			x.isCarryableType() 
+		return game.items.filter ( (x: PersonaItem)=>
+			x.isCarryableType()
 			&& (x.system?.storeId?.length ?? 0) > 0
 			&& (x.system?.storeMax ?? 0) > 0
 		) as Carryable[];

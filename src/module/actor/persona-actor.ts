@@ -2969,49 +2969,49 @@ get tarotLoc() : string{
 }
 
 get tarot() : (Tarot | undefined) {
-	if (this.cache.tarot != undefined) {
-		if (this.cache.tarot.name == "") {return undefined;}
-		return this.cache.tarot;
-	}
-	switch (this.system.type) {
-		case "shadow":
-		case "pc": {
-			if (this.system.tarot == "")
-			{return this.cache.tarot = undefined;}
-			const PC = this as PC | Shadow;
-			this.cache.tarot = PersonaDB.tarotCards().find(x=> x.name == PC.system.tarot);
-			break;
-		}
-		case "npcAlly":
-			if (this.system.tarot.length > 0) {
-				this.cache.tarot = PersonaDB.tarotCards().find(x=> x.name == (this as NPCAlly).system.tarot);
-				break;
-			}
-			if (this.system.NPCSocialProxyId) {
-				const actor = PersonaDB.socialLinks().find( x=> x.id == (this as NPCAlly).system.NPCSocialProxyId);
-				if (actor) {return actor.tarot;}
-			}
-			//switch fallthrough is deliberate here
-		case "npc": {
-			if (this.system.tarot == "")
-			{return undefined;}
-			// console.debug("cached value no good (NPC)");
-			const NPC = this as NPC;
-			if (
-				NPC == PersonaDB.personalSocialLink()
-				|| NPC == PersonaDB.teammateSocialLink()
-			) {
-				return undefined;
-			}
-			this.cache.tarot =  PersonaDB.tarotCards().find(x=> x.name == NPC.system.tarot);
-			break; }
-		case "tarot":
-			return this as Tarot;
-		default:
-			this.system satisfies never;
-			return undefined;
-	}
-	return this.cache.tarot;
+  if (this.cache.tarot != undefined) {
+    if (this.cache.tarot.name == "") {return undefined;}
+    return this.cache.tarot;
+  }
+  switch (this.system.type) {
+    case "shadow":
+    case "pc": {
+      if (this.system.tarot == "")
+      {return this.cache.tarot = undefined;}
+      const PC = this as PC | Shadow;
+      this.cache.tarot = PersonaDB.tarotCards().find(x=> x.name == PC.system.tarot);
+      break;
+    }
+    case "npcAlly":
+      if (this.system.tarot.length > 0) {
+        this.cache.tarot = PersonaDB.tarotCards().find(x=> x.name == (this as NPCAlly).system.tarot);
+        break;
+      }
+      if (this.system.NPCSocialProxyId) {
+        const actor = PersonaDB.socialLinks().find( x=> x.id == (this as NPCAlly).system.NPCSocialProxyId);
+        if (actor) {return actor.tarot;}
+      }
+      //switch fallthrough is deliberate here
+    case "npc": {
+      if (this.system.tarot == "")
+      {return undefined;}
+      // console.debug("cached value no good (NPC)");
+      const NPC = this as NPC;
+      if (
+        NPC == PersonaDB.personalSocialLink()
+        || NPC == PersonaDB.teammateSocialLink()
+      ) {
+        return undefined;
+      }
+      this.cache.tarot =  PersonaDB.tarotCards().find(x=> x.name == NPC.system.tarot);
+      break; }
+    case "tarot":
+      return this as Tarot;
+    default:
+      this.system satisfies never;
+      return undefined;
+  }
+  return this.cache.tarot;
 }
 
 numOfIncAdvances(): number {
