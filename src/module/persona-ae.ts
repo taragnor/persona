@@ -158,7 +158,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
   }
 
   durationFix(duration: TurnEndDuration) : void {
-    if (duration.anchorStatus) {return;}
+    if ("anchorStatus" in duration) {return;}
     const owner = duration.actorTurn ? PersonaDB.findActor(duration.actorTurn) : this.parent;
     if (!(owner instanceof PersonaActor)) { return;}
     const combat = game.combat;
@@ -229,7 +229,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
       case "UEoNT":
       case "USoNT":
       case "UEoT": {
-        if (newDuration.anchorStatus) {return;}
+        if ("anchorStatus" in newDuration) {return;}
         if (!newDuration.actorTurn) {return;}
         const actorTurn = PersonaDB.findActor(newDuration.actorTurn);
         if (actorTurn == this.parent) {break;}
@@ -269,7 +269,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
       case "UEoNT":
       case "USoNT":
       case "UEoT": {
-        if (duration.anchorStatus) {break;}
+        if ("anchorStatus" in duration) {break;}
         if (!duration.actorTurn) {break;}
         const actorTurn = PersonaDB.findActor(duration.actorTurn);
         if (actorTurn == this.parent) {break;}
@@ -363,7 +363,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     return PersonaDB.getUniversalAEAccessor(this);
   }
 
-  async createAnchoredHolder(duration: StatusDuration) : Promise<PersonaAE | null> {
+  async createAnchoredHolder(duration: TurnEndDuration & {actorTurn : UniversalActorAccessor<PersonaActor>}) : Promise<PersonaAE | null> {
     const origDuration = duration;
     switch (origDuration.dtype) {
       case "UEoNT":
@@ -394,7 +394,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
         }
       }
       default:
-        PersonaError.softFail(`Wrong Duraton Type, can't create Anchored : ${origDuration.dtype}`);
+        PersonaError.softFail(`Wrong Duraton Type, can't create Anchored : ${(origDuration as StatusDuration).dtype}`);
         return null;
     }
   }
@@ -424,8 +424,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
       case "USoNT":
       case "UEoNT":
       case "UEoT": {
+        if (!("anchorStatus" in  duration)) {break;}
         const acc = duration.anchorStatus;
-        if (!acc) {break;}
         try {
           const anchorStatus = PersonaDB.findAE(acc);
           await anchorStatus?.endStatusTimeout();
@@ -459,8 +459,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
       case "USoNT":
       case "UEoNT":
       case "UEoT": {
+        if (!("anchorStatus" in  duration)) {break;}
         const acc = duration.anchorStatus;
-        if (!acc) {break;}
         try {
           const anchorStatus = PersonaDB.findAE(acc);
           if (anchorStatus) {
@@ -967,11 +967,13 @@ type Numeric_Duration = {
   amount: number,
 }
 
-export type TurnEndDuration = {
-  dtype : Extract<StatusDurationType, "UEoNT" | "USoNT" | "UEoT">,
-  actorTurn ?: UniversalActorAccessor<PersonaActor>,
-  anchorStatus ?: UniversalAEAccessor<PersonaAE>,
-};
+export type TurnEndDuration = 
+  {
+    dtype : Extract<StatusDurationType, "UEoNT" | "USoNT" | "UEoT">,
+  } & (
+    {actorTurn : UniversalActorAccessor<PersonaActor>}
+    | {anchorStatus : UniversalAEAccessor<PersonaAE>}
+  );
 
 type SaveDuration = {
   dtype: "save",

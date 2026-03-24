@@ -141,61 +141,64 @@ export class FinalizedCombatResult {
 	}
 
 
-	#finalizeOtherEffects(change: ActorChange<ValidAttackers>) {
-		const actor = PersonaDB.findActor(change.actor);
-		for (const otherEffect of change.otherEffects) {
-			switch (otherEffect.type) {
-				case "expend-item":
-					break;
-				case "save-slot":
-					this.addFlag(actor, otherEffect);
-					ui.notifications.warn("Save Slot is deprecated");
-					break;
-				case "half-hp-cost":
-					ui.notifications.warn("Half HP cost is deprecated");
-					this.addFlag(actor, otherEffect);
-					break;
-				case "extraTurn": {
-					const bonusAction : StatusEffect = {
-						id: "bonus-action",
-						duration: { dtype:  "UEoT"},
-						activationRoll: otherEffect.activation,
-					};
-					change.addStatus.push(bonusAction);
-					break;
-				}
-				case "set-flag":
-					break;
-				case "raise-resistance":
-				case "lower-resistance":
-				case "display-message":
-				case "inspiration-cost":
-				case "hp-loss":
-				case "alter-energy":
-				case "extra-attack":
-				case "dungeon-action":
-				case "use-power":
-				case "scan":
-				case "social-card-action":
-				case "add-power-to-list":
-				case "teach-power":
-				case "alter-mp":
-				case "alter-theurgy":
-				case "combat-effect":
-				case "alter-fatigue-lvl":
-				case "perma-buff":
-				case "alter-variable":
-				case "play-sound":
-				case "gain-levels":
-				case "cancel":
-				case "set-roll-result":
-				case "set-hp":
-				case "inventory-action":
-				case "apply-recovery":
-					break;
-				default:
-					otherEffect satisfies never;
-			}
+  #finalizeOtherEffects(change: ActorChange<ValidAttackers>) {
+    const actor = PersonaDB.findActor(change.actor);
+    for (const otherEffect of change.otherEffects) {
+      switch (otherEffect.type) {
+        case "expend-item":
+          break;
+        case "save-slot":
+          this.addFlag(actor, otherEffect);
+          ui.notifications.warn("Save Slot is deprecated");
+          break;
+        case "half-hp-cost":
+          ui.notifications.warn("Half HP cost is deprecated");
+          this.addFlag(actor, otherEffect);
+          break;
+        case "extraTurn": {
+          const bonusAction : StatusEffect = {
+            id: "bonus-action",
+            duration: {
+              dtype:  "UEoT",
+              actorTurn: actor.accessor,
+            },
+            activationRoll: otherEffect.activation,
+          };
+          change.addStatus.push(bonusAction);
+          break;
+        }
+        case "set-flag":
+          break;
+        case "raise-resistance":
+        case "lower-resistance":
+        case "display-message":
+        case "inspiration-cost":
+        case "hp-loss":
+        case "alter-energy":
+        case "extra-attack":
+        case "dungeon-action":
+        case "use-power":
+        case "scan":
+        case "social-card-action":
+        case "add-power-to-list":
+        case "teach-power":
+        case "alter-mp":
+        case "alter-theurgy":
+        case "combat-effect":
+        case "alter-fatigue-lvl":
+        case "perma-buff":
+        case "alter-variable":
+        case "play-sound":
+        case "gain-levels":
+        case "cancel":
+        case "set-roll-result":
+        case "set-hp":
+        case "inventory-action":
+        case "apply-recovery":
+          break;
+        default:
+          otherEffect satisfies never;
+      }
 
 		}
 		// CombatResult.normalizeChange(change);
@@ -366,12 +369,8 @@ export class FinalizedCombatResult {
 			await PersonaSFX.onUsePowerOn(power, attacker, target, atkResult.result);
 			// TimeLog.log(`Finished Executing Special Effect for ${power.name} on ${target.name}`);
 			for (const change of changes) {
-				const actor = PersonaDB.findActor(change.actor);
-				// TimeLog.log(`Processing change on ${actor.name}`);
 				const chained = await ConsequenceApplier.applyActorChange(change, power, atkResult.attacker!);
-				// TimeLog.log(`Finished ApplyActor Change change on ${actor.name}`);
 				this.addChained(...chained);
-				// TimeLog.log(`Adding Chained Effects`);
 			}
 		}
 		//TODO: this is the time sink
@@ -523,13 +522,13 @@ Hooks.on("socketsReady", () => {
 	PersonaSockets.setHandler("COMBAT_RESULT_APPLY", FinalizedCombatResult.applyHandler.bind(CombatResult));
 });
 
-Hooks.on("updateActor", async (updatedActor : PersonaActor, changes) => {
+Hooks.on("updateActor", (updatedActor : PersonaActor, changes) => {
 	//open scan prompt for all players on scan
 	if (game.user.isGM) {return;}
 	if (updatedActor.system.type == "shadow") {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 		if (changes?.system?.scanLevel && updatedActor.token) {
-			await updatedActor.sheet.render(true);
+			updatedActor.sheet.render(true);
 		}
 	}
 });

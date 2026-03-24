@@ -6,7 +6,6 @@ import { DamageCalculation } from "./damage-calc.js";
 import { PostAttackRollSituation } from "../../config/situation.js";
 import { PersonaItem} from "../item/persona-item.js";
 import { getSocialLinkTarget, multiCheckToArray } from "../preconditions.js";
-import { Consequence } from "../../config/consequence-types.js";
 import { SocialCardActionConsequence } from "../../config/consequence-types.js";
 import { OtherEffect } from "../../config/consequence-types.js";
 import { StatusEffect } from "../../config/consequence-types.js";
@@ -201,7 +200,7 @@ export class CombatResult  {
 							 PersonaError.softFail(`No Target for ${id}`);
 							 break;
 						 }
-						 const duration = convertConsToStatusDuration(cons, target);
+						 const duration = convertConsToStatusDuration(cons, target, situation);
 						 if (effect.addStatus.find( st => st.id == id && PersonaAE.durationLessThanOrEqualTo(duration, st.duration))) {
 							 break;
 						 }
@@ -344,7 +343,7 @@ export class CombatResult  {
 			case "set-flag": {
 				if (!effect) {break;}
 				// const target = PersonaDB.findActor(situation.target);
-				const dur = convertConsToStatusDuration(cons, target!);
+				const dur = convertConsToStatusDuration(cons, target!, situation);
 				let embeddedEffects: readonly SourcedConditionalEffect[]= [];
 				const source = cons.source;
 				if (cons.flagState && cons.applyEmbedded && source && "getEmbeddedEffects" in source && source.getEmbeddedEffects != undefined) {
@@ -687,7 +686,6 @@ export type AttackResult = {
 	critRange: U<{low: number, high:number}>;
 };
 
-
 function resolveStatusDurationAnchor (anchor: ConsequenceTarget, atkResult: AttackResult) : UniversalActorAccessor<ValidAttackers> | null {
 	if (!anchor) {
 		anchor = "target";
@@ -700,6 +698,7 @@ function resolveStatusDurationAnchor (anchor: ConsequenceTarget, atkResult: Atta
 			break;
 		case "owner":
 			console.warn("Using owner in status duration anchors is unsupported and just resolves to 'user'");
+		// eslint-disable-next-line no-fallthrough
 		case "user": {
 			const userAcc = atkResult.situation.user;
 			if (userAcc)
@@ -744,83 +743,92 @@ function resolveStatusDurationAnchor (anchor: ConsequenceTarget, atkResult: Atta
 	return null;
 }
 
-function convertConsToStatusDuration(cons: Consequence & ({type : "set-flag"} | {type: "combat-effect", combatEffect:"addStatus"}) , atkResultOrActor: AttackResult | ValidAttackers) : StatusDuration {
-	const dur = cons.statusDuration;
-	switch (dur) {
-		case "X-rounds":
-		case "X-days":
-		case "3-rounds":
-			return {
-				dtype: dur,
-				amount: cons.amount ?? 3,
-			};
-		case "expedition":
-		case "combat":
-		case "permanent":
-		case "instant":
-			return {
-				dtype: dur,
-			};
-		case "save":
-			return {
-				dtype: "save",
-				saveType: cons.saveType ?? "normal",
-			};
-		case "save-easy":
-		case "presave-easy":
-			return {
-				dtype: "save",
-				saveType: "easy",
-			};
-		case "save-normal":
-		case "presave-normal":
-			return {
-				dtype: "save",
-				saveType: "normal",
-			};
-		case "save-hard":
-		case "presave-hard":
-			return {
-				dtype: "save",
-				saveType: "hard",
-			};
-		case "UEoNT":
-		case "USoNT":
-		case "UEoT": {
-			if (atkResultOrActor instanceof PersonaActor) {
-				return {
-					dtype: dur,
-					actorTurn: atkResultOrActor.accessor
-				};
-			}
-			const anchorHolder = resolveStatusDurationAnchor(cons.durationApplyTo!, atkResultOrActor);
-			//this isn't necessarily target, it has to be  determined by who the anchor is
-			if (anchorHolder)  {
-				return {
-					dtype: dur,
-					actorTurn: anchorHolder,
-				};
-			}
-			if (!anchorHolder) {
-				PersonaError.softFail(`Can't coinvert consequence ${cons.type}`, atkResultOrActor);
-			}
-		}
-			break;
-		case "anchored":
-			PersonaError.softFail("Anchored shouldn't happen here");
-			return {
-				dtype: "instant",
-			};
-		case "X-exploration-turns":
-			return {
-				dtype: "X-exploration-turns",
-				amount: cons.amount ?? 3,
-			};
-		default:
-			dur satisfies never;
-	}
-	PersonaError.softFail(`Invaliud Duration ${dur as string}`, cons);
-	return {dtype: "instant"};
+function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-flag"} | {type: "combat-effect", combatEffect:"addStatus"}) , atkResultOrActor: AttackResult | ValidAttackers, situation : Situation) : StatusDuration {
+  const dur = cons.statusDuration;
+  switch (dur) {
+    case "X-rounds":
+    case "X-days":
+    case "3-rounds":
+      return {
+        dtype: dur,
+        amount: cons.amount ?? 3,
+      };
+    case "expedition":
+    case "combat":
+    case "permanent":
+    case "instant":
+      return {
+        dtype: dur,
+      };
+    case "save":
+      return {
+        dtype: "save",
+        saveType: cons.saveType ?? "normal",
+      };
+    case "save-easy":
+    case "presave-easy":
+      return {
+        dtype: "save",
+        saveType: "easy",
+      };
+    case "save-normal":
+    case "presave-normal":
+      return {
+        dtype: "save",
+        saveType: "normal",
+      };
+    case "save-hard":
+    case "presave-hard":
+      return {
+        dtype: "save",
+        saveType: "hard",
+      };
+    case "UEoNT":
+    case "USoNT":
+    case "UEoT": {
+      if (atkResultOrActor instanceof PersonaActor) {
+        if (!cons.durationApplyTo) {
+          PersonaError.softFail(`No duration apply to provided for status`);
+          return {
+            dtype: dur,
+            actorTurn: atkResultOrActor.accessor
+          };
+        }
+        const actor = PersonaCombat.solveEffectiveTargets(cons.durationApplyTo, situation, cons).at(0);
+        if (!actor) {
+          PersonaError.softFail(`Can't find actor for actorTurn property in Status`);
+        }
+        return {
+          dtype: dur,
+          actorTurn: actor!.accessor,
+        };
+      }
+      //const anchorHolder = resolveStatusDurationAnchor(cons.durationApplyTo!, atkResultOrActor);
+      ////this isn't necessarily target, it has to be  determined by who the anchor is
+      //if (anchorHolder)  {
+      //	return {
+      //		dtype: dur,
+      //		actorTurn: anchorHolder,
+      //	};
+      //}
+      PersonaError.softFail(`Can't coinvert consequence ${cons.type}`, atkResultOrActor);
+      break;
+    }
+    case "anchored":
+      PersonaError.softFail("Anchored shouldn't happen here");
+      return {
+        dtype: "instant",
+      };
+    case "X-exploration-turns":
+      return {
+        dtype: "X-exploration-turns",
+        amount: cons.amount ?? 3,
+      };
+    default:
+      dur satisfies never;
+  }
+  PersonaError.softFail(`Invaliud Duration ${dur as string}`, cons);
+  return {dtype: "instant"};
 }
 
 export type ResistResult =  {

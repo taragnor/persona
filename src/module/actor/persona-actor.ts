@@ -42,7 +42,7 @@ import { StatusEffectId } from "../../config/status-effects.js";
 import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { SetFlagEffect, StatusEffect } from "../../config/consequence-types.js";
 import { ModifierList } from "../combat/modifier-list.js";
-import { GetEffectsOptions, ModifierContainer } from "../item/persona-item.js";
+import { ModifierContainer } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
 import { ACTORMODELS } from "../datamodel/actor-types.js";
 import { PersonaItem } from "../item/persona-item.js";
@@ -67,7 +67,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	DOWNED_OPACITY = 0.5 as const;
 	FULL_FADE_OPACITY = 0.2 as const;
 
-	private _antiloop : boolean = false;
 	// private _trackerAntiLoop : boolean = false;
 
 	static MPMap = new Map<number, number>;
