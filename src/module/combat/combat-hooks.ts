@@ -20,46 +20,47 @@ export class CombatHooks {
 					await combat.endTurn(combat.combatant);
 				}
 			}
-
 		});
 
-		Hooks.on("updateCombat" , async (combat: PersonaCombat, changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
-			if (changes.turn == undefined && changes.round == undefined
-				|| diffObject.direction == undefined) {
-				return;
-			}
-			//new turn
-			if (changes.round != undefined) {
-				//new round
-				if (diffObject.direction > 0 && game.user.isGM) {
-					if (combat.isSocial) {
-						await PersonaSocial.startSocialCombatRound();
-					} else {
-						await combat.onNewRound();
-					}
-				}
-				if (diffObject.direction < 0 && game.user.isGM) {
-					if (!combat.isSocial) {
-						await combat.decEscalationDie();
-					}
-				}
-			}
-			if (diffObject.direction && diffObject.direction != 0) {
-				const currentActor = combat?.combatant?.actor;
-				if (currentActor && diffObject.direction > 0) {
-					if (combat.isSocial) {
-						if (currentActor.system.type == "pc") {
-							// console.log("Hook start social combat turn");
-							await PersonaSocial.startSocialTurn(currentActor as PC);
-						}
-					} else {
-						if (combat.combatant) {
-							await combat.startCombatantTurn(combat.combatant as PersonaCombatant);
-						}
-					}
-				}
-			}
-		});
+    Hooks.on("updateCombat" , async (combat: PersonaCombat, changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
+      if (
+        (changes.turn == undefined
+          && changes.round == undefined)
+        || diffObject.direction == undefined) {
+        return;
+      }
+      //new turn
+      if (changes.round != undefined) {
+        //new round
+        if (diffObject.direction > 0 && game.user.isGM) {
+          if (combat.isSocial) {
+            await PersonaSocial.startSocialCombatRound();
+          } else {
+            await combat.onNewRound();
+          }
+        }
+        if (diffObject.direction < 0 && game.user.isGM) {
+          if (!combat.isSocial) {
+            await combat.decEscalationDie();
+          }
+        }
+      }
+      if (diffObject.direction && diffObject.direction != 0) {
+        const currentActor = combat?.combatant?.actor;
+        if (currentActor && diffObject.direction > 0) {
+          if (combat.isSocial) {
+            if (currentActor.system.type == "pc") {
+              // console.log("Hook start social combat turn");
+              await PersonaSocial.startSocialTurn(currentActor as PC);
+            }
+          } else {
+            if (combat.combatant) {
+              await combat.startCombatantTurn(combat.combatant as PersonaCombatant);
+            }
+          }
+        }
+      }
+    });
 
 		Hooks.on("updateCombat", async (combat: PersonaCombat, diff) => {
 			const changes = diff as FlagChangeDiffObject;

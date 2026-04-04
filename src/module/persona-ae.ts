@@ -999,6 +999,10 @@ Hooks.on("createActiveEffect", async function (eff: PersonaAE) {
   }
 });
 
+Hooks.on("preDeleteActiveEffect", async function (eff: PersonaAE) {
+  await eff.onAEDelete();
+});
+
 Hooks.on("deleteActiveEffect", async function (eff: PersonaAE) {
   if (!game.user.isGM) {return;}
   if (eff.isFatigueStatus) {
@@ -1007,8 +1011,6 @@ Hooks.on("deleteActiveEffect", async function (eff: PersonaAE) {
       await parent.setAlteredFatigue();
     }
   }
-  await eff.onAEDelete();
-
 });
 
 

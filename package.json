@@ -11,7 +11,7 @@
 	"author": "taragnor",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/taragnor/gm-paranoia-taragnor"
+		"url": ""
 	},
 	"license": "ISC",
 	"devDependencies": {
@@ -19,7 +19,7 @@
 		"@typescript-eslint/parser": ">=8.41.0",
 		"copyfiles": "^2.4.1",
 		"eslint": ">=9.39.2",
-		"typescript": ">=5.3.3",
+		"typescript": "^5.3.3",
 		"typescript-eslint": ">=8.41.0",
 		"@eslint/js": "latest"
 	}
