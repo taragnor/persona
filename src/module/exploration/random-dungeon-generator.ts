@@ -18,7 +18,7 @@ export class RandomDungeonGenerator {
   dimensions : {width: number, height: number};
   questSpecials : QuestSpecial[] = [];
 
-	static SPECIAL_FLOORS = ["tough-enemy", "revealed", "treasure-shadow", "dark"] as const;
+	// static SPECIAL_FLOORS = ["tough-enemy", "revealed", "treasure-shadow", "dark"] as const;
 
 	static init() {}
 

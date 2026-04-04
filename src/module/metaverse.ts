@@ -574,19 +574,19 @@ const MEMENTOS_SCENE_MODS : GeneratorSceneModifier<UniversalModifier["name"]>[] 
   {
     localName: "none",
     item: null,
-    probability: 80,
+    probability: 70,
   }, {
     localName: "hardShadowsFloor",
     item: "Difficult Enemies",
-    probability: 5
+    probability: 10,
   }, {
     localName: "treasureFloor",
     item: "Treasure Floor",
-    probability: 5,
+    probability: 10,
   }, {
     localName: "shadowDrops",
     item: "Extra Shadow Drops",
-    probability: 4,
+    probability: 8,
   }
 ];
 

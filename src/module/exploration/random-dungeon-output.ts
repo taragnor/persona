@@ -359,20 +359,40 @@ private region_hazard(sq: DungeonSquare["group"]) : {status: RegionData["hazard"
 	}
 
   private async writeSceneModifiers() {
-    const mods = this.sceneMods;
-    let mod0 = mods.at(0);
-    if (typeof mod0 == "string") {
-      mod0 = PersonaDB.getSceneModifiers().find( x=> x.name == mod0 || x.id == mod0);
-    }
-    if (mod0 == undefined) {
-      await this.scene.setSceneModifiers([]);
-      return;
-    }
-    if (mod0 instanceof PersonaItem) {
-      await this.scene.setSceneModifiers(mods as UniversalModifier[]);
-    } else {
-      throw new PersonaError("Modifiers aren't of type PersonaItem UniversalModifier");
-    }
+    const resolvedMods : UniversalModifier[] = this.sceneMods
+      .map( modifier => {
+        let mod = modifier;
+        if (typeof mod == "string") {
+          mod = PersonaDB.getSceneModifiers().find( x=> x.name == modifier || x.id == modifier);
+          if (mod == undefined) {
+            PersonaError.softFail(`Can't find Scene MOdifier $${modifier as string}`);
+            return mod;
+          }
+        }
+        if (mod instanceof PersonaItem && mod.isUniversalModifier()) {return mod;}
+        return undefined;
+      })
+      .filter( mod => mod != undefined);
+    await this.scene.setSceneModifiers(resolvedMods);
+
+    // const mods : UniversalModifier[] = [];
+    // for (const modifier of this.sceneMods) {
+    //   let mod = modifier;
+    //   if (typeof mod == "string") {
+    //     mod = PersonaDB.getSceneModifiers().find( x=> x.name == modifier || x.id == modifier);
+    //     if (mod == undefined) {
+    //       PersonaError.softFail(`Can't find Scene MOdifier $${modifier as string}`);
+    //       continue;
+    //     }
+    //   }
+    //   if (mod instanceof PersonaItem && mod.isUniversalModifier()) {
+    //     mods.push(mod);
+    //     // await this.scene.setSceneModifiers(mods as UniversalModifier[]);
+    //   } else {
+    //     throw new PersonaError("Modifiers aren't of type PersonaItem UniversalModifier");
+    //   }
+    // }
+    // await this.scene.setSceneModifiers(resolvedMods);
   }
 
 	wallToLineConvert( wd: Pick<WallData, "door" | "c">) : U<Partial<Foundry.DrawingData>> {
