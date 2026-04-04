@@ -140,7 +140,7 @@ export class TreasureSystem {
 
 	static amountOfItemOwnedByParty(item : TreasureItem) : number {
 		const pcsAndAllies = game.actors.filter( (act:PersonaActor) => act.isPC() || act.isNPCAlly()) as PersonaActor[];
-		const items = pcsAndAllies.map( actor => actor.items.find(i=> i == item)?.amount ?? 0);
+		const items = pcsAndAllies.map( actor => actor.items.find(i=> i.name == item.name)?.amount ?? 0);
 		return items.reduce( (acc,i) => acc+i, 0);
 	}
 
@@ -165,7 +165,6 @@ export class TreasureSystem {
 				item.system satisfies never;
 				return false;
 		}
-
 	}
 
 	static generateEnchantmentFromTable(table: Exclude<TreasureTable, "none">, treasureLevel: number) : U<Tag> {
@@ -199,13 +198,31 @@ export class TreasureSystem {
 		await this.handleTreasureRolls(arr);
 	}
 
-	static async handleTreasureRolls (treasures: EnchantedTreasureFormat[]) {
+  static async handleTreasureRolls (treasures: EnchantedTreasureFormat[]) {
+    await this.printTreasureFound(treasures);
+  }
+
+  static async awardFoundRoomTreasure(target: NPCAlly | PC, treasures: EnchantedTreasureFormat[]) {
+    for (const treasure of treasures) {
+      try {
+        await target.addTreasureItem(treasure);
+      } catch (e) {
+        PersonaError.softFail("Can't award treasure to target", e, target, treasure);
+      }
+    }
+  }
+
+	static async printTreasureFound (treasures: EnchantedTreasureFormat[]) {
 		if (treasures.length == 0) {return;}
-		let html = `<h2> Treasure Found </h2>`;
-		for (const treasure of treasures) {
-			const treasureString = TreasureSystem.printEnchantedTreasureString(treasure);
-			html +=`<div> ${treasureString} </div>`;
-		}
+		const htmlHeader = `<h2> Treasure Found </h2>`;
+    const html = treasures.reduce( (acc, tr) => {
+      const treasureStr = TreasureSystem.printEnchantedTreasureString(tr);
+      return acc + `<div> ${treasureStr} </div>`;
+    }, htmlHeader);
+		// for (const treasure of treasures) {
+		// 	const treasureString = TreasureSystem.printEnchantedTreasureString(treasure);
+		// 	html +=`<div> ${treasureString} </div>`;
+		// }
 		return await ChatMessage.create({
 			speaker: {
 				alias: "Treasure Rolls"

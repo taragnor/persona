@@ -2,6 +2,7 @@ import {RealDamageType, ResistStrength} from "../../config/damage-types.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaCombat} from "../combat/persona-combat.js";
+import {Encounter, RandomEncounter} from "../exploration/random-encounters.js";
 import {Persona} from "../persona-class.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
@@ -34,6 +35,14 @@ const NAVIGATOR_TRIGGER_LIST = [
 	"injured",
 	"great-work",
 	"recovery",
+  "enemy-healing",
+  "enemy-spotted",
+  "reaper",
+  "status-added", //to PC
+  "generic-okay",
+  "special" , //reclassify later
+  "level-up",
+  "warning",
 ] as const;
 
 export type NavigatorTrigger = typeof NAVIGATOR_TRIGGER_LIST[number];
@@ -71,39 +80,50 @@ export class NavigatorVoiceLines {
 		}
 	}
 
-	static async playVoice (trigger: NavigatorVoiceEvent, selfOnly = !game.user.isGM) : PVoid {
-		try {
-			if (this.nowPlaying) {return;}
-			const time = Date.now();
-			if (time - this.lastChat < 2000) {return;}
-			this.lastChat = time;
-			if (!PersonaSettings.get("navigatorVoiceLines")) {
-				return;
-			}
-			const navigator = PersonaDB.getNavigator();
-			if (!navigator) {return;}
-			let lines = navigator.navigatorVoiceLines
-				.filter ( ln => ln.trigger == trigger.type);
-			if (trigger.type == "vulnerable" || trigger.type == "immune") {
-				lines = lines.filter ( x=> x.elementType == trigger.elementType);
-			}
-			if (lines.length == 0) {return;}
-			const line = randomSelect(lines);
-			if (selfOnly) {
-				this.nowPlaying = true;
-				await PersonaSounds.playFileSelf(line.fileName);
-			} else {
-				this.nowPlaying = true;
-				await PersonaSounds.playFileAll(line.fileName);
-			}
-			this.nowPlaying = false;
-		} catch (e) {
-			Debug(e);
-			PersonaError.softFail("Error in Navigator Chat", e);
-			this.nowPlaying = false;
-			return;
-		}
-	}
+  static async playVoice (trigger: NavigatorVoiceEvent, selfOnly = !game.user.isGM) : PVoid {
+    try {
+      if (this.nowPlaying) {return;}
+      const time = Date.now();
+      if (time - this.lastChat < 2000) {return;}
+      this.lastChat = time;
+      if (!PersonaSettings.get("navigatorVoiceLines")) {
+        return;
+      }
+      const navigator = PersonaDB.getNavigator();
+      if (!navigator) {return;}
+      let lines = navigator.navigatorVoiceLines
+        .filter ( ln => ln.trigger == trigger.type);
+      switch (trigger.type) {
+        case "vulnerable":
+        case "immune":
+          lines = lines.filter ( x=> x.elementType == trigger.elementType
+            && x.strongEnemy == trigger.strongEnemy
+          );
+          break;
+        case "injured":
+          lines = lines.filter ( x=> (x.level ?? 1) == trigger.severity);
+          break;
+        case "enemy-spotted":
+            lines = lines.filter ( x=> (x.level ?? 1) == trigger.difficultyLevel);
+          break;
+      }
+      if (lines.length == 0) {return;}
+      const line = randomSelect(lines);
+      if (selfOnly) {
+        this.nowPlaying = true;
+        await PersonaSounds.playFileSelf(line.fileName);
+      } else {
+        this.nowPlaying = true;
+        await PersonaSounds.playFileAll(line.fileName);
+      }
+      this.nowPlaying = false;
+    } catch (e) {
+      Debug(e);
+      PersonaError.softFail("Error in Navigator Chat", e);
+      this.nowPlaying = false;
+      return;
+    }
+  }
 
 	static async onTargetKilled(target: ValidAttackers, combat: PersonaCombat) {
 		if (target.isShadow()) {return;}
@@ -114,10 +134,31 @@ export class NavigatorVoiceLines {
 		if (remainingPCs.length <= 2) {
 			await this.playVoice({
 				type: "injured",
+        severity: 3,
 			});
-		}
-
+		} else {
+			await this.playVoice({
+				type: "injured",
+        severity: 2,
+			});
+    }
 	}
+
+  static async onTargetHeal(target: ValidAttackers, combat: PersonaCombat) {
+    if (target.isNPCAlly() || target.isPC() || combat.isSocial) {return;}
+    if (Math.random() < 0.5) {
+			await this.playVoice({
+				type: "enemy-healing",
+			});
+    }
+  }
+
+  static async onBattleLoss() {
+    await this.playVoice( {
+      type: "injured",
+      severity: 4,
+    });
+  }
 
 	static onHoverToken(token: Token<PersonaActor>, hover: boolean) {
 		if (hover != true) {return;}
@@ -148,6 +189,7 @@ export class NavigatorVoiceLines {
 				void this.playVoice({
 					type: "vulnerable",
 					elementType: randElement,
+          strongEnemy: false,
 				}, true);
 				return;
 			case "absorb":
@@ -156,6 +198,7 @@ export class NavigatorVoiceLines {
 				void this.playVoice({
 					type: "immune",
 					elementType: randElement,
+          strongEnemy: false,
 				}, true);
 				return;
 			default:
@@ -167,6 +210,35 @@ export class NavigatorVoiceLines {
 		return persona.elemResist(element);
 
 	}
+
+  static async onEnemyEncountered(encounter: Encounter)  : Promise<void> {
+    const diff = RandomEncounter.getLevelDiffString(encounter);
+    let difficultyLevel = 1;
+    switch (diff)  {
+      case "Very Easy":
+        difficultyLevel = -1;
+        break;
+      case "Easy":
+        difficultyLevel = 0;
+        break;
+      case "Moderate":
+      case "Strong":
+        difficultyLevel = 1;
+        break;
+      case "Very Strong":
+        difficultyLevel = 2;
+        break;
+      case "Overwhelming":
+        difficultyLevel = 3;
+        break;
+      default:
+        diff satisfies never;
+    }
+    await this.playVoice({
+      type: "enemy-spotted",
+      difficultyLevel,
+    });
+  }
 
   static async navigatorTalk(this:void, text: string) {
     const navigator = PersonaDB.getNavigator();
@@ -199,10 +271,20 @@ type PVoid = Promise<void>; //for some reason Promise<void> screws up indenting
 
 
 type NavigatorVoiceEvent = {
-	type: Exclude<NavigatorTrigger, "vulnerable" | "immune">
+	type: Exclude<NavigatorTrigger, "vulnerable" | "immune" | "injured" | "enemy-spotted" | "level-up">
 } | {
 	type: "vulnerable" | "immune"
 	elementType: RealDamageType,
+  strongEnemy: boolean,
+} | {
+  type: "injured",
+  severity: number,
+} | {
+  type: "enemy-spotted",
+  difficultyLevel: number,
+} | {
+  type: "level-up",
+  isNavigator: boolean,
 };
 
 //@ts-expect-error adding to global

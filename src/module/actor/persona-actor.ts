@@ -313,10 +313,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				...tags,
 				...treasure.enchantments,
 			];
-		const tagsString = treasure.enchantments
-			.map( x=> PersonaDB.allTags().get(x)?.name  ?? "ERROR")
-			.join(", ");
-		const name =`${baseItem.name} (${tagsString})`;
+		// const tagsString = treasure.enchantments
+		// 	.map( x=> PersonaDB.allTags().get(x)?.name  ?? "ERROR")
+		// 	.join(", ");
+		// const name =`${baseItem.name} (${tagsString})`;
+		const name =`${baseItem.name}`;
 		const baseData = baseItem.toJSON() as typeof baseItem;
 		baseData.system.amount = 1;
 		baseData.system.itemTags = tagIds;
@@ -1363,6 +1364,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 								fileName: file,
 								trigger: "unused",
 								elementType: "none",
+                level: 0,
+                statusCondition: "",
+                strongEnemy: false,
+                text: "",
+                bool: false,
 							});
 						}
 					}

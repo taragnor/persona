@@ -11,6 +11,7 @@ import { Logger } from "../../utility/logger.js";
 import { NAVIGATOR_TRIGGERS } from "../../navigator/nav-voice-lines.js";
 import {PersonaSounds} from "../../persona-sounds.js";
 import {Persona} from "../../persona-class.js";
+import {STATUS_EFFECT_TRANSLATION_TABLE} from "../../../config/status-effects.js";
 
 
 export class NPCAllySheet extends PCLikeSheet {
@@ -33,6 +34,7 @@ export class NPCAllySheet extends PCLikeSheet {
 		return {
 			...super.CONST(),
 			NAVIGATOR_TRIGGERS,
+			STATUSEFFECTS: STATUS_EFFECT_TRANSLATION_TABLE,
 		};
 	}
 

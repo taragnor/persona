@@ -2,6 +2,7 @@ import {PersonaActor} from "../actor/persona-actor.js";
 import {CombatScene, CombatSetupOptions} from "../combat/combat-scene.js";
 import {ModifierList} from "../combat/modifier-list.js";
 import {Metaverse, PresenceRollData} from "../metaverse.js";
+import {NavigatorVoiceLines} from "../navigator/nav-voice-lines.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
@@ -134,6 +135,7 @@ export class RandomEncounter {
 
   /** queries player to determine if they will ambush, fight , etc.*/
   private static async queryPlayerResponse(encounter: Encounter, validChoices: typeof this.encounterChoices[number][]) : Promise<EncounterAction> {
+    void NavigatorVoiceLines.onEnemyEncountered(encounter);
     await this.PlayerNotifyChatMsg(encounter);
     return await this.takePlayerVote(validChoices, encounter.encounterDifficulty);
   }
@@ -172,7 +174,7 @@ export class RandomEncounter {
     return Math.round(total / encounter.enemies.length);
   }
 
-  static getLevelDiffString(encounter: Encounter) : string {
+  static getLevelDiffString(encounter: Encounter) {
     const levelDiff = this.avgPartyLevel() - this.avgLevelOfEncounter(encounter);
     switch (true) {
       case (levelDiff >= 8):  return "Very Easy";

@@ -254,6 +254,7 @@ export class SearchMenu {
 				case 4:
 				case 5:
 					val = Math.min(6, val + (options.treasureFindBonus ?? 0));
+				// eslint-disable-next-line no-fallthrough
 				case 6:
 					result= (7 - options.treasureRemaining <= val) ? "treasure" : "nothing";
 					break;
@@ -262,17 +263,6 @@ export class SearchMenu {
 			}
 			return [result, val];
 		}
-
-	// static async tensionPool(_guards: number, options: SearchOptions<typeof SearchMenu["template"]>) : Promise<TensionPoolResult> {
-	// 	// if (!options.rollTension) return TensionPool.nullResult();
-	// 	const tensionRoll =  await TensionPool.instance.roll();
-	// 	let inc = options.incTension;
-	// 	while (inc--) {
-	// 		await TensionPool.instance.inc();
-	// 	}
-	// 	return tensionRoll;
-
-	// }
 
 	static async searchOptionsDialog<T extends SearchPromptConfigObject>(optionsToFill: T) : Promise<SearchOptions<T>> {
 		const ret: Partial<SearchOptions<T>> = {};
@@ -588,7 +578,7 @@ type SearchAttempt = {
 }
 
 	type SearcherData = {
-		actor: UniversalActorAccessor<PersonaActor>;
+		actor: UniversalActorAccessor<PC | NPCAlly>;
 		name: string;
 		ownerId: string;
 		ownerName: string;

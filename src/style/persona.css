@@ -1905,6 +1905,11 @@ img.navigator-img  {
   align-self: flex-start; /* extra safety: don't stretch */
 }
 
+.item-tag-list {
+	font-size: 0.8em;
+}
+
+
 .navigator-speech {
 	font-style: italic;
   flex:1;

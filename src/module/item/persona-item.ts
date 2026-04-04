@@ -654,10 +654,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   get isHidden() : boolean {
     switch (true) {
       case this.isTag(): return this.system.hidden;
-
     }
     return false;
-
   }
 
   get cardTags() : (Tag | CardTag | RollTag)[] {
@@ -1339,6 +1337,17 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         }
         else {return 'Unlinked Skill Card';}
       }
+      case "weapon":
+      case "item": {
+        const tags = this.tagList()
+        .filter( tag => tag instanceof PersonaItem)
+        .filter( tag=> tag.isEnchantmentTag() && !tag.isHidden)
+        .map( tag=> tag.name)
+        .join (" ,");
+        if (tags.length > 0) {
+          return `${this.name} (${tags})`;
+        }
+      }
     }
     return this.name;
   }
@@ -1367,8 +1376,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         }
         else {return new Handlebars.SafeString('Unlinked Skill Card');}
       }
+      case "item":
+      case "weapon": {
+        const tags = this.tagList()
+        .filter( tag => tag instanceof PersonaItem)
+        .filter( tag=> tag.isEnchantmentTag() && !tag.isHidden)
+        .map( tag=> `<span class="tag" title="${tag.description.toString()}"> ${tag.name} </span>`)
+        .join("");
+        if (tags.length > 0) {
+          return new Handlebars.SafeString(`<span class='item-true-name'> ${this.name} </span> <span class='item-tag-list'> (${tags}) </span>`);
+        }
+      }
     }
-    return new Handlebars.SafeString(this.name);
+    return new Handlebars.SafeString(this.displayedName);
   }
 
   toModifierList(this: ItemModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow | null): ModifierList {
@@ -1385,11 +1405,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       // && !ConditionalEffectManager.canModifyStat(eff, btype))
         .map(eff => {
           const ownerName = eff.owner ? PersonaDB.findActor(eff.owner)?.name ?? "" : "" ;
-        const name = eff.realSource && eff.realSource as unknown != this
-          ? `${ownerName} (${eff.realSource.name})`
-          : eff.source && eff.source as unknown != this
-          ? `${ownerName} (${eff.source.name})`
-          : this.name;
+          const name = eff.realSource && eff.realSource as unknown != this
+            ? `${ownerName} (${eff.realSource.name})`
+            : eff.source && eff.source as unknown != this
+            ? `${ownerName} (${eff.source.name})`
+            : this.name;
           return ({
             name,
             // name: eff.source?.name ?? "Unknown Source",
@@ -1908,6 +1928,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   isUniversalModifier(): this is UniversalModifier {
     return this.system.type == "universalModifier";
+  }
+
+  isEnchantmentTag(this: Tag) : boolean {
+    return this.system.tagType == "enchantment";
   }
 
   isCarryableType(): this is Carryable  {
@@ -2567,7 +2591,7 @@ async markEventUsed(this: SocialCard, event: CardEvent) {
 
 static async DamageLevelConvert(item: PersonaItem) {
   if (!item.isUsableType()) {return;}
-  if (item.isSkillCard()) {return;}
+  // if (item.isSkillCard()) {return;}
   if (!item.isPower()) {return;}
   let damageLevel : typeof item['system']['damageLevel'] | undefined;
   if (item.system.damageLevel != '-' && item.system.damageLevel != 'fixed') {return;}
@@ -2671,7 +2695,7 @@ causesAilment(this: Usable) : boolean {
 ailmentsCaused (this:Usable, deepTagList = true) : StatusEffectId[]{
   return this.statusesAdded(deepTagList)
     .filter ( status => STATUS_AILMENT_SET.has(status.status))
-  .map ( status => status.status);
+    .map ( status => status.status);
 }
 
 removesAilment(this:Power) : boolean {

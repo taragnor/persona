@@ -5,32 +5,49 @@
 			</a>
 	</h3>
 
-	<ul>
-		{{#each actor.navigatorVoiceLines as |vl i|}}
-		<li data-vl-index="{{i}}" data-sound-file="{{vl.fileName}}" >
-			<span>
-				<select name="system.combat.navigatorVoice.{{i}}.trigger">
-					{{selectOptions ../CONST.NAVIGATOR_TRIGGERS localize=true selected=vl.trigger}}
-				</select>
-			</span>
-			{{#if (eqAny vl.trigger "immune" "vulnerable")}}
-				<select name="system.combat.navigatorVoice.{{i}}.elementType">
-					{{selectOptions ../CONST.DAMAGETYPES localize=true selected=vl.elementType}}
-				</select>
-			{{/if}}
-			{{#if vl.fileName}}
-			<span>
-				<a class="play-voiceline" title="{{vl.fileName}}">
-					<i class="fa-solid fa-play"></i>
-				</a>
-			</span>
-			{{else}}
-			{{filePicker type="audio" target=(strcat "system.combat.navigatorVoice." i ".fileName") }}
-			{{/if}}
-			<input type="hidden" name="system.combat.navigatorVoice.{{i}}.fileName" value="{{vl.fileName}}">
-			<a class="del-voiceline">
-				<i class="fa-solid fa-trash-can"></i>
-			</a>
+  <ul>
+    {{#each actor.navigatorVoiceLines as |vl i|}}
+    <li data-vl-index="{{i}}" data-sound-file="{{vl.fileName}}" >
+      <span>
+        <select name="system.combat.navigatorVoice.{{i}}.trigger">
+          {{selectOptions ../CONST.NAVIGATOR_TRIGGERS localize=true selected=vl.trigger}}
+        </select>
+      </span>
+      {{#if (eqAny vl.trigger "immune" "vulnerable")}}
+      <select name="system.combat.navigatorVoice.{{i}}.elementType">
+        {{selectOptions ../CONST.DAMAGETYPES localize=true selected=vl.elementType}}
+      </select>
+      <label> Strong Enemy</label>
+      <input class="strong-enemy" type="checkbox" name="system.combat.navigatorVoice.{{i}}.strongEnemy" {{checked vl.strongEnemy}}>
+      {{/if}}
+      {{#if (eqAny vl.trigger "injured" "enemy-spotted")}}
+      <input class="short" type=number name="system.combat.navigatorVoice.{{i}}.level" value="{{vl.level}}">
+      {{/if}}
+      {{#if (eqAny vl.trigger "status-added")}}
+      <select name="system.combat.navigatorVoice.{{i}}.statusCondition">
+        {{selectOptions ../CONST.STATUSEFFECTS localize=true selected=vl.statusCondition}}
+      </select>
+      {{/if}}
+      {{#if (eqAny vl.trigger "special")}}
+      <input type="text" name="system.combat.navigatorVoice.{{i}}.text" value="{{vl.text}}" title="Description" placeholder="Description">
+      {{/if}}
+      {{#if (eqAny vl.trigger "level-up")}}
+      <label>self level up </label>
+      <input class="level-up" type="checkbox" name="system.combat.navigatorVoice.{{i}}.bool" {{checked vl.bool}}>
+      {{/if}}
+      {{#if vl.fileName}}
+      <span>
+        <a class="play-voiceline" title="{{vl.fileName}}">
+          <i class="fa-solid fa-play"></i>
+        </a>
+      </span>
+      {{else}}
+      {{filePicker type="audio" target=(strcat "system.combat.navigatorVoice." i ".fileName") }}
+      {{/if}}
+      <input type="hidden" name="system.combat.navigatorVoice.{{i}}.fileName" value="{{vl.fileName}}">
+      <a class="del-voiceline">
+        <i class="fa-solid fa-trash-can"></i>
+      </a>
 
 		</li>
 		{{/each}}

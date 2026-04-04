@@ -400,9 +400,10 @@ export class Metaverse {
 							PersonaError.softFail("Treasure Found but no roll given");
 							break;
 						}
-						const treasureRoll = await region.treasureFound(result.roll, searcher as ValidAttackers);
+						const treasureRoll = await region.treasureFound(result.roll, searcher);
 						if (treasureRoll) {
 							treasureRolls.push(...treasureRoll);
+              await TreasureSystem.awardFoundRoomTreasure(searcher, treasureRoll);
 						}
 						break;
 					}

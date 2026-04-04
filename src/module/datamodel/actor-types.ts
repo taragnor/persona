@@ -212,6 +212,11 @@ class NPCAllySchema extends foundry.abstract.TypeDataModel {
 						fileName: new txt(),
 						trigger: new txt<NavigatorTrigger>(),
 						elementType: new txt<DamageType>(),
+						level: new num(),
+            statusCondition: new txt(),
+            strongEnemy: new bool(),
+            text: new txt(),
+            bool: new bool(),
 					})
 				),
 			}),

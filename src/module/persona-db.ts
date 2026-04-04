@@ -299,7 +299,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		if (this.#cache.enchantments) {return this.#cache.enchantments;}
 		const tags= this.allItems()
 			.filter (x=> x.isTag())
-			.filter(tag=> tag.system.tagType == "enchantment");
+			.filter(tag=> tag.isEnchantmentTag());
 		return this.#cache.enchantments = tags;
 	}
 

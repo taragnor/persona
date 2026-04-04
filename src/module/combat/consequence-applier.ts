@@ -139,6 +139,13 @@ export class ConsequenceApplier {
         ?.finalize();
       if (CR) { ret.push(CR);}
     }
+    if (dmg.hpChange > 0) {
+      const combat = PersonaCombat.combat;
+      if (combat && !combat.isSocial) {
+        await NavigatorVoiceLines.onTargetHeal(actor, combat);
+      }
+    }
+
     if (power) {
       PersonaSFX.onDamage(token, dmg.hpChange, dmg.damageType, power);
     }
