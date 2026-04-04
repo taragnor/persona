@@ -9,6 +9,8 @@ import { EnergyCostBase } from "./energy-cost-base.js";
 import {Persona} from "../persona-class.js";
 
 export class EnergyClassCalculator extends CostCalculator {
+     static MULTIATTACK_MULT = 18 as const;
+
 	 static calcEnergyCost(pwr: Power, shadow: Persona) : {energyRequired: number, energyCost: number, cooldown: number} {
 			// const emptyCost = { energyRequired:0, energyCost:0, cooldown: 0 };
 			// if (pwr.isPassive()) {return emptyCost;}
@@ -86,7 +88,7 @@ export class EnergyClassCalculator extends CostCalculator {
 		};
 		const energyRequired = pwr.getBonuses("power-energy-req").total(situation);
 		const energyCost = pwr.getBonuses("power-energy-cost").total(situation);
-		return new EnergyCostBase(energyCost, energyRequired);
+		return new EnergyCostBase(energyRequired, energyCost);
 	}
 
 	static #targetsMod(power: Power) : EnergyCostBase {
@@ -101,8 +103,8 @@ export class EnergyClassCalculator extends CostCalculator {
 
 	static #multiattack(power: Power) : EnergyCostBase {
 		if (power.system.attacksMax <= 1) {return this.NULL_COST;}
-		const cost = (power.system.attacksMax -1) * 24
-			+ (power.system.attacksMin - 1) * 24;
+		const cost = (power.system.attacksMax - 1) * this.MULTIATTACK_MULT
+			+ (power.system.attacksMin - 1) * this.MULTIATTACK_MULT;
 		return new EnergyCostBase(cost, cost);
 	}
 
@@ -122,7 +124,6 @@ export class EnergyClassCalculator extends CostCalculator {
 
 	static #energyLevel_damage(pwr: Power) : EnergyCostBase {
 		const base = this.DAMAGE_LEVEL_BASE_ENERGY[pwr.system.damageLevel] ?? 0;
-		// const modifier = this.SHADOW_DAMAGE_TYPE_MODIFIER[pwr.system.dmg_type] ?? 0;
 		const cost = base;
 		return new EnergyCostBase(cost, cost);
 	}

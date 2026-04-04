@@ -430,9 +430,7 @@ export type EnchantedTreasureFormat = {
 	costMult ?: number,
 }
 
-
 export type BattleTreasure = {
 	money : number,
 	items: TreasureItem[],
 };
-

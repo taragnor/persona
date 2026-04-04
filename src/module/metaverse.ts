@@ -85,6 +85,9 @@ export class Metaverse {
     if (gen) {
       await RandomDungeonOutput.outputToScene(gen, scene, TreasureSystem, "WonderLand Depths");
       await TensionPool._instance.clear();
+      if (gen.sceneModifiers.length > 0) {
+        void NavigatorVoiceLines.navigatorTalk("This level has some interesting properties.");
+      }
       if (gen.hasActiveQuest()) {
         void NavigatorVoiceLines.navigatorTalk("There looks like there's something interesting on this level");
       }

@@ -374,25 +374,6 @@ private region_hazard(sq: DungeonSquare["group"]) : {status: RegionData["hazard"
       })
       .filter( mod => mod != undefined);
     await this.scene.setSceneModifiers(resolvedMods);
-
-    // const mods : UniversalModifier[] = [];
-    // for (const modifier of this.sceneMods) {
-    //   let mod = modifier;
-    //   if (typeof mod == "string") {
-    //     mod = PersonaDB.getSceneModifiers().find( x=> x.name == modifier || x.id == modifier);
-    //     if (mod == undefined) {
-    //       PersonaError.softFail(`Can't find Scene MOdifier $${modifier as string}`);
-    //       continue;
-    //     }
-    //   }
-    //   if (mod instanceof PersonaItem && mod.isUniversalModifier()) {
-    //     mods.push(mod);
-    //     // await this.scene.setSceneModifiers(mods as UniversalModifier[]);
-    //   } else {
-    //     throw new PersonaError("Modifiers aren't of type PersonaItem UniversalModifier");
-    //   }
-    // }
-    // await this.scene.setSceneModifiers(resolvedMods);
   }
 
 	wallToLineConvert( wd: Pick<WallData, "door" | "c">) : U<Partial<Foundry.DrawingData>> {
@@ -402,8 +383,8 @@ private region_hazard(sq: DungeonSquare["group"]) : {status: RegionData["hazard"
 		const dy = y2 - y1;
 		const shape : Foundry.ShapesData = {
 			type: "p",
-			height: Math.abs(y2- y1),
-			width: Math.abs(x2- x1),
+			height: Math.abs(y2 - y1),
+			width: Math.abs(x2 - x1),
 			radius: null,
 			points: [0, 0, Math.abs(dx), Math.abs(dy)]
 		};
