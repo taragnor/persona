@@ -44,7 +44,6 @@ export class RandomDungeonGenerator {
 	get currentDepth() : number {return this._depth;}
 
 	print(description : boolean = false) : string {
-
     let ret = "";
     if (description) {
       ret += `Dungeon Lvl ${this.currentDepth} Seed: ${this.seedString}`;
@@ -292,7 +291,7 @@ export class RandomDungeonGenerator {
     return activeQuests;
   }
 
-  private assignQuestSpecials() {
+  private assignQuestSpecials() :boolean {
     let filter: (sq: DungeonSquare) => boolean = () => false;
     for (const quest of this.activeQuests) {
       switch (quest.requirement) {
@@ -313,7 +312,9 @@ export class RandomDungeonGenerator {
         throw new InvalidDungeonError("Can't assign quest special");
       }
       rm.assignQuestSpecial(quest);
+      return true;
     }
+    return false;
   }
 
   private assignTreasures() {
@@ -369,7 +370,7 @@ export class RandomDungeonGenerator {
 		const list = this.squareList
 			.filter (x=> !x.isStairs());
 		for (const room of list) {
-			if (!this.percentChance(60)) {continue;}
+			// if (!this.percentChance(60)) {continue;}
 			room.assignSpecials();
 		}
 	}
@@ -394,8 +395,10 @@ export class RandomDungeonGenerator {
       try {
         this.createFloorplan(numSquares);
         this.assignExit();
-        this.assignQuestSpecials();
-        this.assignSpecialFloors();
+        const questFloor = this.assignQuestSpecials();
+        if (!questFloor) {
+          this.assignSpecialFloors();
+        }
         this.assignSpecials();
         this.assignTreasures();
         this.assignFlavorText();
@@ -438,12 +441,12 @@ export class RandomDungeonGenerator {
     }
     let emergencyBrake = 0;
     while (this.squareList.length < numSquares) {
-      const corridors = this.rng.die(1,3)+1;
+      const corridors = this.rng.die(1,4)+1;
       const corridorMade= this.createDungeonCorridors(corridors );
       if (corridorMade && this.stepDebug) {
         this.print();
       }
-      const rooms = this.rng.die(1,3);
+      const rooms = this.rng.die(1,2);
       const roomMade = this.createDungeonRooms(rooms);
       if (roomMade && this.stepDebug) {
         this.print();

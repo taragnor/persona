@@ -30,8 +30,8 @@ export class RandomDungeonOutput <TreasureType> {
 	wallData: ReturnType<RandomDungeonOutput<unknown>["createWallsOnSquare"]> = [];
   errorLog: (string | Error)[] = [];
 
-  regionData : WeakMap<DungeonSquare, RegionBaseData> = new WeakMap();
-  treasureData : WeakMap<DungeonSquare, TreasureType[]> = new WeakMap();
+  regionData : WeakMap<DungeonSquare["group"], RegionBaseData> = new WeakMap();
+  treasureData : WeakMap<DungeonSquare["group"], TreasureType[]> = new WeakMap();
 
   SQUARE_WIDTH = 5 as const;
   SQUARE_HEIGHT = 5 as const;
@@ -70,8 +70,8 @@ export class RandomDungeonOutput <TreasureType> {
     };
     this.depth = generator.currentDepth;
     this.checkDimensions();
-    this.sceneMods = generator.sceneModifiers;
-    this.squareList = this.generator.squareList;
+    this.sceneMods = generator.sceneModifiers.slice();
+    this.squareList = this.generator.squareList.slice();
     this.finalizeSquares(this.squareList);
 		this._baseDiff = (this.scene.baseDungeonLevel || baseDiff) ?? 0;
 		if (this._baseDiff == 0) {
@@ -85,13 +85,13 @@ export class RandomDungeonOutput <TreasureType> {
 	}
 
   private finalizeSquares(squares : readonly DungeonSquare[]) {
-    for (const sq of squares) {
-      const data = this.makeRegionData(sq);
+    for (const grp of squares.map (sq=> sq.group)) {
+      const data = this.makeRegionData(grp);
       if (data) {
-        this.regionData.set(sq, data);
+        this.regionData.set(grp, data);
       }
-      const treasures= this.generateTreasures(sq);
-      this.treasureData.set(sq, treasures);
+      const treasures = this.generateTreasures(grp);
+      this.treasureData.set(grp, treasures);
     }
   }
 
@@ -134,7 +134,7 @@ export class RandomDungeonOutput <TreasureType> {
 			return;
 		}
 		for (const tok of PCTokens) {
-			const {x, y} = this.treasurePosition(startingSq);
+			const {x, y} = this.treasurePosition(startingSq.group);
 			await tok.move( {x , y, action: "displace"});
 		}
 	}
@@ -163,16 +163,16 @@ export class RandomDungeonOutput <TreasureType> {
 	}
 
   private async createRegions() {
-    for (const sq of this.squareList) {
-      const rdata = this.regionData.get(sq);
+    for (const grp of this.squareList.map( sq=> sq.group)) {
+      const rdata = this.regionData.get(grp);
       if (!rdata) {continue;}
       const region = (await this.scene.createEmbeddedDocuments<PersonaRegion>("Region", [rdata as Record<string, unknown>]))[0];
-      const regionData = this.prepPersonaRegionData(sq);
+      const regionData = this.prepPersonaRegionData(grp);
       await region.setRegionData(regionData);
     }
   }
 
-	private prepPersonaRegionData(sq: DungeonSquare) : RegionData {
+	private prepPersonaRegionData(sq: DungeonSquare["group"]) : RegionData {
 		const secret = this.region_secret(sq);
 		const hazard = this.region_hazard(sq);
 		const regionData: RegionData = {
@@ -195,7 +195,7 @@ export class RandomDungeonOutput <TreasureType> {
     return regionData;
 	}
 
-  private region_notes (sq: DungeonSquare) : string {
+  private region_notes (sq: DungeonSquare["group"]) : string {
     const notes :string[]= [];
     if (sq.questSpecial && sq.questSpecial.gmNotes) {
       notes.push(sq.questSpecial.gmNotes);
@@ -225,11 +225,11 @@ export class RandomDungeonOutput <TreasureType> {
     }
   }
 
-  private region_roomEffects( _sq: DungeonSquare) : RegionData["roomEffects"] {
+  private region_roomEffects( _sq: DungeonSquare["group"]) : RegionData["roomEffects"] {
     return [];
   }
 
-  private region_specialMods(sq: DungeonSquare) : RegionData["specialMods"] {
+  private region_specialMods(sq: DungeonSquare["group"]) : RegionData["specialMods"] {
     let mods : RegionData["specialMods"] = [];
     if (sq.isTeleporter()) {
       return ["safe" ,"compendium-access"];
@@ -260,15 +260,15 @@ export class RandomDungeonOutput <TreasureType> {
     return mods;
 	}
 
-	private region_secret(sq: DungeonSquare) : {status: RegionData["secret"], details: string} {
+	private region_secret(group: DungeonSquare["group"]) : {status: RegionData["secret"], details: string} {
 		let status : RegionData["secret"] = "none";
 		const details :string[]= [];
-    const ft = sq.flavorText.find( x=> x.secret);
+    const ft = group.flavorText.find( x=> x.secret);
     if (ft) {
       status = "hidden";
       details.push(ft.secret!);
     }
-    if (sq.group.hasHiddenDoor()) {
+    if (group.hasHiddenDoor()) {
       status = "hidden";
       details.push("Secret Door");
 
@@ -276,7 +276,7 @@ export class RandomDungeonOutput <TreasureType> {
 		return {status, details: details.join(", ")};
 	}
 
-private region_hazard(sq: DungeonSquare) : {status: RegionData["hazard"], details: string} {
+private region_hazard(sq: DungeonSquare["group"]) : {status: RegionData["hazard"], details: string} {
 		let status : RegionData["hazard"] = "none";
 		let details = "";
     const ft = sq.flavorText.find( x=> x.hazard);
@@ -288,11 +288,11 @@ private region_hazard(sq: DungeonSquare) : {status: RegionData["hazard"], detail
 	}
 
 
-  private region_pointsOfInterest(sq: DungeonSquare) : string []{
+  private region_pointsOfInterest(sq: DungeonSquare["group"]) : string []{
     const ret = [];
     switch (true) {
       case sq.isStartPoint():
-        if (sq.parent.currentDepth == 0) {
+        if (sq[0].parent.currentDepth == 0) {
           ret.push("Exit: An exit leads back to Wonderland");
         } else {
           ret.push("Ascend Point: You can ascend towards the higher level here.");
@@ -325,10 +325,10 @@ private region_hazard(sq: DungeonSquare) : {status: RegionData["hazard"], detail
 			PersonaError.softFail("No item piles, can't create treasures");
 			return;
 		}
-		for (const sq of this.squareList)  {
-      const treasures = this.treasureData.get(sq) ?? [];
+		for (const grp of this.squareList.map(sq=> sq.group))  {
+      const treasures = this.treasureData.get(grp) ?? [];
 			if (treasures.length == 0) {continue;}
-			const position = this.treasurePosition(sq);
+			const position = this.treasurePosition(grp);
 			const pile = await game.itempiles.API.createItemPile({position});
 			if (!pile?.tokenUuid)  {
 				PersonaError.softFail(`Something went wrong with creating Item pile at ${position.x} , ${position.y}`);
@@ -503,7 +503,8 @@ private region_hazard(sq: DungeonSquare) : {status: RegionData["hazard"], detail
 		return walls;
 	}
 
-	treasurePosition(sq : DungeonSquare): Point {
+	treasurePosition(grp : DungeonSquare["group"]): Point {
+    const sq = grp[0];
 		let {x,y} = this.realCoordinates(sq);
 		const GS = this.grid.size;
 		x += Math.floor(this.SQUARE_WIDTH /2) * GS;
@@ -525,20 +526,22 @@ private region_hazard(sq: DungeonSquare) : {status: RegionData["hazard"], detail
 		};
 	}
 
-	private makeRegionData(sq: DungeonSquare) : U<RegionBaseData> {
-		if (sq.canBeRegion === false) {return;}
-		const name = sq.generateRegionName();
-		const shapes = sq.group.map( x=> this.rect(x));
+	private makeRegionData(group: DungeonSquare["group"]) : U<RegionBaseData> {
+    if (this.regionData.has(group)) {return;}
+		// if (sq.canBeRegion === false) {return;}
+		const name = group.generateRegionName();
+		const shapes = group.map( x=> this.rect(x));
+		// const shapes = sq.group.map( x=> this.rect(x));
 		const regionConstructionInfo : RegionBaseData = {
 			name,
 			shapes,
 		};
-		sq.group.forEach( member => member.canBeRegion = false);
+		// group.forEach( member => member.canBeRegion = false);
     //need to compress thigs like flavor text and such into the one region
 		return regionConstructionInfo;
 	}
 
-	generateTreasures(sq: DungeonSquare,) : TreasureType[] {
+	generateTreasures(sq: DungeonSquare["group"]) : TreasureType[] {
     const arr : TreasureType[] = [];
 		let modifier: number = 0;
     let minLevel : number = 1;

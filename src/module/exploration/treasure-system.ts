@@ -39,6 +39,7 @@ export class TreasureSystem {
 
 		}
 		const enchantmentRoll = this.treasureRoll(modifier, treasureMin);
+    if (enchantmentRoll <= 15) {return undefined;}
 		const enchantmentTable = this.convertRollToTreasureTable(enchantmentRoll);
 		const enchantment = this.generateEnchantmentFromTable(enchantmentTable, treasureLevel);
 		return enchantment;

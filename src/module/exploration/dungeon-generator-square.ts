@@ -10,11 +10,11 @@ export class DungeonSquare {
 	type: "corridor" | "room";
 	group: SquareGroup;
 	connections: DungeonSquare[] = [];
-	specials: RoomSpecial[] = [];
+	// specials: RoomSpecial[] = [];
   canBeRegion = true;
-  flavorText: FlavorText[] = [];
-  numOfTreasures: number = 0;
-  questSpecial : U<QuestSpecial> = undefined;
+  // flavorText: FlavorText[] = [];
+  // numOfTreasures: number = 0;
+  // questSpecial : U<QuestSpecial> = undefined;
 
 	constructor(generator: RandomDungeonGenerator, x: number, y:number, type: typeof this["type"]) {
 		this.parent = generator;
@@ -23,7 +23,7 @@ export class DungeonSquare {
 		this.type = type;
 		this.group = new SquareGroup(this);
 		this.connections = [];
-		this.specials = [];
+		// this.specials = [];
 	}
 
 
@@ -32,80 +32,19 @@ export class DungeonSquare {
   }
 
 	isStartPoint(): boolean {
-		return this.specials.includes("entrance");
+		return this.group.isStartPoint();
 	}
 
 	isStairsDown() : boolean {
-		return this.specials.includes("exit");
+		return this.group.isStairsDown();
 	}
 
 	isTeleporter(): boolean {
-		return this.specials.includes("checkpoint");
+		return this.group.isTeleporter();
 	}
 
 	isStairs(): boolean {
 		return this.isStartPoint() || this.isStairsDown();
-	}
-
-	hasTreasure() : boolean {
-		return this.numOfTreasures > 0;
-	}
-
-	generateRegionName() : string {
-    if (this.questSpecial && this.questSpecial.roomName) {
-      return this.questSpecial.roomName;
-    }
-    const definedName = this.flavorText
-      .find( ft => ft.newName)?.newName;
-    if (definedName) {return `${definedName}${this.isHiddenRoom() ? " (Hidden)": ""}`;}
-		switch (this.type) {
-			case "corridor":
-				if (this.isDeadEnd()) {
-					return "Dead End";
-				}
-				if (this.group.length == 1) {
-					return "Short Corridor";
-				}
-				if (this.group.length >= 4) {
-					return "Long Corridor";
-				}
-				return "Corridor";
-			case "room":
-				switch (true) {
-					case this.isStartPoint(): {
-						return "Access Point (up)";
-					}
-					case this.isStairsDown(): {
-						return "Access Point (down)";
-					}
-					case this.isTeleporter(): {
-						return "Remote Access Terminal (Teleporter)";
-					}
-          case this.isHiddenRoom(): {
-            return "Secret Area";
-          }
-					default:
-						return "Miscellaneous Room";
-				}
-		}
-	}
-
-
-	die (sides: number) {
-		return Math.floor(Math.random() * sides) + 1;
-	}
-
-	public maxTreasures(): number {
-		if (this.isCorridor()) {
-			if (this.isDeadEnd()) {
-				return this.die(3);
-			}
-			return this.die(2)-1;
-		}
-		if (this.isStartPoint() || this.isStairsDown()) {
-			return 0;
-		}
-		return Math.floor(1 + this.die(4));
 	}
 
 	static flipCoordsIfNecessary (c: WallData["c"]) : WallData["c"] {
@@ -130,18 +69,6 @@ export class DungeonSquare {
 		return arr;
 	}
 
-	public shadowPresence() : number {
-		switch (true) {
-			case this.isStartPoint():  return 0;
-			case this.isDeadEnd(): {return 1;}
-			case this.isStairsDown(): {return 4;}
-			case this.isCorridor(): {
-				const presence =  Math.max(1, Math.ceil(this.group.length / 2));
-				return presence;
-			}
-			default: return 2;
-		}
-	}
 
 	addToGroup(sq: DungeonSquare[]) {
 		this.group.pushUnique(...sq);
@@ -238,13 +165,13 @@ export class DungeonSquare {
 	}
 
 	addSpecial (sp : RoomSpecial) {
-		this.specials.pushUnique(sp);
+    this.group.addSpecial(sp);
 	}
 
 	print() : string {
 		switch (this.type) {
 			case "corridor":
-				if (this.hasTreasure()) {
+				if (this.group.hasTreasure()) {
 					return "T";
 				}
 				if (this.isDeadEnd()) {
@@ -256,7 +183,7 @@ export class DungeonSquare {
 					case this.isStartPoint(): return "S";
 					case this.isStairsDown(): return "X";
 					case this.isTeleporter(): return "t";
-					case this.hasTreasure(): return String(this.numOfTreasures);
+					case this.group.hasTreasure(): return String(this.group.numOfTreasures);
 					default: return "R";
 				}
 		}
@@ -279,18 +206,20 @@ export class DungeonSquare {
   }
 
   isEmptyRoom() : boolean {
-    return this.isRoom()
-    // && this.specials.length == 0
-      && !this.isStartPoint()
-      && !this.isStairsDown()
-      && !this.isTeleporter()
-      && this.flavorText.length == 0
-      && !this.questSpecial;
+    return this.group.isEmptyRoom();
+    // return this.isRoom()
+    // // && this.specials.length == 0
+    //   && !this.isStartPoint()
+    //   && !this.isStairsDown()
+    //   && !this.isTeleporter()
+    //   && this.group.flavorText.length == 0
+    //   && !this.group.questSpecial;
 
   }
 
 	isHiddenRoom() : boolean {
-		return this.specials.includes("hidden-room");
+    return this.group.isHiddenRoom();
+		// return this.specials.includes("hidden-room");
 	}
 
 	hasHiddenDoor() : boolean {
@@ -301,49 +230,42 @@ export class DungeonSquare {
 			)
 		;
 	}
-
   assignQuestSpecial( quest : QuestSpecial) {
-    ui.notifications.notify("Placed quest room on this level");
-    this.questSpecial = quest;
+    this.group.assignQuestSpecial(quest);
   }
+
 
 	assignSpecials() {
-		if (this.isRoom()) {return this.assignRoomSpecials();}
-		if (this.isCorridor()) {return this.assignCorridorSpecials();}
+		if (this.isRoom()) {return this.group.assignRoomSpecials(this.parent);}
+		if (this.isCorridor()) {return this.group.assignCorridorSpecials();}
 	}
 
-	assignCorridorSpecials() {
-		const die = this.die(100);
-		switch (true) {
-			case die > 90:
-				break;
-		}
-	}
-
-  assignRoomSpecials() {
-    const die = this.die(100);
-    switch (true) {
-      case die > 90:
-        if (!this.parent.squareList.some( sq => sq.isTeleporter()) ) {
-          this.specials.push("checkpoint");
-          console.log("teleporter created");
-          break;
-        }
-      // eslint-disable-next-line no-fallthrough
-      case die > 75 : {
-        this.specials.push("hidden-room");
-        console.log("Hidden room created");
-        break;
-      }
-    }
-  }
+  // assignRoomSpecials() {
+  //   const die = this.die(100);
+  //   switch (true) {
+  //     case die > 90:
+  //       if (!this.parent.squareList.some( sq => sq.isTeleporter()) ) {
+  //         this.specials.push("checkpoint");
+  //         console.log("teleporter created");
+  //         break;
+  //       }
+  //     // eslint-disable-next-line no-fallthrough
+  //     case die > 75 : {
+  //       this.specials.push("hidden-room");
+  //       console.log("Hidden room created");
+  //       break;
+  //     }
+  //   }
+  // }
 
   setTreasures(amt: number) {
-    this.numOfTreasures = amt;
+    this.group.setTreasures(amt);
+    // this.numOfTreasures = amt;
   }
 
 	addFlavorText(flavor: FlavorText)  {
-    this.flavorText.push(flavor);
+    this.group.addFlavorText(flavor);
+    // this.flavorText.push(flavor);
 	}
 
 }
@@ -381,6 +303,18 @@ export type FinalizedDungeonSquare = DungeonSquare & {
 
 
 class SquareGroup extends Array<DungeonSquare> {
+  type: "room" | "corridor";
+
+  flavorText: FlavorText[] = [];
+  numOfTreasures: number = 0;
+  questSpecial : U<QuestSpecial> = undefined;
+	specials: RoomSpecial[] = [];
+
+  constructor( ...args: DungeonSquare[]) {
+    super(...args);
+    this.type = args[0].type;
+  }
+
   getNumberOfLegalAdjoiningPoints() {
     const val = this.reduce( (acc, sq) =>
       acc + sq.getLegalAdjoiningPoints()
@@ -402,12 +336,171 @@ class SquareGroup extends Array<DungeonSquare> {
   }
 
   hasHiddenDoor() : boolean {
-    return this.some(sq => sq.hasHiddenDoor());
-
+    // return this.some(sq => sq.hasHiddenDoor());
+		return this.isHiddenRoom()
+			|| (
+				this.isCorridor()
+				&& this.connections.some( c => c.group.isHiddenRoom())
+			)
+		;
   }
 
   isHiddenRoom() : boolean {
-    return this.some(sq => sq.isHiddenRoom());
+		return this.specials.includes("hidden-room");
   }
+
+	hasTreasure() : boolean {
+		return this.numOfTreasures > 0;
+	}
+
+	generateRegionName() : string {
+    if (this.questSpecial && this.questSpecial.roomName) {
+      return this.questSpecial.roomName;
+    }
+    const definedName = this.flavorText
+      .find( ft => ft.newName)?.newName;
+    if (definedName) {return `${definedName}${this.isHiddenRoom() ? " (Hidden)": ""}`;}
+		switch (this.type) {
+			case "corridor":
+				if (this.isDeadEnd()) {
+					return "Dead End";
+				}
+				if (this.length == 1) {
+					return "Short Corridor";
+				}
+				if (this.length >= 4) {
+					return "Long Corridor";
+				}
+				return "Corridor";
+			case "room":
+				switch (true) {
+					case this.isStartPoint(): {
+						return "Access Point (up)";
+					}
+					case this.isStairsDown(): {
+						return "Access Point (down)";
+					}
+					case this.isTeleporter(): {
+						return "Remote Access Terminal (Teleporter)";
+					}
+          case this.isHiddenRoom(): {
+            return "Secret Area";
+          }
+					default:
+						return "Miscellaneous Room";
+				}
+		}
+	}
+
+	isStartPoint(): boolean {
+		return this.specials.includes("entrance");
+	}
+
+	isStairsDown() : boolean {
+		return this.specials.includes("exit");
+	}
+
+	isTeleporter(): boolean {
+		return this.specials.includes("checkpoint");
+	}
+
+	addSpecial (sp : RoomSpecial) {
+		this.specials.pushUnique(sp);
+	}
+
+  isEmptyRoom() : boolean {
+    return this.isRoom()
+    // && this.specials.length == 0
+      && !this.isStartPoint()
+      && !this.isStairsDown()
+      && !this.isTeleporter()
+      && this.flavorText.length == 0
+      && !this.questSpecial;
+  }
+
+	isRoom() : boolean {
+		return this.type == "room";
+	}
+
+	isCorridor() : boolean {
+		return this.type == "corridor";
+	}
+
+  setTreasures(amt: number) {
+    this.numOfTreasures = amt;
+  }
+
+	addFlavorText(flavor: FlavorText)  {
+    this.flavorText.push(flavor);
+	}
+
+  assignRoomSpecials(generator: RandomDungeonGenerator) {
+    const die = generator.rng.getRandom() % 100;
+    switch (true) {
+      case die > 90:
+        if (!generator.squareList.some( sq => sq.isTeleporter()) ) {
+          this.specials.push("checkpoint");
+          console.log("teleporter created");
+          break;
+        }
+      // eslint-disable-next-line no-fallthrough
+      case die > 75 : {
+        this.specials.push("hidden-room");
+        console.log("Hidden room created");
+        break;
+      }
+    }
+  }
+
+  isDeadEnd() : boolean {
+    return this.isCorridor()
+      && this.connections
+      .filter( x=> !x.isHiddenRoom())
+      .length <= 1;
+    // && this.getEmptyAdjoiningPoints().length == 3;
+  }
+
+  assignQuestSpecial( quest : QuestSpecial) {
+    ui.notifications.notify("Placed quest room on this level");
+    this.questSpecial = quest;
+  }
+
+	public maxTreasures(): number {
+		if (this.isCorridor()) {
+			if (this.isDeadEnd()) {
+				return this.die(3);
+			}
+			return this.die(2)-1;
+		}
+		if (this.isStartPoint() || this.isStairsDown()) {
+			return 0;
+		}
+		return Math.floor(1 + this.die(4));
+	}
+
+	die (sides: number) {
+		return Math.floor(Math.random() * sides) + 1;
+	}
+
+	assignCorridorSpecials() {
+		const die = this.die(100);
+		switch (true) {
+			case die > 90:
+				break;
+		}
+	}
+
+	public shadowPresence() : number {
+		switch (true) {
+			case this.isStartPoint():  return 0;
+			case this.isDeadEnd(): {return 1;}
+			case this.isStairsDown(): {return 3;}
+			case this.isCorridor(): {
+				const presence =  Math.max(1, Math.ceil(this.length / 2));
+				return presence;
+			}
+			default: return 2;
+		}
+	}
 
 }
