@@ -1003,7 +1003,7 @@ export class PersonaHandleBarsHelpers {
         && persona.user.isPC()
         && persona.user.system.money >= cost
         && PersonaCompendium.canUseCompendium()
-        && persona.user.hasSpaceForNewPersona();
+        && persona.user.canAddNewPersona();
     },
     "fusionResult": function (s1: Shadow, s2: Shadow) : U<Shadow> {
 

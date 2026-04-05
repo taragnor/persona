@@ -658,10 +658,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		}
 	}
 
+  canAddNewPersona(this: ValidAttackers) : boolean {
+		if (this.isShadow()) {return true;}
+    return this.hasSpaceForNewPersona() || this.hasSpaceForNewSideboardPersona();
+  }
+
 	hasSpaceForNewPersona(this:ValidAttackers) : boolean {
 		if (this.isShadow()) {return true;}
 		return this.personaList.length < this.maxPersonas;
 	}
+
+  hasSpaceForNewSideboardPersona(this: ValidAttackers) : boolean {
+    return this.sideboardPersonas.length < this.maxPersonaSideboard;
+  }
 
 
 	async deletePersona(this: PC | Shadow, personaId: ValidAttackers["id"]) {
