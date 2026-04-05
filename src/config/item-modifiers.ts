@@ -134,16 +134,19 @@ export const MODIFIER_CATEGORIES = {
 	"other": OTHER_TYPES,
 } as const satisfies Record<string, readonly ModifierTarget[]>;
 
-export type ModifierCategory = keyof typeof MODIFIER_CATEGORIES;
+export type ModifierCategory = keyof typeof MODIFIER_CATEGORIES | "";
 
-export const MODIFIER_CATEGORIES_LOCALIZATION = HTMLTools.createLocalizationObject(Object.keys(MODIFIER_CATEGORIES) as ModifierCategory[], "persona.modifier.categories");
+export const MODIFIER_CATEGORIES_LOCALIZATION = HTMLTools.createLocalizationObject(Object.keys(MODIFIER_CATEGORIES) as Exclude<ModifierCategory, "">[], "persona.modifier.categories");
 
 
 
 export const MODIFIERS_TABLE = HTMLTools.createLocalizationObject(MODIFIERLIST, "persona.modifier");
 
+export type DeprecatedModifierTarget = typeof DEPRECATED_TYPES[number];
+
 export type NonDeprecatedModifierType = Exclude<ModifierTarget, typeof DEPRECATED_TYPES[number]>;
 export type ModifierTarget = typeof MODIFIERLIST[number];
+export type NonDeprecatedModifierTarget = NonDeprecatedModifierType;
 
 
 const ITEM_TARGETS_LIST = [

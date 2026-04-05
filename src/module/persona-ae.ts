@@ -7,7 +7,7 @@ import { GetEffectsOptions, ModifierContainer, PersonaItem} from "./item/persona
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaError } from "./persona-error.js";
 import { StatusEffectId } from "../config/status-effects.js";
-import {ModifierTarget} from "../config/item-modifiers.js";
+import {ModifierTarget, NonDeprecatedModifierType} from "../config/item-modifiers.js";
 import {ModifierListItem} from "./combat/modifier-list.js";
 import {TriggeredEffect} from "./triggered-effect.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
@@ -929,7 +929,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     await this.update({"changes": changes});
   }
 
-  getModifier(bonusTypes: ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null = this.parent instanceof PersonaActor ? this.parent : null): ModifierListItem[] {
+  getModifier(bonusTypes: NonDeprecatedModifierType[] | NonDeprecatedModifierType, sourceActor: PersonaActor | null = this.parent instanceof PersonaActor ? this.parent : null): ModifierListItem[] {
     return this.getLinkedTags().flatMap( tag => tag.getModifier(bonusTypes, sourceActor));
   }
 

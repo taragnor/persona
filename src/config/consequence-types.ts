@@ -9,7 +9,7 @@ import { ConsequenceType } from "./effect-types.js";
 import { InternalCreatureTag } from "./creature-tags.js";
 import { SaveType } from "./save-types.js";
 import { StatusDurationType } from "./status-effects.js";
-import { ConditionTarget, MultiCheckOrSingle, SocialLinkIdOrTarot } from "./precondition-types.js";
+import { ConditionTarget, MultiCheck, MultiCheckOrSingle, SocialLinkIdOrTarot } from "./precondition-types.js";
 import { AlterMPSubtype } from "./effect-types.js";
 import { ConsequenceTarget } from "./precondition-types.js";
 import { DamageSubtype } from "./effect-types.js";
@@ -23,7 +23,7 @@ import { ResistType } from "./damage-types.js";
 import { ResistStrength } from "./damage-types.js";
 import { OtherConsequence } from "../module/datamodel/other-effects.js";
 import { StatusEffectId } from "./status-effects.js";
-import { ItemProperty, ModifierCategory, ModifierTarget } from "./item-modifiers.js";
+import { DeprecatedModifierTarget, ItemProperty, ModifierCategory, NonDeprecatedModifierType } from "./item-modifiers.js";
 import {AttackResult} from "../module/combat/combat-result.js";
 import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js";
 import {StatusDuration} from "../module/persona-ae.js";
@@ -199,7 +199,7 @@ type NonGenericConsequences = UsePowerConsequence
 	| DungeonActionConsequence
 	| ModifierConsequence
 	| OldDamageConsequence
-	| OldModifier
+	// | OldModifier
 	| DisplayMessageConsequence
 	| ExpendItemConsequence
 	| AlterMPConsequence
@@ -511,9 +511,16 @@ type DamageConsequenceShared = {
 	/** manually added as part of processing */
 };
 
-export type NonDeprecatedConsequence = Consequence & { type: Exclude<Consequence["type"], DeprecatedConsequence["type"]>}
+export type NonDeprecatedConsequence = ExcludeDeprecatedModifiers<Consequence>
+  & ExcludeDeprecatedTypes<Consequence>
+  // & { type: Exclude<Consequence["type"], DeprecatedConsequence["type"]>}
 	& {applyTo: U<ConditionTarget>};
 //modifier doiesn't have an applyTo but we need to fix this later
+
+type ExcludeDeprecatedModifiers<T extends Consequence> = Exclude<T, DeprecatedMultiModifierConsequence | DeprecatedSingleModifierConsequence>
+
+  type ExcludeDeprecatedTypes<T extends Consequence>  =
+  { type: Exclude<T["type"], DeprecatedConsequence["type"]> | NonDeprecatedMultiModifierConsequence["type"] | NonDeprecatedSingleModifierConsequence["type"] }
 
 type DeprecatedSimpleEffect = {
 	type: "save-slot" | "half-hp-cost";
@@ -543,6 +550,8 @@ export type DeprecatedConsequence =
 		| ExtraActionConsequence
 		| ScanConsequence
 		| BasicNumberedConsequence
+    | DeprecatedMultiModifierConsequence
+    | DeprecatedSingleModifierConsequence
 	)
 ;
 
@@ -590,18 +599,55 @@ type DamageMultiplierCons = {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _errorCheckDType : Expect<DamageConsequence["damageSubtype"], DamageSubtype> = true;
 
-type ModifierConsequence = {
+type NonDeprecatedMultiModifierConsequence = {
 	type: "modifier-new",
-	modifiedFields : Record<ModifierTarget,boolean>,
+	modifiedFields : MultiCheck<NonDeprecatedModifierType>,
 	modifierCategory: ModifierCategory,
 	amount: ConsequenceAmount,
-};
+}
 
-type OldModifier = {
+type DeprecatedMultiModifierConsequence = {
+	type: "modifier-new",
+	modifiedFields : MultiCheck<DeprecatedModifierTarget>,
+	modifierCategory: ModifierCategory,
+	amount: ConsequenceAmount,
+}
+
+type ModifierConsequence =
+  NonDeprecatedMultiModifierConsequence
+  | DeprecatedMultiModifierConsequence
+  | DeprecatedSingleModifierConsequence
+  | NonDeprecatedSingleModifierConsequence;
+
+
+
+// type ModifierConsequence = {
+// 	type: "modifier-new",
+// 	modifiedFields : Record<ModifierTarget,boolean>,
+// 	modifierCategory: ModifierCategory,
+// 	amount: ConsequenceAmount,
+// };
+
+// type OldModifier = {
+// 	type: "modifier",
+// 	modifierCategory: ModifierCategory,
+// 	modifiedField : ModifierTarget,
+// 	amount: ConsequenceAmount,
+// }
+
+type DeprecatedSingleModifierConsequence = {
 	type: "modifier",
 	modifierCategory: ModifierCategory,
-	modifiedField : ModifierTarget,
+	modifiedField : DeprecatedModifierTarget,
 	amount: ConsequenceAmount,
+}
+
+type NonDeprecatedSingleModifierConsequence = {
+	type: "modifier",
+	modifierCategory: ModifierCategory,
+	modifiedField : NonDeprecatedModifierType,
+	amount: ConsequenceAmount,
+
 }
 
 

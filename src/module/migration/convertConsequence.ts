@@ -1,7 +1,8 @@
 import {Consequence, DamageConsequence, DeprecatedConsequence, NewDamageConsequence, NonDeprecatedConsequence, NonDeprecatedDamageCons, OldDamageConsequence} from "../../config/consequence-types.js";
 import {DamageType} from "../../config/damage-types.js";
+import {DeprecatedModifierTarget, ModifierTarget, NonDeprecatedModifierTarget} from "../../config/item-modifiers.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
-import {ConditionTarget} from "../../config/precondition-types.js";
+import {ConditionTarget, MultiCheck} from "../../config/precondition-types.js";
 import {PersonaItem} from "../item/persona-item.js";
 
 export class ConsequenceConverter {
@@ -75,18 +76,72 @@ export class ConsequenceConverter {
 					applyTo,
 				};
 
-			case "alter-energy":
-				return {
-					type: "combat-effect",
-					combatEffect: dep.type,
-					amount: dep.amount,
-					applyTo,
-				};
-			default:
-				dep satisfies never;
-		}
-		return cons as NonDeprecatedConsequence;
-	}
+      case "alter-energy":
+        return {
+          type: "combat-effect",
+          combatEffect: dep.type,
+          amount: dep.amount,
+          applyTo,
+        };
+      case "modifier-new": {
+        const fields = this.fixDeprecatedModifiers(dep.modifiedFields);
+        const ret : NonDeprecatedConsequence = {
+          type: dep.type,
+          modifiedFields: fields,
+          modifierCategory: "",
+          amount: dep.amount,
+          applyTo,
+        };
+        return ret;
+      }
+      case "modifier": {
+        const newField = this.convertModifierField(dep.modifiedField);
+        if (newField) {
+          const ret : NonDeprecatedConsequence = {
+            type: dep.type,
+            modifiedField: newField,
+            modifierCategory: "",
+            amount: dep.amount,
+            applyTo,
+          };
+          return ret;
+        }
+        return {
+          type : "none",
+          applyTo: "user",
+        };
+      }
+      default:
+        dep satisfies never;
+    }
+    return cons as NonDeprecatedConsequence;
+  }
+
+  static fixDeprecatedModifiers( fields: MultiCheck<DeprecatedModifierTarget>) : MultiCheck<NonDeprecatedModifierTarget> {
+    const reviseArr = Object.entries(fields)
+    .map( ([k, v]) => [this.convertModifierField(k as ModifierTarget), v])
+    .filter (([k, _v]) => k != undefined);
+    return Object.fromEntries(reviseArr) as MultiCheck<NonDeprecatedModifierTarget>;
+  }
+
+  static convertModifierField( field: ModifierTarget) : U<NonDeprecatedModifierTarget> {
+    const nonDField = field as DeprecatedModifierTarget;
+    switch (nonDField) {
+      case "wpnMult":
+      case "magHigh":
+      case "magLow":
+      case "wpnDmg_low":
+      case "wpnDmg_high":
+      case "weakestSlot":
+      case "pay":
+        return undefined;
+      case "mpCostMult":
+        return "power-mp-cost-mult";
+      default:
+        nonDField satisfies never;
+    }
+    return field as NonDeprecatedModifierTarget;
+  }
 
 	static convertDeprecatedDamageConsequence( cons: OldDamageConsequence | DamageConsequence, defaultDamageType?: DamageType) : NonDeprecatedDamageCons {
 		if (!defaultDamageType) {

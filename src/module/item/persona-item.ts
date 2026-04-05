@@ -33,7 +33,7 @@ import { BASIC_SHADOW_POWER_NAMES } from '../../config/basic-powers.js';
 import { PersonaError } from '../persona-error.js';
 import { PersonaActor } from '../actor/persona-actor.js';
 import { SLOTTYPES } from '../../config/slot-types.js';
-import { ModifierTarget, NonDeprecatedModifierType } from '../../config/item-modifiers.js';
+import { ModifierTarget, NonDeprecatedModifierTarget, NonDeprecatedModifierType } from '../../config/item-modifiers.js';
 import { ITEMMODELS } from '../datamodel/item-types.js';
 import { PersonaDB } from '../persona-db.js';
 import {Defense, DEFENSE_TYPES} from '../../config/defense-types.js';
@@ -1391,12 +1391,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return new Handlebars.SafeString(this.displayedName);
   }
 
-  toModifierList(this: ItemModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PC | Shadow | null): ModifierList {
+  toModifierList(this: ItemModifierContainer, bonusTypes : NonDeprecatedModifierTarget[] | NonDeprecatedModifierTarget, sourceActor: PC | Shadow | null): ModifierList {
     const modifiers = this.getModifier(bonusTypes, sourceActor);
     return new ModifierList(modifiers);
   }
 
-  static getModifier( effects: readonly SourcedConditionalEffect[], bonusTypes: MaybeArray<ModifierTarget>) : ModifierListItem[] {
+  static getModifier( effects: readonly SourcedConditionalEffect[], bonusTypes: MaybeArray<NonDeprecatedModifierType>) : ModifierListItem[] {
     bonusTypes = Array.isArray(bonusTypes) ? bonusTypes : [bonusTypes];
     return bonusTypes.flatMap( btype => {
       // if (!ConditionalEffectManager.canModifyStat(effects, btype)) {return [];}
@@ -1423,7 +1423,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     });
   }
 
-  getModifier(this: ItemModifierContainer, bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null) : ModifierListItem[] {
+  getModifier(this: ItemModifierContainer, bonusTypes : NonDeprecatedModifierTarget[] | NonDeprecatedModifierTarget, sourceActor: PersonaActor | null) : ModifierListItem[] {
     PersonaItem.cacheStats.modifierRead++;
     if (this.cache.containsModifier === false) {
       PersonaItem.cacheStats.modifierSkip++;
@@ -2196,7 +2196,7 @@ getPassiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null,
   return this.#accessEffectsCache('passiveEffects', sourceActor, options, () => this.getEffects(sourceActor, options).filter( x => x.conditionalType === 'passive'));
 }
 
-getPassiveAndDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor  | null) : readonly ConditionalEffect[] {
+getPassiveAndDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor  | null) : readonly ConditionalEffectC[] {
   return this.getPassiveEffects(sourceActor)
     .concat(this.getDefensiveEffects(sourceActor));
 }

@@ -318,19 +318,12 @@ export class CombatEngine {
 		return baseData;
 	}
 
-	static withinRange(range: U<CalculatedRange>, roll: AttackRollData, situation: ProtoResultAttackSituation) : boolean {
+	static withinRange(range: U<CalculatedRange>, roll: AttackRollData, _situation: ProtoResultAttackSituation) : boolean {
 		if (!range) {return false;}
-		switch (range.type) {
-			case "instantKill": {
-				const target = PersonaDB.findActor(situation.target);
-				if (situation.rollTotal < target.getDefense("kill").eval(situation).total) {return false;}
-      }
-		}
 		return range.possible
 			&& !roll.rollTags.includes("secondary-attack")
 			&& roll.natural >= range.low
 			&& roll.natural <= range.high;
-
 	}
 
 	generateAttackSituation (attacker: Persona, target: Persona, power: Usable, rollData: AttackRollData, rollTotal: number, _options: CombatOptions = {}): ProtoResultAttackSituation {

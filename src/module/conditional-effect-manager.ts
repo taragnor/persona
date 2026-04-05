@@ -6,7 +6,7 @@
 // import { NumericV2 } from "./conditionalEffects/numericV2.js";
 
 import { PersonaSettings } from "../config/persona-settings.js";
-import { ModifierTarget } from "../config/item-modifiers.js";
+import { NonDeprecatedModifierTarget } from "../config/item-modifiers.js";
 import { ModifierContainer, PersonaItem} from "./item/persona-item.js";
 import { Helpers } from "./utility/helpers.js";
 import { Consequence, DeprecatedConsequence, NonDeprecatedConsequence } from "../config/consequence-types.js";
@@ -101,7 +101,7 @@ export class ConditionalEffectManager {
 		return { topPath, dataPath };
 	}
 
-	static canModifyStat (effects: readonly ConditionalEffect[] | ConditionalEffect, stat: ModifierTarget): boolean {
+	static canModifyStat (effects: readonly ConditionalEffectC[] | ConditionalEffectC, stat: NonDeprecatedModifierTarget): boolean {
 		effects = Array.isArray(effects) ? effects : [effects];
 		return effects.some( eff => eff.consequences.some( c=> {
 			if ( "modifiedField" in c ) {

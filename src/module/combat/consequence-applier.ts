@@ -310,7 +310,10 @@ export class ConsequenceApplier {
         break;
       case "gain-levels": {
         const {gainTarget, value}=  otherEffect;
-        if (!value) {break;}
+        if (!value) {
+          PersonaError.softFail(`can't award level, value is ${value}`, otherEffect) ;
+          break;
+        }
         if (gainTarget == "persona" || gainTarget == "both") {
           await actor.persona().gainLevel(value);
         }

@@ -1,9 +1,10 @@
 import { testPreconditions } from "../preconditions.js";
-import { ModifierTarget } from "../../config/item-modifiers.js";
+import { ModifierTarget, NonDeprecatedModifierTarget } from "../../config/item-modifiers.js";
 import {PersonaError} from "../persona-error.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {ConditionalEffectManager} from "../conditional-effect-manager.js";
+import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 
 export type ModifierListItem = Sourced<{
 	name: string;
@@ -81,7 +82,7 @@ export class ModifierList {
 	}
 
 
-	static getModifierAmount(consequences: SourcedConsequence[], targetMods: ModifierTarget[] | ModifierTarget) : number {
+	static getModifierAmount(consequences: ConditionalEffectC["consequences"], targetMods: NonDeprecatedModifierTarget[] | NonDeprecatedModifierTarget) : number {
 		targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
 		return (ConditionalEffectManager.ArrayCorrector(consequences) ?? [])
 			.reduce( (acc,cons)=> {
@@ -104,7 +105,7 @@ export class ModifierList {
 			}, 0);
 	}
 
-	addConditionalEffects( effects: SourcedConditionalEffect[], source: PowerContainer  | string, bonusTypes: ModifierTarget[]) : this {
+	addConditionalEffects( effects: SourcedConditionalEffect[], source: PowerContainer  | string, bonusTypes: NonDeprecatedModifierTarget[]) : this {
 		const sourceName = typeof source =="string" ? source : source.name;
 		const stuff : ModifierListItem[] = (ConditionalEffectManager.ArrayCorrector(effects) ?? []).map( eff=>{
 			return {
