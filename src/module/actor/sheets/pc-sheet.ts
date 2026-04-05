@@ -397,7 +397,7 @@ export class PCSheet extends PCLikeSheet {
 		if (!shadow) {
 			throw new PersonaError(`Couldn't find Shadow ${shadowId}`);
 	}
-		this.selectedCompendium = new Persona(shadow, this.actor, shadow.startingPowers);
+		this.selectedCompendium = new Persona(shadow, this.actor, shadow.powers);
 		this.render(false);
 	}
 
