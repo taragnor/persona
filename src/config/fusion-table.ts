@@ -619,17 +619,19 @@ export class FusionTable {
 		const targetLevel2 =  p2.startingLevel;
 		if (p1.tarot == p2.tarot) {
 			const targetLevel = Math.max(targetLevel1, targetLevel2);
-			return this.#downwardFusion(targetArcana, targetLevel);
+			return this.#downwardFusion(targetArcana, targetLevel, p1, p2);
 		} else {
 			const targetLevel = Math.floor((targetLevel1 + targetLevel2)/2);
 			return this.#upwardFusion(targetArcana, targetLevel);
 		}
 	}
 
-	static #downwardFusion(targetArcana: TarotCard, targetLevel : number) : U<Shadow> {
-		const shadowList = this.fusionTargetsByLevel(targetArcana, 2, targetLevel-1);
+	static #downwardFusion(targetArcana: TarotCard, targetLevel : number, p1: Shadow, p2: Shadow) : U<Shadow> {
+		const shadowList = this.fusionTargetsByLevel(targetArcana, 2, targetLevel-1)
+    .filter ( shadow => shadow.startingLevel != p1.startingLevel && shadow.startingLevel != p2.startingLevel);
 		if (!shadowList || shadowList.length == 0) {return undefined;}
-		shadowList.sort( (a,b)=> b.startingLevel - a.startingLevel);
+		shadowList
+    .sort( (a,b)=> b.startingLevel - a.startingLevel);
 		return shadowList.at(0);
 	}
 

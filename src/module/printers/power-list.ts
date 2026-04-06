@@ -389,19 +389,11 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
     this.setFilterString($(ev.currentTarget).val() as string);
   }
 
-  // onChangeShowUnique(ev: JQuery.ChangeEvent) {
-  //   ev.preventDefault();
-  //   ev.stopPropagation();
-  //   this.showUnique = ($(ev.currentTarget).prop("checked") as boolean);
-  //   this.render(false);
-// }
-
   setFilterString(newval: string) {
     this.filterString = newval;
     console.log(`Search string changed to ${newval}`);
     this.render(false);
   }
-
 
 }
 

@@ -20,6 +20,9 @@ import {CombatOutput} from "./combat-output.js";
 import {ConsequenceApplier} from "./consequence-applier.js";
 import {PersonaSFX} from "./persona-sfx.js";
 import {TriggeredEffect} from "../triggered-effect.js";
+import {sleep} from "../utility/async-wait.js";
+
+const SAFETY_SLEEP_DURATION = 4000 as const;
 
 export class FinalizedCombatResult {
 	static pendingPromises: Map< CombatResult["id"], (val: unknown) => void> = new Map();
@@ -288,6 +291,7 @@ export class FinalizedCombatResult {
 		};
 		try {
 			await PersonaSockets.verifiedSend("COMBAT_RESULT_APPLY", sendObj, gmTarget.id);
+      await sleep(SAFETY_SLEEP_DURATION); //make sure all data is recorded on server
 		}
 		catch (e) {
 			switch (true) {

@@ -3328,7 +3328,7 @@ async expendAction(this: ValidAttackers): Promise<number> {
 
 get actionsRemaining(): number {
 	return this.isValidCombatant()
-		? this.system.combat.actionsRemaining
+      ? this.system.combat.actionsRemaining
 		: 0;
 }
 

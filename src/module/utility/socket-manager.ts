@@ -181,27 +181,31 @@ export class SocketManager {
 		arr.push(handlerFn);
 	}
 
-	private async onMsgRecieve(packet: SocketPayload<keyof SocketMessage>) : Promise<void> {
-		const {code, recipients} = packet;
-		if (!recipients.includes(game.user.id)) {return;}
-		if (packet.sender == game.user.id) {return;}
-		const handlers = this.#handlers.get(code);
-		if (!handlers) {
-			console.warn(`No handler for message ${code}`);
-			return;
-		}
-		if (this.#recordVerifiedMessage(packet)) {return;}
-		for (const handler of handlers) {
-			try{
-				await handler(packet.data, packet);
-				void this.#sendVerification(packet);
-			} catch (e) {
-				PersonaError.softFail("Error during handler", e);
-				void this.#sendVerificationError(packet);
-				continue;
-			}
-		}
-	}
+  private async onMsgRecieve(packet: SocketPayload<keyof SocketMessage>) : Promise<void> {
+    const {code, recipients} = packet;
+    if (!recipients.includes(game.user.id)) {return;}
+    if (packet.sender == game.user.id) {return;}
+    const handlers = this.#handlers.get(code);
+    if (!handlers) {
+      console.warn(`No handler for message ${code}`);
+      return;
+    }
+    let error = false;
+    if (this.#recordVerifiedMessage(packet)) {return;}
+    for (const handler of handlers) {
+      try{
+        await handler(packet.data, packet);
+      } catch (e) {
+        PersonaError.softFail("Error during handler", e);
+        void this.#sendVerificationError(packet);
+        error = true;
+        continue;
+      }
+    }
+    if (!error) {
+      void this.#sendVerification(packet);
+    }
+  }
 
 
 	/** returns true if this message has already been verified, to prevent invoking the handler for an alrady handled request */

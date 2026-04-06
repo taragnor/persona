@@ -810,18 +810,10 @@ export class CombatEngine {
     }
     if (power.system.defense == "kill") {
     }
-    // const powerBonuses = new ModifierList(power.getModifier(mods, attacker.user));
-    // Debug(powerBonuses);
-    // console.log(powerBonuses);
     const atkAndDefenderMods = CombatEngine.getAttackerAndDefenderModifiers(mods, attacker, target, power);
-    // const attackerBonuses = attacker.getBonuses(mods, power);
-    // const targetMods = target.getBonuses(mods, target.defensiveModifiers());
     calc.add(1, atkAndDefenderMods, "Unified Mods");
-    Debug(atkAndDefenderMods);
-    console.log(atkAndDefenderMods);
-    // calc.add(1, attackerBonuses, "Attacker bonuses");
-    // calc.add(1, powerBonuses, "Power Bonuses");
-    // calc.subtract(1, targetMods, "Target Modifiers");
+    // Debug(atkAndDefenderMods);
+    // console.log(atkAndDefenderMods);
     return calc;
   }
 
@@ -881,21 +873,19 @@ export class CombatEngine {
 		const instantKillRangeRaw = CombatEngine.calculateInstantDeathRange(attackerPersona, targetPersona, power, situation);
 		const critRangeRaw = CombatEngine.calculateCriticalRange(attackerPersona, targetPersona, power, situation);
 		if (PersonaSettings.debugMode()) {
-			if (ailmentRangeRaw) {
-				console.debug(ailmentRangeRaw);
-			}
-			if (instantKillRangeRaw) {
-				console.debug(instantKillRangeRaw);
-			}
-			if (critRangeRaw) {
-				console.debug(critRangeRaw);
-			}
+      // this.rangesDebugStats([ailmentRangeRaw, instantKillRangeRaw, critRangeRaw]);
 		}
 		const ailmentRange = this.constrainRange(ailmentRangeRaw);
 		const instantKillRange = this.constrainRange(instantKillRangeRaw);
 		const critRange = this.constrainRange(critRangeRaw);
 		return {ailmentRange, instantKillRange, critRange};
 	}
+
+  static rangesDebugStats( ranges : U<CalculatedRange>[]) {
+    ranges
+      .filter( range => range != undefined)
+      .forEach( range=> console.debug(range));
+  }
 
 	static constrainRange(range: U<CalculatedRange> ) {
 		if (range == undefined) {return undefined;}
