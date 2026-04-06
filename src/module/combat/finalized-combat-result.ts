@@ -22,7 +22,7 @@ import {PersonaSFX} from "./persona-sfx.js";
 import {TriggeredEffect} from "../triggered-effect.js";
 import {sleep} from "../utility/async-wait.js";
 
-const SAFETY_SLEEP_DURATION = 4000 as const;
+const SAFETY_SLEEP_DURATION = 2500 as const;
 
 export class FinalizedCombatResult {
 	static pendingPromises: Map< CombatResult["id"], (val: unknown) => void> = new Map();
