@@ -369,39 +369,46 @@ static generateDefaultData<T extends HTMLDataInputDefinition>(definition: T) : H
 // **************************************************
 
 	static middleClick (handler: (ev: JQuery.ClickEvent)=>unknown ) {
-		return function (event: JQuery.ClickEvent) {
+		return function (event: JQuery.MouseDownEvent) {
 			if (event.which == 2) {
 				event.preventDefault();
 				event.stopPropagation();
-				return handler(event);
+				return handler(event as unknown as JQuery.ClickEvent);
 			}
 		};
 	}
 
-	static rightClick (handler: (ev:JQuery.ClickEvent)=>unknown) {
-		return function (event: JQuery.ClickEvent) {
+	static rightClick (handler: (ev:JQuery.ClickEvent) => unknown) {
+		return function (event: JQuery.MouseDownEvent) {
 			if (event.which == 3) {
 				event.preventDefault();
 				event.stopPropagation();
-				return handler(event);
+				handler(event as unknown as JQuery.ClickEvent);
 			}
 		};
 	}
 
-	static initCustomJqueryFunctions() {
-		if (!jQuery.fn.middleclick) {
-			jQuery.fn.middleclick = function (handler: (ev : JQuery.ClickEvent) => unknown) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-				this.mousedown(HTMLTools.middleClick(handler));
-			};
-		}
-		if (!jQuery.fn.rightclick) {
-			jQuery.fn.rightclick = function (handler: (ev : JQuery.ClickEvent) => unknown) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-				this.mousedown(HTMLTools.rightClick(handler));
-			};
-		}
-	}
+  static initCustomJqueryFunctions() {
+    if (!jQuery.fn.middleclick) {
+      jQuery.fn.middleclick = function (this: JQuery, handler: (ev : JQuery.ClickEvent) => unknown) {
+        this.on("mousedown", HTMLTools.middleClick(handler));
+      };
+    }
+    if (!jQuery.fn.rightclick) {
+      jQuery.fn.rightclick = function (this: JQuery, handler: (ev : JQuery.ClickEvent) => unknown) {
+        this.on("mousedown", HTMLTools.rightClick(handler));
+      };
+    }
+    if (!jQuery.fn.scrollTo) {
+      jQuery.fn.scrollTo = function (this: JQuery) {
+        const elem = this[0];
+        elem.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest'
+        });
+      };
+    }
+  }
 
 } // end of class
 
@@ -413,6 +420,7 @@ declare global{
 	interface JQuery {
 		middleclick( fn: (ev: JQuery.ClickEvent)=> unknown): void;
 		rightclick( fn: (ev: JQuery.ClickEvent)=> unknown): void;
+    scrollTo () : void;
 	}
 }
 

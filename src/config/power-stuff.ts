@@ -31,7 +31,7 @@ import {TAROT_DECK} from "./tarot.js";
 import {TRIGGERS} from "./triggers.js";
 import {WEATHER_TYPES} from "./weather-types.js";
 import {TREASURE_TABLES} from "./treasure-tables.js";
-import {PROBABILITIES} from "./probability.js";
+import {PROBABILITIES, PROBABILITIES_POWER_RARITY} from "./probability.js";
 import {HTMLTools} from "../module/utility/HTMLTools.js";
 import { ATTACK_RESULT } from "./attack-result-config.js";
 import {COMBAT_OUTCOME} from "../module/combat/persona-combat.js";
@@ -131,6 +131,7 @@ private static _powerStuffBase: Record<string, unknown>;
 			TAG_COMPARISON_TYPES,
 			VARIABLE_TYPE,
 			UNIVERSAL_MODIFIERS_TYPE,
+      POWER_RARITY: PROBABILITIES_POWER_RARITY,
 			MODIFIER_CATEGORIES_LOCALIZATION: {
 				"" : "Any",
 				...MODIFIER_CATEGORIES_LOCALIZATION
@@ -169,7 +170,7 @@ private static _powerStuffBase: Record<string, unknown>;
 			ProgressClock.allClocks()
 			.map(clock => [clock.id, clock.name])
 		) ;
-		const STORES = 
+		const STORES =
 		Object.fromEntries(
 			[
 				["", "-"],

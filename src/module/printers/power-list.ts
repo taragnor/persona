@@ -6,18 +6,34 @@ import {Persona} from "../persona-class.js";
 import {localize} from "../persona.js";
 import {PowerTag} from "../../config/power-tags.js";
 import {sleep} from "../utility/async-wait.js";
+import {MultiCheck} from "../../config/precondition-types.js";
+import {DAMAGE_TYPES_LIST} from "../../config/damage-types.js";
+import {PowerStuff} from "../../config/power-stuff.js";
 
-export class PowerPrinter extends Application {
+type PowerFilter = {
+    dmgFilter: Partial<MultiCheck<Power["system"]["dmg_type"]>>;
+    slotFilter: Partial<MultiCheck<string>>;
+    rarityFilter: Partial<MultiCheck<Power["system"]["rarity"]>>;
+    typeFilter: Partial<MultiCheck<Power["system"]["subtype"]>>;
+  };
+
+export class PowerPrinter extends FormApplication<PowerFilter> {
   static _instance : U<PowerPrinter>;
 
   targetPersona: U<Persona>;
 
+  private _startTime: number;
   allowedTags : U<PowerTag[]>;
   baseRarity ?: Power["system"]["rarity"];
   highestSlot ?: Power["system"]["slot"];
   _swapPower ?: Power;
   filterString : string = "";
-  showUnique: boolean = false;
+  generalFilters : U<PowerFilter>;
+  _cache : {
+    powerListCache : U<readonly Power[]>;
+  } = {
+    powerListCache: undefined,
+  };
 
   static init() {
 
@@ -26,10 +42,12 @@ export class PowerPrinter extends Application {
   constructor();
   constructor(swapPower: Power, persona : Persona);
   constructor(swapPower?: Power, persona ?: Persona) {
-    super();
-    if (game.user.isGM) {
-      this.showUnique = true;
-    }
+    const initialFilters = PowerPrinter.initialFilters();
+    super(initialFilters, {
+      "submitOnChange": true,
+      "submitOnClose": false,
+      "closeOnSubmit": false,
+    });
     if (swapPower && persona) {
       this.highestSlot = swapPower.system.slot;
       let rarity = swapPower.system.rarity;
@@ -44,6 +62,49 @@ export class PowerPrinter extends Application {
       this._swapPower = swapPower;
       this.setTargetPersona(persona);
     }
+    this.generalFilters = initialFilters;
+  }
+
+  override _updateObject(_ev: JQuery.SubmitEvent, formData: Record<string, unknown>) {
+    console.log(formData);
+    this._updateFilters(formData);
+    this.render(false);
+  }
+
+  private _updateFilters(formData: Partial<PowerFilter>) {
+    formData = foundry.utils.expandObject(formData);
+    if (!this.generalFilters) {return;}
+    Object.keys( this.generalFilters).forEach( (key: keyof PowerFilter) => {
+      if( formData[key]) {
+        this.generalFilters![key] = formData[key];
+      }
+    });
+  }
+
+  static initialFilters() : PowerPrinter["generalFilters"] {
+      const dmgFilter : NonNullable<PowerPrinter["generalFilters"]>["dmgFilter"]  = Object.fromEntries(
+        DAMAGE_TYPES_LIST.map ( dtype => [dtype, true])
+      );
+      const typeFilter : NonNullable<PowerPrinter["generalFilters"]>["typeFilter"] = {
+        magic: true,
+        weapon: true,
+        passive: true,
+        defensive: true,
+      };
+      const slotFilter : NonNullable<PowerPrinter["generalFilters"]>["slotFilter"] = {
+        0: true,
+        1: true,
+        2: true,
+        3: true,
+      };
+      const rarityFilter  : NonNullable<PowerPrinter["generalFilters"]>["rarityFilter"] = {
+        normal: true,
+        "normal-minus": true,
+        rare: true,
+        "never": game.user.isGM,
+        "rare-plus": true,
+      };
+    return {typeFilter, dmgFilter, slotFilter, rarityFilter};
   }
 
   static override get defaultOptions() {
@@ -67,7 +128,7 @@ export class PowerPrinter extends Application {
     html.find(".learn-power").on ("contextmenu", ev => void this.addToLearningList(ev));
     html.find(".swap-power").on ("click", ev => void this.onSwapPower(ev));
     html.find("input.filter-text").on("change", ev => void this.onFilterStringChange(ev));
-    html.find("input.show-unique").on("change", ev => void this.onChangeShowUnique(ev));
+    // html.find("input.show-unique").on("change", ev => void this.onChangeShowUnique(ev));
     //fix for it automatically reloading the page on filter
     html.find('input').on('keydown', (e) => {
       if (e.key === 'Enter') {
@@ -132,6 +193,42 @@ export class PowerPrinter extends Application {
     return powers.flat();
   }
 
+  private clearPowerListCache() {
+    this._cache.powerListCache = undefined;
+  }
+
+  private powerList() : readonly Power[] {
+    if (this._cache.powerListCache == undefined) {
+      this._cache.powerListCache = this._powerList();
+    }
+    return this._cache.powerListCache;
+  }
+
+  private _powerList() : readonly Power[] {
+    let powerArr =  (this.highestSlot != undefined)
+      ? PowerPrinter.swappablePowers(this.highestSlot ?? 0, this.baseRarity ?? "normal")
+      : PersonaDB.allPowersArr();
+    if (this.filterString.length > 0) {
+      const filterStr = this.filterString.toLowerCase();
+      powerArr = powerArr.filter( pwr=> pwr.name.toLowerCase().includes(filterStr));
+    }
+    if (this.allowedTags) {
+      const allowedTags = Array.isArray(this.allowedTags) ? this.allowedTags : [this.allowedTags];
+      powerArr = powerArr
+        .filter(pwr => allowedTags.some ( tag => pwr.hasTag(tag))
+        );
+    }
+    if (this.generalFilters) {
+      powerArr = powerArr.filter( pwr =>
+        this.generalFilters!.dmgFilter[pwr.system.dmg_type]
+        && this.generalFilters!.rarityFilter[pwr.system.rarity]
+        && this.generalFilters!.slotFilter[String(pwr.system.slot)]
+        && this.generalFilters!.typeFilter[pwr.system.subtype]
+      );
+    }
+    return powerArr;
+  }
+
   override async getData(options: Record<string, unknown>) {
     await PersonaDB.waitUntilLoaded();
     const data = await super.getData(options);
@@ -148,11 +245,14 @@ export class PowerPrinter extends Application {
       targetPersona,
       swapPower: this._swapPower,
       filterString: this.filterString,
-      showUnique: this.showUnique,
+      generalFilters: this.generalFilters,
+      POWERSTUFF: PowerStuff.powerStuff(),
     };
   }
 
   private async mainPowerList () : Promise<Power[][]> {
+    this.clearPowerListCache();
+    this.resetStartTime();
     const untypedSkills = [
       (await this.delayedFilter("magic" ,"none"))
       .filter( x=> x.isSupport()),
@@ -185,11 +285,18 @@ export class PowerPrinter extends Application {
 
   private async delayedFilter(subtype: Power["system"]["subtype"], powerType ?: Power["system"]["dmg_type"] | Power["system"]["dmg_type"][]) : Promise<Power[]> {
     const data =  this.filterByType(subtype, powerType);
-    await sleep(2); //sleep delay for more responsiveness
+    if (Date.now() - this._startTime > 500) {
+      await sleep(1); //sleep delay for more responsiveness
+      this.resetStartTime();
+    }
     return data;
   }
 
-  filterByType (subtype: Power["system"]["subtype"], powerType ?: Power["system"]["dmg_type"] | Power["system"]["dmg_type"][]) : Power[] {
+  private resetStartTime() {
+    this._startTime = Date.now();
+  }
+
+  private filterByType (subtype: Power["system"]["subtype"], powerType ?: Power["system"]["dmg_type"] | Power["system"]["dmg_type"][]) : Power[] {
     if (powerType && !Array.isArray(powerType)) {
       powerType = [powerType];
     }
@@ -199,26 +306,6 @@ export class PowerPrinter extends Application {
       .filter( x=> !x.hasTag("shadow-only"));
   }
 
-  powerList() : readonly Power[] {
-    let powerArr =  (this.highestSlot != undefined) 
-      ? PowerPrinter.swappablePowers(this.highestSlot ?? 0, this.baseRarity ?? "normal")
-      : PersonaDB.allPowersArr();
-    if (this.filterString.length > 0) {
-      const filterStr = this.filterString.toLowerCase();
-      powerArr = powerArr.filter( pwr=> pwr.name.toLowerCase().includes(filterStr));
-    }
-    if (this.allowedTags) {
-      const allowedTags = Array.isArray(this.allowedTags) ? this.allowedTags : [this.allowedTags];
-      powerArr = powerArr
-        .filter(pwr => allowedTags.some ( tag => pwr.hasTag(tag))
-        );
-    }
-    if (!this.showUnique) {
-      powerArr = powerArr
-        .filter(pwr => pwr.system.rarity != "never");
-    }
-    return powerArr;
-  }
 
   static sortPowerFn(this: void, a: Power, b: Power) : number {
     const sort= a.system.slot - b.system.slot;
@@ -293,7 +380,7 @@ export class PowerPrinter extends Application {
       throw new PersonaError("improperly set up power printer window");
     }
     await this.targetPersona.swapPower(this._swapPower, power);
-    await this.close();
+    this.close();
   }
 
   onFilterStringChange(ev: JQuery.ChangeEvent) {
@@ -302,18 +389,19 @@ export class PowerPrinter extends Application {
     this.setFilterString($(ev.currentTarget).val() as string);
   }
 
-  onChangeShowUnique(ev: JQuery.ChangeEvent) {
-    ev.preventDefault();
-    ev.stopPropagation();
-    this.showUnique = ($(ev.currentTarget).prop("checked") as boolean);
-    this.render(false);
-}
+  // onChangeShowUnique(ev: JQuery.ChangeEvent) {
+  //   ev.preventDefault();
+  //   ev.stopPropagation();
+  //   this.showUnique = ($(ev.currentTarget).prop("checked") as boolean);
+  //   this.render(false);
+// }
 
   setFilterString(newval: string) {
     this.filterString = newval;
     console.log(`Search string changed to ${newval}`);
     this.render(false);
   }
+
 
 }
 

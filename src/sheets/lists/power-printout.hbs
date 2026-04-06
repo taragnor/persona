@@ -4,10 +4,14 @@
       <label> Filter </label>
       <input type="text" class="filter-text short-text" value="{{filterString}}" title="Filter For this text" placeholder="Search String">
     </span>
-    <span>
-      <label> show Unique Skills </label>
-      <input type="checkbox" class="show-unique" {{checked showUnique}}>
-    </span>
+    {{#if generalFilters}}
+    <div>
+    {{multicheck 'dmgFilter' POWERSTUFF.DAMAGETYPES checked=generalFilters.dmgFilter localize=true selectorsOnly=true}}
+    {{multicheck 'rarityFilter' POWERSTUFF.POWER_RARITY checked=generalFilters.rarityFilter localize=true selectorsOnly=true}}
+    {{multicheck 'slotFilter' POWERSTUFF.SLOTTYPES checked=generalFilters.slotFilter localize=true selectorsOnly=true}}
+    {{multicheck 'typeFilter' POWERSTUFF.POWERTYPES checked=generalFilters.typeFilter localize=true selectorsOnly=true}}
+    </div>
+    {{/if}}
   </div>
   {{#each powerLists as |list i|}}
   {{> "systems/persona/parts/power-list.hbs" powers=list targetPersona=../targetPersona swapPower=../swapPower}}

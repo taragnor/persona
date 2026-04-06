@@ -1,4 +1,4 @@
-class DocumentSheet<T extends FoundryDocument<any>> extends FormApplication<T> {
+class DocumentSheet<T extends FoundryDocument<unknown>> extends FormApplication<T> {
 	options: SheetOptions;
 	getData(): SheetData | Promise<SheetData>;
 	activateListeners(html: JQuery<HTMLElement>): void;
@@ -9,15 +9,16 @@ class DocumentSheet<T extends FoundryDocument<any>> extends FormApplication<T> {
 	get isEditable(): boolean;
 	get template(): string;
 	_onChangeTab(event: unknown, tabs: unknown, active: unknown): void;
+	_updateObject(_event : TypeGuess<JQuery.SubmitEvent>, formData: Record<string, unknown> ): void | Promise<void>;
 }
 
 
 class FormApplication<T extends object> extends Application {
-	constructor(object: object, options: ApplicationV1Options ={});
+	constructor(object: object ={}, options: ApplicationV1Options ={});
 	get object(): T;
 	getData(options : Record<string, unknown> = {}): AppData | Promise<AppData>;
 	close( options?: unknown): void;
-	async _updateObject(_event : TypeGuess<JQuery.SubmitEvent>, formData: Record<string, unknown> ): Promise<unknown>;
+	abstract _updateObject(_event : TypeGuess<JQuery.SubmitEvent>, formData: Record<string, unknown> ): void | Promise<void>;
 }
 
 

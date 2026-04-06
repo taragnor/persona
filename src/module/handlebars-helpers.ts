@@ -394,7 +394,7 @@ export class PersonaHandleBarsHelpers {
       }
     },
 
-    "multicheck": function (name: string, list: Record<string, string>, options: {hash: {localize: boolean, checked: (Record<string, boolean> | string | undefined)}}) : SafeString {
+    "multicheck": function (name: string, list: Record<string, string>, options: {hash: {localize: boolean, checked: (Record<string, boolean> | string | undefined), selectorsOnly?: boolean}}) : SafeString {
       let checkedTable = options?.hash?.checked;
       if (typeof checkedTable == "string") {
         const newobj= {} as Record<string, boolean>;
@@ -414,8 +414,11 @@ export class PersonaHandleBarsHelpers {
         .map( ([k, _v])=> list[k] ? list[k] : k)
         .map( k => hash?.localize ? localize(k as LocalizationString) : k )
         .join (", ");
-      html += `<span class="selected micro-text"> ${selected.length ? selected : "NONE SELECTED"} </span>`;
-      html+= `<div class="MC-selectors ${(selected.length && ConditionalEffectManager.lastClick != name) ? 'hidden': ''}">`;
+      if (!hash.selectorsOnly) {
+        html += `<span class="selected micro-text"> ${selected.length ? selected : "NONE SELECTED"} </span>`;
+      }
+      const hideSelectors = selected.length && ConditionalEffectManager.lastClick != name && !hash.selectorsOnly;
+      html+= `<div class="MC-selectors ${hideSelectors ? 'hidden': ''}">`;
       for (const [key, val] of Object.entries(list)) {
         const valName = hash?.localize ? localize(val as LocalizationString) : val;
         html += `<span class="small-box">`;

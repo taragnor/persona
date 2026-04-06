@@ -2,9 +2,8 @@ const {StringField:txt, EmbeddedDataField: embedded, ObjectField:obj, NumberFiel
 
 import { ConditionalEffectDM } from "./item-types.js";
 
-import { DAMAGE_LEVELS_LIST } from "../../config/damage-types.js";
+import { DAMAGE_LEVELS_LIST, DAMAGE_TYPES_LIST } from "../../config/damage-types.js";
 import { POWERTYPESLIST } from "../../config/effect-types.js";
-import { DAMAGETYPESLIST } from "../../config/damage-types.js";
 import { TARGETINGLIST } from "../../config/effect-types.js";
 import { POWER_TAGS_LIST } from "../../config/power-tags.js";
 import { SHADOW_CHANGE_REQ_LIST_FULL } from "../../config/effect-types.js";
@@ -79,7 +78,7 @@ export function UsablePowerProps() {
 		defense: new txt( {choices: DEFENSE_TYPES, initial: "none"}),
 		targets: new txt<typeof TARGETINGLIST[number]> ( {choices: TARGETINGLIST, initial: "1-engaged"}),
 		validTargetConditions: new arr( new obj<Precondition>()),
-		dmg_type: new txt( {choices: DAMAGETYPESLIST, initial:"none"}),
+		dmg_type: new txt( {choices: DAMAGE_TYPES_LIST, initial:"none"}),
 		crit_boost: new num( {min: -20, max:20, initial: 0, integer:true}),
 		atk_bonus: new num({initial: 0, integer: true}),
 		openerConditions: new arr(new obj<Precondition>()),

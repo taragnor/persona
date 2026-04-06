@@ -39,7 +39,7 @@ import { PersonaError } from "../persona-error.js";
 import { PersonaSounds } from "../persona-sounds.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import { StatusEffectId } from "../../config/status-effects.js";
-import { DAMAGETYPESLIST } from "../../config/damage-types.js";
+import { DAMAGE_TYPES_LIST } from "../../config/damage-types.js";
 import { SetFlagEffect, StatusEffect } from "../../config/consequence-types.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { ModifierContainer } from "../item/persona-item.js";
@@ -2127,10 +2127,10 @@ complementRating (this: Shadow, other: Shadow) : number {
 	}
 	const thisP= this.persona();
 	const otherP = other.persona();
-	const weaknesses = DAMAGETYPESLIST
+	const weaknesses = DAMAGE_TYPES_LIST
 		.filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "weakness") as RealDamageType[];
 	rating -= 0.5 * weaknesses.length;
-	const normalR = DAMAGETYPESLIST
+	const normalR = DAMAGE_TYPES_LIST
 		.filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "normal") as RealDamageType[];
 	for (const w of weaknesses) {
 		const res = otherP.elemResist(w);

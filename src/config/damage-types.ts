@@ -16,18 +16,18 @@ export const REALDAMAGETYPESLIST = [
 	"none",
 ] as const;
 
-export const DAMAGETYPESLIST = [
+export const DAMAGE_TYPES_LIST = [
 	...REALDAMAGETYPESLIST,
 	"by-power", //by power or weapon
 ] as const;
 
-export const DAMAGETYPES = HTMLTools.createLocalizationObject(DAMAGETYPESLIST, "persona.damage.types");
+export const DAMAGETYPES = HTMLTools.createLocalizationObject(DAMAGE_TYPES_LIST, "persona.damage.types");
 
 export const REALDAMAGETYPES = Object.fromEntries(
 	REALDAMAGETYPESLIST.map( x=> [x, `persona.damage.types.${x}`])
 );
 
-export type DamageType = ( (typeof DAMAGETYPESLIST)[number]);
+export type DamageType = ( (typeof DAMAGE_TYPES_LIST)[number]);
 
 export type RealDamageType = ( (typeof REALDAMAGETYPESLIST)[number])
 

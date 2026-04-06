@@ -629,7 +629,7 @@ export class FusionTable {
 	static #downwardFusion(targetArcana: TarotCard, targetLevel : number) : U<Shadow> {
 		const shadowList = this.fusionTargetsByLevel(targetArcana, 2, targetLevel-1);
 		if (!shadowList || shadowList.length == 0) {return undefined;}
-		shadowList.sort( (a,b)=> a.startingLevel - b.startingLevel);
+		shadowList.sort( (a,b)=> b.startingLevel - a.startingLevel);
 		return shadowList.at(0);
 	}
 

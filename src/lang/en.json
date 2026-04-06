@@ -408,6 +408,7 @@
 	"persona.power.types.none": "None",
 	"persona.power.types.standalone": "Standalone",
 	"persona.power.types.social-link": "Social Link Based",
+	"persona.power.types.downtime": "Downtime",
 
 	"persona.power.targets.1-engaged": "1 Engaged Target",
 	"persona.power.targets.1-nearby-dead": "1 Nearby dying Target",
