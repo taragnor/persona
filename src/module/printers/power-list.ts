@@ -48,6 +48,7 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
       "submitOnClose": false,
       "closeOnSubmit": false,
     });
+    this.generalFilters = initialFilters;
     if (swapPower && persona) {
       this.highestSlot = swapPower.system.slot;
       let rarity = swapPower.system.rarity;
@@ -62,7 +63,6 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
       this._swapPower = swapPower;
       this.setTargetPersona(persona);
     }
-    this.generalFilters = initialFilters;
   }
 
   override _updateObject(_ev: JQuery.SubmitEvent, formData: Record<string, unknown>) {
@@ -232,7 +232,7 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
   override async getData(options: Record<string, unknown>) {
     await PersonaDB.waitUntilLoaded();
     const data = await super.getData(options);
-    const targetPersona = this.targetPersona && this.targetPersona.source.sheet._state > 0 ? this.targetPersona : undefined;
+    const targetPersona = this.targetPersona && this.targetPersona.user.sheet._state > 0 && this.targetPersona.isCustomPersona ? this.targetPersona : undefined;
     const powers = (await this.mainPowerList())
       .filter( x=> x!= undefined && x.length > 0)
       .map( list => list.sort(PowerPrinter.sortPowerFn));

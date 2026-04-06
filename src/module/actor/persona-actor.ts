@@ -633,30 +633,52 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return this == other;
   }
 
-	async addPersona(this: PC | Shadow, shadow: Shadow) {
+	async addPersona(this: PC | Shadow, shadow: Shadow) : Promise<boolean> {
 		if (this.isPC() && (!shadow.hasPlayerOwner || !shadow.isOwner)) {
 			PersonaError.softFail("Can't add this, doesn't have a player owner");
-			return;
+			return false;
 		}
 		if (!this.hasSpaceForNewPersona()) {
 			if (this.maxPersonaSideboard > 0) {
-				await this.addSideboardPersona(shadow);
-				return;
+				if (await this.addSideboardPersona(shadow))
+        { return true; }
 			}
 			PersonaError.softFail("No Space for a new persona");
-			return;
+			return false;
 		}
 		if (!shadow.isPersona()) {
 			PersonaError.softFail("Can't add this, it's not a persona");
-			return;
+			return false;
 		}
+    if (await this.addPersonaToMainList(shadow)) {
+      return true;
+    }
+    PersonaError.softFail(`Couldn't add Persona : ${shadow.name} to ${this.name}`);
+    return false;
+		// const arr = this.system.personaList.slice();
+		// arr.push(shadow.id);
+		// await this.update( {"system.personaList": arr});
+		// if (this.isPC()) {
+		// 	await Logger.sendToChat(`${this.name} adds Persona ${shadow.displayedName}`);
+		// }
+	}
+
+  async addPersonaToMainList(this: PC | Shadow, shadow: Shadow, logging = this.isPC()) : Promise<boolean> {
+		if (!shadow.isPersona()) {
+			PersonaError.softFail("Can't add this, it's not a persona");
+			return false;
+		}
+    if (!this.hasSpaceForNewPersona()) {
+      return false;
+    }
 		const arr = this.system.personaList.slice();
 		arr.push(shadow.id);
 		await this.update( {"system.personaList": arr});
-		if (this.isPC()) {
+		if (logging) {
 			await Logger.sendToChat(`${this.name} adds Persona ${shadow.displayedName}`);
 		}
-	}
+    return true;
+  }
 
   canAddNewPersona(this: ValidAttackers) : boolean {
 		if (this.isShadow()) {return true;}
@@ -673,24 +695,77 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
 
-	async deletePersona(this: PC | Shadow, personaId: ValidAttackers["id"]) {
-		const persona =this.personaList.find( x=> x.source.id == personaId);
-		if (!persona) {
-			if (this.isPC()) {
-				let sideboard = this.system.combat.persona_sideboard;
-				if (sideboard.includes(personaId)) {
-					sideboard = sideboard.filter( x=> x != personaId);
-					await this.update( {"system.combat.persona_sideboard": sideboard});
-					return;
-				}
-			}
-			PersonaError.softFail(`Couldn't find persona ${personaId}`); return;}
-		const newList = this.system.personaList.filter( x=> x != personaId);
-		await this.update( {"system.personaList": newList});
-		if (this.isPC()) {
-			await Logger.sendToChat(`${this.name} deletes Persona ${persona.displayedName}`);
-		}
-	}
+  async deletePersona(this: PC | Shadow, personaId: ValidAttackers["id"]) {
+    if (await this._deletePersonaFromMainList(personaId)) { return; }
+    if (this.isPC() && await this.deletePersonaFromSideboard(personaId)) { return; }
+    PersonaError.softFail(`Couldn't find persona ${personaId}`);
+  }
+
+  // async deletePersona(this: PC | Shadow, personaId: ValidAttackers["id"]) {
+    // const persona =this.personaList.find( x=> x.source.id == personaId);
+    // if (!persona) {
+      // if (this.isPC()) {
+      //   if( await this.deletePersonaFromSideboard(personaId)) {return;}
+        // let sideboard = this.system.combat.persona_sideboard;
+        // if (sideboard.includes(personaId)) {
+        //   sideboard = sideboard.filter( x=> x != personaId);
+        //   await this.update( {"system.combat.persona_sideboard": sideboard});
+        //   return;
+        // }
+      // }
+      // PersonaError.softFail(`Couldn't find persona ${personaId}`); return;}
+    // const newList = this.system.personaList.filter( x=> x != personaId);
+    // await this.update( {"system.personaList": newList});
+    // await this.promoteSideboardPersonaToFillEmptySlots();
+    // if (this.isPC()) {
+      // await Logger.sendToChat(`${this.name} deletes Persona ${persona.displayedName}`);
+    // }
+  // }
+
+  async _deletePersonaFromMainList(this: Shadow | PC, personaId: ValidAttackers["id"]) {
+    const persona = this.personaList.find( x=> x.source.id == personaId);
+    if (persona) {
+      const newList = this.system.personaList.filter( x=> x != personaId);
+      await this.update( {"system.personaList": newList});
+      await this.promoteSideboardPersonaToFillEmptySlots();
+      if (this.isPC()) {
+        await Logger.sendToChat(`${this.name} deletes Persona ${persona.displayedName}`);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  private async deletePersonaFromSideboard(this: PC, personaId: ValidAttackers["id"], logging = this.isPC()) {
+    let sideboard = this.system.combat.persona_sideboard;
+    if (sideboard.includes(personaId)) {
+      const persona = this.sideboardPersonas.find( p => p.source.id == personaId)!;
+      sideboard = sideboard.filter( x=> x != personaId);
+      await this.update( {"system.combat.persona_sideboard": sideboard});
+      if (logging) {
+        await Logger.sendToChat(`${this.name} deletes Persona ${persona.displayedName} from Sideboard`);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  async promoteSideboardPersonaToFillEmptySlots(this: PC | Shadow) : Promise<boolean> {
+    if (this.isShadow() || this.sideboardPersonas.length <= 0) {
+      return false;
+    }
+    const movedPersona = this.sideboardPersonas[0];
+    if (this.personaList.length < this.maxPersonas && movedPersona.source.isShadow()) {
+      const del = await this.deletePersonaFromSideboard(movedPersona.source.id, false);
+      const promote = await this.addPersonaToMainList(movedPersona.source, false);
+      if (!del || !promote) {
+        PersonaError.softFail(`Problem promoting ${movedPersona.name} from Sideboard to main`);
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
 
 	get combatInit(): number {
 		if (!this.isValidCombatant()) {return -666;}
