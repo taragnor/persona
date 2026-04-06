@@ -103,6 +103,7 @@ const templateFileNames : string[] =[
 	"status-block.hbs",
 	"persona-name.hbs",
 	"input-consequence-social-card-action.hbs",
+  "crafting-recipe-input.hbs",
 ];
 
 export const templatePaths = templateFileNames.

@@ -39,6 +39,7 @@ function itemBase() {
 		itemLevel: new num( {initial: 0, integer: true}),
 		storeMax: new num({ integer: true, initial: 0, min:0, max: 50}),
 		storeId: new id(), //id of store actor
+    craftingRecipes: new arr( new embedded(CraftingRecipeDM)),
 	};
 }
 
@@ -417,6 +418,26 @@ class QuestionChoiceDM extends foundry.abstract.DataModel {
 	}
 
 }
+
+export class CraftingRecipeDM extends foundry.abstract.DataModel {
+	static override defineSchema() {
+    return {
+      components: new arr(new embedded(CraftingRecipePartDM)),
+
+    };
+  }
+
+}
+
+export class CraftingRecipePartDM extends foundry.abstract.DataModel {
+	static override defineSchema() {
+    return {
+      itemId: new txt<Item["id"]>(),
+      amount: new num({initial: 0, integer: true, min:0, max:99}),
+    };
+  }
+}
+
 
 export class SocialCardEventDM extends foundry.abstract.DataModel {
 

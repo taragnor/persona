@@ -1,7 +1,7 @@
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
-import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
+import {CarryableSheet} from "./carryable-sheet.js";
 
-export class PersonaWeaponSheet extends PersonaEffectContainerBaseSheet {
+export class PersonaWeaponSheet extends CarryableSheet {
 	declare item: Weapon;
 
 	static override get defaultOptions() {

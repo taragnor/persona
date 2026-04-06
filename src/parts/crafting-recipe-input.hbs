@@ -1,0 +1,33 @@
+<h3> Crafting
+  <a class="add-crafting-recipe">
+    <i class="fa-solid fa-plus"> </i>
+  </a>
+</h3>
+
+<div class="recipe-list">
+  {{#each item.system.craftingRecipes as |r i|}}
+  <div class="recipe" data-recipe-index="{{i}}">
+    <h4> Recipe {{i}}
+      <a class="add-crafting-component">
+        <i class="fa-solid fa-plus"> </i>
+      </a>
+      <a class="del-crafting-recipe">
+        <i class="fa-solid fa-trash-can"></i>
+      </a>
+    </h4>
+    <div class="component-list">
+      {{#each r.components as |comp j|}}
+      <div class="component" data-component-index="{{j}}">
+
+        <select name="system.craftingRecipes.{{i}}.components.{{j}}.itemId">
+          {{selectOptions (craftingList) localize=false selected=comp.itemId}}
+        </select>
+        <input class="short" type="number" name="system.craftingRecipes.{{i}}.components.{{j}}.amount" value="{{comp.amount}}">
+        <a class="del-crafting-component">
+          <i class="fa-solid fa-trash-can"></i>
+        </a>
+      </div>
+      {{/each}}
+    </div>
+    {{/each}}
+  </div>

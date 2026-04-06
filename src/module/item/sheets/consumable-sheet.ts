@@ -1,8 +1,8 @@
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { EQUIP_SLOTS } from "../../../config/equip-slots.js";
-import { PersonaPowerLikeBaseSheet } from "./powerlike-base-sheet.js";
+import {CarryableSheet} from "./carryable-sheet.js";
 
-export class ConsumableSheet extends PersonaPowerLikeBaseSheet {
+export class ConsumableSheet extends CarryableSheet {
 	declare item: Consumable;
 
 	static override get defaultOptions() {

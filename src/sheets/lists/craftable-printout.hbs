@@ -1,0 +1,17 @@
+<h4> Craftables </h4>
+<div class="craftables-list">
+  {{#each craftables as |item i|}}
+  <div class="craftable">
+    <span> {{item.displayedName}} </span>
+    {{#each item.craftingIngredients as |recipe i|}}
+    <div class="recipe"></div>
+    {{#each recipe as |compStr j|}}
+    <span>
+      {{compStr}}
+    </span>
+    {{/each}}
+  </div>
+  {{/each}}
+</div>
+{{/each}}
+</div>

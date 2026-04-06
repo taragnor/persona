@@ -1116,6 +1116,18 @@ export class PersonaHandleBarsHelpers {
 
     "isSpecialPower": function (power: Power) : boolean {
       return power.hasTag("theurgy");
+    },
+
+    "craftingList": function () {
+      const CRAFTING_TREASURE_LIST = Object.fromEntries(
+        [["", "-"]].concat(
+          PersonaDB.treasureItems()
+          .filter( item => item.isCraftingItem)
+          .sort( (a, b) => a.name.localeCompare(b.name))
+          .map( x=> [x.id, x.name])
+        )
+      ) as Record<Item["id"], string>;
+      return CRAFTING_TREASURE_LIST;
     }
 
   };

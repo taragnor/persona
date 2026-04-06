@@ -34,7 +34,7 @@ import { PersonaError } from '../persona-error.js';
 import { PersonaActor } from '../actor/persona-actor.js';
 import { SLOTTYPES } from '../../config/slot-types.js';
 import { ModifierTarget, NonDeprecatedModifierTarget, NonDeprecatedModifierType } from '../../config/item-modifiers.js';
-import { ITEMMODELS } from '../datamodel/item-types.js';
+import { CraftingRecipeDM, CraftingRecipePartDM, ITEMMODELS } from '../datamodel/item-types.js';
 import { PersonaDB } from '../persona-db.js';
 import {Defense, DEFENSE_TYPES} from '../../config/defense-types.js';
 import {EnergyClassCalculator} from '../calculators/shadow-energy-cost-calculator.js';
@@ -2823,6 +2823,60 @@ getCooldown(this:Power, user: N<ValidAttackers | Persona>) : number {
   }
   const cost= EnergyClassCalculator.calcCooldown(this, user);
   return Math.max(cost, this.system.cooldown ?? 0);
+}
+
+async addCraftingRecipe ( this: Carryable) {
+  const recipes = this.system.craftingRecipes;
+  recipes.push( {
+    components: [],
+  });
+  await this.update( {"system.craftingRecipes": recipes});
+}
+
+async addCraftingRecipeComponent ( this: Carryable, index: number) {
+  const recipes = this.system.craftingRecipes.slice();
+  const recipe  = recipes.at(index);
+  if (!recipe) {
+    throw new PersonaError(`No Recipe exists at index ${index} on ${this.name}`);
+  }
+  //a bunch of unsafe things specifically because foundry's nested array handling sucks
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+  const recipeJSON = recipe.toJSON!() as any;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+  recipeJSON.components.push(
+    {
+      itemId: "" as Item["id"],
+      amount: 1
+    });
+  // if (convert.components.length < recipe.components.length) {
+  //   PersonaError.softFail("Data Loss");
+  // }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  recipes[index] = recipeJSON;
+  const recipesJSON = recipes.map( x=> "toJSON" in x ? x.toJSON!() : x);
+  await this.update( {"system.craftingRecipes": recipesJSON});
+}
+
+async deleteCraftingRecipe (this: Carryable, recipe_index: number) {
+  const recipes = this.system.craftingRecipes.slice();
+  recipes.splice(recipe_index, 1);
+  await this.update( {"system.craftingRecipes": recipes});
+}
+
+async deleteCraftingRecipeComponent( this: Carryable, recipe_index: number, componentIndex: number) {
+  const recipes = this.system.craftingRecipes.map(k => k.toJSON!()) as typeof this.system.craftingRecipes ;
+  const recipe= recipes[recipe_index];
+  recipe.components.splice(componentIndex, 1);
+  await this.update( {"system.craftingRecipes": recipes});
+}
+
+get craftingIngredients() : string[][] {
+  if (!this.isCarryableType()) {return [];}
+  return (this.system.craftingRecipes ?? [])
+  .map ( x=> x.components.map( c => {
+    const item = PersonaDB.getItemById(c.itemId);
+    return `${item?.displayedName} (${c.amount})`;
+  }));
 }
 
 }

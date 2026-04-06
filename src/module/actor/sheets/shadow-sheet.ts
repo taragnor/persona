@@ -84,7 +84,7 @@ export class ShadowSheet extends CombatantSheetBase {
 				.sort( (a, b) => a.name.localeCompare(b.name))
 				.map( x=> [x.id, x.name])
 			)
-		);
+		) as Record<Item["id"], string>;
 		const CRAFTING_TREASURE_LIST = Object.fromEntries(
 			[["", "-"]].concat(
 				PersonaDB.treasureItems()
@@ -92,7 +92,7 @@ export class ShadowSheet extends CombatantSheetBase {
 				.sort( (a, b) => a.name.localeCompare(b.name))
 				.map( x=> [x.id, x.name])
 			)
-		);
+		) as Record<Item["id"], string>;
 		data.SHADOW_STUFF =  {
 			FREQUENCY_NEW: PROBABILITIES,
 			CREATURE_TAGS : CREATURE_TAGS,

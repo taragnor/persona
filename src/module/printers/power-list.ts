@@ -395,6 +395,7 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
     this.render(false);
   }
 
+
 }
 
 Hooks.on("DBrefresh", function () {
