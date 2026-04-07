@@ -532,6 +532,8 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
 					return false;
 			}
 		}
+    case "on-social-turn-start":
+      return true;
 		default:
 			condition satisfies never;
 			return false;

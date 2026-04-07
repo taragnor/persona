@@ -31,6 +31,7 @@ export const NONCOMBAT_TRIGGER_LIST = [
 	"on-metaverse-turn",
 	"on-roll",
 	"on-active-scene-change",
+  "on-social-turn-start",
 ] as const;
 
 export const SHARED_TRIGGERS = [

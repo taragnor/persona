@@ -945,6 +945,7 @@
 	"persona.triggers.on-enter-region": "On Enter Region",
 	"persona.triggers.on-active-effect-time-out": "On Active Effect Timeout",
 	"persona.triggers.on-active-effect-end": "On Active Effect End",
+	"persona.triggers.on-social-turn-start": "Social Turn (start)",
 
 	"persona.othereffect.search-twice": "Search Twice",
 	"persona.othereffect.ignore-surprise": "Act during surprise rounds",

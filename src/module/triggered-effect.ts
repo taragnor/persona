@@ -118,6 +118,7 @@ private static _setupSituation< T extends Trigger>( trigger: T, actor ?: ValidAt
 				case "on-power-usage-check":
 				case "on-event-start":
 				case "on-event-end":
+        case "on-social-turn-start":
 					PersonaError.softFail(`Must proivide a situation with this trigger:  ${trigger}`);
 					return null;
 				default:

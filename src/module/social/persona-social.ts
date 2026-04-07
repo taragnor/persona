@@ -84,6 +84,24 @@ export class PersonaSocial {
 		if (!game.user.isGM) {return;}
 		//only GM access beyond this point
 		const startTurnMsg = [ `<u><h2> ${pc.name}'s Social Turn</h2></u><hr>`];
+    startTurnMsg.push(...this.statusBasedStartTurnMsg(pc));
+		for (const activity of PersonaDB.allActivities()) {
+			if (activity.announce(pc)) {
+				startTurnMsg.push(` <b>${activity.displayedName.toString()}</b> is available today.`);
+			}
+		}
+    await this.execStartSocialTurnTriggers(pc);
+		const speaker = {alias: "Social Turn Start"};
+		const messageData = {
+			speaker: speaker,
+			content: startTurnMsg.join("<br>"),
+			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+		};
+		await ChatMessage.create(messageData, {});
+	}
+
+  private static statusBasedStartTurnMsg(pc: PC) : string[] {
+		const startTurnMsg = [];
 		if (pc.hasStatus("injured")) {
 			startTurnMsg.push(`<b> ${pc.name} </b>: is injured and should probably take the rest action`);
 		}
@@ -102,19 +120,17 @@ export class PersonaSocial {
 		if (pc.hasStatus("rested")) {
 			startTurnMsg.push(`<b> ${pc.name} </b>: is Well-rested.`);
 		}
-		for (const activity of PersonaDB.allActivities()) {
-			if (activity.announce(pc)) {
-				startTurnMsg.push(` <b>${activity.displayedName.toString()}</b> is available today.`);
-			}
-		}
-		const speaker = {alias: "Social Turn Start"};
-		const messageData = {
-			speaker: speaker,
-			content: startTurnMsg.join("<br>"),
-			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-		};
-		await ChatMessage.create(messageData, {});
-	}
+    return startTurnMsg;
+  }
+
+  private static async execStartSocialTurnTriggers(pc: PC) {
+    const situation : Situation = {
+      trigger: "on-social-turn-start",
+      triggeringCharacter: pc.accessor,
+      triggeringUser: game.user,
+    };
+    await TriggeredEffect.execNonCombatTrigger("on-social-turn-start", pc, situation, "Start Social Turn Triggered Effects");
+  }
 
 	static async endSocialTurn( pc: PC) {
 		const endTurnMsg = [] as string[];

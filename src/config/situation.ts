@@ -5,7 +5,7 @@ import { RollTag } from "./roll-tags.js";
 import { SocialStat } from "../config/student-skills.js";
 import { TarotCard } from "../config/tarot.js";
 import { StatusEffectId } from "./status-effects";
-import { AttackResult, CombatResult } from "../module/combat/combat-result.js";
+import { AttackResult} from "../module/combat/combat-result.js";
 import { CombatTriggerTypes } from "./triggers.js";
 import {RealDamageType} from "./damage-types.js";
 import {FinalizedCombatResult} from "../module/combat/finalized-combat-result.js";
@@ -26,6 +26,7 @@ type TriggerSituation = TriggerSituation_base & (
 	| OnRollTrigger
 	| OnAETimeoutTrigger
 	| OnPowerUsageCheckTrigger
+  | StartSocialTurnTrigger
 );
 
 type ExplorationTrigger = {
@@ -43,6 +44,12 @@ type ClockTrigger = {
 	trigger: "on-clock-tick" | "on-clock-change",
 	triggeringClockId: string,
 }
+
+type StartSocialTurnTrigger ={
+  trigger: "on-social-turn-start",
+  triggeringCharacter: UniversalActorAccessor<PC>,
+};
+
 
 type OnPowerUsageCheckTrigger = UserSituation & {
 	trigger: "on-power-usage-check",
