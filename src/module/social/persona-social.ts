@@ -152,12 +152,20 @@ export class PersonaSocial {
 		}
 	}
 
-	static async advanceCalendar(force = false, extraMsgs : string [] = []) {
-		if (!force && !(await HTMLTools.confirmBox( "Advance Date", "Advnace Date?", true))) {
-			ui.notifications.notify("Date not advanced due to advanceCalendar being rejected");
-			return;
-		}
-		await PersonaCalendar.nextDay(extraMsgs);
+  static async advanceCalendar(force = false, extraMsgs : string [] = []) {
+    if (!force && !(await HTMLTools.confirmBox( "Advance Date", "Advnace Date?", true))) {
+      ui.notifications.notify("Date not advanced due to advanceCalendar being rejected");
+      return;
+    }
+    await PersonaCalendar.nextDay(extraMsgs);
+    try {
+      const party = (PersonaDB.PCs() as (PC | NPCAlly)[]).concat(PersonaDB.NPCAllies());
+      const promises = party.map( actor => actor.onStartDay());
+      await Promise.allSettled(promises);
+    } catch (e) {
+      PersonaError.softFail("Error trying to execute onStartDay for PC or NPCAlly", e);
+
+    }
 	}
 
 	static async updateLinkAvailability(day: SimpleCalendar.WeekdayName) {

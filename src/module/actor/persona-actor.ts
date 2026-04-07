@@ -3504,15 +3504,27 @@ async resetFatigueChecks(this: PC) {
 	}
 }
 
-async onEndDay(this: PC): Promise<string[]> {
+async onEndDay(this:  PC | NPCAlly): Promise<string[]> {
+  const ret = [] as string[];
+  for (const eff of this.effects) {
+    if (await eff.onEndDay())
+    {ret.push(`Removed Condition ${eff.displayedName} at end of day.`);}
+  }
+  // ret.push(...await this.fatigueRecoveryRoll());
+  if (this.isPC()) {
+    await this.resetFatigueChecks();
+  }
+  return ret;
+}
+
+async onStartDay(this: PC | NPCAlly) : Promise<string[]> {
 	const ret = [] as string[];
 	for (const eff of this.effects) {
-		if (await eff.onEndSocialTurn())
-		{ret.push(`Removed Condition ${eff.displayedName} at end of day.`);}
+		if (await eff.onStartDay())
+		{ret.push(`Removed Condition ${eff.displayedName} at start of day.`);}
 	}
-	// ret.push(...await this.fatigueRecoveryRoll());
-	await this.resetFatigueChecks();
 	return ret;
+
 }
 
 async onEndSocialTurn(this: PC) : Promise<string[]> {

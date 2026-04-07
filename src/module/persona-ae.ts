@@ -623,6 +623,32 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     return false;
   }
 
+  async onStartDay() : Promise<boolean> {
+    const duration = this.statusDuration;
+    switch (duration.dtype) {
+      case "X-days":
+        return false;
+      case "anchored":
+      case "permanent":
+        return false;
+      case "expedition":
+      case "combat":
+      case "X-rounds":
+      case "X-exploration-turns":
+      case "USoNT":
+      case "save":
+      case "UEoNT":
+      case "UEoT":
+      case "instant":
+      case "3-rounds":
+        await this.delete();
+        return true;
+      default:
+        duration satisfies never;
+        return false;
+    }
+  }
+
   async onEndDay(): Promise<boolean> {
     const duration = this.statusDuration;
     switch (duration.dtype) {
