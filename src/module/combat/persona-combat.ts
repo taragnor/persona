@@ -1000,6 +1000,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			'all-foes': foes,
 			'all-in-region': allInRegion,
 			navigator: nav ? [nav.accessor] : [],
+      'pc-party': PersonaDB.activePCParty().map ( pc => pc.accessor),
 		};
 		return context;
 	}
@@ -1094,6 +1095,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 				const nav = PersonaDB.getNavigator();
 				return nav ? [nav] : [];
 			}
+      case "pc-party": {
+        return PersonaDB.activePCParty();
+      }
 			default:
 				applyTo satisfies never;
 				return [];
@@ -1155,6 +1159,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 			case "navigator":
 				PersonaError.softFail(`navigator doesn't support alt targets`);
 				return [];
+      case "pc-party":
+				PersonaError.softFail(`pc-party doesn't support alt targets`);
+        return [];
 			default:
 				targettingType satisfies never;
 				return [];

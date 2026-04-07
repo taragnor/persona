@@ -1017,6 +1017,7 @@
 	"persona.consequence.targets.all-allies" : "All Allies",
 	"persona.consequence.targets.all-combatants" : "All Combatants",
 	"persona.consequence.targets.navigator" : "Navigator",
+	"persona.consequence.targets.pc-party" : "PC Party",
 
 "persona.consequences.consequences-amount.operation": "Op",
 "persona.consequences.consequences-amount.constant": "Con",

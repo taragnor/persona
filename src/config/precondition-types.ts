@@ -127,6 +127,7 @@ export const CONDITION_TARGETS_LIST = [
 	"all-foes",
 	"all-in-region",
 	"navigator",
+  "pc-party",
 ] as const;
 
 export type ConditionTarget= typeof CONDITION_TARGETS_LIST[number];

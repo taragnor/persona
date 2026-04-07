@@ -725,6 +725,7 @@ function resolveStatusDurationAnchor (anchor: ConsequenceTarget, atkResult: Atta
 		case "all-allies":
 		case "all-foes":
 		case "all-in-region":
+    case "pc-party":
 			PersonaError.softFail(`${anchor} not supported as a status anchor`);
 			return null;
 		case "navigator": {

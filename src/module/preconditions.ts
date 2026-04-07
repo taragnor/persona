@@ -1036,6 +1036,9 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
 			const nav = PersonaDB.getNavigator();
 			return nav ? [nav] : [];
 		}
+    case "pc-party": {
+      return PersonaDB.activePCParty();
+    }
 		default: {
 			condTarget satisfies undefined;
 			if (situation.target?.token) {

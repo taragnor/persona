@@ -4347,6 +4347,23 @@ moneyDropped(): number {
 	return Math.floor(mult * moneyLow);
 }
 
+get inActiveParty() : boolean {
+  if (this.isRealPC()) {return true;}
+  if (this.isNPCAlly()) {
+    return this.system.isInActiveParty ?? false;
+  }
+  return false;
+}
+
+async setAsActivePartyMember(this : NPCAlly)  {
+  for (const ally of PersonaDB.NPCAllies()) {
+    if (ally != this && ally.inActiveParty) {
+      await ally.update( {"system.isInActiveParty": false});
+    }
+  }
+  await this.update( {"system.isInActiveParty": true});
+}
+
 get startingLevel() : number {
 	const cVal = this.cache.startingLevel;
 	if (cVal != undefined) {
