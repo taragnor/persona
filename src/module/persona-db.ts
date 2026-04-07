@@ -303,6 +303,13 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.#cache.enchantments = tags;
 	}
 
+  PCsAndAllies() : (PC | NPCAlly) [] {
+    return [
+      ...this.realPCs(),
+      ...this.NPCAllies(),
+    ];
+  }
+
 	allTagLinks() : Map<Tag["system"]["linkedInternalTag"], Tag> {
 		if (this.#cache.tagNames) {return this.#cache.tagNames;}
 		const tags= this.allItems()

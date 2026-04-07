@@ -135,7 +135,6 @@ export class PersonaSocial {
 	static async endSocialTurn( pc: PC) {
 		const endTurnMsg = [] as string[];
 		//Check exhaustion statuses
-
 		try {
 			endTurnMsg.push(...await pc.onEndSocialTurn());
 		} catch  {
@@ -159,12 +158,11 @@ export class PersonaSocial {
     }
     await PersonaCalendar.nextDay(extraMsgs);
     try {
-      const party = (PersonaDB.PCs() as (PC | NPCAlly)[]).concat(PersonaDB.NPCAllies());
+      const party = (PersonaDB.realPCs() as (PC | NPCAlly)[]).concat(PersonaDB.NPCAllies());
       const promises = party.map( actor => actor.onStartDay());
       await Promise.allSettled(promises);
     } catch (e) {
       PersonaError.softFail("Error trying to execute onStartDay for PC or NPCAlly", e);
-
     }
 	}
 

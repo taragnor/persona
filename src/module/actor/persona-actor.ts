@@ -2148,6 +2148,7 @@ async setFatigueLevel(lvl: number,log = true) : Promise<FatigueStatusId | undefi
 	return newId;
 }
 
+/** positive removes fatigue and negative adds it*/
 async alterFatigueLevel(amt: number, log=true) : Promise<FatigueStatusId | undefined> {
 	const oldLvl = this.fatigueLevel;
 	const newLvl = oldLvl + amt;
@@ -3514,7 +3515,26 @@ async onEndDay(this:  PC | NPCAlly): Promise<string[]> {
   if (this.isPC()) {
     await this.resetFatigueChecks();
   }
+  if (this.isNPCAlly()) {
+    await this.recoverFatigue();
+  }
   return ret;
+}
+
+async recoverFatigue(this: NPCAlly) : Promise<void>{
+  if (this.fatigueLevel == 0) {return;}
+  let recoveryDays = Number(this.getFlag<number>("persona", "fatigueRecovery")) ?? 0;
+  if (Number.isNaN(recoveryDays)) {
+    PersonaError.softFail(`NaN recovery days for ${this.name}`);
+    recoveryDays = 0;
+  }
+  recoveryDays += 1;
+  if (recoveryDays == 3) {
+    recoveryDays = 0;
+    await this.setFlag("persona", "fatigueRecovery", 0);
+    await this.alterFatigueLevel(1);
+  }
+  await this.setFlag("persona", "fatigueRecovery", recoveryDays);
 }
 
 async onStartDay(this: PC | NPCAlly) : Promise<string[]> {
@@ -3524,7 +3544,6 @@ async onStartDay(this: PC | NPCAlly) : Promise<string[]> {
 		{ret.push(`Removed Condition ${eff.displayedName} at start of day.`);}
 	}
 	return ret;
-
 }
 
 async onEndSocialTurn(this: PC) : Promise<string[]> {

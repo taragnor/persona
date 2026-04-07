@@ -208,7 +208,7 @@ export class PersonaCalendar {
 
 	static async endDayForPCs(): Promise<string[]> {
 		const ret : string[] = [];
-		for (const pc of PersonaDB.realPCs()) {
+		for (const pc of PersonaDB.PCsAndAllies()) {
 			try {
 				const changes = await pc.onEndDay();
 				if (changes.length == 0) {continue;}
