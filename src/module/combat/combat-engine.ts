@@ -93,44 +93,44 @@ export class CombatEngine {
 		}
 	}
 
-	 async usePower(attacker: PToken, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) : Promise<FinalizedCombatResult> {
-			TimeLog.reset();
-			this.startTime = Date.now();
-			if (attacker instanceof foundry.canvas.placeables.Token) {
-				 throw new Error('Actual token found instead of token document');
-			}
-			if (!options.ignorePrereqs && !await this.checkPowerPreqs(attacker, power)) {
-				 return new CombatResult().finalize();
-			}
-			try {
-				 const targets = presetTargets ? presetTargets :  PersonaTargetting.getTargets(attacker, power);
-				 this.ensureCombatCheck(power, attacker, targets);
-				 await this.handlePlayerInputModifier(options);
-				 // await PersonaSFX.onUsePowerStart(power, attacker);
-				 const result = new CombatResult();
-				 result.merge(await this.usePowerOn(attacker, power, targets, 'standard', options));
-				 const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
-				 result.merge(costs);
-				 const finalizedResult = result.finalize();
-				 if (options.simulated) { return finalizedResult;}
-				 if (!power.isOpener())  {
-						await attacker.actor.expendAction();
-				 }
-				 await attacker.actor.removeStatusesOfType("out-of-turn-action");
-				 // TimeLog.log(`Finished Status Removal and Action Management`);
-				 await finalizedResult.toMessage(power.name, attacker.actor);
-				 // TimeLog.log(`Finished toMessage`);
-				 await this.postActionCleanup(attacker, finalizedResult);
-				 // TimeLog.log(`Finished using power ${power.name}`);
-				 return finalizedResult;
-			} catch(e) {
-				 if (e instanceof CanceledDialgogError) {
-						throw e;
-				 }
-				 console.log(e);
-				 throw e;
-			}
-	 }
+  async usePower(attacker: PToken, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) : Promise<FinalizedCombatResult> {
+    this.setPendingResult();
+    TimeLog.reset();
+    this.startTime = Date.now();
+    if (attacker instanceof foundry.canvas.placeables.Token) {
+      throw new Error('Actual token found instead of token document');
+    }
+    if (!options.ignorePrereqs && !await this.checkPowerPreqs(attacker, power)) {
+      return new CombatResult().finalize();
+    }
+    try {
+      const targets = presetTargets ? presetTargets :  PersonaTargetting.getTargets(attacker, power);
+      this.ensureCombatCheck(power, attacker, targets);
+      await this.handlePlayerInputModifier(options);
+      // await PersonaSFX.onUsePowerStart(power, attacker);
+      const result = new CombatResult();
+      result.merge(await this.usePowerOn(attacker, power, targets, 'standard', options));
+      const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
+      result.merge(costs);
+      const finalizedResult = result.finalize();
+      if (options.simulated) { return finalizedResult;}
+      if (!power.isOpener())  {
+        await attacker.actor.expendAction();
+      }
+      await attacker.actor.removeStatusesOfType("out-of-turn-action");
+      await finalizedResult.toMessage(power.name, attacker.actor);
+      await this.postActionCleanup(attacker, finalizedResult);
+      return finalizedResult;
+    } catch(e) {
+      if (e instanceof CanceledDialgogError) {
+        this.clearPendingResult();
+        throw e;
+      }
+      console.log(e);
+      this.clearPendingResult();
+      throw e;
+    }
+  }
 
 	/** throws error if there's no combat*/
 	ensureCombatCheck(power: UsableAndCard, attacker: PToken, targets: PToken[]) {
@@ -143,6 +143,18 @@ export class CombatEngine {
 		}
 	}
 
+  setPendingResult() {
+    if (PersonaCombat.combat) {
+      PersonaCombat.combat._resolvingAttack = true;
+    }
+  }
+
+  clearPendingResult() {
+    if (PersonaCombat.combat) {
+      PersonaCombat.combat._resolvingAttack = false;
+    }
+  }
+
 	async handlePlayerInputModifier(options: CombatOptions): Promise<void> {
 		if (options.askForModifier) {
 			this.customAtkBonus = await HTMLTools.getNumber('Attack Modifier');
@@ -154,6 +166,7 @@ export class CombatEngine {
 	async postActionCleanup(attacker: PToken, result: FinalizedCombatResult ) {
 		await sleep(1250); //wait for extra action status?
 		await PersonaCombat.postActionCleanup(attacker, result);
+    this.clearPendingResult();
 	}
 
 	async usePowerOn(attacker: PToken, power: UsableAndCard, targets: PToken[], rollType : AttackRollType, options: CombatOptions = {}) : Promise<CombatResult> {
