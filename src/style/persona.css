@@ -1931,3 +1931,8 @@ img.navigator-img  {
 	font-style: italic;
   flex:1;
 }
+
+button.target {
+  height: 2em;
+  width: auto;
+}

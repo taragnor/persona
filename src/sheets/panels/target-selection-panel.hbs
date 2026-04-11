@@ -1,0 +1,11 @@
+<h2>{{power.name}}</h2>
+
+<section class="target-list">
+{{#each targets as |target i|}}
+<button class="target" data-target-id="{{target.id}}">
+  {{target.name}}
+</button>
+{{/each}}
+
+
+</section>

@@ -102,6 +102,12 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     );
   }
 
+  get explorationPowers() : readonly Power[] {
+    return this.powers.filter( pwr =>
+      pwr.canBeUsedInExploration()
+    );
+  }
+
   get bonusPowers() : readonly Power [] {
     const bonusPowers : Power[] =
       this.mainModifiers({omitPowers:true, omitTalents: true, omitAuras: true})

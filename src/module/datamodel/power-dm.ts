@@ -63,7 +63,6 @@ export function powerOnlyUsableProps() {
 		attacksMin: new num( {integer: true, min: 1, initial:1 }),
 		attacksMax: new num( {integer: true, min: 1, initial:1 }),
 		melee_extra_mult: new num( {integer: true, min: -10, max:50, initial: 0}),
-
 	};
 
 }

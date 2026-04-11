@@ -4381,6 +4381,7 @@ async setAsActivePartyMember(this : NPCAlly)  {
     }
   }
   await this.update( {"system.isInActiveParty": true});
+  await Logger.sendToChat( `${this.name} set as Active NPC Ally`);
 }
 
 get startingLevel() : number {

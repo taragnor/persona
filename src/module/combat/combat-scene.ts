@@ -78,17 +78,6 @@ export class CombatScene {
 		await scene.activate();
 		await scene.view();
 		await waitUntilTrue( () => game.scenes.current == scene && game.canvas.scene == scene && game.canvas.ready);
-		// const gridsize = scene.grid.size;
-		// let x = INITIAL_OFFSET.x * gridsize;
-		// const y = INITIAL_OFFSET.y * gridsize;
-		// const tokens : Token<PersonaActor>[] = [];
-		// for (const shadow of this.encounter.enemies) {
-		// 	const token = await CreateToken.create(shadow, {x,y}, this.scene);
-		// 	if (token) {
-		// 		tokens.push(token.object!);
-		// 	}
-		// 	x += SPACING_BLOCKS * gridsize;
-		// }
 		const tokens : Token<PersonaActor>[] = await this.setupShadows();
     const playerTokens = await this.setupPCs();
 		tokens.push(...playerTokens);
@@ -113,7 +102,8 @@ export class CombatScene {
   }
 
   private async setupPCs() : Promise<Token<PersonaActor>[]> {
-		const playerTokens = this.getPlayerTokens();
+    this.clearUnusedPartyMembers();
+		const playerTokens = await this.getPlayerTokens();
 		const INITIAL_OFFSET = { x: 6, y: 12} as const;
 		const SPACING_BLOCKS = 4 as const;
 		const gridsize = this.scene.grid.size;
@@ -127,12 +117,27 @@ export class CombatScene {
     return playerTokens;
   }
 
-	getPlayerTokens() : Token<PersonaActor>[] {
-		const playerTokens = this.scene.tokens
-			.filter( (x: TokenDocument<PersonaActor>)=> x.actor != undefined && (x.actor.isRealPC() || x.actor.isNPCAlly()))
-		.map( t=> t._object);
-		return playerTokens;
-	}
+  async getPlayerTokens() : Promise<Token<PersonaActor>[]> {
+    const PCParty = PersonaDB.activePCParty();
+    for (const pc of PCParty) {
+      if (!this.scene.tokens.contents.some(tok => tok.actor == pc)) {
+        await CreateToken.create(pc, {x: 200, y: 200}, this.scene);
+      }
+    }
+    const playerTokens = PCParty
+    .map( actor => this.scene.tokens.find( tok => tok.actor == actor))
+    // .filter( (x: TokenDocument<PersonaActor>)=> x.actor != undefined && (x.actor.isRealPC() || x.actor.isNPCAlly()))
+    .filter ( t=> t != undefined)
+    .map( t=> t._object);
+    return playerTokens;
+  }
+
+  clearUnusedPartyMembers() {
+    const PCParty = PersonaDB.activePCParty();
+    this.scene.tokens
+      .filter( tok => tok.actor != undefined && tok.actor?.isNPCAlly() && !PCParty.includes( tok.actor))
+      .forEach( tok=> void tok.delete());
+  }
 
 	checkCombatOver() : void {
 		try {

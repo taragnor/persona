@@ -2,78 +2,17 @@ import {Metaverse} from "../metaverse.js";
 import {PersonaSockets} from "../persona.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaRegion} from "../region/persona-region.js";
-import {Helpers} from "../utility/helpers.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
-import { SidePanel } from "../side-panel/side-panel.js";
-import {PersonaCombat} from "../combat/persona-combat.js";
-import {PersonaDB} from "../persona-db.js";
+import {RegionPanelMain} from "../panels/exploration-panel.js";
 
-class RegionPanelComponent extends SidePanel {
-  region: U<PersonaRegion>;
-
-	override get templatePath(): string {
-		return "systems/persona/other-hbs/region-panel.hbs";
-	}
-
-	constructor() {
-		super("region-info-panel");
-	}
-
-  override get autoActivateOnUpdate() : boolean {
-    return true;
-  }
-
-	override activateListeners(html: JQuery<HTMLElement>): void {
-		super.activateListeners(html);
-		html.find(".search-button").on("click", (ev) => RegionPanel.searchButton(ev));
-		html.find(".crunch-button").on("click", (_ev) => void Metaverse.toggleCrunchParty());
-	}
-
-  setRegion(region: PersonaRegion) {
-    this.region = region;
-  }
-
-  override async getData() {
-    if (!this.region) {
-      throw new Error("No region defined");
-    }
-    return {
-      ...await super.getData(),
-      region: this.region,
-      data: this.region.regionData,
-    };
-  }
-
-  override async updatePanel( region?: PersonaRegion) {
-    if (region) {
-      this.setRegion(region);
-    }
-    await super.updatePanel();
-  }
-
-  override buttonConfig() : SidePanel.ButtonConfig[] {
-    return [ {
-      label: "Search Room",
-      onPress : () => RegionPanel.searchButton(),
-      enabled : () => this.region != undefined && this.region.isSearchable && !PersonaCombat.combat,
-    } ];
-  }
-
-  override prereqs() {
-    return [
-      () => PersonaDB.isLoaded
-    ];
-  }
-
-}
 
 export class RegionPanel {
-	private static panel: RegionPanelComponent;
+	private static panel: RegionPanelMain;
 
 	static init() {
 		if (!this.panel) {
-			this.panel = new RegionPanelComponent();
+			this.panel = new RegionPanelMain();
 			this.initHooks();
 		}
 	}
@@ -108,19 +47,6 @@ export class RegionPanel {
 		// await this.panel.updatePanel( {region, data: region.regionData});
 	}
 
-	static searchButton(_ev ?: JQuery.ClickEvent) {
-		if (game.user.isGM) {
-			void Metaverse.searchRoom();
-			return;
-		}
-		Helpers.pauseCheck();
-		const region = Metaverse.getRegion();
-		if (!region) {
-			throw new PersonaError("Can't find region");
-		}
-		const data = {regionId: region.id};
-		PersonaSockets.simpleSend("SEARCH_REQUEST", data, game.users.filter(x=> x.isGM && x.active).map(x=> x.id));
-	}
 
 	private static initHooks() {
 		console.log("Init Region Panel Hooks");

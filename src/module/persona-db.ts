@@ -329,7 +329,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.PCs().filter( x=> x.isRealPC());
 	}
 
-  activePCParty() : (PC | NPCAlly) [] {
+  activePCParty() : readonly (PC | NPCAlly) [] {
     return [
       ...this.realPCs(),
       ...this.NPCAllies(),
@@ -508,11 +508,11 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return await Promise.allSettled(promises);
 	}
 
-	PCParty() : (PC | NPCAlly)[] {
-		return game.scenes.active.tokens.contents
-			.map( x=> x.actor as PersonaActor)
-			.filter( actor=> actor && (actor.isPC() || actor.isNPCAlly()));
-	}
+	// PCParty() : (PC | NPCAlly)[] {
+	// 	return game.scenes.active.tokens.contents
+	// 		.map( x=> x.actor as PersonaActor)
+	// 		.filter( actor=> actor && (actor.isPC() || actor.isNPCAlly()));
+	// }
 
 }
 

@@ -1,6 +1,12 @@
 <header>
+  {{#if token}}
   <h3 class="token-name"> {{token.name}}</h3>
-  {{#if actor.canSwitchPersonas}}
+  {{else}}
+  <h3 class="actor-name"> {{persona.user.name}}</h3>
+  {{/if}}
+
+
+  {{#if persona.user.canSwitchPersonas}}
   <div>
     <b>
       Active Persona:

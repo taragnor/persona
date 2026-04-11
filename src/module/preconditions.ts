@@ -935,7 +935,7 @@ export function resolveActorIdOrTarot (targetIdOrTarot: string)  {
 	return PersonaDB.getSocialLinkByTarot(targetIdOrTarot as TarotCard | Tarot["id"] | SocialLink["id"]);
 }
 
-function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K) : (PToken | ValidAttackers | NPC) []{
+function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K) : readonly (PToken | ValidAttackers | NPC) []{
 	if (!(field in cond)) {
 		Debug(cond);
 		Debug(situation);

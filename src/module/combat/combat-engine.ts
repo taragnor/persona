@@ -23,7 +23,8 @@ import {AttackResult, CombatResult} from "./combat-result.js";
 import {AILMENT_LEVELS, DamageCalculation, INSTANT_KILL_LEVELS, InstantKillLevel} from "./damage-calc.js";
 import {FinalizedCombatResult} from "./finalized-combat-result.js";
 import {ModifierList} from "./modifier-list.js";
-import {CombatOptions, PersonaCombat, PToken, TargettingError} from "./persona-combat.js";
+import {CombatOptions, PersonaCombat, PToken} from "./persona-combat.js";
+import {PersonaTargetting, TargettingError} from "./persona-targetting.js";
 
 export class CombatEngine {
 	combat: U<PersonaCombat>;
@@ -102,7 +103,7 @@ export class CombatEngine {
 				 return new CombatResult().finalize();
 			}
 			try {
-				 const targets = presetTargets ? presetTargets :  PersonaCombat.getTargets(attacker, power);
+				 const targets = presetTargets ? presetTargets :  PersonaTargetting.getTargets(attacker, power);
 				 this.ensureCombatCheck(power, attacker, targets);
 				 await this.handlePlayerInputModifier(options);
 				 // await PersonaSFX.onUsePowerStart(power, attacker);
@@ -238,7 +239,7 @@ export class CombatEngine {
 			const execPower = PersonaDB.allPowers().get( usePower.powerId);
 			if (execPower && newAttacker) {
 				const altTargets= PersonaCombat.getAltTargets(newAttacker, atkResult.situation, usePower.target );
-				const newTargets = PersonaCombat.getTargets(newAttacker, execPower, altTargets);
+				const newTargets = PersonaTargetting.getTargets(newAttacker, execPower, altTargets);
 				const extraPower = await this.usePowerOn(newAttacker, execPower, newTargets, 'standard', options);
 				extraPowers.push(extraPower);
 			}
@@ -1170,6 +1171,7 @@ export class CombatEngine {
 			locType: game.i18n.localize(AILMENT_LEVELS[power.system.ailmentChance]),
 		};
 	}
+
 
 	static calculateBaseInstantKillRange(power: Usable):  U<{high: number, modifier: number, locType: string}> {
 		if (!power.isInstantDeathAttack()) {return undefined ;}

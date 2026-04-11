@@ -1825,6 +1825,71 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       item.hasTag('passive');
   }
 
+  canBeUsedInExploration(this: UsableAndCard) : boolean {
+    if (this.isSkillCard()) {return true;}
+    if (this.isPassive() || this.isDefensive()) {return false;}
+    if (!this.canBeUsedOnAllies()) { return false;}
+    if (this.hasTag("exploration")) {return true;}
+    if (this.restoresMP() || this.restoresHP()) {return true;}
+    return false;
+  }
+
+  isHealing(this: Usable) {
+    return this.restoresHP();
+  }
+
+  requiresManualTargets(this: UsableAndCard) {
+    if (this.isSkillCard()) {return false;}
+    switch (this.system.targets) {
+      case "1-engaged":
+      case "1-nearby":
+      case "1-nearby-dead":
+        return true;
+      case "1-random-enemy":
+      case "1d4-random":
+      case "1d4-random-rep":
+      case "1d3-random":
+      case "1d3-random-rep":
+      case "self":
+      case "all-enemies":
+      case "all-allies":
+      case "all-dead-allies":
+      case "all-others":
+      case "everyone":
+      case "everyone-even-dead":
+        return false;
+      default:
+        this.system.targets satisfies never;
+        return false;
+    }
+  }
+
+  canBeUsedOnAllies(this: Usable) : boolean {
+    switch (this.system.targets) {
+      case "1-engaged":
+      case "1-nearby":
+      case "1-nearby-dead":
+      case "1-random-enemy":
+      case "1d4-random":
+      case "1d4-random-rep":
+      case "1d3-random":
+      case "1d3-random-rep":
+      case "all-enemies":
+      case "all-others":
+      case "everyone":
+      case "everyone-even-dead":
+        return false;
+      case "self":
+      case "all-allies":
+      case "all-dead-allies":
+        return true;
+      default:
+        this.system.targets satisfies never;
+        return false;
+    }
+
+  }
+
   isTeamwork(this: UsableAndCard): boolean {
     return this.hasTag('teamwork');
   }
@@ -2530,7 +2595,8 @@ targetMeetsConditions(this: UsableAndCard, user: ValidAttackers, target: ValidAt
   return testPreconditions(conditions, situation);
 }
 
-requiresTargetSelection(this: Usable) : boolean {
+requiresTargetSelection(this: UsableAndCard) : boolean {
+  if (this.isSkillCard()) {return false;}
   switch (this.system.targets) {
     case '1-engaged':
     case '1-nearby':

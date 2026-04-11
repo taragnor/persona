@@ -7,17 +7,6 @@ export class SidePanelManager {
   private static _activePanel : U<SidePanel>;
   private static panelStack: SidePanel[] = [];
 
-  // static clearPanel() : void {
-  //   const infoPanel = this.panel;
-  //   if (infoPanel.length) {
-  //     infoPanel.remove();
-  //   }
-  //   this.HTMLPanel = undefined;
-  //   // if (this.buttons.length > 0) {
-  //   //   this.buttons = [];
-  //   // }
-  // }
-
   static get panel()  {
     const infoPanel = $(document).find(this.CSSClassSelector);
     return infoPanel;
@@ -43,7 +32,6 @@ export class SidePanelManager {
     this.clearPanel();
     if (clearStack) {
       this.clearPanelStack();
-      // this.clearPanel();
     }
   }
 
@@ -112,8 +100,6 @@ export class SidePanelManager {
       await this.activate(sidePanel);
     }
     const panel = this.clearPanel();
-    // const panel = this.verifyValidState();
-    // panel.empty();
     if (!this._activePanel) {
       throw new Error("No active panel to render");
     }
@@ -127,7 +113,6 @@ export class SidePanelManager {
   }
 
   private static createContainer() : typeof SidePanelManager["HTMLPanel"] {
-    // console.log("Creating Container");
     const infoPanel = $("<section>").addClass(this.CSSClassName);
     const chatNotifications = $(document).find("#interface #ui-right-column-1 #chat-notifications");
     const chatContainer= $("<div>")

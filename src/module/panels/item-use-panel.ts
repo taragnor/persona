@@ -1,8 +1,6 @@
 import {PersonaError} from "../persona-error.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
-import {SubPanel} from "./sub-panel.js";
-import { lockObject } from "../utility/anti-loop.js";
-import {CombatEngine} from "../combat/combat-engine.js";
+import {PersonaPanel, SubPanel} from "./sub-panel.js";
 
 export class ItemUsePanel extends SubPanel {
 
@@ -25,7 +23,6 @@ export class ItemUsePanel extends SubPanel {
     };
   }
 
-
   override activateListeners(html : JQuery) {
     super.activateListeners(html);
     html.find(".inventory-item:not(.faded)").on("click", (ev) => void this._onUseItem(ev));
@@ -42,18 +39,12 @@ export class ItemUsePanel extends SubPanel {
     if (!item.isConsumable()) {
       throw new PersonaError(`Can't use this item`);
     }
-    await this._useItemOrPower(item);
+    await this._useItemOrPower(this.actor, item);
   }
 
-  private async _useItemOrPower(power : UsableAndCard) {
-    if (!this.actor) {return;}
-    await lockObject(this,
-      async () => await CombatEngine.usePower(this.actor, power),
-      {
-        timeoutMs: 5000,
-          inUseMsg: "Already Using a power",
-      }
-    );
+
+  static init() {
+    PersonaPanel.itemPanel = (actor: PC | NPCAlly) => new ItemUsePanel(actor);
   }
 
 }

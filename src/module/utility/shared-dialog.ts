@@ -249,7 +249,7 @@ type VotingDataDefPart<T extends string> = VotingDataDef<T>[keyof VotingDataDef<
 export class VotingDialog<Choices extends string> {
 	_dialog : SharedDialog<VotingDataDef<Choices>>;
 	constructor( choices : readonly Choices[], name : string) {
-		const def : VotingDataDef<Choices> = 
+		const def : VotingDataDef<Choices> =
 			Object.fromEntries(
 				game.users.contents
 				.filter( x=> !x.isGM && x.active)

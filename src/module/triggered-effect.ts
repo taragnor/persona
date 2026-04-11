@@ -12,6 +12,7 @@ import {ConsequenceProcessor} from "./conditionalEffects/consequence-processor.j
 import {CombatEngine} from "./combat/combat-engine.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {PersonaSettings} from "../config/persona-settings.js";
+import {PersonaTargetting} from "./combat/persona-targetting.js";
 
 export class TriggeredEffect {
 
@@ -214,7 +215,7 @@ static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Sit
 				const execPower = PersonaDB.allPowers().get( usePower.powerId);
 				if (execPower && newAttacker) {
 					const altTargets= PersonaCombat.getAltTargets(newAttacker, situation, usePower.target );
-					const newTargets = PersonaCombat.getTargets(newAttacker, execPower, altTargets);
+					const newTargets = PersonaTargetting.getTargets(newAttacker, execPower, altTargets);
 					const combatEngine = new CombatEngine();
 					const extraPower = await combatEngine.usePowerOn(newAttacker, execPower, newTargets, "standard");
 					triggerResult.merge(extraPower);

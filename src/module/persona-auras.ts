@@ -12,7 +12,7 @@ export class PersonaAura {
       return this.getCombatAuras(PersonaCombat.combat);
     }
     if (affectedTarget.user.isPC() || affectedTarget.user.isNPCAlly()) {
-      return PersonaDB.PCParty().flatMap( actor => actor.activeAuras());
+      return PersonaDB.activePCParty().flatMap( actor => actor.activeAuras());
     }
     return affectedTarget.myAuraEffects();
   }

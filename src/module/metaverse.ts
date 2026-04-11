@@ -27,6 +27,7 @@ import {RandomDungeonOutput} from "./exploration/random-dungeon-output.js";
 import {PersonaCombat} from "./combat/persona-combat.js";
 import {PersonaQuests} from "./exploration/persona-quests.js";
 import {NavigatorVoiceLines} from "./navigator/nav-voice-lines.js";
+import {VotingDialog} from "./utility/shared-dialog.js";
 
 export class Metaverse {
 	static lastCrunch : number = 0;
@@ -104,6 +105,22 @@ export class Metaverse {
     await TensionPool.instance.clear();
     Hooks.callAll("enterMetaverse");
     await Logger.sendToChat(`Entering Metaverse...`);
+    await this.chooseAlly();
+  }
+
+  static async chooseAlly() {
+    const alliesNames = PersonaDB.NPCAllies()
+      .map (x=> x.name);
+    const dialog = new VotingDialog(alliesNames, "NPC Ally Selection");
+    const choice = await dialog.majorityVote();
+    if (!PersonaDB.activePCParty().find (x=> x.name == choice)) {
+      const newAlly = PersonaDB.NPCAllies().find( npc=> npc.name == choice);
+      if (!newAlly) {
+        PersonaError.softFail(`Can't activate ${choice} as this NPC could not be found`);
+        return;
+      }
+      await newAlly.setAsActivePartyMember();
+    }
   }
 
 	static async exitMetaverse() {

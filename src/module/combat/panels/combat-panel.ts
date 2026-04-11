@@ -1,23 +1,20 @@
 import {PersonaSettings} from "../../../config/persona-settings.js";
 import {PersonaActor} from "../../actor/persona-actor.js";
 import {PersonaActorSheetBase} from "../../actor/sheets/actor-sheet.base.js";
-import {ItemUsePanel} from "../../panels/item-use-panel.js";
 import {PersonaSwitchPanel} from "../../panels/persona-switch-panel.js";
+import {PersonaPanel} from "../../panels/sub-panel.js";
 import {PersonaDB} from "../../persona-db.js";
 import {PersonaError} from "../../persona-error.js";
-import { SidePanel } from "../../side-panel/side-panel.js";
 import {HTMLTools} from "../../utility/HTMLTools.js";
-import {CombatEngine} from "../combat-engine.js";
 import {FollowUpActionData} from "../follow-up-actions.js";
 import {OpenerOption} from "../openers.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "../persona-combat.js";
 
-export class CombatPanel extends SidePanel {
+export class CombatPanel extends PersonaPanel {
   private _target: U<PToken>;
   static _instance: U<CombatPanel>;
   private _openers: OpenerOption[] = [];
   private _followUps: FollowUpActionData[] = [];
-  private _powerUseLock: boolean = false;
   mode: "main" | "tactical" | "opener" | "followUp";
   tacticalTarget: U<PToken>;
 
@@ -259,7 +256,7 @@ export class CombatPanel extends SidePanel {
 
   private async _onInventoryButton() {
     if (this._target && this._target.actor && this._target.actor.canUseConsumables) {
-      await this.push(new ItemUsePanel(this._target.actor as PC | NPCAlly));
+      await this._openInventoryPanel(this._target.actor as PC | NPCAlly);
     }
   }
 
@@ -322,7 +319,7 @@ export class CombatPanel extends SidePanel {
     if (!item.isConsumable()) {
       throw new PersonaError(`Can't use this item`);
     }
-    await this._useItemOrPower(item);
+    await this._useItemOrPower(this.actor, item);
   }
 
   private async _onClickPower(ev: JQuery.ClickEvent) {
@@ -336,27 +333,7 @@ export class CombatPanel extends SidePanel {
     const ptype = power.system.type;
     if (ptype != "power" && ptype != "consumable")
     {throw new PersonaError(`powerId pointed to unsualbe power ${powerId}`);}
-    await this._useItemOrPower(power);
-  }
-
-  private async _useItemOrPower(power : UsableAndCard) {
-    if (!this.actor) {return;}
-    if (this._powerUseLock) {
-      ui.notifications.notify("Can't use another power now, as a power is already in process");
-      return;
-    }
-    await this.lockSection(CombatEngine.usePower(this.actor, power));
-  }
-
-  private async lockSection(promise: Promise<unknown>) {
-    this._powerUseLock = true;
-    try {
-      await promise;
-    } catch (e) {
-      console.warn(e);
-      Debug(e);
-    }
-    this._powerUseLock = false;
+    await this._useItemOrPower(this.actor, power);
   }
 
   private async _onTacticalMode(ev?: JQuery.ClickEvent) {

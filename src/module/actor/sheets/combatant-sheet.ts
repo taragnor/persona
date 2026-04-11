@@ -6,7 +6,7 @@ import { PersonaDB } from "../../persona-db.js";
 import { PersonaActor } from "../persona-actor.js";
 import { Helpers } from "../../utility/helpers.js";
 import { PersonaError } from "../../persona-error.js";
-import { PersonaCombat, TargettingError } from "../../combat/persona-combat.js";
+import { PersonaCombat} from "../../combat/persona-combat.js";
 import { PToken } from "../../combat/persona-combat.js";
 import { CanceledDialgogError, HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaItem } from "../../item/persona-item.js";
@@ -17,6 +17,7 @@ import {antiLoop} from "../../utility/anti-loop.js";
 import {sleep} from "../../utility/async-wait.js";
 import {PROBABILITIES_POWER_RARITY} from "../../../config/probability.js";
 import {localize} from "../../persona.js";
+import {PersonaTargetting, TargettingError} from "../../combat/persona-targetting.js";
 
 export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	declare actor: ValidAttackers;
@@ -230,10 +231,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				if (actor.token) {
 					 token = actor.token as PToken;
 				} else {
-					 // const tokens = this.actor._dependentTokens.get(game.scenes.current)!;
-					 //THIS IS PROBABLY A bad idea to iterate over weakset
-					 //@ts-expect-error not sure what type tokens are
-					 // token = Array.from(tokens)[0];
 					 token = this.actor.getDependentTokens()
 							.find( tok => tok.parent == game.scenes.current);
 				}
@@ -387,7 +384,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!power) {
 			throw new PersonaError(`Can't find power id ${powerId}`);
 		}
-		const targets= PersonaCombat.targettedPTokens()
+		const targets= PersonaTargetting.targettedPTokens()
 			.filter( x=> x.actor.persona().effectiveScanLevel >=2 ) ;
 		await power.displayDamageStack(this.actor.persona(), targets[0] ?? null);
 		const stack = await power.getDamageStack(this.actor, targets[0] ?? null);
@@ -400,7 +397,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const CONST = PersonaActorSheetBase.CONST();
 		if (!power) {return;}
 		const persona = this.actor.persona();
-		const target= PersonaCombat.targettedPTokens()
+		const target= PersonaTargetting.targettedPTokens()
 			.filter( x=> x.actor.persona().effectiveScanLevel >=2 ).at(0) ?? null ;
     const targetPersona  : Persona = target ? target.actor.persona() : persona;
 		const damage = await CombatantSheetBase.getDamage(persona, power);
@@ -462,7 +459,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			if (!persona.isValidCombatant()) {return "0/0";}
 			persona = persona.persona();
 		}
-		const target= PersonaCombat.targettedPTokens()
+		const target= PersonaTargetting.targettedPTokens()
 			.filter( x=> x.actor.persona().effectiveScanLevel >=2 ).at(0) ?? null ;
 		const dmg = await usable.estimateDamage(persona.user, target);
 		if (dmg.high <= 0) {
