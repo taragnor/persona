@@ -107,7 +107,6 @@ export class CombatEngine {
       const targets = presetTargets ? presetTargets :  PersonaTargetting.getTargets(attacker, power);
       this.ensureCombatCheck(power, attacker, targets);
       await this.handlePlayerInputModifier(options);
-      // await PersonaSFX.onUsePowerStart(power, attacker);
       const result = new CombatResult();
       result.merge(await this.usePowerOn(attacker, power, targets, 'standard', options));
       const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));

@@ -38,8 +38,8 @@ export class PersonaSFX {
 	static async onAttackResult(_attacker: PToken, _target: PToken, attackResult: AttackResult["result"]) {
 		switch (attackResult) {
 			case "hit":
-			case "miss":
 			case "crit":
+			case "miss":
 				break;
 			case "reflect":
 			case "block":
@@ -88,7 +88,7 @@ export class PersonaSFX {
 		if (usableOrCard.isSkillCard()) {
 			return;
 		}
-		if (usableOrCard.name == BASIC_PC_POWER_NAMES[1]) {
+		if (usableOrCard.system.dmg_type == "all-out" ) {
 			return PersonaSFX.onAllOutAttack();
 		}
 		const damageType = usableOrCard.getDamageType(attacker.actor);

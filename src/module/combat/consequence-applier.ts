@@ -149,10 +149,10 @@ export class ConsequenceApplier {
     if (power) {
       PersonaSFX.onDamage(token, dmg.hpChange, dmg.damageType, power);
     }
+    if (power && !power.isAoE()) {
+      await PersonaSFX.onSingleTargetDamage(token, dmg.hpChange, dmg.damageType, power);
+    }
     if (token) {
-      if (power && !power.isAoE()) {
-        await PersonaSFX.onSingleTargetDamage(token, dmg.hpChange, dmg.damageType, power);
-      }
       Hooks.callAll("onTakeDamage", token, dmg.hpChange, dmg.damageType);
     }
     await actor.modifyHP(dmg.hpChange);
