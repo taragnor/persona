@@ -1,17 +1,24 @@
-<h4> Craftables </h4>
-<div class="craftables-list">
-  {{#each craftables as |item i|}}
-  <div class="craftable">
-    <span> {{item.displayedName}} </span>
-    {{#each item.craftingIngredients as |recipe i|}}
-    <div class="recipe"></div>
-    {{#each recipe as |compStr j|}}
-    <span>
-      {{compStr}}
-    </span>
+<section>
+  <h2> Craftables </h2>
+  <ul class="craftables-list">
+    {{#each craftables as |item i|}}
+    <li class="craftable">
+      <h3> {{item.displayedName}} </h3>
+      <div class="recipes">
+        {{#each item.craftingIngredients as |recipe i|}}
+        <div class="recipe">
+          <span>
+            Recipe {{i}}:
+          </span>
+          {{#each recipe as |compStr j|}}
+          <span class="ingredient">
+            {{compStr}}
+          </span>
+          {{/each}}
+        </div>
+        {{/each}}
+      </div>
+    </li>
     {{/each}}
-  </div>
-  {{/each}}
-</div>
-{{/each}}
-</div>
+  </ul>
+</section>

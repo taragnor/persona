@@ -586,6 +586,7 @@
 	"persona.equipment.tag.drug" : "Drug",
 	"persona.equipment.tag.defensive" : "Defensive",
 	"persona.equipment.tag.crafting" : "Crafting Material",
+	"persona.equipment.tag.secondary-crafting" : "Crafting (side-use)",
 	"persona.equipment.tag.d-mon" : "D-Mon",
 	"persona.equipment.tag.pc-d-mon" : "PC D-Mon",
 	"persona.equipment.tag.bow" : "Bow",
@@ -796,6 +797,7 @@
 	"persona.preconditions.targets.all-in-region": "Everyone in the Region" ,
 	"persona.preconditions.targets.cameo": "Cameo Character" ,
 	"persona.preconditions.targets.navigator": "Navigator" ,
+	"persona.preconditions.targets.pc-party": "PC Party" ,
 
 	"persona.preconditions.dice.escalation": "Escalation DIe" ,
 	"persona.preconditions.dice.activation": "Activation Roll" ,

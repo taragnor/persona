@@ -12,7 +12,7 @@ import {PersonaError} from "../persona-error.js";
 import {testPreconditions} from "../preconditions.js";
 import {randomSelect} from "../utility/array-tools.js";
 import { SocialCardEventHandler} from "./card-event-handler.js";
-import {PersonaSocial} from "./persona-social.js";
+import {DowntimeActionData, PersonaSocial} from "./persona-social.js";
 import {ItemSelector} from "../../config/consequence-types.js";
 
 export class SocialCardExecutor {
@@ -158,9 +158,21 @@ export class SocialCardExecutor {
 		}
 		const finale = await this.#printCardFinale(cardData);
 		chatMessages.push(finale);
+    await this.expendSocialAction(cardData);
 		this.stopCardExecution();
 		return chatMessages;
 	}
+
+  async expendSocialAction(cardData: CardData) {
+    const type = this.getTypeOfActivity(cardData.activity);
+    await PersonaSocial.expendDowntimeAction(cardData.actor, type);
+  }
+
+  getTypeOfActivity(activity : CardData["activity"]) : keyof DowntimeActionData {
+    if (activity instanceof PersonaActor) {return "standard";}
+    if (activity.system.cardType == "minor") {return "minor";}
+    return "standard";
+  }
 
 	async #execOpportunity(cardData: CardData) {
 		const card = cardData.card;

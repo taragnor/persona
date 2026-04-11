@@ -1122,7 +1122,7 @@ export class PersonaHandleBarsHelpers {
       const CRAFTING_TREASURE_LIST = Object.fromEntries(
         [["", "-"]].concat(
           PersonaDB.treasureItems()
-          .filter( item => item.isCraftingItem)
+          .filter( item => item.isCraftingItem || item.isSecondaryCraftingItem)
           .sort( (a, b) => a.name.localeCompare(b.name))
           .map( x=> [x.id, x.name])
         )

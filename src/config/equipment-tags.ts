@@ -56,6 +56,7 @@ export const EQUIPMENT_TAGS_LIST = [
 	"drug",
 	"defensive",
 	"crafting",
+  "secondary-crafting",
 	"d-mon",
 	...WEAPON_TAGS_LIST,
 ] as const;

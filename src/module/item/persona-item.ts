@@ -972,6 +972,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.isCraftingMaterial();
   }
 
+  get isSecondaryCraftingItem() : boolean {
+    if (!this.isCarryableType()) {return false;}
+    return this.hasTag("secondary-crafting");
+  }
+
   /**@deprecated */
   costString() : string {
     return 'ERROR';

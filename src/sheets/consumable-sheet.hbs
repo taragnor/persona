@@ -1,63 +1,63 @@
 <form class="consumable-sheet">
-	<header>
-		<div class="flexrow">
-			<div>
-				<img class="profile-img" src="{{item.img}}" data-edit="img"/>
-			</div>
-			<div>
-				<h2> Consumable</h2>
-				<input type="text" class="borderless item-name" name="name" value="{{item.name}}" title="Conusmable Name" placeholder="Consumable Name">
-				<textarea name="system.description">{{item.system.description}}</textarea>
-				{{#if (isGM)}}
-				<div>
-					<label>
-						Consumable Type</label>
-					<select name="system.subtype">
-						{{selectOptions POWERSTUFF.CONSUMABLE_SUBTYPES localize=true selected=item.system.subtype}}
-					</select>
-				</div>
-				{{/if}}
-				{{> "systems/persona/parts/item-quantity-part.hbs" item=item POWERSTUFF=POWERSTUFF}}
-				{{> "systems/persona/parts/itemTags.hbs" item=item POWERSTUFF=POWERSTUFF}}
-			</div>
-		</div>
-	</header>
-	<hr>
-	<div class="f-row">
-		<div class="left-side">
-			{{> "systems/persona/parts/power-tags.hbs" item=item POWERSTUFF=POWERSTUFF}}
-			<div class="damage">
-				<label class="dmg-mult">
-					Damage
-				</label>
-				{{numberInput item.system.damage.low class="short" name="system.damage.low" step=1 min=0 max=100}} /
-				{{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=100}}
-			</div>
-			<hr>
+  <header>
+    <div class="flexrow">
+      <div>
+        <img class="profile-img" src="{{item.img}}" data-edit="img"/>
+      </div>
+      <div>
+        <h2> Consumable</h2>
+        <input type="text" class="borderless item-name" name="name" value="{{item.name}}" title="Conusmable Name" placeholder="Consumable Name">
+        <textarea name="system.description">{{item.system.description}}</textarea>
+        {{#if (isGM)}}
+        <div>
+          <label>
+            Consumable Type</label>
+          <select name="system.subtype">
+            {{selectOptions POWERSTUFF.CONSUMABLE_SUBTYPES localize=true selected=item.system.subtype}}
+          </select>
+        </div>
+        {{/if}}
+        {{> "systems/persona/parts/item-quantity-part.hbs" item=item POWERSTUFF=POWERSTUFF}}
+        {{> "systems/persona/parts/itemTags.hbs" item=item POWERSTUFF=POWERSTUFF}}
+      </div>
+    </div>
+  </header>
+  <hr>
+  <div class="f-row">
+    <div class="left-side">
+      {{> "systems/persona/parts/power-tags.hbs" item=item POWERSTUFF=POWERSTUFF}}
+      <div class="damage">
+        <label class="dmg-mult">
+          Damage
+        </label>
+        {{numberInput item.system.damage.low class="short" name="system.damage.low" step=1 min=0 max=100}} /
+        {{numberInput item.system.damage.high class="short" name="system.damage.high" step=1 min=0 max=100}}
+      </div>
+      <hr>
 
-			{{#if (isGM)}}
-			<label> Price </label>
-			{{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}
-			<br>
-			<div class="item-level">
-				<label>
-					Item Level:
-				</label>
-				{{numberInput item.system.itemLevel class="short" name="system.itemLevel" step=1 min=0 max=15}}
-			</div>
-			<label> No Trade </label>
-			<input type="checkbox" name="system.noTrade" {{checked item.system.noTrade}}>
-			{{else}}
-			{{#if item.system.noTrade}}
-			<b> Can't trade</b>
-			{{/if}}
-			{{/if}}
-		</div>
-		<div class="right-side">
-			{{> "systems/persona/parts/treasure-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
-		</div>
-	</div>
-	{{> "systems/persona/parts/power-effects.hbs" item=item POWERSTUFF=POWERSTUFF}}
+      {{#if (isGM)}}
+      <label> Price </label>
+      {{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}
+      <br>
+      <div class="item-level">
+        <label>
+          Item Level:
+        </label>
+        {{numberInput item.system.itemLevel class="short" name="system.itemLevel" step=1 min=0 max=15}}
+      </div>
+      <label> No Trade </label>
+      <input type="checkbox" name="system.noTrade" {{checked item.system.noTrade}}>
+      {{else}}
+      {{#if item.system.noTrade}}
+      <b> Can't trade</b>
+      {{/if}}
+      {{/if}}
+    </div>
+    <div class="right-side">
+      {{> "systems/persona/parts/treasure-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
+    </div>
+  </div>
+  {{> "systems/persona/parts/power-effects.hbs" item=item POWERSTUFF=POWERSTUFF}}
   {{> "systems/persona/parts/crafting-recipe-input.hbs" item=item POWERSTUFF=POWERSTUFF}}
 </form>
 

@@ -1936,3 +1936,19 @@ button.target {
   height: 2em;
   width: auto;
 }
+
+li.craftable {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.recipes {
+  margin-left : 5px;
+}
+
+.ingredient {
+	border-radius:5px;
+	border: 1px solid #bfcbe0;
+	font-size: 0.85em;
+  padding: 3px;
+}

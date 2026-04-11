@@ -29,6 +29,7 @@ import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class
 import {SocialCardExecutor} from "./social-card-executor.js";
 import {weightedChoice} from "../utility/array-tools.js";
 import {ConditionalEffectPrinter} from "../conditionalEffects/conditional-effect-printer.js";
+import {DowntimePanel} from "../panels/downtime-panel.js";
 
 export class PersonaSocial {
 	static allowMetaverse: boolean = true;
@@ -81,8 +82,12 @@ export class PersonaSocial {
 	static async startSocialTurn( pc: PC) {
 		if (pc.isOwner && !game.user.isGM)
 		{TurnAlert.alert();}
+    if (pc.isOwner) {
+      await DowntimePanel.instance.setActor(pc);
+    }
 		if (!game.user.isGM) {return;}
 		//only GM access beyond this point
+    await this.refreshSocialActions(pc);
 		const startTurnMsg = [ `<u><h2> ${pc.name}'s Social Turn</h2></u><hr>`];
     startTurnMsg.push(...this.statusBasedStartTurnMsg(pc));
 		for (const activity of PersonaDB.allActivities()) {
@@ -664,6 +669,38 @@ export class PersonaSocial {
 		await PC.increaseSocialLink(linkId);
 	}
 
+  static async refreshSocialActions( actor: PC) {
+    const socialActions = {
+      minor: 1,
+      standard: 1,
+    };
+    await actor.setFlag("persona", "socialActions", socialActions);
+  }
+
+  static getDownTimeActionsRemaining(actor: PC, type: keyof DowntimeActionData) : number {
+    const data = actor.getFlag<DowntimeActionData>("persona", "socialActions");
+    return data ? data[type] ?? 0 : 0;
+  }
+
+  static async expendDowntimeAction(actor: PC, type: keyof DowntimeActionData)  {
+    const data = actor.getFlag<DowntimeActionData>("persona", "socialActions") ?? {minor: 0, standard:0};
+    data[type]= Math.max( 0, data[type]-1);
+    await actor.setFlag("persona", "socialActions", data);
+  }
+
+  static hasMainSocialAction(actor: PC) : boolean {
+    return this.getDownTimeActionsRemaining(actor, "standard") > 0;
+
+  }
+
+  static hasMinorSocialAction(actor: PC) : boolean {
+    return this.getDownTimeActionsRemaining(actor, "minor") > 0;
+  }
+
+  static availableActivities() : SocialCard[] {
+		return PersonaDB.allActivities().filter( activity=> Object.values(activity.system.weeklyAvailability).some (val => val));
+  }
+
 } //end of class
 
 
@@ -752,4 +789,11 @@ Hooks.on("renderChatMessageHTML", (message: ChatMessage, htm: HTMLElement ) => {
 		html.find("button.raise-SL").on("click", ev => void PersonaSocial._onRaiseSLButton(ev));
 	}
 });
+
+
+export interface DowntimeActionData {
+  minor: number;
+  standard: number;
+};
+
 
