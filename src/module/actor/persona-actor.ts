@@ -3464,12 +3464,31 @@ get hasMultiplePersonas() : boolean {
 	return this.personaList.length > 1;
 }
 
+/** says if character can take normal actions, requires alive and turn is in combat */
+get canTakeNormalActions() : boolean {
+  if (!this.isValidCombatant()) {return false;}
+  const combat = PersonaCombat.combat;
+  if (!this.isAlive() || !this.isOwner) {return false;}
+  if (combat && !combat.isSocial
+    && !combat.allowedToTakeActions(this)) {
+    return false;
+  }
+  return true;
+}
+
+get canUseConsumables() : boolean {
+  if (!this.isValidCombatant() || this.isShadow()) {return false;}
+  if (this.hasStatus("rage")) {return false;}
+  return this.canTakeNormalActions;
+}
+
+/** returns true if actor can take the switch persona action*/
 get canSwitchPersonas() : boolean {
-	if (!this.isValidCombatant()) {return false;}
+  if (!this.isValidCombatant()) {return false;}
+  if (!this.canTakeNormalActions) {return false;}
+  if (this.hasStatus("sealed")) {return false;}
 	return this.hasMultiplePersonas
-		&& this.isOwner
-		&& !this.hasStatus("sealed")
-		&& this.isAlive();
+		&& this.canTakeNormalActions;
 }
 
 /** should get called after a search action or after entering a new region*/

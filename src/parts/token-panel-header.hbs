@@ -1,0 +1,15 @@
+<header>
+  <h3 class="token-name"> {{token.name}}</h3>
+  {{#if actor.canSwitchPersonas}}
+  <div>
+    <b>
+      Active Persona:
+    </b>
+    <span class="persona-name">
+      {{persona.name}}
+    </span>
+  </div>
+  {{/if}}
+  {{> "systems/persona/parts/vitals-section.hbs" CONST=CONST persona=persona}}
+</header>
+<hr>

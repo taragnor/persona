@@ -1,8 +1,4 @@
 <section class="control-inventory">
-	<button class="return-button">
-		Return
-	</button>
-
 	<div class="item-list">
 	{{#each actor.usableConsumables as |item|}}
 	<div class="inventory-item {{#if (not (canUsePower ../persona item))}} faded {{/if}}" data-item-id="{{item.id}}" title="{{item.tooltip}}">

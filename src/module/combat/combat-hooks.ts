@@ -6,7 +6,7 @@ import { StatusEffect } from "../../config/consequence-types.js";
 import { PersonaError } from "../persona-error.js";
 import { PersonaSockets } from "../persona.js";
 import {FlagChangeDiffObject, OpenerManager} from "./openers.js";
-import {CombatPanel} from "./combat-panel.js";
+import { CombatPanel } from "./panels/combat-panel.js";
 import {FollowUpManager} from "./follow-up-actions.js";
 
 export class CombatHooks {

@@ -25,6 +25,14 @@ export abstract class SidePanel {
     await SidePanelManager.deactivate(this);
   }
 
+  async pop() {
+    return await SidePanelManager.pop();
+  }
+
+  async push(panel: SidePanel) {
+    return await SidePanelManager.push(panel);
+  }
+
   get autoActivateOnUpdate() : boolean {
     return false;
   }
@@ -36,7 +44,6 @@ export abstract class SidePanel {
   protected prereqs() : (() => boolean)[] {
     return [];
   }
-
 
   async waitUntilReady() : Promise<void> {
     if (!this._ready) {
@@ -50,7 +57,6 @@ export abstract class SidePanel {
     }
     this._ready = true;
   }
-
 
   abstract get templatePath() : string;
 
@@ -96,7 +102,7 @@ export abstract class SidePanel {
     const buttonData = await this.resolveButtonData();
     const buttonHTML = buttonData
     .map( (button, i) =>
-      `<button class='side-panel-button ${button.cssClasses.join(" ")}' data-button-index='${i}' ${button.enabled ? "" : "disabled"}'>
+      `<button class='side-panel-button ${button.cssClasses.join(" ")}' data-button-index='${i}' ${button.enabled ? "" : "disabled"}>
       ${button.label}
       </button>
       `
@@ -123,6 +129,7 @@ export abstract class SidePanel {
     if (!button) {
       throw new Error(`No Button Data at index ${index}`);
     }
+    ev.stopPropagation();
     button.onPress();
   }
 
@@ -190,7 +197,30 @@ export abstract class SidePanel {
       return await (ValOrFunction as () => Promise<T>)();
     }
     return ValOrFunction;
-
   }
 
 }
+
+declare global {
+  namespace SidePanel {
+    interface ButtonConfig {
+      label: ValOrFunctional<string>;
+      enabled ?: ValOrFunctional<boolean>;
+      onPress : () => unknown;
+      cssClasses ?: ValOrFunctional<string>[];
+      visible ?: ValOrFunctional<boolean>;
+    }
+
+    interface ResolvedButtonData {
+      label: string,
+        enabled: boolean,
+        index: number,
+        // onPress: () => unknown,
+        cssClasses : string[],
+    }
+
+    type ValOrFunctional<T> = T | (() => T) | (() => Promise<T>);
+  }
+
+}
+

@@ -4,7 +4,11 @@ import {sleep} from "./async-wait.js";
 
 const lockedObjects : WeakMap<object, number> = new WeakMap();
 
-export async function antiLoop(lockObj: object,  fn: () => Promise<void>, options : LockObjectOptions = {}) : Promise<void> {
+export async function lockObject(lockObj: object,  fn: () => Promise<unknown>, options : LockObjectOptions = {}) : Promise<void> {
+  await antiLoop(lockObj, fn, options);
+}
+
+export async function antiLoop(lockObj: object,  fn: () => Promise<unknown>, options : LockObjectOptions = {}) : Promise<void> {
 	 const usage = lockedObjects.get(lockObj) ?? 0;
 	 const usageLimit = options.maxDepth ?? 1;
 	 if (usage >= usageLimit ) {

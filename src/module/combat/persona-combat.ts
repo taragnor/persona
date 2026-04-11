@@ -35,7 +35,7 @@ import {CombatEngine} from './combat-engine.js';
 import {ConditionTarget} from '../../config/precondition-types.js';
 import {NavigatorVoiceLines} from '../navigator/nav-voice-lines.js';
 import {OpenerManager} from './openers.js';
-import {CombatPanel} from './combat-panel.js';
+import { CombatPanel } from './panels/combat-panel.js';
 import {TreasureSystem} from '../exploration/treasure-system.js';
 import {ModifierList} from './modifier-list.js';
 import {FollowUpManager} from './follow-up-actions.js';
@@ -84,6 +84,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 	static get combat() : U<PersonaCombat> {
 		return game?.combat as U<PersonaCombat>;
 	}
+
+allowedToTakeActions(actor: ValidAttackers) {
+  if (game.user.isGM) {return true;}
+  return this.turnCheck(actor);
+}
 
 	async runAllCombatantStartCombatTriggers() {
 		const combatants = this.combatants
@@ -1455,15 +1460,24 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 	/**return true if the target is eligible to use the power based on whose turn it is
 	 */
-	turnCheck(token: PToken): boolean {
+	turnCheck(token: ValidAttackers): boolean;
+	turnCheck(combatant: Required<typeof this.combatant>): boolean;
+	turnCheck(token: PToken): boolean ;
+	turnCheck(thing: PToken  | Required<typeof this.combatant> | ValidAttackers): boolean  {
+    const combatant = thing instanceof TokenDocument
+      ? this.getCombatantByToken(thing)
+      : thing instanceof PersonaActor
+    ? this.getCombatantByActor(thing)
+    : thing;
+    if (!combatant || !combatant.actor) {return false;}
 		if (
 			this.isSocial
-			|| token.actor.hasStatusOfType("out-of-turn-action")
-			|| token.actor.hasStatus('bonus-action')) {
+			|| combatant.actor.hasStatusOfType("out-of-turn-action")
+			|| combatant.actor.hasStatus('bonus-action')) {
 			return true;
 		}
 		if (!this.combatant) {return false;}
-		return (this.combatant.token.id == token.id);
+		return (this.combatant.id == combatant.id);
 	}
 
 

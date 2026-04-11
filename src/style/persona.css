@@ -807,6 +807,23 @@ form h5 {
 	opacity: 0.8;
 }
 
+.side-panel-main {
+	pointer-events: auto;
+	background-image: var(--sheet-bg-color);
+	max-width: 100%;
+	min-width: 33%;
+	z-index: 30;
+	margin: 3px;
+	color: white;
+	padding: 10px;
+	opacity: 0.8;
+}
+
+.side-panel-button:disabled {
+	background-color: #222; /* default is #333 dark grey*/
+  opacity: 0.6;
+}
+
 .region-panel .points-of-interest h3 {
 	font-size: larger;
 	text-decoration: underline;

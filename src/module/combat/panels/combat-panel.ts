@@ -1,14 +1,16 @@
-import {PersonaSettings} from "../../config/persona-settings.js";
-import {PersonaActor} from "../actor/persona-actor.js";
-import {PersonaActorSheetBase} from "../actor/sheets/actor-sheet.base.js";
-import {PersonaDB} from "../persona-db.js";
-import {PersonaError} from "../persona-error.js";
-import { SidePanel } from "../side-panel/side-panel.js";
-import {HTMLTools} from "../utility/HTMLTools.js";
-import {CombatEngine} from "./combat-engine.js";
-import {FollowUpActionData} from "./follow-up-actions.js";
-import {OpenerOption} from "./openers.js";
-import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
+import {PersonaSettings} from "../../../config/persona-settings.js";
+import {PersonaActor} from "../../actor/persona-actor.js";
+import {PersonaActorSheetBase} from "../../actor/sheets/actor-sheet.base.js";
+import {ItemUsePanel} from "../../panels/item-use-panel.js";
+import {PersonaSwitchPanel} from "../../panels/persona-switch-panel.js";
+import {PersonaDB} from "../../persona-db.js";
+import {PersonaError} from "../../persona-error.js";
+import { SidePanel } from "../../side-panel/side-panel.js";
+import {HTMLTools} from "../../utility/HTMLTools.js";
+import {CombatEngine} from "../combat-engine.js";
+import {FollowUpActionData} from "../follow-up-actions.js";
+import {OpenerOption} from "../openers.js";
+import {PersonaCombat, PersonaCombatant, PToken} from "../persona-combat.js";
 
 export class CombatPanel extends SidePanel {
   private _target: U<PToken>;
@@ -16,7 +18,7 @@ export class CombatPanel extends SidePanel {
   private _openers: OpenerOption[] = [];
   private _followUps: FollowUpActionData[] = [];
   private _powerUseLock: boolean = false;
-  mode: "main" | "inventory" | "persona" | "tactical" | "opener" | "followUp";
+  mode: "main" | "tactical" | "opener" | "followUp";
   tacticalTarget: U<PToken>;
 
   constructor() {
@@ -26,6 +28,34 @@ export class CombatPanel extends SidePanel {
 
   override get autoActivateOnUpdate(): boolean {
     return true;
+  }
+
+  override buttonConfig() : SidePanel.ButtonConfig[] {
+    return [
+      {
+        label: "Tactical",
+        onPress: () => this._onTacticalMode(),
+      },
+      {
+        label: "Persona",
+        onPress: () => this._onPersonaModeSwitchButton(),
+        enabled: () => this._target ? this._target.actor.canSwitchPersonas && this._target.isOwner : false,
+        visible: () => this._target ? this._target.isOwner && this._target.actor.hasMultiplePersonas: false,
+      },
+      {
+        label: "Item",
+        onPress: () => this._onInventoryButton(),
+        visible: () => this._target ? this._target?.actor.isPCLike() && this._target.isOwner : false,
+        enabled: () => this._target ? this._target.actor.canUseConsumables : false,
+      },
+      {
+        label: "End Turn",
+        onPress: () => this._onSelectEndTurn(),
+        visible: () => this._target ? this._target?.isOwner && PersonaCombat.combat != undefined : false,
+        enabled: () => PersonaCombat.combat?.combatant?.token == this._target,
+      },
+    ];
+
   }
 
   get combat() : U<PersonaCombat> {
@@ -89,7 +119,7 @@ export class CombatPanel extends SidePanel {
     html.find(".active-control-panel .main-power .pretty-power-name").on("click", ev => void this._onClickPower(ev));
     html.find(".active-control-panel button.basic-power").on("click", (ev) => void this._onClickPower(ev));
     html.find(".control-panel .token-name").on("click", ev => void this.openToken(ev));
-    html.find(".control-panel button.inventory-button").on("click", (ev) => void this._onInventoryButton(ev));
+    // html.find(".control-panel button.inventory-button").on("click", (ev) => void this._onInventoryButton(ev));
     html.find(".control-panel button.return-button").on("click", (ev) => void this._onReturnToMainButton(ev));
     html.find(".active-control-panel .inventory-item:not(.faded)").on("click", (ev) => void this._onUseItem(ev));
     html.find(".control-panel .tacticalMode").on("click", (ev) => void this._onTacticalMode(ev));
@@ -102,7 +132,7 @@ export class CombatPanel extends SidePanel {
     html.find(".control-panel .follow-ups .follow-up").on("click", (ev) => void this._onSelectFollowUp(ev));
     html.find(".control-panel .opener-list .option-target").on("click", (ev) => void this._onSelectOpenerTarget(ev));
     html.find(".control-panel .opener-list .simple-action").on("click", (ev) => void this._onSelectSimpleOpener(ev));
-    html.find(".active-control-panel button.end-turn").on("click", (ev) => void this._onSelectEndTurn(ev));
+    // html.find(".active-control-panel button.end-turn").on("click", (ev) => void this._onSelectEndTurn(ev));
     if ( this.target ) {
       this.target.actor.refreshTheurgyBarStyle();
     }
@@ -222,9 +252,15 @@ export class CombatPanel extends SidePanel {
     ];
   }
 
-  private async _onInventoryButton(_ev: JQuery.ClickEvent) {
-    await this.setMode("inventory");
-    await this.updatePanel();
+  // private async _onInventoryButton(_ev: JQuery.ClickEvent) {
+  //   await this.setMode("inventory");
+  //   await this.updatePanel();
+  // }
+
+  private async _onInventoryButton() {
+    if (this._target && this._target.actor && this._target.actor.canUseConsumables) {
+      await this.push(new ItemUsePanel(this._target.actor as PC | NPCAlly));
+    }
   }
 
   override async updatePanel() {
@@ -261,7 +297,7 @@ export class CombatPanel extends SidePanel {
     }
   }
 
-  private async _onSelectEndTurn( _ev: JQuery.ClickEvent) {
+  private async _onSelectEndTurn( _ev ?: JQuery.ClickEvent) {
     if (this._target != this.combat?.combatant?.token) {return;}
     await this.combat?.nextTurn();
   }
@@ -323,27 +359,32 @@ export class CombatPanel extends SidePanel {
     this._powerUseLock = false;
   }
 
-  private async _onTacticalMode(ev: JQuery.ClickEvent) {
-    ev.stopPropagation();
+  private async _onTacticalMode(ev?: JQuery.ClickEvent) {
+    if (ev) { ev.stopPropagation();}
     await this.setMode("tactical");
   }
 
-  private async _onPersonaModeSwitchButton(ev: JQuery.ClickEvent) {
-    ev.stopPropagation();
+  private async _onPersonaModeSwitchButton(ev ?: JQuery.ClickEvent) {
+    if (ev) {
+      ev.stopPropagation();
+    }
     if (!this.target) {return;}
     const actor = this.target.actor;
     const currentPersona = actor.persona();
     const filteredPList = actor.personaList
       .filter( p => !p.equals(currentPersona));
     if (filteredPList.length == 1) {
-      if (!this.isActiveControl()) {
+      // if (!this.isActiveControl()) {
+      if (!this.actor?.canSwitchPersonas) {
         ui.notifications.notify("Can't swap right now.");
         return;
       }
       await actor.switchPersona(filteredPList.at(0)!.source.id);
       return;
     }
-    await this.setMode("persona");
+
+    await this.push(new PersonaSwitchPanel(this.target));
+    // await this.setMode("persona");
   }
 
   private async _onPersonaSwitchButton(event: JQuery.ClickEvent) {
@@ -418,6 +459,10 @@ export class CombatPanel extends SidePanel {
       if (this.instance.target == token) {
         void this.instance.updatePanel();
       }
+    });
+
+    Hooks.on("updateCombat", () => {
+      void this.instance.updatePanel();
     });
 
     Hooks.on("hoverToken", (token, isSelecting) => {

@@ -42,7 +42,7 @@ import {PCSheet} from "./actor/sheets/pc-sheet.js";
 import {OriginalDamageSystem} from "./combat/original-damage-system.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaCompendium} from "./persona-compendium.js";
-import {CombatPanel} from "./combat/combat-panel.js";
+import { CombatPanel } from "./combat/panels/combat-panel.js";
 import {PROBABILITIES_POWER_RARITY, ProbabilityRate} from "../config/probability.js";
 import {CardData} from "./social/social-card-executor.js";
 import {ConditionalEffectPrinter} from "./conditionalEffects/conditional-effect-printer.js";
