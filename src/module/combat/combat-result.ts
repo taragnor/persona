@@ -17,7 +17,6 @@ import { PersonaCombat } from "./persona-combat.js";
 import { PersonaDB } from "../persona-db.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
-import {ConsequenceTarget} from "../../config/precondition-types.js";
 import {SocialActionExecutor} from "../social/exec-social-action.js";
 import {ATTACK_RESULT} from "../../config/attack-result-config.js";
 import {PersonaAE, StatusDuration} from "../persona-ae.js";
@@ -42,7 +41,6 @@ export class CombatResult  {
 		this.id = ++CombatResult.lastId;
 		if (atkResult) {
 			this.attacks.set(atkResult, []);
-			// this.attackResults.push(atkResult);
 		}
 	}
 
@@ -689,9 +687,7 @@ export type AttackResult = {
 	power: UniversalItemAccessor<UsableAndCard>,
 	situation: Situation & PostAttackRollSituation,
 	roll: RollBundle | null ,
-	// critBoost: number,
-	// critPrintable?: string []
-	ailmentRange: U<{low: number, high: number}>;
+	ailmentRange: U<{low: number, high: number}>
 	instantKillRange: U<{low: number, high:number}>;
 	critRange: U<{low: number, high:number}>;
 };

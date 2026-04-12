@@ -385,14 +385,6 @@ export class FinalizedCombatResult {
       .filter(res => res != undefined)
       .filter( res=> res.emptyCheck());
     this.chainedResults.push(...results);
-    // for (const otherResult of otherResults) {
-    // 	if (
-    // 		!otherResult
-    // 		||
-    // !otherResult.emptyCheck()
-    // 	) {continue;}
-    // 	this.chainedResults.push(otherResult);
-    // }
     return this;
   }
 
