@@ -408,6 +408,9 @@ export class Metaverse {
 			treasureFindBonus: 0,
 		};
 		const results = await SearchMenu.start(searchOptions, region);
+    if (results.every( x=> x.declaration == "leave")) {
+      return;
+    }
 		const treasureRolls : EnchantedTreasureFormat[] = [];
 		for (const resultSet of results) {
 			const searcher = PersonaDB.findActor(resultSet.searcher.actor);
