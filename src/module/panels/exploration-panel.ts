@@ -106,6 +106,5 @@ export class RegionPanelMain extends PersonaPanel {
     await this.push(new ExplorationPowerPanel(actor));
   }
 
-
 }
 

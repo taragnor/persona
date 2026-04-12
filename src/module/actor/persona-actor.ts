@@ -4375,6 +4375,10 @@ get inActiveParty() : boolean {
 }
 
 async setAsActivePartyMember(this : NPCAlly)  {
+  if (PersonaDB.activePCParty().includes(this)) {
+    console.log(`${this.name} remains in the Party`);
+    return;
+  }
   for (const ally of PersonaDB.NPCAllies()) {
     if (ally != this && ally.inActiveParty) {
       await ally.update( {"system.isInActiveParty": false});
