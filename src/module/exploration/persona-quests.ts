@@ -23,7 +23,15 @@ export class PersonaQuests {
         poi: "An Elderly Asian man is here cowering."
       });
     }
+    arr.push( {
+      level: 9,
+      roomName: "Cassandra's Photo Forger",
+      requirement: "room",
+      gmNotes: "Cassandra's Hacker, a breach in the wall.",
+      poi: "Wall Breach: There seems to be a sort of breach in space here, it seems to lead to a small pocket realm in the metaers, likely ruled by ashadow. Rise thinks it may be the one that released Cassandra's Photos."
+    });
     return arr;
   }
+
 
 }

@@ -19,16 +19,15 @@ export abstract class PersonaPanel extends SidePanel {
       return;
     }
     await lockObject(this,
-      async () => await CombatEngine.usePower(user, power, power.requiresTargetSelection() ? targets : []),
+      async () => await CombatEngine.usePower(user, power, power.requiresTargetSelection() ? targets : undefined),
       {
-        timeoutMs: 5000,
+        timeoutMs: 25000,
         inUseMsg: "Already Using a power",
       }
     );
   }
 
   protected async _openInventoryPanel(user:PC | NPCAlly) {
-    // await this.push(new ItemUsePanel(user));
     await this.push(PersonaPanel.itemPanel(user));
   }
 

@@ -74,8 +74,9 @@ export class RegionPanelMain extends PersonaPanel {
         enabled: () => true,
       });
     }
+    const NPCAlly = PersonaDB.activePCParty().find( x=> x.isNPCAlly());
     buttons.push( {
-      label: "Swap Teammate",
+      label: `Swap ${NPCAlly?.displayedName ?? "Teammate"}`,
       onPress: () => void Metaverse.chooseAlly(),
       enabled: () => !PersonaCombat.combat,
     });

@@ -25,7 +25,9 @@ export class ConsequenceApplier {
     const token  = change.actor.token ? PersonaDB.findToken(change.actor.token) as PToken: undefined;
     for (const status of change.addStatus) {
       try {
-        chained.push(...(await this._applyStatus(status, actor, power, attacker, token)));
+        chained.push(
+          ...(await this._applyStatus(status, actor, power, attacker, token))
+        );
       } catch (e) {
         PersonaError.softFail(`Error applying status: ${status.id}`, e);
       }
@@ -145,7 +147,6 @@ export class ConsequenceApplier {
         await NavigatorVoiceLines.onTargetHeal(actor, combat);
       }
     }
-
     if (power) {
       PersonaSFX.onDamage(token, dmg.hpChange, dmg.damageType, power);
     }

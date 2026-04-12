@@ -380,16 +380,21 @@ export class FinalizedCombatResult {
 		//TODO: this is the time sink
 	}
 
-	addChained( ...otherResults : U<FinalizedCombatResult>[]) : this {
-		for (const otherResult of otherResults) {
-			if (
-				!otherResult
-				||  !otherResult.emptyCheck()
-			) { return this; }
-			this.chainedResults.push(otherResult);
-		}
-		return this;
-	}
+  addChained( ...otherResults : U<FinalizedCombatResult>[]) : this {
+    const results= otherResults
+      .filter(res => res != undefined)
+      .filter( res=> res.emptyCheck());
+    this.chainedResults.push(...results);
+    // for (const otherResult of otherResults) {
+    // 	if (
+    // 		!otherResult
+    // 		||
+    // !otherResult.emptyCheck()
+    // 	) {continue;}
+    // 	this.chainedResults.push(otherResult);
+    // }
+    return this;
+  }
 
 	compressChained() : this {
 		for (const chain of this.chainedResults) {

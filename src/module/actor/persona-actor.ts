@@ -402,23 +402,27 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		});
 	}
 
-	get displayedName() : string {
-		switch (this.system.type) {
-			case "tarot":
-				return game.i18n.localize(TAROT_DECK[this.name as keyof typeof TAROT_DECK] ?? "-");
-			case "npcAlly":
-			case "shadow": {
-				if (this.isShadow() && this.isCustomPersona()) {return this.name;}
-				const combat = PersonaCombat.combat;
-				if (!combat) {return this.name;}
-				const token = combat.getCombatantByActor(this as ValidAttackers)?.token;
-				if (!token) {return this.prototypeToken.name;}
-				return token.name;
-			}
-			default:
-				return this.name;
-		}
-	}
+  get displayedName() : string {
+    switch (this.system.type) {
+      case "tarot":
+        return game.i18n.localize(TAROT_DECK[this.name as keyof typeof TAROT_DECK] ?? "-");
+      case "npcAlly": {
+        const proxy = (this as NPCAlly).getNPCProxyActor();
+        if (proxy) {return proxy.displayedName;}
+      }
+      // eslint-disable-next-line no-fallthrough
+      case "shadow": {
+        if (this.isShadow() && this.isCustomPersona()) {return this.name;}
+        const combat = PersonaCombat.combat;
+        if (!combat) {return this.name;}
+        const token = combat.getCombatantByActor(this as ValidAttackers)?.token;
+        if (!token) {return this.prototypeToken.name;}
+        return token.name;
+      }
+      default:
+        return this.name;
+    }
+  }
 
 	private async _setLevelTo(this: NPCAlly, lvl: number) {
 		if (!this.isNPCAlly()) {return;}
