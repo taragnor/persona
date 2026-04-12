@@ -800,7 +800,7 @@ function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-fl
           PersonaError.softFail(`Can't find actor for actorTurn property in Status, defaulting to user`);
           return {
             dtype: dur,
-            actorTurn: situation.user ? situation.user : situation["triggering-character"]!,
+            actorTurn: situation.user ? situation.user : situation["triggering-character"] ? situation["triggering-character"] : situation.target!,
           };
           //TODO: need to bail here
         }

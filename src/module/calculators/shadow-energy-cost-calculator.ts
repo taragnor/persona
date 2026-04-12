@@ -9,7 +9,7 @@ import { EnergyCostBase } from "./energy-cost-base.js";
 import {Persona} from "../persona-class.js";
 
 export class EnergyClassCalculator extends CostCalculator {
-     static MULTIATTACK_MULT = 18 as const;
+     static MULTIATTACK_MULT = 17 as const;
 
 	 static calcEnergyCost(pwr: Power, shadow: Persona) : {energyRequired: number, energyCost: number, cooldown: number} {
 			// const emptyCost = { energyRequired:0, energyCost:0, cooldown: 0 };

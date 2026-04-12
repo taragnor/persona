@@ -3038,6 +3038,7 @@ async spendMoney(this: PC, amt: number) {
 
 isAlive(): boolean {
 	if (this.system.type == "npc") {return true;}
+  if (this.isPC() && !this.isRealPC()) {return true;}
 	return this.hp > 0;
 }
 
