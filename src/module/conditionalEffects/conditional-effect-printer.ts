@@ -506,22 +506,6 @@ export class ConditionalEffectPrinter {
 				const modifiers = this.translate(cons.modifiedFields, MODIFIERS_TABLE);
 				return `${modifiers}: ${this.printConsequenceAmount(cons.amount)}`;
 			}
-			// case "damage-new":
-			// 	return this.printDamageConsequence(cons);
-			// case "addStatus": {
-			// 	const status = this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE);
-			// 	const dur = cons.statusDuration;
-			// 	if (!dur) {return `ERROR`;}
-			// 	const duration = this.translate(dur, STATUS_EFFECT_DURATION_TYPES);
-			// 	return `Add Status ${status} (${duration})`;
-			// } case "removeStatus": {
-			// 	const status = this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE);
-			// 	return `Remove Status ${status}`;
-			// }
-			// case "extraAttack":
-			// 	return `extra attack`;
-			// case "extraTurn":
-			// 	return `Take an extra turn`;
 			case "expend-slot":
 				return `expend Slot`;
 			case "expend-item":
@@ -545,10 +529,6 @@ export class ConditionalEffectPrinter {
 				return `Display Msg: ${cons.msg?.trim()}`;
 			case "social-card-action":
 				return this.#printSocialCardAction(cons);
-				// case "scan":
-				// 	return `Scan Target Level ${cons.amount}`;
-				// case "alter-energy":
-				// 	return `Energy ${cons.amount}`;
 			case "dungeon-action":
 				return this.#printDungeonAction(cons);
 			case "raise-resistance": {

@@ -38,6 +38,7 @@ import { CombatPanel } from './panels/combat-panel.js';
 import {TreasureSystem} from '../exploration/treasure-system.js';
 import {ModifierList} from './modifier-list.js';
 import {FollowUpManager} from './follow-up-actions.js';
+import {ConditionalEffectPrinter} from '../conditionalEffects/conditional-effect-printer.js';
 
 declare global {
   interface SocketMessage {
@@ -1008,6 +1009,74 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       'pc-party': PersonaDB.activePCParty().map ( pc => pc.accessor),
     };
     return context;
+  }
+
+  /** forces a result from solve effective targets if possible */
+  static solveEffectiveTargetsForce < T extends keyof Omit<TargettingContextList, "situation">>(applyTo :T, situation: Situation, cons?: SourcedConsequence<NonDeprecatedConsequence>) : readonly (ValidAttackers | ValidSocialTarget)[]  {
+    const solutionList : (keyof Omit<TargettingContextList, "situation">)[] = [applyTo];
+    switch (applyTo) {
+      case "target":
+        solutionList.push("triggering-character");
+        solutionList.push("user");
+        solutionList.push("owner");
+        break;
+      case "owner":
+        solutionList.push("triggering-character");
+        solutionList.push("user");
+        solutionList.push("owner");
+        solutionList.push("attacker");
+        break;
+      case "attacker":
+        solutionList.push("triggering-character");
+        solutionList.push("user");
+        solutionList.push("owner");
+        solutionList.push("target");
+        break;
+      case "user":
+        solutionList.push("triggering-character");
+        solutionList.push("owner");
+        solutionList.push("attacker");
+        solutionList.push("target");
+        break;
+      case "triggering-character":
+        solutionList.push("user");
+        solutionList.push("owner");
+        solutionList.push("target");
+        solutionList.push("attacker");
+        break;
+      case "cameo":
+        solutionList.push("user");
+        break;
+      case "all-allies":
+        break;
+      case "all-foes":
+        break;
+      case "all-in-region":
+        solutionList.push("pc-party");
+        break;
+      case "navigator":
+        break;
+      case "pc-party":
+        solutionList.push("all-in-region");
+        break;
+      default:
+        applyTo satisfies never;
+    }
+    const resolved= solutionList.reduce( (acc, newApplyTo, i) => {
+      if (acc.length > 0) {
+        return acc;
+      }
+      const ret= this.solveEffectiveTargets(newApplyTo, situation, cons);
+      if (ret.length > 0 && i > 0) {
+        PersonaError.softFail(`Had to default to ${newApplyTo} in place of ${applyTo} for bugged consequence ${cons?.type ?? "unknown consequence"}`, cons);
+      }
+      return ret;
+    }, [] as ReturnType<typeof PersonaCombat["solveEffectiveTargets"]>);
+    if (resolved.length == 0) {
+      const consPrintout = cons ? ConditionalEffectPrinter.printConsequence(cons): "No Cons";
+      throw new PersonaError(`Couldn't resolve effective targets for ${consPrintout}`);
+    }
+    return resolved;
   }
 
   static solveEffectiveTargets< T extends keyof Omit<TargettingContextList, "situation">>(applyTo :T, situation: Situation, cons?: SourcedConsequence) : readonly (ValidAttackers | ValidSocialTarget)[]  {

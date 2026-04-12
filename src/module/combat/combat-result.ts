@@ -169,358 +169,332 @@ export class CombatResult  {
 		}
 	}
 
-	 private addEffect_combatEffect( cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "combat-effect"}, effect: ActorChange<ValidAttackers>, target: U<ValidAttackers>, situation: Readonly<Situation>) {
-			if (!target && situation.target) {
-				 target = PersonaDB.findActor(situation.target);
-			}
-			switch (cons.combatEffect) {
-				 case "damage":
-						if (!effect || !target) {break;}
-						this.addEffect_damage(cons, situation, effect, target);
-						break;
-				 case "addStatus": {
-						if (!effect || !target) {break;}
+  private addEffect_combatEffect( cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "combat-effect"}, effect: ActorChange<ValidAttackers>, target: U<ValidAttackers>, situation: Readonly<Situation>) {
+    if (!target && situation.target) {
+      target = PersonaDB.findActor(situation.target);
+    }
+    switch (cons.combatEffect) {
+      case "damage":
+        if (!effect || !target) {break;}
+        this.addEffect_damage(cons, situation, effect, target);
+        break;
+      case "addStatus": {
+        this.addEffect_combatEffect_addStatus(cons, effect, target, situation);
+        break;
+      }
+      case "removeStatus": {
+        if (!effect) {break;}
+        // const id = cons.statusName;
+        const actor = PersonaDB.findActor(effect.actor);
+        for (const id of multiCheckToArray(cons.statusName)) {
+          if (actor.hasStatus(id)) {
+            effect.removeStatus.push({
+              id,
+            });
+          }
+        }
+        break;
+      }
+      case "extraAttack": {
+        if (!effect) {break;}
+        effect.otherEffects.push({
+          type: "extra-attack",
+          maxChain: cons.amount ?? 1,
+          iterativePenalty: -Math.abs(cons.iterativePenalty ?? 0),
+        });
+        break;
+      }
+      case "extraTurn": {
+        if (situation.usedPower) {
+          const power = PersonaDB.findItem(situation.usedPower);
+          if (power.isOpener()) {break;}
+          if (power.isTeamwork()) {break;}
+        }
+        if (!effect) {break;}
+        const combat = game.combat as PersonaCombat;
+        if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) {break;}
+        effect.otherEffects.push({
+          type: "extraTurn",
+          activation: combat.lastActivationRoll
+        });
+        break;
+      }
+      case "scan":
+        if (!effect) {break;}
+        effect.otherEffects.push( {
+          type: cons.combatEffect,
+          level: cons.amount ?? 1,
+          downgrade: cons.downgrade ?? false,
+        });
+        break;
+      case "auto-end-turn":
+        if (!effect) {break;}
+        effect.otherEffects.push(cons);
+        break;
+      case "alter-theurgy": {
+        if (!effect) {break;}
+        const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
+        effect.otherEffects.push( {
+          type: cons.combatEffect,
+          subtype: cons.subtype,
+          amount,
+        });
+        break;
+      }
+      case "alter-energy": {
+        if (!effect) {break;}
+        const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
+        effect.otherEffects.push( {
+          type: cons.combatEffect,
+          amount,
+        });
+        break;
+      }
+      case "apply-recovery":
+        effect.otherEffects.push( {
+          type: cons.combatEffect,
+        });
+        break;
+      case "set-cooldown": 
+        effect.otherEffects.push( cons);
+        break;
+      default:
+        cons satisfies never;
+    }
+  }
 
-					 let status_damage : number | undefined = undefined;
-					 if (situation.attacker && situation.usedPower &&  cons.statusName == "burn") {
-						 const power = PersonaDB.findItem(situation.usedPower);
-						 if (power.system.type == "skillCard") {
-							 PersonaError.softFail("Skill Card shouldn't be here");
-							 break;
-						 }
-						 const attacker = PersonaDB.findActor(situation.attacker);
-						 status_damage = attacker
-							 ? (power as Usable)
-							 .damage.getBurnDamage(power as Usable, attacker.persona(), target.persona())
-							 : 0;
-					 }
-					 const id = cons.statusName;
-					 if (id != "bonus-action") {
-						 if (!target) {
-							 PersonaError.softFail(`No Target for ${id}`);
-							 break;
-						 }
-						 const duration = convertConsToStatusDuration(cons, target, situation);
-						 if (effect.addStatus.find( st => st.id == id && PersonaAE.durationLessThanOrEqualTo(duration, st.duration))) {
-							 break;
-						 }
-						 effect.addStatus.push({
-							 id,
-							 potency: Math.abs(status_damage ?? cons.potency ?? 1),
-							 duration,
-						 });
-					 }
-					 break;
-				 }
-				case "removeStatus": {
-					if (!effect) {break;}
-					// const id = cons.statusName;
-					const actor = PersonaDB.findActor(effect.actor);
-					for (const id of multiCheckToArray(cons.statusName)) {
-						if (actor.hasStatus(id)) {
-							effect.removeStatus.push({
-								id,
-							});
-						}
-					}
-					break;
-				}
-				case "extraAttack": {
-					if (!effect) {break;}
-					effect.otherEffects.push({
-						type: "extra-attack",
-						maxChain: cons.amount ?? 1,
-						iterativePenalty: -Math.abs(cons.iterativePenalty ?? 0),
-					});
-					break;
-				}
-				case "extraTurn": {
-					if (situation.usedPower) {
-						const power = PersonaDB.findItem(situation.usedPower);
-						if (power.isOpener()) {break;}
-						if (power.isTeamwork()) {break;}
-					}
-					if (!effect) {break;}
-					const combat = game.combat as PersonaCombat;
-					if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) {break;}
-					effect.otherEffects.push({
-						type: "extraTurn",
-						activation: combat.lastActivationRoll
-					});
-					break;
-				}
-				case "scan":
-					if (!effect) {break;}
-					effect.otherEffects.push( {
-						type: cons.combatEffect,
-						level: cons.amount ?? 1,
-						downgrade: cons.downgrade ?? false,
-					});
-					break;
-				case "auto-end-turn":
-					if (!effect) {break;}
-					effect.otherEffects.push(cons);
-					break;
-				case "alter-theurgy": {
-					if (!effect) {break;}
-					const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
-					effect.otherEffects.push( {
-						type: cons.combatEffect,
-						subtype: cons.subtype,
-						amount,
-					});
-					break;
-				}
-				case "alter-energy": {
-					if (!effect) {break;}
-					const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
-					effect.otherEffects.push( {
-						type: cons.combatEffect,
-						amount,
-					});
-					break;
-				}
-				case "apply-recovery":
-					effect.otherEffects.push( {
-						type: cons.combatEffect,
-					});
-					break;
-				case "set-cooldown": 
-					effect.otherEffects.push( cons);
-					break;
-				default:
-					cons satisfies never;
-			}
-	 }
-
-	async addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
-		if (!target && situation.target) {
-			target = PersonaDB.findActor(situation.target);
-		}
-		const effect = this.#getEffect(target);
-		switch (cons.type) {
-			case "none":
-				break;
-			case "expend-item": {
-				const item = cons.source;
-				if (!effect) {
-					const msg=`Can't expend item ${item?.name ?? "Unknown Item"} due to no effect present in combat result`;
-					PersonaError.softFail(msg, item, cons);
-					break;
-				}
-				if (! (item instanceof PersonaItem)) {
-					const msg = "Illegal target for expend item";
-					PersonaError.softFail(msg, item, cons);
-					break;
-				}
-				if( !(item.isConsumable() || item.isSkillCard())) {
-					const msg = "Illegal target for expend item";
-					PersonaError.softFail(msg, item, cons);
-					break;
-				}
-				const itemAcc =  item.accessor;
-				effect.otherEffects.push( {
-					type: "expend-item",
-					itemAcc,
-				});
-				break;
-			}
-			case "expend-slot": {
-				console.warn("Expend slot is unused and does nnothing");
-				break;
-			}
-			case "modifier":
-			case "modifier-new":
-			case "raise-resistance":
-			case "lower-resistance":
-			case "raise-status-resistance":
-				break;
-			case "add-power-to-list":
-			case "add-talent-to-list":
-				break;
-			case "other-effect":
-				break;
-			case "set-flag": {
-				if (!effect) {break;}
-				// const target = PersonaDB.findActor(situation.target);
-				const dur = convertConsToStatusDuration(cons, target!, situation);
-				let embeddedEffects: readonly SourcedConditionalEffect[]= [];
-				const source = cons.source;
-				if (cons.flagState && cons.applyEmbedded && source && "getEmbeddedEffects" in source && source.getEmbeddedEffects != undefined) {
-					const owner = cons.owner ? PersonaDB.findActor(cons.owner) : null;
-					embeddedEffects = source.getEmbeddedEffects(owner);
-				}
-				effect.otherEffects.push( {
-					type: "set-flag",
-					flagId: cons.flagId ?? "",
-					flagName: cons.flagState ? cons.flagName ?? "" : "",
-					state: cons.flagState ?? true,
-					duration: dur,
-					embeddedEffects,
-					clearOnDeath: cons.flagState ? cons.clearOnDeath : false,
-					statusTagId: "statusTagId" in cons ? cons.statusTagId ?? "" : "",
-				} satisfies SetFlagEffect);
-				break;
-			}
-			case "inspiration-cost": {
-				if (!effect) {break;}
-				const socialTarget = getSocialLinkTarget(cons.socialLinkIdOrTarot, situation, undefined);
-				if (!socialTarget) {break;}
-				effect.otherEffects.push( {
-					type: "inspiration-cost",
-					amount: cons.amount ?? 1,
-					linkId: socialTarget.id,
-				});
-				break;
-			}
-			case "display-msg":
-				if (effect && !cons.newChatMsg) {
-					effect.otherEffects.push( {
-						type: "display-message",
-						newChatMsg: false,
-						msg: cons.msg ?? "",
-					});
-				} else {
-					this.globalOtherEffects.push({
-						type: "display-message",
-						newChatMsg: true,
-						msg: cons.msg ?? "",
-					});
-				}
-				break;
-			case "use-power":  {
-				if (!effect) {break;}
-				if (!cons.actorOwner) {
-					PersonaError.softFail("No actor owner for usepower ability");
-					break;
-				}
-				effect.otherEffects.push( {
-					newAttacker:  cons.actorOwner,
-					type: cons.type,
-					powerId : cons.powerId,
-					target: cons.target,
-				});
-				break;
-			}
-			case "social-card-action": {
-				//must be executed playerside as event execution is a player thing
-				const otherEffect : Sourced<SocialCardActionConsequence> = {
-					...cons
-				};
-				await SocialActionExecutor.execSocialCardAction(otherEffect, situation);
-				if (!effect) {break;}
-				effect.otherEffects.push( otherEffect);
-				break;
-			}
-			case "dungeon-action":
-				this.globalOtherEffects.push( {
-					...cons
-				});
-				break;
-			case "alter-mp":
-				if (!effect) {break;}
-				effect.otherEffects.push( {
-					type: cons.type,
-					amount: cons.amount ?? 0,
-					subtype: cons.subtype
-				});
-				break;
-			case "teach-power":
-				if (!effect) {break;}
-				effect.otherEffects.push( {
-					...cons
-				});
-				break;
-			case "add-creature-tag":
-				break;
-			case "combat-effect":
-				if (!effect) {break;}
-				this.addEffect_combatEffect(cons, effect, target, situation);
-				// effect.otherEffects.push(cons);
-				break;
-			case "alter-fatigue-lvl":
-				if (!effect) {break;}
-				effect.otherEffects.push(cons);
-				break;
-			case "alter-variable": {
-				const alterVarCons = {
-					...cons,
-					situation: situation,
-				};
-				if (cons.varType == "social-temp") {
-					//social stuff must be executed player side
-					if (cons.operator == "set-range") {
-						const otherEffect : Sourced<SocialCardActionConsequence> & {cardAction: "set-temporary-variable"} = {
-							...cons,
-							type: "social-card-action",
-							cardAction: "set-temporary-variable",
-						};
-						await SocialActionExecutor.execSocialCardAction(otherEffect, situation);
-					}
-					if (cons.operator != "set-range") {
-						const amount = this.resolveConsequenceAmount(cons, situation, "value");
-						const otherEffect : Sourced<SocialCardActionConsequence> & {cardAction: "set-temporary-variable"} = {
-							...cons,
-							type: "social-card-action",
-							cardAction: "set-temporary-variable",
-							variableId: cons.variableId,
-							operator: cons.operator,
-							value: amount,
-						};
-						await SocialActionExecutor.execSocialCardAction(otherEffect, situation);
-					}
-					break;
-				}
-				if (target) {
-					effect?.otherEffects.push(alterVarCons);
-				} else {
-					this.globalOtherEffects.push(alterVarCons);
-				}
-				break;
-			}
-			case "perma-buff":
-				if (!effect) {break;}
-				effect.otherEffects.push(cons);
-				break;
-			case"gain-levels":
-				if (!effect) {break;}
-				effect.otherEffects.push(cons);
-				break;
-			case "play-sound":
-				this.globalOtherEffects.push(cons);
-				break;
-			case "cancel":
-				this.globalOtherEffects.push(cons);
-				break;
-			case "inventory-action": {
-				if (!effect) {break;}
-				const amount = this.resolveConsequenceAmount(cons, situation);
-				if (cons.invAction == "add-card-item") {
-					const treasureItem = "cardEventItem" in situation ? situation.cardEventItem : undefined;
-					if (!treasureItem) {break;}
-					effect.otherEffects.push( {
-						...cons,
-						amount,
-						treasureItem,
-					});
-					break;
-				}
-				if (cons.invAction != "add-treasure") {
-					const resolvedCons = {
-						...cons,
-						amount,
-					};
-					effect.otherEffects.push( resolvedCons);
-				} else {
-					const sourced2=  ConsequenceAmountResolver.extractSourcedFromField(cons, "treasureLevel");
-					const treasureLevel = ConsequenceAmountResolver.resolveConsequenceAmount(sourced2, situation) ?? 0;
-					const resolvedCons = {
-						...cons,
-						amount,
-						treasureLevel,
-					};
-					effect.otherEffects.push( resolvedCons);
-				}
+  async addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
+    if (!target && situation.target) {
+      target = PersonaDB.findActor(situation.target);
+    }
+    const effect = this.#getEffect(target);
+    switch (cons.type) {
+      case "none":
+        break;
+      case "expend-item": {
+        const item = cons.source;
+        if (!effect) {
+          const msg=`Can't expend item ${item?.name ?? "Unknown Item"} due to no effect present in combat result`;
+          PersonaError.softFail(msg, item, cons);
+          break;
+        }
+        if (! (item instanceof PersonaItem)) {
+          const msg = "Illegal target for expend item";
+          PersonaError.softFail(msg, item, cons);
+          break;
+        }
+        if( !(item.isConsumable() || item.isSkillCard())) {
+          const msg = "Illegal target for expend item";
+          PersonaError.softFail(msg, item, cons);
+          break;
+        }
+        const itemAcc =  item.accessor;
+        effect.otherEffects.push( {
+          type: "expend-item",
+          itemAcc,
+        });
+        break;
+      }
+      case "expend-slot": {
+        console.warn("Expend slot is unused and does nnothing");
+        break;
+      }
+      case "modifier":
+      case "modifier-new":
+      case "raise-resistance":
+      case "lower-resistance":
+      case "raise-status-resistance":
+        break;
+      case "add-power-to-list":
+      case "add-talent-to-list":
+        break;
+      case "other-effect":
+        break;
+      case "set-flag": {
+        if (!effect) {break;}
+        // const target = PersonaDB.findActor(situation.target);
+        try {
+          const dur = convertConsToStatusDuration(cons, target!, situation);
+          let embeddedEffects: readonly SourcedConditionalEffect[]= [];
+          const source = cons.source;
+          if (cons.flagState && cons.applyEmbedded && source && "getEmbeddedEffects" in source && source.getEmbeddedEffects != undefined) {
+            const owner = cons.owner ? PersonaDB.findActor(cons.owner) : null;
+            embeddedEffects = source.getEmbeddedEffects(owner);
+          }
+          effect.otherEffects.push( {
+            type: "set-flag",
+            flagId: cons.flagId ?? "",
+            flagName: cons.flagState ? cons.flagName ?? "" : "",
+            state: cons.flagState ?? true,
+            duration: dur,
+            embeddedEffects,
+            clearOnDeath: cons.flagState ? cons.clearOnDeath : false,
+            statusTagId: "statusTagId" in cons ? cons.statusTagId ?? "" : "",
+          } satisfies SetFlagEffect);
+        } catch (e) {
+          PersonaError.softFail(`Problem converting set Flag duration: ${cons?.flagId ?? "unknown Flag Id" }`, e);
+        }
+        break;
+      }
+      case "inspiration-cost": {
+        if (!effect) {break;}
+        const socialTarget = getSocialLinkTarget(cons.socialLinkIdOrTarot, situation, undefined);
+        if (!socialTarget) {break;}
+        effect.otherEffects.push( {
+          type: "inspiration-cost",
+          amount: cons.amount ?? 1,
+          linkId: socialTarget.id,
+        });
+        break;
+      }
+      case "display-msg":
+        if (effect && !cons.newChatMsg) {
+          effect.otherEffects.push( {
+            type: "display-message",
+            newChatMsg: false,
+            msg: cons.msg ?? "",
+          });
+        } else {
+          this.globalOtherEffects.push({
+            type: "display-message",
+            newChatMsg: true,
+            msg: cons.msg ?? "",
+          });
+        }
+        break;
+      case "use-power":  {
+        if (!effect) {break;}
+        if (!cons.actorOwner) {
+          PersonaError.softFail("No actor owner for usepower ability");
+          break;
+        }
+        effect.otherEffects.push( {
+          newAttacker:  cons.actorOwner,
+          type: cons.type,
+          powerId : cons.powerId,
+          target: cons.target,
+        });
+        break;
+      }
+      case "social-card-action": {
+        //must be executed playerside as event execution is a player thing
+        const otherEffect : Sourced<SocialCardActionConsequence> = {
+          ...cons
+        };
+        await SocialActionExecutor.execSocialCardAction(otherEffect, situation);
+        if (!effect) {break;}
+        effect.otherEffects.push( otherEffect);
+        break;
+      }
+      case "dungeon-action":
+        this.globalOtherEffects.push( {
+          ...cons
+        });
+        break;
+      case "alter-mp":
+        if (!effect) {break;}
+        effect.otherEffects.push( {
+          type: cons.type,
+          amount: cons.amount ?? 0,
+          subtype: cons.subtype
+        });
+        break;
+      case "teach-power":
+        if (!effect) {break;}
+        effect.otherEffects.push( {
+          ...cons
+        });
+        break;
+      case "add-creature-tag":
+        break;
+      case "combat-effect":
+        if (!effect) {break;}
+        this.addEffect_combatEffect(cons, effect, target, situation);
+        // effect.otherEffects.push(cons);
+        break;
+      case "alter-fatigue-lvl":
+        if (!effect) {break;}
+        effect.otherEffects.push(cons);
+        break;
+      case "alter-variable": {
+        const alterVarCons = {
+          ...cons,
+          situation: situation,
+        };
+        if (cons.varType == "social-temp") {
+          //social stuff must be executed player side
+          if (cons.operator == "set-range") {
+            const otherEffect : Sourced<SocialCardActionConsequence> & {cardAction: "set-temporary-variable"} = {
+              ...cons,
+              type: "social-card-action",
+              cardAction: "set-temporary-variable",
+            };
+            await SocialActionExecutor.execSocialCardAction(otherEffect, situation);
+          }
+          if (cons.operator != "set-range") {
+            const amount = this.resolveConsequenceAmount(cons, situation, "value");
+            const otherEffect : Sourced<SocialCardActionConsequence> & {cardAction: "set-temporary-variable"} = {
+              ...cons,
+              type: "social-card-action",
+              cardAction: "set-temporary-variable",
+              variableId: cons.variableId,
+              operator: cons.operator,
+              value: amount,
+            };
+            await SocialActionExecutor.execSocialCardAction(otherEffect, situation);
+          }
+          break;
+        }
+        if (target) {
+          effect?.otherEffects.push(alterVarCons);
+        } else {
+          this.globalOtherEffects.push(alterVarCons);
+        }
+        break;
+      }
+      case "perma-buff":
+        if (!effect) {break;}
+        effect.otherEffects.push(cons);
+        break;
+      case"gain-levels":
+        if (!effect) {break;}
+        effect.otherEffects.push(cons);
+        break;
+      case "play-sound":
+        this.globalOtherEffects.push(cons);
+        break;
+      case "cancel":
+        this.globalOtherEffects.push(cons);
+        break;
+      case "inventory-action": {
+        if (!effect) {break;}
+        const amount = this.resolveConsequenceAmount(cons, situation);
+        if (cons.invAction == "add-card-item") {
+          const treasureItem = "cardEventItem" in situation ? situation.cardEventItem : undefined;
+          if (!treasureItem) {break;}
+          effect.otherEffects.push( {
+            ...cons,
+            amount,
+            treasureItem,
+          });
+          break;
+        }
+        if (cons.invAction != "add-treasure") {
+          const resolvedCons = {
+            ...cons,
+            amount,
+          };
+          effect.otherEffects.push( resolvedCons);
+        } else {
+          const sourced2=  ConsequenceAmountResolver.extractSourcedFromField(cons, "treasureLevel");
+          const treasureLevel = ConsequenceAmountResolver.resolveConsequenceAmount(sourced2, situation) ?? 0;
+          const resolvedCons = {
+            ...cons,
+            amount,
+            treasureLevel,
+          };
+          effect.otherEffects.push( resolvedCons);
+        }
 
 				break;
 			}
@@ -643,19 +617,55 @@ export class CombatResult  {
 		return ret;
 	}
 
-	get power() : UsableAndCard | undefined {
-		for (const atkResult of this.attacks.keys()) {
-			if (atkResult.power) {
-				try {
-					return PersonaDB.findItem(atkResult.power);
-				} catch {
-					continue;
-				}
-			}
-		}
-		return undefined;
-	}
+  get power() : UsableAndCard | undefined {
+    for (const atkResult of this.attacks.keys()) {
+      if (atkResult.power) {
+        try {
+          return PersonaDB.findItem(atkResult.power);
+        } catch {
+          continue;
+        }
+      }
+    }
+    return undefined;
+  }
 
+  addEffect_combatEffect_addStatus(  cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "combat-effect", combatEffect:"addStatus"}, effect: ActorChange<ValidAttackers>, target: U<ValidAttackers>, situation: Readonly<Situation>) {
+    if (!effect || !target) {return;}
+    let status_damage : number | undefined = undefined;
+    if (situation.attacker && situation.usedPower &&  cons.statusName == "burn") {
+      const power = PersonaDB.findItem(situation.usedPower);
+      if (power.isSkillCard()) {
+        PersonaError.softFail("Skill Card shouldn't be here");
+        return;
+      }
+      const attacker = PersonaDB.findActor(situation.attacker);
+      status_damage = attacker
+        ? power.damage.getBurnDamage(power, attacker.persona(), target.persona())
+        : 0;
+    }
+    const id = cons.statusName;
+    if (id != "bonus-action") {
+      if (!target) {
+        PersonaError.softFail(`No Target for ${id}`);
+        return;
+      }
+      try {
+        const duration = convertConsToStatusDuration(cons, target, situation);
+        if (effect.addStatus.find( st => st.id == id && PersonaAE.durationLessThanOrEqualTo(duration, st.duration))) {
+          return;
+        }
+        effect.addStatus.push({
+          id,
+          potency: Math.abs(status_damage ?? cons.potency ?? 1),
+          duration,
+        });
+      } catch (e) {
+        PersonaError.softFail(`Problem converting status Flag duration: ${cons.statusName ?? "unknown Status Id" }`, e);
+      }
+    }
+
+  }
 }
 
 export interface ActorChange<T extends PersonaActor> {
@@ -686,63 +696,63 @@ export type AttackResult = {
 	critRange: U<{low: number, high:number}>;
 };
 
-function resolveStatusDurationAnchor (anchor: ConsequenceTarget, atkResult: AttackResult) : UniversalActorAccessor<ValidAttackers> | null {
-	if (!anchor) {
-		anchor = "target";
-	}
-	let accessor : UN<UniversalTokenAccessor<PToken>>;
-	const situation = atkResult.situation;
-	switch (anchor) {
-		case "target":
-			accessor = atkResult.target;
-			break;
-		case "owner":
-			console.warn("Using owner in status duration anchors is unsupported and just resolves to 'user'");
-		// eslint-disable-next-line no-fallthrough
-		case "user": {
-			const userAcc = atkResult.situation.user;
-			if (userAcc)
-				{return userAcc;}
-			PersonaError.softFail("Can't resolve user for status Duration anchor");
-			return null;
-		}
-		case "attacker":
-			accessor = atkResult.attacker;
-			break;
-		case "triggering-character":
-			if ("triggeringCharacter" in situation && situation.triggeringCharacter) {
-				return situation.triggeringCharacter;
-			}
-			PersonaError.softFail("Can't resolve triggering Character for status Duration anchor");
-			return null;
-		case "cameo":
-			if ("cameo" in situation && situation.cameo) {
-				const actor = PersonaDB.findActor(situation.cameo);
-				if (actor && actor.isValidCombatant()) {return actor.accessor;}
-				return null;
-			}
-			break;
-		case "all-allies":
-		case "all-foes":
-		case "all-in-region":
-    case "pc-party":
-			PersonaError.softFail(`${anchor} not supported as a status anchor`);
-			return null;
-		case "navigator": {
-			const nav = PersonaDB.getNavigator();
-			return nav ? nav.accessor : null;
-		}
-		default:
-			anchor satisfies never;
-			return null;
-	}
-	if (accessor) {
-		const token = PersonaDB.findToken(accessor);
-		return token?.actor?.accessor;
-	}
-	PersonaError.softFail("Odd error in resolving Status Anchor");
-	return null;
-}
+// function resolveStatusDurationAnchor (anchor: ConsequenceTarget, atkResult: AttackResult) : UniversalActorAccessor<ValidAttackers> | null {
+// 	if (!anchor) {
+// 		anchor = "target";
+// 	}
+// 	let accessor : UN<UniversalTokenAccessor<PToken>>;
+// 	const situation = atkResult.situation;
+// 	switch (anchor) {
+// 		case "target":
+// 			accessor = atkResult.target;
+// 			break;
+// 		case "owner":
+// 			console.warn("Using owner in status duration anchors is unsupported and just resolves to 'user'");
+// 		// eslint-disable-next-line no-fallthrough
+// 		case "user": {
+// 			const userAcc = atkResult.situation.user;
+// 			if (userAcc)
+// 				{return userAcc;}
+// 			PersonaError.softFail("Can't resolve user for status Duration anchor");
+// 			return null;
+// 		}
+// 		case "attacker":
+// 			accessor = atkResult.attacker;
+// 			break;
+// 		case "triggering-character":
+// 			if ("triggeringCharacter" in situation && situation.triggeringCharacter) {
+// 				return situation.triggeringCharacter;
+// 			}
+// 			PersonaError.softFail("Can't resolve triggering Character for status Duration anchor");
+// 			return null;
+// 		case "cameo":
+// 			if ("cameo" in situation && situation.cameo) {
+// 				const actor = PersonaDB.findActor(situation.cameo);
+// 				if (actor && actor.isValidCombatant()) {return actor.accessor;}
+// 				return null;
+// 			}
+// 			break;
+// 		case "all-allies":
+// 		case "all-foes":
+// 		case "all-in-region":
+//     case "pc-party":
+// 			PersonaError.softFail(`${anchor} not supported as a status anchor`);
+// 			return null;
+// 		case "navigator": {
+// 			const nav = PersonaDB.getNavigator();
+// 			return nav ? nav.accessor : null;
+// 		}
+// 		default:
+// 			anchor satisfies never;
+// 			return null;
+// 	}
+// 	if (accessor) {
+// 		const token = PersonaDB.findToken(accessor);
+// 		return token?.actor?.accessor;
+// 	}
+// 	PersonaError.softFail("Odd error in resolving Status Anchor");
+// 	return null;
+// }
 
 function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-flag"} | {type: "combat-effect", combatEffect:"addStatus"}) , atkResultOrActor: AttackResult | ValidAttackers, situation : Situation) : StatusDuration {
   const dur = cons.statusDuration;
@@ -795,7 +805,7 @@ function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-fl
             actorTurn: atkResultOrActor.accessor
           };
         }
-        const actor = PersonaCombat.solveEffectiveTargets(cons.durationApplyTo, situation, cons).at(0);
+        const actor = PersonaCombat.solveEffectiveTargetsForce(cons.durationApplyTo, situation, cons).at(0);
         if (!actor) {
           PersonaError.softFail(`Can't find actor for actorTurn property in Status, defaulting to user`);
           return {
