@@ -74,6 +74,11 @@ export class RegionPanelMain extends PersonaPanel {
         enabled: () => true,
       });
     }
+    buttons.push( {
+      label: "Swap Teammate",
+      onPress: () => void Metaverse.chooseAlly(),
+      enabled: () => !PersonaCombat.combat,
+    });
     return buttons;
   }
 
