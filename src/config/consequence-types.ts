@@ -170,7 +170,7 @@ export type EnhancedSourcedConsequence<C extends Consequence = Consequence> = So
 	// modifiers?: ConsModifiers[];
 }
 
-type ConsModifiers = "blocked" | "absorbed" | "resisted";
+// type ConsModifiers = "blocked" | "absorbed" | "resisted";
 
 export type Consequence =
 	{
@@ -618,22 +618,6 @@ type ModifierConsequence =
   | DeprecatedMultiModifierConsequence
   | DeprecatedSingleModifierConsequence
   | NonDeprecatedSingleModifierConsequence;
-
-
-
-// type ModifierConsequence = {
-// 	type: "modifier-new",
-// 	modifiedFields : Record<ModifierTarget,boolean>,
-// 	modifierCategory: ModifierCategory,
-// 	amount: ConsequenceAmount,
-// };
-
-// type OldModifier = {
-// 	type: "modifier",
-// 	modifierCategory: ModifierCategory,
-// 	modifiedField : ModifierTarget,
-// 	amount: ConsequenceAmount,
-// }
 
 type DeprecatedSingleModifierConsequence = {
 	type: "modifier",

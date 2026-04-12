@@ -95,6 +95,7 @@ export class CombatResult  {
 		}
 		let damageCalc : DamageCalculation;
 		if (damageType == undefined) {
+			// eslint-disable-next-line no-debugger
 			debugger;
 			PersonaError.softFail("Damage Type is undefined on this consequence", cons, effect, situation);
 			return undefined;
@@ -601,6 +602,7 @@ export class CombatResult  {
 			const aDamage = ret[key]!;
 			if (!bDamage.isMergeable(aDamage)) {
 				PersonaError.softFail("Unmergable value, this shoudln't hapepn", original, b);
+				// eslint-disable-next-line no-debugger
 				debugger;
 			}
 			aDamage.merge(bDamage);

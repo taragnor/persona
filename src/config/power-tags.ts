@@ -88,8 +88,7 @@ export const POWER_TAGS_LIST = [
 
 export type PowerTag = typeof POWER_TAGS_LIST[number] | Tag;
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-export type PowerTagOrId = typeof POWER_TAGS_LIST[number] | Tag["id"]
+export type PowerTagOrId = typeof POWER_TAGS_LIST[number] | Tag["id"];
 
 export const POWER_TAGS = HTMLTools.createLocalizationObject(POWER_TAGS_LIST.slice().sort(), "persona.power.tag");
 

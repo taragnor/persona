@@ -1,7 +1,6 @@
 import { PermaBuffType } from "../../config/perma-buff-type.js";
 import { PersonaScene } from "../persona-scene.js";
 import { WeatherType } from "../../config/weather-types.js";
-import { BASIC_PC_POWER_NAMES } from "../../config/basic-powers.js";
 import { PersonaError } from "../persona-error.js";
 import { TurnAlert } from "../utility/turnAlert.js";
 import { PersonaActor } from "../actor/persona-actor.js";

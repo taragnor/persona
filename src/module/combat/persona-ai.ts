@@ -154,6 +154,7 @@ export abstract class PersonaAI {
 	}
 
 	isUselessAction(action: AIAction) : boolean {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const {power, targets} = action;
 		//check for things like healiong already full health or applying statuses to those that already have them
 		return false;

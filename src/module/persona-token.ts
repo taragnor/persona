@@ -1,5 +1,6 @@
 import {PersonaActor} from "./actor/persona-actor.js";
 import {PersonaDB} from "./persona-db.js";
+import {PersonaError} from "./persona-error.js";
 
 export class PersonaToken extends TokenDocument<PersonaActor> {
 	 DOWNED_OPACITY = 0.55 as const;
@@ -23,20 +24,10 @@ export class PersonaToken extends TokenDocument<PersonaActor> {
 	}
 	 override set alpha(val: number) {
 			if (Number.isNaN(val)) {
-				 debugger;
+				 PersonaError.softFail("NaN result");
 			}
-			// console.log(`Setting Alpha on ${this.name} ${val}`);
 			this._oldAlpha = val;
 	 }
-
-	 // setOpacity() : void {
-			// if (this.hidden) {return;}
-			// const actor = this.actor;
-			// if  (!actor || !actor.isValidCombatant()) {return;}
-			// const opacity = actor.hp > 0 ? 1.0 : (actor.isFullyFaded() ? this.FULL_FADE_OPACITY : this.DOWNED_OPACITY);
-			// this.alpha = opacity;
-	 // }
-
 }
 
 Hooks.on( "updateActor", (actor : PersonaActor, diff) => {

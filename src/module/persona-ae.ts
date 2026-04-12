@@ -7,7 +7,7 @@ import { GetEffectsOptions, ModifierContainer, PersonaItem} from "./item/persona
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaError } from "./persona-error.js";
 import { StatusEffectId } from "../config/status-effects.js";
-import {ModifierTarget, NonDeprecatedModifierType} from "../config/item-modifiers.js";
+import {NonDeprecatedModifierType} from "../config/item-modifiers.js";
 import {ModifierListItem} from "./combat/modifier-list.js";
 import {TriggeredEffect} from "./triggered-effect.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";

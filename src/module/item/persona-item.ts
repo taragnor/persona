@@ -34,7 +34,7 @@ import { PersonaError } from '../persona-error.js';
 import { PersonaActor } from '../actor/persona-actor.js';
 import { SLOTTYPES } from '../../config/slot-types.js';
 import { ModifierTarget, NonDeprecatedModifierTarget, NonDeprecatedModifierType } from '../../config/item-modifiers.js';
-import { CraftingRecipeDM, CraftingRecipePartDM, ITEMMODELS } from '../datamodel/item-types.js';
+import { ITEMMODELS } from '../datamodel/item-types.js';
 import { PersonaDB } from '../persona-db.js';
 import {Defense, DEFENSE_TYPES} from '../../config/defense-types.js';
 import {EnergyClassCalculator} from '../calculators/shadow-energy-cost-calculator.js';

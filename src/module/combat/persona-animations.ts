@@ -12,6 +12,20 @@ export class PersonaAnimation {
 	attacker: PToken;
 	result: AttackResult["result"];
 
+  static ANIMATIONS =  {
+    IMPACT : "jb2a.impact",
+    FIREWORK : "jb2a.firework",
+    MISS : "jb2a.ui.miss.white",
+    CRITICAL_HIT : "jb2a.ui.critical.red",
+    STATUS_ICONS : {
+      FEAR_ICON : "jb2a.icon.fear.dark_purple",
+      CHARM_ICON : "jb2a.icon.heart.pink",
+      MUTE_ICON : "jb2a.icon.mute.dark_red",
+      POISON_ICON : "jb2a.icon.poison.dark_green",
+      CURSE_ICON : "jb2a.icon.skull.purple",
+    },
+  } as const;
+
 	constructor (usable: Usable, damageType: RealDamageType, attacker : PToken, target: PToken, result: AttackResult["result"] ) {
 		this.usable = usable;
 		this.damageType = damageType;
@@ -148,7 +162,7 @@ export class PersonaAnimation {
 
 	private appendCriticalHit<T extends Sequence>(seq: T) {
 		return seq.effect()
-			.file(CRITICAL_HIT)
+			.file(PersonaAnimation.ANIMATIONS.CRITICAL_HIT)
 			.delay(750)
 			.atLocation(this.target)
 			.playbackRate(0.75)
@@ -159,7 +173,7 @@ export class PersonaAnimation {
 	private appendMiss<T extends EffectProxy>(seq: T) {
 		return seq.missed()
 			.effect()
-			.file(MISS)
+			.file(PersonaAnimation.ANIMATIONS.MISS)
 			.atLocation(this.target)
 			.delay(750)
 			.playbackRate(0.75)
@@ -519,23 +533,12 @@ const BUFF = "jb2a.healing_generic.03.burst.bluegreen";
 
 const REFLECT= "jb2a.shimmer.01.blue";
 const ABSORB = "jb2a.cast_generic.01";
-const IMPACT = "jb2a.impact";
-const FIREWORK = "jb2a.firework";
 const SWIRLING_SPARKLES = "jb2a.swirling_sparkles";
 
-const MISS = "jb2a.ui.miss.white";
-const CRITICAL_HIT = "jb2a.ui.critical.red";
 const DEBUFF = "jb2a.cast_generic.sound.01";
 
 const BROKEN_SHIELD = "jb2a.icon.shield_cracked.purple";
 
-const STATUS_ICONS = {
-	FEAR_ICON : "jb2a.icon.fear.dark_purple",
-	CHARM_ICON : "jb2a.icon.heart.pink",
-	MUTE_ICON : "jb2a.icon.mute.dark_red",
-	POISON_ICON : "jb2a.icon.poison.dark_green",
-	CURSE_ICON : "jb2a.icon.skull.purple",
-} as const;
 
 
 //@ts-expect-error adding to global scope

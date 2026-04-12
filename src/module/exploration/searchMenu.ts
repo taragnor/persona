@@ -127,7 +127,7 @@ export class SearchMenu {
 		const rolls : Roll[] = [];
 		// const guards = results.filter( x=> x.declaration == "guard").length;
 		exitFor: for (const searcher of results) {
-			const actor = PersonaDB.findActor(searcher.searcher.actor) as PC | NPCAlly;
+			const actor = PersonaDB.findActor(searcher.searcher.actor);
 			const situation : Situation = {
 				user: actor.accessor,
 			};
@@ -147,7 +147,7 @@ export class SearchMenu {
 					break;
 				}
 				case "careful-search": {
-					const actor = PersonaDB.findActor(searcher.searcher.actor) as PC | NPCAlly;
+					const actor = PersonaDB.findActor(searcher.searcher.actor);
 					const situation : Situation = {
 						user: actor.accessor,
 					};

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {DungeonGeneratorOptions, RandomDungeonGenerator} from "./random-dungeon-generator.js";
 
   const scene = {

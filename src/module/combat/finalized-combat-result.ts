@@ -326,7 +326,6 @@ export class FinalizedCombatResult {
 	async #apply(): Promise<void> {
 		try {
 			await this.#processAttacks();
-			// TimeLog.log("Finished processAttacks");
 			await this.#applyCosts();
 			await this.#applyGlobalOtherEffects();
 			await this.#onUsePowerTriggered();
@@ -377,7 +376,6 @@ export class FinalizedCombatResult {
 				this.addChained(...chained);
 			}
 		}
-		//TODO: this is the time sink
 	}
 
   addChained( ...otherResults : U<FinalizedCombatResult>[]) : this {

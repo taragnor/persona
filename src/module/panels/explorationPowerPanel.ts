@@ -1,8 +1,5 @@
-import {CombatEngine} from "../combat/combat-engine.js";
 import {PersonaError} from "../persona-error.js";
-import {lockObject} from "../utility/anti-loop.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
-import {PowerTargetSelectionPanel} from "./power-target-selection-panel.js";
 import {SubPanel} from "./sub-panel.js";
 
 export class ExplorationPowerPanel extends SubPanel {
@@ -44,22 +41,6 @@ export class ExplorationPowerPanel extends SubPanel {
     {throw new PersonaError(`powerId pointed to unsualbe power ${powerId}`);}
     await this._useItemOrPower(this.actor, power);
   }
-
-
-  // private async _useItemOrPower(power : UsableAndCard) {
-  //   if (!this.actor) {return;}
-  //   if (power.requiresTargetSelection()) {
-  //     await this.push(new PowerTargetSelectionPanel(this.actor, power as Usable));
-  //     return;
-  //   }
-  //   await lockObject(this,
-  //     async () => await CombatEngine.usePower(this.actor, power),
-  //     {
-  //       timeoutMs: 5000,
-  //       inUseMsg: "Already Using a power",
-  //     }
-  //   );
-  // }
 
 }
 

@@ -78,7 +78,7 @@ export const CREATURE_TAG_LIST = [
 ] as const;
 
 export type InternalCreatureTag = typeof CREATURE_TAG_LIST[number];
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
 export type CreatureTag = InternalCreatureTag | Tag;
 
 export const CREATURE_TAGS = HTMLTools.createLocalizationObject(CREATURE_TAG_LIST, "persona.creatureType");

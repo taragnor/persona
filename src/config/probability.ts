@@ -81,7 +81,7 @@ export const CARD_DROP_RATE : ProbabilityRate = {
 };
 
 const SORTEDPROB = Object.entries(ITEM_DROP_RATE)
-	.sort( ([_k, v], [k2,v2]) => v - v2)
+	.sort( ([_k, v], [_k2,v2]) => v - v2)
 	.map ( ([k, _v]) => k) as Probability[];
 
 

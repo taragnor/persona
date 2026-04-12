@@ -4,6 +4,7 @@ type U<const T> = T | undefined;
 type N<const T> = T | null;
 type UN<const T> = T | undefined | null;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DistributiveOmit<T, K extends keyof T> = T extends any
   ? Omit<T, K>
   : never
@@ -34,4 +35,9 @@ type DeepReadonlyObject<T> = {
 
 type MaybeArray<T> = T | T[];
 
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
+
+  type DeepWriteable<T> = { -readonly [P in keyof T]: DeepWriteable<T[P]> };
 

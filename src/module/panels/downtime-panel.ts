@@ -1,4 +1,3 @@
-import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaCombat} from "../combat/persona-combat.js";
 import {PersonaSocial} from "../social/persona-social.js";
@@ -12,6 +11,7 @@ export class DowntimePanel extends PersonaPanel {
     super("downtime-panel");
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async setActor(actor: PC) {
     if (this.actor != actor) {
       this.actor = actor;

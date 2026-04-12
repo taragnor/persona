@@ -83,6 +83,7 @@ export function testPrecondition (condition: SourcedPrecondition, situation: Sit
 				return false;
 			} else {return true;}
 		case "diagnostic": {
+			// eslint-disable-next-line no-debugger
 			debugger;
 			return true;
 		}
@@ -855,7 +856,7 @@ function getSubjectPersonas<K extends string, T extends Sourced<Record<K, Condit
   });
 }
 
-function accessPersonaCache(situation: Situation, dataLoc: string, creatorFn: () => Persona[]) : Persona[] {
+function accessPersonaCache(_situation: Situation, _dataLoc: string, creatorFn: () => Persona[]) : Persona[] {
   return creatorFn();
   //TODO: thsi cache produced in accurate results may have to cache by a different value as different conditons with condition targetsmay produce different values
   // if (!PersonaSettings.agressiveCaching()) {
@@ -1401,6 +1402,7 @@ function resolveSocialAvailabilityCheck(condition: SourcedPrecondition & {type: 
 	}
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PersonaCache : WeakMap<Situation, PersonaData>= new WeakMap();
 
 type PersonaData = Record<string, U<Persona[]>>;

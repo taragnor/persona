@@ -4,7 +4,7 @@ import {AIAction, PersonaAI} from "./persona-ai.js";
 
 export class BasicAI extends PersonaAI {
 
-   override recordCombatResult(atkResult: AttackResult): void {
+   override recordCombatResult(_atkResult: AttackResult): void {
    }
 
 	get engaged() : boolean {

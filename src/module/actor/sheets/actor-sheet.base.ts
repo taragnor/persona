@@ -191,7 +191,7 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 		}]);
 	}
 
-	async openFocus(event: Event) {
+	openFocus(event: Event) {
 		const itemType = "Focus";
 		const focusId = HTMLTools.getClosestData(event, "focusId");
 		if (focusId == undefined) {
@@ -204,7 +204,7 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 		if (!focus) {
 			throw new PersonaError(`Can't find ${itemType} id ${focusId}`);
 		}
-		await focus.sheet.render(true);
+		focus.sheet.render(true);
 	}
 
 	defaultConditionalEffect(_ev: JQuery.ClickEvent): ConditionalEffect {
