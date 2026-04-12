@@ -101,8 +101,8 @@ export abstract class SidePanel {
   private async _renderButtons() : Promise<string> {
     const buttonData = await this.resolveButtonData();
     const buttonHTML = buttonData
-    .map( (button, i) =>
-      `<button class='side-panel-button ${button.cssClasses.join(" ")}' data-button-index='${i}' ${button.enabled ? "" : "disabled"}>
+    .map( (button) =>
+      `<button class='side-panel-button ${button.cssClasses.join(" ")}' data-button-index='${button.index}' ${button.enabled ? "" : "disabled"}>
       ${button.label}
       </button>
       `
@@ -142,7 +142,8 @@ export abstract class SidePanel {
   }
 
   private async resolveButtonData() : Promise<SidePanel.ResolvedButtonData[]> {
-    const promises = this.buttons.map( async (button, i) => {
+    const promises = this.buttons
+    .map( async (button, i) => {
       if (button.visible != undefined) {
         try {
           const visible = await this.resolveButtonDataVal(button.visible);

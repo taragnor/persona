@@ -407,6 +407,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       case "tarot":
         return game.i18n.localize(TAROT_DECK[this.name as keyof typeof TAROT_DECK] ?? "-");
       case "npcAlly": {
+        if (!PersonaDB.isLoaded){return this.name;}
         const proxy = (this as NPCAlly).getNPCProxyActor();
         if (proxy) {return proxy.displayedName;}
       }

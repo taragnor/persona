@@ -456,7 +456,11 @@ export class FinalizedCombatResult {
 	get power() : UsableAndCard | undefined {
 		for (const {atkResult} of this.attacks) {
 			if (atkResult.power) {
+        try {
 				return PersonaDB.findItem(atkResult.power);
+        } catch {
+          return undefined;
+        }
 			}
 		}
 		return undefined;

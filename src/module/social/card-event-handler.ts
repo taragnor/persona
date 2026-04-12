@@ -578,7 +578,13 @@ export class SocialCardEventHandler {
     if (cardData.currentEvent) {
       rollTags.pushUnique(	...cardData.currentEvent.eventTags);
     }
-    return rollTags.filter ( x=> x);
+    const filtered= rollTags.filter ( x=> x != undefined);
+    if (filtered.some( tag=> typeof tag != "string" && typeof tag.id == "undefined")) {
+      PersonaError.softFail(`Bad Tag:`, filtered);
+      return filtered
+        .filter(tag=> !(typeof tag != "string" && typeof tag.id == "undefined" ));
+    }
+    return filtered;
   }
 
 	async #onCardChoice(_cardData: CardData , _cardRoll: CardChoice["roll"], _rollTags: (RollTag | CardTag | Tag)[]) {

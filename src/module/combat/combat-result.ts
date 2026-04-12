@@ -797,21 +797,18 @@ function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-fl
         }
         const actor = PersonaCombat.solveEffectiveTargets(cons.durationApplyTo, situation, cons).at(0);
         if (!actor) {
-          PersonaError.softFail(`Can't find actor for actorTurn property in Status`);
+          PersonaError.softFail(`Can't find actor for actorTurn property in Status, defaulting to user`);
+          return {
+            dtype: dur,
+            actorTurn: situation.user ? situation.user : situation["triggering-character"]!,
+          };
+          //TODO: need to bail here
         }
         return {
           dtype: dur,
-          actorTurn: actor!.accessor,
+          actorTurn: actor.accessor,
         };
       }
-      //const anchorHolder = resolveStatusDurationAnchor(cons.durationApplyTo!, atkResultOrActor);
-      ////this isn't necessarily target, it has to be  determined by who the anchor is
-      //if (anchorHolder)  {
-      //	return {
-      //		dtype: dur,
-      //		actorTurn: anchorHolder,
-      //	};
-      //}
       PersonaError.softFail(`Can't coinvert consequence ${cons.type}`, atkResultOrActor);
       break;
     }
