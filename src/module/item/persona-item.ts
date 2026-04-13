@@ -62,6 +62,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   declare parent: PersonaActor | undefined;
 
+  _targeting  : U<PersonaTargetting>;
+
   private cache: {
     effects: AdvancedEffectsCache;
     containsModifier: boolean | undefined;
@@ -1905,7 +1907,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   targeting(this: Usable) : PersonaTargetting {
-    return new PersonaTargetting(this);
+    if (!this._targeting) {
+      this._targeting = new PersonaTargetting(this);
+    }
+    return this._targeting;
   }
 
   /** returns the level of the inventory item */
