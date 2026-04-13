@@ -1,3 +1,4 @@
+{{#if (isGM)}}
 <div class="power-tags">
 	<h2>
 		<span>Power Tags</span>
@@ -6,7 +7,7 @@
 		</a>
 	</h2>
 	<div class="tag-list">
-		{{#each (resolvedPowerTagList item) as |tag i|}}
+		{{#each item.system.tags as |tag i|}}
 		<div class="tag-item", data-tag-index="{{i}}">
 			<select name="system.tags.{{i}}">
 				{{selectOptions ../POWERSTUFF.TAGS localize=true selected=tag}}
@@ -17,5 +18,10 @@
 		</div>
 		{{/each}}
 	</div>
+</div>
+{{/if}}
+
+<div class="power-tags">
+  {{getPowerTagsL actor item}}
 </div>
 

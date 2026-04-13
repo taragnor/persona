@@ -1,7 +1,8 @@
 {{#if (eq mode "tactical")}}
 <h2 title="right click to exit"> Tactical View </h2>
+<hr>
 {{/if}}
-<div class="control-panel {{#if (isCombatPanelActive)}}active-control-panel{{/if}}">
+<div class="control-panel {{#if (isCombatPanelActive)}}active-control-panel{{/if}} {{#if (eq mode 'tactical')}}tactical-view{{/if}}">
 	<header>
 		<h3 class="token-name"> {{token.name}}</h3>
 		{{#if actor.canSwitchPersonas}}

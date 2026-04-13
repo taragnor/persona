@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 
@@ -7,24 +6,27 @@ export abstract class PersonaPowerLikeBaseSheet extends PersonaEffectContainerBa
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
-		html.find(".power-tags .addTag").on("click", this.addTag.bind(this));
-		html.find(".power-tags .delTag").on("click", this.deleteTag.bind(this));
+    PersonaPowerLikeBaseSheet.powerTagListeners(html, this.item);
 
 	}
 
-	async addTag(_event: Event) {
-		const item = this.item;
+  static powerTagListeners(html: JQuery, item: Usable) {
+		html.find(".power-tags .addTag").on("click", ev => void this.addTag(ev, item));
+		html.find(".power-tags .delTag").on("click", ev => void this.deleteTag(ev, item));
+
+  }
+
+	static async addTag(_event: JQuery.Event, item: Usable) {
 		const x = item.system.tags;
 		x.push("weapon");
-		await this.item.update({ "system.tags": x});
+		await item.update({ "system.tags": x});
 	}
 
-	async deleteTag(ev: Event) {
+	static async deleteTag(ev: JQuery.Event, item: Usable) {
 		const index = Number(HTMLTools.getClosestData(ev, "tagIndex"));
-		const item = this.item;
 		const x = item.system.tags;
 		x.splice(index, 1);
-		await this.item.update({ "system.tags": x});
+		await item.update({ "system.tags": x});
 	}
 
 

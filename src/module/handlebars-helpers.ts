@@ -713,8 +713,8 @@ export class PersonaHandleBarsHelpers {
 
     },
 
-    "getPowerTagsL": function (actor: ValidAttackers, power: Usable) {
-      return power.tagListLocalized(actor);
+    "getPowerTagsL": function (actor: U<ValidAttackers>, power: Usable) {
+      return power.tagListLocalized(actor ?? null);
     },
     "persona": function (actor: ValidAttackers) : Persona {
       return actor.persona();

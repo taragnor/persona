@@ -1,6 +1,7 @@
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { EQUIP_SLOTS } from "../../../config/equip-slots.js";
 import {CarryableSheet} from "./carryable-sheet.js";
+import {PersonaPowerLikeBaseSheet} from "./powerlike-base-sheet.js";
 
 export class ConsumableSheet extends CarryableSheet {
 	declare item: Consumable;
@@ -24,6 +25,7 @@ export class ConsumableSheet extends CarryableSheet {
 
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
+    PersonaPowerLikeBaseSheet.powerTagListeners(html, this.item);
 	}
 
 }

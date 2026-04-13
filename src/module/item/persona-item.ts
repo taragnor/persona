@@ -1895,7 +1895,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         this.system.targets satisfies never;
         return false;
     }
-
   }
 
   isTeamwork(this: UsableAndCard): boolean {
@@ -1917,7 +1916,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   itemLevel() : number {
     if (this.isTag()) {return this.system.tagLevel || TreasureSystem.guessItemLevel(this) ;}
     if (!this.isCarryableType()) {return 0;}
-    // if (this.isConsumable()) { return 1;}
     if (this.system.itemLevel == 0) {
       return TreasureSystem.guessItemLevel(this);
     }

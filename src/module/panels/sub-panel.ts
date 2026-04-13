@@ -52,7 +52,6 @@ export abstract class SubPanel extends PersonaPanel {
     await this.pop();
   }
 
-
   override async getData() {
     return {
       ...await super.getData(),

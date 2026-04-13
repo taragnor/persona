@@ -37,7 +37,7 @@ export class HPCostCalculator extends CostCalculator {
 		return this.i(mod);
 	}
 
-  static hpCost_multiattack(pwr: Power) :CostModifier {
+  static hpCost_multiattack(pwr: Power) : CostModifier {
     if (pwr.system.attacksMax == 1) {return this.i(0);}
     const min = pwr.system.attacksMin;
     const max = pwr.system.attacksMax;
@@ -65,7 +65,7 @@ export class HPCostCalculator extends CostCalculator {
     }
   }
 
-  static hpCost_damage(pwr: Power) : CostModifier { 
+  static hpCost_damage(pwr: Power) : CostModifier {
     const baselevel = pwr.system.damageLevel;
     if (baselevel == "none") {return this.i(0);}
     const baseLevel = 1;
@@ -100,7 +100,6 @@ export class HPCostCalculator extends CostCalculator {
 		// }
 		return this.i(baseCost);
 	}
-
 
 }
 
