@@ -47,6 +47,7 @@ import {changeProbability, PROBABILITIES_POWER_RARITY} from '../../config/probab
 import {PersonaAE} from '../persona-ae.js';
 import {CombatEngine} from '../combat/combat-engine.js';
 import {sleep} from '../utility/async-wait.js';
+import {PersonaTargetting} from '../combat/persona-targetting.js';
 
 declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -1903,67 +1904,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.hasTag('navigator');
   }
 
-  isValidTargetFor(this: Usable, user: ValidAttackers, target: ValidAttackers, situation?: Situation): boolean {
-    if (!situation) {
-      situation = {
-        user : user.accessor,
-        target: target.accessor,
-      };
-    } else {
-      situation = {
-        ...situation,
-        target: target.accessor
-      };
-    }
-    switch (this.system.targets) {
-      case '1-engaged':
-      case '1-nearby':
-      case '1d4-random':
-      case '1d4-random-rep':
-      case '1d3-random':
-      case '1d3-random-rep':
-        if (!target.isAlive()) {return false;}
-        break;
-      case '1-nearby-dead':
-        if (target.isAlive()) {return false;}
-        break;
-      case 'self':
-        if (user != target) {return false;}
-        break;
-      case '1-random-enemy':
-      case 'all-enemies':
-        if (PersonaCombat.isSameTeam(user, target)) {return false;}
-        if (!target.isAlive()) {return false;}
-        break;
-      case 'all-allies':
-        if (!PersonaCombat.isSameTeam(user, target)) {return false;}
-        if (!target.isAlive()) {return false;}
-        break;
-      case 'all-dead-allies':
-        if (!PersonaCombat.isSameTeam(user, target)) {return false;}
-        if (target.isAlive()) {return false;}
-        break;
-      case 'all-others':
-        if (user == target) {return false;}
-        if (target.isAlive()) {return false;}
-        break;
-      case 'everyone':
-        if (!target.isAlive()) {return false;}
-        break;
-      case 'everyone-even-dead':
-        break;
-      default:
-        this.system.targets satisfies never;
-    }
-    if (this.isOpener()) {
-      const sourced = ConditionalEffectManager.getConditionals(this.system.openerConditions, this, user, this );
-      if (!testPreconditions(sourced, situation)) {return false;}
-    }
-    const sourcedTC = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user, this );
-
-    return testPreconditions(sourcedTC, situation);
+  targeting(this: Usable) : PersonaTargetting {
+    return new PersonaTargetting(this);
   }
-
 
   /** returns the level of the inventory item */
   itemLevel() : number {

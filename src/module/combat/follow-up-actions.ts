@@ -4,6 +4,7 @@ import {PersonaError} from "../persona-error.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {FlagChangeDiffObject} from "./openers.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
+import {PersonaTargetting} from "./persona-targetting.js";
 
 export class FollowUpManager {
 	combat: PersonaCombat;
@@ -76,7 +77,8 @@ export class FollowUpManager {
 					user: actor.accessor,
 				};
 				if (!actor.teamworkMove.testTeamworkPrereqs(situation, actor)) {return [];}
-				const targets = this.combat.getValidTargetsFor(actor.teamworkMove, combatant as Combatant<ValidAttackers>, situation);
+        const possibleTargets= this.combat.combatants.contents.filter (c=> PersonaCombat.isPersonaCombatant(c));
+				const targets = PersonaTargetting.getValidTargetsFor(actor.teamworkMove, combatant, situation, possibleTargets);
 				if (targets.length == 0) {return [];}
 				return [{
 					type :"power",

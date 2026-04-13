@@ -4,6 +4,8 @@ import {CostCalculator, CostModifier} from "./cost-calculator.js";
 
 export class HPCostCalculator extends CostCalculator {
 
+  static HPCOST_MULTIATTACKMULT = 3 as const;
+
 	static calcHPPercentCost(pwr: Power) : number {
 		if (pwr.isBasicPower()) {return 0;}
 		const mods : CostModifier[] = [
@@ -39,8 +41,8 @@ export class HPCostCalculator extends CostCalculator {
     if (pwr.system.attacksMax == 1) {return this.i(0);}
     const min = pwr.system.attacksMin;
     const max = pwr.system.attacksMax;
-    const maxAdd =  3 * (max -1);
-    const minAdd = 3 * (min -1);
+    const maxAdd =  this.HPCOST_MULTIATTACKMULT * (max -1);
+    const minAdd = this.HPCOST_MULTIATTACKMULT * (min -1);
     const costMod : CostModifier = {
       mult: 1,
       add: 1 + Math.round(maxAdd + minAdd),

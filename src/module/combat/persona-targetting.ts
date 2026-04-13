@@ -1,10 +1,17 @@
 import { PersonaActor } from "../actor/persona-actor.js";
+import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
+import {testPreconditions} from "../preconditions.js";
 import {randomSelect} from "../utility/array-tools.js";
-import {PersonaCombat, PToken} from "./persona-combat.js";
+import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
 
 export class PersonaTargetting {
+  power : Usable;
+
+  constructor (usable: Usable) {
+    this.power = usable;
+  }
 
   static targettedPTokens(): PToken[] {
     return Array.from(game.user.targets)
@@ -180,6 +187,97 @@ export class PersonaTargetting {
 			throw new TargettingError(error);
 		}
 	}
+
+  static getValidTargetsFor(usable: Usable, user: PersonaCombatant, situation: Situation, possibleTargets: PersonaCombatant[]) : PersonaCombatant[] {
+    const userActor = user.token.actor;
+    if (!userActor) {return [];}
+    return possibleTargets
+      .filter( comb =>  {
+        const targetActor = comb.token.actor;
+        if (!targetActor) {return false;}
+        if (!PersonaCombat.isPersonaCombatant(comb)) {return false;}
+        return this.isValidTargetFor( usable, user, comb, situation);
+      });
+  }
+
+  static isValidTargetFor(usable: Usable, user: PersonaCombatant, target: PersonaCombatant, situation: Situation): boolean {
+    const userActor = user.token.actor;
+    const targetActor = target.token.actor;
+    if (!userActor || !targetActor) {return false;}
+    if (!usable.targeting().isValidTargetFor(userActor, targetActor, situation))
+    {return false;}
+    const targetChallenged = targetActor.hasStatus('challenged');
+    const userChallenged = userActor.hasStatus('challenged');
+    if (userChallenged) {
+      if (!targetChallenged) {return false;}
+      if (target.parent && !target.parent.isInChallengeWith(user, target))
+      {return false;}
+    } else {
+      if (targetChallenged) {return false;}
+    }
+    return true;
+  }
+
+  isValidTargetFor(user: ValidAttackers, target: ValidAttackers, situation?: Situation): boolean {
+    const power = this.power;
+    if (!situation) {
+      situation = {
+        user : user.accessor,
+        target: target.accessor,
+      };
+    } else {
+      situation = {
+        ...situation,
+        target: target.accessor
+      };
+    }
+    switch (power.system.targets) {
+      case '1-engaged':
+      case '1-nearby':
+      case '1d4-random':
+      case '1d4-random-rep':
+      case '1d3-random':
+      case '1d3-random-rep':
+        if (!target.isAlive()) {return false;}
+        break;
+      case '1-nearby-dead':
+        if (target.isAlive()) {return false;}
+        break;
+      case 'self':
+        if (user != target) {return false;}
+        break;
+      case '1-random-enemy':
+      case 'all-enemies':
+        if (PersonaCombat.isSameTeam(user, target)) {return false;}
+        if (!target.isAlive()) {return false;}
+        break;
+      case 'all-allies':
+        if (!PersonaCombat.isSameTeam(user, target)) {return false;}
+        if (!target.isAlive()) {return false;}
+        break;
+      case 'all-dead-allies':
+        if (!PersonaCombat.isSameTeam(user, target)) {return false;}
+        if (target.isAlive()) {return false;}
+        break;
+      case 'all-others':
+        if (user == target) {return false;}
+        if (target.isAlive()) {return false;}
+        break;
+      case 'everyone':
+        if (!target.isAlive()) {return false;}
+        break;
+      case 'everyone-even-dead':
+        break;
+      default:
+        power.system.targets satisfies never;
+    }
+    if (power.isOpener()) {
+      const sourced = ConditionalEffectManager.getConditionals(power.system.openerConditions, power, user, power );
+      if (!testPreconditions(sourced, situation)) {return false;}
+    }
+    const sourcedTC = ConditionalEffectManager.getConditionals(power.system.validTargetConditions, power, user, power );
+    return testPreconditions(sourcedTC, situation);
+  }
 
 }
 

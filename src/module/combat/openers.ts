@@ -4,6 +4,7 @@ import {PersonaError} from "../persona-error.js";
 import {PersonaRoller} from "../persona-roll.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
+import {PersonaTargetting} from "./persona-targetting.js";
 
 export class OpenerManager {
 	combat: PersonaCombat;
@@ -148,7 +149,7 @@ export class OpenerManager {
 		return { msg, options};
 	}
 
-	mandatoryOtherOpeners( combatant: Combatant<ValidAttackers> , situation: Situation): OpenerOptionsReturn {
+	mandatoryOtherOpeners( combatant: PersonaCombatant, situation: Situation): OpenerOptionsReturn {
 		let options : OpenerOptionsReturn['options'] = [];
 		const msg : string[] = [];
 		if (!combatant.actor) {return { msg, options};}
@@ -159,11 +160,12 @@ export class OpenerManager {
 					...situation,
 					usedPower: action.accessor,
 				};
-				return action.testOpenerPrereqs(useSituation, combatant.actor!);
+				return action.testOpenerPrereqs(useSituation, combatant.actor);
 			});
 		options = usableActions
 			.flatMap( action =>  {
-				const targets= this.combat.getValidTargetsFor(action, combatant, situation);
+        const possibleTargets= this.combat.combatants.contents.filter (x=> PersonaCombat.isPersonaCombatant(x));
+				const targets= PersonaTargetting.getValidTargetsFor(action, combatant, situation, possibleTargets);
 				if (targets.length == 0) {return [];}
 				return [{
 					mandatory: action.hasTag('mandatory'),
@@ -416,7 +418,7 @@ export class OpenerManager {
 		return {msg, options};
 	}
 
-	otherOpeners( combatant: Combatant<ValidAttackers> , situation: Situation): OpenerOptionsReturn {
+	otherOpeners( combatant: PersonaCombatant, situation: Situation): OpenerOptionsReturn {
 		let options : OpenerOptionsReturn['options'] = [];
 		const msg : string[] = [];
 		const actor = combatant.actor;
@@ -432,11 +434,12 @@ export class OpenerManager {
 					usedPower: action.accessor,
 				};
 				if (!actor.persona().canPayActivationCost(action)) {return false;}
-				return action.testOpenerPrereqs(useSituation, combatant.actor!);
+				return action.testOpenerPrereqs(useSituation, combatant.actor);
 			});
 		options = usableActions
 			.flatMap<OpenerOption>( action =>  {
-				const targets= this.combat.getValidTargetsFor(action, combatant, situation);
+        const possibleTargets= this.combat.combatants.contents.filter (x=> PersonaCombat.isPersonaCombatant(x));
+				const targets= PersonaTargetting.getValidTargetsFor(action, combatant, situation, possibleTargets);
 				if (targets.length == 0) {return [];}
 				// const printableName = this.getOpenerPrintableName(action, targets);
 				return [{
