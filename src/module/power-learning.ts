@@ -38,29 +38,33 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 			.filter( x=> actor.checkPowerLegality(x.power ));
 	}
 
-	powerLearningListFull() : readonly Readonly<{power: Power, level: number}>[] {
-		const actor = this.actor;
-		let powerList = actor.system.combat.powersToLearn;
-		if (actor.isShadow()) {
-			const baseId= (actor.system.personaConversion.baseShadowId);
-			if (baseId) {
-				const baseShadow = PersonaDB.getActorById(baseId);
-				if (baseShadow && baseShadow.isShadow()) {
-					powerList = baseShadow.system.combat.powersToLearn;
-				}
-			}
-		}
-		return powerList
-			.sort( (a,b) => a.level - b.level)
-			.map( data => {
-				const power = PersonaDB.getPower(data.powerId);
-				return {
-					power,
-					level: data.level,
-				};
-			})
-			.filter ( x=> x.power) as {power: Power, level: number}[];
-	}
+  powerLearningListFull() : readonly Readonly<{power: Power, level: number}>[] {
+    const actor = this.actor;
+    let powerList = actor.system.combat.powersToLearn;
+    const baseShadow = actor.isShadow() ? actor.baseShadow() : undefined;
+    if (baseShadow) {
+      powerList = baseShadow.system.combat.powersToLearn;
+    }
+    // if (actor.isShadow()) {
+    // const baseId= (actor.system.personaConversion.baseShadowId);
+    // if (baseId) {
+    // 	const baseShadow = PersonaDB.getActorById(baseId);
+    // 	if (baseShadow && baseShadow.isShadow()) {
+    // 		powerList = baseShadow.system.combat.powersToLearn;
+    // 	}
+    // }
+    // }
+    return powerList
+      .sort( (a,b) => a.level - b.level)
+      .map( data => {
+        const power = PersonaDB.getPower(data.powerId);
+        return {
+          power,
+          level: data.level,
+        };
+      })
+      .filter ( x=> x.power) as {power: Power, level: number}[];
+  }
 
 	async customPersona_learnedPowersMsg(newLevel: number) {
 		if (!this.actor.isCustomPersona()) {return;}

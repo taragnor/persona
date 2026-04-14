@@ -14,23 +14,45 @@ export class PersonaCombatStats {
   static MINIMUM_MAX_STAT_GAP = 10 as const;
   static MAX_STAT_VAL = 99 as const;
   static MIN_STAT_VAL = 1 as const;
-  static MAX_STAT_DIVISOR_WILD = 5.5 as const;
+  // static MAX_STAT_DIVISOR_WILD = 5.5 as const;
   static MAX_STAT_DIVISOR_CUSTOM = 8 as const;
 
   static STAT_DEVIATION = {
-    "very-low": 0.15,
-    "low": 0.333,
-    "medium": 0.666,
+    "very-low": 0.33,
+    "low": 0.5,
+    "medium": 0.8,
     "high" : 1.2,
-    "very-high": 1.6,
+    "very-high": 1.5,
+  } as const;
+
+  static WILD_PERSONA_MAX_STAT_DIVISOR = {
+    "very-low": 9,
+    "low": 7.5,
+    "medium": 6.5,
+    "high" : 5.5,
+    "very-high": 4,
   } as const;
 
   constructor (persona: Persona) {
     this.persona = persona;
   }
 
-  get combatStats() {
-    return this.persona.source.system.combat.personaStats;
+  get combatStats() : typeof this.persona.source.system.combat.personaStats  {
+    const source= this.persona.source;
+    const baseStats=   source.system.combat.personaStats;
+    if (!source.isShadow() || source.baseShadow() == source) {
+      return baseStats;
+    }
+    const baseShadowStats = source.baseShadow().system.combat.personaStats;
+
+    return {
+      ...baseStats,
+      "disfavored_stat": baseShadowStats.disfavored_stat,
+      "disfavored_stat2": baseShadowStats.disfavored_stat2,
+      "preferred_stat": baseShadowStats.preferred_stat,
+      "preferred_stat2": baseShadowStats.preferred_stat2,
+      "statDeviation": baseShadowStats.statDeviation,
+    };
   }
 
   mhpCalculation() {
@@ -175,6 +197,11 @@ export class PersonaCombatStats {
     return 1 + (this.statDeviation() * this._adjustment(lvl));
   }
 
+  private tarotStatDeviation (totalPts: number) : number {
+    const lvl = Math.floor(totalPts / PersonaCombatStats.STAT_POINTS_PER_LEVEL);
+    return 1 + (this.statDeviation() * this._adjustment(lvl) / 3);
+  }
+
   private _adjustment(lvl: number) : number {
     if (lvl <= 20) {return 1.5;}
     if (lvl <= 50) {return 1;}
@@ -184,7 +211,6 @@ export class PersonaCombatStats {
 
   #autoSpendPoints(pointsToSpend: number = this.persona.unspentStatPoints) : StatGroup {
     const persona = this.persona;
-    const isCustomPersona = persona.isCustomPersona;
     const favored = [
       this.combatStats.preferred_stat,
       this.combatStats.preferred_stat2,
@@ -213,14 +239,15 @@ export class PersonaCombatStats {
     while (statsToBeChosen > 0) {
       const totalStatPoints = Object.values(stblk).reduce ((acc, x) => acc + x, 0);
       const slist = (Object.keys(stblk) as PersonaStatType[])
-        .filter(( st) => PersonaCombatStats.canRaiseStat(st, stblk, isCustomPersona))
+        .filter(( st) => this.canRaiseStat(st, stblk))
         .map( st => {
           let weight = 1;
           const statDeviation = this.adjustedStatDeviation(totalStatPoints);
+          const tarotStatDeviation = this.tarotStatDeviation(totalStatPoints);
           weight = favored.reduce( (acc, x)=> x == st ? acc * statDeviation: acc, weight);
           weight = disfavored.reduce( (acc, x)=> x == st ? acc / statDeviation : acc, weight);
-          weight = tarotFavored.reduce( (acc, x)=> x == st ? acc * statDeviation : acc, weight);
-          weight = tarotDisfavored.reduce( (acc, x)=> x == st ? acc / statDeviation: acc, weight);
+          weight = tarotFavored.reduce( (acc, x)=> x == st ? acc * tarotStatDeviation : acc, weight);
+          weight = tarotDisfavored.reduce( (acc, x)=> x == st ? acc / tarotStatDeviation: acc, weight);
           return {
             weight,
             item: st
@@ -258,34 +285,34 @@ export class PersonaCombatStats {
   }
 
   canRaiseStat(st: PersonaStatType, statBlock: StatGroup = this.combatStats.stats) : boolean {
-    return statBlock[st] < PersonaCombatStats.maxStatAmount(statBlock, this.persona.isCustomPersona);
+    return statBlock[st] < this.maxStatAmount(statBlock);
   }
 
-  static canRaiseStat(st: PersonaStatType, statBlock: StatGroup, isCustomPersona: boolean) : boolean {
-    return statBlock[st] < PersonaCombatStats.maxStatAmount(statBlock, isCustomPersona);
+  canLowerStat(st: PersonaStatType, statBlock: StatGroup) : boolean {
+    return statBlock[st] > this.minStatAmount(statBlock);
   }
 
-  static canLowerStat(st: PersonaStatType, statBlock: StatGroup, isCustomPersona: boolean) : boolean {
-    return statBlock[st] > PersonaCombatStats.minStatAmount(statBlock, isCustomPersona);
+  maxStatDivisorWild() : number {
+    return PersonaCombatStats.WILD_PERSONA_MAX_STAT_DIVISOR[this.combatStats.statDeviation ?? "medium"];
   }
 
-  static maxStatGap(statBlock: StatGroup, isCustomPersona: boolean): number {
+  maxStatGap(statBlock: StatGroup): number {
     const totalPoints = Object.values(statBlock).reduce ( (a, x) => a+x, 0);
-    const statGapDivisor = isCustomPersona ? this.MAX_STAT_DIVISOR_CUSTOM : this.MAX_STAT_DIVISOR_WILD;
-    const MaxStatGap = Math.max(this.MINIMUM_MAX_STAT_GAP, Math.floor(totalPoints / statGapDivisor)) ;
+    const statGapDivisor = this.persona.isCustomPersona ? PersonaCombatStats.MAX_STAT_DIVISOR_CUSTOM : this.maxStatDivisorWild();
+    const MaxStatGap = Math.max(PersonaCombatStats.MINIMUM_MAX_STAT_GAP, Math.floor(totalPoints / statGapDivisor)) ;
     return MaxStatGap;
   }
 
-  static minStatAmount(statBlock: StatGroup, isCustomPersona: boolean) : number {
-    const maxStatGap = this.maxStatGap(statBlock, isCustomPersona);
+  minStatAmount(statBlock: StatGroup) : number {
+    const maxStatGap = this.maxStatGap(statBlock);
     const maxStat = Object.values(statBlock).reduce ( (a, x) => Math.max(a, x));
-    return Math.max(this.MIN_STAT_VAL, maxStat - maxStatGap);
+    return Math.max(PersonaCombatStats.MIN_STAT_VAL, maxStat - maxStatGap);
   }
 
-  static maxStatAmount(statBlock: StatGroup, isCustomPersona: boolean): number {
-    const maxStatGap = this.maxStatGap(statBlock, isCustomPersona);
+  maxStatAmount(statBlock: StatGroup): number {
+    const maxStatGap = this.maxStatGap(statBlock);
     const minStat = Object.values(statBlock).reduce ( (a, x) => Math.min(a, x));
-    return Math.min(this.MAX_STAT_VAL, minStat + maxStatGap);
+    return Math.min(PersonaCombatStats.MAX_STAT_VAL, minStat + maxStatGap);
   }
 
   async autoSpendStatPoints() : Promise<StatGroup> {

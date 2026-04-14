@@ -425,6 +425,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     }
   }
 
+  /** Shadow from which this was derived, used for shadows used in Personas*/
+  baseShadow(this: Shadow) : Shadow {
+    const baseId = this.system?.personaConversion?.baseShadowId;
+    if (baseId) {
+      const baseShadow = PersonaDB.getActorById(baseId);
+      if (baseShadow && baseShadow.isShadow()) {
+        return baseShadow;
+      }
+    }
+    return this;
+  }
+
 	private async _setLevelTo(this: NPCAlly, lvl: number) {
 		if (!this.isNPCAlly()) {return;}
 		await this.update( {"system.combat.personaStats.pLevel" : lvl});

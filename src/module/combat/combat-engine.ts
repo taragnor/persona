@@ -182,9 +182,7 @@ export class CombatEngine {
 		const num_of_attacks = this.getNumOfAttacks(power);
 		for (let atkNum = 0; atkNum < num_of_attacks; ++atkNum) {
 			rollType = atkNum > 0 ? 'iterative': rollType;
-			// const atkResult = await this.processAttackRoll( attacker, power, target, rollType == 'standard' && atkNum==0 ? 'activation' : rollType, options);
 			const atkResult = await this.attackRollProcess( attacker, power, target, rollType == 'standard' && atkNum==0 ? 'activation' : rollType, options);
-			// this.updateSituation(atkResult);
 			const this_result = await this.processEffects(atkResult);
 			result.merge(this_result);
 			const secondary = await this.handleSecondaryAttacks(this_result, atkResult, power, attacker, target, rollType, options);
@@ -351,7 +349,6 @@ export class CombatEngine {
 			DC: defenseVal,
 			rollType: rollData.rollType,
 		};
-
 		const {ailmentRange, instantKillRange, critRange} = CombatEngine.calculateRanges(attacker, target, power, partialSituation);
 		const withinAilmentRange = CombatEngine.withinRange(ailmentRange, rollData, partialSituation);
 		const withinCritRange = CombatEngine.withinRange(critRange, rollData, partialSituation);
@@ -407,7 +404,6 @@ export class CombatEngine {
 			ailmentRange: situation.ailmentRange,
 			instantKillRange: situation.instantKillRange,
 			critRange: situation.critRange,
-			// validAtkModifiers, validDefModifiers,
 			situation,
 		};
 		const {result, resisted, struckWeakness} = await this.determineAttackResult(attacker, target, power, rollBundle, situation);
@@ -519,7 +515,6 @@ export class CombatEngine {
 		if (testNullify) {
 			return this.getWeaknessSitRep(attacker, target, power, testNullify);
 		}
-		// const canCrit = typeof situation.rollType == 'number' || situation.rollType == 'iterative' ? false : true;
 		const def = power.system.defense;
 		if (def == 'none') {
 			if (this.checkCritical(attacker, target, power, situation)) {
@@ -534,13 +529,6 @@ export class CombatEngine {
 		if (this.checkMiss(attacker, target, power, situation)) {
 			return this.getWeaknessSitRep(attacker, target, power, "miss");
 		}
-		// if (situation.withinCritRange
-		// 	&& situation.rollTotal >= situation.DC
-		// 	&& (!power.isMultiTarget() || situation.naturalRoll % 2 == 0)
-		// 	&& !target.user.hasStatus('blocking')
-		// 	&& !power.hasTag('no-crit')
-		// 	&& canCrit
-		// ) {
 		if (this.checkCritical(attacker, target, power, situation)) {
 			return this.getWeaknessSitRep(attacker, target, power, "crit");
 		}
@@ -552,7 +540,6 @@ export class CombatEngine {
 		return !!(
 			situation.withinCritRange
 			&& situation.rollTotal >= situation.DC
-			&& (!power.isMultiTarget() || situation.naturalRoll % 2 == 0)
 			&& !target.user.hasStatus('blocking')
 			&& !power.hasTag('no-crit')
 			&& canCrit

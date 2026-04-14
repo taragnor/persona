@@ -132,7 +132,7 @@ export class AltDamageSystem extends DamageSystemBase {
 	public getArmorDRByArmorLevel(lvl: number) : number {
 		const ARMOR_DIVISOR = this.ARMOR_TO_DAMAGE_DIVISOR;
 		const val =  this.getWeaponDamageByWpnLevel(lvl);
-		if (val) {return Math.floor(val * ARMOR_DIVISOR);}
+		if (val > 0) {return Math.floor(val * ARMOR_DIVISOR);}
 		return 0;
 	}
 

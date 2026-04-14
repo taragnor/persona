@@ -90,21 +90,22 @@ export class SidePanelManager {
 
   static async renderPanel(sidePanel: SidePanel) {
     if (PersonaSettings.debugMode()) {
-      console.log(`rendering ${sidePanel.panelName}`);
+      console.log(`rendering ${sidePanel?.panelName ?? "No Panel given"}`);
     }
     if (this._activePanel != sidePanel) {
       if (sidePanel.autoActivateOnUpdate == false) {
         console.log(`Can't render ${sidePanel.panelName}: it's not active`);
         return;
       }
-      await this.activate(sidePanel);
+      return await this.activate(sidePanel); //this should rerender the panel anyway
     }
     const panel = this.clearPanel();
     if (!this._activePanel) {
       throw new Error("No active panel to render");
     }
-    const html = await this._activePanel.renderHTML();
-    const div = `<div class="panel-data ${this._activePanel.panelName}">
+    const activePanel = this._activePanel;
+    const html = await activePanel.renderHTML();
+    const div = `<div class="panel-data ${activePanel.panelName}">
     ${html}
     </div>
     `;
