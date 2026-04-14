@@ -242,7 +242,15 @@ export class CombatResult  {
       }
       case "alter-energy": {
         if (!effect) {break;}
-        const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
+        let amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
+        if (amount> 0) {
+          const situation = {
+            user: effect.actor,
+          };
+          const actor = PersonaDB.findActor(effect.actor);
+          const mult = actor.basePersona.getBonuses("energy-gained-multiplier").total(situation, "percentage");
+          amount *= mult;
+        }
         effect.otherEffects.push( {
           type: cons.combatEffect,
           amount,

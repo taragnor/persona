@@ -601,3 +601,7 @@ type PresenceCheckResult = null
   | "daemons"
   | "any";
 
+
+//@ts-expect-error adding to global scope
+window.encounterList = (lvl: number) => RandomEncounter.getRandomEncounterListFromDiffLevel(lvl)
+.map( x=> x.directoryName);

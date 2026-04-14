@@ -3385,11 +3385,17 @@ hasRole( roles: Shadow["system"]["role"] | Shadow["system"]["role"][]): boolean 
 	if (!Array.isArray(roles)) {
 		roles = [roles];
 	}
-	const shadow = this as Shadow;
-	return roles.some( role => {
-		return shadow.system.role == role
-			|| shadow.system.role2 == role;
-	});
+  const myRoles = this.shadowRoles;
+	return roles.some( role => myRoles.includes(role));
+}
+
+get shadowRoles()  : Shadow["system"]["role"][] {
+  if (!this.isShadow()) {return [];}
+  return [
+    this.system.role,
+    this.system.role2,
+    this.system.role3
+  ].filter (x=> x && x != "base");
 }
 
 isSoloType() : boolean {
@@ -3454,19 +3460,12 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 		await this.modifyHP(-damage);
 	}
 	this.hasStatus("burn");
-	const despair = this.hasStatus("despair");
-	if (despair && !this.isShadow() ) {
-		await this.modifyMP(-this.despairMPDamage());
-	}
 	if (this.isShadow()) {
 		const situation : Situation = {
 			user: this.accessor,
 			activeCombat: true,
 		};
-		let bonusEnergy = 3 + this.persona().getBonuses("energy-per-turn").total(situation);
-		if (despair) {
-			bonusEnergy = Math.floor(bonusEnergy/2);
-		}
+		const bonusEnergy = 3 + this.persona().getBonuses("energy-per-turn").total(situation);
 		await this.alterEnergy(bonusEnergy);
 	}
 	ret.push(...await this.endTurnStatusEffects());
@@ -3946,8 +3945,8 @@ async setEnergy(this: Shadow, amt: number) {
 }
 
 async alterEnergy(this: Shadow, amt: number) {
-	console.log(`Altering Energy ${amt}`);
-	await this.setEnergy(this.system.combat.energy.value + amt);
+  console.log(`Altering Energy ${amt}`);
+  await this.setEnergy(this.system.combat.energy.value + amt);
 }
 
 async onRoll(situation: RollSituation & Situation) {

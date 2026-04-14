@@ -100,7 +100,7 @@ export class ConsequenceConverter {
           const ret : NonDeprecatedConsequence = {
             type: dep.type,
             modifiedField: newField,
-            modifierCategory: "",
+            modifierCategory: dep?.modifierCategory ?? "",
             amount: dep.amount,
             applyTo,
           };
@@ -124,7 +124,7 @@ export class ConsequenceConverter {
     return Object.fromEntries(reviseArr) as MultiCheck<NonDeprecatedModifierTarget>;
   }
 
-  static convertModifierField( field: ModifierTarget) : U<NonDeprecatedModifierTarget> {
+  static convertModifierField( field: U<ModifierTarget>) : U<NonDeprecatedModifierTarget> {
     const nonDField = field as DeprecatedModifierTarget;
     switch (nonDField) {
       case "wpnMult":
@@ -134,9 +134,12 @@ export class ConsequenceConverter {
       case "wpnDmg_high":
       case "weakestSlot":
       case "pay":
+      case "will":
         return undefined;
       case "mpCostMult":
         return "power-mp-cost-mult";
+      case undefined:
+        return "allAtk"; //for modifiers that have yet to be filled in
       default:
         nonDField satisfies never;
     }

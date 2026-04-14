@@ -36,7 +36,6 @@ export class PersonaScene extends Scene {
 			.filter ( shadow=> shadow.system.encounter.dungeonEncounters.some( x=> x.dungeonId == this.id)) ;
 	}
 
-
 	//only called for the alternate random gen encounter system
 	getEncounterRate(shadow: Shadow) : number{
 		if (this.difficultyLevel == 0) {
@@ -83,7 +82,7 @@ export class PersonaScene extends Scene {
 				ui.notifications.warn(`${mod.name} is not a scene modifier`);
 			}
 		});
-		const ids= mods.filter (mod => mod.system.scope == "scene")
+		const ids = mods.filter (mod => mod.system.scope == "scene")
 			.map (x=> x.id);
 		await this.setFlag("persona", "sceneModifiers", ids);
 	}

@@ -610,39 +610,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       );
   }
 
-  // getValidTargetsFor(usable: Usable, user: Combatant<ValidAttackers>, situation: Situation): PersonaCombatant[] {
-  //   const userActor = user.token.actor;
-  //   if (!userActor) {return [];}
-  //   return this.combatants
-  //     .filter( comb =>  {
-  //       const targetActor = comb.token.actor;
-  //       if (!targetActor) {return false;}
-  //       if (!PersonaCombat.isPersonaCombatant(comb)) {return false;}
-  //       return this.isValidTargetFor( usable, user, comb, situation);
-  //     }) as PersonaCombatant[];
-  // }
-
   static isPersonaCombatant(comb: Combatant<PersonaActor>) : comb is PersonaCombatant {
     return comb.actor?.isValidCombatant() == true && comb.parent != undefined;
   }
-
-  // isValidTargetFor(usable: Usable, user: Combatant<ValidAttackers>, target: Combatant<ValidAttackers>, situation: Situation): boolean {
-  //   const userActor = user.token.actor;
-  //   const targetActor = target.token.actor;
-  //   if (!userActor || !targetActor) {return false;}
-  //   if (!usable.isValidTargetFor(userActor, targetActor, situation))
-  //   {return false;}
-  //   const targetChallenged = targetActor.hasStatus('challenged');
-  //   const userChallenged = userActor.hasStatus('challenged');
-  //   if (userChallenged) {
-  //     if (!targetChallenged) {return false;}
-  //     if (!this.isInChallengeWith(user, target))
-  //     {return false;}
-  //   } else {
-  //     if (targetChallenged) {return false;}
-  //   }
-  //   return true;
-  // }
 
   isInChallengeWith(user: Combatant<ValidAttackers>, target: Combatant<ValidAttackers>) : boolean {
     const userActor = user.token.actor;

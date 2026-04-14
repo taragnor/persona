@@ -25,6 +25,7 @@ const DEPRECATED_TYPES = [
 	"weakestSlot",
 	"pay",
 	"mpCostMult",
+	"will",
 ] as const;
 
 export const COMBAT_BONUS_TYPES = [
@@ -50,7 +51,6 @@ const DEFENSE_TYPES = [
 	"allDefenses",
 	"ref",
 	"fort",
-	"will",
 	"kill", //kill defense bonus
 	"ail", //ailment defnese bonus
 	"dr",
@@ -91,6 +91,7 @@ export const SHADOW_STATS_TYPES = [
 	"energy-per-turn",
 	"actions-per-turn",
 	"max-energy",
+  "energy-gained-multiplier",
 ] as const;
 
 export const STUDENT_SKILLS_TYPES = [

@@ -79,6 +79,7 @@ export class ActorConverters {
 				creatureType:  "persona",
 				role: "base",
 				role2: "base",
+				role3: "base",
 				creatureTags: personaTags,
 				personaConversion : {
 					...json.personaConversion,

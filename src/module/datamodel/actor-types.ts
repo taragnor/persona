@@ -95,6 +95,7 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 			...BaseStuff.defineSchema(),
 			role: new txt({choices: SHADOW_ROLE_LIST, initial: "base"}),
 			role2: new txt({choices: SHADOW_ROLE_LIST, initial: "base"}),
+			role3: new txt({choices: SHADOW_ROLE_LIST, initial: "base"}),
 			scanLevel: new num({initial: 0, integer: true}),
 			encounter: encounterDataSchema(),
 			creatureType: new txt({ choices: SHADOW_CREATURE_TYPE_LIST, initial: "shadow"}),
