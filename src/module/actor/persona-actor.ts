@@ -3459,7 +3459,6 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 		const damage = burnStatus.potency;
 		await this.modifyHP(-damage);
 	}
-	this.hasStatus("burn");
 	if (this.isShadow()) {
 		const situation : Situation = {
 			user: this.accessor,
@@ -3472,7 +3471,7 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 	return ret;
 }
 
-despairMPDamage(this: PC | NPCAlly): number {
+despairMPDamage(this: PC | NPCAlly) : number {
 	return Math.floor(this.mmp * 0.15);
 }
 
