@@ -188,9 +188,15 @@ export class PersonaTargetting {
 		}
 	}
 
-  static getValidTargetsFor(usable: Usable, user: PersonaCombatant, situation: Situation, possibleTargets: PersonaCombatant[]) : PersonaCombatant[] {
+  static getValidTargetsFor(usable: Usable, user: PersonaCombatant, situation ?: Situation, possibleTargets?: PersonaCombatant[]) : PersonaCombatant[] {
     const userActor = user.token.actor;
     if (!userActor) {return [];}
+    if (possibleTargets == undefined) {
+      const comb = (PersonaCombat.combat ?
+        PersonaCombat.combat.combatants.contents :
+        []) ?? [];
+      possibleTargets = comb.filter( x=> PersonaCombat.isPersonaCombatant(x));
+    }
     return possibleTargets
       .filter( comb =>  {
         const targetActor = comb.token.actor;
@@ -200,7 +206,11 @@ export class PersonaTargetting {
       });
   }
 
-  static isValidTargetFor(usable: Usable, user: PersonaCombatant, target: PersonaCombatant, situation: Situation): boolean {
+  getValidTargetsFor( user: PersonaCombatant, situation ?: Situation, possibleTargets?: PersonaCombatant[]) : PersonaCombatant[] {
+    return PersonaTargetting.getValidTargetsFor(this.power, user, situation, possibleTargets);
+  }
+
+  static isValidTargetFor(usable: Usable, user: PersonaCombatant, target: PersonaCombatant, situation?: Situation): boolean {
     const userActor = user.token.actor;
     const targetActor = target.token.actor;
     if (!userActor || !targetActor) {return false;}
@@ -223,6 +233,7 @@ export class PersonaTargetting {
     if (!situation) {
       situation = {
         user : user.accessor,
+        attacker: user.accessor,
         target: target.accessor,
       };
     } else {

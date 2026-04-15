@@ -7,6 +7,7 @@ import {Persona} from "../persona-class.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaSounds} from "../persona-sounds.js";
+import {PersonaSocial} from "../social/persona-social.js";
 import {randomSelect} from "../utility/array-tools.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 
@@ -243,25 +244,30 @@ export class NavigatorVoiceLines {
   static async navigatorTalk(this:void, text: string) {
     const navigator = PersonaDB.getNavigator();
     if (!navigator) {return;}
-    const speaker  = {
-      alias: navigator.name,
-    };
-    const content = `
-    <div class="f-row">
-    <img class="navigator-img" src=${navigator.img}>
-<div class="navigator-speech">
-      "${text}"
-</div>
-    </div>
-    `;
-    const messageData = {
-      speaker: speaker,
-      content,
-      style: CONST.CHAT_MESSAGE_STYLES.IC,
-    };
-    await ChatMessage.create(messageData, {});
+    await PersonaSocial.characterDialog(navigator, text);
   }
+
+    // const speaker  = {
+    //   alias: navigator.name,
+    // };
+    // const content = `
+    // <div class="f-row">
+    // <img class="navigator-img" src=${navigator.img}>
+    // <div class="navigator-speech">
+    //   "${text}"
+    // </div>
+    // </div>
+    // `;
+    // const messageData = {
+    //   speaker: speaker,
+    //   content,
+    //   style: CONST.CHAT_MESSAGE_STYLES.IC,
+    // };
+    // await ChatMessage.create(messageData, {});
+    // }
+
 }
+
 
 Hooks.on("hoverToken", function (token: Token<PersonaActor>, hover: boolean) {
 	NavigatorVoiceLines.onHoverToken(token, hover);

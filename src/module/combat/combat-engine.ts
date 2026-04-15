@@ -119,7 +119,7 @@ export class CombatEngine {
       await attacker.actor.removeStatusesOfType("out-of-turn-action");
       await finalizedResult.toMessage(power.name, attacker.actor);
       await this.postActionCleanup(attacker, finalizedResult);
-      return finalizedResult;
+        return finalizedResult;
     } catch(e) {
       if (e instanceof CanceledDialgogError) {
         this.clearPendingResult();
@@ -162,11 +162,13 @@ export class CombatEngine {
 		}
 	}
 
-	async postActionCleanup(attacker: PToken, result: FinalizedCombatResult ) {
-		await sleep(1250); //wait for extra action status?
-		await PersonaCombat.postActionCleanup(attacker, result);
+  async postActionCleanup(attacker: PToken, result: FinalizedCombatResult ) {
+    await sleep(1250); //wait for extra action status?
+    if (PersonaCombat.combat && !PersonaCombat.combat.isSocial) {
+      await PersonaCombat.combat.postActionCleanup(attacker, result);
+    }
     this.clearPendingResult();
-	}
+  }
 
 	async usePowerOn(attacker: PToken, power: UsableAndCard, targets: PToken[], rollType : AttackRollType, options: CombatOptions = {}) : Promise<CombatResult> {
 		const result = new CombatResult();

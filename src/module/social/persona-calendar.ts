@@ -409,6 +409,7 @@ export class PersonaCalendar {
 			const currentAmt = itemList.find( item => item.name == i.name)?.amount ?? 0;
 			const itemsToAdd = i.system.storeMax - currentAmt;
 			if (itemsToAdd > 0) {
+        await i.refreshItemBase();
 				const addItem = {
 					...i,
 					quantity: itemsToAdd,

@@ -85,9 +85,10 @@ type PushUniqueTypes = number | string | EqualityDetector;
 declare global {
 	interface Array<T> {
 		pushUnique<R extends T & PushUniqueTypes>(...x: R[]): this;
-		// pushUnique<R extends T>(...x: R[]): this;
 		pushUniqueS<R extends T>(equalityTestFn: (a:R, b:R) => boolean, ...list: R[]) : this ;
+    concatUnique<R extends T & PushUniqueTypes> (this: R[], ...x: R[]) : R[];
 	}
+
 }
 
 Array.prototype.pushUniqueS = function<T>(this: Array<T>, equalityTestFn: (a:T, b:T) => boolean, ...list: T[]) {
@@ -116,6 +117,15 @@ Array.prototype.pushUnique = function<T extends PushUniqueTypes>(this: Array<T>,
 	}
 	return this;
 };
+
+Array.prototype.concatUnique = function <T extends PushUniqueTypes & R, R extends PushUniqueTypes >(this:  Array<T>, ...origList: R[]) : R[] {
+  const newList : R[]= this.slice();
+  for (const item of origList) {
+    newList.pushUnique(item);
+  }
+  return newList;
+};
+
 
 function pushUniqueEqualityObject<T extends PushUniqueTypes>(arr: T[], ...adds: (T & EqualityDetector)[]) : typeof arr {
   for (const item of adds) {

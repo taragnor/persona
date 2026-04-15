@@ -70,10 +70,9 @@ export class CombatHooks {
 			if (OpenerManager.checkForOpeningChanges(changes)) {
 				await CombatPanel.instance.setOpeningActionChoices(combat.combatant, combat.openers.getOpenerChoices());
 			}
-			if (FollowUpManager.checkForFollowUpChanges(changes)) {
-				await CombatPanel.instance.setFollowUpChoices(combat.combatant, combat.followUp.getFollowUpChoices());
-
-			}
+			// if (FollowUpManager.checkForFollowUpChanges(changes)) {
+			// 	await CombatPanel.instance.setFollowUpChoices(combat.combatant, combat.followUp.getFollowUpChoices());
+			// }
 		});
 
 		Hooks.on("combatStart", async (combat: PersonaCombat) => {
@@ -111,54 +110,59 @@ export class CombatHooks {
 			}
 		});
 
-		Hooks.on("onAddStatus", async function (token: PToken, status: StatusEffect)  {
-			if (!game.user.isGM) {
-				throw new PersonaError("Somehow isn't GM executing this");
-			}
-			switch (status.id) {
-				case "down":
-					if (status.id != "down") {return;}
-					if (game.combat) {
-						const allegiance = token.actor.getAllegiance();
-						const standingAllies = game.combat.combatants.contents
-							.some(comb => {
-								if (!comb.token) {return false;}
-								const actor = comb.actor as ValidAttackers;
-								return actor.isStanding()
-									&& actor.getAllegiance() == allegiance;
-							});
-						if (!standingAllies) {
-							const currentTurnCharacter = (game.combat as PersonaCombat).combatant?.actor;
-							if (!currentTurnCharacter) {return;}
-							const currentTurnType = currentTurnCharacter.system.type;
-							if (currentTurnType == "shadow") {
-								await PersonaCombat.allOutAttackPrompt();
-								break;
-							} else {
-								PersonaSockets.simpleSend("QUERY_ALL_OUT_ATTACK", {}, game.users
-									.filter( user=> currentTurnCharacter.testUserPermission(user, "OWNER") && !user.isGM )
-									.map( usr=> usr.id)
-								);
-							}
-						}
-					}
-					break;
-				case "bonus-action": { const combat = game.combat as PersonaCombat;
-					if (combat && !combat.isSocial) {
-						await combat.onFollowUpAction(token, status.activationRoll);
-					}
-					break;
-				}
-				default:
-			}
-		});
+    Hooks.on("onAddStatus", async function (token: PToken, status: StatusEffect)  {
+      if (!game.user.isGM) {
+        throw new PersonaError("Somehow isn't GM executing this");
+      }
+      switch (status.id) {
+        case "down":
+          if (status.id != "down") {return;}
+          if (game.combat) {
+            const allegiance = token.actor.getAllegiance();
+            const standingAllies = game.combat.combatants.contents
+              .some(comb => {
+                if (!comb.token) {return false;}
+                const actor = comb.actor as ValidAttackers;
+                return actor.isStanding()
+                  && actor.getAllegiance() == allegiance;
+              });
+            if (!standingAllies) {
+              const currentTurnCharacter = (game.combat as PersonaCombat).combatant?.actor;
+              if (!currentTurnCharacter) {return;}
+              const currentTurnType = currentTurnCharacter.system.type;
+              if (currentTurnType == "shadow") {
+                await PersonaCombat.allOutAttackPrompt();
+                break;
+              } else {
+                PersonaSockets.simpleSend("QUERY_ALL_OUT_ATTACK", {}, game.users
+                  .filter( user=> currentTurnCharacter.testUserPermission(user, "OWNER") && !user.isGM )
+                  .map( usr=> usr.id)
+                );
+              }
+            }
+          }
+          break;
+          //this did not work
+          // case "bonus-action": {
+          // const combat = game.combat as PersonaCombat;
+          // 	if (combat && !combat.isSocial) {
+          // 		await combat.onFollowUpAction(token, status.activationRoll);
+          // 	}
+          // 	break;
+          // }
+        default:
+      }
+    });
 
 
-		Hooks.on("socketsReady", () => {
-			PersonaSockets.setHandler("QUERY_ALL_OUT_ATTACK", () => {
-				void PersonaCombat.allOutAttackPrompt();
-			});
-		});
+    Hooks.on("socketsReady", () => {
+      PersonaSockets.setHandler("QUERY_ALL_OUT_ATTACK", () => {
+        void PersonaCombat.allOutAttackPrompt();
+      });
+      PersonaSockets.setHandler("REQUEST_TEAMWORK", (data) => {
+        void PersonaCombat.onTeamworkRequest(data);
+      })
+    });
 
 		Hooks.on("renderChatMessageHTML", (_msg, html) => {
 			const elem = $(html);

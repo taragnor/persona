@@ -75,7 +75,7 @@ export function UsablePowerProps() {
 		ailmentChance: new txt({choices: INSTANT_KILL_LEVELS, initial: "none"}),
 		damage: damage(),
 		defense: new txt( {choices: DEFENSE_TYPES, initial: "none"}),
-		targets: new txt<typeof TARGETINGLIST[number]> ( {choices: TARGETINGLIST, initial: "1-engaged"}),
+		targets: new txt<typeof TARGETINGLIST[number]> ( {choices: TARGETINGLIST, initial: "self"}),
 		validTargetConditions: new arr( new obj<Precondition>()),
 		dmg_type: new txt( {choices: DAMAGE_TYPES_LIST, initial:"none"}),
 		crit_boost: new num( {min: -20, max:20, initial: 0, integer:true}),

@@ -105,6 +105,33 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		}
 	}
 
+  async refreshItemBases() {
+    const tokenActors = game.scenes.contents
+      .flatMap(scene => scene.tokens.contents.flatMap
+        (tok => tok.actor ? [tok.actor as PersonaActor] : [])
+      );
+    const allActors = [
+      ...this.allActors(),
+      ...tokenActors,
+    ];
+    const nullItems : Carryable[] = [];
+    for (const actor of allActors) {
+      const items : Carryable[] = actor.items
+        .filter( item=> item.isCarryableType()) as Carryable[];
+      for (const item of items) {
+        const ret = await item.refreshItemBase();
+        if (ret == null) { nullItems.push(item); }
+      }
+    }
+    for (const item of PersonaDB.allItems()) {
+      if (item.isCarryableType()) {
+        const ret = await item.refreshItemBase();
+        if (ret == null) { nullItems.push(item); }
+      }
+    }
+    return nullItems;
+  }
+
 	getGlobalDefensives(): readonly UniversalModifier [] {
 		if (this.#cache.worldDefensives == undefined) {
 		this.#cache.worldDefensives = this.getGlobalModifiers()

@@ -39,10 +39,15 @@ import {TreasureSystem} from '../exploration/treasure-system.js';
 import {ModifierList} from './modifier-list.js';
 import {FollowUpManager} from './follow-up-actions.js';
 import {ConditionalEffectPrinter} from '../conditionalEffects/conditional-effect-printer.js';
+import {PersonaSockets} from '../persona.js';
 
 declare global {
   interface SocketMessage {
-'QUERY_ALL_OUT_ATTACK' : Record<string, never>;
+    'QUERY_ALL_OUT_ATTACK' : Record<string, never>;
+    'REQUEST_TEAMWORK': {
+      requestor: UniversalActorAccessor<ValidAttackers>
+      teammateTarget: UniversalActorAccessor<ValidAttackers>;
+    }
   }
 }
 
@@ -721,35 +726,81 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     return this._engagedList;
   }
 
-  static async postActionCleanup(attacker: PToken, result: FinalizedCombatResult ) {
+  async postActionCleanup(attacker: PToken, result: FinalizedCombatResult ) {
     // await this.afterActionTriggered(attacker, result);
     const power = result.power;
     if (!power) {return;}
-    const combat= game.combat as PersonaCombat | undefined;
-    if (!combat?.combatant || !PersonaCombat.isPersonaCombatant(combat.combatant)) {return;}
-    if (combat && combat.combatant?.token == attacker) {
+    const comb = this.combatant;
+    if (!comb || !PersonaCombat.isPersonaCombatant(comb)) {return;}
+    if ( await this.checkUpFollowUpAction(attacker)) {
+      return;
+    }
+    if (comb?.token == attacker) {
       const shouldEndTurn =
         (
-          combat.hasRunOutOfActions(combat.combatant)
+          this.hasRunOutOfActions(comb)
           || power == PersonaDB.getBasicPower('All-out Attack')
         ) ;
       const autoEndTurn = PersonaSettings.autoEndTurn() && shouldEndTurn;
       if (shouldEndTurn) {
         if (autoEndTurn) {
-          if (combat.forceAdvanceTurn) {
-            await combat.setForceEndTurn(false);
+          if (this.forceAdvanceTurn) {
+            await this.setForceEndTurn(false);
           }
-          await combat.nextTurn();
+          await this.nextTurn();
           return;
         }
-        await combat.displayEndTurnMessage();
+        await this.displayEndTurnMessage();
       } else {
-        await this.displayActionsRemaining(combat.combatant);
+        await this.displayActionsRemaining(comb);
       }
     }
   }
 
-  static async displayActionsRemaining(combatant: PersonaCombatant) : Promise<ChatMessage> {
+  async checkUpFollowUpAction(attacker: PToken ) {
+    const status = attacker.actor.effects.find( eff=> eff.statuses.has("bonus-action"));
+    if (status) {
+      await this.followUp.onFollowUpAction(attacker, status.activationRoll);
+      return true;
+    }
+    return false;
+  }
+
+  async callOnTeammateForTeamworkMove(teammate: PersonaCombatant, requestor : PToken) {
+    const actor = teammate.actor;
+    const owner = game.users.find( user=> user.active && actor.isPC() && user == actor.getPrimaryPlayerOwner()) ??
+      game.users.find ( user => user.active && !user.isGM && actor.testUserPermission(user, "OWNER"))
+      ?? game.users.find ( user => user.isGM);
+    if (owner) {
+      try {
+        const teamworkData : SocketMessage["REQUEST_TEAMWORK"] = {
+          requestor: requestor?.actor?.accessor,
+          teammateTarget: actor.accessor,
+        };
+      const response = await PersonaSockets.verifiedSend("REQUEST_TEAMWORK", teamworkData, owner.id);
+      return response;
+      } catch (e) {
+        PersonaError.softFail(`Problem Contactign ${owner.name}`, e);
+        return false;
+      }
+    }
+    return false;
+  }
+
+  static async onTeamworkRequest(data: SocketMessage["REQUEST_TEAMWORK"]) {
+    const leader = data.requestor ? PersonaDB.findActor(data.requestor) : undefined;
+    const yourChar = PersonaDB.findActor(data.teammateTarget);
+    const reply = await HTMLTools.confirmBox("Teamwork request", `${leader?.name ?? "Unknown Character"} requests that ${yourChar.name} perform a teamwork move`);
+    if (!reply) {
+      const msg = `${yourChar.name} turns down opportunity to use teamwork move!`;
+      await PersonaSocial.characterDialog(yourChar, msg);
+      return;
+    }
+    const msg = `${yourChar.name} seizes the opportunity!`;
+    await PersonaSocial.characterDialog(yourChar, msg);
+  }
+
+  async displayActionsRemaining(combatant: PersonaCombatant) : Promise<ChatMessage> {
     const token = combatant?.token as PToken;
     const boldName = `<b>${token.name}</b>`;
     const actor = combatant.actor;
@@ -1552,8 +1603,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     if (!allOutAttack) {throw new PersonaError("Can't find all out attack in database");}
     const attacker = comb.token as PToken;
     const result = await combat.combatEngine.usePower(attacker, allOutAttack);
-    await this.postActionCleanup(attacker, result);
-
+    return result;
   }
 
   findCombatant(acc :UniversalTokenAccessor<TokenDocument<ValidAttackers>>) : PersonaCombatant | undefined;
@@ -2005,3 +2055,4 @@ const COMBAT_OUTCOME_LIST = [
 ] as const;
 
 export const COMBAT_OUTCOME = HTMLTools.createLocalizationObject(COMBAT_OUTCOME_LIST, "persona.combat.outcome");
+

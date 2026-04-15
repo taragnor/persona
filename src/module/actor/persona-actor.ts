@@ -302,35 +302,34 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return item;
 	}
 
-	async addTreasureItem( treasure: EnchantedTreasureFormat, quietLog = false) {
-		const baseItem = PersonaDB.findItem(treasure.item);
-		const tags = baseItem.system.itemTags;
-		if (treasure.enchantments.length == 0) {
-			return await this.addItem(baseItem);
-		}
-		const tagIds =
-			[
-				...tags,
-				...treasure.enchantments,
-			];
-		// const tagsString = treasure.enchantments
-		// 	.map( x=> PersonaDB.allTags().get(x)?.name  ?? "ERROR")
-		// 	.join(", ");
-		// const name =`${baseItem.name} (${tagsString})`;
-		const name =`${baseItem.name}`;
-		const baseData = baseItem.toJSON() as typeof baseItem;
-		baseData.system.amount = 1;
-		baseData.system.itemTags = tagIds;
-		const itemData = {
-			...baseData,
-			name,
-		};
-		const item = (await this.createEmbeddedDocuments("Item", [itemData]))[0];
-		if (this.hasPlayerOwner && !quietLog) {
-			void Logger.sendToChat(`${this.name} gained Treasure Item : ${item.name}`);
-		}
-		return item;
-	}
+  async addTreasureItem( treasure: EnchantedTreasureFormat, quietLog = false) {
+    const baseItem = PersonaDB.findItem(treasure.item);
+    const tags = baseItem.system.itemTags;
+    if (treasure.enchantments.length == 0) {
+      return await this.addItem(baseItem);
+    }
+    const tagIds =
+      [
+        ...tags,
+        ...treasure.enchantments,
+      ];
+    const name =`${baseItem.name}`;
+    const baseData = baseItem.toJSON() as typeof baseItem;
+    baseData.system.amount = 1;
+    baseData.system.itemTags = tagIds;
+    const itemData = {
+      ...baseData,
+      name,
+    };
+    const item = (await this.createEmbeddedDocuments("Item", [itemData]))[0] as typeof baseItem;
+    if (this.hasPlayerOwner && !quietLog) {
+      void Logger.sendToChat(`${this.name} gained Treasure Item : ${item.name}`);
+    }
+    if (baseItem.id) {
+      await item.update({"system.itemBase" : baseItem.id});
+    }
+    return item;
+  }
 
 	get inventory() : (Consumable | InvItem | Weapon | SkillCard)[] {
 		return this.items.filter( x=> x.system.type == "item" || x.system.type == "weapon" || x.system.type == "consumable" || x.system.type == "skillCard") as (Consumable | InvItem | Weapon)[];
@@ -1735,7 +1734,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   /** returns true if status is added*/
   async addStatus(statusEffect: StatusEffect, ignoreFatigue= false): Promise<boolean> {
-    const {id, duration} = statusEffect;
+    const {id} = statusEffect;
     try {
       if (!ignoreFatigue && statusMap?.get(id)?.tags.includes("fatigue")) {
         const lvl = statusToFatigueLevel(id as FatigueStatusId);
@@ -1748,49 +1747,98 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
         return false;
       }
       if (await this.isStatusResisted(id)) {return false;}
-      const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
-      if (!stateData) {
-        throw new Error(`Couldn't find status effect Id: ${id}`);
-      }
       const eff = this.effects.find( eff => eff.statuses.has(id));
       if (eff) {
+        //checking to see if actor already has status
         await eff.mergeStatus(statusEffect);
         return false;
       }
-      if (await this.checkStatusNullificaton(statusEffect)) {return false;}
-      if (this.isValidCombatant()) {
-        const situation: Situation ={
-          triggeringCharacter: this.accessor,
-          triggeringUser: game.user,
-          user: this.accessor,
-          statusEffect: id,
-          target: this.accessor,
-        };
-        const ret = (await TriggeredEffect.onTrigger("pre-inflict-status", this, situation)).finalize();
-        await ret
-          .emptyCheck()
-          ?.toMessage("Response to acquiring Status", this);
-        if (ret.hasCancelRequest()) {return false;}
-        const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
-        if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
-          await this.setHP(0);
-        }
-      }
-      const newState = {
-        ...stateData,
-        name: game.i18n.localize(stateData.name as LocalizationString),
-        statuses: [id]
-      };
-      const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
-      //potency can change in checkStatusNullification so its important to wait to unpack it until here
-      await newEffect.setPotency(statusEffect.potency || 1);
-      const adjustedDuration = this.getAdjustedDuration(duration, id);
-      await newEffect.setDuration(adjustedDuration);
-      return true;
-    } catch (e) {
+      return await this._addStatus(statusEffect);
+    }
+    catch (e) {
       PersonaError.softFail(`Error adding status :${id}`, e);
       return false;
     }
+  }
+
+    ////actually add the status
+    //if (await this.checkStatusNullificaton(statusEffect)) {return false;}
+    //if (this.isValidCombatant()) {
+    //  const situation: Situation ={
+    //    triggeringCharacter: this.accessor,
+    //    triggeringUser: game.user,
+    //    user: this.accessor,
+    //    statusEffect: id,
+    //    target: this.accessor,
+    //  };
+    //  const ret = (await TriggeredEffect.onTrigger("pre-inflict-status", this, situation)).finalize();
+    //  await ret
+    //    .emptyCheck()
+    //    ?.toMessage("Response to acquiring Status", this);
+    //  if (ret.hasCancelRequest()) {return false;}
+    //  const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
+    //  if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
+    //    await this.setHP(0);
+    //  }
+    //}
+    //const newState = {
+    //  ...stateData,
+    //  name: game.i18n.localize(stateData.name as LocalizationString),
+    //  statuses: [id]
+    //};
+    //const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
+    ////potency can change in checkStatusNullification so its important to wait to unpack it until here
+    //await newEffect.setPotency(statusEffect.potency || 1);
+    //const adjustedDuration = this.getAdjustedDuration(duration, id);
+    //await newEffect.setDuration(adjustedDuration);
+    //return true;
+    //} catch (e) {
+    //PersonaError.softFail(`Error adding status :${id}`, e);
+    //return false;
+    //}
+  // }
+
+  /** actually adds a new status, use addStauts to also check for duplicates and merge if needed */
+  private async _addStatus(statusEffect: StatusEffect): Promise<boolean> {
+
+    const {id, duration} = statusEffect;
+    const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
+    if (!stateData) {
+      throw new PersonaError(`Couldn't find status effect Id: ${id}`);
+    }
+    if (await this.checkStatusNullificaton(statusEffect)) {return false;}
+    if (this.isValidCombatant()) {
+      const situation: Situation ={
+        triggeringCharacter: this.accessor,
+        triggeringUser: game.user,
+        user: this.accessor,
+        statusEffect: id,
+        target: this.accessor,
+      };
+      const ret = (await TriggeredEffect.onTrigger("pre-inflict-status", this, situation)).finalize();
+      await ret
+        .emptyCheck()
+        ?.toMessage("Response to acquiring Status", this);
+      if (ret.hasCancelRequest()) {return false;}
+      const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
+      if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
+        await this.setHP(0);
+      }
+    }
+    const newState = {
+      ...stateData,
+      name: game.i18n.localize(stateData.name as LocalizationString),
+      statuses: [id]
+    };
+    const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
+    //potency can change in checkStatusNullification so its important to wait to unpack it until here
+    await newEffect.setPotency(statusEffect.potency || 1);
+    const adjustedDuration = this.getAdjustedDuration(duration, id);
+    if ("activationRoll" in statusEffect) {
+      await newEffect.setActivationRoll(statusEffect.activationRoll);
+    }
+    await newEffect.setDuration(adjustedDuration);
+    return true;
   }
 
 	getAdjustedDuration( duration: StatusDuration, id: StatusEffect["id"]) : StatusDuration {

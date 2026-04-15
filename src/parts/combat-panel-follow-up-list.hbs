@@ -1,15 +1,38 @@
 <section class="follow-ups">
-<h3> Follow Up Choices</h3>
+  <h3> Follow Up Choices</h3>
 
-<ul class="follow-ups">
-	{{#each followUps as |followUp|}}
-	{{#if (eq followUp.type "power")}}
-	<div class="follow-up" data-power-id="followUp.powerId" data-combatant-id="{{followUp.combatantId}}">
-		{{followUp.name}}
-	</div>
-	{{/if}}
-	{{/each}}
-</ul>
+  <ul class="follow-ups">
+    {{#each followUps as |followUp|}}
 
-<button class="act-again"> Act Again </button>
+    {{#if (eq followUp.type "power")}}
+    <div class="follow-up" data-power-id="followUp.powerId" data-combatant-id="{{followUp.combatantId}}">
+      {{followUp.name}}
+      {{#each followUp.targetChoices as |target i|}}
+      <button class="target" data-target-combatant-id="{{target.id}}">
+        {{target.name}}
+      </button>
+      {{/each}}
+    </div>
+    {{/if}}
+
+    {{#if (eq followUp.type "area-power")}}
+    <div class="follow-up" data-power-id="followUp.powerId" data-combatant-id="{{followUp.combatantId}}">
+      <button class="area-button">
+        {{followUp.name}}
+      </button>
+    </div>
+    {{/if}}
+
+    {{#if (eq followUp.type "teamwork")}}
+    <div class="teamwork-follow-up" data-power-id="followUp.powerId" data-teammate-id="{{followUp.teammate}}">
+      <button class="teamwork">
+        {{followUp.name}}
+      </button>
+    </div>
+    {{/if}}
+
+    {{/each}}
+  </ul>
+
+  <button class="act-again"> Act Again </button>
 </section>

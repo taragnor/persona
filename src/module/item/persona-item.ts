@@ -14,10 +14,10 @@ import { CombatResult, AttackResult } from '../combat/combat-result.js';
 import { ROLL_TAGS_AND_CARD_TAGS, RollTag } from '../../config/roll-tags.js';
 import { CardTag } from '../../config/card-tags.js';
 import { PersonaSettings } from '../../config/persona-settings.js';
-import { POWER_TAGS_LIST, POWER_TYPE_TAGS , STATUS_AILMENT_POWER_TAGS} from '../../config/power-tags.js';
+import { POWER_TAGS_LIST, POWER_TYPE_TAGS , PowerTagOrId, STATUS_AILMENT_POWER_TAGS} from '../../config/power-tags.js';
 import { Logger } from '../utility/logger.js';
 import { DamageType } from '../../config/damage-types.js';
-import { EQUIPMENT_TAGS, EquipmentTag } from '../../config/equipment-tags.js';
+import { EQUIPMENT_TAGS, EquipmentTag, EquipmentTagOrId } from '../../config/equipment-tags.js';
 import { Consequence } from '../../config/consequence-types.js';
 import { CreatureTag, InternalCreatureTag } from '../../config/creature-tags.js';
 import { removeDuplicates } from '../utility/array-tools.js';
@@ -75,7 +75,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     mpCost: U<number>,
     mpGrowthTable: U<GrowthCalculator>,
     hpGrowthTable: U<GrowthCalculator>,
-    tags: U<readonly (PowerTag | EquipmentTag)[]>,
+      tags: U<readonly UnifiedTagData[]>,
   };
 
   static cacheStats = {
@@ -337,6 +337,48 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         return (cons.type == "combat-effect" && cons.combatEffect == "damage");
       });
     });
+  }
+
+  async refreshItemBase(this: Carryable) {
+    if (this.system.itemBase) {return "no change";}
+      const itemBase = this._deriveItemBase();
+    if (this.parent instanceof PersonaActor) {
+      // const item = PersonaDB.getItemByName(this.name);
+      if (itemBase) {
+        await this.update( {"system.itemBase": itemBase.id});
+        return itemBase;
+      }
+      return null;
+    }
+    await this.update({"system.itemBase": this.id});
+    return "master item";
+  }
+
+  private _deriveItemBase<T extends Carryable>(this: T) : T {
+    if (this.parent instanceof PersonaActor) {
+      const item = PersonaDB.getItemByName(this.name);
+      if (item && item.system.type == this.system.type) {
+        return item as typeof this;
+      }
+    }
+    return this;
+  }
+
+  get itemBase() : typeof this {
+    if (!this.isCarryableType()) {
+      return this;
+    }
+    const baseId = this.system.itemBase ?? this._deriveItemBase()?.id;
+    if (this.system.itemBase == undefined) {
+      void this.refreshItemBase();
+    }
+    if (baseId && baseId != this.id) {
+      const baseItem = PersonaDB.getItemById(baseId);
+      if (baseItem && baseItem.system.type == this.system.type) {
+        return baseItem as typeof this;
+      }
+    }
+    return this;
   }
 
   static getDamageIconPath(dmgType : RealDamageType) : string  | undefined {
@@ -729,7 +771,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   get itemPilesStackId(): string {
     console.log(`Calling item Piles Stack Id on ${this.name} (${this.id})`);
     const name = this.name;
-    const tags = this.tagList().map( x=> x instanceof PersonaItem ? x.name : x)
+    const tags = this.tagList(null).map( x=> x instanceof PersonaItem ? x.name : x)
       .join(", ");
     return `${name} (${tags})`;
   }
@@ -749,14 +791,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         list = (this as Power).tagList(user ?? null);
         break;
       case 'consumable':
-          list = (this as Consumable).tagList();
+          list = (this as Consumable).tagList(user ?? null);
         break;
       case 'item':
       case 'weapon':
-        list = (this as Weapon | InvItem).tagList();
+        list = (this as Weapon | InvItem).tagList(user ?? null);
         break;
       case 'skillCard':
-        list = (this as SkillCard).tagList();
+        list = (this as SkillCard).tagList(user ?? null);
         break;
       default:
         this.system satisfies never;
@@ -770,20 +812,36 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this == other;
   }
 
-  tagList(this : Power, user: ValidAttackers | null): readonly (PowerTag | EquipmentTag)[];
-  tagList(this: UsableAndCard, user: ValidAttackers | null) : readonly PowerTag[];
-  tagList(this : Weapon, user ?: null ): readonly EquipmentTag[];
-  tagList(this : InvItem, user ?: null ): readonly EquipmentTag[];
-  tagList(this : Talent, user ?: null): readonly PowerTag[];
-  tagList(this : Focus, user ?: null): readonly PowerTag[];
-  tagList(this: Consumable | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : readonly (PowerTag | EquipmentTag)[];
-  tagList(this: UsableAndCard | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : readonly (PowerTag | EquipmentTag)[];
-  tagList(this: PersonaItem, user ?: null | ValidAttackers): readonly (PowerTag | EquipmentTag)[];
-  tagList(this: Talent | Focus | UsableAndCard | InvItem | Weapon, user ?: ValidAttackers | null) : readonly (PowerTag | EquipmentTag)[] {
+  baseItemExtraTags(user: N<ValidAttackers>) : readonly UnifiedTagData[] {
+    const itemBase= this.itemBase;
+    if (this == itemBase) {
+      return [];
+    }
+    return itemBase.unified_tagList(user);
+  }
+
+  tagList(user: UN<ValidAttackers>) : readonly (PowerTag | EquipmentTag)[] {
+    const tagListData = this.unified_tagList(user).slice()
+      .pushUnique(...this.baseItemExtraTags(user ?? null));
+    return tagListData.map(tagData=> PersonaItem.resolveTag(tagData));
+  }
+
+
+  // private unified_tagList(this : Power, user: ValidAttackers | null): readonly (PowerTag | EquipmentTag)[];
+  // private unified_tagList(this: UsableAndCard, user: ValidAttackers | null) : readonly PowerTag[];
+  // private unified_tagList(this : Weapon, user ?: null ): readonly EquipmentTag[];
+  // private unified_tagList(this : InvItem, user ?: null ): readonly EquipmentTag[];
+  // private unified_tagList(this : Talent, user ?: null): readonly PowerTag[];
+  // private unified_tagList(this : Focus, user ?: null): readonly PowerTag[];
+  // private unified_tagList(this: Consumable | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : readonly (PowerTag | EquipmentTag)[];
+  // private unified_tagList(this: UsableAndCard | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : readonly (PowerTag | EquipmentTag)[];
+  // private unified_tagList(this: PersonaItem, user ?: null | ValidAttackers): readonly (PowerTag | EquipmentTag)[];
+  // private unified_tagList(this: Talent | Focus | UsableAndCard | InvItem | Weapon, user ?: ValidAttackers | null) : readonly (PowerTag | EquipmentTag)[] {
+  private unified_tagList(user ?: ValidAttackers | null) : readonly UnifiedTagData[] {
     const itype = this.system.type;
     switch (itype) {
       case 'power': {
-        const retTags = this._getUniformAutoTags().slice();
+        const retTags : UnifiedTagData[] = this._getUniformAutoTags().slice();
         if ((this as Power).getCooldown(user ?? null)) {
           retTags.pushUnique(`cooldown`);
         }
@@ -792,26 +850,31 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         return retTags;
       }
       case 'consumable': {
-        const list  =
-        ([] as (typeof this.system.tags[number] | typeof this.system.itemTags[number])[])
+        const list : UnifiedTagData[] =
+        // const list : (typeof this.system.tags[number] | typeof this.system.itemTags[number])[] =
+        ([] as (UnifiedTagData)[])
         .concat( this.system.tags)
-        .concat(this.system.itemTags);
+        .concat(this.system.itemTags)
+        .pushUnique(...this.baseItemExtraTags(user ?? null));
         if (!list.includes(itype)) {
           list.pushUnique(itype);
         }
         if (!list.includes(this.system.dmg_type as typeof list[number]) && POWER_TAGS_LIST.includes(this.system.dmg_type as typeof POWER_TAGS_LIST[number])) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          list.pushUnique(this.system.dmg_type as any);
+          if (this.system.dmg_type != "none") {
+            list.pushUnique(this.system.dmg_type);
+          }
         }
         if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
           list.pushUnique('ailment');
         }
         const subtype = this.system.subtype;
         list.pushUnique(subtype);
-        return list.map ( t=> PersonaItem.resolveTag(t));
+        return list;
+        // return list.map ( t=> PersonaItem.resolveTag(t));
       }
       case 'item': {
-        const list= this.system.itemTags.slice();
+        const list= (this.system.itemTags.slice() as UnifiedTagData[])
+        .pushUnique(...this.baseItemExtraTags(user ?? null));
         const subtype = this.system.slot;
         switch (subtype) {
           case 'body':
@@ -831,16 +894,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
           default:
             subtype satisfies never;
         }
-        return list.map( t=> PersonaItem.resolveTag(t));
+        return list;
+        // return list.map( t=> PersonaItem.resolveTag(t));
       }
       case 'weapon': {
-        const list = this.system.itemTags.slice();
+        const list = (this.system.itemTags.slice() as UnifiedTagData[])
+        .pushUnique(...this.baseItemExtraTags(user ?? null));
         if (!list.includes(this.system.dmg_type as typeof list[number]) && POWER_TAGS_LIST.includes(this.system.dmg_type as typeof POWER_TAGS_LIST[number])) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           list.pushUnique(this.system.dmg_type as any);
         }
         list.pushUnique(itype);
-        return list.map( t=> PersonaItem.resolveTag(t));
+        return list;
+        // return list.map( t=> PersonaItem.resolveTag(t));
       }
       case 'skillCard': {
         return [
@@ -849,14 +915,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       }
       case 'talent':
       case 'focus' : {
-        const list : PowerTag[] = [];
+        const list : UnifiedTagData[] = [];
         if (this.system.defensive) {
           list.pushUnique('defensive');
         } else {
           list.pushUnique('passive');
         }
-        return list.map( t=> PersonaItem.resolveTag(t));
+        return list;
+        // return list.map( t=> PersonaItem.resolveTag(t));
       }
+      case "characterClass":
+      case "universalModifier":
+      case "socialCard":
+      case "tag":
+        return [];
       default:
         itype satisfies never;
         // PersonaError.softFail(`Can't get tag list for ${itype as string}`);
@@ -865,8 +937,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
 
-  #autoTags_power(this: Power): (PowerTag | EquipmentTag)[] {
-    const list : (PowerTag | EquipmentTag) [] = [];
+  #autoTags_power(this: Power): UnifiedTagData[] {
+    const list : UnifiedTagData [] = [];
     if (this.system.subtype == "weapon" || this.system.subtype == "magic") {
       list.pushUnique(this.system.subtype);
     }
@@ -907,10 +979,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
     const subtype : typeof POWER_TYPE_TAGS[number]  = this.system.subtype as typeof POWER_TYPE_TAGS[number];
     if (POWER_TYPE_TAGS.includes(subtype) && !list.includes(subtype)) { list.pushUnique(subtype);}
-    const innateTags : (PowerTag | EquipmentTag) [] = this.system.tags.map( x=> PersonaItem.resolveTag(x));
-    const resolved= list.map ( x=> PersonaItem.resolveTag(x));
-    resolved.pushUnique(...innateTags);
-    return resolved;
+    // const innateTags : (PowerTag | EquipmentTag) [] = this.system.tags.map( x=> PersonaItem.resolveTag(x));
+    // const resolved= list.map ( x=> PersonaItem.resolveTag(x));
+    // resolved.pushUnique(...innateTags);
+    // return resolved;
+    list.pushUnique(...(this.system?.tags ?? []));
+    return list;
   }
 
   // getting weird warning if made private saying its never used
@@ -930,8 +1004,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   //this can vary by user so has to be in its own function
-  private getWeaponDamageTypeTags(this: Power, user: N<ValidAttackers>) :  (PowerTag | EquipmentTag)[] {
-    const list : (PowerTag | EquipmentTag)[]  = [];
+  private getWeaponDamageTypeTags(this: Power, user: N<ValidAttackers>) :  UnifiedTagData[] {
+    const list : UnifiedTagData[]  = [];
     if (this.system.damageLevel != "none") {
       const damageType = user ? this.getDamageType(user) : this.system.dmg_type;
       switch (damageType) {
@@ -954,8 +1028,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
           list.pushUnique(damageType);
       }
     }
-    const resolved= list.map ( x=> PersonaItem.resolveTag(x));
-    return resolved;
+    return list;
+    // const resolved= list.map ( x=> PersonaItem.resolveTag(x));
+    // return resolved;
   }
 
   get amount() : number {
@@ -1347,7 +1422,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       }
       case "weapon":
       case "item": {
-        const tags = this.tagList()
+        const tags = (this as InvItem | Weapon).tagList(null)
         .filter( tag => tag instanceof PersonaItem)
         .filter( tag=> tag.isEnchantmentTag() && !tag.isHidden)
         .map( tag=> tag.name)
@@ -1386,7 +1461,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       }
       case "item":
       case "weapon": {
-        const tags = this.tagList()
+        const tags = (this as Weapon | InvItem).tagList(null)
         .filter( tag => tag instanceof PersonaItem)
         .filter( tag=> tag.isEnchantmentTag() && !tag.isHidden)
         .map( tag=> `<span class="tag" title="${tag.description.toString()}"> ${tag.name} </span>`)
@@ -1998,9 +2073,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.isCraftingMaterial() || this.isConsumable() || this.isSkillCard();
   }
 
-  isStackableWith(a: PersonaItem): boolean {
-    const tagListA= a.tagList();
-    const thisTagList = this.tagList();
+  isStackableWith(a: TagBearingItem): boolean {
+    const tagListA= a.tagList(null);
+    const thisTagList = this.tagList(null);
     return this.isStackable && a.isStackable
       && this.name == a.name
       && tagListA.every(tag => thisTagList.includes(tag))
@@ -2093,7 +2168,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const deepTags = options.deepTags ?? true;
     const tagEffects = deepTags ? this._getLinkedEffects(sourceActor, CETypes) : [];
     if (!CETypes || CETypes.length == 0) {
-      const effects = this.system.effects;
+      const effects = this.itemBase.system.effects;
       const effectsGetterFn = () => {
         const proxyItem = options.proxyItem ? options.proxyItem : this;
         return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
@@ -2130,7 +2205,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options: GetEffectsOptions = {}) : readonly SourcedConditionalEffect[] {
   if (this.isSkillCard()) { return []; }
-  const effects = this.system.effects;
+  const effects = this.itemBase.system.effects;
   const effectsGetterFn = () => {
     const proxyItem = options.proxyItem ?? this;
     return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
@@ -2145,7 +2220,7 @@ getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | nul
 
 getAuraEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options: GetEffectsOptions = {}) : readonly ConditionalEffectC[] {
   if (this.isSkillCard()) { return []; }
-  const effects = this.system.effects;
+  const effects = this.itemBase.system.effects;
   const effectsGetterFn = () => {
     const proxyItem = options.proxyItem ?? this;
     return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
@@ -2160,9 +2235,6 @@ getAuraEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, o
 
 
 #accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, options: GetEffectsOptions, refresherFn: () => ConditionalEffectC[]) : ConditionalEffectC[] {
-  // if (this.name == "Spin Kick" && cacheType == "triggeredEffects") {
-  // 	debugger;
-  // }
   if (!PersonaDB.isLoaded) {
     throw new PersonaError("DB not loaded yet!");
   }
@@ -2997,3 +3069,7 @@ export interface GetEffectsOptions {
   triggerType ?: Trigger
 }
 
+
+type UnifiedTagData = Tag["id"] | PowerTagOrId | EquipmentTagOrId;
+
+type TagBearingItem = Talent | Focus | UsableAndCard | InvItem | Weapon;

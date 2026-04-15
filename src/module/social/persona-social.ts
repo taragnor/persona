@@ -701,6 +701,26 @@ export class PersonaSocial {
 		return PersonaDB.allActivities().filter( activity=> Object.values(activity.system.weeklyAvailability).some (val => val));
   }
 
+  static async characterDialog(this: void, talker: PersonaActor, text: string)  {
+    const speaker  = {
+      alias: talker.name,
+    };
+    const content = `
+    <div class="f-row">
+    <img class="navigator-img" src=${talker.img}>
+<div class="navigator-speech">
+      "${text}"
+</div>
+    </div>
+    `;
+    const messageData = {
+      speaker: speaker,
+      content,
+      style: CONST.CHAT_MESSAGE_STYLES.IC,
+    };
+    await ChatMessage.create(messageData, {});
+  }
+
 } //end of class
 
 

@@ -48,6 +48,7 @@ import {CardData} from "./social/social-card-executor.js";
 import {ConditionalEffectPrinter} from "./conditionalEffects/conditional-effect-printer.js";
 import {PowerLearningSystem} from "./power-learning.js";
 import {TARGETING} from "../config/effect-types.js";
+import {PersonaAE} from "./persona-ae.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -479,7 +480,7 @@ export class PersonaHandleBarsHelpers {
     },
 
     "printConditionals": function (cond: Precondition[]) {
-      const str=ConditionalEffectPrinter.printConditions(cond);
+      const str= ConditionalEffectPrinter.printConditions(cond);
       return new Handlebars.SafeString( `<div class="printed-conditional">${str}</div>`
       );
     },
@@ -1128,6 +1129,20 @@ export class PersonaHandleBarsHelpers {
         )
       ) as Record<Item["id"], string>;
       return CRAFTING_TREASURE_LIST;
+    },
+
+    "ownsOwnEffects": function (owner: PersonaItem | PersonaActor) {
+      if (owner instanceof PersonaActor) {
+        return true;
+      }
+      return owner.itemBase == owner;
+    },
+
+    "getBaseItem": function<T extends PersonaItem | PersonaActor | PersonaAE> (owner: T) :T  {
+      if (owner instanceof PersonaItem) {
+        return owner.itemBase as T;
+      }
+      return owner;
     }
 
   };

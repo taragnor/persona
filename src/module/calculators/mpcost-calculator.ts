@@ -137,7 +137,7 @@ export class MPCostCalculator extends CostCalculator {
 
 	static #mpCost_tags(pwr: Power) : CostModifier {
 		let mult = 1;
-		const tags = pwr.tagList();
+		const tags = pwr.tagList(null);
 		for (const x of tags) {
 			const tagName = (typeof x == "string" ? x : x.system.linkedInternalTag);
 			const modMult = this.TAG_ADJUST_MP_MULT[tagName as keyof typeof this.TAG_ADJUST_MP_MULT];

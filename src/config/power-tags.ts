@@ -1,4 +1,5 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
+import {DAMAGE_TYPES_LIST, REALDAMAGETYPES, REALDAMAGETYPESLIST} from "./damage-types.js";
 
 export const STATUS_AILMENT_POWER_TAGS  = [
 	"dizzy",
@@ -57,6 +58,8 @@ const POWER_TRAIT_TAGS = [
 	"half-on-miss",
 	"flurry",
 	"multi-target",
+  "by-power",
+  ...REALDAMAGETYPESLIST,
 ] as const;
 
 export const POWER_TAGS_LIST = [
@@ -86,9 +89,11 @@ export const POWER_TAGS_LIST = [
 	...POWER_TRAIT_TAGS,
 ] as const;
 
-export type PowerTag = typeof POWER_TAGS_LIST[number] | Tag;
+type RawPowerId = typeof POWER_TAGS_LIST[number] | Exclude<typeof DAMAGE_TYPES_LIST[number], "none">;
 
-export type PowerTagOrId = typeof POWER_TAGS_LIST[number] | Tag["id"];
+export type PowerTag = RawPowerId | Tag;
+
+export type PowerTagOrId = RawPowerId | Tag["id"];
 
 export const POWER_TAGS = HTMLTools.createLocalizationObject(POWER_TAGS_LIST.slice().sort(), "persona.power.tag");
 

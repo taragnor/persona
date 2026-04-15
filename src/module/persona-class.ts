@@ -1066,13 +1066,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     if (!power.isTeamwork() ) {return null;}
     const combat= PersonaCombat.combat;
     if (!combat || !combat.combatant) {return "No Combat, can't use teamwork move";}
-    if (
-      combat.combatant?.actor != this.user &&
-      this.user.hasStatus('bonus-action')
-    ) {
-      return null;
+    if (combat.combatant?.actor == this.user) {
+      return "Can't use a teamwork move during your own turn";
     }
-    return "Can't use a teamwork move here.";
+    return null;
   }
 
   private _isTrulyUsable( usable: UsableAndCard) : N<FailReason> {

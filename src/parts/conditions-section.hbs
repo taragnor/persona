@@ -1,6 +1,6 @@
 <section class="conditions-section" data-path="{{namePrefix}}">
 
-{{#if (isGM)}}
+{{#if (and (isGM) (ownsOwnEffects owner))}}
 	<div> Conditions
 		<a class="add-condition">
 			<i class="fa-solid fa-plus"> </i>
@@ -14,7 +14,7 @@
 	{{/each}}
 
 {{else}}
-	{{printConditionals (getProp owner namePrefix)}}
+	{{printConditionals (getProp (getBaseItem owner) namePrefix)}}
 {{/if}}
 
 </section>

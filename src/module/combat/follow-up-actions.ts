@@ -3,6 +3,7 @@ import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {FlagChangeDiffObject} from "./openers.js";
+import {CombatPanel} from "./panels/combat-panel.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
 import {PersonaTargetting} from "./persona-targetting.js";
 
@@ -15,22 +16,13 @@ export class FollowUpManager {
 		this.combat  = combat;
 	}
 
-	async setFollowUpChoices(choices: FollowUpActionData[])  {
-		await this.combat.setFlag("persona", FollowUpManager.FOLLOW_UP_DATA_FLAG_NAME, choices);
-	}
-
-	getFollowUpChoices() : FollowUpActionData[] {
-		return this.combat.getFlag("persona",FollowUpManager.FOLLOW_UP_DATA_FLAG_NAME) ?? [];
-	}
-
 	async onFollowUpAction(token: PToken, activationRoll: number) {
-		///NOTE THIS is executed by GM so will rquire it be made into a PC viewable for combat panel
 		console.debug('Calling On Follow Up Action');
 		const combatant = token.object ? this.combat.getCombatantByToken(token): null;
 		if (!combatant || !combatant.actor || !PersonaCombat.isPersonaCombatant(combatant)) {return;}
 		if (combatant.actor && combatant.actor.hasStatus('down')) {return;}
 		const list = this.usableFollowUpsList(combatant, activationRoll);
-		await this.setFollowUpChoices(list);
+    await CombatPanel.instance.setFollowUpChoices(combatant, list);
 		await this.sendFollowUpsToChat(list);
 	}
 
@@ -57,7 +49,7 @@ export class FollowUpManager {
 
 	actAgain() : FollowUpActionData[] {
 		return [{
-			type:"act-again"
+			type: "act-again"
 		}];
 	}
 
@@ -71,34 +63,51 @@ export class FollowUpManager {
 				if (!actor || !actor.teamworkMove ) {return [];}
 				if (!actor.persona().canUsePower(actor.teamworkMove, false)) {return [];}
 				const situation : CombatRollSituation = {
+          attacker: actor.accessor,
 					naturalRoll: activationRoll,
 					rollTags: ['attack', 'activation'],
 					rollTotal : activationRoll,
 					user: actor.accessor,
 				};
 				if (!actor.teamworkMove.testTeamworkPrereqs(situation, actor)) {return [];}
-        const possibleTargets= this.combat.combatants.contents.filter (c=> PersonaCombat.isPersonaCombatant(c));
-				const targets = PersonaTargetting.getValidTargetsFor(actor.teamworkMove, combatant, situation, possibleTargets);
+				const targets = PersonaTargetting.getValidTargetsFor(actor.teamworkMove, combatant, situation);
 				if (targets.length == 0) {return [];}
 				return [{
-					type :"power",
-					combatantId: ally.id,
+					type :"teamwork",
+					teammate: ally.id,
 					powerId: actor.teamworkMove.id,
-					name: `${actor.teamworkMove.name} (${actor.name})`,
+					name: `${actor.teamworkMove.name} (${ally.name})`,
 				}] satisfies FollowUpActionData[];
 			});
 		return validTeamworkMoves;
 	}
 
-	personalFollowUps(combatant: PersonaCombatant, activationRoll: number): FollowUpActionData[] {
-		const followUps : FollowUpActionData[] = this.getUsableFollowUps(combatant.token, activationRoll).map( pwr=> ({
-			combatantId: combatant.id,
-			powerId: pwr.id,
-			type: "power",
-			name: `${pwr.name} (${combatant.actor.name})`,
-		}));
-		return followUps;
-	}
+  personalFollowUps(combatant: PersonaCombatant, activationRoll: number): FollowUpActionData[] {
+    const followUps : FollowUpActionData[] = this.getUsableFollowUps(combatant.token, activationRoll).map( pwr=> {
+      const legalTargets = pwr.targeting().getValidTargetsFor(combatant);
+      if (legalTargets.length == 0) { return undefined; }
+      const targetNames = legalTargets
+        .map (x=> x.name)
+        .join (" ,");
+      if (pwr.requiresTargetSelection()) {
+        return {
+          combatantId: combatant.id,
+          powerId: pwr.id,
+          type: "power",
+          targetChoices: legalTargets,
+          name: `${pwr.name}`,
+        } satisfies FollowUpActionData;
+      }
+      return {
+        type : "area-power",
+        powerId: pwr.id,
+        combatantId: combatant.id,
+        name: `${pwr.name} (${targetNames})`,
+      } satisfies FollowUpActionData;
+    } )
+      .filter (x=> x != undefined);
+    return followUps;
+  }
 
 	allOutCheck(combatant: PersonaCombatant) : FollowUpActionData[] {
 		const allout = (this.combat.getAllEnemiesOf(combatant.token)
@@ -111,7 +120,7 @@ export class FollowUpManager {
 			return [];
 		}
 		return [ {
-			type: "power",
+			type: "area-power",
 			name: allOutAttack.displayedName,
 			powerId: allOutAttack.id,
 			combatantId: combatant.id,
@@ -189,15 +198,28 @@ export class FollowUpManager {
 		await ChatMessage.create(messageData, {});
 		return true;
 	}
+
+
 }
 
 export type FollowUpActionData = {
-	type: "power",
-	powerId: Usable["id"],
-	combatantId: Combatant["id"],
-	name: string,
+  type: "power",
+  powerId: Usable["id"],
+  combatantId: PersonaCombatant["id"],
+  targetChoices: PersonaCombatant[],
+  name: string,
 } | {
-	type: "act-again";
+  type: "area-power",
+  powerId: Usable["id"],
+  combatantId: PersonaCombatant["id"],
+  name: string,
+} | {
+  type :"teamwork",
+  powerId: Usable["id"],
+  teammate: PersonaCombatant["id"],
+  name: string,
+} | {
+  type: "act-again";
 };
 
 type CombatRollSituation = RollSituation & Situation;

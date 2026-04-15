@@ -820,11 +820,11 @@ export class ConditionalEffectPrinter {
 			case "multiplier":
 				return `Damage Multiplier ${this.printConsequenceAmount(cons.amount)}`;
 			case "percentage":
-				return `${this.printConsequenceAmount(cons.amount)}% of target MHP`;
+				return `damage/healing ${this.printConsequenceAmount(cons.amount)}% of target MHP`;
 			case "mult-stack":
 				return `Damage Multiplier (stacking) ${this.printConsequenceAmount(cons.amount)}`;
 			case "percentage-current":
-				return `${this.printConsequenceAmount(cons.amount)}% of target HP`;
+				return `damage/healing ${this.printConsequenceAmount(cons.amount)}% of target HP`;
 			case "set-to-const":
 				return `Set HP to ${this.printConsequenceAmount(cons.amount)}`;
 			case "set-to-percent":

@@ -288,6 +288,18 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     await this.setFlag("persona", "duration", duration);
   }
 
+  async setActivationRoll(actRoll: number) {
+    await this.setFlag("persona", "activationRoll", actRoll);
+  }
+
+  get activationRoll() : number {
+    const num = this.getFlag("persona", "activationRoll");
+    if (typeof num == "number" && !Number.isNaN(num)) {
+      return num;
+    }
+    return -1;
+  }
+
   async setEmbeddedEffects( effects: readonly SourcedConditionalEffect[])  : Promise<this> {
     const effectsRedux : ConditionalEffect[]= effects
     .map( eff=> {
@@ -320,6 +332,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     await this.setFlag("persona", "embeddedEffects", effectString);
     return this;
   }
+
 
   getEmbeddedEffects(sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
     const {CETypes} = options;

@@ -66,6 +66,8 @@ export type WeaponTag= typeof WEAPON_TAGS_LIST[number] | Tag;
 
 export type EquipmentTag = typeof EQUIPMENT_TAGS_LIST[number] | Tag;
 
+export type EquipmentTagOrId =  typeof EQUIPMENT_TAGS_LIST[number] | Tag["id"];
+
 export const WEAPON_TAGS = HTMLTools.createLocalizationObject(WEAPON_TAGS_LIST.slice().sort(), "persona.equipment.tag");
 
 export const EQUIPMENT_TAGS = HTMLTools.createLocalizationObject(EQUIPMENT_TAGS_LIST.slice().sort(), "persona.equipment.tag");

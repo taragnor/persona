@@ -125,11 +125,16 @@ export class CombatPanel extends PersonaPanel {
     html.find(".control-panel button.persona-name-button").on("click", (ev) => void this._onPersonaSwitchButton(ev));
     html.rightclick( (ev) => this._onReturnToMainButton(ev));
     html.find(".control-panel button.no-opener").on("click", (ev) => void this._onReturnToMainButton(ev));
-    html.find(".control-panel button.act-again").on("click", (ev) => void this._onReturnToMainButton(ev));
+    // html.find(".control-panel button.act-again").on("click", (ev) => void this._onReturnToMainButton(ev));
     html.find(".control-panel .follow-ups .follow-up").on("click", (ev) => void this._onSelectFollowUp(ev));
     html.find(".control-panel .opener-list .option-target").on("click", (ev) => void this._onSelectOpenerTarget(ev));
     html.find(".control-panel .opener-list .simple-action").on("click", (ev) => void this._onSelectSimpleOpener(ev));
     // html.find(".active-control-panel button.end-turn").on("click", (ev) => void this._onSelectEndTurn(ev));
+    html.find(".follow-ups button.act-again").on("click", (ev) => void this._onReturnToMainButton(ev));
+    html.find(".follow-ups button.area-buton").on("click", (ev) => void this._onAreaPowerFollowUp(ev));
+    html.find(".follow-ups .follow-up button.target").on("click", (ev) => void this._onSingleTargetFollowUp(ev));
+    html.find(".follow-ups .follow-up button.target").on("click", (ev) => void this._onSingleTargetFollowUp(ev));
+    html.find(".follow-ups .teamwork-follow-up button.teamwork").on("click", (ev) => void this._onTeamworkMove(ev));
     if ( this.target ) {
       this.target.actor.refreshTheurgyBarStyle();
     }
@@ -375,6 +380,55 @@ export class CombatPanel extends PersonaPanel {
     }
   }
 
+  private getPowerAndCombatant(ev: JQuery.ClickEvent)  {
+    const combatantId = HTMLTools.getClosestData(ev, "combatantId");
+    const powerId = HTMLTools.getClosestData(ev, "powerId");
+    const combat = this.combat;
+    const comb =combat?.combatants.find(c => c.id == combatantId) as PersonaCombatant;
+    if (!combat  || !comb) {throw new PersonaError(`Can't find combatnat ${combatantId}`);}
+    const power = comb.actor.persona().powers.find(x=> x.id == powerId && x.isUsableType()) ?? comb.actor.items.find(x=> x.id == powerId && x.isUsableType()) as U<Usable>;
+    if (!power) {
+      throw new PersonaError(`Can't find power ${powerId} on ${comb.actor.name}`);
+    }
+    return {power, comb};
+  }
+
+  private async _onAreaPowerFollowUp(ev: JQuery.ClickEvent) {
+    const {power, comb} = this.getPowerAndCombatant(ev);
+    await this.setMode("main");
+    await this.combat!.combatEngine.usePower(comb.token, power);
+  }
+
+private async _onSingleTargetFollowUp (ev: JQuery.ClickEvent) {
+    const {power, comb} = this.getPowerAndCombatant(ev);
+    const target = this.getPowerTarget(ev);
+    await this.setMode("main");
+    await this.combat!.combatEngine.usePower(comb.token, power, [target.token]);
+}
+
+private async _onTeamworkMove(ev: JQuery.Event) {
+  const teammateId = HTMLTools.getClosestData(ev, "teammateId");
+  const combat = this.combat;
+  const teammate =combat?.combatants.find(c => c.id == teammateId) as PersonaCombatant;
+  if (!combat  || !teammate) {throw new PersonaError(`Can't find combatnat target ${teammateId}`);}
+  if (teammate.isOwner) {
+    await this.setTarget(teammate.token);
+    await this.setMode("main");
+    return;
+  }
+  if ( await this.combat?.callOnTeammateForTeamworkMove(teammate, this._target!)) {
+    await this.setMode("main");
+  }
+}
+
+private getPowerTarget(ev: JQuery.Event) : PersonaCombatant {
+  const targetId = HTMLTools.getClosestData(ev, "targetCombatantId");
+  const combat = this.combat;
+  const target =combat?.combatants.find(c => c.id == targetId) as PersonaCombatant;
+  if (!combat  || !target) {throw new PersonaError(`Can't find combatnat target ${targetId}`);}
+  return target;
+}
+
   openToken(_ev: JQuery.ClickEvent) {
     this.actor?.sheet.render(true);
   }
@@ -455,5 +509,6 @@ export class CombatPanel extends PersonaPanel {
 
   }
 
-
 }
+
+

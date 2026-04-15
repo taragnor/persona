@@ -40,6 +40,7 @@ function itemBase() {
 		storeMax: new num({ integer: true, initial: 0, min:0, max: 50}),
 		storeId: new id(), //id of store actor
     craftingRecipes: new arr( new embedded(CraftingRecipeDM)),
+    itemBase: new id<PersonaItem>(), //id of baseItem
 	};
 }
 
