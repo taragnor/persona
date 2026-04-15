@@ -251,6 +251,16 @@ const SETTINGS = {
 		default: true,
 	},
 
+	"followUpToChat": {
+		name: "Send Follow Up Choice to Chat Window",
+		hint: "Send follow up possibilities to Chat Window",
+		scope: "world",
+		restricted: true,
+		config: true,
+		type: Boolean,
+		default: false,
+	},
+
 	"weather": {
 		name: "Weather Conditions",
 		hint: "Weather conditions in world",

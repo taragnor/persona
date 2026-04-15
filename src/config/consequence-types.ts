@@ -63,7 +63,7 @@ export type ResistanceShiftEffect = {
 
 export type InspirationChange = {
 	type: "inspiration-cost",
-	linkId : string,
+	linkId : SocialLink["id"],
 	amount: number,
 }
 

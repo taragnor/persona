@@ -92,8 +92,9 @@ export class SidePanelManager {
     if (PersonaSettings.debugMode()) {
       console.log(`rendering ${sidePanel?.panelName ?? "No Panel given"}`);
     }
-    if (this._activePanel != sidePanel) {
-      if (sidePanel.autoActivateOnUpdate == false) {
+    if (this._activePanel != sidePanel ) {
+      if (sidePanel.autoActivateOnUpdate == false
+        || this.panelStack.includes(sidePanel)) {
         console.log(`Can't render ${sidePanel.panelName}: it's not active`);
         return;
       }

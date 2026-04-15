@@ -717,12 +717,18 @@ export class PersonaHandleBarsHelpers {
     "getPowerTagsL": function (actor: U<ValidAttackers>, power: Usable) {
       return power.tagListLocalized(actor ?? null);
     },
-    "persona": function (actor: ValidAttackers) : Persona {
+    "persona": function (actor: ValidAttackers | PersonaCombatant | PToken) : Persona {
+      if (actor instanceof TokenDocument) {
+        actor = actor.actor;
+      }
+      if (actor instanceof Combatant) {
+        actor = actor.actor;
+      }
       return actor.persona();
     },
 
     "getPowerTargetsL": function (power: Usable) : string {
-      return TARGETING[power.system.targets];
+      return localize(TARGETING[power.system.targets]);
     },
 
     "elemResist": function (actorOrPersona: ValidAttackers | Persona, resistType: Exclude<DamageType, "by-power">) : string {

@@ -212,7 +212,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
       const status = CONFIG.statusEffects.find( x=> x.id == st);
       if (!status) {continue;}
       if (status.tags.includes("buff") || status.tags.includes("debuff")) { return BUFF_MAX_POTENCY; }
-      if (status.tags.includes("burn")) { return 9000; }
+      if (status.id == "burn") { return 9000; }
     }
     return 1;
   }
@@ -595,6 +595,16 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     return bundle.success ?? false;
   }
 
+  async onFinishAction() : Promise<boolean> {
+    const duration = this.statusDuration;
+    switch (duration.dtype) {
+      case "instant":
+        await this.delete();
+        return true;
+      default:
+        return false;
+    }
+  }
 
 
   /** returns true if the status expires*/
@@ -719,13 +729,15 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     }
   }
 
-  async onEndCombat() : Promise<void> {
+  async onEndCombat() : Promise<boolean> {
     const dur: StatusDuration = {
       dtype: "combat"
     };
     if (this.durationLessThanOrEqualTo(dur)) {
       await this.delete();
+      return true;
     }
+    return false;
   }
 
   async onMetaverseTimeAdvance() : Promise<boolean> {

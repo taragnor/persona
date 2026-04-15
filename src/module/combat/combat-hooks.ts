@@ -169,6 +169,9 @@ export class CombatHooks {
 			if (elem.find(".opener-block").length > 0) {
 				PersonaCombat.addOpeningActionListeners(elem);
 			}
+      if (PersonaCombat.combat && !PersonaCombat.combat.isSocial) {
+        PersonaCombat.combat.followUp.activateListeners(elem);
+      }
 		});
 
 		Hooks.on("renderChatMessageHTML", (_msg, elem) => {

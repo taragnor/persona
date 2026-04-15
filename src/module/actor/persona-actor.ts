@@ -1550,6 +1550,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		].flat();
 	}
 
+
+
 	get displayedBonusPowers() : Power[] {
 		if (!this.isValidCombatant()) {return [];}
 		return this.persona().bonusPowers.filter( power=>
@@ -2673,10 +2675,10 @@ async refreshSocialLink(this: PC, npc: SocialLink) {
 	await this.update({"system.social": this.system.social});
 }
 
-async spendInspiration(this: PC, linkId:string, amt?: number) : Promise<void> ;
+async spendInspiration(this: PC, linkId: SocialLink["id"], amt?: number) : Promise<void> ;
 async spendInspiration(this: PC, socialLink:SocialLink , amt?: number): Promise<void> ;
 
-async spendInspiration(this: PC, socialLinkOrId:SocialLink | string, amt: number = 1): Promise<void> {
+async spendInspiration(this: PC, socialLinkOrId:SocialLink | SocialLink["id"], amt: number = 1): Promise<void> {
 	const id = typeof socialLinkOrId == "string" ? socialLinkOrId : socialLinkOrId.id;
 	const link = this.system.social.find( x=> x.linkId == id);
 	if (!link) {
@@ -2698,7 +2700,10 @@ getInspirationWith(linkId: SocialLink["id"]): number {
 	return link.inspiration;
 }
 
-async addInspiration(this:PC, linkId:SocialLink["id"], amt: number) {
+async addInspiration(this:PC, linkId:SocialLink["id"] | SocialLink, amt: number) {
+  if (linkId instanceof PersonaActor) {
+    linkId = linkId.id;
+  }
 	const link = this.system.social.find( x=> x.linkId == linkId);
 	if (!link) {
 		throw new PersonaError("Trying to refresh social link you don't have");
@@ -3470,31 +3475,62 @@ isBossOrMiniBossType() : boolean {
 
 
 async onStartCombatTurn(this: ValidAttackers): Promise<string[]> {
-	console.log(`${this.name} on Start turn`);
-	const ret = [] as string[];
-	await this.setBatonLevel(0);
-	const promises = this.effects.contents.map( async (eff) => {
-		if ( await eff.onStartCombatTurn()
-			&& eff.displayOnEnd()
-		) {
-			return eff.displayedName;
-		}
-		return "";
-	});
-	try {
-		const strings = (await Promise.all(promises))
-			.filter( x=> x && x.length > 0)
-			.join(", ");
-		if (strings.length > 0) {
-			ret.push(`Conditions Removed: ${strings}`);
-		}
-	} catch (e) {
-		const msg = `Error resolving conditions at start of turn`;
-		ret.push(msg);
-		PersonaError.softFail(msg, e);
-	}
-	return ret;
+  return this.checkEffectExpire( eff => eff.onStartCombatTurn());
+	// console.log(`${this.name} on Start turn`);
+	// const ret = [] as string[];
+	// await this.setBatonLevel(0);
+	// const promises = this.effects.contents.map( async (eff) => {
+	// 	if ( await eff.onStartCombatTurn()
+	// 		&& eff.displayOnEnd()
+	// 	) {
+	// 		return eff.displayedName;
+	// 	}
+	// 	return "";
+	// });
+	// try {
+	// 	const strings = (await Promise.all(promises))
+	// 		.filter( x=> x && x.length > 0)
+	// 		.join(", ");
+	// 	if (strings.length > 0) {
+	// 		ret.push(`Conditions Removed: ${strings}`);
+	// 	}
+	// } catch (e) {
+	// 	const msg = `Error resolving conditions at start of turn`;
+	// 	ret.push(msg);
+	// 	PersonaError.softFail(msg, e);
+	// }
+	// return ret;
 }
+
+private async checkEffectExpire(fn : (eff: PersonaAE) => Promise<boolean> ): Promise<string[]> {
+  const promises = this.effects.contents.map( async (eff) => {
+    if (await fn(eff)
+      && eff.displayOnEnd())  {
+      return eff.displayedName;
+    }
+    return "";
+  });
+  const ret = [] as string[];
+  try {
+    const strings = (await Promise.all(promises))
+      .filter ( x=> x && x.length >0)
+      .join(", ");
+    if (strings.length > 0) {
+      ret.push(`Conditions Removed: ${strings}`);
+    }
+  } catch(e) {
+    const msg = `Error resolving conditions`;
+    ret.push(msg);
+    PersonaError.softFail(msg, e);
+  }
+  return ret;
+
+}
+
+async onFinishAction() : Promise<string[]> {
+  return this.checkEffectExpire( eff => eff.onFinishAction());
+}
+
 
 async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 	const ret: string[]= [];
@@ -3589,11 +3625,12 @@ async resetFatigueChecks(this: PC) {
 }
 
 async onEndDay(this:  PC | NPCAlly): Promise<string[]> {
-  const ret = [] as string[];
-  for (const eff of this.effects) {
-    if (await eff.onEndDay())
-    {ret.push(`Removed Condition ${eff.displayedName} at end of day.`);}
-  }
+  const ret = await this.checkEffectExpire( eff => eff.onStartDay());
+  // const ret = [] as string[];
+  // for (const eff of this.effects) {
+  //   if (await eff.onEndDay())
+  //   {ret.push(`Removed Condition ${eff.displayedName} at end of day.`);}
+  // }
   // ret.push(...await this.fatigueRecoveryRoll());
   if (this.isPC()) {
     await this.resetFatigueChecks();
@@ -3621,27 +3658,31 @@ async recoverFatigue(this: NPCAlly) : Promise<void>{
 }
 
 async onStartDay(this: PC | NPCAlly) : Promise<string[]> {
-	const ret = [] as string[];
-	for (const eff of this.effects) {
-		if (await eff.onStartDay())
-		{ret.push(`Removed Condition ${eff.displayedName} at start of day.`);}
-	}
-	return ret;
+  return this.checkEffectExpire( eff => eff.onStartDay());
+	// const ret = [] as string[];
+	// for (const eff of this.effects) {
+	// 	if (await eff.onStartDay())
+	// 	{ret.push(`Removed Condition ${eff.displayedName} at start of day.`);}
+	// }
+	// return ret;
 }
 
 async onEndSocialTurn(this: PC) : Promise<string[]> {
-	const ret = [] as string[];
-	for (const eff of this.effects) {
-		if (await eff.onEndSocialTurn())
-		{ret.push(`Removed Condition ${eff.displayedName} at end of social turn`);}
-	}
-	return ret;
+  return this.checkEffectExpire( eff => eff.onEndSocialTurn());
+
+	// const ret = [] as string[];
+	// for (const eff of this.effects) {
+	// 	if (await eff.onEndSocialTurn())
+	// 	{ret.push(`Removed Condition ${eff.displayedName} at end of social turn`);}
+	// }
+	// return ret;
 }
 
-async onEndCombat(this: ValidAttackers) : Promise<void> {
-	for (const eff of this.effects) {
-		await eff.onEndCombat();
-	}
+async onEndCombat(this: ValidAttackers) : Promise<string[]> {
+  return this.checkEffectExpire( eff => eff.onEndCombat());
+	// for (const eff of this.effects) {
+	// 	await eff.onEndCombat();
+	// }
 }
 
 encounterSizeValue() : number {
@@ -3669,13 +3710,14 @@ async onDefeat(this: ValidAttackers) {
 }
 
 async endTurnStatusEffects(this: ValidAttackers) : Promise<string[]> {
-	const ret = [] as string[];
-	for (const eff of this.effects) {
-		if (await eff.onEndCombatTurn()) {
-			ret.push(`Removed Condition ${eff.displayedName} at end of turn`);
-		}
-	}
-	return ret;
+  return this.checkEffectExpire( eff => eff.onEndCombatTurn());
+	// const ret = [] as string[];
+	// for (const eff of this.effects) {
+	// 	if (await eff.onEndCombatTurn()) {
+	// 		ret.push(`Removed Condition ${eff.displayedName} at end of turn`);
+	// 	}
+	// }
+	// return ret;
 }
 
 getFlagState(flagName: string) : boolean {

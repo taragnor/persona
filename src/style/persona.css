@@ -1957,3 +1957,34 @@ li.craftable {
   margin-top: 3px;
   margin-bottom: 3px;
 }
+
+.follow-up.target-select {
+	border: 2px solid red;
+	border-radius:5px;
+  padding: 5px;
+  margin-bottom: 0.5em;
+}
+
+.teamwork img,
+.target img {
+	width: auto;
+	height: 40px;
+	justify-content: center;
+	margin:auto;
+
+}
+
+button.teamwork {
+  height: 70px;
+  width: auto;
+}
+
+button.target {
+  height: 50px;
+  width: auto;
+}
+
+/* .teamwork-follow-up button { */
+/* 	animation: shimmer-sweep 2.2s ease-in-out infinite; */
+/* } */
+

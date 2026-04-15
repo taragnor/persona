@@ -6,7 +6,6 @@ import {PersonaPanel} from "../../panels/sub-panel.js";
 import {PersonaDB} from "../../persona-db.js";
 import {PersonaError} from "../../persona-error.js";
 import {HTMLTools} from "../../utility/HTMLTools.js";
-import {FollowUpActionData} from "../follow-up-actions.js";
 import {OpenerOption} from "../openers.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "../persona-combat.js";
 
@@ -14,8 +13,7 @@ export class CombatPanel extends PersonaPanel {
   private _target: U<PToken>;
   static _instance: U<CombatPanel>;
   private _openers: OpenerOption[] = [];
-  private _followUps: FollowUpActionData[] = [];
-  mode: "main" | "tactical" | "opener" | "followUp";
+  mode: "main" | "tactical" | "opener";
   tacticalTarget: U<PToken>;
 
   constructor() {
@@ -32,20 +30,17 @@ export class CombatPanel extends PersonaPanel {
       {
         label: "Tactical",
         onPress: () => this._onTacticalMode(),
-      },
-      {
+      }, {
         label: "Persona",
         onPress: () => this._onPersonaModeSwitchButton(),
         enabled: () => this._target ? this._target.actor.canSwitchPersonas && this._target.isOwner : false,
         visible: () => this._target ? this._target.isOwner && this._target.actor.hasMultiplePersonas: false,
-      },
-      {
+      }, {
         label: "Item",
         onPress: () => this._onInventoryButton(),
         visible: () => this._target ? this._target?.actor.isPCLike() && this._target.isOwner : false,
         enabled: () => this._target ? this._target.actor.canUseConsumables : false,
-      },
-      {
+      }, {
         label: "End Turn",
         onPress: () => this._onSelectEndTurn(),
         visible: () => this._target ? this._target?.isOwner && PersonaCombat.combat != undefined : false,
@@ -62,7 +57,8 @@ export class CombatPanel extends PersonaPanel {
   }
 
   get allowGMPCControl () {
-    return PersonaSettings.debugMode();
+    return game.users.filter(user => user.active && !user.isGM).length == 0;
+    // return PersonaSettings.debugMode();
   }
 
   get target() {
@@ -86,9 +82,7 @@ export class CombatPanel extends PersonaPanel {
       case target.isNPCAlly():
       case target.isPC() && target.isRealPC(): {
         const allowGM = this.allowGMPCControl;
-        if (game.user.isGM && !allowGM) {
-          break;
-        }
+        if (game.user.isGM && !allowGM) { break; }
         if (target.isOwner) {
           return this._controlledTemplate();
         }
@@ -131,10 +125,9 @@ export class CombatPanel extends PersonaPanel {
     html.find(".control-panel .opener-list .simple-action").on("click", (ev) => void this._onSelectSimpleOpener(ev));
     // html.find(".active-control-panel button.end-turn").on("click", (ev) => void this._onSelectEndTurn(ev));
     html.find(".follow-ups button.act-again").on("click", (ev) => void this._onReturnToMainButton(ev));
-    html.find(".follow-ups button.area-buton").on("click", (ev) => void this._onAreaPowerFollowUp(ev));
-    html.find(".follow-ups .follow-up button.target").on("click", (ev) => void this._onSingleTargetFollowUp(ev));
-    html.find(".follow-ups .follow-up button.target").on("click", (ev) => void this._onSingleTargetFollowUp(ev));
-    html.find(".follow-ups .teamwork-follow-up button.teamwork").on("click", (ev) => void this._onTeamworkMove(ev));
+    if (this.combat) {
+      this.combat.followUp.activateListeners(html);
+    }
     if ( this.target ) {
       this.target.actor.refreshTheurgyBarStyle();
     }
@@ -142,7 +135,7 @@ export class CombatPanel extends PersonaPanel {
 
   async selectCombatantIfNeeded(combatant: PersonaCombatant) : Promise<boolean> {
     if (!combatant.isOwner) {return false;}
-    if (game.user.isGM && combatant.hasPlayerOwner) {return false;}
+    if (game.user.isGM && combatant.hasPlayerOwner && !this.allowGMPCControl) {return false;}
     await this.setTarget(combatant.token);
     return true;
   }
@@ -157,16 +150,14 @@ export class CombatPanel extends PersonaPanel {
     // console.log(`Set opening actions: ${openerList.length}`);
   }
 
-  async setFollowUpChoices( combatant: PersonaCombatant, followUpList : CombatPanel["_followUps"])  : Promise<void>{
-    if (followUpList.length == 0) {return;}
-    if (!await this.selectCombatantIfNeeded(combatant)) {
-      return;
-    }
-    this._followUps = followUpList;
-    await this.setMode("followUp");
-    console.log(`Set FollowUP actions: ${followUpList.length}`);
-
-  }
+  // async setFollowUpChoices( combatant: PersonaCombatant, followUpList : CombatPanel["_followUps"])  : Promise<void>{
+  //   if (followUpList.length == 0) {return;}
+  //   if (!await this.selectCombatantIfNeeded(combatant)) {
+  //     return;
+  //   }
+  //   this._followUps = followUpList;
+  //   await this.setMode("followUp");
+  // }
 
   async setTacticalTarget(token: UN<PToken>) {
     if (!PersonaSettings.combatPanel()) {return;}
@@ -236,7 +227,7 @@ export class CombatPanel extends PersonaPanel {
       actor,
       token,
       openers: this._openers ?? [],
-      followUps: this._followUps,
+      // followUps: this._followUps,
     };
   }
 
@@ -253,11 +244,6 @@ export class CombatPanel extends PersonaPanel {
       () => PersonaDB.isLoaded
     ];
   }
-
-  // private async _onInventoryButton(_ev: JQuery.ClickEvent) {
-  //   await this.setMode("inventory");
-  //   await this.updatePanel();
-  // }
 
   private async _onInventoryButton() {
     if (this._target && this._target.actor && this._target.actor.canUseConsumables) {
@@ -380,54 +366,6 @@ export class CombatPanel extends PersonaPanel {
     }
   }
 
-  private getPowerAndCombatant(ev: JQuery.ClickEvent)  {
-    const combatantId = HTMLTools.getClosestData(ev, "combatantId");
-    const powerId = HTMLTools.getClosestData(ev, "powerId");
-    const combat = this.combat;
-    const comb =combat?.combatants.find(c => c.id == combatantId) as PersonaCombatant;
-    if (!combat  || !comb) {throw new PersonaError(`Can't find combatnat ${combatantId}`);}
-    const power = comb.actor.persona().powers.find(x=> x.id == powerId && x.isUsableType()) ?? comb.actor.items.find(x=> x.id == powerId && x.isUsableType()) as U<Usable>;
-    if (!power) {
-      throw new PersonaError(`Can't find power ${powerId} on ${comb.actor.name}`);
-    }
-    return {power, comb};
-  }
-
-  private async _onAreaPowerFollowUp(ev: JQuery.ClickEvent) {
-    const {power, comb} = this.getPowerAndCombatant(ev);
-    await this.setMode("main");
-    await this.combat!.combatEngine.usePower(comb.token, power);
-  }
-
-private async _onSingleTargetFollowUp (ev: JQuery.ClickEvent) {
-    const {power, comb} = this.getPowerAndCombatant(ev);
-    const target = this.getPowerTarget(ev);
-    await this.setMode("main");
-    await this.combat!.combatEngine.usePower(comb.token, power, [target.token]);
-}
-
-private async _onTeamworkMove(ev: JQuery.Event) {
-  const teammateId = HTMLTools.getClosestData(ev, "teammateId");
-  const combat = this.combat;
-  const teammate =combat?.combatants.find(c => c.id == teammateId) as PersonaCombatant;
-  if (!combat  || !teammate) {throw new PersonaError(`Can't find combatnat target ${teammateId}`);}
-  if (teammate.isOwner) {
-    await this.setTarget(teammate.token);
-    await this.setMode("main");
-    return;
-  }
-  if ( await this.combat?.callOnTeammateForTeamworkMove(teammate, this._target!)) {
-    await this.setMode("main");
-  }
-}
-
-private getPowerTarget(ev: JQuery.Event) : PersonaCombatant {
-  const targetId = HTMLTools.getClosestData(ev, "targetCombatantId");
-  const combat = this.combat;
-  const target =combat?.combatants.find(c => c.id == targetId) as PersonaCombatant;
-  if (!combat  || !target) {throw new PersonaError(`Can't find combatnat target ${targetId}`);}
-  return target;
-}
 
   openToken(_ev: JQuery.ClickEvent) {
     this.actor?.sheet.render(true);

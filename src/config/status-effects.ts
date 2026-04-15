@@ -170,6 +170,10 @@ export const STATUS_EFFECT_LIST = [
 		icon: "icons/weapons/staves/staff-orb-red.webp",
 		tags: ["out-of-turn-action"],
 	}, {
+		id: "teamwork-shift",
+		icon: "icons/skills/social/diplomacy-handshake.webp",
+		tags: ["out-of-turn-action", "enable-teamwork"],
+	}, {
 		id: "tactical-shift",
 		icon: "icons/svg/wingfoot.svg",
 		tags: ["out-of-turn-action"],
@@ -216,6 +220,8 @@ export const STATUS_EFFECT_LIST = [
 	},
 ] as const satisfies Omit<StatusEffectObject, "name">[];
 
+
+
 declare global {
 	interface StatusEffectObject {
 		tags: StatusTag[];
@@ -237,8 +243,9 @@ const STATUS_PROPERTY_TAGS = [
 "fatigue" ,
 "identifier" ,
 "out-of-turn-action" ,
+"enable-teamwork",
 "fusion"
-];
+] as const;
 
 CONFIG.statusEffects = STATUS_EFFECT_LIST
 	.map( ({id, icon, tags})=> {
@@ -351,6 +358,6 @@ export const STATUSES_BY_TAG : Record<StatusTag, Set<StatusEffectId>> = Object.f
 		.filter( x=> x.tags.includes(tag))
 		.map( x=> x.id as StatusEffectId)
 	)])
-);
+) as Record<StatusTag, Set<StatusEffectId>>;
 
 

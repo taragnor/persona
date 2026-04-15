@@ -1069,6 +1069,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     if (combat.combatant?.actor == this.user) {
       return "Can't use a teamwork move during your own turn";
     }
+    if (this.user.hasStatusOfType("distracting")) {
+      return "Can't use a teamwork move while distracted";
+    }
+    //this breaks determining if move is usable  from followup to find moves ready to be used beofre passing the turn
+    // if (!this.user.hasStatusOfType("enable-teamwork")) {
+    //   return "Requires a status effect that allows teamwork moves";
+    // }
     return null;
   }
 

@@ -163,6 +163,7 @@ export class CombatEngine {
 	}
 
   async postActionCleanup(attacker: PToken, result: FinalizedCombatResult ) {
+    await attacker.actor.onFinishAction();
     await sleep(1250); //wait for extra action status?
     if (PersonaCombat.combat && !PersonaCombat.combat.isSocial) {
       await PersonaCombat.combat.postActionCleanup(attacker, result);
