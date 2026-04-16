@@ -187,21 +187,21 @@ export class PersonaAnimation {
 			return;
 		}
 		switch (true) {
-			case usable.hasTag("status-removal"):
+			case usable.hasTag("status-removal", this.attacker.actor):
 				await new Sequence().effect()
 					.atLocation(this.target)
 					.file(SWIRLING_SPARKLES)
 					.scaleToObject(1.5)
 					.play({preload: true});
 				break;
-			case usable.hasTag("buff"):
+			case usable.hasTag("buff", this.attacker.actor):
 				await new Sequence().effect()
 					.atLocation(this.target)
 					.file(BUFF)
 					.scaleToObject(1)
 					.play({preload: true});
 				break;
-			case usable.hasTag("debuff"):
+			case usable.hasTag("debuff", this.attacker.actor):
 				await new Sequence().effect()
 					.atLocation(this.target)
 					.file(DEBUFF)

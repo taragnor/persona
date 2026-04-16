@@ -141,15 +141,15 @@ export abstract class PersonaAI {
 		if (damageType == "healing") {
 			return false;
 		}
-		if (pwr.hasTag("resurrection")) { return false;}
+		if (pwr.hasTag("resurrection", this.persona)) { return false;}
 		if (damageType != "none") {
 			return true;
 		}
-		if (pwr.hasTag("buff")) {return false;}
-		if (pwr.hasTag("debuff")) {return true;}
-		if (pwr.hasTag("ailment")) {return true;}
-		if (pwr.hasTag("instantKill")) {return true;}
-		if (pwr.hasTag("status-removal")) {return false;}
+		if (pwr.hasTag("buff", this.persona)) {return false;}
+		if (pwr.hasTag("debuff", this.persona)) {return true;}
+		if (pwr.hasTag("ailment", this.persona)) {return true;}
+		if (pwr.hasTag("instantKill", this.persona)) {return true;}
+		if (pwr.hasTag("status-removal", this.persona)) {return false;}
 		return true;
 	}
 

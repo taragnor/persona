@@ -264,7 +264,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 				|| item.system.type == "consumable"
 				|| item.system.type == "item"
 			)
-			.filter( (x : TreasureItem)=> !x.hasTag("key-item") && !x.hasTag("mundane")) as TreasureItem[];
+			.filter( (x : TreasureItem)=> !x.hasTag("key-item", null) && !x.hasTag("mundane", null)) as TreasureItem[];
 		return this.#cache.treasureItems;
 	}
 

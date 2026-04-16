@@ -80,7 +80,7 @@ export class ShadowSheet extends CombatantSheetBase {
 		const COMMON_TREASURE_LIST = Object.fromEntries(
 			[["", "-"]].concat(
 				PersonaDB.treasureItems()
-				.filter( item => item.hasTag("common-loot"))
+				.filter( item => item.hasTag("common-loot", this.actor))
 				.sort( (a, b) => a.name.localeCompare(b.name))
 				.map( x=> [x.id, x.name])
 			)

@@ -113,7 +113,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       this.mainModifiers({omitPowers:true, omitTalents: true, omitAuras: true})
       .filter(trait => PersonaItem.grantsPowers(trait))
       .flatMap(powerGranter=> PersonaItem.getAllGrantedPowers(powerGranter, this.user))
-      .filter( pwr=> !pwr.hasTag("opener"))
+      .filter( pwr=> !pwr.hasTag("opener", this))
       .sort ( (a,b)=> a.name.localeCompare(b.name)) ;
     return removeDuplicates(bonusPowers);
   }
@@ -1087,7 +1087,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   private _deadCheck(usable: UsableAndCard) : N<FailReason> {
-    if (!this.user.isAlive() && !usable.hasTag("usable-while-dead")) {return "Can't Use While Unconscious";}
+    if (!this.user.isAlive() && !usable.hasTag("usable-while-dead", this)) {return "Can't Use While Unconscious";}
     return null;
   }
 
@@ -1106,7 +1106,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   private _explorationCheck (usable: UsableAndCard) : N<FailReason> {
-    if (usable.hasTag("exploration")) {
+    if (usable.hasTag("exploration", this)) {
       const combat = PersonaCombat.combat;
       if (combat && !combat.isSocial) {
         return "Can't use this during combat";
@@ -1116,7 +1116,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   private _downtimeCheck(usable: UsableAndCard) : N<FailReason> {
-    if (usable.hasTag("downtime") || usable.hasTag("downtime-minor")) {
+    if (usable.hasTag("downtime", this) || usable.hasTag("downtime-minor", this)) {
       if (!game.combat || !(game.combat as PersonaCombat).isSocial) {
         return "Can only use this item during downtime in social rounds";
       }
@@ -1134,7 +1134,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       case user.hasStatus("sealed")
           && usable.isPower()
           && !usable.isBasicPower()
-          && !usable.hasTag("usable-while-sealed"):
+          && !usable.hasTag("usable-while-sealed", this):
         return " Can't take that action because of status: Sealed";
     }
     return null;

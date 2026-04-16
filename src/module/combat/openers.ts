@@ -153,7 +153,7 @@ export class OpenerManager {
 		let options : OpenerOptionsReturn['options'] = [];
 		const msg : string[] = [];
 		if (!combatant.actor) {return { msg, options};}
-		const mandatoryActions = combatant.actor.openerActions.filter( x=> x.hasTag('mandatory'));
+		const mandatoryActions = combatant.actor.openerActions.filter( x=> x.hasTag('mandatory', combatant.actor));
 		const usableActions = mandatoryActions
 			.filter( action => {
 				const useSituation : Situation = {
@@ -168,7 +168,7 @@ export class OpenerManager {
 				const targets= PersonaTargetting.getValidTargetsFor(action, combatant, situation, possibleTargets);
 				if (targets.length == 0) {return [];}
 				return [{
-					mandatory: action.hasTag('mandatory'),
+					mandatory: action.hasTag('mandatory', combatant.actor),
 					optionName: action.name,
 					toolTip: action.system.description,
 					optionEffects: []
@@ -443,7 +443,7 @@ export class OpenerManager {
 				if (targets.length == 0) {return [];}
 				// const printableName = this.getOpenerPrintableName(action, targets);
 				return [{
-					mandatory: action.hasTag('mandatory'),
+					mandatory: action.hasTag('mandatory', combatant.actor),
 					optionName: action.name,
 					toolTip: action.system.description,
 					// optionTxt: printableName ?? "",

@@ -3,7 +3,6 @@ import { EnhancedSourcedConsequence, NonDeprecatedConsequence} from '../../confi
 import { sleep, waitUntilTrue } from '../utility/async-wait.js';
 import { CardTag } from '../../config/card-tags.js';
 import { RollTag } from '../../config/roll-tags.js';
-import { Persona } from '../persona-class.js';
 import { PersonaScene } from '../persona-scene.js';
 import { CombatHooks } from './combat-hooks.js';
 import { TriggeredEffect } from '../triggered-effect.js';
@@ -12,7 +11,6 @@ import { ConsTarget } from '../../config/consequence-types.js';
 import { PersonaSocial } from '../social/persona-social.js';
 import { PersonaSFX } from './persona-sfx.js';
 import { PersonaSettings } from '../../config/persona-settings.js';
-import { RealDamageType } from '../../config/damage-types.js';
 import { ModifierContainer } from '../item/persona-item.js';
 import { Consequence } from '../../config/consequence-types.js';
 import { TurnAlert } from '../utility/turnAlert.js';
@@ -950,33 +948,32 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   }
 
 
-  static resistIKMod(targetPersona: Persona, power: Usable) : number {
-    const fn = function (elem: RealDamageType) {
-      const resist = targetPersona.elemResist(elem);
-      switch (resist) {
-        case "weakness":
-          return -3;
-        case "normal":
-          return 0;
-        case "resist": return 3;
-        case "block":
-        case "absorb":
-        case "reflect": return 9999;
-        default:
-          resist satisfies never;
-          return 0;
-      }
-    };
-    let ret = 0;
-    if (power.hasTag("dark")) {
-      ret += fn ("dark");
-    }
-    if (power.hasTag("light")) {
-      ret += fn ("light");
-    }
-    return ret;
-
-  }
+//   static resistIKMod(targetPersona: Persona, power: Usable) : number {
+//     const fn = function (elem: RealDamageType) {
+//       const resist = targetPersona.elemResist(elem);
+//       switch (resist) {
+//         case "weakness":
+//           return -3;
+//         case "normal":
+//           return 0;
+//         case "resist": return 3;
+//         case "block":
+//         case "absorb":
+//         case "reflect": return 9999;
+//         default:
+//           resist satisfies never;
+//           return 0;
+//       }
+//     };
+//     let ret = 0;
+//     if (power.hasTag("dark")) {
+//       ret += fn ("dark");
+//     }
+//     if (power.hasTag("light")) {
+//       ret += fn ("light");
+//     }
+//     return ret;
+//   }
 
   static createTargettingContextList(situation: Partial<Situation>, cons : Consequence | null) : TargettingContextList {
     const {target, attacker, user, cameo} = situation;

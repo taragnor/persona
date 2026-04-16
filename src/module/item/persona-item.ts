@@ -225,7 +225,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case 'all-out':
         break;
     }
-    if (this.hasTag('ailment')) {
+    if (this.hasTag('ailment', user ?? null)) {
       return "ailment";
     }
     if (this.isPassive() || this.isDefensive()) {
@@ -258,19 +258,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   getWeaponCategory(this: Weapon) : ItemCategory {
     switch (true) {
-      case this.hasTag("spear"):
+      case this.hasTag("spear", null):
         return "spear";
-      case this.hasTag("light-weapon"):
+      case this.hasTag("light-weapon", null):
         return "knife";
-      case this.hasTag("axe"):
+      case this.hasTag("axe", null):
         return "axe";
-      case this.hasTag("fist"):
+      case this.hasTag("fist", null):
         return "fist";
-      case this.hasTag("heavy"):
+      case this.hasTag("heavy", null):
         return "2hsword";
-      case this.hasTag("blade"):
+      case this.hasTag("blade", null):
         return "rapier";
-      case this.hasTag("bow"):
+      case this.hasTag("bow", null):
         return "bow";
       default:
         return "sword";
@@ -284,10 +284,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case "none":
         break;
       case "body":
-        if (this.hasTag("female")) {
+        if (this.hasTag("female", null)) {
           return "female-armor";
         }
-        if (this.hasTag("male")) {
+        if (this.hasTag("male", null)) {
           return "male-armor";
         }
         return "generic-armor";
@@ -298,7 +298,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case "crafting":
         return "material-2";
     }
-    if (this.hasTag("crafting")) {
+    if (this.hasTag("crafting", null)) {
       return "material-1";
     }
     return "gift"; ///sort of a default
@@ -405,11 +405,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   isInheritable(this: Power) : boolean {
-    return !this.hasTag("non-inheritable") && !this.hasTag("shadow-only")
+    return !this.hasTag("non-inheritable", null) && !this.hasTag("shadow-only", null)
       && (this.isMagicSkill() || this.isWeaponSkill() || this.isPassive() || this.isDefensive())
-      && !this.hasTag("teamwork")
-      &&	!this.hasTag("opener")
-      &&	!this.hasTag("navigator");
+      && !this.hasTag(["teamwork", "opener", "navigator"], null);
   }
 
   getDisplayedIcon(this: Power | Consumable, user: ValidAttackers | Persona) : SafeString  | undefined {
@@ -441,7 +439,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
             break;
         }
       }
-      if (this.hasTag('ailment')) {
+      if (this.hasTag('ailment', user)) {
         return iconize(POWER_ICONS['ailment']);
       }
       if (this.isPassive() || this.isDefensive()) {
@@ -529,7 +527,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   isFollowUpMove(this: UsableAndCard): boolean {
     if (!this.isTrulyUsable()) {return false;}
-    return this.hasTag('follow-up');
+    return this.hasTag('follow-up', null);
   }
 
   isDefensive(): boolean {
@@ -784,7 +782,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   // hasTag(this: ItemModifierContainer, tag: PowerTag, user ?: null): boolean;
   // hasTag(this: SkillCard | Consumable | InvItem | Weapon, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
   // hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user : null) : boolean;
-  hasTag(this: UsableAndCard | InvItem | Weapon, tags: (PowerTag | EquipmentTag) | (PowerTag | EquipmentTag)[], user?: N<ValidAttackers>) : boolean {
+  hasTag(this: UsableAndCard | InvItem | Weapon, tags: (PowerTag | EquipmentTag) | (PowerTag | EquipmentTag)[], user: N<ValidAttackers | Persona>) : boolean {
     // let list : readonly (PowerTag | EquipmentTag)[];
     // switch (this.system.type) {
     //   case 'power':
@@ -805,6 +803,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     //     // PersonaError.softFail(`Can't check tag list for ${this.system["type"]}`);
     //     return false;
     // }
+    if (user instanceof Persona) {
+      user = user.user;
+    }
     const list = this.tagList(user ?? null);
     if (!Array.isArray(tags)) {
       tags = [tags];
@@ -1060,7 +1061,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   get isSecondaryCraftingItem() : boolean {
     if (!this.isCarryableType()) {return false;}
-    return this.hasTag("secondary-crafting");
+    return this.hasTag("secondary-crafting", null);
   }
 
   /**@deprecated */
@@ -1280,7 +1281,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       default:
         this.system.subtype satisfies never;
     }
-    if (this.hasTag("theurgy")) {
+    if (this.hasTag("theurgy", null)) {
       return "Expends Theurgy Energy";
     }
     return 'free';
@@ -1291,7 +1292,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.isMagicSkill()
       || this.isWeaponSkill()
       || this.canDealDamage()
-      || combatTags.some( tag => this.hasTag(tag));
+      || this.hasTag(combatTags, null);
   }
 
   estimateShadowCosts(this: Power, persona: Persona) : Power["system"]["energy"] {
@@ -1747,7 +1748,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   isMinorActionItem() : boolean {
     if (this.isSocialCard() && this.system.cardType == "minor") {return true;}
     if (!this.isUsableType()) {return false;}
-    return this.hasTag("downtime-minor");
+    return this.hasTag("downtime-minor", null);
   }
 
   get tooltip(): string {
@@ -1867,7 +1868,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   isExotic(this: Power) : boolean {
-    return this.hasTag('exotic');
+    return this.hasTag('exotic', null);
   }
 
   oldhpCost(this: Usable): number {
@@ -1878,7 +1879,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     if (this.isBasicPower()) {return 0;}
     if (this.isTeamwork()) {return 0;}
     let mult = 1;
-    if (this.hasTag('high-cost')) {
+    if (this.hasTag('high-cost', null)) {
       mult *= 2;
     }
     switch (this.system.slot) {
@@ -1892,8 +1893,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
   }
 
-  isOpener(this: UsableAndCard) : boolean {
-    return this.hasTag('opener');
+  isOpener(this: UsableAndCard, user: N<ValidAttackers>) : boolean {
+    return this.hasTag('opener', user);
   }
 
 
@@ -1913,20 +1914,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     if (this.system.type == 'skillCard') {return false;}
     const item = this as Usable;
     return item.system.subtype == 'passive' ||
-      item.hasTag('passive');
+      item.hasTag('passive', null);
   }
 
   canBeUsedInCombat () : boolean {
     if (!this.isUsableType()) {return false;}
     if (this.isSkillCard()) {return false;}
-    if (this.hasTag(["exploration", "downtime", "downtime-minor"])) {return false;}
+    if (this.hasTag(["exploration", "downtime", "downtime-minor"], null)) {return false;}
     return true;
   }
 
   canBeUsedInDowntime() : boolean {
     if (!this.isUsableType()) {return false;}
     if (this.isSkillCard()) {return true;}
-    if (!this.hasTag(["downtime", "downtime-minor"])) {return false;}
+    if (!this.hasTag(["downtime", "downtime-minor"], null)) {return false;}
     return true;
 
   }
@@ -1936,7 +1937,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     if (this.isSkillCard()) {return true;}
     if (this.isPassive() || this.isDefensive()) {return false;}
     if (!this.canBeUsedOnAllies()) { return false;}
-    if (this.hasTag("exploration")) {return true;}
+    if (this.hasTag("exploration", null)) {return true;}
     if (this.restoresMP() || this.restoresHP()) {return true;}
     return false;
   }
@@ -1997,11 +1998,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   isTeamwork(this: UsableAndCard): boolean {
-    return this.hasTag('teamwork');
+    return this.hasTag('teamwork', null);
   }
 
   isNavigator(this: UsableAndCard): boolean {
-    return this.hasTag('navigator');
+    return this.hasTag('navigator', null);
   }
 
   targeting(this: Usable) : PersonaTargetting {
@@ -2078,7 +2079,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       if (this.system.slot == "key-item")
       {return true;}
     }
-    return this.hasTag("key-item");
+    return this.hasTag("key-item", null);
   }
 
   isCraftingMaterial(): boolean {
@@ -2087,7 +2088,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       return this.system.slot == "crafting";
     }
     if (this.isConsumable()) {
-      return this.hasTag("crafting");
+      return this.hasTag("crafting", null);
     }
     return false;
   }
@@ -2125,7 +2126,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   isShadowExclusivePower(): boolean {
     if (!this.isPower()) {return false;}
-    return this.hasTag('shadow-only');
+    return this.hasTag('shadow-only', null);
   }
 
   isBasicPower(this: UsableAndCard) : boolean {
@@ -2541,7 +2542,8 @@ isStatusEffect(this: UsableAndCard) : boolean {
     'despair',
     'blind',
   ];
-  return statusTags.some( st => this.hasTag(st));
+  return this.hasTag(statusTags, null);
+  // return statusTags.some( st => this.hasTag(st, null));
 }
 
 isMultiTarget(this: UsableAndCard) : boolean {
@@ -2902,7 +2904,7 @@ static resolveItemSelector(selector: ItemSelector, situation: Situation): Enchan
 }
 
 canBecomeSkillCard(this: Power) : boolean {
-  return !this.hasTag("shadow-only") && !this.hasTag("non-inheritable");
+  return !this.hasTag("shadow-only", null) && !this.hasTag("non-inheritable", null);
 }
 
 canUseConsumable(this: Consumable, user: ValidAttackers) : boolean {
@@ -3043,7 +3045,7 @@ Hooks.on('updateItem', (item :PersonaItem, _diff: DeepPartial<typeof item>) => {
   if (item.isTag()) {
     PersonaDB.allItems()
       .filter (x=> x.isCarryableType() || x.isUsableType() )
-      .filter( x=> x.hasTag(item) )
+      .filter( x=> x.hasTag(item, null) )
       .forEach( x=> x.clearCache() );
   }
 });

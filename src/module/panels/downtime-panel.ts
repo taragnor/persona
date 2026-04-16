@@ -132,9 +132,6 @@ Hooks.on("controlToken", async (token : Token<PersonaActor>, selected: boolean) 
   const actor = token?.document?.actor;
   if (!actor || !actor.isOwner) {return;}
   const combat = PersonaCombat.combat;
-  // if (PersonaSettings.debugMode() && actor?.isRealPC()) {
-  //   await DowntimePanel.instance.setActor(actor);
-  // }
   if (!combat || !combat.isSocial) {return;}
   if (actor.isRealPC()) {
     await DowntimePanel.instance.setActor(actor);

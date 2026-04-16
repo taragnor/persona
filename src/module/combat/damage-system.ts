@@ -19,7 +19,7 @@ export abstract class DamageSystemBase implements DamageInterface {
 		if (!options.ignoreDefenses) {
 			this.applyDR(calc, damageType, power, attackerPersona, targetPersona);
 			const resist = targetPersona.elemResist(damageType);
-			this.setResistance(calc, power, situation, resist);
+			this.setResistance(calc, power, attackerPersona, situation, resist);
 		}
 		return calc;
 	}
@@ -32,8 +32,8 @@ export abstract class DamageSystemBase implements DamageInterface {
 			};
 	}
 
-	protected setResistance(calc: DamageCalculation, power: Usable, situation: U<Situation>, resist: ResistStrength) {
-		const piercePower = power && power.hasTag('pierce') || power.hasTag("theurgy");
+	protected setResistance(calc: DamageCalculation, power: Usable, attackerPersona: Persona, situation: U<Situation>, resist: ResistStrength) {
+		const piercePower = power && power.hasTag('pierce', attackerPersona) || power.hasTag("theurgy", attackerPersona);
 		const pierceTag = situation != undefined && 'addedTags' in situation && situation.addedTags && situation.addedTags.includes('pierce');
 		if (piercePower || pierceTag) {return;}
 		switch (resist) {

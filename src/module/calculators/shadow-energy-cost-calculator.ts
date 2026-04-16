@@ -129,7 +129,7 @@ export class EnergyClassCalculator extends CostCalculator {
 	}
 
 	static #energyLevel_ailment(pwr: Power) : EnergyCostBase {
-		if (!pwr.hasTag("ailment") || pwr.isInstantDeathAttack()) {return this.NULL_COST;}
+		if (!pwr.hasTag("ailment", null) || pwr.isInstantDeathAttack()) {return this.NULL_COST;}
 		const ailmentBase = pwr.ailmentsCaused().reduce( (acc, ail) => Math.max (acc, this.AILMENT_VALUE[ail as keyof typeof this.AILMENT_VALUE] ?? 0), 0);
 		const ailMult = this.AILMENT_MULT_CHANCE[pwr.system.ailmentChance];
 		return new EnergyCostBase(ailMult.energyCost * ailmentBase, ailMult.energyRequired * ailmentBase) ;

@@ -50,7 +50,7 @@ export class PersonaSFX {
 	static async onSingleTargetDamage( _token: PToken | undefined, hpchange: number, damageType: RealDamageType, power ?: UsableAndCard) {
 		if (hpchange == 0) {return;}
 		if (hpchange > 0) {
-			if (power?.hasTag("resurrection")) {
+			if (power?.hasTag("resurrection", null)) {
 				await this.#play("raise");
 				return;
 			}

@@ -205,8 +205,9 @@ export class CombatResult  {
       }
       case "extraTurn": {
         if (situation.usedPower) {
+          const user = situation.user ? PersonaDB.findActor(situation.user) : null;
           const power = PersonaDB.findItem(situation.usedPower);
-          if (power.isOpener()) {break;}
+          if (power.isOpener(user)) {break;}
           if (power.isTeamwork()) {break;}
         }
         if (!effect) {break;}

@@ -215,7 +215,7 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
     if (this.allowedTags) {
       const allowedTags = Array.isArray(this.allowedTags) ? this.allowedTags : [this.allowedTags];
       powerArr = powerArr
-        .filter(pwr => allowedTags.some ( tag => pwr.hasTag(tag))
+        .filter(pwr => allowedTags.some ( tag => pwr.hasTag(tag, null))
         );
     }
     if (this.generalFilters) {
@@ -301,9 +301,9 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
       powerType = [powerType];
     }
     return this.powerList()
-      .filter( pwr => pwr.system.subtype == subtype && !pwr.isTeamwork() && !pwr.isOpener() && !pwr.isNavigator())
+      .filter( pwr => pwr.system.subtype == subtype && !pwr.isTeamwork() && !pwr.isOpener(null) && !pwr.isNavigator())
       .filter( pwr=> powerType ? powerType.includes(pwr.system.dmg_type) : true)
-      .filter( x=> !x.hasTag("shadow-only"));
+      .filter( x=> !x.hasTag("shadow-only", null));
   }
 
 
@@ -313,8 +313,8 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
     if (b.system.rarity != a.system.rarity) {
       return CARD_DROP_RATE[b.system.rarity] - CARD_DROP_RATE[a.system.rarity];
     }
-    const exoticSort= (a.hasTag("exotic")? 1 : 0)
-      - (b.hasTag("exotic") ? 1 : 0);
+    const exoticSort= (a.hasTag("exotic", null)? 1 : 0)
+      - (b.hasTag("exotic", null) ? 1 : 0);
     if (exoticSort != 0) {return exoticSort;}
     return a.name.localeCompare(b.name);
   }

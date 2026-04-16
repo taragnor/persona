@@ -113,7 +113,7 @@ export class CombatEngine {
       result.merge(costs);
       const finalizedResult = result.finalize();
       if (options.simulated) { return finalizedResult;}
-      if (!power.isOpener())  {
+      if (!power.isOpener(attacker.actor))  {
         await attacker.actor.expendAction();
       }
       await attacker.actor.removeStatusesOfType("out-of-turn-action");
@@ -538,13 +538,13 @@ export class CombatEngine {
 		return this.getWeaknessSitRep(attacker, target, power, "hit");
 	}
 
-	private checkCritical( _attacker: Persona, target: Persona,  power: Usable, situation: ProtoResultAttackSituation): boolean {
+	private checkCritical( attacker: Persona, target: Persona,  power: Usable, situation: ProtoResultAttackSituation): boolean {
 		const canCrit = typeof situation.rollType == 'number' || situation.rollType == 'iterative' ? false : true;
 		return !!(
 			situation.withinCritRange
 			&& situation.rollTotal >= situation.DC
 			&& !target.user.hasStatus('blocking')
-			&& !power.hasTag('no-crit')
+			&& !power.hasTag('no-crit', attacker )
 			&& canCrit
 		);
 	}
@@ -577,10 +577,10 @@ export class CombatEngine {
 	}
 
 	checkAttackNullifiers(attacker : Persona , power :Usable, target: Persona, situation: Situation & AttackRollSituation): N<AttackResult["result"]> {
-		if (power.hasTag("theurgy")) {return null;}
+		if (power.hasTag("theurgy", attacker)) {return null;}
 		const element = power.getDamageType(attacker);
 		const resist = target.elemResist(element);
-		const pierce = power.hasTag('pierce');
+		const pierce = power.hasTag('pierce', attacker);
 		switch (resist) {
 			case 'reflect': {
 				return situation.rollType != "reflect" ? "reflect" : "block";

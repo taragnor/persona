@@ -132,7 +132,7 @@ export class HypotheticalPersona extends Persona<PC> {
 		const currentPowers= this.powers;
 		const inheritableSkills = this.components
 		.flatMap( shadow => shadow.mainPowers
-			.filter( pwr => !pwr.hasTag("non-inheritable") && !pwr.hasTag("shadow-only"))
+			.filter( pwr => !pwr.hasTag("non-inheritable", null) && !pwr.hasTag("shadow-only", null))
 			.filter( pwr => !currentPowers.includes(pwr))
 		);
 		const finalList :Record< Power["id"], Power["name"]>= Object.fromEntries(

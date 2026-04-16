@@ -646,7 +646,7 @@ export class PersonaHandleBarsHelpers {
     },
 
     "isExotic" : function (power: Power) : boolean {
-      return power.hasTag("exotic");
+        return power.isExotic();
     },
 
     "simplePowerCost": function (power: Power) : string {
@@ -1122,7 +1122,7 @@ export class PersonaHandleBarsHelpers {
     },
 
     "isSpecialPower": function (power: Power) : boolean {
-      return power.hasTag("theurgy");
+      return power.hasTag("theurgy", null);
     },
 
     "craftingList": function () {

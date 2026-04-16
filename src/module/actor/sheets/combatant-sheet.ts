@@ -121,7 +121,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 							await actor.setTeamworkMove(power);
 							return power;
 						}
-						if (power.hasTag("shadow-only")) {
+						if (power.hasTag("shadow-only", this.actor)) {
 							ui.notifications.warn(`Can't take Shadow only power ${item.name}`);
 							return;
 						}

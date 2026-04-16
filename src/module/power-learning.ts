@@ -241,7 +241,7 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 	}
 
   isSwappable(pwr: Power) : boolean {
-    if (pwr.hasTag("swappable")) {
+    if (pwr.hasTag("swappable", null)) {
       return true;
     }
     if (!this.actor.isCustomPersona()) {
