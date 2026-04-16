@@ -14,7 +14,7 @@ export class CombatPanel extends PersonaPanel {
   private _target: U<PToken>;
   static _instance: U<CombatPanel>;
   private _openers: OpenerOption[] = [];
-  mode: "main" | "tactical" | "opener";
+  mode: "main" | "tactical";
   tacticalTarget: U<PToken>;
 
   constructor() {
@@ -122,8 +122,8 @@ export class CombatPanel extends PersonaPanel {
     html.find(".control-panel button.no-opener").on("click", (ev) => void this._onReturnToMainButton(ev));
     // html.find(".control-panel button.act-again").on("click", (ev) => void this._onReturnToMainButton(ev));
     html.find(".control-panel .follow-ups .follow-up").on("click", (ev) => void this._onSelectFollowUp(ev));
-    html.find(".control-panel .opener-list .option-target").on("click", (ev) => void this._onSelectOpenerTarget(ev));
-    html.find(".control-panel .opener-list .simple-action").on("click", (ev) => void this._onSelectSimpleOpener(ev));
+    // html.find(".control-panel .opener-list .option-target").on("click", (ev) => void this._onSelectOpenerTarget(ev));
+    // html.find(".control-panel .opener-list .simple-action").on("click", (ev) => void this._onSelectSimpleOpener(ev));
     // html.find(".active-control-panel button.end-turn").on("click", (ev) => void this._onSelectEndTurn(ev));
     html.find(".follow-ups button.act-again").on("click", (ev) => void this._onReturnToMainButton(ev));
     if (this.combat) {
@@ -141,15 +141,15 @@ export class CombatPanel extends PersonaPanel {
     return true;
   }
 
-  async setOpeningActionChoices(combatant: PersonaCombatant, openerList: OpenerOption[]) : Promise<void> {
-    if (openerList.length == 0) {return;}
-    if (!await this.selectCombatantIfNeeded(combatant)) {
-      return;
-    }
-    this._openers = openerList;
-    await this.setMode("opener");
-    // console.log(`Set opening actions: ${openerList.length}`);
-  }
+  // async setOpeningActionChoices(combatant: PersonaCombatant, openerList: OpenerOption[]) : Promise<void> {
+  //   if (openerList.length == 0) {return;}
+  //   if (!await this.selectCombatantIfNeeded(combatant)) {
+  //     return;
+  //   }
+  //   this._openers = openerList;
+  //   await this.setMode("opener");
+  //   // console.log(`Set opening actions: ${openerList.length}`);
+  // }
 
   // async setFollowUpChoices( combatant: PersonaCombatant, followUpList : CombatPanel["_followUps"])  : Promise<void>{
   //   if (followUpList.length == 0) {return;}
@@ -270,23 +270,23 @@ export class CombatPanel extends PersonaPanel {
     await this.updatePanel();
   }
 
-  private async _onSelectOpenerTarget(ev: JQuery.ClickEvent) {
-    const combat = PersonaCombat.combat;
-    if (!combat) {return;}
-    const ret = await combat.openers.activateTargettedOpener(ev);
-    if (ret) {
-      await this.setMode("main");
-    }
-  }
+  // private async _onSelectOpenerTarget(ev: JQuery.ClickEvent) {
+  //   const combat = PersonaCombat.combat;
+  //   if (!combat) {return;}
+  //   const ret = await combat.openers.activateTargettedOpener(ev);
+  //   if (ret) {
+  //     await this.setMode("main");
+  //   }
+  // }
 
-  private async _onSelectSimpleOpener(ev: JQuery.ClickEvent) {
-    const combat = PersonaCombat.combat;
-    if (!combat) {return;}
-    const ret = await combat.openers.activateGeneralOpener(ev);
-    if (ret) {
-      await this.setMode("main");
-    }
-  }
+  // private async _onSelectSimpleOpener(ev: JQuery.ClickEvent) {
+  //   const combat = PersonaCombat.combat;
+  //   if (!combat) {return;}
+  //   const ret = await combat.openers.activateGeneralOpener(ev);
+  //   if (ret) {
+  //     await this.setMode("main");
+  //   }
+  // }
 
   private async _onSelectEndTurn( _ev ?: JQuery.ClickEvent) {
     if (this._target != this.combat?.combatant?.token) {return;}

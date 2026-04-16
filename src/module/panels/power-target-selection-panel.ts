@@ -14,7 +14,6 @@ export class PowerTargetSelectionPanel extends SubPanel {
     return "systems/persona/sheets/panels/target-selection-panel.hbs";
   }
 
-
   constructor (actor: ValidAttackers, power: Usable) {
     super( "exploration-power-panel");
     this.actor = actor;

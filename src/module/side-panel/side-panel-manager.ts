@@ -35,6 +35,10 @@ export class SidePanelManager {
     }
   }
 
+  static isActive(panel: SidePanel) :boolean {
+    return this._activePanel == panel;
+  }
+
   static async activate(panel: SidePanel, clearStack = true) {
     await panel.waitUntilReady();
     if (!this.doesPanelExist()) {

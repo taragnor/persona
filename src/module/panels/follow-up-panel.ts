@@ -12,6 +12,15 @@ export class FollowUpPanel extends SubPanel {
     void this.setFollowUps(data);
   }
 
+  protected override buttonConfig() {
+    return [
+      {
+        label: "Act Again",
+        onPress: () => this._onReturnToMainButton(undefined),
+      }
+    ];
+  }
+
   async setFollowUps(data: FollowUpActionData[]) {
     this.followUps = data;
     await this.updatePanel();
@@ -19,7 +28,7 @@ export class FollowUpPanel extends SubPanel {
 
   override activateListeners(html: JQuery) {
     super.activateListeners(html);
-    html.find(".act-again").on("click", (ev) => void this._onReturnToMainButton(ev));
+    // html.find(".act-again").on("click", (ev) => void this._onReturnToMainButton(ev));
     PersonaCombat.combat?.followUp.activateListeners(html);
   }
 

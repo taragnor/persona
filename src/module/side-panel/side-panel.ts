@@ -25,8 +25,14 @@ export abstract class SidePanel {
     await SidePanelManager.deactivate(this);
   }
 
+  isActive() : boolean {
+    return SidePanelManager.isActive(this);
+  }
+
   async pop() {
-    return await SidePanelManager.pop();
+    if (this.isActive()) {
+      return await SidePanelManager.pop();
+    }
   }
 
   async push(panel: SidePanel) {

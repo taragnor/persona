@@ -1,18 +1,18 @@
 {{> "systems/persona/parts/token-panel-header.hbs" token=token CONST=CONST persona=persona}}
 <section class="control-inventory">
-	<div class="item-list">
-	{{#each itemList as |item|}}
-	<div class="inventory-item {{#if (not (canUsePower ../persona item))}} faded {{/if}}" data-item-id="{{item.id}}" title="{{item.tooltip}}">
-		<span class="item-icon">
-			{{displayIcon item}}
-		</span>
-		<span class="itemName">
-			{{item.name}}
-			{{#if (gt item.amount 1)}}
-			( {{item.amount}} )
-			{{/if}}
-		</span>
-	</div>
-	{{/each}}
+  <div class="item-list">
+    {{#each itemList as |item|}}
+    <div class="inventory-item {{#if (not (canUsePower ../persona item))}} faded {{/if}}" data-item-id="{{item.id}}" title="{{item.tooltip}}">
+      <span class="item-icon">
+        {{displayIcon item}}
+      </span>
+      <span class="itemName">
+        {{item.name}}
+        {{#if (gt item.amount 1)}}
+        ( {{item.amount}} )
+        {{/if}}
+      </span>
+    </div>
+    {{/each}}
 </section>
 

@@ -436,6 +436,17 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return this;
   }
 
+  get hasActivePlayerOwner() : boolean {
+    return game.users.contents
+      .some( user => user.active && !user.isGM && this.testUserPermission(user, "OWNER"));
+  }
+
+  get basicAttack() : Power {
+    const basic = PersonaDB.getBasicPower("Basic Attack");
+    if (!basic) {throw new PersonaError("Cant' find basic attack");}
+    return basic;
+  }
+
 	private async _setLevelTo(this: NPCAlly, lvl: number) {
 		if (!this.isNPCAlly()) {return;}
 		await this.update( {"system.combat.personaStats.pLevel" : lvl});
@@ -3073,6 +3084,13 @@ async alterSocialSkill (this: PC, socialStat: SocialStat, amt: number, logger = 
 		const verb = amt >= 0 ? "raised" : "lowered";
 		await Logger.sendToChat(`<b>${this.name}:</b> ${verb} ${socialStat} by ${amt} (previously ${oldval})`, this);
 	}
+}
+
+get money() : number {
+  if (this.isPC()) {
+    return this.system.money;
+  }
+  return 0;
 }
 
 async gainMoney(this: PC, amt: number, log :boolean, breakLimit = false) {

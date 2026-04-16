@@ -47,8 +47,10 @@ export abstract class SubPanel extends PersonaPanel {
   }
 
 
-  protected async _onReturnToMainButton(ev: JQuery.ClickEvent) {
-    ev.stopPropagation();
+  protected async _onReturnToMainButton(ev ?: U<JQuery.Event>) {
+    if (ev) {
+      ev.stopPropagation();
+    }
     await this.pop();
   }
 

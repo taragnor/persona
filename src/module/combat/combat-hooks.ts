@@ -68,7 +68,8 @@ export class CombatHooks {
 			if (!combat.combatant
 				|| !PersonaCombat.isPersonaCombatant(combat.combatant)) {return;}
 			if (OpenerManager.checkForOpeningChanges(changes)) {
-				await CombatPanel.instance.setOpeningActionChoices(combat.combatant, combat.openers.getOpenerChoices());
+        await combat.openers.requestOpenerChoice();
+				// await CombatPanel.instance.setOpeningActionChoices(combat.combatant, combat.openers.getOpenerChoices());
 			}
 			// if (FollowUpManager.checkForFollowUpChanges(changes)) {
 			// 	await CombatPanel.instance.setFollowUpChoices(combat.combatant, combat.followUp.getFollowUpChoices());
