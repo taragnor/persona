@@ -2223,7 +2223,7 @@ async alterFatigueLevel(amt: number, log=true) : Promise<FatigueStatusId | undef
 }
 
 getUnarmedDamageType(): RealDamageType {
-	if (this.system.type == "shadow") {return this.system.combat.baseDamageType ?? "physical";}
+	if (this.isShadow()) {return this.system.combat.baseDamageType ?? "physical";}
 	return "physical";
 }
 
@@ -2317,12 +2317,12 @@ complementRating (this: Shadow, other: Shadow) : number {
 
 	const attacks = new Set(
 		this.powers
-		.map(x=> x.system.dmg_type)
+		.map(x=> x.getBaseDamageType())
 		.filter (dmgType => dmgType != "untyped" && dmgType != "none")
 	);
 	const otherAttacks =
 		other.powers
-		.map(x=> x.system.dmg_type)
+		.map(x=> x.getBaseDamageType())
 		.filter (dmgType => dmgType != "healing" && dmgType != "untyped" && dmgType != "none");
 	rating += otherAttacks.reduce( (acc, dmg) =>
 		acc + (!attacks.has(dmg) ? 1 : 0)

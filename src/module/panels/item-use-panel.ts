@@ -53,10 +53,5 @@ export class ItemUsePanel extends SubPanel {
     await this._useItemOrPower(this.actor, item);
   }
 
-
-  static init() {
-    // PersonaPanel.itemPanel = (actor: PC | NPCAlly) => new ItemUsePanel(actor);
-  }
-
 }
 

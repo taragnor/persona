@@ -188,7 +188,6 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
 				if (!situation.attacker) {return false;}
 				const attacker = PersonaDB.findActor(situation?.attacker);
 				element = (power as Usable).getDamageType(attacker);
-				// element = power.system.dmg_type;
 				if (element == "healing" || element == "untyped" || element == "all-out" || element =="none" ) {return false;}
 			}
 			if (subject.system.type == "npc") {return false;}

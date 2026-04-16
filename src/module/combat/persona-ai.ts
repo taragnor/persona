@@ -74,7 +74,7 @@ export abstract class PersonaAI {
 			return false;
 		}
 		const engagedFoes = this.combat.getAllEngagedEnemies(this.combatant);
-		if (pwr.system.targets == "1-random-enemy") {return false;}
+		if (pwr.targets() == "1-random-enemy") {return false;}
 		for (const target of targets) {
 			if (!engagedFoes.includes(target)) {return true;}
 		}
@@ -90,7 +90,8 @@ export abstract class PersonaAI {
 	}
 
 	calculatePotentialTargetsOfPower(pwr: Power) : PersonaCombatant[][] {
-		switch (pwr.system.targets) {
+    const targets = pwr.targets();
+		switch (targets) {
 			case "all-enemies":
 				return [this.livingFoes];
 			case "1-engaged":
@@ -119,12 +120,13 @@ export abstract class PersonaAI {
 			default:
 				break;
 		}
-		PersonaError.softFail(`Targetting mode ${pwr.system.targets} is not supported by AI`);
+		PersonaError.softFail(`Targetting mode ${targets} is not supported by AI`);
 		return [];
 	}
 
 	isHarmfulPower(pwr: Power) : boolean {
-		switch (pwr.system.targets) {
+    const targets = pwr.targets();
+    switch (targets) {
 			case "all-enemies":
 			case "1-random-enemy":
 			case "all-others":

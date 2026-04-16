@@ -87,7 +87,7 @@ export class PersonaSFX {
 		if (usableOrCard.isSkillCard()) {
 			return;
 		}
-		if (usableOrCard.system.dmg_type == "all-out" ) {
+		if (usableOrCard.getBaseDamageType() == "all-out" ) {
 			return PersonaSFX.onAllOutAttack();
 		}
 		const damageType = usableOrCard.getDamageType(attacker.actor);

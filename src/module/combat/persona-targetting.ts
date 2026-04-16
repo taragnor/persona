@@ -68,7 +68,7 @@ export class PersonaTargetting {
   }
 
   static getDefaultPowerTargets(attacker: ValidAttackers, power: UsableAndCard): PToken[] {
-    const targets = power.isSkillCard() ? "self" : power.system.targets;
+    const targets = power.targets();
     const attackerType = attacker.getAllegiance();
     const selected = this.targettedPTokens();
     switch (targets) {
@@ -242,7 +242,8 @@ export class PersonaTargetting {
         target: target.accessor
       };
     }
-    switch (power.system.targets) {
+    const targets = power.targets();
+    switch (targets) {
       case '1-engaged':
       case '1-nearby':
       case '1d4-random':
@@ -280,7 +281,7 @@ export class PersonaTargetting {
       case 'everyone-even-dead':
         break;
       default:
-        power.system.targets satisfies never;
+        targets satisfies never;
     }
     if (power.isOpener(user)) {
       const sourced = ConditionalEffectManager.getConditionals(power.system.openerConditions, power, user, power );

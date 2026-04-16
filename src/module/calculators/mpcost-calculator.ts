@@ -26,11 +26,6 @@ export class MPCostCalculator extends CostCalculator {
     const baseCost = this.BASE_MP_COSTS["directDamage"];
     const levelMult = this.DAMAGE_LEVEL_MULTIPLIERS_MP[baselevel];
     let cost = baseCost * levelMult;
-    // {
-    //   const dmgType = pwr.system.dmg_type;
-    //   const {mult, add} = this.DAMAGE_TYPE_MODIFIER[dmgType];
-    //   cost = cost * mult + add;
-    // }
     if (pwr.isAoE()) {
       cost *= 1.5;
       cost += 4;

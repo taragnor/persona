@@ -95,7 +95,7 @@ export class EnergyClassCalculator extends CostCalculator {
 		if (!power.isAoE()) {
 			return this.NULL_COST;
 		}
-		if (power.system.targets == "1-random-enemy") {
+		if (power.targets() == "1-random-enemy") {
 			return new EnergyCostBase(-15,-15);
 		}
 		return this.AOE_COST_INCREASE;

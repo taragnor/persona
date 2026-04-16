@@ -220,7 +220,7 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
     }
     if (this.generalFilters) {
       powerArr = powerArr.filter( pwr =>
-        this.generalFilters!.dmgFilter[pwr.system.dmg_type]
+        this.generalFilters!.dmgFilter[pwr.getBaseDamageType()]
         && this.generalFilters!.rarityFilter[pwr.system.rarity]
         && this.generalFilters!.slotFilter[String(pwr.system.slot)]
         && this.generalFilters!.typeFilter[pwr.system.subtype]
@@ -302,7 +302,7 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
     }
     return this.powerList()
       .filter( pwr => pwr.system.subtype == subtype && !pwr.isTeamwork() && !pwr.isOpener(null) && !pwr.isNavigator())
-      .filter( pwr=> powerType ? powerType.includes(pwr.system.dmg_type) : true)
+      .filter( pwr=> powerType ? powerType.includes(pwr.getBaseDamageType()) : true)
       .filter( x=> !x.hasTag("shadow-only", null));
   }
 

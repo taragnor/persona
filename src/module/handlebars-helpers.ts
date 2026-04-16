@@ -728,7 +728,7 @@ export class PersonaHandleBarsHelpers {
     },
 
     "getPowerTargetsL": function (power: Usable) : string {
-      return localize(TARGETING[power.system.targets]);
+      return localize(TARGETING[power.targets()]);
     },
 
     "elemResist": function (actorOrPersona: ValidAttackers | Persona, resistType: Exclude<DamageType, "by-power">) : string {
@@ -882,7 +882,7 @@ export class PersonaHandleBarsHelpers {
       {retstr+= "M";} else  {
         retstr += "S";
       }
-      if (power.system.targets.includes("random"))
+      if (power.targets().includes("random"))
       { retstr+= "R"; }
       return retstr;
     },

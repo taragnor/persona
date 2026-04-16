@@ -60,7 +60,7 @@ export abstract class DamageSystemBase implements DamageInterface {
 		}
 		const typeOverride = damageOptions.overrideDamageType;
 		if (!typeOverride) {
-			if (power.system.dmg_type == 'none') {
+			if (power.getBaseDamageType() == 'none') {
 				return new DamageCalculation('none');
 			}
 		}
@@ -124,7 +124,7 @@ abstract	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Pe
 
 	getStandaloneDamage(power: Usable, damageTypeOverride?: DamageType) : DamageCalculation {
 		const dmg = power.system.damage;
-		const baseDtype = damageTypeOverride || power.system.dmg_type;
+		const baseDtype = damageTypeOverride || power.getBaseDamageType();
 		const dtype = baseDtype == 'by-power' ? 'untyped' : baseDtype;
 		const calc = new DamageCalculation(dtype);
 		calc.add('base', dmg.low, `${power.displayedName.toString()} base damage`);

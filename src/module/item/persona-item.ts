@@ -200,7 +200,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   getPowerCategory(this: Usable, user?: ValidAttackers | Persona ) : U<ItemCategory> {
-    const dtype = this.system.dmg_type;
+    const dtype = this.getBaseDamageType();
     switch (dtype) {
       case 'fire':
       case 'wind':
@@ -314,7 +314,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   restoresHP(this: Consumable | Power) : boolean {
-    if (this.system.dmg_type != "healing") {return false;}
+    if (this.getBaseDamageType() != "healing") {return false;}
     return this.getEffects(null).some( eff => {
       return eff.consequences.some( cons => {
         return (cons.type == "combat-effect" && cons.combatEffect == "damage");
@@ -331,7 +331,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   inflictsDamage(this:Consumable) : boolean {
-    if (this.system.dmg_type == "healing" || this.system.dmg_type == "none") {return false;}
+    const dmgType = this.getBaseDamageType()
+    if (dmgType == "healing" || dmgType == "none") {return false;}
     return this.getEffects(null).some( eff => {
       return eff.consequences.some( cons => {
         return (cons.type == "combat-effect" && cons.combatEffect == "damage");
@@ -417,7 +418,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
     if (this.isUsableType())  {
       if (this.isPower()) {
-        const dtype = this.system.dmg_type;
+        const dtype = this.getBaseDamageType();
         switch (dtype) {
           case 'fire':
           case 'wind':
@@ -803,9 +804,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     //     // PersonaError.softFail(`Can't check tag list for ${this.system["type"]}`);
     //     return false;
     // }
-    if (user instanceof Persona) {
-      user = user.user;
-    }
+    if (user instanceof Persona) { user = user.user; }
     const list = this.tagList(user ?? null);
     if (!Array.isArray(tags)) {
       tags = [tags];
@@ -835,17 +834,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return tagListData.map(tagData=> PersonaItem.resolveTag(tagData));
   }
 
-
-  // private unified_tagList(this : Power, user: ValidAttackers | null): readonly (PowerTag | EquipmentTag)[];
-  // private unified_tagList(this: UsableAndCard, user: ValidAttackers | null) : readonly PowerTag[];
-  // private unified_tagList(this : Weapon, user ?: null ): readonly EquipmentTag[];
-  // private unified_tagList(this : InvItem, user ?: null ): readonly EquipmentTag[];
-  // private unified_tagList(this : Talent, user ?: null): readonly PowerTag[];
-  // private unified_tagList(this : Focus, user ?: null): readonly PowerTag[];
-  // private unified_tagList(this: Consumable | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : readonly (PowerTag | EquipmentTag)[];
-  // private unified_tagList(this: UsableAndCard | Talent | Focus | SkillCard | InvItem | Weapon, user ?: null | ValidAttackers) : readonly (PowerTag | EquipmentTag)[];
-  // private unified_tagList(this: PersonaItem, user ?: null | ValidAttackers): readonly (PowerTag | EquipmentTag)[];
-  // private unified_tagList(this: Talent | Focus | UsableAndCard | InvItem | Weapon, user ?: ValidAttackers | null) : readonly (PowerTag | EquipmentTag)[] {
   private unified_tagList(user ?: ValidAttackers | null) : readonly UnifiedTagData[] {
     const itype = this.system.type;
     switch (itype) {
@@ -860,7 +848,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       }
       case 'consumable': {
         const list : UnifiedTagData[] =
-        // const list : (typeof this.system.tags[number] | typeof this.system.itemTags[number])[] =
         ([] as (UnifiedTagData)[])
         .concat( this.system.tags)
         .concat(this.system.itemTags)
@@ -868,9 +855,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         if (!list.includes(itype)) {
           list.pushUnique(itype);
         }
-        if (!list.includes(this.system.dmg_type as typeof list[number]) && POWER_TAGS_LIST.includes(this.system.dmg_type as typeof POWER_TAGS_LIST[number])) {
-          if (this.system.dmg_type != "none") {
-            list.pushUnique(this.system.dmg_type);
+        if (!list.includes( (this as Consumable).getBaseDamageType() as typeof list[number]) && POWER_TAGS_LIST.includes( (this as Consumable).getBaseDamageType() as typeof POWER_TAGS_LIST[number])) {
+          if ((this as Consumable).getBaseDamageType() != "none") {
+            list.pushUnique((this as Consumable).getBaseDamageType());
           }
         }
         if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
@@ -879,7 +866,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         const subtype = this.system.subtype;
         list.pushUnique(subtype);
         return list;
-        // return list.map ( t=> PersonaItem.resolveTag(t));
       }
       case 'item': {
         const list= (this.system.itemTags.slice() as UnifiedTagData[])
@@ -904,18 +890,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
             subtype satisfies never;
         }
         return list;
-        // return list.map( t=> PersonaItem.resolveTag(t));
       }
       case 'weapon': {
         const list = (this.system.itemTags.slice() as UnifiedTagData[])
         .pushUnique(...this.baseItemExtraTags(user ?? null));
-        if (!list.includes(this.system.dmg_type as typeof list[number]) && POWER_TAGS_LIST.includes(this.system.dmg_type as typeof POWER_TAGS_LIST[number])) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          list.pushUnique(this.system.dmg_type as any);
+        if (!list.includes((this as Weapon).getBaseDamageType() as typeof list[number]) && POWER_TAGS_LIST.includes((this as Weapon).getBaseDamageType() as typeof POWER_TAGS_LIST[number])) {
+          list.pushUnique( (this as Weapon).getBaseDamageType());
         }
         list.pushUnique(itype);
         return list;
-        // return list.map( t=> PersonaItem.resolveTag(t));
       }
       case 'skillCard': {
         return [
@@ -931,7 +914,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
           list.pushUnique('passive');
         }
         return list;
-        // return list.map( t=> PersonaItem.resolveTag(t));
       }
       case "characterClass":
       case "universalModifier":
@@ -940,7 +922,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         return [];
       default:
         itype satisfies never;
-        // PersonaError.softFail(`Can't get tag list for ${itype as string}`);
         return [];
     }
   }
@@ -974,7 +955,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         list.pushUnique("exotic");
         break;
     }
-    if (this.system.dmg_type == 'by-power') {
+    if (this.getBaseDamageType() == 'by-power') {
       list.pushUnique('variable-damage');
     }
     if (this.system.attacksMax > 1) {
@@ -1016,7 +997,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   private getWeaponDamageTypeTags(this: Power, user: N<ValidAttackers>) :  UnifiedTagData[] {
     const list : UnifiedTagData[]  = [];
     if (this.system.damageLevel != "none") {
-      const damageType = user ? this.getDamageType(user) : this.system.dmg_type;
+      const damageType = user ? this.getDamageType(user) : this.getBaseDamageType();
       switch (damageType) {
         case "none":
         case "all-out":
@@ -1368,8 +1349,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   targets(this: UsableAndCard): Power['system']['targets'] {
-    if (this.system.type == 'skillCard') {return 'self';}
-    return this.system.targets;
+    const base = this.itemBase;
+    if (base.isSkillCard()) {return 'self';}
+    return base.system.targets;
   }
 
   toSkillCard(this: Power) : Promise<SkillCard> {
@@ -1592,11 +1574,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       .map( t => PersonaItem.resolveTag(t));
   }
 
+  getBaseDamageType (this: Usable | Weapon) : DamageType {
+    return this.itemBase.system.dmg_type;
+  }
+
   getDamageType(this: Usable | Weapon, attacker: ValidAttackers | Persona): Exclude<DamageType, 'by-power'> {
     if (attacker instanceof Persona) {
       attacker = attacker.user;
     }
-    switch (this.system.dmg_type) {
+    const dtype = this.getBaseDamageType();
+    switch (dtype) {
       case 'fire':
       case 'wind':
       case 'light':
@@ -1609,13 +1596,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case 'lightning':
       case 'untyped':
       case 'all-out':
-        return this.system.dmg_type;
+        return dtype;
       case 'by-power':
         return attacker.weapon?.getDamageType(attacker) ?? attacker.getUnarmedDamageType();
       default:
-          this.system satisfies never;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        PersonaError.softFail(`Can't find damag etype for ${String((this.system as any)?.dmg_type ?? "")}`);
+          dtype satisfies never;
+        PersonaError.softFail(`Can't find damag etype for ${dtype as string ?? ""}`);
         return 'none';
     }
   }
@@ -1948,7 +1934,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   requiresManualTargets(this: UsableAndCard) {
     if (this.isSkillCard()) {return false;}
-    switch (this.system.targets) {
+    const targets = this.targets();
+    switch (targets) {
       case "1-engaged":
       case "1-nearby":
       case "1-nearby-dead":
@@ -1967,13 +1954,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case "everyone-even-dead":
         return false;
       default:
-        this.system.targets satisfies never;
+        targets satisfies never;
         return false;
     }
   }
 
   canBeUsedOnAllies(this: Usable) : boolean {
-    switch (this.system.targets) {
+    const targets = this.targets();
+    switch (targets) {
       case "1-engaged":
       case "1-nearby":
       case "1-nearby-dead":
@@ -1992,7 +1980,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case "all-dead-allies":
         return true;
       default:
-        this.system.targets satisfies never;
+        targets satisfies never;
         return false;
     }
   }
@@ -2548,7 +2536,8 @@ isStatusEffect(this: UsableAndCard) : boolean {
 
 isMultiTarget(this: UsableAndCard) : boolean {
   if (this.system.type == 'skillCard') {return false;}
-  switch (this.system.targets) {
+    const targets = this.targets();
+    switch (targets) {
     case '1-nearby-dead':
     case '1-nearby':
     case '1-engaged':
@@ -2567,15 +2556,16 @@ isMultiTarget(this: UsableAndCard) : boolean {
     case 'everyone-even-dead':
       return true;
     default:
-      this.system.targets satisfies never;
-      PersonaError.softFail(`Unknown target type: ${this.system.targets as string}`);
+      targets satisfies never;
+      PersonaError.softFail(`Unknown target type: ${targets as string}`);
       return false;
   }
 }
 
 isAoE(this: UsableAndCard) : boolean {
   if (this.system.type == 'skillCard') {return false;}
-  switch (this.system.targets) {
+    const targets = this.targets();
+    switch (targets) {
     case '1-nearby-dead':
     case '1-nearby':
     case '1-engaged':
@@ -2594,8 +2584,8 @@ isAoE(this: UsableAndCard) : boolean {
     case 'everyone-even-dead':
       return true;
     default:
-      this.system.targets satisfies never;
-      PersonaError.softFail(`Unknown target type: ${this.system.targets as string}`);
+      targets satisfies never;
+      PersonaError.softFail(`Unknown target type: ${targets as string}`);
       return false;
   }
 }
@@ -2610,7 +2600,7 @@ powerEffectLevel(this: Power) : number {
     mod += 1;
   }
   // const multiMod = this.isMultiTarget() ? 1 : 0;
-  const dmgtype = this.system.dmg_type;
+  const dmgtype = this.getBaseDamageType();
   if (dmgtype == 'dark' || dmgtype == 'light')
   {mod+= 1;}
   if (this.isAoE()) {
@@ -2646,7 +2636,8 @@ targetMeetsConditions(this: UsableAndCard, user: ValidAttackers, target: ValidAt
 
 requiresTargetSelection(this: UsableAndCard) : boolean {
   if (this.isSkillCard()) {return false;}
-  switch (this.system.targets) {
+    const targets = this.targets();
+    switch (targets) {
     case '1-engaged':
     case '1-nearby':
       return true;
@@ -2669,11 +2660,10 @@ requiresTargetSelection(this: UsableAndCard) : boolean {
     case 'everyone-even-dead':
       return false;
     default:
-      this.system.targets satisfies never;
+      targets satisfies never;
       return false;
   }
 }
-
 
 isInstantDeathAttack(this: Usable) : boolean {
   return (this.system.instantKillChance != 'none');
@@ -2710,7 +2700,7 @@ static async DamageLevelConvert(item: PersonaItem) {
   if (!item.isPower()) {return;}
   let damageLevel : typeof item['system']['damageLevel'] | undefined;
   if (item.system.damageLevel != '-' && item.system.damageLevel != 'fixed') {return;}
-  if (item.system.dmg_type == 'none') {
+  if (item.getBaseDamageType() == 'none') {
     damageLevel = 'none';
   } else {
     switch (item.system.subtype) {
@@ -2761,19 +2751,19 @@ static #convertSpellDamage(item: Power) : typeof item['system']['damageLevel'] |
     case 4:
       return 'medium';
     case 6:
-      if (item.system.dmg_type == 'healing')
+      if (item.getBaseDamageType() == 'healing')
       {return 'medium';}
       break;
     case 7:
       return 'heavy';
     case 8:
-      if (item.system.dmg_type == 'healing')
+      if (item.getBaseDamageType() == 'healing')
       {return 'heavy';}
       break;
     case 11:
       return 'severe';
     case 12:
-      if (item.system.dmg_type == 'healing')
+      if (item.getBaseDamageType() == 'healing')
       {return 'severe';}
       break;
     default:
