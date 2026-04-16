@@ -504,27 +504,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   }
 
   static addOpeningActionListeners(elem: JQuery) : void {
-    elem.find('a.option-target').on('click', (ev) => void this.activateTargettedOpener(ev));
-    elem.find('a.simple-action').on('click', (ev) => void this.activateGeneralOpener(ev));
-
+    this.combat?.openers.activateListeners(elem);
   }
 
   static _openRollBlock(ev: JQuery.ClickEvent) {
     $(ev.currentTarget).closest('.outer-roll-block').toggleClass('open');
-  }
-
-
-
-  static async activateGeneralOpener(ev: JQuery.ClickEvent) {
-    if (this.combat) {
-      await this.combat.openers.activateGeneralOpener(ev);
-    }
-  }
-
-  static async activateTargettedOpener(ev: JQuery.ClickEvent) {
-    if (this.combat) {
-      await this.combat.openers.activateTargettedOpener(ev);
-    }
   }
 
   static ensureActivatingCharacterValid(combatantId: PersonaCombatant['id']): PersonaCombatant | undefined {

@@ -30,6 +30,12 @@ export abstract class PersonaPanel extends SidePanel {
   // protected async _openInventoryPanel(user:PC | NPCAlly) {
   //   await this.push(PersonaPanel.itemPanel(user));
   // }
+  override prereqs() {
+    return [
+      ...super.prereqs(),
+      () => PersonaDB.isLoaded
+    ];
+  }
 
 }
 

@@ -1,28 +1,27 @@
-{{#if opt.power.targets}}
-<div class="targeted-action" data-power-id="{{opt.power.powerId}}" title="{{opt.toolTip}}">
-	{{#if opt.mandatory}}
-	<b>(Mandatory)</b>
-	{{/if}}
-	<span class="option-name">
-		{{opt.optionName}}
-	</span>
-	<span class="option-targets">
-		(
-		{{#each opt.power.targets as |targetId|}}
-		<a class="option-target" data-target-id="{{targetId}}">
-			{{getCombatantTokenNameByCombatantId targetId}}
-		</a>
-		{{/each}}
-		)
-	</span>
+<div class="opener-selector" title="{{opt.toolTip}}">
+  {{#if opt.mandatory}}
+  <b>(Mandatory)</b>
+  {{/if}}
+  {{#if (not opt.power.targets)}}
+  <button class="auto-option">
+    <span class="option-name">
+      {{opt.optionName}}
+    </span>
+  </button>
+  {{else}}
+  <span class="option-name">
+    {{opt.optionName}}
+  </span>
+  <button class="targeted-action" data-power-id="{{opt.power.powerId}}" title="{{opt.toolTip}}">
+    <span class="option-targets">
+      (
+      {{#each opt.power.targets as |targetId t|}}
+      <a class="option-target" data-target-id="{{targetId}}" data-target-index="{{t}}">
+        {{getCombatantTokenNameByCombatantId targetId}}
+      </a>
+      {{/each}}
+      )
+    </span>
+  </div>
+  {{/if}}
 </div>
-{{else}}
-<a class="simple-action" data-power-id="{{opt.power.powerId}}" title="{{opt.toolTip}}" data-option-effects="{{opt.optionEffects}}">
-	{{#if opt.mandatory}}
-	<b>(Mandatory)</b>
-	{{/if}}
-	<span class="option-name">
-		{{opt.optionName}}
-	</span>
-</a>
-{{/if}}

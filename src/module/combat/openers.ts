@@ -7,12 +7,12 @@ import {SidePanelManager} from "../side-panel/side-panel-manager.js";
 import {randomSelect} from "../utility/array-tools.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {EngagementChecker} from "./engageChecker.js";
+import {CombatPanel} from "./panels/combat-panel.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
 import {PersonaTargetting} from "./persona-targetting.js";
 
 export class OpenerManager {
   combat: PersonaCombat;
-  openerOptions: OpenerOption[] = [];
   static panel = new OpenerPanel();
 
   static OPENING_ACTION_FLAG_NAME = "openingActionData" as const;
@@ -40,6 +40,10 @@ export class OpenerManager {
   async storeOpenerChoices (openingReturn: OpenerOptionsReturn[]) {
     const options = openingReturn.flatMap ( or => or.options);
     await this.combat.setFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME, options);
+  }
+
+  async clearOpenerChoices()  {
+    await this.combat.unsetFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME);
   }
 
   getOpenerChoices()  : OpenerOption[] {
@@ -504,68 +508,90 @@ export class OpenerManager {
     return saveBonus + rollValue;
   }
 
-  /** return true if action executed */
-  async activateGeneralOpener (ev: JQuery.ClickEvent) :Promise<boolean> {
-    if (!await HTMLTools.confirmBox('use this opener?', 'use this opener?')) {return false;}
-    const combatantId = HTMLTools.getClosestData(ev,'combatantId');
-    const powerId = HTMLTools.getClosestDataSafe(ev,'powerId', '');
-    const combatant = this.combat.ensureActivatingCharacterValid(combatantId as ValidAttackers["id"]);
-    const options = HTMLTools.getClosestDataSafe(ev, 'optionEffects', '');
-    if (!combatant) {
-      PersonaError.softFail("Invalid combatant");
-      return false;
-    }
-    if (!powerId) {
-      this.execSimpleAction(options);
-      const actionName = $(ev.currentTarget).parents('li.opener-option').find('.option-name').text().trim();
-      await this.chooseOpener(actionName);
-      // await this.chooseOpener(ev);
-      return true;
-    }
-    const power = combatant.actor.getUsableById(powerId as Power["id"]);
-    if (!power) { return false; }
-    if (power && combatant.actor?.canUseOpener()) {
-      await combatant.parent.combatEngine.usePower(combatant.token as PToken, power);
-      const actionName = $(ev.currentTarget).parents('li.opener-option').find('.option-name').text().trim();
-      await this.chooseOpener(actionName);
-      // await this.chooseOpener(ev);
-      return true;
-    } else {
-      ui.notifications.warn("Can't use opener here");
-      return false;
-    }
-  }
-
-  execSimpleAction(options: string) {
-    options = options.trim();
-    if (options.length == 0) {return;}
-    switch (options.trim() as OptionEffect) {
-      case 'disengage':
-        //TODO handle disengage later
-    }
-    ui.notifications.notify('Executing simple action');
-  }
-
-  async chooseOpener(openerName: string) {
-    if (!this.combat.combatant?.isOwner)  {
-      PersonaError.softFail("Can't pick opener, it's not your turn");
+  async _onOpenerSelect (ev: JQuery.ClickEvent) {
+    console.log("On Opener Select");
+    ev.stopPropagation();
+    const openerIndex = Number(HTMLTools.getClosestData(ev, "openerIndex"));
+    const targetIndex = Number(HTMLTools.getClosestDataSafe(ev, "target-index", -1));
+    if (Number.isNaN(targetIndex) || targetIndex == -1) {
+      await PersonaCombat.combat?.openers.ecOpeningOption( openerIndex);
       return;
     }
-    const reverseArray = game.messages.contents.reverse();
-    const msgTarget = reverseArray.find( msg => {
-      if (!msg.isOwner) {return false;}
-      const html = $(msg.content);
-      const openerList = html.find(".option-name");
-      if (openerList.length> 0) {
-        return true;
-      }
-    });
-    if (!msgTarget) {
-      PersonaError.softFail("Couldnt' find message target to choose opener");
-      return;
-    }
-    await this.modifyOpenerMsg(msgTarget, openerName);
+    await PersonaCombat.combat?.openers.execOpeningOption( openerIndex, targetIndex);
   }
+
+  activateListeners(html: JQuery) {
+    html.find(".opener-selector .option-target").on("click", (ev) => void this._onOpenerSelect(ev));
+    html.find(".opener-selector button.auto-option").on("click", (ev) => void this._onOpenerSelect(ev));
+  }
+
+  async cleanUpAfterOpener() {
+    await this.panel.pop();
+    await this.clearOpenerChoices();
+  }
+
+  // /** return true if action executed */
+  // async activateGeneralOpener (ev: JQuery.ClickEvent) :Promise<boolean> {
+  //   if (!await HTMLTools.confirmBox('use this opener?', 'use this opener?')) {return false;}
+  //   const combatantId = HTMLTools.getClosestData(ev,'combatantId');
+  //   const powerId = HTMLTools.getClosestDataSafe(ev,'powerId', '');
+  //   const combatant = this.combat.ensureActivatingCharacterValid(combatantId as ValidAttackers["id"]);
+  //   const options = HTMLTools.getClosestDataSafe(ev, 'optionEffects', '');
+  //   if (!combatant) {
+  //     PersonaError.softFail("Invalid combatant");
+  //     return false;
+  //   }
+  //   if (!powerId) {
+  //     this.execSimpleAction(options);
+  //     const actionName = $(ev.currentTarget).parents('li.opener-option').find('.option-name').text().trim();
+  //     await this.chooseOpener(actionName);
+  //     // await this.chooseOpener(ev);
+  //     return true;
+  //   }
+  //   const power = combatant.actor.getUsableById(powerId as Power["id"]);
+  //   if (!power) { return false; }
+  //   if (power && combatant.actor?.canUseOpener()) {
+  //     await combatant.parent.combatEngine.usePower(combatant.token as PToken, power);
+  //     const actionName = $(ev.currentTarget).parents('li.opener-option').find('.option-name').text().trim();
+  //     await this.chooseOpener(actionName);
+  //     // await this.chooseOpener(ev);
+  //     return true;
+  //   } else {
+  //     ui.notifications.warn("Can't use opener here");
+  //     return false;
+  //   }
+  // }
+
+  //execSimpleAction(options: string) {
+  //  options = options.trim();
+  //  if (options.length == 0) {return;}
+  //  switch (options.trim() as OptionEffect) {
+  //    case 'disengage':
+  //      //TODO handle disengage later
+  //  }
+  //  ui.notifications.notify('Executing simple action');
+  //}
+
+  // async chooseOpener(openerName: string) {
+  //   if (!this.combat.combatant?.isOwner)  {
+  //     PersonaError.softFail("Can't pick opener, it's not your turn");
+  //     return;
+  //   }
+  //   const reverseArray = game.messages.contents.reverse();
+  //   const msgTarget = reverseArray.find( msg => {
+  //     if (!msg.isOwner) {return false;}
+  //     const html = $(msg.content);
+  //     const openerList = html.find(".option-name");
+  //     if (openerList.length> 0) {
+  //       return true;
+  //     }
+  //   });
+  //   if (!msgTarget) {
+  //     PersonaError.softFail("Couldnt' find message target to choose opener");
+  //     return;
+  //   }
+  //   await this.modifyOpenerMsg(msgTarget, openerName);
+  // }
 
   async modifyOpenerMsg(msg: ChatMessage, actionName: string) {
     if (!msg) {return;}
@@ -584,26 +610,13 @@ export class OpenerManager {
   }
 
   /** returns true if the opener actually gets executed*/
-  async activateTargettedOpener(combatant :PersonaCombatant,  power: Usable, target: PersonaCombatant, actionName: string ) : Promise<boolean> {
-    if (!await HTMLTools.confirmBox('use this opener?', 'use this opener?')) {return false;}
-    // const combatantId = HTMLTools.getClosestData(ev,'combatantId');
-    // const powerId = HTMLTools.getClosestData<Power["id"]>(ev,'powerId');
-    // const targetId = HTMLTools.getClosestData(ev,'targetId');
-    if (!this.combat.ensureActivatingCharacterValid(combatant.id)) {return false;}
-    // const power = combatant.actor.getUsableById(powerId);
-    // if (!power) { return false; }
-    // const target = combatant.parent?.combatants.find(c=> c.id == targetId);
-    // if (!target) {
-    //   PersonaError.softFail(`Cant find target Id ${targetId}`);
-    //   return false;
-    // }
-    // if (!combatant.actor?.canUseOpener()) { return false;}
-    await combatant.parent.combatEngine.usePower(combatant.token as PToken, power, [target.token]);
-    // const actionName = $(ev.currentTarget).parents('li.opener-option').find('.option-name').text().trim();
-    await this.chooseOpener(actionName);
-    // await this.chooseOpener(ev);
-    return true;
-  }
+  // async activateTargettedOpener(combatant :PersonaCombatant,  power: Usable, target: PersonaCombatant, actionName: string ) : Promise<boolean> {
+  //   if (!await HTMLTools.confirmBox('use this opener?', 'use this opener?')) {return false;}
+  //  if (!this.combat.ensureActivatingCharacterValid(combatant.id)) {return false;}
+  //   await combatant.parent.combatEngine.usePower(combatant.token as PToken, power, [target.token]);
+  //   await this.chooseOpener(actionName);
+  //   return true;
+  // }
 
   static checkForOpeningChanges(diffObject: FlagChangeDiffObject) : boolean {
     if (diffObject?.flags?.persona?.openingActionData) {
@@ -618,7 +631,7 @@ export class OpenerManager {
   }
 
   async requestOpenerChoice() {
-    const comb= this.combat.combatant;
+    const comb = this.combat.combatant;
     if (!comb || !PersonaCombat.isPersonaCombatant(comb)) {
       return;
     }
@@ -626,12 +639,15 @@ export class OpenerManager {
       return;
     }
     if (!comb.actor.isOwner) { return; }
+    await CombatPanel.instance.setTarget(comb.token);
+    await CombatPanel.instance.activate();
     this.panel.setOpenerList(comb, this.getOpenerChoices());
     await SidePanelManager.push(this.panel);
   }
 
-  async execOpeningOption( option: OpenerOption) : Promise<void> {
-    const combatant= this.combat.combatants.find(c=> c.id == option.combatant);
+  async execOpeningOption( openerIndex: number, targetIndex?: number) : Promise<void> {
+    const option = this.getOpenerChoices()[openerIndex];
+    const combatant = this.combat.combatants.find(c=> c.id == option.combatant);
     if (!combatant || !PersonaCombat.isPersonaCombatant(combatant)) {
       PersonaError.softFail("Couldn't find Combatant to execute Opening Option");
       return;
@@ -645,14 +661,16 @@ export class OpenerManager {
       return;
     }
     if (option.power) {
-      await this.execOpenerPower(combatant, option.power);
+      await this.execOpenerPower(combatant, option.power, targetIndex);
     }
+    await this.cleanUpAfterOpener();
     await this.processOptionEffects(combatant, option.optionEffects);
   }
 
-  async execOpenerPower(combatant: PersonaCombatant, powerData: NonNullable<OpenerOption["power"]>) {
+  async execOpenerPower(combatant: PersonaCombatant, powerData: NonNullable<OpenerOption["power"]>, targetIndex ?: number) {
     const {powerId, targets} = powerData;
-    const power = combatant.actor.persona().powers
+    const targetId = targetIndex && targets ? targets[targetIndex]: undefined;
+    const power = combatant.actor.openerActions
       .find( pwr=> pwr.id == powerId)
       ?? (combatant.actor.items.find( item=> item.id == powerId));
     if (!power || !power.isUsableType()) {
@@ -660,9 +678,9 @@ export class OpenerManager {
       return;
     }
     const resolvedTargets = targets != undefined
-      ? targets.map (target => this.combat.combatants
-        .find(comb => comb.id == target)?.token as U<PToken>)
-      .filter( tok => tok != undefined)
+      ? this.combat.combatants
+      .filter(comb => comb.id == targetId)
+      .map(comb => comb?.token as PToken)
       : undefined;
     await this.combat.combatEngine.usePower(combatant.token, power, resolvedTargets);
   }

@@ -242,6 +242,7 @@ export class CombatPanel extends PersonaPanel {
 
   override prereqs() {
     return [
+      ...super.prereqs(),
       () => PersonaDB.isLoaded
     ];
   }

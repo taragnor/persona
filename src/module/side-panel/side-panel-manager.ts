@@ -93,6 +93,7 @@ export class SidePanelManager {
   }
 
   static async renderPanel(sidePanel: SidePanel) {
+    await sidePanel.waitUntilReady();
     if (PersonaSettings.debugMode()) {
       console.log(`rendering ${sidePanel?.panelName ?? "No Panel given"}`);
     }

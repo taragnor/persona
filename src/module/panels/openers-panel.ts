@@ -45,38 +45,42 @@ export class OpenerPanel extends SubPanel {
 
   override activateListeners(html: JQuery) {
     super.activateListeners(html);
-    html.find(".control-panel .opener-list .option-target").on("click", (ev) => void this._onSelectOpenerTarget(ev));
-    html.find(".control-panel .opener-list .simple-action").on("click", (ev) => void this._onSelectSimpleOpener(ev));
+    PersonaCombat.combat?.openers.activateListeners(html);
+    // html.find(".opener-selector .option-target").on("click", (ev) => void this._onSelectOpener(ev));
+    // html.find(".opener-selector button.auto-action").on("click", (ev) => void this._onSelectOpener(ev));
 
   }
 
+  // private async _onSelectOpener(ev: JQuery.ClickEvent) {
+  //   await PersonaCombat.combat?.openers._onOpenerSelect(ev);
+  // }
 
-  _onSelectSimpleOpener(ev: JQuery.Event) {
-    ev.stopPropagation();
 
-  }
+  // _onSelectSimpleOpener(ev: JQuery.Event) {
+  //   ev.stopPropagation();
+  // }
 
-  private async _onSelectOpenerTarget(ev: JQuery.ClickEvent) {
-    ev.stopPropagation();
-    // const combatantId = HTMLTools.getClosestData(ev,'combatantId');
-    const combatant = this._combatant;
-    const powerId = HTMLTools.getClosestData<Power["id"]>(ev,'powerId');
-    const targetId = HTMLTools.getClosestData(ev,'targetId');
-    const combat = PersonaCombat.combat;
-    if (!combat) {return;}
-    const power = combatant.actor.getUsableById(powerId);
-    if (!power) { return false; }
-    const target = combatant.parent?.combatants.find(c=> c.id == targetId);
-    const actionName = $(ev.currentTarget).parents('li.opener-option').find('.option-name').text().trim();
-    if (!target || !PersonaCombat.isPersonaCombatant(target)) {
-      PersonaError.softFail(`Cant find target Id ${targetId}`);
-      return false;
-    }
-    const ret = await combat.openers.activateTargettedOpener(combatant, power, target, actionName);
-    if (ret) {
-      await this._onReturnToMainButton(ev);
-    }
-  }
+  // private async _onSelectOpenerTarget(ev: JQuery.ClickEvent) {
+  //   ev.stopPropagation();
+  //   // const combatantId = HTMLTools.getClosestData(ev,'combatantId');
+  //   const combatant = this._combatant;
+  //   const powerId = HTMLTools.getClosestData<Power["id"]>(ev,'powerId');
+  //   const targetId = HTMLTools.getClosestData(ev,'targetId');
+  //   const combat = PersonaCombat.combat;
+  //   if (!combat) {return;}
+  //   const power = combatant.actor.getUsableById(powerId);
+  //   if (!power) { return false; }
+  //   const target = combatant.parent?.combatants.find(c=> c.id == targetId);
+  //   const actionName = $(ev.currentTarget).parents('li.opener-option').find('.option-name').text().trim();
+  //   if (!target || !PersonaCombat.isPersonaCombatant(target)) {
+  //     PersonaError.softFail(`Cant find target Id ${targetId}`);
+  //     return false;
+  //   }
+  //   const ret = await combat.openers.activateTargettedOpener(combatant, power, target, actionName);
+  //   if (ret) {
+  //     await this._onReturnToMainButton(ev);
+  //   }
+  // }
 
   override get templatePath(): string {
     return "systems/persona/parts/combat-panel-opener-list.hbs";
