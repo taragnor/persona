@@ -514,7 +514,7 @@ export class OpenerManager {
     const openerIndex = Number(HTMLTools.getClosestData(ev, "openerIndex"));
     const targetIndex = Number(HTMLTools.getClosestDataSafe(ev, "target-index", -1));
     if (Number.isNaN(targetIndex) || targetIndex == -1) {
-      await PersonaCombat.combat?.openers.ecOpeningOption( openerIndex);
+      await PersonaCombat.combat?.openers.execOpeningOption( openerIndex);
       return;
     }
     await PersonaCombat.combat?.openers.execOpeningOption( openerIndex, targetIndex);
@@ -529,69 +529,6 @@ export class OpenerManager {
     await this.panel.pop();
     await this.clearOpenerChoices();
   }
-
-  // /** return true if action executed */
-  // async activateGeneralOpener (ev: JQuery.ClickEvent) :Promise<boolean> {
-  //   if (!await HTMLTools.confirmBox('use this opener?', 'use this opener?')) {return false;}
-  //   const combatantId = HTMLTools.getClosestData(ev,'combatantId');
-  //   const powerId = HTMLTools.getClosestDataSafe(ev,'powerId', '');
-  //   const combatant = this.combat.ensureActivatingCharacterValid(combatantId as ValidAttackers["id"]);
-  //   const options = HTMLTools.getClosestDataSafe(ev, 'optionEffects', '');
-  //   if (!combatant) {
-  //     PersonaError.softFail("Invalid combatant");
-  //     return false;
-  //   }
-  //   if (!powerId) {
-  //     this.execSimpleAction(options);
-  //     const actionName = $(ev.currentTarget).parents('li.opener-option').find('.option-name').text().trim();
-  //     await this.chooseOpener(actionName);
-  //     // await this.chooseOpener(ev);
-  //     return true;
-  //   }
-  //   const power = combatant.actor.getUsableById(powerId as Power["id"]);
-  //   if (!power) { return false; }
-  //   if (power && combatant.actor?.canUseOpener()) {
-  //     await combatant.parent.combatEngine.usePower(combatant.token as PToken, power);
-  //     const actionName = $(ev.currentTarget).parents('li.opener-option').find('.option-name').text().trim();
-  //     await this.chooseOpener(actionName);
-  //     // await this.chooseOpener(ev);
-  //     return true;
-  //   } else {
-  //     ui.notifications.warn("Can't use opener here");
-  //     return false;
-  //   }
-  // }
-
-  //execSimpleAction(options: string) {
-  //  options = options.trim();
-  //  if (options.length == 0) {return;}
-  //  switch (options.trim() as OptionEffect) {
-  //    case 'disengage':
-  //      //TODO handle disengage later
-  //  }
-  //  ui.notifications.notify('Executing simple action');
-  //}
-
-  // async chooseOpener(openerName: string) {
-  //   if (!this.combat.combatant?.isOwner)  {
-  //     PersonaError.softFail("Can't pick opener, it's not your turn");
-  //     return;
-  //   }
-  //   const reverseArray = game.messages.contents.reverse();
-  //   const msgTarget = reverseArray.find( msg => {
-  //     if (!msg.isOwner) {return false;}
-  //     const html = $(msg.content);
-  //     const openerList = html.find(".option-name");
-  //     if (openerList.length> 0) {
-  //       return true;
-  //     }
-  //   });
-  //   if (!msgTarget) {
-  //     PersonaError.softFail("Couldnt' find message target to choose opener");
-  //     return;
-  //   }
-  //   await this.modifyOpenerMsg(msgTarget, openerName);
-  // }
 
   async modifyOpenerMsg(msg: ChatMessage, actionName: string) {
     if (!msg) {return;}
@@ -641,30 +578,52 @@ export class OpenerManager {
     if (!comb.actor.isOwner) { return; }
     await CombatPanel.instance.setTarget(comb.token);
     await CombatPanel.instance.activate();
-    this.panel.setOpenerList(comb, this.getOpenerChoices());
-    await SidePanelManager.push(this.panel);
+    const choices = this.getOpenerChoices();
+    if (choices.length == 0) {return;}
+    if (choices.some( c => c.mandatory)) {
+      await this._execOpener(choices.find( c=> c.mandatory)!);
+      return;
+    }
+    if (choices.length > 0) {
+      this.panel.setOpenerList(comb, this.getOpenerChoices());
+      await SidePanelManager.push(this.panel);
+    }
   }
 
   async execOpeningOption( openerIndex: number, targetIndex?: number) : Promise<void> {
     const option = this.getOpenerChoices()[openerIndex];
-    const combatant = this.combat.combatants.find(c=> c.id == option.combatant);
+    await this._execOpener(option, targetIndex);
+  }
+
+  private validateCombatant(combatant: U<Combatant<ValidAttackers>>) : combatant is PersonaCombatant {
     if (!combatant || !PersonaCombat.isPersonaCombatant(combatant)) {
       PersonaError.softFail("Couldn't find Combatant to execute Opening Option");
-      return;
+      return false;
     }
     if (!combatant.isOwner) {
       PersonaError.softFail("You don't own this combatant");
-      return;
+      return false;
     }
     if (!this.combat.turnCheck(combatant.actor)) {
       PersonaError.softFail(`${combatant.name} is not currently able to take actions (Out of Turn Action?)`);
+      return false;
+    }
+    return true;
+  }
+
+  private async _execOpener(option: OpenerOption, targetIndex ?: number) {
+    const combatant = this.combat.combatants.find(c=> c.id == option.combatant);
+    if (!this.validateCombatant(combatant)) {
       return;
     }
-    if (option.power) {
+    if (option.power != undefined) {
       await this.execOpenerPower(combatant, option.power, targetIndex);
+    } else {
+      await this.simpleOpenerMsg(combatant, option);
     }
     await this.cleanUpAfterOpener();
     await this.processOptionEffects(combatant, option.optionEffects);
+
   }
 
   async execOpenerPower(combatant: PersonaCombatant, powerData: NonNullable<OpenerOption["power"]>, targetIndex ?: number) {
@@ -683,6 +642,19 @@ export class OpenerManager {
       .map(comb => comb?.token as PToken)
       : undefined;
     await this.combat.combatEngine.usePower(combatant.token, power, resolvedTargets);
+  }
+
+  async simpleOpenerMsg(combatant: PersonaCombatant, opener: OpenerOption ) {
+    const content = `${combatant.name} takes opening action: ${opener.optionName ?? "Unnamed Choice"}`;
+    const messageData: MessageData = {
+      speaker: {
+        token: combatant.token.id,
+        actor: combatant.actor.id,
+      },
+      content: content,
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+    };
+    await ChatMessage.create(messageData, {});
   }
 
 

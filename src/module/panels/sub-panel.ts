@@ -37,6 +37,13 @@ export abstract class PersonaPanel extends SidePanel {
     ];
   }
 
+  override async getData() {
+    return {
+      ...await super.getData(),
+      CONST : PersonaActorSheetBase.CONST(),
+    };
+  }
+
 }
 
 export abstract class SubPanel extends PersonaPanel {
@@ -46,25 +53,11 @@ export abstract class SubPanel extends PersonaPanel {
     html.rightclick( (ev) => this._onReturnToMainButton(ev));
   }
 
-  override prereqs() {
-    return [
-      () => PersonaDB.isLoaded,
-    ];
-  }
-
-
   protected async _onReturnToMainButton(ev ?: U<JQuery.Event>) {
     if (ev) {
       ev.stopPropagation();
     }
     await this.pop();
-  }
-
-  override async getData() {
-    return {
-      ...await super.getData(),
-      CONST : PersonaActorSheetBase.CONST(),
-    };
   }
 
 }

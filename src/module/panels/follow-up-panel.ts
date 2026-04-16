@@ -1,9 +1,9 @@
 import {FollowUpActionData} from "../combat/follow-up-actions.js";
 import {PersonaCombat} from "../combat/persona-combat.js";
-import {SubPanel} from "./sub-panel.js";
+import {PersonaPanel} from "./sub-panel.js";
 
 
-export class FollowUpPanel extends SubPanel {
+export class FollowUpPanel extends PersonaPanel {
 
   followUps: FollowUpActionData[];
 
@@ -16,14 +16,22 @@ export class FollowUpPanel extends SubPanel {
     return [
       {
         label: "Act Again",
-        onPress: () => this._onReturnToMainButton(undefined),
+        onPress: () => this._noOpener(),
       }
     ];
   }
 
+  async _noOpener() {
+    await this.pop();
+    this.followUps = [];
+    await PersonaCombat.combat?.openers.cleanUpAfterOpener();
+  }
+
   async setFollowUps(data: FollowUpActionData[]) {
     this.followUps = data;
-    await this.updatePanel();
+    if (data.length > 0) {
+      await this.updatePanel();
+    }
   }
 
   override activateListeners(html: JQuery) {

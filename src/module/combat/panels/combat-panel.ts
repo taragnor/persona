@@ -211,7 +211,7 @@ export class CombatPanel extends PersonaPanel {
     const actor = this.target?.actor;
     const persona = actor?.persona();
     const token = this.target;
-    if (!this.combat) {return {};}
+    if (!this.combat) {return {...data};}
     const combatant = this.combat?.getCombatantByActor(actor as ValidAttackers);
     let engagedList : PersonaCombatant[] = [];
     if (combatant && PersonaCombat.isPersonaCombatant(combatant))  {

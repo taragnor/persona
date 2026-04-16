@@ -18,6 +18,7 @@ export class OpenerPanel extends SubPanel {
       {
         label: "No Opener",
         onPress: () => this._onReturnToMainButton(undefined),
+        visible: () => !this._openers.some ( opener=> opener.mandatory),
       }
     ];
   }
