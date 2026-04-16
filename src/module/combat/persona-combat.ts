@@ -461,6 +461,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     const actor = combatant.actor;
     if (!game.user.isGM && actor.isOwner) {
       void CombatPanel.instance.setTarget(combatant.token);
+      void CombatPanel.instance.activate();
     }
     if (!game.user.isGM) {return;}
     await this.resetBatonStates();
