@@ -21,7 +21,7 @@ export class EnergyClassCalculator extends CostCalculator {
 				 const emptyCost = { energyRequired:0, energyCost:0, cooldown: 0 };
 				 return emptyCost;
 			}
-			return this.personalizedCostForShadow(baseCost, shadow);
+			return this.personalizedCostForShadow(baseCost, shadow, pwr);
 	 }
 
 	 private static calcBasePowerCost(pwr: Power)  {
@@ -43,12 +43,13 @@ export class EnergyClassCalculator extends CostCalculator {
 			return Math.max(cooldown, pwr.system.cooldown ?? 0);
 	 }
 
-	static personalizedCostForShadow(basePowerLevel: EnergyCostBase, shadow: Persona) : {energyRequired: number, energyCost: number, cooldown: number} {
+	static personalizedCostForShadow(basePowerLevel: EnergyCostBase, shadow: Persona, power: Power) : {energyRequired: number, energyCost: number, cooldown: number} {
 		const shadow_lvl = shadow.level;
 		let {energyRequired, energyCost} = basePowerLevel;
 
-		const situation = {
+		const situation : Situation = {
 			user: shadow.user.accessor,
+      usedPower: power.accessor,
 		};
 		const modifiers = shadow.getBonuses("power-energy-cost").total(situation);
 		const effectiveCost  = this.BASE_COST + energyCost + modifiers - shadow_lvl;
