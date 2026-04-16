@@ -14,6 +14,7 @@ import {PersonaTargetting} from "./persona-targetting.js";
 export class OpenerManager {
   combat: PersonaCombat;
   static panel = new OpenerPanel();
+  static OPENER_MSG_ID_FLAG = "openerMsgId" as const;
 
   static OPENING_ACTION_FLAG_NAME = "openingActionData" as const;
   constructor(combat: PersonaCombat) {
@@ -24,25 +25,36 @@ export class OpenerManager {
     return OpenerManager.panel;
   }
 
-  async printOpenerList(combatant: PersonaCombatant) : Promise< U<{openerMsg:  string, roll: Roll}>> {
-    const openingReturn = await this.execOpeningRoll(combatant);
-    if (openingReturn) {
-      await this.storeOpenerChoices(openingReturn.data);
-      const {data, roll} = openingReturn;
-      const openerMsg = await foundry.applications.handlebars.renderTemplate('systems/persona/parts/openers-list.hbs', {roll, openers: data, combatant});
-      return {
-        openerMsg: openerMsg,
-        roll: roll
-      };
-    }
+  private async getOpenerMsg(combatant: PersonaCombatant, data: OpenerOptionsReturn[], roll: Roll) {
+    const openerMsg = await foundry.applications.handlebars.renderTemplate('systems/persona/parts/openers-list.hbs', {roll, openers: data, combatant});
+    return {
+      openerMsg: openerMsg,
+      roll: roll
+    };
   }
 
-  async storeOpenerChoices (openingReturn: OpenerOptionsReturn[]) {
+
+  async storeOpenerChatMsg(msgId: U<ChatMessage["id"]>) {
+    if (!msgId) {
+      await this.combat.unsetFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME);
+      return;
+    }
+    await this.combat.setFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME, msgId);
+  }
+
+  get chatMessage() : U<ChatMessage> {
+    const msgId= this.combat.getFlag<ChatMessage["id"]>("persona", OpenerManager.OPENING_ACTION_FLAG_NAME);
+    if (!msgId) {return undefined;}
+    return game.messages.get(msgId);
+  }
+
+
+  private async storeOpenerChoices (openingReturn: OpenerOptionsReturn[]) {
     const options = openingReturn.flatMap ( or => or.options);
     await this.combat.setFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME, options);
   }
 
-  async clearOpenerChoices()  {
+  private async clearOpenerChoices()  {
     await this.combat.unsetFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME);
   }
 
@@ -50,7 +62,16 @@ export class OpenerManager {
     return (this.combat.getFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME) as OpenerOption[]) ?? [];
   }
 
-  async execOpeningRoll( combatant: PersonaCombatant) : Promise<{data: OpenerOptionsReturn[], roll: Roll} | null> {
+  public async execOpeningRoll(combatant: PersonaCombatant) : Promise< U<{openerMsg:  string, roll: Roll}>> {
+    const openingReturn = await this._execOpeningRoll(combatant);
+    if (!openingReturn) {return undefined;}
+    await this.storeOpenerChoices(openingReturn.data);
+    const {data, roll} = openingReturn;
+    return await this.getOpenerMsg(combatant, data, roll);
+  }
+
+
+  private async _execOpeningRoll( combatant: PersonaCombatant) : Promise<{data: OpenerOptionsReturn[], roll: Roll} | null> {
     const returns :OpenerOptionsReturn[]= [];
     if (this.combat.isSocial) {return null;}
     const actor = combatant.actor;
@@ -528,13 +549,15 @@ export class OpenerManager {
   async cleanUpAfterOpener() {
     await this.panel.pop();
     await this.clearOpenerChoices();
+    await this.storeOpenerChatMsg(undefined);
   }
 
-  async modifyOpenerMsg(msg: ChatMessage, actionName: string) {
+  async modifyOpenerMsg( opener: OpenerOption) {
+    const msg = this.chatMessage;
     if (!msg) {return;}
     const choice = $(`<div class='opener-choice'>
       <span>Chosen Opener:</span>
-      <span>${actionName}</span>
+      <span>${opener.optionName}</span>
       </div>`);
     const targetToReplace = $(msg.content).find('.opener-choices');
     const replacedData = targetToReplace.empty();
@@ -546,25 +569,13 @@ export class OpenerManager {
     }
   }
 
-  /** returns true if the opener actually gets executed*/
-  // async activateTargettedOpener(combatant :PersonaCombatant,  power: Usable, target: PersonaCombatant, actionName: string ) : Promise<boolean> {
-  //   if (!await HTMLTools.confirmBox('use this opener?', 'use this opener?')) {return false;}
-  //  if (!this.combat.ensureActivatingCharacterValid(combatant.id)) {return false;}
-  //   await combatant.parent.combatEngine.usePower(combatant.token as PToken, power, [target.token]);
-  //   await this.chooseOpener(actionName);
-  //   return true;
-  // }
-
-  static checkForOpeningChanges(diffObject: FlagChangeDiffObject) : boolean {
+  async onUpdateCombat(diffObject: FlagChangeDiffObject) : Promise<boolean> {
+    //Check for opening changes
     if (diffObject?.flags?.persona?.openingActionData) {
+      await this.combat.openers.requestOpenerChoice();
       return true;
     }
     return false;
-  }
-
-  getOpenerPrintableName(usable: Usable, targetList: PersonaCombatant[]) : string  | undefined {
-    const targets= targetList.map( target=> target.name);
-    return `${usable.displayedName.toString()} (${targets.join(', ')}): ${usable.system.description}`;
   }
 
   async requestOpenerChoice() {
@@ -592,6 +603,10 @@ export class OpenerManager {
 
   async execOpeningOption( openerIndex: number, targetIndex?: number) : Promise<void> {
     const option = this.getOpenerChoices()[openerIndex];
+    if (!option) {
+      PersonaError.softFail(`Can't find Opener option at index ${openerIndex}`);
+      return;
+    }
     await this._execOpener(option, targetIndex);
   }
 
@@ -616,6 +631,7 @@ export class OpenerManager {
     if (!this.validateCombatant(combatant)) {
       return;
     }
+    await this.modifyOpenerMsg (option);
     if (option.power != undefined) {
       await this.execOpenerPower(combatant, option.power, targetIndex);
     } else {

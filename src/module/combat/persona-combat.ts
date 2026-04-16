@@ -39,6 +39,7 @@ import {FollowUpManager} from './follow-up-actions.js';
 import {ConditionalEffectPrinter} from '../conditionalEffects/conditional-effect-printer.js';
 import {PersonaSockets} from '../persona.js';
 
+
 declare global {
   interface SocketMessage {
     'QUERY_ALL_OUT_ATTACK' : Record<string, never>;
@@ -56,6 +57,7 @@ declare global {
 }
 
 export class PersonaCombat extends Combat<ValidAttackers> {
+  static WAIT_FOR_FOUNRY_DELAY = 1000 as const;
   _resolvingAttack: boolean = false;
   _engagedList: EngagementList;
   consecutiveCombat: number =0;
@@ -482,7 +484,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       this.handleStartTurnEffects(combatant),
     );
     await this.execStartingTrigger(combatant);
-    const openingData = await this.openers.printOpenerList(combatant);
+    const openingData = await this.openers.execOpeningRoll(combatant);
     if (openingData) {
       startTurnMsg.push(openingData.openerMsg);
       baseRolls.push(openingData.roll);
@@ -496,9 +498,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       sound: rolls.length + baseRolls.length > 0 ? CONFIG.sounds.dice : undefined
     };
     const msg = await ChatMessage.create(messageData, {});
+    await this.openers.storeOpenerChatMsg(msg.id);
     const actorOwner = actor.getPrimaryPlayerOwner();
     if (actorOwner) {
-      await sleep(2000);
+      await sleep(PersonaCombat.WAIT_FOR_FOUNRY_DELAY);
       await msg.update({'author': actorOwner});
     }
   }
@@ -653,7 +656,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         };
         const CR = await TriggeredEffect.autoTriggerToCR('end-turn', user.actor, situation);
         await CR?.toMessage('On End Turn', combatant.actor);
-        // await PersonaCombat.execTrigger("end-turn", user.token.actor as ValidAttackers, situation);
       }
     }
     const notes = await actor?.onEndCombatTurn() ?? [];
