@@ -6,6 +6,7 @@ import {PersonaSockets} from "../persona.js";
 import {PersonaRegion} from "../region/persona-region.js";
 import {Helpers} from "../utility/helpers.js";
 import {ExplorationPowerPanel} from "./explorationPowerPanel.js";
+import {ItemUsePanel} from "./item-use-panel.js";
 import {PersonaPanel} from "./sub-panel.js";
 
 export class RegionPanelMain extends PersonaPanel {
@@ -81,6 +82,10 @@ export class RegionPanelMain extends PersonaPanel {
       enabled: () => !PersonaCombat.combat,
     });
     return buttons;
+  }
+
+  async _openInventoryPanel(member: PC | NPCAlly) {
+    await this.push(new ItemUsePanel(member, (item:Carryable) => item.isUsableType() && item.canBeUsedInExploration()));
   }
 
 	searchButton(_ev ?: JQuery.ClickEvent) {

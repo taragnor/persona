@@ -221,8 +221,8 @@ export class ConsequenceApplier {
       case "display-message":
         break;
       case "inspiration-cost":
-        if (actor.system.type == "pc") {
-          await (actor as PC).spendInspiration(otherEffect.linkId, otherEffect.amount);
+        if (actor.isRealPC()) {
+          await actor.spendInspiration(otherEffect.linkId, otherEffect.amount);
         }
         break;
       case "hp-loss":

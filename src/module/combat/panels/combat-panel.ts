@@ -1,6 +1,7 @@
 import {PersonaSettings} from "../../../config/persona-settings.js";
 import {PersonaActor} from "../../actor/persona-actor.js";
 import {PersonaActorSheetBase} from "../../actor/sheets/actor-sheet.base.js";
+import {ItemUsePanel} from "../../panels/item-use-panel.js";
 import {PersonaSwitchPanel} from "../../panels/persona-switch-panel.js";
 import {PersonaPanel} from "../../panels/sub-panel.js";
 import {PersonaDB} from "../../persona-db.js";
@@ -247,7 +248,9 @@ export class CombatPanel extends PersonaPanel {
 
   private async _onInventoryButton() {
     if (this._target && this._target.actor && this._target.actor.canUseConsumables) {
-      await this._openInventoryPanel(this._target.actor as PC | NPCAlly);
+      if (this._target.actor.isPCLike()) {
+        await this.push(new ItemUsePanel(this._target.actor as PC | NPCAlly, (x: Carryable) => x.isUsableType() && x.canBeUsedInCombat()));
+      }
     }
   }
 

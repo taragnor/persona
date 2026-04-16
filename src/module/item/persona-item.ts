@@ -776,36 +776,44 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return `${name} (${tags})`;
   }
 
-  hasTag(this: Power, tag: PowerTag, user : null | ValidAttackers) : boolean;
-  hasTag(this: Consumable, tag: PowerTag, user ?: null) : boolean;
-  hasTag(this: Carryable, tag: EquipmentTag | PowerTag, user ?: null) : boolean;
-  hasTag(this: InvItem | Weapon | SkillCard, tag: EquipmentTag, user ?: null): boolean;
-  hasTag(this: UsableAndCard, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
-  hasTag(this: ItemModifierContainer, tag: PowerTag, user ?: null): boolean;
-  hasTag(this: SkillCard | Consumable | InvItem | Weapon, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
-  hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user : null) : boolean;
-  hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user?: null | ValidAttackers) : boolean {
-    let list : readonly (PowerTag | EquipmentTag)[];
-    switch (this.system.type) {
-      case 'power':
-        list = (this as Power).tagList(user ?? null);
-        break;
-      case 'consumable':
-          list = (this as Consumable).tagList(user ?? null);
-        break;
-      case 'item':
-      case 'weapon':
-        list = (this as Weapon | InvItem).tagList(user ?? null);
-        break;
-      case 'skillCard':
-        list = (this as SkillCard).tagList(user ?? null);
-        break;
-      default:
-        this.system satisfies never;
-        // PersonaError.softFail(`Can't check tag list for ${this.system["type"]}`);
-        return false;
+  // hasTag(this: Power, tag: PowerTag, user : null | ValidAttackers) : boolean;
+  // hasTag(this: Consumable, tag: PowerTag, user ?: null) : boolean;
+  // hasTag(this: Carryable, tag: EquipmentTag | PowerTag, user ?: null) : boolean;
+  // hasTag(this: InvItem | Weapon | SkillCard, tag: EquipmentTag, user ?: null): boolean;
+  // hasTag(this: UsableAndCard, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
+  // hasTag(this: ItemModifierContainer, tag: PowerTag, user ?: null): boolean;
+  // hasTag(this: SkillCard | Consumable | InvItem | Weapon, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
+  // hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user : null) : boolean;
+  hasTag(this: UsableAndCard | InvItem | Weapon, tags: (PowerTag | EquipmentTag) | (PowerTag | EquipmentTag)[], user?: N<ValidAttackers>) : boolean {
+    // let list : readonly (PowerTag | EquipmentTag)[];
+    // switch (this.system.type) {
+    //   case 'power':
+    //     list = (this as Power).tagList(user ?? null);
+    //     break;
+    //   case 'consumable':
+    //       list = (this as Consumable).tagList(user ?? null);
+    //     break;
+    //   case 'item':
+    //   case 'weapon':
+    //       list = (this as Weapon | InvItem).tagList(user ?? null);
+    //     break;
+    //   case 'skillCard':
+    //       list = (this as SkillCard).tagList(user ?? null);
+    //     break;
+    //   default:
+    //       this.system satisfies never;
+    //     // PersonaError.softFail(`Can't check tag list for ${this.system["type"]}`);
+    //     return false;
+    // }
+    const list = this.tagList(user ?? null);
+    if (!Array.isArray(tags)) {
+      tags = [tags];
     }
-    return list.some(t=> t instanceof PersonaItem ? t.system.linkedInternalTag == tag : t == tag );
+    const modTagList = tags.map( tag => tag instanceof PersonaItem ? tag.system.linkedInternalTag ?? tag.id : tag);
+
+    return modTagList.some( tag=> list
+      .some(t=> t instanceof PersonaItem ? t.system.linkedInternalTag == tag || t.id == tag : t == tag )
+    );
   }
 
   equals(other: PersonaItem) : boolean {
@@ -1908,7 +1916,23 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       item.hasTag('passive');
   }
 
-  canBeUsedInExploration(this: UsableAndCard) : boolean {
+  canBeUsedInCombat () : boolean {
+    if (!this.isUsableType()) {return false;}
+    if (this.isSkillCard()) {return false;}
+    if (this.hasTag(["exploration", "downtime", "downtime-minor"])) {return false;}
+    return true;
+  }
+
+  canBeUsedInDowntime() : boolean {
+    if (!this.isUsableType()) {return false;}
+    if (this.isSkillCard()) {return true;}
+    if (!this.hasTag(["downtime", "downtime-minor"])) {return false;}
+    return true;
+
+  }
+
+  canBeUsedInExploration() : boolean {
+    if (!this.isUsableType()) {return false;}
     if (this.isSkillCard()) {return true;}
     if (this.isPassive() || this.isDefensive()) {return false;}
     if (!this.canBeUsedOnAllies()) { return false;}

@@ -1,14 +1,16 @@
 import {PersonaError} from "../persona-error.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
-import {PersonaPanel, SubPanel} from "./sub-panel.js";
+import {SubPanel} from "./sub-panel.js";
 
 export class ItemUsePanel extends SubPanel {
 
   private actor: PC | NPCAlly;
+  private filter: U<(x: Carryable) => boolean>;
 
-  constructor (actor: PC | NPCAlly) {
+  constructor (actor: PC | NPCAlly, filter ?: (x: Carryable) => boolean) {
     super("item-use-panel");
     this.actor = actor;
+    this.filter = filter;
   }
 
   override get templatePath(): string {
@@ -20,7 +22,16 @@ export class ItemUsePanel extends SubPanel {
       ...await super.getData(),
       persona: this.actor.persona(),
       actor: this.actor,
+      itemList: this.itemList(),
     };
+  }
+
+  itemList() : Carryable[] {
+    const baseList = this.actor.usableConsumables;
+    if (!this.filter) {
+      return baseList;
+    }
+    return baseList.filter( this.filter);
   }
 
   override activateListeners(html : JQuery) {
@@ -44,7 +55,7 @@ export class ItemUsePanel extends SubPanel {
 
 
   static init() {
-    PersonaPanel.itemPanel = (actor: PC | NPCAlly) => new ItemUsePanel(actor);
+    // PersonaPanel.itemPanel = (actor: PC | NPCAlly) => new ItemUsePanel(actor);
   }
 
 }

@@ -1,6 +1,7 @@
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaCombat} from "../combat/persona-combat.js";
 import {PersonaSocial} from "../social/persona-social.js";
+import {ItemUsePanel} from "./item-use-panel.js";
 import {PersonaPanel, SubPanel} from "./sub-panel.js";
 
 export class DowntimePanel extends PersonaPanel {
@@ -60,7 +61,7 @@ export class DowntimePanel extends PersonaPanel {
         visible: () => true,
       }, {
         label: "Item",
-        onPress: () => this._openInventoryPanel(actor),
+        onPress: () => this._openInventoryPanel(),
         enabled: () => true,
         visible: () => true,
       }
@@ -71,6 +72,14 @@ export class DowntimePanel extends PersonaPanel {
       ...await super.getData(),
       actor: this.actor,
     };
+  }
+
+  async _openInventoryPanel() {
+    if (this.actor) {
+      await this.push(
+        new ItemUsePanel(this.actor, x => x.canBeUsedInDowntime())
+      );
+    }
   }
 
   override activateListeners(html: JQuery) {

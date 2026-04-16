@@ -8,7 +8,7 @@ import {lockObject} from "../utility/anti-loop.js";
 
 export abstract class PersonaPanel extends SidePanel {
 
-  static itemPanel: (actor: PC | NPCAlly) => PersonaPanel;
+  // static itemPanel: (actor: PC | NPCAlly) => PersonaPanel;
   static powerSelectionPanel: (user: ValidAttackers, power: Usable) => PersonaPanel;
 
   protected async _useItemOrPower(user: ValidAttackers, power : UsableAndCard, targets ?: PToken[]) {
@@ -27,9 +27,9 @@ export abstract class PersonaPanel extends SidePanel {
     );
   }
 
-  protected async _openInventoryPanel(user:PC | NPCAlly) {
-    await this.push(PersonaPanel.itemPanel(user));
-  }
+  // protected async _openInventoryPanel(user:PC | NPCAlly) {
+  //   await this.push(PersonaPanel.itemPanel(user));
+  // }
 
 }
 
