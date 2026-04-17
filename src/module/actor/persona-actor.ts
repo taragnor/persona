@@ -23,7 +23,6 @@ import { RealDamageType } from "../../config/damage-types.js";
 import { FlagData } from "../../config/actor-parts.js";
 import { TarotCard } from "../../config/tarot.js";
 import { removeDuplicates } from "../utility/array-tools.js";
-import { testPreconditions } from "../preconditions.js";
 import { CreatureTag, InternalCreatureTag, PersonaTag } from "../../config/creature-tags.js";
 import { PersonaSocial } from "../social/persona-social.js";
 import { TAROT_DECK } from "../../config/tarot.js";
@@ -1082,7 +1081,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 	highestLinker(this: SocialLink) : {pc: PC | null, linkLevel: number} {
 		const listOfLinkers = (game.actors.contents as PersonaActor[])
-			.filter( x=> x.system.type == "pc" && x != this)
+			.filter( x=> x.isPC() && x != this)
 			.map( (pc : PC)=> ({
 				pc,
 				highest: pc.socialLinks
@@ -1111,14 +1110,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	get activityLinks() : ActivityLink[] {
-		if (this.system.type != "pc") {return [];}
+		if (!this.isPC()) {return [];}
 		return this.system.activities
 			.flatMap( aData => {
 				const activity = PersonaDB.allActivities().find(x=> x.id == aData.linkId);
 				if (!activity) {return [];}
 				const aLink : ActivityLink = {
 					strikes: aData.strikes ?? 0,
-					available: activity.isAvailable(this as PC),
+					available: PersonaSocial.isAvailable(activity, this),
 					currentProgress: aData.currentProgress,
 					activity,
 				};
@@ -1171,8 +1170,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 				if (!npc) {return [];}
 				const isDating = relationshipType == "DATE";
 				relationshipType = relationshipType ? relationshipType : npc.baseRelationship;
-				if (npc.system.type == "npc") {
-					const allFocii = (npc as NPC).getSocialFocii_NPC(npc as SocialLink);
+				if (npc.isNPC()) {
+					const allFocii = (npc).getSocialFocii_NPC(npc as SocialLink);
 					const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
 					return [{
 						currentProgress,
@@ -1182,7 +1181,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 						actor:npc as SocialLink,
 						linkBenefits: npc as SocialLink,
 						allFocii,
-						available: npc.isAvailable(this as PC),
+						available: PersonaSocial.isAvailable(npc, this),
 						focii: qualifiedFocii,
 						isDating,
 					}];
@@ -1203,7 +1202,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 							linkBenefits: personalLink,
 							allFocii: allFocii,
 							focii: qualifiedFocii,
-							available: (npc as SocialLink).isAvailable(this as PC),
+							available: PersonaSocial.isAvailable(npc as PC, this),
 							isDating,
 						}];
 					} else {
@@ -1222,7 +1221,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 							linkBenefits: teammate,
 							allFocii: allFocii,
 							focii: qualifiedFocii,
-							available: (npc as SocialLink).isAvailable(this as PC),
+							available: PersonaSocial.isAvailable(npc as PC, this),
 							isDating,
 						}];
 					}
@@ -2133,7 +2132,7 @@ get downtimeMinorActions() : (Usable | SocialCard)[] {
 	];
 	const allUsable = list.filter ( pwr => pwr.hasTag("downtime-minor", this.isValidCombatant() ? this : null));
 	return [
-		...PersonaDB.downtimeActions(),
+		...PersonaDB.minorActionActivities(),
 		...allUsable,
 	];
 }
@@ -2615,7 +2614,7 @@ async decreaseSocialLink(this: PC, linkId: string) {
 	await this.update({"system.social": this.system.social});
 }
 
-getSocialLinkProgress(this: PC, linkId: string) : number {
+getSocialLinkProgress(this: PC, linkId: SocialLink["id"] | Activity["id"]) : number {
 	const link = this.system.social.find( x=> x.linkId == linkId);
 	if (!link) {
 		return 0;
@@ -3856,22 +3855,22 @@ async deleteTokenSpend(this: SocialLink, deleteIndex:number) {
 	await this.update({"system.tokenSpends":list});
 }
 
-isAvailable(pc: PersonaActor) : boolean {
-	if (!this.isSocialLink() && !this.isNPCAlly()) {return false;}
-	const sit: Situation = {
-		user: (pc as ValidAttackers).accessor,
-		socialTarget: this.accessor,
-	};
-	if(!testPreconditions(this.getAvailabilityConditions(), sit)) {
-		return false;
-	}
-	if (PersonaSocial.availabilityDisqualifierStatuses.some (st=> this.hasStatus(st))) {return false;}
-	const availability = this.system.weeklyAvailability;
-	if (this.isSociallyDisabled())  {
-		return false;
-	}
-	return availability?.available ?? false;
-}
+// isAvailable(pc: PC) : boolean {
+// 	if (!this.isSocialLink() && !this.isNPCAlly()) {return false;}
+// 	const sit: Situation = {
+// 		user: pc.accessor,
+// 		socialTarget: this.accessor,
+// 	};
+// 	if(!testPreconditions(this.getAvailabilityConditions(), sit)) {
+// 		return false;
+// 	}
+// 	if (PersonaSocial.availabilityDisqualifierStatuses.some (st=> this.hasStatus(st))) {return false;}
+// 	const availability = this.system.weeklyAvailability;
+// 	if (this.isSociallyDisabled())  {
+// 		return false;
+// 	}
+// 	return availability?.available ?? false;
+// }
 
 getAvailabilityConditions(this: SocialLink)  : readonly SourcedPrecondition[] {
 	if (this.isPC()){ return [];}
@@ -3879,24 +3878,24 @@ getAvailabilityConditions(this: SocialLink)  : readonly SourcedPrecondition[] {
 	return conds;
 }
 
-isSociallyDisabled(): boolean {
-	switch (this.system.type) {
-		case "shadow":
-		case "tarot":
-			return true;
-		case "pc": {
-			const statuses : StatusEffectId[] = ["jailed", "exhausted", "crippled", "injured"];
-			return statuses.some( x=> this.hasStatus(x));
-		}
+// isSociallyDisabled(): boolean {
+// 	switch (this.system.type) {
+// 		case "shadow":
+// 		case "tarot":
+// 			return true;
+// 		case "pc": {
+// 			const statuses : StatusEffectId[] = ["jailed", "exhausted", "crippled", "injured"];
+// 			return statuses.some( x=> this.hasStatus(x));
+// 		}
 
-		case "npcAlly":
-		case "npc":
-			return this.system.weeklyAvailability.disabled || this.tarot == undefined;
-		default:
-			this.system satisfies never;
-			throw new PersonaError("Unknown type");
-	}
-}
+// 		case "npcAlly":
+// 		case "npc":
+// 			return this.system.weeklyAvailability.disabled || this.tarot == undefined;
+// 		default:
+// 			this.system satisfies never;
+// 			throw new PersonaError("Unknown type");
+// 	}
+// }
 
 canTakeNormalDowntimeActions(): boolean {
 	return !this.hasStatus("jailed") && !this.hasStatus("crippled");

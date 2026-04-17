@@ -329,11 +329,14 @@ export class PCSheet extends PCLikeSheet {
 	}
 
 
-	async startSocialLink(event: JQuery.ClickEvent) {
-		const linkId= HTMLTools.getClosestData<PersonaActor["id"]>(event, "linkId");
-		await PersonaSocial.startSocialLink(this.actor, linkId);
-
-	}
+  async startSocialLink(event: JQuery.ClickEvent) {
+    const linkId= HTMLTools.getClosestData<PersonaActor["id"]>(event, "linkId");
+    const link = PersonaDB.socialLinks().find( sl=> sl.id == linkId);
+    if (!link) {
+      throw new PersonaError(`can't find Link Id ${linkId}`);
+    }
+    await PersonaSocial.startSocialLink(this.actor, link);
+  }
 
 	async movePowerToSideboard( event: JQuery.ClickEvent) {
 		const powerId = HTMLTools.getClosestData<Power["id"]>(event, "powerId");

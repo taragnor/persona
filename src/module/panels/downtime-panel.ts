@@ -1,23 +1,21 @@
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaCombat} from "../combat/persona-combat.js";
+import {PersonaDB} from "../persona-db.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {ItemUsePanel} from "./item-use-panel.js";
 import {PersonaPanel, SubPanel} from "./sub-panel.js";
 
 export class DowntimePanel extends PersonaPanel {
   actor: U<PC> = undefined;
-  static instance = new DowntimePanel();
 
   constructor () {
     super("downtime-panel");
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async setActor(actor: PC) {
     if (this.actor != actor) {
       this.actor = actor;
-      //not ready yet
-      // await this.activate();
+      await this.activate();
     }
   }
 
@@ -34,36 +32,43 @@ export class DowntimePanel extends PersonaPanel {
         onPress: () => this._onSocialLinkButton(),
         enabled: () => PersonaSocial.hasMainSocialAction(actor),
         visible: () => true,
+        cssClasses : ["tall-button"]
       }, {
         label: "Jobs",
         onPress: () => this._onActivities("job"),
         enabled: () => PersonaSocial.hasMainSocialAction(actor),
         visible: () => true,
+        cssClasses : ["tall-button"]
       }, {
         label: "Training",
         onPress: () => this._onActivities("training"),
         enabled: () => PersonaSocial.hasMainSocialAction(actor),
         visible: () => true,
+        cssClasses : ["tall-button"]
       }, {
         label: "Recovery",
         onPress: () => this._onActivities("recovery"),
         enabled: () => PersonaSocial.hasMainSocialAction(actor),
         visible: () => true,
+        cssClasses : ["tall-button"]
       }, {
         label: "Other",
         onPress: () => this._onActivities("other"),
         enabled: () => PersonaSocial.hasMainSocialAction(actor),
         visible: () => true,
+        cssClasses : ["tall-button"]
       }, {
-        label: "Minor Actor",
+        label: "Minor Action",
         onPress: () => this._onActivities("minor"),
         enabled: () => PersonaSocial.hasMinorSocialAction(actor),
         visible: () => true,
+        cssClasses : ["tall-button"]
       }, {
         label: "Item",
         onPress: () => this._openInventoryPanel(),
         enabled: () => true,
         visible: () => true,
+        cssClasses : ["tall-button"]
       }
     ];
   }
@@ -77,9 +82,19 @@ export class DowntimePanel extends PersonaPanel {
   async _openInventoryPanel() {
     if (this.actor) {
       await this.push(
-        new ItemUsePanel(this.actor, x => x.canBeUsedInDowntime())
+        new ItemUsePanel(this.actor, item => this.usableDowntimeItem(item))
       );
     }
+  }
+
+  usableDowntimeItem(item: Carryable) : boolean {
+    if (this.actor == undefined) {return false;}
+    const minor = PersonaSocial.hasMinorSocialAction(this.actor);
+    if (item.hasTag("downtime-minor", this.actor)
+      && !minor) {
+      return false;
+    }
+    return item.canBeUsedInDowntime();
   }
 
   override activateListeners(html: JQuery) {
@@ -88,26 +103,31 @@ export class DowntimePanel extends PersonaPanel {
 
   async _onSocialLinkButton() {
     if (!this.actor) {return null;}
-    const list = this.actor.socialLinks
-      .map( x=> x.actor);
-    await this.push(new MainActivityPanel(this.actor, list));
+    const list = PersonaDB.socialLinks()
+    .filter ( sl=> sl != this.actor);
+    await this.push(new SocialActivityPanel(this.actor, list));
   }
 
   async _onActivities(type : SocialCard["system"]["cardType"]) {
     if (!this.actor) {return null;}
-    const jobs = PersonaSocial.availableActivities()
+    if (type == "minor") {
+      const activities = PersonaSocial.availableMinorActionActivities(this.actor)
+        .filter( act => act.system.cardType == type);
+      await this.push(new SocialActivityPanel(this.actor, activities));
+      return;
+    }
+      const activities = PersonaSocial.availableStandardActionActivities(this.actor)
       .filter( act => act.system.cardType == type);
-    await this.push(new MainActivityPanel(this.actor, jobs));
-  }
-
+      await this.push(new SocialActivityPanel(this.actor, activities));
+    }
 }
 
-class MainActivityPanel extends SubPanel {
+class SocialActivityPanel extends SubPanel {
   list : (SocialLink | Activity) [] = [];
   actor: PC;
 
   override get templatePath(): string {
-    return "systems/persona/sheets/panels/social-activity-list-panel.hbs";
+    return "systems/persona/sheets/panels/social-activity-panel.hbs";
   }
 
   constructor (actor: PC, list: (SocialLink | Activity)[]) {
@@ -123,6 +143,57 @@ class MainActivityPanel extends SubPanel {
       list: this.list,
     };
   }
+
+  activityButtons() : SidePanel.ButtonConfig[] {
+    const activityButtons =  this.list.map( activity => this.activityToButton(activity));
+    return [
+      ...activityButtons,
+    ];
+  }
+
+  protected override buttonConfig() : SidePanel.ButtonConfig[] {
+    return [
+      ...this.activityButtons(),
+      ...super.buttonConfig(),
+    ];
+  }
+
+  private activityLabel(activity : SocialLink | Activity) : string {
+    const isNewLink = activity instanceof PersonaActor && this.actor.getSocialSLWith(activity) == 0;
+    const progress = this.actor.getSocialLinkProgress(activity.id);
+    const tooltip = `Progress Tokens: ${progress}`;
+    const name = `<span class="activity-name" title="${tooltip}">${activity.name}</span>`;
+    const img = activity.img ? `<img src="${activity.img}">` : "";
+    const SL  = activity instanceof PersonaActor
+    ? this.actor.getSocialSLWith(activity)
+    : 0;
+    const star = PersonaSocial.isHighestLinkerWith(this.actor, activity) && SL < 10
+      ? `<i title="Highest Link Level" class="fa-solid fa-star gold"></i>`
+      : "";
+    const SLText = SL > 0 ? `<span class="sl-level"> (SL ${SL}) </span>` : "";
+    const newLinkText = isNewLink ? `<span class="new-link">(New Link)</span>` : "";
+    return `${star}${img}${name}${SLText}${newLinkText}`;
+  }
+
+
+  private activityToButton(activity: SocialLink | Activity) : SidePanel.ButtonConfig {
+    const isNewLink = activity instanceof PersonaActor && this.actor.getSocialSLWith(activity) == 0;
+    const meetsLinkConditions : boolean = isNewLink ?
+      PersonaSocial.meetsConditionsToStartLink(this.actor, activity)
+    : PersonaSocial.isAvailable(activity, this.actor);
+
+    return {
+      label: this.activityLabel(activity),
+      onPress: () => this.selectActivity(activity),
+      enabled: () => meetsLinkConditions && PersonaSocial.turnCheck(this.actor),
+      visible: () => PersonaSocial.isVisible(activity, this.actor),
+      cssClasses : ["tall-button"],
+    } satisfies SidePanel.ButtonConfig;
+  }
+
+  private async selectActivity(activity: SocialLink | Activity) {
+    await PersonaSocial.chooseActivity(this.actor, activity);
+  }
 }
 
 Hooks.on("controlToken", async (token : Token<PersonaActor>, selected: boolean) => {
@@ -134,13 +205,14 @@ Hooks.on("controlToken", async (token : Token<PersonaActor>, selected: boolean) 
   const combat = PersonaCombat.combat;
   if (!combat || !combat.isSocial) {return;}
   if (actor.isRealPC()) {
-    await DowntimePanel.instance.setActor(actor);
+    await PersonaSocial.panel.setActor(actor);
   }
 });
 
 Hooks.on("updateActor", async (actor) => {
-  if (DowntimePanel.instance.actor == actor) {
-    await DowntimePanel.instance.updatePanel();
+  const panel = PersonaSocial.panel;
+  if (panel.actor == actor) {
+    await panel.updatePanel();
   }
 });
 

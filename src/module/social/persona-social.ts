@@ -35,6 +35,8 @@ export class PersonaSocial {
 	static allowMetaverse: boolean = true;
 	static metaverseChoosers = 0;
 
+  static panel = new DowntimePanel();
+
 	private static _cardExecutor : N<SocialCardExecutor> = null;
 
 	static cardDrawPromise: null | {
@@ -79,31 +81,31 @@ export class PersonaSocial {
 		}
 	}
 
-	static async startSocialTurn( pc: PC) {
-		if (pc.isOwner && !game.user.isGM)
-		{TurnAlert.alert();}
-    if (pc.isOwner) {
-      await DowntimePanel.instance.setActor(pc);
+  static async startSocialTurn( pc: PC) {
+    if (pc.isOwner && !game.user.isGM)
+    {
+      TurnAlert.alert();
+      await this.panel.setActor(pc);
     }
-		if (!game.user.isGM) {return;}
-		//only GM access beyond this point
+    if (!game.user.isGM) {return;}
+    //only GM access beyond this point
     await this.refreshSocialActions(pc);
-		const startTurnMsg = [ `<u><h2> ${pc.name}'s Social Turn</h2></u><hr>`];
+    const startTurnMsg = [ `<u><h2> ${pc.name}'s Social Turn</h2></u><hr>`];
     startTurnMsg.push(...this.statusBasedStartTurnMsg(pc));
-		for (const activity of PersonaDB.allActivities()) {
-			if (activity.announce(pc)) {
-				startTurnMsg.push(` <b>${activity.displayedName.toString()}</b> is available today.`);
-			}
-		}
+    for (const activity of PersonaDB.allActivities()) {
+      if (activity.announce(pc)) {
+        startTurnMsg.push(` <b>${activity.displayedName.toString()}</b> is available today.`);
+      }
+    }
     await this.execStartSocialTurnTriggers(pc);
-		const speaker = {alias: "Social Turn Start"};
-		const messageData = {
-			speaker: speaker,
-			content: startTurnMsg.join("<br>"),
-			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-		};
-		await ChatMessage.create(messageData, {});
-	}
+    const speaker = {alias: "Social Turn Start"};
+    const messageData = {
+      speaker: speaker,
+      content: startTurnMsg.join("<br>"),
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+    };
+    await ChatMessage.create(messageData, {});
+  }
 
   private static statusBasedStartTurnMsg(pc: PC) : string[] {
 		const startTurnMsg = [];
@@ -235,8 +237,11 @@ export class PersonaSocial {
 
 	}
 
-	static async #socialEncounter(actor: PC, activity: SocialLink | Activity) : Promise<ChatMessage[]> {
+	static async #socialEncounter(actor: PC, activity: SocialLink | Activity) {
 		if (activity instanceof PersonaActor) {
+      if (actor.getSocialSLWith(activity) == 0) {
+        return await this.startSocialLink(actor, activity);
+      }
 			const link = PersonaSocial.lookupSocialLink(actor, activity.id);
 			if (link.actor.isSpecialEvent(link.linkLevel + 1)) {
 				const msg = await this.specialEvent(actor, activity);
@@ -332,54 +337,13 @@ export class PersonaSocial {
 	}
 
 	static async chooseActivity(actor: PC, activity: SocialLink | Activity, _options: ActivityOptions = {}) {
-		const debug = PersonaSettings.debugMode();
-		if (!debug && !game.user.isGM &&
-			(
-				!game.combat
-				|| !(game.combat.combatant?.actor == actor)
-			)
-		) {
-			ui.notifications.warn("It's not your turn");
+    if (!this.isAvailable(activity, actor)) {
+			ui.notifications.warn("This action isn't enabled in your current condition");
 			return;
-		}
-		if (activity instanceof PersonaItem) {
-			const situation : Situation = {
-				user: actor.accessor,
-				attacker: actor.accessor,
-				isSocial: true,
-			};
-			const sourced = ConditionalEffectManager.getConditionals(activity.system.conditions, null, null, null);
-			if (!testPreconditions( sourced, situation)) {
-				ui.notifications.warn("Fails to meet preconditions for this activity.");
-				return;
-			}
-		}
-
-		if (actor.hasStatus("exhausted") && activity instanceof PersonaItem && activity.system.cardType == "training") {
-			ui.notifications.warn("You're currently unable to take this action, you must recover first");
-			return;
-		}
-		if (!actor.canTakeNormalDowntimeActions()) {
-			if (activity instanceof PersonaActor) {
-				ui.notifications.warn("You're currently unable to take this action, you must recover first");
-				return;
-			}
-			if (activity.system.cardType != "recovery") {
-				ui.notifications.warn("You're currently unable to take this action, you must recover first");
-				return;
-			}
-
-		}
-		if (activity instanceof PersonaItem) {
-			await actor.addNewActivity(activity);
-			if (activity.system.cardType == "job") {
-				//TODO: sockets to send availability change
-				// await activity.setAvailability(false);
-			}
-		}
-		if (activity instanceof PersonaActor) {
-			// await activity.setAvailability(false);
-		}
+    }
+    if (!this.turnCheck(actor, true)) {
+      return;
+    }
 		await this.#socialEncounter(actor, activity);
 	}
 
@@ -462,28 +426,31 @@ export class PersonaSocial {
 		tracker.find(".day").text(weekday);
 	}
 
-	static async startSocialLink(initiator: PC, targetId: PC["id"]) {
-		const target = game.actors.get(targetId) as (NPC | PC);
-		if (!target) {
-			throw new PersonaError(`Couldn't find target ${targetId}`);
-		}
-		const combat = game.combat as PersonaCombat;
-		if (!combat) {
-			ui.notifications.warn("Can only do this on your turn.");
-			return;
-		}
-		if (!combat.isSocial) {
-			ui.notifications.warn("Not in Downtime");
-			return;
-		}
-		if (!target.isAvailable(initiator)) {
-			ui.notifications.warn("Target isn't available today!");
-			return;
-		}
-		if (combat.combatant?.actor != initiator) {
-			ui.notifications.warn("Can only do this on your turn.");
-			return;
-		}
+  static turnCheck(initiator: PC, printMsg = false) : boolean {
+    const combat = PersonaCombat.combat;
+    if (game.user.isGM) {return true;}
+    if (!combat || !combat.isSocial) {
+      if (printMsg) {
+        ui.notifications.warn("Can only do this on during a social turn");
+      }
+      return false;
+    }
+    if (!combat.combatant || combat.combatant.actor != initiator) {
+      if (printMsg) {
+        ui.notifications.warn("Not your turn");
+      }
+      return false;
+    }
+    return true;
+  }
+
+	static async startSocialLink(initiator: PC, target: SocialLink) {
+    if (target.tarot == undefined) {
+			throw new PersonaError(`${target.name} has no Arcana`);
+    }
+    if (!this.turnCheck(initiator, true)) {
+      return;
+    }
 		if (!this.meetsConditionsToStartLink(initiator, target)) {
 			const requirements = ConditionalEffectPrinter.printConditions((target as NPC).system?.conditions ?? []);
 			ui.notifications.warn(`You don't meet the prerequisites to start a relationship with this Link: ${requirements}`);
@@ -508,6 +475,9 @@ export class PersonaSocial {
 	}
 
 	static meetsConditionsToStartLink(pc: PC, target: SocialLink): boolean {
+		if (!this.isAvailable(target, pc)) {
+      return false;
+		}
 		const situation: Situation = {
 			user: pc.accessor,
 			attacker: pc.accessor,
@@ -597,7 +567,6 @@ export class PersonaSocial {
 		if (activity instanceof PersonaActor) {
 			await activity.setAvailability(false);
 		}
-
 		const card = this._drawSocialCard(actor, activity);
 		const sendBack = [socketPayload.sender];
 		// console.log(`Send back ${card.name}`);
@@ -654,20 +623,36 @@ export class PersonaSocial {
 		void handler.makeCardRoll(eventIndex, choiceIndex, message);
 	}
 
-	static async _onRaiseSLButton(ev: JQuery.ClickEvent) {
-		const tokenCost = HTMLTools.getClosestDataNumber(ev, "tokenAmt");
-		const PCId = HTMLTools.getClosestData(ev, "pcId");
-		const linkId = HTMLTools.getClosestData(ev, "linkId");
-		const PC = PersonaDB.getActor(PCId);
-		if (!PC || !PC.isPC()) {
-			throw new PersonaError(`Cant' find PC : ${PCId}`);
-		}
-		if (PC.getSocialLinkProgress(linkId) < tokenCost) {
-			ui.notifications.warn("Not enough tokesn to improve this link");
-		}
-		await PC.socialLinkProgress(linkId, -tokenCost);
-		await PC.increaseSocialLink(linkId);
-	}
+  static async _onRaiseSLButton(ev: JQuery.ClickEvent) {
+    const tokenCost = HTMLTools.getClosestDataNumber(ev, "tokenAmt");
+    const PCId = HTMLTools.getClosestData(ev, "pcId");
+    const linkId = HTMLTools.getClosestData<SocialLink["id"]>(ev, "linkId");
+    const PC = PersonaDB.getActor(PCId);
+    if (!PC || !PC.isPC()) {
+      throw new PersonaError(`Cant' find PC : ${PCId}`);
+    }
+    if (PC.getSocialLinkProgress(linkId) < tokenCost) {
+      ui.notifications.warn("Not enough tokesn to improve this link");
+    }
+    const target = PersonaDB.getActorById(linkId);
+    const RPScene = target && target.isSocialLink() ? this.isHighestLinkerWith(PC, target) : false;
+    await PC.socialLinkProgress(linkId, -tokenCost);
+    await PC.increaseSocialLink(linkId);
+    if (RPScene && target?.isSocialLink()) {
+      await this.printRPSceneMsg(PC, target);
+    }
+  }
+
+  static async printRPSceneMsg(pc: PC, target: SocialLink) {
+    const content = `<div> ${pc.name} gets social scene wtih ${target.name}`;
+    const speaker = { actor: pc.id};
+    const messageData = {
+      speaker: speaker,
+      content,
+      style: CONST.CHAT_MESSAGE_STYLES.OOC,
+    };
+    await ChatMessage.create(messageData, {});
+  }
 
   static async refreshSocialActions( actor: PC) {
     const socialActions = {
@@ -697,8 +682,101 @@ export class PersonaSocial {
     return this.getDownTimeActionsRemaining(actor, "minor") > 0;
   }
 
-  static availableActivities() : SocialCard[] {
-		return PersonaDB.allActivities().filter( activity=> Object.values(activity.system.weeklyAvailability).some (val => val));
+  static availableMinorActionActivities(pc: PC) : SocialCard[] {
+    return PersonaDB.minorActionActivities()
+    .filter (activity => this.isAvailable(activity, pc));
+  }
+
+  static availableStandardActionActivities(pc: PC) : SocialCard[] {
+		// return PersonaDB.allActivities().filter( activity=> Object.values(activity.system.weeklyAvailability).some (val => val));
+    return PersonaDB.standardActionActivities()
+    .filter (activity => this.isAvailable(activity, pc));
+  }
+
+  static isAvailable(activity: Activity | SocialLink, pc : PC) : boolean {
+    if (this.isDisabled(activity)) {return false;}
+    if (activity instanceof PersonaItem) {
+      return this._isAvailable_Activity(activity, pc);
+    }
+    if (activity instanceof PersonaActor) {
+      return this._isAvailable_SL(activity, pc);
+    }
+    activity satisfies never;
+    PersonaError.softFail("Can't identify type of Activity", activity);
+    return false;
+  }
+
+private static _isAvailable_SL(sl : SocialLink, pc: PC): boolean {
+  const sit: Situation = {
+    user: pc.accessor,
+    socialTarget: sl.accessor,
+  };
+  if(!testPreconditions(sl.getAvailabilityConditions(), sit)) {
+    return false;
+  }
+  if (PersonaSocial.availabilityDisqualifierStatuses.some (st=> sl.hasStatus(st))) {return false;}
+  const availability = sl.system.weeklyAvailability;
+  if (!pc.canTakeNormalDowntimeActions()) {
+    // 		ui.notifications.warn("You're currently unable to take this action, you must recover first");
+    return false;
+  }
+  return availability?.available ?? false;
+}
+
+  private static _isAvailable_Activity(activity: Activity, pc: PC) : boolean {
+    const sit: Situation = {
+      user: pc.accessor,
+      attacker: pc.accessor,
+      isSocial: true,
+    };
+    const sourcedConditions = ConditionalEffectManager.getConditionals(activity.system.conditions, null, null, null );
+    if(!testPreconditions(sourcedConditions, sit)) {return false;}
+    if (pc.hasStatus("exhausted") && activity.system.cardType == "training") {
+      // ui.notifications.warn("You're currently unable to take this action, you must recover first");
+      return false;
+    }
+    if (!pc.canTakeNormalDowntimeActions() && activity.system.cardType != "recovery") {
+			// 	ui.notifications.warn("You're currently unable to take this action, you must recover first");
+      return false;
+    }
+    return activity.system.weeklyAvailability.available;
+  }
+
+  public static isDisabled( activity: {system: {weeklyAvailability: {disabled : boolean}}}) : boolean {
+    if( activity.system.weeklyAvailability.disabled) {
+      return true;
+    }
+    if (activity instanceof PersonaActor && activity.isSocialLink()) {
+      const sl = activity;
+      const statuses : StatusEffectId[] = ["jailed", "exhausted", "crippled", "injured"];
+      if ( statuses.some( x=> sl.hasStatus(x))) {
+        return true;
+      }
+      switch (true) {
+        case sl.isNPCAlly():{
+          const proxy = sl.getNPCProxyActor();
+          if (!proxy) {return false;}
+          return this.isDisabled(proxy);
+        }
+        case sl.isNPC():
+          if (sl.tarot == undefined) {return true;}
+          break;
+      }
+    }
+    return false;
+  }
+
+static isHighestLinkerWith(pc: PC, sl: Activity | SocialLink) : boolean {
+  if (sl instanceof PersonaItem) {return false;}
+  const highest = sl.highestLinker();
+  return highest.linkLevel == pc.getSocialSLWith(sl);
+}
+
+  static isVisible(activity: Activity | SocialLink, _pc: PC) : boolean {
+    if( activity.system.weeklyAvailability.disabled) {
+      return false;
+    }
+    return true;
   }
 
   static async characterDialog(this: void, talker: PersonaActor, text: string)  {
@@ -725,9 +803,8 @@ export class PersonaSocial {
 
 
 
-type ActivityOptions = {
-	noDegrade ?: boolean;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface ActivityOptions { }
 
 declare global {
 	interface SocketMessage {

@@ -1974,6 +1974,11 @@ li.craftable {
 
 }
 
+img.small {
+  height: 1.5em;
+  width: auto;
+}
+
 button.teamwork {
   height: 70px;
   width: auto;
@@ -1984,7 +1989,22 @@ button.target {
   width: auto;
 }
 
-/* .teamwork-follow-up button { */
-/* 	animation: shimmer-sweep 2.2s ease-in-out infinite; */
-/* } */
+
+.tall-button {
+  height: 3em;
+  margin: 10px;
+	font-size: 1.25em;
+}
+
+.tall-button img {
+  height: 2em;
+  width: auto;
+  flex-shrink: 0;
+}
+
+span.new-link,
+span.sl-level {
+  flex-shrink: 0;
+	font-size: 1.0em;
+}
 

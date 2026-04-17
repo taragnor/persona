@@ -305,8 +305,7 @@ export class SocialCardExecutor {
 			if (cameo.id == actor.id) {return false;}
 			if (cameo.id == linkId) {return false;}
 			const acc = cameo.accessor;
-			if (!cameo.isSociallyDisabled()) {return false;}
-			// if (!cameo.isAvailable(actor)) {return false;}
+			if (PersonaSocial.isDisabled(cameo)) {return false;}
 			if (cameo.hasCreatureTag("stuck-in-metaverse")) {return false;}
 			const target = PersonaDB.socialLinks().find(link => link.id == linkId) as SocialLink | undefined;
 			const targetAcc = target?.accessor;

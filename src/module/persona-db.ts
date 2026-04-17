@@ -371,7 +371,17 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 	allActivities(): readonly Activity[] {
 		return this.allSocialCards()
+			.filter( x=> (x.system.cardType !="social"));
+	}
+
+  standardActionActivities(): readonly Activity[] {
+		return this.allActivities()
 			.filter( x=> (x.system.cardType == "job" || x.system.cardType =="training" || x.system.cardType == "recovery" || x.system.cardType == "other") );
+  }
+
+	minorActionActivities() : SocialCard[] {
+		return this.allSocialCards()
+			.filter( card=> card.isMinorActionItem());
 	}
 
 	personalSocialLink(): NPC {
@@ -388,13 +398,15 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.#cache.teammateSocialLink;
 	}
 
-	socialLinks(): readonly (PC | NPC)[] {
-		if (this.#cache.socialLinks) {return this.#cache.socialLinks;}
-		return this.#cache.socialLinks = game.actors.filter( (actor :PersonaActor) =>
-			(actor.isNPC()
-				|| actor.isPC())
-			&& actor.tarot != undefined
-		) as (PC | NPC)[];
+  socialLinks(): readonly (PC | NPC)[] {
+    if (this.#cache.socialLinks) {return this.#cache.socialLinks;}
+    return this.#cache.socialLinks = (game.actors.contents  as PersonaActor[])
+      .filter( (actor :PersonaActor) =>
+        (actor.isNPC()
+          || actor.isPC())
+      )
+      .filter( actor => actor.tarot != undefined)
+      .sort((a, b) => (a.tarot?.system.sortOrder ?? 99) - (b.tarot?.system.sortOrder ?? 99));
 	}
 
 	skillCards(): readonly SkillCard[] {
@@ -494,10 +506,6 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return tarotList;
 	}
 
-	downtimeActions() : SocialCard[] {
-		return this.allSocialCards()
-			.filter( card=> card.isMinorActionItem());
-	}
 
 	averagePCLevel(): number {
 		const pcs = game.actors

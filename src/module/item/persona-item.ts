@@ -48,6 +48,7 @@ import {PersonaAE} from '../persona-ae.js';
 import {CombatEngine} from '../combat/combat-engine.js';
 import {sleep} from '../utility/async-wait.js';
 import {PersonaTargetting} from '../combat/persona-targetting.js';
+import {PersonaSocial} from '../social/persona-social.js';
 
 declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -2360,21 +2361,21 @@ cardEvents(this: SocialCard) : CardEvent[] {
   return this.system.events;
 }
 
-isAvailable(this: Activity, pc: PC): boolean {
-  const sit: Situation = {
-    user: pc.accessor
-  };
-  if (this.system.weeklyAvailability.disabled) {return false;}
-  const sourcedConditions = ConditionalEffectManager.getConditionals(this.system.conditions, null, null, null );
-  if(!testPreconditions(sourcedConditions, sit)) {return false;}
-  return this.system.weeklyAvailability.available;
-}
+// isAvailable(this: Activity, pc: PC): boolean {
+//   const sit: Situation = {
+//     user: pc.accessor
+//   };
+//   if (PersonaSocial.isDisabled(this)) {return false;}
+//   const sourcedConditions = ConditionalEffectManager.getConditionals(this.system.conditions, null, null, null );
+//   if(!testPreconditions(sourcedConditions, sit)) {return false;}
+//   return this.system.weeklyAvailability.available;
+// }
 
 announce(this: SocialCard, pc: PC): boolean {
   if (!this.system.announceWhenAvailable) {
     return false;
   }
-  return this.isAvailable(pc);
+  return PersonaSocial.isAvailable(this, pc);
 }
 
 async resetAvailability (this: Activity, day: SimpleCalendar.WeekdayName) : Promise<void> {

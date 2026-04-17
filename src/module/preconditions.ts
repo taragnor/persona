@@ -1369,7 +1369,7 @@ function resolveSocialAvailabilityCheck(condition: SourcedPrecondition & {type: 
 		target1 = PersonaDB.findActor(situation.user);
 		if (!target1) {return undefined;}
 	}
-	if (target1.system.type == "shadow") {return undefined;}
+	if (target1.isShadow()) {return undefined;}
 	switch (condition.socialTypeCheck) {
 		case "relationship-type-check": {
 			const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, condition.source);
@@ -1378,14 +1378,15 @@ function resolveSocialAvailabilityCheck(condition: SourcedPrecondition & {type: 
 			return link.relationshipType.toUpperCase() == condition.relationshipType.toUpperCase();
 		}
 		case "is-social-disabled":
-			return target1.isSociallyDisabled();
+			return PersonaSocial.isDisabled(target1);
 		case "is-available": {
-			if (target1.system.type != "pc") {
+			if (!target1.isPC()) {
 				return undefined;
 			}
 			const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, condition.source);
 			if (!target2) {return undefined;}
-			return target1.isAvailable(target2);
+      return PersonaSocial.isAvailable(target2, target1 );
+			// return target1.isAvailable(target2);
 		}
 		case "is-dating": {
 			const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, condition.source);
