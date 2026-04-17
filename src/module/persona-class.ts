@@ -1042,7 +1042,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.getBonuses("hpCostMult");
   }
 
-  canUsePower (usable: UsableAndCard, outputReason: boolean = true) : boolean {
+  canUsePower (usable: UsableAndCard, outputReason: boolean) : boolean {
     const msg =
       this._consumableCheck(usable)
       || this._explorationCheck(usable)

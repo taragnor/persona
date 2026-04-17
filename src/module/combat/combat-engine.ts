@@ -1047,7 +1047,7 @@ export class CombatEngine {
 			ui.notifications.notify("You can't pay the activation cost for this power");
 			return false;
 		}
-		if (!attacker.actor.persona().canUsePower(power)) {
+		if (!attacker.actor.persona().canUsePower(power, true)) {
 			ui.notifications.notify("You can't Use this power");
 			return false;
 		}

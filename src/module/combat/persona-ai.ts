@@ -46,7 +46,7 @@ export abstract class PersonaAI {
 		const {persona} = this;
       const powers = this.persona.powers.concat(this.persona.basicPowers);
       const usablePowers = powers
-			.filter( pwr => persona.canUsePower(pwr));
+			.filter( pwr => persona.canUsePower(pwr, false));
 		return usablePowers;
 
 	}

@@ -16,7 +16,7 @@ export class UsableUsePanel extends UsableListPanel {
     const button : SidePanel.ButtonConfig = {
       label: this.getButtonLabel(usable),
       onPress: () => this._useItemOrPower(this.actor, usable),
-      enabled: () => persona.canUsePower(usable),
+      enabled: () => persona.canUsePower(usable, false),
       cssClasses: ["inventory-item"],
       tooltip: () => this.getItemTooltip(usable, persona),
     };
