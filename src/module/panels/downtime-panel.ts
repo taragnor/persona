@@ -108,18 +108,31 @@ export class DowntimePanel extends PersonaPanel {
     await this.push(new SocialActivityPanel(this.actor, list));
   }
 
-  async _onActivities(type : SocialCard["system"]["cardType"]) {
-    if (!this.actor) {return null;}
-    if (type == "minor") {
-      const activities = PersonaSocial.availableMinorActionActivities(this.actor)
+  _activityList(type : SocialCard["system"]["cardType"]) : SocialCard[] {
+    if (!this.actor) {return [];}
+    switch (type) {
+      case "minor": {
+        const activities = PersonaSocial.availableMinorActionActivities(this.actor)
         .filter( act => act.system.cardType == type);
-      await this.push(new SocialActivityPanel(this.actor, activities));
+        return activities;
+      }
+      default: {
+        const activities = PersonaSocial.availableStandardActionActivities(this.actor)
+          .filter( act => act.system.cardType == type);
+        return activities;
+      }
+    }
+  }
+
+  async _onActivities(type : SocialCard["system"]["cardType"]) {
+    const list = this._activityList(type);
+    if (list.length == 0 || !this.actor) {
+      console.warn("Downtime Panel: No activities or null actor");
       return;
     }
-      const activities = PersonaSocial.availableStandardActionActivities(this.actor)
-      .filter( act => act.system.cardType == type);
-      await this.push(new SocialActivityPanel(this.actor, activities));
-    }
+    await this.push(new SocialActivityPanel(this.actor, list));
+  }
+
 }
 
 class SocialActivityPanel extends SubPanel {

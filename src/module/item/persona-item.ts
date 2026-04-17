@@ -1916,7 +1916,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     if (this.isSkillCard()) {return true;}
     if (!this.hasTag(["downtime", "downtime-minor"], null)) {return false;}
     return true;
-
   }
 
   canBeUsedInExploration() : boolean {

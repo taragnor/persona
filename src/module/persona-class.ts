@@ -1116,7 +1116,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   private _downtimeCheck(usable: UsableAndCard) : N<FailReason> {
-    if (usable.hasTag("downtime", this) || usable.hasTag("downtime-minor", this)) {
+    if (usable.hasTag(["downtime", "downtime-minor"], this)) {
       if (!game.combat || !(game.combat as PersonaCombat).isSocial) {
         return "Can only use this item during downtime in social rounds";
       }
