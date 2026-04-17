@@ -332,7 +332,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   inflictsDamage(this:Consumable) : boolean {
-    const dmgType = this.getBaseDamageType()
+    const dmgType = this.getBaseDamageType();
     if (dmgType == "healing" || dmgType == "none") {return false;}
     return this.getEffects(null).some( eff => {
       return eff.consequences.some( cons => {

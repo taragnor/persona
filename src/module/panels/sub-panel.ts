@@ -5,17 +5,18 @@ import {PersonaTargetting} from "../combat/persona-targetting.js";
 import {PersonaDB} from "../persona-db.js";
 import { SidePanel } from "../side-panel/side-panel.js";
 import {lockObject} from "../utility/anti-loop.js";
+import {PowerTargetSelectionPanel} from "./power-target-selection-panel.js";
 
 export abstract class PersonaPanel extends SidePanel {
 
   // static itemPanel: (actor: PC | NPCAlly) => PersonaPanel;
-  static powerSelectionPanel: (user: ValidAttackers, power: Usable) => PersonaPanel;
+  // static powerSelectionPanel: (user: ValidAttackers, power: Usable) => PersonaPanel;
 
   protected async _useItemOrPower(user: ValidAttackers, power : UsableAndCard, targets ?: PToken[]) {
     if (!user) {return;}
     const selection = targets ? targets : PersonaTargetting.targettedPTokens() ;
     if (selection.length != 1 && power.requiresTargetSelection()) {
-      await this.push(PersonaPanel.powerSelectionPanel(user, power as Usable));
+      await this.push(new PowerTargetSelectionPanel(user, power as Usable));
       return;
     }
     await lockObject(this,

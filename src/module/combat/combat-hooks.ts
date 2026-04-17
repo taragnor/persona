@@ -5,9 +5,7 @@ import { PToken } from "./persona-combat.js";
 import { StatusEffect } from "../../config/consequence-types.js";
 import { PersonaError } from "../persona-error.js";
 import { PersonaSockets } from "../persona.js";
-import {FlagChangeDiffObject, OpenerManager} from "./openers.js";
-import { CombatPanel } from "./panels/combat-panel.js";
-import {FollowUpManager} from "./follow-up-actions.js";
+import {FlagChangeDiffObject} from "./openers.js";
 
 export class CombatHooks {
 
@@ -156,7 +154,7 @@ export class CombatHooks {
       });
       PersonaSockets.setHandler("REQUEST_TEAMWORK", (data) => {
         void PersonaCombat.onTeamworkRequest(data);
-      })
+      });
     });
 
 		Hooks.on("renderChatMessageHTML", (_msg, html) => {

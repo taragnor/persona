@@ -56,7 +56,6 @@ import {RandomDungeonGenerator} from "./exploration/random-dungeon-generator.js"
 import {PersonaToken} from "./persona-token.js";
 import {SeededRandom} from "./utility/seededRandom.js";
 import {CraftingPrinter} from "./printers/crafting-list.js";
-import {PowerTargetSelectionPanel} from "./panels/power-target-selection-panel.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -129,7 +128,6 @@ Hooks.once("init", function() {
 	EnhancedActorDirectory.init("systems/persona");
 	RandomDungeonGenerator.init();
   CraftingPrinter.init();
-  PowerTargetSelectionPanel.init();
 });
 
 function registerHandlebarsHelpers() {

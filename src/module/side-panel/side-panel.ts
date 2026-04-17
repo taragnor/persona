@@ -64,7 +64,7 @@ export abstract class SidePanel {
     this._ready = true;
   }
 
-  abstract get templatePath() : string;
+  abstract get templatePath() : U<string>;
 
   constructor (panelName: string) {
     if (panelName.startsWith(".")) {
@@ -77,27 +77,37 @@ export abstract class SidePanel {
 
   }
 
+  staticHTML() : Promise<string> | string {
+    return "";
+  }
+
+  async renderPanelBody() : Promise<string> {
+    if (this.templatePath) {
+      const templateData = {
+        ...await this.getData(),
+        _iteration : this.iterations,
+      };
+      return await foundry.applications.handlebars.renderTemplate(this.templatePath, templateData);
+    }
+    return await this.staticHTML();
+  }
+
   async renderHTML () : Promise<string>{
     await this.waitUntilReady();
-    const templateData = {
-      ...await this.getData(),
-      _iteration : this.iterations,
-    };
-    this.iterations++;
-    if (!this.templatePath) {
-      await this.deactivate();
-      return "";
-    }
-
-    let html = await foundry.applications.handlebars.renderTemplate(this.templatePath, templateData);
+    let html = await this.renderPanelBody();
     if (this.buttons.length) {
       html  += await this._renderButtons();
     }
+    this.iterations++;
     return `
     <div class="${this.panelName}">
     ${html}
     </div>
     `;
+  }
+
+  static getInstances< const T extends SidePanel, const G extends ConstructorOf<T> = ConstructorOf<T>>(panelType: G) : T[] {
+    return SidePanelManager.getInstances(panelType);
   }
 
   async updatePanel() {
@@ -107,14 +117,15 @@ export abstract class SidePanel {
   private async _renderButtons() : Promise<string> {
     const buttonData = await this.resolveButtonData();
     const buttonHTML = buttonData
-    .map( (button) =>
-      `<button class='side-panel-button ${button.cssClasses.join(" ")}' data-button-index='${button.index}' ${button.enabled ? "" : "disabled"}>
+    .map( (button) => {
+      const tooltip = button.tooltip ? ` title="${button.tooltip}"` : "";
+      return `<button class='side-panel-button ${button.cssClasses.join(" ")}' data-button-index='${button.index}' ${button.enabled ? "" : "disabled"} ${tooltip}>
       ${button.label}
       </button>
-      `
-    );
+      `;
+    });
     return `
-    <div class="side-panel-buttons">
+    <div class="side-panel-buttons button-list">
     ${buttonHTML.join("")}
   </div>
   `;
@@ -188,11 +199,13 @@ export abstract class SidePanel {
           console.error(e);
         }
       }
+      const tooltip = await this.resolveButtonDataVal(button.tooltip) ?? "";
       return {
         enabled,
         label,
         index: i,
         cssClasses,
+        tooltip,
       };
     });
     const ret = await Promise.all(promises);
@@ -216,14 +229,16 @@ declare global {
       onPress : () => unknown;
       cssClasses ?: ValOrFunctional<string>[];
       visible ?: ValOrFunctional<boolean>;
+      tooltip ?: ValOrFunctional<string>;
     }
 
     interface ResolvedButtonData {
-      label: string,
-        enabled: boolean,
-        index: number,
-        // onPress: () => unknown,
-        cssClasses : string[],
+      label: string;
+      enabled: boolean;
+      index: number;
+      // onPress: () => unknown,
+      cssClasses : string[];
+      tooltip: string;
     }
 
     type ValOrFunctional<T> = T | (() => T) | (() => Promise<T>);

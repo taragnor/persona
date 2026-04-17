@@ -25,6 +25,14 @@ export class SidePanelManager {
     return `side-panel-main`;
   }
 
+  //works on only concrete and non-abstract classes
+  static getInstances<const T extends SidePanel, const G extends ConstructorOf<T> = ConstructorOf<T>>(panelType: G) : T[] {
+    return [
+      ...this._activePanel instanceof panelType ? [this._activePanel] : [],
+      ...this.panelStack.filter ( panel => panel instanceof panelType),
+    ] as T[];
+  }
+
   static async deactivate(panel: SidePanel, clearStack = true) {
     if (this._activePanel != panel) {return;}
     await this._activePanel.onDeactivate();
@@ -132,6 +140,5 @@ export class SidePanelManager {
     this.HTMLPanel = infoPanel;
     return this.HTMLPanel;
   }
-
 
 }

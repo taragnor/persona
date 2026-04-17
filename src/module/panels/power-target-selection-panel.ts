@@ -4,7 +4,7 @@ import {PersonaTargetting} from "../combat/persona-targetting.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
-import {PersonaPanel, SubPanel} from "./sub-panel.js";
+import {SubPanel} from "./sub-panel.js";
 
 export class PowerTargetSelectionPanel extends SubPanel {
   power: Usable;
@@ -64,10 +64,7 @@ export class PowerTargetSelectionPanel extends SubPanel {
     }
     event.stopPropagation();
     await this._useItemOrPower(this.actor, this.power, [target]);
-  }
-
-  static init() {
-    PersonaPanel.powerSelectionPanel = (user: ValidAttackers, usable: Usable) => new PowerTargetSelectionPanel(user, usable);
+    await this.pop();
   }
 
 }

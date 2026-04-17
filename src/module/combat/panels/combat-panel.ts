@@ -271,24 +271,6 @@ export class CombatPanel extends PersonaPanel {
     await this.updatePanel();
   }
 
-  // private async _onSelectOpenerTarget(ev: JQuery.ClickEvent) {
-  //   const combat = PersonaCombat.combat;
-  //   if (!combat) {return;}
-  //   const ret = await combat.openers.activateTargettedOpener(ev);
-  //   if (ret) {
-  //     await this.setMode("main");
-  //   }
-  // }
-
-  // private async _onSelectSimpleOpener(ev: JQuery.ClickEvent) {
-  //   const combat = PersonaCombat.combat;
-  //   if (!combat) {return;}
-  //   const ret = await combat.openers.activateGeneralOpener(ev);
-  //   if (ret) {
-  //     await this.setMode("main");
-  //   }
-  // }
-
   private async _onSelectEndTurn( _ev ?: JQuery.ClickEvent) {
     if (this._target != this.combat?.combatant?.token) {return;}
     await this.combat?.nextTurn();

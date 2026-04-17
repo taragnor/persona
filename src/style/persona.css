@@ -1379,7 +1379,17 @@ img.inline {
 	display:inline;
 }
 
+.item-amount {
+  min-width: 2em;
+  max-width: 2em;
+  width: 3em;
+  flex-shrink: 0;
+  flex-grow: 0;
+  font-size: 0.9em;
+}
+
 .social-list,
+.item-use-panel .button-list,
 .item-list {
 	display: flex;
 	flex-wrap: wrap;        /* allow items to wrap onto new rows */
@@ -1387,8 +1397,14 @@ img.inline {
 
 }
 
+.item-use-panel div.button-list {
+  gap: 0.5em;
+}
+
 .social-list > .social-item,
-.item-list > .inventory-item {
+.item-list > .inventory-item,
+.side-panel-buttons > .inventory-item {
+  height: 3em;
 	flex: 1 1 calc(50% - 1em); /* two items per row, minus the gap */
 	box-sizing: border-box;    /* include padding/borders in width */
 	padding: 0.25em;
@@ -1400,11 +1416,22 @@ img.inline {
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
 }
 
+.side-panel-buttons > .inventory-item {
+  height: 4em;
+  font-size: 0.7em;
+}
+
 img.item-icon {
 	height: 21px;
 	width: 76px;
 }
 
+.side-panel-buttons img.item-icon {
+  /* modified size may not look right */
+	height: 18px;
+	width: 60px;
+
+}
 
 .talent-list .talent,
 .tarot-list .card {
