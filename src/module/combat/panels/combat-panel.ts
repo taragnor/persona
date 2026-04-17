@@ -28,6 +28,10 @@ export class CombatPanel extends PersonaPanel {
   }
 
   override buttonConfig() : SidePanel.ButtonConfig[] {
+    const validState= this.combat != undefined && this._target != undefined;
+    const turnCheck = !this._target || !this.combat 
+      ? false
+      : this.combat.turnCheck(this._target);
     return [
       {
         label: "Tactical",
@@ -35,18 +39,26 @@ export class CombatPanel extends PersonaPanel {
       }, {
         label: "Persona",
         onPress: () => this._onPersonaModeSwitchButton(),
-        enabled: () => this._target ? this._target.actor.canSwitchPersonas && this._target.isOwner : false,
+        enabled: () => this._target ? this._target.actor.canSwitchPersonas && this._target.isOwner && turnCheck : false,
         visible: () => this._target ? this._target.isOwner && this._target.actor.hasMultiplePersonas: false,
       }, {
         label: "Item",
         onPress: () => this._onInventoryButton(),
-        visible: () => this._target ? this._target?.actor.isPCLike() && this._target.isOwner : false,
-        enabled: () => this._target ? this._target.actor.canUseConsumables : false,
+        visible: () => this._target != undefined
+        && this._target?.actor.isPCLike() && this._target.isOwner,
+        enabled: () => validState
+        && this._target!.actor.canUseConsumables
+        && turnCheck
       }, {
         label: "End Turn",
         onPress: () => this._onSelectEndTurn(),
-        visible: () => this._target ? this._target?.isOwner && PersonaCombat.combat != undefined : false,
-        enabled: () => PersonaCombat.combat?.combatant?.token == this._target,
+        visible: () => this._target != undefined
+        && this._target?.isOwner
+        && PersonaCombat.combat != undefined
+        && turnCheck,
+        enabled: () => PersonaCombat.combat?.combatant?.token == this._target
+        && validState
+        && turnCheck,
       },
     ];
 

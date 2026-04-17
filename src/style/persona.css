@@ -819,9 +819,11 @@ form h5 {
 	opacity: 0.8;
 }
 
-.side-panel-button:disabled {
-	background-color: #222; /* default is #333 dark grey*/
+.side-panel-main .side-panel-button:disabled {
+	background-color: #111; /* default is #333 dark grey*/
   opacity: 0.6;
+	background: linear-gradient(135deg, #0B1E3F 0%, #1D1E5F 40%, #1D1E69 100%) !important;
+  color: grey !important;
 }
 
 .region-panel .points-of-interest h3 {
@@ -1419,6 +1421,10 @@ img.inline {
 .side-panel-buttons > .inventory-item {
   height: 4em;
   font-size: 0.7em;
+}
+
+.side-panel-buttons {
+overflow-y: auto;
 }
 
 img.item-icon {

@@ -9,7 +9,7 @@ export abstract class SidePanel {
   private _ready : boolean = false;
 
   protected get CSSClassName() : string {
-    return `.${this.panelName}`;
+    return `.${this.panelName} side-panel`;
   }
 
   protected get buttons() : SidePanel.ButtonConfig[] {
