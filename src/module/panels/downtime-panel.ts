@@ -87,7 +87,7 @@ export class DowntimePanel extends PersonaPanel {
     }
   }
 
-  usableDowntimeItem(item: Carryable) : boolean {
+  usableDowntimeItem(item: Usable) : boolean {
     if (this.actor == undefined) {return false;}
     const minor = PersonaSocial.hasMinorSocialAction(this.actor);
     if (item.hasTag("downtime-minor", this.actor)

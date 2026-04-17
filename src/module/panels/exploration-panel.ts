@@ -85,7 +85,7 @@ export class RegionPanelMain extends PersonaPanel {
   }
 
   async _openInventoryPanel(member: PC | NPCAlly) {
-    await this.push(new ItemUsePanel(member, (item:Carryable) => item.isUsableType() && item.canBeUsedInExploration()));
+    await this.push(new ItemUsePanel(member, (item:Usable) => item.canBeUsedInExploration()));
   }
 
 	searchButton(_ev ?: JQuery.ClickEvent) {
