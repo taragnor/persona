@@ -123,16 +123,24 @@ export class Metaverse {
     }
   }
 
-	static async exitMetaverse() {
-		(game.actors as Collection<PersonaActor>)
-			.filter( (x: PersonaActor)=> x.isRealPC() || x.isNPCAlly())
-			.forEach( (x: PC | NPCAlly) => void x.onExitMetaverse());
-		const promises = game.scenes.contents.map(sc => (sc as PersonaScene).onExitMetaverse());
-		await Promise.allSettled(promises);
-		await TensionPool.instance.clear();
-		Hooks.callAll("exitMetaverse");
-		await Logger.sendToChat(`Exiting Metaverse... Everyone gains 1 level of fatigue`);
-	}
+  static getPhase() : "exploration" | "combat" | "downtime" {
+    const combat = PersonaCombat.combat;
+    switch (true) {
+      case !combat: return "exploration";
+      case combat?.isSocial : return "downtime";
+      default: return "combat";
+    }
+  }
+  static async exitMetaverse() {
+    (game.actors as Collection<PersonaActor>)
+      .filter( (x: PersonaActor)=> x.isRealPC() || x.isNPCAlly())
+      .forEach( (x: PC | NPCAlly) => void x.onExitMetaverse());
+    const promises = game.scenes.contents.map(sc => (sc as PersonaScene).onExitMetaverse());
+    await Promise.allSettled(promises);
+    await TensionPool.instance.clear();
+    Hooks.callAll("exitMetaverse");
+    await Logger.sendToChat(`Exiting Metaverse... Everyone gains 1 level of fatigue`);
+  }
 
 	static weightedTest(type :Shadow["system"]["creatureType"] = "shadow") {
 		const map = new Map<Shadow["name"], number>();

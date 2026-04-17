@@ -3,7 +3,8 @@ import {PersonaCombat} from "../combat/persona-combat.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {ItemUsePanel} from "./item-use-panel.js";
-import {PersonaPanel, SubPanel} from "./sub-panel.js";
+import {PersonaPanel} from "./sub-panel.js";
+import {UsableUsePanel} from "./usable-use-panel.js";
 
 export class DowntimePanel extends PersonaPanel {
   actor: U<PC> = undefined;
@@ -89,11 +90,6 @@ export class DowntimePanel extends PersonaPanel {
 
   usableDowntimeItem(item: Usable) : boolean {
     if (this.actor == undefined) {return false;}
-    const minor = PersonaSocial.hasMinorSocialAction(this.actor);
-    if (item.hasTag("downtime-minor", this.actor)
-      && !minor) {
-      return false;
-    }
     return item.canBeUsedInDowntime();
   }
 
@@ -105,7 +101,7 @@ export class DowntimePanel extends PersonaPanel {
     if (!this.actor) {return null;}
     const list = PersonaDB.socialLinks()
     .filter ( sl=> sl != this.actor);
-    await this.push(new SocialActivityPanel(this.actor, list));
+    await this.push(new SocialActivityPanel(this.actor, list, () => false));
   }
 
   _activityList(type : SocialCard["system"]["cardType"]) : SocialCard[] {
@@ -130,35 +126,40 @@ export class DowntimePanel extends PersonaPanel {
       console.warn("Downtime Panel: No activities or null actor");
       return;
     }
-    await this.push(new SocialActivityPanel(this.actor, list));
+    const filter = type == "minor" ? (usable: Usable) => usable.hasTag(["downtime-minor"], this.actor ?? null) : () => false;
+    await this.push(
+      new SocialActivityPanel(this.actor, list, filter)
+    );
   }
 
 }
 
-class SocialActivityPanel extends SubPanel {
-  list : (SocialLink | Activity) [] = [];
-  actor: PC;
+class SocialActivityPanel extends UsableUsePanel {
+  socialList : (SocialLink | Activity) [] = [];
+  declare actor: PC;
 
   override get templatePath(): string {
     return "systems/persona/sheets/panels/social-activity-panel.hbs";
   }
 
-  constructor (actor: PC, list: (SocialLink | Activity)[]) {
-    super("main-activity-panel");
-    this.actor = actor;
-    this.list = list;
+  constructor (actor: PC, activityList: (SocialLink | Activity)[], powerFilter : (usable: Usable) => boolean) {
+    const baseListFn = () => this.actor.powers
+    .filter (pwr=> pwr.canBeUsedInDowntime());
+    super(actor, baseListFn, powerFilter);
+    // this.actor = actor;
+    this.socialList = activityList;
   }
 
   override async getData() {
     return {
       ...await super.getData(),
       actor: this.actor,
-      list: this.list,
+      list: this.socialList,
     };
   }
 
   activityButtons() : SidePanel.ButtonConfig[] {
-    const activityButtons =  this.list.map( activity => this.activityToButton(activity));
+    const activityButtons =  this.socialList.map( activity => this.activityToButton(activity));
     return [
       ...activityButtons,
     ];

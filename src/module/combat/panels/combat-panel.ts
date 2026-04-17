@@ -4,6 +4,7 @@ import {PersonaActorSheetBase} from "../../actor/sheets/actor-sheet.base.js";
 import {ItemUsePanel} from "../../panels/item-use-panel.js";
 import {PersonaSwitchPanel} from "../../panels/persona-switch-panel.js";
 import {PersonaPanel} from "../../panels/sub-panel.js";
+import {UsableListPanel} from "../../panels/usable-list-panel.js";
 import {PersonaDB} from "../../persona-db.js";
 import {PersonaError} from "../../persona-error.js";
 import {HTMLTools} from "../../utility/HTMLTools.js";
@@ -296,7 +297,7 @@ export class CombatPanel extends PersonaPanel {
     if (!item.isConsumable()) {
       throw new PersonaError(`Can't use this item`);
     }
-    await this._useItemOrPower(this.actor, item);
+    await UsableListPanel.useItemOrPower(this, this.actor, item);
   }
 
   private async _onClickPower(ev: JQuery.ClickEvent) {
@@ -310,7 +311,7 @@ export class CombatPanel extends PersonaPanel {
     const ptype = power.system.type;
     if (ptype != "power" && ptype != "consumable")
     {throw new PersonaError(`powerId pointed to unsualbe power ${powerId}`);}
-    await this._useItemOrPower(this.actor, power);
+    await UsableListPanel.useItemOrPower(this, this.actor, power);
   }
 
   private async _onTacticalMode(ev?: JQuery.ClickEvent) {

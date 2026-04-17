@@ -27,6 +27,7 @@ import {ConditionalEffectPrinter} from "./conditionalEffects/conditional-effect-
 import {PersonaAura} from "./persona-auras.js";
 import {PowerLearningSystem} from "./power-learning.js";
 import {CombatEngine} from "./combat/combat-engine.js";
+import {PersonaSocial} from "./social/persona-social.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidAttackers = ValidAttackers> implements PersonaI {
   #combatStats: U<PersonaCombatStats>;
@@ -1045,7 +1046,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     const msg =
       this._consumableCheck(usable)
       || this._explorationCheck(usable)
-      || this._downtimeCheck(usable)
+      || this._combatTypeCheck(usable)
+      || this._downtimeUsageCheck(usable)
       || this._powerInhibitingStatusCheck(usable)
       || this._powerTooStrong(usable)
       || this._deadCheck(usable)
@@ -1115,10 +1117,36 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return null;
   }
 
-  private _downtimeCheck(usable: UsableAndCard) : N<FailReason> {
-    if (usable.hasTag(["downtime", "downtime-minor"], this)) {
-      if (!game.combat || !(game.combat as PersonaCombat).isSocial) {
-        return "Can only use this item during downtime in social rounds";
+  private _combatTypeCheck(usable: UsableAndCard) : N<FailReason> {
+    const phase= Metaverse.getPhase();
+    switch (phase) {
+      case "downtime":
+        if (!usable.canBeUsedInDowntime()) {
+          return "This can't be used during Downtime";
+        }
+        break;
+      case "combat":
+        if (!usable.canBeUsedInCombat()) {
+          return "This can't be used during Combat";
+        }
+        break;
+      case "exploration":
+        if (!usable.canBeUsedInExploration()) {
+          return "This can't be used during Exploration";
+        }
+        break;
+      default:
+        phase satisfies never;
+    }
+    return null;
+  }
+
+  private _downtimeUsageCheck(usable: UsableAndCard) : N<FailReason> {
+    if (Metaverse.getPhase() != "downtime") {return null;}
+    if (usable.hasTag("downtime-minor", this)) {
+      if (!this.user.isPC()) {return "Only PCs can take downtime minor actions";}
+      if (!PersonaSocial.hasMinorSocialAction(this.user)) {
+        return "You don't have a social action";
       }
     }
     return null;

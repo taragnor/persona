@@ -1,13 +1,13 @@
 import {PersonaError} from "../persona-error.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
-import {SubPanel} from "./sub-panel.js";
+import {UsableListPanel} from "./usable-list-panel.js";
 
-export class ExplorationPowerPanel extends SubPanel {
-  actor: ValidAttackers;
+export class ExplorationPowerPanel extends UsableListPanel {
+  declare actor: ValidAttackers;
 
   constructor (actor: ValidAttackers) {
-    super( "exploration-power-panel");
-    this.actor = actor;
+    super(actor, () => []);
+    // super( "exploration-power-panel");
   }
 
   override get templatePath(): string {

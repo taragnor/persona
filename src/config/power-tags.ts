@@ -34,6 +34,7 @@ export const POWER_TYPE_TAGS = [
 	"pierce",
 	"hack",
 	"exploration",
+	"combat",
 	"usable-while-dead",
 	"usable-while-sealed",
 	"theurgy",

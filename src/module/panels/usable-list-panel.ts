@@ -1,23 +1,29 @@
 import {PersonaActor} from "../actor/persona-actor.js";
-import {PersonaCombat} from "../combat/persona-combat.js";
+import {CombatEngine} from "../combat/combat-engine.js";
+import {PersonaCombat, PToken} from "../combat/persona-combat.js";
+import {PersonaTargetting} from "../combat/persona-targetting.js";
 import {PersonaItem} from "../item/persona-item.js";
 import {PersonaError} from "../persona-error.js";
+import {SidePanel} from "../side-panel/side-panel.js";
+import {lockObject} from "../utility/anti-loop.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
+import {PowerTargetSelectionPanel} from "./power-target-selection-panel.js";
 import {SubPanel} from "./sub-panel.js";
 
 export abstract class UsableListPanel extends SubPanel {
-  protected actor: PC | NPCAlly;
+  protected actor: ValidAttackers;
   protected filter: U<(x: Usable) => boolean>;
   private itemListFn : () => Usable[];
+  static USE_POWER_TIMEOUT = 25000;
 
-  constructor (actor: PC | NPCAlly, listFn: UsableListPanel["itemListFn"], filter ?: (x: Usable) => boolean) {
+  constructor (actor: ValidAttackers, listFn: UsableListPanel["itemListFn"], filter ?: (x: Usable) => boolean) {
     super("item-use-panel");
     this.itemListFn = listFn;
     this.actor = actor;
     this.filter = filter;
   }
 
-  override get templatePath() {
+  override get templatePath() : U<string>{
     // return "systems/persona/sheets/panels/item-use-panel.hbs";
     return undefined;
   }
@@ -73,6 +79,26 @@ export abstract class UsableListPanel extends SubPanel {
     }
     await this._useItemOrPower(this.actor, item);
   }
+
+  static async useItemOrPower(panel: SidePanel, user: ValidAttackers, power : UsableAndCard, targets ?: PToken[]) {
+    if (!user) {return;}
+    const selection = targets ? targets : PersonaTargetting.targettedPTokens() ;
+    if (selection.length != 1 && power.requiresTargetSelection()) {
+      await panel.push(new PowerTargetSelectionPanel(user, power as Usable));
+      return;
+    }
+    await lockObject(this,
+      async () => await CombatEngine.usePower(user, power, power.requiresTargetSelection() ? targets : undefined),
+      {
+        timeoutMs: UsableListPanel.USE_POWER_TIMEOUT,
+        inUseMsg: "Already Using a power",
+      }
+    );
+  }
+
+  protected async _useItemOrPower(user: ValidAttackers, power : UsableAndCard, targets ?: PToken[]) {
+    return await UsableListPanel.useItemOrPower(this, user, power, targets);
+}
 
 }
 

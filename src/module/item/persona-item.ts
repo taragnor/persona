@@ -776,35 +776,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return `${name} (${tags})`;
   }
 
-  // hasTag(this: Power, tag: PowerTag, user : null | ValidAttackers) : boolean;
-  // hasTag(this: Consumable, tag: PowerTag, user ?: null) : boolean;
-  // hasTag(this: Carryable, tag: EquipmentTag | PowerTag, user ?: null) : boolean;
-  // hasTag(this: InvItem | Weapon | SkillCard, tag: EquipmentTag, user ?: null): boolean;
-  // hasTag(this: UsableAndCard, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
-  // hasTag(this: ItemModifierContainer, tag: PowerTag, user ?: null): boolean;
-  // hasTag(this: SkillCard | Consumable | InvItem | Weapon, tag: PowerTag | EquipmentTag, user ?: null) : boolean;
-  // hasTag(this: UsableAndCard | InvItem | Weapon, tag: PowerTag | EquipmentTag, user : null) : boolean;
   hasTag(this: UsableAndCard | InvItem | Weapon, tags: (PowerTag | EquipmentTag) | (PowerTag | EquipmentTag)[], user: N<ValidAttackers | Persona>) : boolean {
-    // let list : readonly (PowerTag | EquipmentTag)[];
-    // switch (this.system.type) {
-    //   case 'power':
-    //     list = (this as Power).tagList(user ?? null);
-    //     break;
-    //   case 'consumable':
-    //       list = (this as Consumable).tagList(user ?? null);
-    //     break;
-    //   case 'item':
-    //   case 'weapon':
-    //       list = (this as Weapon | InvItem).tagList(user ?? null);
-    //     break;
-    //   case 'skillCard':
-    //       list = (this as SkillCard).tagList(user ?? null);
-    //     break;
-    //   default:
-    //       this.system satisfies never;
-    //     // PersonaError.softFail(`Can't check tag list for ${this.system["type"]}`);
-    //     return false;
-    // }
     if (user instanceof Persona) { user = user.user; }
     const list = this.tagList(user ?? null);
     if (!Array.isArray(tags)) {
