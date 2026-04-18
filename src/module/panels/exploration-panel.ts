@@ -9,7 +9,7 @@ import {ExplorationPowerPanel} from "./explorationPowerPanel.js";
 import {ItemUsePanel} from "./item-use-panel.js";
 import {PersonaPanel} from "./sub-panel.js";
 
-export class RegionPanelMain extends PersonaPanel {
+export class ExplorationPanel extends PersonaPanel {
   region: U<PersonaRegion>;
 
 	override get templatePath(): string {

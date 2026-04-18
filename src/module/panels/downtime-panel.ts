@@ -1,5 +1,6 @@
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaCombat} from "../combat/persona-combat.js";
+import {Metaverse} from "../metaverse.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {ItemUsePanel} from "./item-use-panel.js";
@@ -212,6 +213,7 @@ class SocialActivityPanel extends UsableUsePanel {
 }
 
 Hooks.on("controlToken", async (token : Token<PersonaActor>, selected: boolean) => {
+  if (Metaverse.getPhase() != "downtime") {return;}
   if (!selected) {
     return;
   }
@@ -229,5 +231,10 @@ Hooks.on("updateActor", async (actor) => {
   if (panel.actor == actor) {
     await panel.updatePanel();
   }
+});
+
+Hooks.on("deleteCombat", (_combat) => {
+  const panel = PersonaSocial.panel;
+  void panel.deactivate();
 });
 

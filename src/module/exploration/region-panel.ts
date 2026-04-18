@@ -4,15 +4,15 @@ import {PersonaError} from "../persona-error.js";
 import {PersonaRegion} from "../region/persona-region.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
-import {RegionPanelMain} from "../panels/exploration-panel.js";
+import {ExplorationPanel} from "../panels/exploration-panel.js";
 
 
 export class RegionPanel {
-	private static panel: RegionPanelMain;
+	private static panel: ExplorationPanel;
 
 	static init() {
 		if (!this.panel) {
-			this.panel = new RegionPanelMain();
+			this.panel = new ExplorationPanel();
 			this.initHooks();
 		}
 	}
@@ -44,7 +44,6 @@ export class RegionPanel {
 
 	static async _updateRegionDisplay (region: PersonaRegion) {
 		await this.panel.updatePanel(region);
-		// await this.panel.updatePanel( {region, data: region.regionData});
 	}
 
 
@@ -85,10 +84,12 @@ export class RegionPanel {
 		});
 
 		Hooks.on("updateCombat", (_combat) => {
+      void RegionPanel.panel.deactivate();
 			RegionPanel.clearRegionDisplay();
 		});
 
 		Hooks.on("controlToken", async (token : Token<PersonaActor>) => {
+      if (Metaverse.getPhase() != "exploration") {return;}
 			const actor = token?.document?.actor;
 			if (!actor) {return;}
 			if (actor.isPC()) {
