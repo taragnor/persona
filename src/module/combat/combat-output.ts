@@ -1,4 +1,5 @@
 import {PersonaActor} from "../actor/persona-actor.js";
+import {PersonaError} from "../persona-error.js";
 import {RollBundle} from "../persona-roll.js";
 import {FinalizedCombatResult} from "./finalized-combat-result.js";
 import {PersonaCombat, PToken} from "./persona-combat.js";
@@ -14,6 +15,7 @@ export class CombatOutput {
 	}
 
 	async HTMLHeader(effectName: string,  initiator: PersonaActor | undefined) : Promise<string> {
+    try {
 		if (!initiator) {return "";}
 		let initiatorToken : PToken | undefined;
 		if (game.combat) {
@@ -27,9 +29,14 @@ export class CombatOutput {
 		const attackerName = initiator.token?.name ?? initiatorToken?.name ?? initiator.displayedName;
 		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-header.hbs", {attackerToken, attackerPersona, attackerName, effectName});
 		return html;
+    } catch (e) {
+      PersonaError.softFail((e as Error).toString(), e);
+      return "ERROR";
+    }
 	}
 
 	async HTMLBody(): Promise<string> {
+    try {
 		this.result.compressChained();
 		// this.compressChained();
 		const attacks = this.result.attacks.map( (attack)=> {
@@ -40,6 +47,10 @@ export class CombatOutput {
 		});
 		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-body.hbs", {attacks, escalation: 0, result: this, costs: this.result.costs});
 		return html;
+    } catch (e) {
+      PersonaError.softFail((e as Error).toString(), e);
+      return "ERROR";
+    }
 	}
 
 	async generateHTML(effectNameOrHeader: string, initiator: U<PersonaActor>) : Promise<string> {

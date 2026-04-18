@@ -29,7 +29,7 @@ export class CombatPanel extends PersonaPanel {
 
   override buttonConfig() : SidePanel.ButtonConfig[] {
     const validState= this.combat != undefined && this._target != undefined;
-    const turnCheck = !this._target || !this.combat 
+    const turnCheck = !this._target || !this.combat
       ? false
       : this.combat.turnCheck(this._target);
     return [

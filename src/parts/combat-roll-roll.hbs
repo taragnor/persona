@@ -4,7 +4,7 @@
 	</div>
 	<div class="roll-block">
 		{{> "systems/persona/parts/simple-roll.hbs" roll=atk.attackResult.roll }}
-		{{#if atk.attackResult.critRange}}
+		{{#if (and atk.attackResult.critRange atk.attackResult.critRange.possible)}}
 		<div class="crit-boost gm-only">
 			<div class="tooltip">
 				<span>

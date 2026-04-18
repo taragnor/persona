@@ -426,7 +426,6 @@ type CombatEffectConsequencesList =
     combatEffect: "add-power-tag-to-attack",
     powerTag: PowerTagOrId
   }
-
 ;
 
 

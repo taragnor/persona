@@ -106,8 +106,12 @@ export class SidePanelManager {
       console.log(`rendering ${sidePanel?.panelName ?? "No Panel given"}`);
     }
     if (this._activePanel != sidePanel ) {
-      if (sidePanel.autoActivateOnUpdate == false
-        || this.panelStack.includes(sidePanel)) {
+      if (this._activePanel != undefined
+        && (
+          sidePanel.autoActivateOnUpdate == false
+          || this.panelStack.includes(sidePanel)
+        )
+      ) {
         console.log(`Can't render ${sidePanel.panelName}: it's not active`);
         return;
       }
@@ -142,3 +146,6 @@ export class SidePanelManager {
   }
 
 }
+
+//@ts-expect-error adding to global scope
+window.panels  = SidePanelManager;
