@@ -4,12 +4,12 @@ import {PersonaTargetting} from "../combat/persona-targetting.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
-import {PersonaPanel} from "./sub-panel.js";
+import {SubPanel} from "./sub-panel.js";
 import {UsableListPanel} from "./usable-list-panel.js";
 
-export class PowerTargetSelectionPanel extends PersonaPanel {
-  power: Usable;
-  actor: ValidAttackers;
+export class PowerTargetSelectionPanel extends SubPanel {
+  protected power: Usable;
+  protected actor: ValidAttackers;
 
   override get templatePath(): string {
     return "systems/persona/sheets/panels/target-selection-panel.hbs";

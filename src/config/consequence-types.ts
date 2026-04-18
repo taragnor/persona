@@ -28,122 +28,139 @@ import {AttackResult} from "../module/combat/combat-result.js";
 import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js";
 import {StatusDuration} from "../module/persona-ae.js";
 
-type ExpendOtherEffect = {
-	type: "expend-item";
-	itemAcc: UniversalItemAccessor<Consumable | SkillCard>;
-}
+// type ExpendOtherEffect = {
+// 	type: "expend-item";
+// 	itemAcc: UniversalItemAccessor<Consumable | SkillCard>;
+// }
 
-type SimpleOtherEffect = DeprecatedSimpleEffect;
+// type SimpleOtherEffect = DeprecatedSimpleEffect;
 
-export type SetFlagEffect = {
-	type: "set-flag",
-	flagId: string,
-	state: boolean,
-} & ( EnableFlagEffect | ClearFlagEffect);
+// export type SetFlagEffect = {
+// 	type: "set-flag",
+// 	flagId: string,
+// 	state: boolean,
+// } & ( EnableFlagEffect | ClearFlagEffect);
 
-type EnableFlagEffect = {
-	state: true,
-	flagName: string,
-	duration: StatusDuration,
-	embeddedEffects: readonly SourcedConditionalEffect[],
-	clearOnDeath: boolean,
-	statusTagId: Tag["id"] | "",
-};
+// type EnableFlagEffect = {
+// 	state: true,
+// 	flagName: string,
+// 	duration: StatusDuration,
+// 	embeddedEffects: readonly SourcedConditionalEffect[],
+// 	clearOnDeath: boolean,
+// 	statusTagId: Tag["id"] | "",
+// };
 
-type ClearFlagEffect = {
-	state: false,
-};
+// type ClearFlagEffect = {
+// 	state: false,
+// };
 
-export type ResistanceShiftEffect = {
-	type: "raise-resistance" | "lower-resistance",
-	element: MultiCheckOrSingle<keyof PC["system"]["combat"]["resists"]>,
-	level: PC["system"]["combat"]["resists"]["physical"],
-	duration: StatusDuration,
-}
+// export type ResistanceShiftEffect = {
+// 	type: "raise-resistance" | "lower-resistance",
+// 	element: MultiCheckOrSingle<keyof PC["system"]["combat"]["resists"]>,
+// 	level: PC["system"]["combat"]["resists"]["physical"],
+// 	duration: StatusDuration,
+// }
 
-export type InspirationChange = {
-	type: "inspiration-cost",
-	linkId : SocialLink["id"],
-	amount: number,
-}
+// export type InspirationChange = {
+// 	type: "inspiration-cost",
+// 	linkId : SocialLink["id"],
+// 	amount: number,
+// }
 
-export type DisplayMessage = {
-	type : "display-message",
-	msg: string,
-	newChatMsg: boolean,
-}
+// export type DisplayMessage = {
+// 	type : "display-message",
+// 	msg: string,
+// 	newChatMsg: boolean,
+// }
 
-export type HPLossEffect = {
-	type: "hp-loss",
-	amount: number,
-}
+// export type HPLossEffect = {
+// 	type: "hp-loss",
+// 	amount: number,
+// }
 
-export type ExtraAttackEffect = {
-	type : "extra-attack",
-	maxChain: number,
-	iterativePenalty: number,
-}
+// export type ExtraAttackEffect = {
+// 	type : "extra-attack",
+// 	maxChain: number,
+// 	iterativePenalty: number,
+// }
 
-type ExecPowerEffect = {
-	type: "use-power",
-	newAttacker: UniversalActorAccessor<ValidAttackers>
-	powerId: string,
-	target: ConsTarget,
-}
+// type ExecPowerEffect = {
+// 	type: "use-power",
+// 	newAttacker: UniversalActorAccessor<ValidAttackers>
+// 	powerId: string,
+// 	target: ConsTarget,
+// }
 
-type ScanEffect = {
-	type: "scan",
-	level: number,
-	downgrade: boolean,
-}
+// type ScanEffect = {
+// 	type: "scan",
+// 	level: number,
+// 	downgrade: boolean,
+// }
 
-export type AlterEnergyEffect = {
-	type: "alter-energy",
-	amount: number,
-}
-
-export type AlterMPEffect = {
-	type: "alter-mp",
-	subtype: AlterMPSubtype,
-	amount: number,
-}
-
-export type AlterTheurgyEffect = {
-	type: "alter-theurgy",
-	subtype: AlterMPSubtype,
-	amount: number,
-}
-
-export type ExtraTurnEffect = {
-	type: "extraTurn",
-	activation: number,
-};
-
-type RecoveryEffect = {
-	type: "apply-recovery",
-}
-
-export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | AlterTheurgyEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | SetHPOtherEffect | InventoryActionOtherEffect | RecoveryEffect | setRollResultConsequence;
+// type ScanEffect= ProcessedConsequenceToOtherEffect<ScanConsequence>;
 
 
-type InventoryActionOtherEffect = Exclude<InventoryActionConsequence, {invAction: "add-card-item"}> | {
-	type: "inventory-action",
-	invAction: "add-card-item",
-	treasureItem: EnchantedTreasureFormat,
-	amount: number,
-}
+// export type AlterEnergyEffect = {
+// 	type: "alter-energy",
+// 	amount: number,
+// }
 
-type SetHPOtherEffect = {
-	type: "set-hp",
-	subtype: "set-to-percent",
-	value: number,
-} | {
-	type: "set-hp",
-	subtype: "set-to-const",
-	value: number,
-};
+// export type AlterEnergyEffect = ProcessedConsequenceToOtherEffect<BasicNumberedConsequence>;
 
-type AlterVariableOtherEffect = AlterVariableConsequence & {situation: Partial<Situation>} & SourcedConsequence<NonDeprecatedConsequence>;
+// export type AlterMPEffect = {
+// 	type: "alter-mp",
+// 	subtype: AlterMPSubtype,
+// 	amount: number,
+// }
+
+// export type AlterMPEffect = ProcessedConsequenceToOtherEffect<AlterMPConsequence>;
+
+// export type AlterTheurgyEffect = {
+// 	type: "alter-theurgy",
+// 	subtype: AlterMPSubtype,
+// 	amount: number,
+// }
+
+// export type ExtraTurnEffect = {
+// 	type: "extraTurn",
+// 	activation: number,
+// };
+
+// type RecoveryEffect = {
+// 	type: "apply-recovery",
+// }
+
+export type OtherEffect = ProcessedConsequenceToOtherEffect< ExpendItemConsequence | SetFlagConsequence | StatusResistanceAlterConsequence | InspirationChangeConsequence | DisplayMessageConsequence | UsePowerConsequence | SocialCardActionConsequence | DungeonActionConsequence | AlterMPConsequence | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | InventoryActionConsequence | setRollResultConsequence>;
+
+type NonDepTypes = Prettify<NonDeprecatedConsequence & {type: "damage-new"}>;
+
+type OE = Prettify<
+  OtherEffect &  {
+  type: undefined,
+    // subtype: never,
+}>;
+
+// export type OtherEffect =  AlterEnergyEffect | ExpendOtherEffect | SimpleOtherEffect | SetFlagEffect | ResistanceShiftEffect | InspirationChange | DisplayMessage | HPLossEffect | ExtraAttackEffect | ExecPowerEffect | ScanEffect | SocialCardActionConsequence | DungeonActionConsequence | AlterMPEffect | AlterTheurgyEffect | ExtraTurnEffect | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableOtherEffect | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | SetHPOtherEffect | InventoryActionOtherEffect | RecoveryEffect | setRollResultConsequence;
+
+
+// type InventoryActionOtherEffect = Exclude<InventoryActionConsequence, {invAction: "add-card-item"}> | {
+// 	type: "inventory-action",
+// 	invAction: "add-card-item",
+// 	treasureItem: EnchantedTreasureFormat,
+// 	amount: number,
+// }
+
+// type SetHPOtherEffect = {
+// 	type: "set-hp",
+// 	subtype: "set-to-percent",
+// 	value: number,
+// } | {
+// 	type: "set-hp",
+// 	subtype: "set-to-const",
+// 	value: number,
+// };
+
+// type AlterVariableOtherEffect = AlterVariableConsequence & {situation: Partial<Situation>} & SourcedConsequence<NonDeprecatedConsequence>;
 
 export type StatusEffect = StatusEffect_Basic | StatusEffect_NonBasic;
 
@@ -172,54 +189,62 @@ export type EnhancedSourcedConsequence<C extends Consequence = Consequence> = So
 
 // type ConsModifiers = "blocked" | "absorbed" | "resisted";
 
+
 export type Consequence =
 	{
 		actorOwner ?: UniversalActorAccessor<ValidAttackers>,
 	} & (
-		GenericConsequence | NonGenericConsequences
+		NonGenericConsequences
 	);
 
-type GenericConsequence = {
-	type: Exclude<ConsequenceType, NonGenericConsequences["type"]>,
-	itemAcc ?: UniversalItemAccessor<Usable>,
-	slotType ?: SlotType,
-	id ?: string,
-	otherEffect ?: OtherConsequence,
-	resistType ?: ResistType,
-	resistanceLevel ?: ResistStrength,
-	msg ?: string,
-}
+// type GenericConsequence = {
+// 	type: Exclude<ConsequenceType, NonGenericConsequences["type"] | DeprecatedConsequence["type"]>,
+// 	itemAcc ?: UniversalItemAccessor<Usable>,
+// 	slotType ?: SlotType,
+// 	id ?: string,
+// 	otherEffect ?: OtherConsequence,
+// 	resistType ?: ResistType,
+// 	resistanceLevel ?: ResistStrength,
+// 	msg ?: string,
+// }
 
 type NumberedConsequencePart = {
 	amount: number;
 }
 
-type NonGenericConsequences = UsePowerConsequence
-	| SocialCardActionConsequence
-	| DungeonActionConsequence
-	| ModifierConsequence
-	| OldDamageConsequence
-	// | OldModifier
-	| DisplayMessageConsequence
-	| ExpendItemConsequence
-	| AlterMPConsequence
-	| ElementalResistanceAlterConsequence
-	| StatusResistanceAlterConsequence
-	| OtherEffectConsequence
-	| AddPowerConsequence
-	| AddTalentConsequence
-	| InspirationChangeConsequence
-	| SetFlagConsequence
-	| AddTagConsequence
-	| CombatEffectConsequence
-	| FatigueConsequence
-	| AlterVariableConsequence
-	| PermabuffConsequence
-	| PlaySoundConsequence
-	| GainLevelConsequence
-	| CancelRequestConsequence
-	| setRollResultConsequence
-	| InventoryActionConsequence
+type NullConsequence = {
+  type: "none",
+}
+
+type NonGenericConsequences =
+  NullConsequence |
+  UsePowerConsequence
+  | SocialCardActionConsequence
+  | DungeonActionConsequence
+  | ModifierConsequence
+  | OldDamageConsequence
+// | OldModifier
+  | DisplayMessageConsequence
+  | ExpendItemConsequence
+  | AlterMPConsequence
+  | ElementalResistanceAlterConsequence
+  | StatusResistanceAlterConsequence
+  | OtherEffectConsequence
+  | AddPowerConsequence
+  | AddTalentConsequence
+  | InspirationChangeConsequence
+  | SetFlagConsequence
+  | AddTagConsequence
+  | CombatEffectConsequence
+  | FatigueConsequence
+  | AlterVariableConsequence
+  | PermabuffConsequence
+  | PlaySoundConsequence
+  | GainLevelConsequence
+  | CancelRequestConsequence
+  | setRollResultConsequence
+  | InventoryActionConsequence
+  | DeprecatedConsequence
 ;
 
 type InventoryActionConsequence = {
@@ -257,16 +282,16 @@ type setRollResultConsequence = {
 	priority ?: number; //not used yet but could be
 }
 
-type ExtraActionConsequence = {
+type Dep_ExtraActionConsequence = {
 	type: "extraTurn"
 };
 
-type BasicNumberedConsequence = {
+type Deprecated_BasicNumberedConsequence = {
 	type: "alter-energy",
 } & NumberedConsequencePart;
 
 
-type ExtraAttackConsequence = {
+type Dep_ExtraAttackConsequence = {
 	type: "extraAttack";
 	iterativePenalty: number;
 } & NumberedConsequencePart;
@@ -277,7 +302,7 @@ type GainLevelConsequence = {
 	gainTarget: LevelGainTarget,
 }
 
-type ScanConsequence = {
+type Deprecated_ScanConsequence = {
 	type: "scan",
 	amount: number,
 	downgrade: boolean,
@@ -420,14 +445,14 @@ type SetFlagConsequence = {
 	{
 		flagState: false
 	}
-	| {
+	| ({
 		flagState : true,
 		flagName : string,
 		applyEmbedded: boolean,
 		clearOnDeath: boolean,
 		statusTagId: Tag["id"] | "",
-	}
-) & DurationComponent;
+	} & DurationComponent)
+);
 
 type AddStatusConsequence = {
 	type : "addStatus",
@@ -450,9 +475,12 @@ type InspirationChangeConsequence = {
 	type: "inspiration-cost",
 	socialLinkIdOrTarot : SocialLinkIdOrTarot,
 	amount: number,
+	applyTo : ConsequenceTarget,
 }
 
-type AddPowerConsequence = {
+type AddPowerConsequence =
+  {applyTo : ConsequenceTarget} 
+  & ({
 	type: "add-power-to-list",
 	id: Power["id"], // id of power
 } | {
@@ -462,7 +490,7 @@ type AddPowerConsequence = {
 } | {
 	type:  "teach-power"
 	randomPower: true,
-};
+});
 
 type AddTalentConsequence = {
 	type: "add-talent-to-list",
@@ -497,6 +525,7 @@ type AlterMPConsequence = {
 
 type ExpendItemConsequence = {
 	type : "expend-item",
+	applyTo : ConsequenceTarget,
 }
 
 type DamageConsequenceSubtypes = SimpleDamageCons
@@ -511,16 +540,18 @@ type DamageConsequenceShared = {
 	/** manually added as part of processing */
 };
 
-export type NonDeprecatedConsequence = ExcludeDeprecatedModifiers<Consequence>
+export type NonDeprecatedConsequence = Prettify<ExcludeDeprecatedModifiers<Consequence>
   & ExcludeDeprecatedTypes<Consequence>
+  >;
   // & { type: Exclude<Consequence["type"], DeprecatedConsequence["type"]>}
-	& {applyTo: U<ConditionTarget>};
+	// & {applyTo: U<ConditionTarget>};
 //modifier doiesn't have an applyTo but we need to fix this later
 
 type ExcludeDeprecatedModifiers<T extends Consequence> = Exclude<T, DeprecatedMultiModifierConsequence | DeprecatedSingleModifierConsequence>
 
   type ExcludeDeprecatedTypes<T extends Consequence>  =
   { type: Exclude<T["type"], DeprecatedConsequence["type"]> | NonDeprecatedMultiModifierConsequence["type"] | NonDeprecatedSingleModifierConsequence["type"] }
+
 
 type DeprecatedSimpleEffect = {
 	type: "save-slot" | "half-hp-cost";
@@ -543,17 +574,23 @@ export type DeprecatedConsequence =
 		| AddEscalationConsequence
 		| SlotRecoveryConsequence
 		| EscalationManipulation
-		| DamageConsequence
+		| Dep_DamageConsequence
 		| AddStatusConsequence
 		| RemoveStatusConsequence
-		| ExtraAttackConsequence
-		| ExtraActionConsequence
-		| ScanConsequence
-		| BasicNumberedConsequence
+    | Dep_ExtraActionConsequence
+		| Dep_ExtraAttackConsequence
+		| Deprecated_ScanConsequence
+		| Deprecated_BasicNumberedConsequence
     | DeprecatedMultiModifierConsequence
     | DeprecatedSingleModifierConsequence
+    | ExpendSlotDep
 	)
 ;
+
+type ExpendSlotDep = {
+  type: "expend-slot";
+
+}
 
 type EscalationManipulation = {
 	type: "escalationManipulation";
@@ -573,7 +610,7 @@ export type OldDamageConsequence = {
 	calc ?: unknown, //this is a DamageCalc but typescript doesn't like it
 } & OldDeprecatedStyle;
 
-export type DamageConsequence =
+export type Dep_DamageConsequence =
 	{	type : "damage-new" }
 	& DamageConsequenceShared
 	& DamageConsequenceSubtypes
@@ -597,7 +634,7 @@ type DamageMultiplierCons = {
 
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _errorCheckDType : Expect<DamageConsequence["damageSubtype"], DamageSubtype> = true;
+const _errorCheckDType : Expect<Dep_DamageConsequence["damageSubtype"], DamageSubtype> = true;
 
 type NonDeprecatedMultiModifierConsequence = {
 	type: "modifier-new",
@@ -633,8 +670,6 @@ type NonDeprecatedSingleModifierConsequence = {
 	amount: ConsequenceAmount,
 
 }
-
-
 
 export type SocialCardActionConsequence =
 	{ type: "social-card-action", cardAction: SocialCardAction} & CardActionTypes[number];
@@ -787,6 +822,7 @@ type UsePowerConsequence = {
 	type: "use-power",
 	powerId: Power["id"],
 	target: ConsTarget,
+	applyTo : ConsequenceTarget,
 }
 
 export const CONS_TARGET_LIST = [
@@ -932,4 +968,37 @@ type SituationProperty = typeof CONSEQUENCE_AMOUNT_SITUATION_PROPERTIES_LIST[num
 
  export const SITUATION_PROPERTIES = HTMLTools.createLocalizationObject( CONSEQUENCE_AMOUNT_SITUATION_PROPERTIES_LIST, "persona.consequenceAmount.sitProperties");
 
+type ProcessedConsequenceToOtherEffect<T extends NonDeprecatedConsequence> =
+  Prettify<
+  AlterVariableExtraSituation<
+  SocialTargetConvert<
+  StatusDurationReplace<
+  modifyCardItem<
+  // removeApplyTo<
+  RemoveConsequenceAmount<T>
+  // >
+  >
+  >
+  >
+  >
+  >;
+
+// type RemoveConsequenceAmount<T extends object> = T extends {amount: ConsequenceAmount} ? Omit<T, "amount"> & {amount: number} : T;
+
+
+type RemoveConsequenceAmount<T> = {
+  [K in keyof T]: T[K] extends ConsequenceAmount ? number : T[K];
+};
+
+
+type modifyCardItem<T extends object> = T extends {invAction: "add-card-item"} ? T & {treasureItem: EnchantedTreasureFormat} : T;
+
+type removeApplyTo<T extends object> = T extends {applyTo: ConsequenceTarget} ? Omit<T, "applyTo">: T;
+
+type StatusDurationReplace<T extends object> = T extends {statusDuration: StatusDurationType} ? Omit<T, "statusDuration"> & {duration :StatusDuration}: T;
+
+type SocialTargetConvert <T extends object> = T extends { socialLinkIdOrTarot : SocialLinkIdOrTarot} ? Omit<T, "socialLinkIdOrTarot"> & {linkId: SocialLink["id"]} : T;
+
+
+type AlterVariableExtraSituation<T extends object> = T extends {type: "alter-variable"} ? T & {situation: Situation} : T;
 

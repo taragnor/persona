@@ -16,26 +16,27 @@ import {PersonaTargetting} from "./combat/persona-targetting.js";
 
 export class TriggeredEffect {
 
-	static async onTrigger<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation ) : Promise<CombatResult> {
-		const result = new CombatResult();
-		 const situationCopy = this._setupSituation(trigger, actor, situation);
-		 if (situationCopy == null) {return result;}
-		const triggers = this.getTriggerList(trigger, actor, situationCopy);
-		 if (PersonaSettings.debugMode()) {
-				console.debug( `${actor?.name ?? "void actor"} triggerList (${trigger}) : \n${triggers.map( trig=> trig.toString()).join("\n")}`);
-		 }
-		for (const eff of triggers) {
-			try {
-				const validCons = eff.getActiveConsequences(situationCopy);
-				const res = await ConsequenceProcessor.consequencesToResult(validCons ,undefined, situationCopy, actor, actor, null);
-				result.merge(res);
-			} catch (e) {
-				PersonaError.softFail(`Problem with triggered effects ${eff.source?.name ?? "Unknown source"} running on actor ${actor?.name ?? "none"}`, e);
-				continue;
-			}
-		}
-	return result;
-}
+  static async onTrigger<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation ) : Promise<CombatResult> {
+    const result = new CombatResult();
+    const situationCopy = this._setupSituation(trigger, actor, situation);
+    if (situationCopy == null) {return result;}
+    const triggers = this.getTriggerList(trigger, actor, situationCopy);
+    if (PersonaSettings.debugMode()) {
+      console.debug( `${actor?.name ?? "void actor"} triggerList (${trigger}) : \n${triggers.map( trig=> trig.toString()).join("\n")}`);
+    }
+    for (const eff of triggers) {
+      try {
+        const validCons = eff.getActiveConsequences(situationCopy);
+        const res = await ConsequenceProcessor.consequencesToResult(validCons ,undefined, situationCopy, actor, actor, null);
+        result.merge(res);
+      } catch (e) {
+        const source = eff.source ? PersonaDB.find(eff.source) : undefined;
+        PersonaError.softFail(`Problem with triggered effects ${source?.name ?? "Unknown source"} running on actor ${actor?.name ?? "none"}`, e);
+        continue;
+      }
+    }
+    return result;
+  }
 
 private static _setupSituation< T extends Trigger>( trigger: T, actor ?: ValidAttackers, situation ?: Situation ) : N<Situation>{
 		if (!situation) {
@@ -211,7 +212,8 @@ static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Sit
 		for (const usePower of usePowers) {
 			//TODO BUG: Extra attacks keep the main inputted modifier
 			try {
-				const newAttacker = PersonaCombat.getPTokenFromActorAccessor(usePower.newAttacker);
+        if (!usePower.owner) {continue;}
+				const newAttacker = PersonaCombat.getPTokenFromActorAccessor(usePower.owner);
 				const execPower = PersonaDB.allPowers().get( usePower.powerId);
 				if (execPower && newAttacker) {
 					const altTargets= PersonaCombat.getAltTargets(newAttacker, situation, usePower.target );

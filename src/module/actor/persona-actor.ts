@@ -39,7 +39,7 @@ import { PersonaSounds } from "../persona-sounds.js";
 import { ModifierTarget } from "../../config/item-modifiers.js";
 import { StatusEffectId } from "../../config/status-effects.js";
 import { DAMAGE_TYPES_LIST } from "../../config/damage-types.js";
-import { SetFlagEffect, StatusEffect } from "../../config/consequence-types.js";
+import { OtherEffect, StatusEffect } from "../../config/consequence-types.js";
 import { ModifierList } from "../combat/modifier-list.js";
 import { ModifierContainer } from "../item/persona-item.js";
 import { PersonaDB } from "../persona-db.js";
@@ -3745,24 +3745,33 @@ getFlagDuration(flagName: string) : StatusDuration | undefined {
 	return this.getEffectFlag(flagName)?.duration;
 }
 
-async setEffectFlag(effect: DistributiveOmit<SetFlagEffect, "type">) {
-	if (effect.state == true) {
-		const flag = await this.createEffectFlag(effect.flagId, effect.flagName, effect.duration, effect.clearOnDeath);
-		if (effect.embeddedEffects.length> 0) {
-			await flag.setEmbeddedEffects(effect.embeddedEffects);
-		}
-		if (effect.statusTagId) {
-			const tags = PersonaDB.tagsOfCategory("status");
-			const statusTag = tags.find(tag => tag.id == effect.statusTagId);
-			if (statusTag) {
-				await flag.update({
-					"img" : statusTag.img,
-					"statuses" : [statusTag.id]});
-			}
-		}
-	} else {
-		await this.clearEffectFlag(effect.flagId);
-	}
+async setEffectFlag(effect: Sourced<OtherEffect> & {type: "set-flag"}) {
+  if (effect.flagState == false) {
+    await this.clearEffectFlag(effect.flagId);
+    return;
+  }
+  const flag = await this.createEffectFlag(effect.flagId, effect.flagName, effect.duration, effect.clearOnDeath);
+  const owner = effect.owner ? PersonaDB.findActor(effect.owner) : null;
+  const source = effect.source ? PersonaDB.find(effect.source) : undefined;
+  const embeddedEffects = (effect.applyEmbedded
+    && source != undefined
+    && owner
+  )
+    ? (source instanceof PersonaAE ? source.getEmbeddedEffects(owner) : source.getEmbeddedEffects(owner))
+    : [];
+  if (embeddedEffects.length> 0) {
+    await flag.setEmbeddedEffects(embeddedEffects);
+  }
+  if (effect.statusTagId) {
+    const tags = PersonaDB.tagsOfCategory("status");
+    const statusTag = tags.find(tag => tag.id == effect.statusTagId);
+    if (statusTag) {
+      await flag.update({
+        "img" : statusTag.img,
+        "statuses" : [statusTag.id]
+      });
+    }
+  }
 }
 
 async resetAllCooldowns() {

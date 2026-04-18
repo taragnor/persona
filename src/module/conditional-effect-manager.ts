@@ -461,8 +461,8 @@ export class ConditionalEffectManager {
     return {
       ...obj,
       owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : undefined) as UniversalActorAccessor<ValidAttackers>,
-      source: sourceItem != null ? sourceItem : undefined,
-      realSource: realSource ? realSource : undefined,
+      source: sourceItem != null ? sourceItem.accessor : undefined,
+      realSource: realSource ? realSource.accessor : undefined,
     };
   }
 
@@ -783,9 +783,9 @@ declare global{
 		Sourced<T>;
 
 	type Sourced<T extends object>= T & {
-		source: U<ModifierContainer>;
+		source: U<ModifierContainer["accessor"]>;
 		owner: U<UniversalActorAccessor<PersonaActor>>;
-		realSource: U<ModifierContainer>;
+		realSource: U<ModifierContainer["accessor"]>;
 	}
 
 }

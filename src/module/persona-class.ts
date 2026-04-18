@@ -1146,7 +1146,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     if (usable.hasTag("downtime-minor", this)) {
       if (!this.user.isPC()) {return "Only PCs can take downtime minor actions";}
       if (!PersonaSocial.hasMinorSocialAction(this.user)) {
-        return "You don't have a social action";
+        return "You don't have a social minor action";
       }
     }
     return null;

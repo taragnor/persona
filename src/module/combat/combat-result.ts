@@ -1,7 +1,7 @@
 import { DAMAGETYPES } from "../../config/damage-types.js";
 import { FinalizedCombatResult } from "./finalized-combat-result.js";
 import { ConsequenceProcessed } from "./persona-combat.js";
-import { ConsequenceAmount, NewDamageConsequence, SetFlagEffect } from "../../config/consequence-types.js";
+import { ConsequenceAmount, NewDamageConsequence } from "../../config/consequence-types.js";
 import { DamageCalculation } from "./damage-calc.js";
 import { PostAttackRollSituation } from "../../config/situation.js";
 import { PersonaItem} from "../item/persona-item.js";
@@ -48,17 +48,17 @@ export class CombatResult  {
 		return new FinalizedCombatResult(this);
 	}
 
-	findEffects<T extends OtherEffect["type"]>(effectType: T): (OtherEffect & {type:T})[] {
-		const arr = [] as (OtherEffect & {type:T})[];
+	findEffects<T extends Sourced<OtherEffect>["type"]>(effectType: T): (Sourced<OtherEffect> & {type:T})[] {
+		const arr = [] as (Sourced<OtherEffect> & {type:T})[];
 		for (const v of this.attacks.values()) {
 			for (const eff of v.flatMap(chg => chg.otherEffects) ) {
 				if (eff.type == effectType)
-					{arr.push( eff as OtherEffect & {type:T});}
+					{arr.push( eff as Sourced<OtherEffect> & {type:T});}
 			}
 		}
 		for (const eff of this.costs.flatMap(chg => chg.otherEffects) ) {
 			if (eff.type == effectType)
-				{arr.push( eff as OtherEffect & {type:T});}
+				{arr.push( eff as Sourced<OtherEffect> & {type:T});}
 		}
 		return arr;
 	}
@@ -140,9 +140,12 @@ export class CombatResult  {
 					return;
 				}
 				effect.otherEffects.push( {
-					type: "set-hp",
-					subtype: cons.damageSubtype,
-					value: amount,
+          ...cons,
+          amount,
+          //fix to other effects
+					// type: "set-hp",
+					// subtype: cons.damageSubtype,
+					// value: amount,
 				});
 				break;
 			}
@@ -152,7 +155,8 @@ export class CombatResult  {
 					const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons as typeof cons & {amount: ConsequenceAmount});
 					const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situation);
 					if (amount == undefined) {
-						PersonaError.softFail(`ConsAmount is undefiend in Damage Effect ${cons.damageSubtype} of ${cons.realSource?.name}`);
+            const realSource = cons.realSource ? PersonaDB.find(cons.realSource) : undefined;
+						PersonaError.softFail(`ConsAmount is undefiend in Damage Effect ${cons.damageSubtype} of ${realSource?.name ?? "No Real Source"}`);
 						return;
 					}
 					cons = {
@@ -197,9 +201,10 @@ export class CombatResult  {
       case "extraAttack": {
         if (!effect) {break;}
         effect.otherEffects.push({
-          type: "extra-attack",
-          maxChain: cons.amount ?? 1,
-          iterativePenalty: -Math.abs(cons.iterativePenalty ?? 0),
+          ...cons,
+          // type: "extra-attack",
+          // maxChain: cons.amount ?? 1,
+          // iterativePenalty: -Math.abs(cons.iterativePenalty ?? 0),
         });
         break;
       }
@@ -213,17 +218,25 @@ export class CombatResult  {
         if (!effect) {break;}
         const combat = game.combat as PersonaCombat;
         if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) {break;}
-        effect.otherEffects.push({
-          type: "extraTurn",
-          activation: combat.lastActivationRoll
+        if (effect.addStatus.some( x=> x.id =="bonus-action")) {
+          break;
+        }
+        effect.addStatus.push({
+          id: "bonus-action",
+          duration: {
+            dtype:  "UEoT",
+            actorTurn: effect.actor,
+          },
+          activationRoll: combat.lastActivationRoll,
         });
         break;
       }
       case "scan":
         if (!effect) {break;}
         effect.otherEffects.push( {
-          type: cons.combatEffect,
-          level: cons.amount ?? 1,
+          ...cons,
+          // type: cons.combatEffect,
+          amount: cons.amount ?? 1,
           downgrade: cons.downgrade ?? false,
         });
         break;
@@ -235,9 +248,11 @@ export class CombatResult  {
         if (!effect) {break;}
         const amount = ConsequenceAmountResolver.resolveConsequenceAmount(cons.amount ?? 0, situation) ?? 0;
         effect.otherEffects.push( {
-          type: cons.combatEffect,
-          subtype: cons.subtype,
+          ...cons,
           amount,
+          // type: cons.combatEffect,
+          // subtype: cons.subtype,
+          // amount,
         });
         break;
       }
@@ -253,17 +268,18 @@ export class CombatResult  {
           amount *= mult;
         }
         effect.otherEffects.push( {
-          type: cons.combatEffect,
+          ...cons,
           amount,
         });
         break;
       }
       case "apply-recovery":
         effect.otherEffects.push( {
-          type: cons.combatEffect,
+          ...cons,
+          // type: cons.combatEffect,
         });
         break;
-      case "set-cooldown": 
+      case "set-cooldown":
         effect.otherEffects.push( cons);
         break;
       default:
@@ -280,7 +296,7 @@ export class CombatResult  {
       case "none":
         break;
       case "expend-item": {
-        const item = cons.source;
+        const item = cons.source ? PersonaDB.find(cons.source) : undefined;
         if (!effect) {
           const msg=`Can't expend item ${item?.name ?? "Unknown Item"} due to no effect present in combat result`;
           PersonaError.softFail(msg, item, cons);
@@ -296,15 +312,12 @@ export class CombatResult  {
           PersonaError.softFail(msg, item, cons);
           break;
         }
-        const itemAcc =  item.accessor;
+        // const itemAcc =  item.accessor;
         effect.otherEffects.push( {
-          type: "expend-item",
-          itemAcc,
+          ...cons,
+          // type: "expend-item",
+          // itemAcc,
         });
-        break;
-      }
-      case "expend-slot": {
-        console.warn("Expend slot is unused and does nnothing");
         break;
       }
       case "modifier":
@@ -322,23 +335,32 @@ export class CombatResult  {
         if (!effect) {break;}
         // const target = PersonaDB.findActor(situation.target);
         try {
-          const dur = convertConsToStatusDuration(cons, target!, situation);
-          let embeddedEffects: readonly SourcedConditionalEffect[]= [];
-          const source = cons.source;
-          if (cons.flagState && cons.applyEmbedded && source && "getEmbeddedEffects" in source && source.getEmbeddedEffects != undefined) {
-            const owner = cons.owner ? PersonaDB.findActor(cons.owner) : null;
-            embeddedEffects = source.getEmbeddedEffects(owner);
+          // let embeddedEffects: readonly SourcedConditionalEffect[]= [];
+          // const source = cons.source;
+          // if (cons.flagState && cons.applyEmbedded && source && "getEmbeddedEffects" in source && source.getEmbeddedEffects != undefined) {
+          //   const owner = cons.owner ? PersonaDB.findActor(cons.owner) : null;
+          //   embeddedEffects = source.getEmbeddedEffects(owner);
+          // }
+          if (cons.flagState) {
+            const duration = convertConsToStatusDuration(cons, target!, situation);
+            effect.otherEffects.push( {
+              ...cons,
+              duration,
+            });
+          } else {
+            effect.otherEffects.push( {
+              ...cons,
+            });
           }
-          effect.otherEffects.push( {
-            type: "set-flag",
-            flagId: cons.flagId ?? "",
-            flagName: cons.flagState ? cons.flagName ?? "" : "",
-            state: cons.flagState ?? true,
-            duration: dur,
-            embeddedEffects,
-            clearOnDeath: cons.flagState ? cons.clearOnDeath : false,
-            statusTagId: "statusTagId" in cons ? cons.statusTagId ?? "" : "",
-          } satisfies SetFlagEffect);
+          // type: "set-flag",
+          // flagId: cons.flagId ?? "",
+          // flagName: cons.flagState ? cons.flagName ?? "" : "",
+          // state: cons.flagState ?? true,
+          // duration: dur,
+          // embeddedEffects,
+          // clearOnDeath: cons.flagState ? cons.clearOnDeath : false,
+          // statusTagId: "statusTagId" in cons ? cons.statusTagId ?? "" : "",
+          // } satisfies OtherEffect);
         } catch (e) {
           PersonaError.softFail(`Problem converting set Flag duration: ${cons?.flagId ?? "unknown Flag Id" }`, e);
         }
@@ -349,24 +371,27 @@ export class CombatResult  {
         const socialTarget = getSocialLinkTarget(cons.socialLinkIdOrTarot, situation, undefined);
         if (!socialTarget) {break;}
         effect.otherEffects.push( {
-          type: "inspiration-cost",
-          amount: cons.amount ?? 1,
+          ...cons,
           linkId: socialTarget.id,
+          // type: "inspiration-cost",
+          // amount: cons.amount ?? 1,
         });
         break;
       }
       case "display-msg":
         if (effect && !cons.newChatMsg) {
           effect.otherEffects.push( {
-            type: "display-message",
+            ...cons,
+            // type: "display-message",
             newChatMsg: false,
-            msg: cons.msg ?? "",
+            // msg: cons.msg ?? "",
           });
         } else {
           this.globalOtherEffects.push({
-            type: "display-message",
+            ...cons,
+            // type: "display-message",
             newChatMsg: true,
-            msg: cons.msg ?? "",
+            // msg: cons.msg ?? "",
           });
         }
         break;
@@ -377,21 +402,30 @@ export class CombatResult  {
           break;
         }
         effect.otherEffects.push( {
-          newAttacker:  cons.actorOwner,
-          type: cons.type,
-          powerId : cons.powerId,
-          target: cons.target,
+          ...cons,
+          // newAttacker:  cons.actorOwner,
+          // type: cons.type,
+          // powerId : cons.powerId,
+          // target: cons.target,
         });
         break;
       }
       case "social-card-action": {
         //must be executed playerside as event execution is a player thing
-        const otherEffect : Sourced<SocialCardActionConsequence> = {
-          ...cons
-        };
-        await SocialActionExecutor.execSocialCardAction(otherEffect, situation);
+        await SocialActionExecutor.execSocialCardAction(cons, situation);
         if (!effect) {break;}
-        effect.otherEffects.push( otherEffect);
+        if ("amount" in cons) {
+          const sourced=  ConsequenceAmountResolver.extractSourcedFromField(cons, "amount");
+          const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situation) ?? 1;
+          effect.otherEffects.push( {
+            ...cons,
+            amount,
+          }
+          );
+        }
+        else {
+          effect.otherEffects.push( cons);
+        }
         break;
       }
       case "dungeon-action":
@@ -402,9 +436,10 @@ export class CombatResult  {
       case "alter-mp":
         if (!effect) {break;}
         effect.otherEffects.push( {
-          type: cons.type,
-          amount: cons.amount ?? 0,
-          subtype: cons.subtype
+          ...cons,
+          // type: cons.type,
+          // amount: cons.amount ?? 0,
+          // subtype: cons.subtype
         });
         break;
       case "teach-power":
@@ -453,10 +488,27 @@ export class CombatResult  {
           }
           break;
         }
-        if (target) {
-          effect?.otherEffects.push(alterVarCons);
+        if ("value" in alterVarCons) {
+          const value = this.resolveConsequenceAmount(alterVarCons, situation, "value");
+          if (target) {
+            effect?.otherEffects.push({
+              ...alterVarCons,
+              value,
+            }
+            );
+          } else {
+            this.globalOtherEffects.push({
+              ... alterVarCons,
+              value,
+            });
+          }
+
         } else {
-          this.globalOtherEffects.push(alterVarCons);
+          if (target) {
+            effect?.otherEffects.push(alterVarCons);
+          } else {
+            this.globalOtherEffects.push(alterVarCons);
+          }
         }
         break;
       }
@@ -484,7 +536,7 @@ export class CombatResult  {
             ...cons,
             amount,
             treasureItem,
-          });
+          } satisfies OtherEffect);
           break;
         }
         if (cons.invAction != "add-treasure") {
@@ -681,7 +733,7 @@ export interface ActorChange<T extends PersonaActor> {
 	actor: UniversalActorAccessor<T>;
 	damage: Partial<Record<NonNullable<DamageCalculation["damageType"]>, DamageCalculation>>;
 	addStatus: StatusEffect[],
-	otherEffects: OtherEffect[]
+	otherEffects: (Sourced<OtherEffect>)[]
 	removeStatus: Pick<StatusEffect, "id">[],
 }
 
@@ -761,7 +813,7 @@ export type AttackResult = {
 // 	return null;
 // }
 
-function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-flag"} | {type: "combat-effect", combatEffect:"addStatus"}) , atkResultOrActor: AttackResult | ValidAttackers, situation : Situation) : StatusDuration {
+function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-flag", flagState: true} | {type: "combat-effect", combatEffect:"addStatus"}) , atkResultOrActor: AttackResult | ValidAttackers, situation : Situation) : StatusDuration {
   const dur = cons.statusDuration;
   switch (dur) {
     case "X-rounds":

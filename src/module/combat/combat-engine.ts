@@ -195,15 +195,15 @@ export class CombatEngine {
 		return result;
 	}
 
-	async handleSecondaryAttacks(CR: CombatResult, atkResult: AttackResult, power: UsableAndCard, attacker: PToken, target: PToken, rollType: AttackRollType, options: CombatOptions  ): Promise<CombatResult> {
+	async handleSecondaryAttacks(CR: CombatResult, atkResult: AttackResult, power: UsableAndCard, attacker: PToken, _target: PToken, _rollType: AttackRollType, options: CombatOptions  ): Promise<CombatResult> {
 		const result = new CombatResult;
 		if (atkResult.result == 'reflect') {
 			result.merge(await this.usePowerOn(attacker, power, [attacker], 'reflect'));
 		}
 
 		if (!power.isSkillCard()) {
-			const extraAttacks= await this.execExtraAttacks(CR, power, rollType, attacker, target, options);
-			result.merge(...extraAttacks);
+			// const extraAttacks= await this.execExtraAttacks(CR, power, rollType, attacker, target, options);
+			// result.merge(...extraAttacks);
 			const extraPowerEffects= await this.execSubPowers(CR, atkResult, options);
 			result.merge(...extraPowerEffects);
 		}
@@ -218,28 +218,29 @@ export class CombatEngine {
 		return num_of_attacks;
 	}
 
-	async execExtraAttacks(CR: CombatResult, power: Usable, rollType: AttackRollType,attacker: PToken, target: PToken, options: CombatOptions ) {
-		const ret : CombatResult[] = [];
-		const extraAttacks = CR.findEffects('extra-attack');
-		for (const extraAttack of extraAttacks)
-		{
-			const bonusRollType = typeof rollType != 'number' ? 0: rollType+1;
-			const mods = new ModifierList();
-			//TODO BUG: Extra attacks keep the main inputted modifier
-			if (extraAttack.iterativePenalty) {
-				mods.add('Iterative Penalty', (bonusRollType + 1) * extraAttack.iterativePenalty);
-			}
-			const newOptions = {
-				...options,
-				modifiers: mods,
-			};
-			if (bonusRollType < extraAttack.maxChain) {
-				const extra = await this.usePowerOn(attacker, power, [target], bonusRollType, newOptions);
-				ret.push(extra);
-			}
-		}
-		return ret;
-	}
+	// async execExtraAttacks(CR: CombatResult, power: Usable, rollType: AttackRollType,attacker: PToken, target: PToken, options: CombatOptions ) {
+	// 	const ret : CombatResult[] = [];
+    //note extra attacks were removed as a mechanic
+		//const extraAttacks = CR.findEffects('extraAttack');
+		//for (const extraAttack of extraAttacks)
+		//{
+		//	const bonusRollType = typeof rollType != 'number' ? 0: rollType+1;
+		//	const mods = new ModifierList();
+		//	//TODO BUG: Extra attacks keep the main inputted modifier
+		//	if (extraAttack.iterativePenalty) {
+		//		mods.add('Iterative Penalty', (bonusRollType + 1) * extraAttack.iterativePenalty);
+		//	}
+		//	const newOptions = {
+		//		...options,
+		//		modifiers: mods,
+		//	};
+		//	if (bonusRollType < extraAttack.maxChain) {
+		//		const extra = await this.usePowerOn(attacker, power, [target], bonusRollType, newOptions);
+		//		ret.push(extra);
+		//	}
+		//}
+		// return ret;
+	// }
 
 	/** executes powers which trigger off other powers via consequence */
 	async execSubPowers(CR : CombatResult, atkResult: AttackResult, options: CombatOptions) : Promise<CombatResult[]> {
@@ -248,7 +249,12 @@ export class CombatEngine {
 		for (const usePower of execPowers) {
 			//TODO BUG: Extra attacks keep the main inputted modifier
 			if (!this.combat) {continue;}
-			const newAttacker = this.combat.getPToken(usePower.newAttacker);
+      if (!usePower.owner) {
+        PersonaError.softFail("Can't find new Attacker for extra power execution", usePower);
+        continue;
+      }
+      const newAttackerActor = PersonaDB.findActor(usePower.owner) as ValidAttackers;
+			const newAttacker = this.combat.getPToken(newAttackerActor);
 			const execPower = PersonaDB.allPowers().get( usePower.powerId);
 			if (execPower && newAttacker) {
 				const altTargets= PersonaCombat.getAltTargets(newAttacker, atkResult.situation, usePower.target );
@@ -645,7 +651,7 @@ export class CombatEngine {
 						combatEffect: 'removeStatus',
 						owner: targetActor.accessor,
 						statusName: 'magic-shield',
-						source: power,
+						source: power.accessor,
 						realSource: undefined,
 						applyTo: "target",
 					};
@@ -657,7 +663,7 @@ export class CombatEngine {
 						combatEffect: 'removeStatus',
 						owner: targetActor.accessor,
 						statusName: 'phys-shield',
-						source: power,
+						source: power.accessor,
 						realSource: undefined,
 						applyTo: "target",
 					};
@@ -1062,7 +1068,7 @@ export class CombatEngine {
 					type:'inspiration-cost',
 					amount: power.system.inspirationCost,
 					socialLinkIdOrTarot: power.system.inspirationId as unknown as AnyStringObject,
-					source: power,
+					source: power.accessor,
 					owner: attacker.actor.accessor,
 					realSource: undefined,
 					applyTo: "attacker",
@@ -1074,7 +1080,7 @@ export class CombatEngine {
 				type: 'hp-loss',
 				damageType: 'none',
 				amount: power.modifiedHpCost(attacker.actor.persona()),
-				source: power,
+				source: power.accessor,
 				owner: attacker.actor.accessor,
 				realSource: undefined,
 				applyTo: "attacker",
@@ -1088,7 +1094,7 @@ export class CombatEngine {
 				type: 'alter-mp',
 				subtype: 'direct',
 				amount: -power.mpCost(attacker.actor.persona()),
-				source: power,
+				source: power.accessor,
 				owner: attacker.actor.accessor,
 				realSource: undefined,
 				applyTo: "attacker",
@@ -1101,7 +1107,7 @@ export class CombatEngine {
 					type: "combat-effect",
 					combatEffect: 'alter-energy',
 					amount: -ecost,
-					source: power,
+					source: power.accessor,
 					owner: attacker.actor.accessor,
 					realSource: undefined,
 					applyTo: "attacker",
@@ -1115,7 +1121,7 @@ export class CombatEngine {
 				combatEffect: 'set-cooldown',
 				powerId: power.id,
 				durationRounds: cooldown,
-				source: power,
+				source: power.accessor,
 				owner: attacker.actor.accessor,
 				realSource: undefined,
 				applyTo: "attacker",
@@ -1145,7 +1151,7 @@ export class CombatEngine {
 					|| consumable.system.subtype == 'consumable') {
 					await res.addEffect(null, attacker.actor, {
 						type: 'expend-item',
-						source: usableOrCard,
+						source: usableOrCard.accessor,
 						owner: attacker.actor.accessor,
 						realSource: undefined,
 						applyTo: "attacker",

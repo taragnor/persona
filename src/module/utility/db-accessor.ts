@@ -443,7 +443,8 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		};
 	}
 
-	accessorEq<T extends UniversalTokenAccessor<any> | UniversalItemAccessor<any> | UniversalActorAccessor<any>> ( a: T, b: T) : boolean {
+	accessorEq<T extends UniversalAccessor<any>> ( a: U<T>, b: U<T>) : boolean {
+    if (!a || !b) {return false;}
 		if ("token" in a && "token" in b && a.token && b.token) {
 			return a.token.tokenId == b.token.tokenId;
 		}
@@ -490,7 +491,7 @@ type UniversalAccessorTypes = Actor | TokenDocument | Item | ActiveEffect;
 
 // type UniversalAccessor<T extends UniversalAccessorTypes> = UniversalActorAccessor<T> | UniversalItemAccessor<T> | UniversalTokenAccessor<T> | UniversalAEAccessor<T>;
 
-type UniversalAccessor<T extends UniversalAccessorTypes> =
+type UniversalAccessor<T extends UniversalAccessorTypes = UniversalAccessorTypes> =
 	(T extends Actor ? UniversalActorAccessor<T> : never)
 	| (T extends TokenDocument ? UniversalTokenAccessor<T> : never)
 	| (T extends Item ? UniversalItemAccessor<T> : never)

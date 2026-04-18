@@ -1,4 +1,4 @@
-import {Consequence, DamageConsequence, DeprecatedConsequence, NewDamageConsequence, NonDeprecatedConsequence, NonDeprecatedDamageCons, OldDamageConsequence} from "../../config/consequence-types.js";
+import {Consequence, Dep_DamageConsequence, DeprecatedConsequence, NewDamageConsequence, NonDeprecatedConsequence, NonDeprecatedDamageCons, OldDamageConsequence} from "../../config/consequence-types.js";
 import {DamageType} from "../../config/damage-types.js";
 import {DeprecatedModifierTarget, ModifierTarget, NonDeprecatedModifierTarget} from "../../config/item-modifiers.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
@@ -32,7 +32,6 @@ export class ConsequenceConverter {
 				console.log(`Deprecated Consequence type ${dep.type} in ${usable?.name} - ${usable?.parent?.name}`);
 				return {
 					type: "none",
-					applyTo: undefined,
 				};
 			case "addStatus":
 				return {
@@ -90,7 +89,6 @@ export class ConsequenceConverter {
           modifiedFields: fields,
           modifierCategory: "",
           amount: dep.amount,
-          applyTo,
         };
         return ret;
       }
@@ -102,15 +100,15 @@ export class ConsequenceConverter {
             modifiedField: newField,
             modifierCategory: dep?.modifierCategory ?? "",
             amount: dep.amount,
-            applyTo,
           };
           return ret;
         }
         return {
           type : "none",
-          applyTo: "user",
         };
       }
+      case "expend-slot":
+        return { type : "none", };
       default:
         dep satisfies never;
     }
@@ -146,7 +144,7 @@ export class ConsequenceConverter {
     return field as NonDeprecatedModifierTarget;
   }
 
-	static convertDeprecatedDamageConsequence( cons: OldDamageConsequence | DamageConsequence, defaultDamageType?: DamageType) : NonDeprecatedDamageCons {
+	static convertDeprecatedDamageConsequence( cons: OldDamageConsequence | Dep_DamageConsequence, defaultDamageType?: DamageType) : NonDeprecatedDamageCons {
 		if (!defaultDamageType) {
 			defaultDamageType = "by-power";
 		}

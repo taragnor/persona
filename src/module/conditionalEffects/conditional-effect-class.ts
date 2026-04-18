@@ -4,6 +4,7 @@ import {PersonaActor} from "../actor/persona-actor.js";
 import {CETypes, ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
 import {PersonaAE} from "../persona-ae.js";
+import {PersonaDB} from "../persona-db.js";
 import {testPrecondition} from "../preconditions.js";
 import {ConditionalEffectPrinter} from "./conditional-effect-printer.js";
 
@@ -11,9 +12,9 @@ export class ConditionalEffectC {
 	_preconditions : SourcedPrecondition<NonDeprecatedPrecondition<Precondition>>[];
 	_consequences: SourcedConsequence<NonDeprecatedConsequence>[];
 	_isEmbedded : boolean;
-	_source: U<ModifierContainer>;
+	_source: U<ModifierContainer["accessor"]>;
 	_owner: U<UniversalActorAccessor<PersonaActor>>;
-	_realSource: U<ModifierContainer>;
+	_realSource: U<ModifierContainer["accessor"]>;
 	_original : CondEffectObject | SkillCard;
 	_conditionalType: typeof CETypes[number];
 	_isDefensiveRaw: boolean;
@@ -34,8 +35,8 @@ export class ConditionalEffectC {
 		this._isAura = ce.isAura ?? false;
 		this._conditionalType = this.#determineConditionalType(ce, this._preconditions, this._consequences, sourceItem!);
 		this._owner= sourceActor?.accessor;
-		this._source= sourceItem != null ? sourceItem : undefined;
-		this._realSource= realSource;
+		this._source= sourceItem != null ? sourceItem.accessor : undefined;
+		this._realSource= realSource? realSource.accessor: undefined;
 		this._isDefensiveRaw = ce.isDefensive ?? false;
 		this._isMainModifier = !this._isEmbedded && !this._isAura;
 	}
@@ -46,11 +47,12 @@ export class ConditionalEffectC {
 
 	get name() : string {
 		let ret = "";
-		if (this._realSource && this._realSource != this._source) {
-			ret += this._realSource.name;
+		if (this._realSource && !PersonaDB.accessorEq(this._realSource, this._source)) {
+			ret += PersonaDB.find(this._realSource)?.name;
 		}
 		if (this._source) {
-			ret += ret.length > 0 ? ` (${this._source.name})` : this._source.name;
+      const sourceName = PersonaDB.find(this._source)?.name;
+			ret += ret.length > 0 ? ` (${sourceName})` : sourceName;
 		}
 		if (ret.length == 0) {
 			return "unknown";
@@ -131,7 +133,7 @@ export class ConditionalEffectC {
 		}));
 	}
 
-	#determineConditionalType (ce: CondEffectObject, conditions: SourcedConditionalEffect["conditions"], consequences : SourcedConditionalEffect["consequences"], sourceItem: N<ConditonalEffectHolderItem> ) : this["_conditionalType"] {
+	#determineConditionalType (ce: CondEffectObject, _conditions: SourcedConditionalEffect["conditions"], _consequences : SourcedConditionalEffect["consequences"], sourceItem: N<ConditonalEffectHolderItem> ) : this["_conditionalType"] {
 		let condType : this["_conditionalType"] = "unknown";
 		const forceDefensive = (sourceItem?.isDefensive)
 			? sourceItem.isDefensive()
@@ -155,7 +157,7 @@ export class ConditionalEffectC {
 
 	private _generateSkillCardTeachEffect(card: SkillCard) {
 		this._original = card;
-		this._source = card;
+		this._source = card.accessor;
 		this._owner = card.parent?.accessor;
 		this._isEmbedded= false;
 		this._conditionalType = "on-use";
@@ -167,7 +169,7 @@ export class ConditionalEffectC {
 		}
 		this._preconditions = [ {
 			type: 'always',
-			source: card,
+			source: card.accessor,
 			owner: card.parent?.accessor,
 			realSource: undefined,
 		} as const ];
@@ -175,7 +177,7 @@ export class ConditionalEffectC {
 			type: 'teach-power',
 			randomPower: false,
 			id: card.system.skillId,
-			source: card,
+			source: card.accessor,
 			owner: card.parent?.accessor,
 			realSource: undefined,
 			applyTo: "user",

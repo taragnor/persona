@@ -133,79 +133,88 @@ export class FinalizedCombatResult {
 		.filter( cost => !FinalizedCombatResult.changeIsEmpty(cost));
 		this.globalOtherEffects = cr.globalOtherEffects;
 		this.sounds = cr.sounds;
-		for (const changes of cr.attacks.values()) {
-			for (const change of changes) {
-				this.#finalizeOtherEffects(change);
-			}
-		}
-		for (const cost of cr.costs) {
-			this.#finalizeOtherEffects(cost);
-		}
+		// for (const changes of cr.attacks.values()) {
+		// 	for (const change of changes) {
+		// 		this.#finalizeOtherEffects(change);
+		// 	}
+		// }
+		// for (const cost of cr.costs) {
+		// 	this.#finalizeOtherEffects(cost);
+		// }
 	}
 
 
-  #finalizeOtherEffects(change: ActorChange<ValidAttackers>) {
-    const actor = PersonaDB.findActor(change.actor);
-    for (const otherEffect of change.otherEffects) {
-      switch (otherEffect.type) {
-        case "expend-item":
-          break;
-        case "save-slot":
-          this.addFlag(actor, otherEffect);
-          ui.notifications.warn("Save Slot is deprecated");
-          break;
-        case "half-hp-cost":
-          ui.notifications.warn("Half HP cost is deprecated");
-          this.addFlag(actor, otherEffect);
-          break;
-        case "extraTurn": {
-          const bonusAction : StatusEffect = {
-            id: "bonus-action",
-            duration: {
-              dtype:  "UEoT",
-              actorTurn: actor.accessor,
-            },
-            activationRoll: otherEffect.activation,
-          };
-          change.addStatus.push(bonusAction);
-          break;
-        }
-        case "set-flag":
-          break;
-        case "raise-resistance":
-        case "lower-resistance":
-        case "display-message":
-        case "inspiration-cost":
-        case "hp-loss":
-        case "alter-energy":
-        case "extra-attack":
-        case "dungeon-action":
-        case "use-power":
-        case "scan":
-        case "social-card-action":
-        case "add-power-to-list":
-        case "teach-power":
-        case "alter-mp":
-        case "alter-theurgy":
-        case "combat-effect":
-        case "alter-fatigue-lvl":
-        case "perma-buff":
-        case "alter-variable":
-        case "play-sound":
-        case "gain-levels":
-        case "cancel":
-        case "set-roll-result":
-        case "set-hp":
-        case "inventory-action":
-        case "apply-recovery":
-          break;
-        default:
-          otherEffect satisfies never;
-      }
+  // #finalizeOtherEffects(change: ActorChange<ValidAttackers>) {
+  //   const actor = PersonaDB.findActor(change.actor);
+  //   for (const otherEffect of change.otherEffects) {
+  //     switch (otherEffect.type) {
+          // case "extraTurn": {
+          //   const bonusAction : StatusEffect = {
+          //     id: "bonus-action",
+          //     duration: {
+          //       dtype:  "UEoT",
+          //       actorTurn: actor.accessor,
+          //     },
+          //     activationRoll: otherEffect.activation,
+          //   };
+          //   change.addStatus.push(bonusAction);
+          //   break;
+          // }
+        // case "combat-effect": {
+        //   switch (otherEffect.combatEffect) {
+        //     case "extraTurn": {
+        //       const bonusAction : StatusEffect = {
+        //         id: "bonus-action",
+        //         duration: {
+        //           dtype:  "UEoT",
+        //           actorTurn: actor.accessor,
+        //         },
+        //         activationRoll: otherEffect.activation,
+        //       };
+        //       change.addStatus.push(bonusAction);
+        //       break;
+        //     }
+        //   }
+        //   break;
+        // }
+          // case "alter-energy":
+          // case "alter-theurgy":
+          // case "raise-resistance":
+          // case "lower-resistance":
+          // case "display-message":
+          // case "hp-loss":
+          // case "extra-attack":
+          // case "set-hp":
+          // case "apply-recovery":
+          // case "scan":
+        // case "expend-item":
+        // case "dungeon-action":
+        // case "set-flag":
+        // case "inspiration-cost":
+        // case "use-power":
+        // case "social-card-action":
+        // case "add-power-to-list":
+        // case "teach-power":
+        // case "alter-mp":
+        //   break;
+        // case "alter-fatigue-lvl":
+        // case "perma-buff":
+        // case "alter-variable":
+        // case "play-sound":
+        // case "gain-levels":
+        // case "cancel":
+        // case "set-roll-result":
+        // case "inventory-action":
+        // case "raise-status-resistance":
+        // case "display-msg":
+        //   break;
+        // default:
+        //   otherEffect satisfies never;
+      // }
 
-		}
-		// CombatResult.normalizeChange(change);
-	}
+		// }
+		// // CombatResult.normalizeChange(change);
+	// }
 
 	addFlag(actor: PersonaActor, flag: OtherEffect) {
 		const item = this.tokenFlags.find(x=> x.actor.actorId ==  actor.accessor.actorId );
@@ -476,12 +485,12 @@ export class FinalizedCombatResult {
 		for (const v of this.attacks) {
 			for (const eff of v.changes.flatMap(chg => chg.otherEffects) ) {
 				if (eff.type == effectType)
-				{arr.push( eff as OtherEffect & {type:T});}
+				{arr.push( eff as Sourced<OtherEffect> & {type:T});}
 			}
 		}
 		for (const eff of this.costs.flatMap(chg => chg.otherEffects) ) {
 			if (eff.type == effectType)
-			{arr.push( eff as OtherEffect & {type:T});}
+			{arr.push( eff as Sourced<OtherEffect> & {type:T});}
 		}
 		return arr;
 	}
@@ -491,7 +500,7 @@ export interface ResolvedActorChange<T extends PersonaActor> {
 	actor: UniversalActorAccessor<T>;
 	damage: EvaluatedDamage[];
 	addStatus: StatusEffect[],
-	otherEffects: OtherEffect[]
+	otherEffects: Sourced<OtherEffect>[]
 	removeStatus: Pick<StatusEffect, "id">[],
 }
 

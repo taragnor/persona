@@ -3,7 +3,7 @@ import { BUFF_MAX_POTENCY, FatigueStatusId } from "../config/status-effects.js";
 import { statusMap } from "../config/status-effects.js";
 import { PersonaDB } from "./persona-db.js";
 import { StatusDurationType } from "../config/status-effects.js";
-import { GetEffectsOptions, ModifierContainer, PersonaItem} from "./item/persona-item.js";
+import { ContainerTypes, GetEffectsOptions, ModifierContainer, PersonaItem} from "./item/persona-item.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaError } from "./persona-error.js";
 import { StatusEffectId } from "../config/status-effects.js";
@@ -345,17 +345,17 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     const effectsArrModified : SourcedConditionalEffect[]=  effectsArr
       .map ( eff => {
         const conditions:  SourcedConditionalEffect["conditions"] = eff.conditions.map( cond => {
-          return { ...cond, owner: sourceActorAcc, source: this, realSource: this, };
+          return { ...cond, owner: sourceActorAcc, source: this.accessor, realSource: this.accessor, };
         });
-        const consequences : SourcedConditionalEffect["consequences"] = eff.consequences.map( cons => { return { ...cons, owner: sourceActorAcc, source: this, realSource: this, };
+        const consequences : SourcedConditionalEffect["consequences"] = eff.consequences.map( cons => { return { ...cons, owner: sourceActorAcc, source: this.accessor, realSource: this.accessor, };
         });
         return {
           ...eff,
           conditions,
           consequences,
           owner: sourceActorAcc,
-          source: this,
-          realSource: this,
+          source: this.accessor as UniversalAccessor<ContainerTypes>,
+          realSource: this.accessor as UniversalAccessor<ContainerTypes>,
         };
       });
     if (CETypes == undefined || CETypes.length == 0){
@@ -911,7 +911,12 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     }
     if (flag && effect.parent instanceof PersonaActor) {
       effect["_flaggedDeletion"] = true;
-      await effect.parent.setEffectFlag({flagId: flag, state: false});
+      await effect.parent.clearEffectFlag(flag);
+      // await effect.parent.setEffectFlag({
+      //   flagId: flag,
+      //   flagState: false,
+      //   type: "set-flag",
+      // });
     }
   }
 

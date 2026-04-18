@@ -1,6 +1,7 @@
 import {OtherEffect, StatusEffect} from "../../config/consequence-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
+import {PersonaItem} from "../item/persona-item.js";
 import {Metaverse} from "../metaverse.js";
 import {NavigatorVoiceLines} from "../navigator/nav-voice-lines.js";
 import {StatusDuration} from "../persona-ae.js";
@@ -163,27 +164,29 @@ export class ConsequenceApplier {
     return ret;
   }
 
-  private static async _applyOtherEffect(actor: ValidAttackers, token: PToken | undefined, otherEffect: OtherEffect, mutableState: MutableActorState): Promise<void> {
+  private static async _applyOtherEffect(actor: ValidAttackers, _token: PToken | undefined, otherEffect: Sourced<OtherEffect>, mutableState: MutableActorState): Promise<void> {
     switch (otherEffect.type) {
-      case "expend-item":
-        if (otherEffect.itemAcc) {
-          const item = PersonaDB.findItem(otherEffect.itemAcc);
-          if (!item) {
-            PersonaError.softFail(`Couldn't find personal Item to expend ${JSON.stringify(otherEffect.itemAcc)}`);
-            return;
-          }
+      case "expend-item": {
+        const item = otherEffect.source;
+        if (!item) {
+          PersonaError.softFail(`Couldn't find personal Item to expend`);
+          return;
+        }
+        if (item instanceof PersonaItem && item.isCarryableType()) {
+          // const item = PersonaDB.find(otherEffect.source);
           if ( item.parent) {
             await item.parent.expendConsumable(item);
           }
           return;
         }
         break;
-      case "save-slot":
-        break;
-      case "half-hp-cost":
-        break;
-      case "extraTurn":
-        break;
+        // case "save-slot":
+        //   break;
+        // case "half-hp-cost":
+        //   break;
+        // case "extraTurn":
+        //   break;
+      }
       case "set-flag":
         await actor.setEffectFlag(otherEffect);
         break;
@@ -215,43 +218,43 @@ export class ConsequenceApplier {
         }
         break;
       }
-      case "lower-resistance":
-      case "raise-resistance":
+      // case "lower-resistance":
+      // case "raise-resistance":
+      // case "display-message":
       case "add-power-to-list":
-      case "display-message":
         break;
       case "inspiration-cost":
         if (actor.isRealPC()) {
           await actor.spendInspiration(otherEffect.linkId, otherEffect.amount);
         }
         break;
-      case "hp-loss":
-        await actor.modifyHP(-otherEffect.amount);
-        break;
-      case "extra-attack":
-        break;
+      // case "hp-loss":
+      //   await actor.modifyHP(-otherEffect.amount);
+      //   break;
+      // case "extra-attack":
+      //   break;
       case "use-power":
         break;
-      case "scan":
-        if (actor.isShadow()) {
-          if (otherEffect.downgrade == false) {
-            await actor.increaseScanLevel(otherEffect.level);
-            void PersonaSFX.onScan(token, otherEffect.level);
-          } else {
-            await actor.decreaseScanLevel(otherEffect.level ?? 0);
-          }
-        }
-        break; // done elsewhere for local player
+      // case "scan":
+      //   if (actor.isShadow()) {
+      //     if (otherEffect.downgrade == false) {
+      //       await actor.increaseScanLevel(otherEffect.amount);
+      //       void PersonaSFX.onScan(token, otherEffect.amount);
+      //     } else {
+      //       await actor.decreaseScanLevel(otherEffect.amount ?? 0);
+      //     }
+      //   }
+      //   break; // done elsewhere for local player
       case "social-card-action":
         break;
       case "dungeon-action":
         await Metaverse.executeDungeonAction(otherEffect);
         break;
-      case "alter-energy":
-        if (actor.isShadow()) {
-          await actor.alterEnergy(otherEffect.amount);
-        }
-        break;
+      // case "alter-energy":
+      //   if (actor.isShadow()) {
+      //     await actor.alterEnergy(otherEffect.amount);
+      //   }
+      //   break;
       case "alter-mp":
         switch (otherEffect.subtype) {
           case "direct":
@@ -261,27 +264,27 @@ export class ConsequenceApplier {
             mutableState.mpCost += actor.mmp * (otherEffect.amount / 100);
             break;
           default:
-            otherEffect satisfies never;
+            otherEffect.subtype satisfies never;
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             PersonaError.softFail(`Bad subtype for Alter MP effect : ${otherEffect["subtype"]}`);
         }
         break;
-      case "alter-theurgy":
-        switch (otherEffect.subtype) {
-          case "direct":
-            mutableState.theurgy += otherEffect.amount;
-            break;
-          case "percent-of-total":
-            mutableState.theurgy += actor.mmp * (otherEffect.amount / 100);
-            break;
-          default:
-            otherEffect satisfies never;
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            PersonaError.softFail(`Bad subtype for Alter Theurgy effect : ${otherEffect["subtype"]}`);
-        }
-        break;
+        // case "alter-theurgy":
+        //   switch (otherEffect.subtype) {
+        //     case "direct":
+        //       mutableState.theurgy += otherEffect.amount;
+        //       break;
+        //     case "percent-of-total":
+        //       mutableState.theurgy += actor.mmp * (otherEffect.amount / 100);
+        //       break;
+        //     default:
+        //       otherEffect satisfies never;
+        //       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        //       PersonaError.softFail(`Bad subtype for Alter Theurgy effect : ${otherEffect["subtype"]}`);
+        //   }
+        //   break;
       case "combat-effect":
-        await this._applyCombatEffect(otherEffect, actor);
+        await this._applyCombatEffect(otherEffect, actor, mutableState);
         break;
       case "alter-fatigue-lvl":
         await actor.alterFatigueLevel(otherEffect.amount);
@@ -289,8 +292,14 @@ export class ConsequenceApplier {
 
       case "alter-variable": {
         const varCons = otherEffect;
+        if (varCons.situation == undefined) {
+          PersonaError.softFail("No situation present in variable alteration");
+          break;
+        }
         switch (varCons.varType) {
           case "actor": {
+            //cluinky patch because applyTo gets removed in type system
+            // const hack = varCons as unknown as SourcedConsequence & {type: "alter-variable"};
             await PersonaVariables.alterVariable(varCons, varCons.situation);
             break;
           }
@@ -327,25 +336,28 @@ export class ConsequenceApplier {
       case "cancel":
       case "set-roll-result":
         break;
-      case "set-hp": {
-        let newhp : number;
-        switch (otherEffect.subtype) {
-          case "set-to-const":
-            newhp = otherEffect.value;
-            break;
-          case "set-to-percent":
-            newhp = otherEffect.value * actor.mhp;
-            break;
-        }
-        await actor.setHP(newhp);
-        break;
-      }
+      // case "set-hp": {
+      //   let newhp : number;
+      //   switch (otherEffect.subtype) {
+      //     case "set-to-const":
+      //       newhp = otherEffect.value;
+      //       break;
+      //     case "set-to-percent":
+      //       newhp = otherEffect.value * actor.mhp;
+      //       break;
+      //   }
+      //   await actor.setHP(newhp);
+      //   break;
+      // }
       case "inventory-action":
         await this.resolveInventoryAction(actor, otherEffect);
         break;
-      case "apply-recovery" :
-        await actor.spendRecovery(null);
+      case "raise-status-resistance":
+      case "display-msg":
         break;
+      // case "apply-recovery" :
+      //   await actor.spendRecovery(null);
+      //   break;
       default:
         otherEffect satisfies never;
     }
@@ -407,7 +419,7 @@ export class ConsequenceApplier {
         }
         break;
       }
-      case "display-message": {
+      case "display-msg": {
         if (!eff.newChatMsg) {break;}
         const html = eff.msg;
         const speaker : Foundry.ChatSpeakerObject = {
@@ -423,7 +435,7 @@ export class ConsequenceApplier {
     }
   }
 
-  static async _applyCombatEffect(effect: OtherEffect & {type: "combat-effect"}, actor: ValidAttackers) {
+  static async _applyCombatEffect(effect: OtherEffect & {type: "combat-effect"}, actor: ValidAttackers, mutableState: MutableActorState) {
     switch (effect.combatEffect) {
       case "auto-end-turn":
         if (PersonaCombat.combat
@@ -433,10 +445,53 @@ export class ConsequenceApplier {
         }
         break;
       case "alter-energy":
+        if (actor.isShadow()) {
+          await actor.alterEnergy(effect.amount);
+        }
+        break;
       case "scan":
+        if (actor.isShadow()) {
+          if (effect.downgrade == false) {
+            await actor.increaseScanLevel(effect.amount);
+            const token = PersonaCombat.combat?.getCombatantByActor(actor)?.token;
+            if (token) {
+              void PersonaSFX.onScan(token as PToken, effect.amount);
+            }
+          } else {
+            await actor.decreaseScanLevel(effect.amount ?? 0);
+          }
+        }
+        break; // done elsewhere for local player
+
       case "alter-theurgy":
+        switch (effect.subtype) {
+          case "direct":
+            mutableState.theurgy += effect.amount;
+            break;
+          case "percent-of-total":
+            mutableState.theurgy += actor.mmp * (effect.amount / 100);
+            break;
+          default:
+            effect.subtype satisfies never;
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            PersonaError.softFail(`Bad subtype for Alter Theurgy effect : ${effect["subtype"]}`);
+        }
+        break;
       case "extraTurn":
-      case "damage":
+        break;
+      case "damage": {
+        switch (effect.damageSubtype) {
+          case "set-to-const":
+            await actor.setHP(effect.amount);
+            break;
+          case "set-to-percent": {
+            const newhp = effect.amount * actor.mhp;
+            await actor.setHP(newhp);
+            break;
+          }
+        }
+        break;
+      }
       case "addStatus":
       case "removeStatus":
       case "extraAttack":

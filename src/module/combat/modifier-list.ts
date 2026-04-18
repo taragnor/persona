@@ -5,6 +5,7 @@ import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amoun
 import {PersonaActor} from "../actor/persona-actor.js";
 import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
+import {PersonaDB} from "../persona-db.js";
 
 export type ModifierListItem = Sourced<{
 	name: string;
@@ -21,26 +22,30 @@ export class ModifierList {
 	_data: ModifierListItem[];
 	listType: MLListType;
 
-	constructor ( sourcedEffects: SourcedConditionalEffect[], bonusFn : (eff :SourcedConditionalEffect) => number ,listType?: MLListType);
-	constructor ( list?: ModifierListItem[], listType?: MLListType);
-	constructor ( list: ModifierListItem[] | SourcedConditionalEffect[] = [], listTypeOrFn: MLListType | ((eff: SourcedConditionalEffect) => number) = "standard", listType ?: MLListType)
-	{
-		this.listType = typeof listTypeOrFn != "function" ? listTypeOrFn : (listType ? listType : "standard");
-		if (list.length == 0 || ("name" in list.at(0)!)) {
-			this._data = list as ModifierListItem[];
-			return;
-		}
-		const ModListItems = (list as SourcedConditionalEffect[]).map( eff=> ({
-			name: eff?.realSource?.name ?? eff.source?.name ?? "Unknown Source",
-			source: eff.source,
-			owner: eff.owner,
-			realSource : eff.realSource,
-			conditions: ConditionalEffectManager.ArrayCorrector(eff.conditions),
-			modifier: typeof listTypeOrFn == "function" ? listTypeOrFn(eff): 0,
-		}));
-		this._data = ModListItems;
-		this._data= this._data.filter( x=> x.modifier != 0);
-	}
+  constructor ( sourcedEffects: SourcedConditionalEffect[], bonusFn : (eff :SourcedConditionalEffect) => number ,listType?: MLListType);
+  constructor ( list?: ModifierListItem[], listType?: MLListType);
+  constructor ( list: ModifierListItem[] | SourcedConditionalEffect[] = [], listTypeOrFn: MLListType | ((eff: SourcedConditionalEffect) => number) = "standard", listType ?: MLListType)
+  {
+    this.listType = typeof listTypeOrFn != "function" ? listTypeOrFn : (listType ? listType : "standard");
+    if (list.length == 0 || ("name" in list.at(0)!)) {
+      this._data = list as ModifierListItem[];
+      return;
+    }
+    const ModListItems = (list as SourcedConditionalEffect[]).map( eff=> {
+      const realSource = eff.realSource ? PersonaDB.find(eff.realSource) : undefined;
+      const source = eff.source ? PersonaDB.find(eff.source) : undefined;
+      return {
+        name: realSource?.name ?? source?.name ?? "Unknown Source",
+        source: eff.source,
+        owner: eff.owner,
+        realSource : eff.realSource,
+        conditions: ConditionalEffectManager.ArrayCorrector(eff.conditions),
+        modifier: typeof listTypeOrFn == "function" ? listTypeOrFn(eff): 0,
+      };
+    });
+    this._data = ModListItems;
+    this._data= this._data.filter( x=> x.modifier != 0);
+  }
 
 	add(name: string, modifier: number, sourceItem?: ModifierListItem["source"]  , owner ?: ModifierListItem["owner"], conditions: SourcedPrecondition[] = []) : ModifierList {
 		this._data.push( {

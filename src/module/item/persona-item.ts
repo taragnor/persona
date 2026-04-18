@@ -1446,16 +1446,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   static getModifier( effects: readonly SourcedConditionalEffect[], bonusTypes: MaybeArray<NonDeprecatedModifierType>) : ModifierListItem[] {
     bonusTypes = Array.isArray(bonusTypes) ? bonusTypes : [bonusTypes];
     return bonusTypes.flatMap( btype => {
-      // if (!ConditionalEffectManager.canModifyStat(effects, btype)) {return [];}
       return effects
         .filter( eff => eff.consequences.some( cons => ('modifiedFields' in cons && cons.modifiedFields[btype] == true) || ('modifiedField' in cons && cons.modifiedField == btype)))
-      // && !ConditionalEffectManager.canModifyStat(eff, btype))
         .map(eff => {
+          const source = eff.source ? PersonaDB.find(eff.source) : undefined;
+          const realSource = eff.realSource ? PersonaDB.find(eff.realSource) : undefined;
           const ownerName = eff.owner ? PersonaDB.findActor(eff.owner)?.name ?? "" : "" ;
-          const name = eff.realSource && eff.realSource as unknown != this
-            ? `${ownerName} (${eff.realSource.name})`
-            : eff.source && eff.source as unknown != this
-            ? `${ownerName} (${eff.source.name})`
+          const name = realSource
+            ? `${ownerName} (${realSource?.name})`
+            : source
+            ? `${ownerName} (${source.name})`
             : this.name;
           return ({
             name,
@@ -1498,10 +1498,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     this.cache.containsModifier = filteredEffects.length > 0;
     return filteredEffects
       .map(x => {
-        const name = x.realSource && x.realSource != this
-          ? `${this.name} (${x.realSource.name})`
-          : x.source && x.source != this
-          ? `${this.name} (${x.source.name})`
+        const realSource = x.realSource ? PersonaDB.find(x.realSource) : undefined;
+        const source = x.source ? PersonaDB.find(x.source) : undefined;
+        const name = realSource && realSource != this
+          ? `${this.name} (${realSource.name})`
+          : source && source != this
+          ? `${this.name} (${source?.name})`
           : this.name;
         return {
           name,
@@ -2188,7 +2190,7 @@ getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, optio
   }
 }
 
-getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options: GetEffectsOptions = {}) : readonly SourcedConditionalEffect[] {
+getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options: GetEffectsOptions = {}) : readonly ConditionalEffectC[] {
   if (this.isSkillCard()) { return []; }
   const effects = this.itemBase.system.effects;
   const effectsGetterFn = () => {

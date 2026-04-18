@@ -23,13 +23,14 @@ import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {localize} from "../persona.js";
 import {multiCheckToArray} from "../preconditions.js";
+import {ConditionalEffectC} from "./conditional-effect-class.js";
 
 export class ConditionalEffectPrinter {
-	static printEffects(effects: ConditionalEffect[]) : string[] {
+	static printEffects(effects: ConditionalEffectC[]) : string[] {
 		return effects.map( x=> this.printEffect(x));
 	}
 
-	static printEffect(effect: ConditionalEffect): string {
+	static printEffect(effect: ConditionalEffectC): string {
 		return `${this.printConditions(effect.conditions)} ---- ${this.printConsequences(effect.consequences)}`;
 
 	}
@@ -491,32 +492,32 @@ export class ConditionalEffectPrinter {
 		}
 	}
 
-	static printConsequences(cons: Consequence[]) : string {
+	static printConsequences(cons: ConditionalEffectC["consequences"]) : string {
 		return ConditionalEffectManager.getConsequences(cons, null , null, null)
 			.map(x=> this.printConsequence(x))
 			.filter(x => x)
 			.join (", ");
 	}
 
-	static printConsequence (cons: NonDeprecatedConsequence) : string {
-		switch (cons.type) {
-			case "none":
-				return "";
-			case "modifier-new": {
-				const modifiers = this.translate(cons.modifiedFields, MODIFIERS_TABLE);
-				return `${modifiers}: ${this.printConsequenceAmount(cons.amount)}`;
-			}
-			case "expend-slot":
-				return `expend Slot`;
-			case "expend-item":
-				return `expend item`;
-			case "add-power-to-list": {
-				const grantedPower = PersonaDB.getPower(cons.id);
-				return `Add power to list ${grantedPower?.displayedName?.toString() ?? "ERROR"}`;
-			}
-			case "add-talent-to-list": {
-				const grantedTalent = PersonaDB.getItemById(cons.id) as Talent;
-				return `Add Talent to list ${grantedTalent?.displayedName?.toString() ?? "ERROR"}`;
+    static printConsequence (cons: NonDeprecatedConsequence) : string {
+      switch (cons.type) {
+        case "none":
+          return "";
+        case "modifier-new": {
+          const modifiers = this.translate(cons.modifiedFields, MODIFIERS_TABLE);
+          return `${modifiers}: ${this.printConsequenceAmount(cons.amount)}`;
+        }
+          // case "expend-slot":
+          // return `expend Slot`;
+        case "expend-item":
+          return `expend item`;
+        case "add-power-to-list": {
+          const grantedPower = PersonaDB.getPower(cons.id);
+          return `Add power to list ${grantedPower?.displayedName?.toString() ?? "ERROR"}`;
+        }
+        case "add-talent-to-list": {
+          const grantedTalent = PersonaDB.getItemById(cons.id) as Talent;
+          return `Add Talent to list ${grantedTalent?.displayedName?.toString() ?? "ERROR"}`;
 
 			}
 			case "other-effect":

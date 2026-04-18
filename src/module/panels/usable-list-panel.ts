@@ -24,7 +24,6 @@ export abstract class UsableListPanel extends SubPanel {
   }
 
   override get templatePath() : U<string>{
-    // return "systems/persona/sheets/panels/item-use-panel.hbs";
     return undefined;
   }
 
@@ -63,7 +62,6 @@ export abstract class UsableListPanel extends SubPanel {
 
   override activateListeners(html : JQuery) {
     super.activateListeners(html);
-    // html.find(".inventory-item:not(.faded)").on("click", (ev) => void this._onUseItem(ev));
   }
 
   protected async _onUseItem(ev: JQuery.ClickEvent) {

@@ -1,11 +1,12 @@
 import { RealDamageType } from "../../config/damage-types.js";
-import { ConsequenceAmount, DamageConsequence, EnhancedSourcedConsequence, NewDamageConsequence, NonDeprecatedDamageCons } from "../../config/consequence-types.js";
+import { ConsequenceAmount, Dep_DamageConsequence, EnhancedSourcedConsequence, NewDamageConsequence, NonDeprecatedDamageCons } from "../../config/consequence-types.js";
 import { OldDamageConsequence } from "../../config/consequence-types.js";
 import { DamageType } from "../../config/damage-types.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {ConsequenceConverter} from "../migration/convertConsequence.js";
 import {PersonaError} from "../persona-error.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
+import {PersonaDB} from "../persona-db.js";
 
 export class DamageCalculation {
 	#resisted: boolean = false;
@@ -71,7 +72,7 @@ export class DamageCalculation {
 		return this;
 	}
 
-	static convertToNewFormConsequence( cons: SourcedConsequence<OldDamageConsequence> | SourcedConsequence<DamageConsequence>, defaultDamageType: DamageType) : SourcedConsequence<NonDeprecatedDamageCons> {
+	static convertToNewFormConsequence( cons: SourcedConsequence<OldDamageConsequence> | Sourced<Dep_DamageConsequence>, defaultDamageType: DamageType) : SourcedConsequence<NonDeprecatedDamageCons> {
 		const convert = ConsequenceConverter.convertDeprecatedDamageConsequence(cons, defaultDamageType);
 		return {
 			...convert,
@@ -153,10 +154,12 @@ export class DamageCalculation {
 				return this;
 		}
 		if (cons.amount) {
-			const effectName = cons.realSource
-				? cons.realSource?.displayedName
-				: cons.source
-				? cons.source?.displayedName?.toString()
+      const realSource = cons.realSource ? PersonaDB.find(cons.realSource) : undefined;
+      const source = cons.source ? PersonaDB.find(cons.source) : undefined;
+			const effectName = realSource
+				? realSource?.displayedName
+				: source
+				? source?.displayedName?.toString()
 				?? "Unknown Source"
 				: "Unknown Source";
 			this.add(damageOrder, amt ?? 0, effectName);

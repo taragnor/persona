@@ -662,7 +662,7 @@ export class PersonaSocial {
     await actor.setFlag("persona", "socialActions", socialActions);
   }
 
-  static getDownTimeActionsRemaining(actor: PC, type: keyof DowntimeActionData) : number {
+  private static getDowntimeActionsRemaining(actor: PC, type: keyof DowntimeActionData) : number {
     const data = actor.getFlag<DowntimeActionData>("persona", "socialActions");
     return data ? data[type] ?? 0 : 0;
   }
@@ -674,12 +674,11 @@ export class PersonaSocial {
   }
 
   static hasMainSocialAction(actor: PC) : boolean {
-    return this.getDownTimeActionsRemaining(actor, "standard") > 0;
-
+    return this.getDowntimeActionsRemaining(actor, "standard") > 0;
   }
 
   static hasMinorSocialAction(actor: PC) : boolean {
-    return this.getDownTimeActionsRemaining(actor, "minor") > 0;
+    return this.getDowntimeActionsRemaining(actor, "minor") > 0;
   }
 
   static availableMinorActionActivities(pc: PC) : SocialCard[] {

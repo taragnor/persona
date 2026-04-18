@@ -24,7 +24,7 @@ export class ConsequenceProcessor {
 	static processConsequences_simple(consequence_list: SourcedConsequence<NonDeprecatedConsequence>[], situation: Situation): ConsequenceProcessed {
 		let consequences : ConsequenceProcessed['consequences'] = [];
 		for (const cons of consequence_list) {
-			const applyTo = cons.applyTo ?? "target";
+			const applyTo = "applyTo" in cons ? cons.applyTo ?? "target": "target";
 			const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
 			consequences= consequences.concat(this.processConsequence_simple(cons, consTargets));
 		}
@@ -44,7 +44,7 @@ export class ConsequenceProcessor {
 					const newCons = this.processConsequence(power, situation, sourcedC, attacker, target, atkresult);
 					consequences = consequences.concat(newCons);
 				} else {
-					const applyTo = sourcedC.applyTo ?? "target";
+					const applyTo = "applyTo" in sourcedC ? sourcedC.applyTo ?? "target" : "target";
 					const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
 					const newCons = this.processConsequence_simple( sourcedC, consTargets);
 					consequences = consequences.concat(newCons);
@@ -53,31 +53,31 @@ export class ConsequenceProcessor {
 			return {consequences} satisfies ConsequenceProcessed;
 		}
 
-	static processConsequence( power: U<ModifierContainer>, situation: Situation, cons: SourcedConsequence<NonDeprecatedConsequence>, attacker: ValidAttackers, _target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed['consequences'] {
-		//need to fix this so it knows who the target actual is so it can do a proper compariosn, right now when applying to Self it won't consider resistance or consider the target's resist.
-		const applyTo = cons.applyTo ?? "target";
-		const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
-		const applyToSelf = applyTo == 'attacker' || applyTo =='user' || applyTo == 'owner';
-		const absorb = ("result" in situation && situation.result == "absorb" && !applyToSelf) ?? false;
-		const block = atkresult && atkresult.result == 'block' && !applyToSelf;
-		switch (cons.type) {
-			case 'none':
-			case 'modifier':
-				return [];
-			case "combat-effect": {
-				switch (cons.combatEffect) {
-					case 'damage':
-						return this.processConsequence_damage(cons, consTargets, attacker, power, situation);
-					case 'addStatus': case 'removeStatus':
-						if (!applyToSelf && (absorb || block)) {return [];}
-						return consTargets.map( target => {
-							return  {applyTo: target ,cons};
-						});
-				}
-			}
-		}
-		return this.processConsequence_simple(cons, consTargets);
-	}
+  static processConsequence( power: U<ModifierContainer>, situation: Situation, cons: SourcedConsequence<NonDeprecatedConsequence>, attacker: ValidAttackers, _target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed['consequences'] {
+    //need to fix this so it knows who the target actual is so it can do a proper compariosn, right now when applying to Self it won't consider resistance or consider the target's resist.
+    const applyTo = "applyTo" in cons ? cons.applyTo ?? "target" : "target";
+    const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
+    const applyToSelf = applyTo == 'attacker' || applyTo =='user' || applyTo == 'owner';
+    const absorb = ("result" in situation && situation.result == "absorb" && !applyToSelf) ?? false;
+    const block = atkresult && atkresult.result == 'block' && !applyToSelf;
+    switch (cons.type) {
+      case 'none':
+      case 'modifier':
+        return [];
+      case "combat-effect": {
+        switch (cons.combatEffect) {
+          case 'damage':
+            return this.processConsequence_damage(cons, consTargets, attacker, power, situation);
+          case 'addStatus': case 'removeStatus':
+            if (!applyToSelf && (absorb || block)) {return [];}
+            return consTargets.map( target => {
+              return  {applyTo: target ,cons};
+            });
+        }
+      }
+    }
+    return this.processConsequence_simple(cons, consTargets);
+  }
 
 	static processConsequence_simple( cons: SourcedConsequence<NonDeprecatedConsequence>, targets: ValidAttackers[]) :ConsequenceProcessed['consequences'] {
 		switch (cons.type) {
@@ -86,8 +86,8 @@ export class ConsequenceProcessor {
 			case 'modifier-new':
 			case 'add-creature-tag':
 				break;
-			case 'expend-slot':
-				return targets.map( applyTo => ({applyTo, cons}));
+			// case 'expend-slot':
+			// 	return targets.map( applyTo => ({applyTo, cons}));
 			case 'other-effect':
 			case 'set-flag':
 			case 'add-power-to-list':
