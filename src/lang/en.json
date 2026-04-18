@@ -939,6 +939,7 @@
 	"persona.triggers.start-turn": "Start Combat Turn",
 	"persona.triggers.end-turn": "End Combat Turn",
 	"persona.triggers.on-power-usage-check": "On Power Usage Check",
+	"persona.triggers.get-added-power-tags": "Attack Start (generate Extra Power Tags)",
 	"persona.triggers.on-open-door": "A door opens",
 	"persona.triggers.on-inflict-status": "Inflict a Status",
 	"persona.triggers.pre-inflict-status": "Pre-Inflict Status",

@@ -3,6 +3,7 @@ import {DamageType} from "../../config/damage-types.js";
 import {Defense} from "../../config/defense-types.js";
 import {ModifierTarget, NonDeprecatedModifierType} from "../../config/item-modifiers.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
+import {PowerTag} from "../../config/power-tags.js";
 import {AnyStringObject} from "../../config/precondition-types.js";
 import {AttackRollSituation, BaseAttackRollSituation, PostAttackRollSituation, RollSituation} from "../../config/situation.js";
 import {PersonaCombatStats} from "../actor/persona-combat-stats.js";
@@ -66,34 +67,36 @@ export class CombatEngine {
 		return token;
 	}
 
-	static async usePower(actor: ValidAttackers, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) {
-		try {
-			Helpers.ownerCheck(actor);
-			Helpers.pauseCheck();
-			const attacker = this.getTokenFromActor(actor);
-			const combat = game.combat as U<PersonaCombat>;
-			const engine = combat ? combat.combatEngine : new CombatEngine(undefined);
-			return await engine.usePower(attacker, power, presetTargets, options );
-		} catch (e) {
-			switch (true) {
-				case e instanceof CanceledDialgogError: {
-					break;
-				}
-				case e instanceof TargettingError: {
-					break;
-				}
-				case e instanceof Error: {
-					console.error(e);
-					console.error(e.stack);
-					PersonaError.softFail("Problem with Using Item or Power", e, e.stack);
-					break;
-				}
-				default: break;
-			}
-		}
-	}
+  static async usePower(actor: ValidAttackers, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) {
+    try {
+      Helpers.ownerCheck(actor);
+      Helpers.pauseCheck();
+      const attacker = this.getTokenFromActor(actor);
+      const combat = game.combat as U<PersonaCombat>;
+      const engine = combat ? combat.combatEngine : new CombatEngine(undefined);
+      return await engine.usePower(attacker, power, presetTargets, options );
+    } catch (e) {
+      switch (true) {
+        case e instanceof CanceledDialgogError: {
+          break;
+        }
+        case e instanceof TargettingError: {
+          break;
+        }
+        case e instanceof Error: {
+          console.error(e);
+          console.error(e.stack);
+          PersonaError.softFail("Problem with Using Item or Power", e, e.stack);
+          break;
+        }
+        default: break;
+      }
+    }
+  }
 
   async usePower(attacker: PToken, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) : Promise<FinalizedCombatResult> {
+    Helpers.ownerCheck(attacker.actor);
+    Helpers.pauseCheck();
     this.setPendingResult();
     TimeLog.reset();
     this.startTime = Date.now();
@@ -119,7 +122,7 @@ export class CombatEngine {
       await attacker.actor.removeStatusesOfType("out-of-turn-action");
       await finalizedResult.toMessage(power.name, attacker.actor);
       await this.postActionCleanup(attacker, finalizedResult);
-        return finalizedResult;
+      return finalizedResult;
     } catch(e) {
       if (e instanceof CanceledDialgogError) {
         this.clearPendingResult();
@@ -271,7 +274,7 @@ export class CombatEngine {
 		return result;
 	}
 
-	private getBaseSituation(attacker: Persona, target: Persona, usableOrCard: UsableAndCard, rollData: AttackRollData) : BaseAttackRollSituation & Situation {
+	private async getBaseSituation(attacker: Persona, target: Persona, usableOrCard: UsableAndCard, rollData: AttackRollData) : Promise<BaseAttackRollSituation & Situation> {
 		const activeCombat  = this.combat ? Boolean(this.combat.combatants.find( x=> x.actor?.system.type != attacker.user.system.type)): false;
 		const baseProtoSituation = {
 			target: target.user.accessor,
@@ -286,10 +289,29 @@ export class CombatEngine {
 		} satisfies Situation;
 		const baseSituation = {
 			...baseProtoSituation,
+      addedTags: await this.determineAddedPowerTags(attacker, target, usableOrCard, baseProtoSituation),
 			rollType: rollData.rollType,
 		} satisfies BaseAttackRollSituation & Situation;
 		return baseSituation;
 	}
+
+  private async determineAddedPowerTags(attacker: Persona, target: Persona, usableOrCard: UsableAndCard, _situation: Situation) : Promise<PowerTag[]> {
+    type S = Prettify<Situation & {trigger: "get-added-power-tags"}>;
+    const targetActor = target.user;
+    const attackerActor = attacker.user;
+    const trigSit : S = {
+      trigger : "get-added-power-tags",
+      usedPower: usableOrCard.accessor,
+      target: targetActor.accessor,
+      user: attackerActor.accessor,
+      attacker: attackerActor.accessor,
+      triggeringCharacter: attackerActor.accessor,
+      triggeringUser: game.user,
+    } satisfies Situation & {trigger: "get-added-power-tags"};
+    //TODO: check this and get added roll tags
+    const effects = await TriggeredEffect.onTrigger("get-added-power-tags", attackerActor, trigSit);
+    return [];
+  }
 
 	private generateRollTags(rollType: AttackRollType): NonNullable<Situation['rollTags']> {
 		const rollTags: NonNullable<Situation['rollTags']> = ['attack'];
@@ -346,8 +368,8 @@ export class CombatEngine {
 			&& roll.natural <= range.high;
 	}
 
-	generateAttackSituation (attacker: Persona, target: Persona, power: Usable, rollData: AttackRollData, rollTotal: number, _options: CombatOptions = {}): ProtoResultAttackSituation {
-		const baseSituation = this.getBaseSituation(attacker, target, power, rollData);
+	async generateAttackSituation (attacker: Persona, target: Persona, power: Usable, rollData: AttackRollData, rollTotal: number, _options: CombatOptions = {}): Promise<ProtoResultAttackSituation> {
+		const baseSituation = await this.getBaseSituation(attacker, target, power, rollData);
 		const def = power.system.defense;
 		const defenseCalc = target.getDefense(def).eval(baseSituation);
 		const defenseVal = def != 'none' ? defenseCalc.total: 0;
@@ -401,9 +423,9 @@ export class CombatEngine {
 		if (power.isSkillCard()) {
 			return this.processSkillCard(attacker, power, target, rollData);
 		}
-		const baseSituation = this.getBaseSituation(attacker, target, power, rollData);
+		const baseSituation = await this.getBaseSituation(attacker, target, power, rollData);
 		const rollBundle = this.makeRollBundle(rollData, attacker, target, power, baseSituation, options );
-		const situation = this.generateAttackSituation(attacker, target, power, rollData, rollBundle.total, options);
+		const situation = await this.generateAttackSituation(attacker, target, power, rollData, rollBundle.total, options);
 		rollBundle.DC = situation?.DC;
 		return await this.generateAttackResult(attacker, target, power, rollBundle, situation);
 	}
@@ -586,7 +608,7 @@ export class CombatEngine {
 		if (power.hasTag("theurgy", attacker)) {return null;}
 		const element = power.getDamageType(attacker);
 		const resist = target.elemResist(element);
-		const pierce = power.hasTag('pierce', attacker);
+		const pierce = power.hasTag('pierce', attacker) || PersonaItem.hasTag(situation.addedTags ?? [], "pierce");
 		switch (resist) {
 			case 'reflect': {
 				return situation.rollType != "reflect" ? "reflect" : "block";
@@ -691,7 +713,7 @@ export class CombatEngine {
 	}
 
 	async processSkillCard( attacker: Persona, usableOrCard: UsableAndCard, target: Persona, rollData: AttackRollData) : Promise<AttackResult> {
-		const situation = this.getBaseSituation(attacker, target, usableOrCard, rollData);
+		const situation = await this.getBaseSituation(attacker, target, usableOrCard, rollData);
 		const r = await new Roll('1d20').roll();
 		const emptyList = new ModifierList();
 		const roll = new RollBundle('Activation Roll Skiill Card', r, attacker.user.isPC(), emptyList, situation);

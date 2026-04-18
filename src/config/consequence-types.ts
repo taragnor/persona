@@ -15,7 +15,6 @@ import { ConsequenceTarget } from "./precondition-types.js";
 import { DamageSubtype } from "./effect-types.js";
 import { DamageType } from "./damage-types.js";
 import { DungeonAction } from "./effect-types.js";
-import { SlotType } from "./slot-types.js";
 import { CONDITION_TARGETS_LIST } from "./precondition-types.js";
 
 import { StudentSkill } from "./student-skills.js";
@@ -27,6 +26,9 @@ import { DeprecatedModifierTarget, ItemProperty, ModifierCategory, NonDeprecated
 import {AttackResult} from "../module/combat/combat-result.js";
 import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js";
 import {StatusDuration} from "../module/persona-ae.js";
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type Xfdsafdsa = ConsequenceType; //keeping alive so the import doesn't get accidentally deleted
 
 // type ExpendOtherEffect = {
 // 	type: "expend-item";
@@ -192,6 +194,7 @@ export type EnhancedSourcedConsequence<C extends Consequence = Consequence> = So
 
 export type Consequence =
 	{
+    type: ConsequenceType,
 		actorOwner ?: UniversalActorAccessor<ValidAttackers>,
 	} & (
 		NonGenericConsequences

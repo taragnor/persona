@@ -16,7 +16,7 @@ import {PersonaTargetting} from "./combat/persona-targetting.js";
 
 export class TriggeredEffect {
 
-  static async onTrigger<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation ) : Promise<CombatResult> {
+    static async onTrigger<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation) : Promise<CombatResult> {
     const result = new CombatResult();
     const situationCopy = this._setupSituation(trigger, actor, situation);
     if (situationCopy == null) {return result;}
@@ -121,6 +121,7 @@ private static _setupSituation< T extends Trigger>( trigger: T, actor ?: ValidAt
 				case "on-event-start":
 				case "on-event-end":
         case "on-social-turn-start":
+        case "get-added-power-tags":
 					PersonaError.softFail(`Must proivide a situation with this trigger:  ${trigger}`);
 					return null;
 				default:

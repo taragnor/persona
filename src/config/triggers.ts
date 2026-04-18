@@ -16,6 +16,7 @@ export const COMBAT_TRIGGER_LIST = [
 	"start-turn",
 	"end-turn",
 	"on-power-usage-check",
+  "get-added-power-tags",
 ] as const;
 
 export const NONCOMBAT_TRIGGER_LIST = [

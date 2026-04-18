@@ -56,6 +56,14 @@ type OnPowerUsageCheckTrigger = UserSituation & {
 	usedPower : UniversalItemAccessor<UsableAndCard>;
 }
 
+type OnPowerStartUse = UserSituation & {
+	trigger: "get-added-power-tags",
+	usedPower : UniversalItemAccessor<UsableAndCard>;
+	target: UniversalActorAccessor<ValidAttackers>,
+	attacker: UniversalActorAccessor<ValidAttackers>,
+	triggeringCharacter: UniversalActorAccessor<ValidAttackers>,
+}
+
 type OnAETimeoutTrigger = {
 	trigger: "on-active-effect-time-out" | "on-active-effect-end",
 	activeEffect: UniversalAEAccessor<PersonaAE>,
@@ -68,7 +76,6 @@ type CombatTrigger = (
 	GenericCombatTrigger
 	| NonGenericCombatTrigger
 );
-
 
 type GenericCombatTrigger = UserSituation & {
 	trigger: Exclude<CombatTriggerTypes, NonGenericCombatTrigger["trigger"]>;
@@ -84,6 +91,7 @@ type NonGenericCombatTrigger =
 	| PreDamageTrigger
 	| StartEventTrigger
 	| EndEventTrigger
+  | OnPowerStartUse
 ;
 
 type StartEventTrigger = {
@@ -197,7 +205,7 @@ export type SocialCardSituation = UserSituation & {
 	target ?: UniversalActorAccessor<ValidSocialTarget>;
 	isSocial: true;
 	cameo : UniversalActorAccessor<ValidSocialTarget> | undefined;
-	trigger ?: never;
+	trigger ?: undefined;
 	cardEventItem ?: U<EnchantedTreasureFormat>,
 };
 

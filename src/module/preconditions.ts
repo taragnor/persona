@@ -498,6 +498,8 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
     case "pre-take-damage":
     case "on-combat-start-global":
     case "on-power-usage-check":
+    case "get-added-power-tags":
+    case "on-social-turn-start":
       return true;
     case "on-clock-change":
     case "on-clock-tick":
@@ -531,8 +533,6 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
           return false;
       }
     }
-    case "on-social-turn-start":
-      return true;
     default:
       condition satisfies never;
       return false;
