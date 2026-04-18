@@ -97,6 +97,7 @@ export class ConsequenceApplier {
         ...sitPartial,
         user: user.accessor,
       };
+      console.log(`On inflict status: ${status.id} ${actor.name}`);
       const eff = (await TriggeredEffect.onTrigger("on-inflict-status", user, situation))
         .finalize()
         .emptyCheck() ;

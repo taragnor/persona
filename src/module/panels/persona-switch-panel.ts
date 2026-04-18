@@ -41,6 +41,7 @@ export class PersonaSwitchPanel extends SubPanel {
     }
     const personaId = HTMLTools.getClosestData(event, "personaId");
     await this._token.actor.switchPersona(personaId as ValidAttackers["id"]);
+    await this.pop();
   }
 
 }

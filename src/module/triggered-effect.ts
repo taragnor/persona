@@ -18,7 +18,9 @@ export class TriggeredEffect {
 
   static async onTrigger<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation) : Promise<CombatResult> {
     const situationCopy = this._setupSituation(trigger, actor, situation);
-    if (!situationCopy) {return new CombatResult();}
+    if (!situationCopy) {
+      PersonaError.softFail(`Trigger Fizzle: ${trigger}`, situation);
+      return new CombatResult();}
     const triggers = this.getTriggerList(trigger, actor, situationCopy);
     const consequences = this._getTriggerConsequences(triggers, situationCopy );
     const res = await ConsequenceProcessor.consequencesToResult(consequences ,undefined, situationCopy, null);
@@ -27,7 +29,7 @@ export class TriggeredEffect {
 
   static onTrigger_consequences<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation) : SourcedConsequence[] {
     const situationCopy = this._setupSituation(trigger, actor, situation);
-    if (situationCopy == null) {return [];}
+    if (!situationCopy) {return [];}
     const triggers = this.getTriggerList(trigger, actor, situationCopy);
     const consequences = this._getTriggerConsequences(triggers, situationCopy );
     return consequences;

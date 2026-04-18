@@ -269,12 +269,12 @@ export class FollowUpManager {
     await this.callToTeammate(comb, teammate);
     if (teammate.isOwner) {
       await this.panel.pop();
-      await this.prepareToActOnTeammateAction(teammate.actor);
+      await this.prepareToActOnTeammateAction(teammate.actor, comb.actor);
       // await CombatPanel.instance.setTarget(teammate.token);
       await CombatPanel.instance.setMode("main");
       return;
     }
-    if ( await this.combat?.callOnTeammateForTeamworkMove(teammate, this.combat.combatant?.token as U<PToken>)) {
+    if ( await this.combat?.callOnTeammateForTeamworkMove(teammate, comb.token )) {
       await this.panel.pop();
       // await CombatPanel.instance.setMode("main");
     }
@@ -287,19 +287,22 @@ export class FollowUpManager {
       if (initiator.actor.isPC()) {
         await initiator.actor.addInspiration(teammate.actor, -1);
       }
-      if (teammate.actor.isPC()) {
-        await teammate.actor.addInspiration(initiator.actor, -1);
-      }
     }
   }
 
-  async prepareToActOnTeammateAction(actor: ValidAttackers) {
+  async prepareToActOnTeammateAction(actor: ValidAttackers, leader: U<ValidAttackers>) {
     const status : StatusEffect = {
       id: "teamwork-shift",
       duration: {
         dtype: "instant",
       }
     };
+    if (!leader) {
+      PersonaError.softFail("No leader specified for teamwork request");
+    }
+    if (!PersonaSettings.debugMode() && leader && actor.isPC() && leader.isPCLike()) {
+        await actor.addInspiration(leader, -1);
+    }
     await actor.addStatus( status);
     const msg = `${actor.name} seizes the opportunity for a Teamwork move!`;
     await PersonaSocial.characterDialog(actor, msg);

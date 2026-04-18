@@ -112,7 +112,7 @@ export class SidePanelManager {
           || this.panelStack.includes(sidePanel)
         )
       ) {
-        console.log(`Can't render ${sidePanel.panelName}: it's not active`);
+        console.warn(`Can't render ${sidePanel.panelName}: it's not active`);
         return;
       }
       return await this.activate(sidePanel); //this should rerender the panel anyway

@@ -347,6 +347,7 @@ export class CombatPanel extends PersonaPanel {
         return;
       }
       await actor.switchPersona(filteredPList.at(0)!.source.id);
+      await this.setMode("main");
       return;
     }
 

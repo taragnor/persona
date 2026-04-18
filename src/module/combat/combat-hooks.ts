@@ -109,7 +109,6 @@ export class CombatHooks {
       }
       switch (status.id) {
         case "down":
-          if (status.id != "down") {return;}
           if (game.combat) {
             const allegiance = token.actor.getAllegiance();
             const standingAllies = game.combat.combatants.contents
@@ -135,16 +134,8 @@ export class CombatHooks {
             }
           }
           break;
-          //this did not work
-          // case "bonus-action": {
-          // const combat = game.combat as PersonaCombat;
-          // 	if (combat && !combat.isSocial) {
-          // 		await combat.onFollowUpAction(token, status.activationRoll);
-          // 	}
-          // 	break;
-          // }
         default:
-      }
+        }
     });
 
 

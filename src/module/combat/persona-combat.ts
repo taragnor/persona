@@ -781,7 +781,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       await PersonaSocial.characterDialog(yourChar, msg);
       return;
     }
-    await PersonaCombat.combat?.followUp.prepareToActOnTeammateAction(yourChar);
+    await PersonaCombat.combat?.followUp.prepareToActOnTeammateAction(yourChar, leader );
   }
 
 
