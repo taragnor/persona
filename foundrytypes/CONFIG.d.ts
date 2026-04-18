@@ -57,10 +57,12 @@ declare interface CONFIG {
 }
 
 interface StatusEffectObject {
-	id: string,
-	name: string,
-	icon: string,
-	changes ?: readonly AEChange[],
+  id: string;
+  name: string;
+  img: string;
+  /** @deprecated*/
+  icon?: string,
+  changes ?: readonly AEChange[],
 }
 
 interface WeatherEffectData {}

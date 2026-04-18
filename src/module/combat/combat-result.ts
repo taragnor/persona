@@ -282,6 +282,8 @@ export class CombatResult  {
       case "set-cooldown":
         effect.otherEffects.push( cons);
         break;
+      case "add-power-tag-to-attack":
+        break;
       default:
         cons satisfies never;
     }

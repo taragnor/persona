@@ -1775,7 +1775,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       speaker: {alias: 'Combat Start'},
       content: html,
       rolls: rolls.map(x=> x.roll),
-      style: CONST.CHAT_MESSAGE_STYLES.ROLL,
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
     };
     return await ChatMessage.create(chatMessage, messageOptions);
   }

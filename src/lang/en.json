@@ -733,6 +733,7 @@
 "persona.combat-effects-subtypes.apply-recovery": "Apply Recovery",
 "persona.combat-effects-subtypes.alter-theurgy": "Alter Current Theurgy Score",
 "persona.combat-effects-subtypes.set-cooldown": "Set Cooldown to effect",
+"persona.combat-effects-subtypes.add-power-tag-to-attack": "Add Power Tag to Attack",
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",

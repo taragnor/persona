@@ -19,6 +19,7 @@ import {TRIGGERS} from "../../config/triggers.js";
 import {WEATHER_TYPES} from "../../config/weather-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {ConditionalEffectManager} from "../conditional-effect-manager.js";
+import {PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {localize} from "../persona.js";
@@ -688,6 +689,10 @@ export class ConditionalEffectPrinter {
 				return `Alter Theurgy Amount`;
 			case "set-cooldown":
 				return `Set Power Cooldown : ${cons.durationRounds} rounds`;
+      case "add-power-tag-to-attack": {
+        const tag = PersonaItem.resolveTag(cons.powerTag);
+        return `Add Power Tag To Attack : ${tag instanceof PersonaItem ? tag.name : tag}`;
+      }
 			default:
 				cons satisfies never;
 				return "ERROR";

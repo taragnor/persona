@@ -26,6 +26,7 @@ import { DeprecatedModifierTarget, ItemProperty, ModifierCategory, NonDeprecated
 import {AttackResult} from "../module/combat/combat-result.js";
 import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js";
 import {StatusDuration} from "../module/persona-ae.js";
+import {PowerTag, PowerTagOrId} from "./power-tags.js";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type Xfdsafdsa = ConsequenceType; //keeping alive so the import doesn't get accidentally deleted
@@ -421,7 +422,11 @@ type CombatEffectConsequencesList =
 		powerId: Power["id"],
 		combatEffect: "set-cooldown",
 		durationRounds: number,
-	}
+	} | {
+    combatEffect: "add-power-tag-to-attack",
+    powerTag: PowerTagOrId
+  }
+
 ;
 
 

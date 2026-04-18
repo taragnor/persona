@@ -110,6 +110,9 @@ export class ConditionalEffectC {
 		return false;
 	}
 
+  findSource() { return this._source ? PersonaDB.find(this._source) : undefined;}
+  findRealSource() { return this._realSource ? PersonaDB.find(this._realSource) : undefined;}
+  findOwner() { return this._owner ? PersonaDB.find(this._owner) : undefined;}
 	get source() { return this._source;}
 	get realSource() { return this._realSource;}
 	get owner() { return this._owner; }

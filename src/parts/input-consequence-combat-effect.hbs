@@ -91,3 +91,9 @@
 	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 {{/if}}
 
+{{#if (eq cons.combatEffect  "add-power-tag-to-attack")}}
+<select name="{{strcat namePrefix 'powerTag'}}">
+  {{selectOptions POWERSTUFF.TAGS localize=true selected=cons.powerTag}}
+</select>
+{{/if}}
+

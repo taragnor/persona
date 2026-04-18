@@ -245,6 +245,7 @@ export const COMBAT_EFFECTS_LIST = [
 	"apply-recovery",
 	"alter-theurgy",
 	"set-cooldown",
+  "add-power-tag-to-attack",
 ] as const;
 
 export type CombatEffect = typeof COMBAT_EFFECTS_LIST[number];

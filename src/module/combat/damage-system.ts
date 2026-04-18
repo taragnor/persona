@@ -4,6 +4,7 @@ import {ItemSubtype, ModifierContainer, PersonaItem} from "../item/persona-item.
 import {Persona} from "../persona-class.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
+import {CombatEngine} from "./combat-engine.js";
 import {AttackResult} from "./combat-result.js";
 import {DamageCalculation, EvaluatedDamage} from "./damage-calc.js";
 import {ConsequenceProcessed, PersonaCombat} from "./persona-combat.js";
@@ -34,7 +35,7 @@ export abstract class DamageSystemBase implements DamageInterface {
 
 	protected setResistance(calc: DamageCalculation, power: Usable, attackerPersona: Persona, situation: U<Situation>, resist: ResistStrength) {
 		const piercePower = power && power.hasTag('pierce', attackerPersona) || power.hasTag("theurgy", attackerPersona);
-		const pierceTag = situation != undefined && 'addedTags' in situation && situation.addedTags && situation.addedTags.includes('pierce');
+		const pierceTag = CombatEngine.hasPierce(attackerPersona, power, situation);
 		if (piercePower || pierceTag) {return;}
 		switch (resist) {
 			case "resist":
@@ -136,7 +137,7 @@ abstract	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Pe
 		return this.getWeaponDamageByWpnLevel(low-1);
 	}
 
-	processConsequence_damage( consequence: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'] {
+	processConsequence_damage( consequence: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: Persona, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'] {
 		return targets.flatMap( target => {
 			const cons = this.process_damageConsOnTarget(consequence, target, attacker, powerUsed, situation);
 			if (cons != null) {
@@ -149,7 +150,7 @@ abstract	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Pe
 
 	}
 
-	protected process_damageConsOnTarget( cons: SourcedConsequence<NewDamageConsequence>, target: ValidAttackers, attacker: ValidAttackers, powerUsed: U<ModifierContainer>, situation: Situation) : N<ConsequenceProcessed['consequences'][number]["cons"]> {
+	protected process_damageConsOnTarget( cons: SourcedConsequence<NewDamageConsequence>, target: ValidAttackers, attacker: Persona, powerUsed: U<ModifierContainer>, situation: Situation) : N<ConsequenceProcessed['consequences'][number]["cons"]> {
 		const damageOptions : GetDamageOptions= {};
 		let dmgCalc: U<DamageCalculation>;
 		let damageType : U<RealDamageType> = cons.damageType != "by-power" ? cons.damageType : "none";
@@ -183,7 +184,7 @@ abstract	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Pe
 				if (cons.damageType != "by-power") {
 					damageOptions["overrideDamageType"] =  cons.damageType;
 				}
-				dmgCalc = power.damage.getDamage(power, attacker.persona(), target.persona(), situation, damageOptions);
+				dmgCalc = power.damage.getDamage(power, attacker, target.persona(), situation, damageOptions);
 				const evenRoll = (situation.naturalRoll ?? 0) % 2 == 0;
 				if ( cons.damageSubtype == "high" || (cons.damageSubtype == "odd-even" && evenRoll)) {
 					dmgCalc.setApplyEvenBonus();
@@ -254,7 +255,7 @@ export interface DamageInterface {
 	getArmorDRByArmorLevel(lvl: number) : number;
 	// calculateAllOutAttackDamage(attackLeader: ValidAttackers, allAttackers: ValidAttackers[], situation: AttackResult['situation'] ) : AllOutReturn[];
 	// individualContributionToAllOutAttackDamage(actor: ValidAttackers, situation: AttackResult["situation"], isAttackLeader: boolean) : DamageCalculation;
-	processConsequence_damage( cons: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'];
+	processConsequence_damage( cons: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: Persona, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'];
 
 }
 

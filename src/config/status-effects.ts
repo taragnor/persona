@@ -9,85 +9,85 @@ export const BUFF_MAX_POTENCY = 2;
 export const STATUS_EFFECT_LIST = [
 	{
 		id: "burn",
-		icon: "icons/svg/fire.svg",
+		img: "icons/svg/fire.svg",
 		tags: ["distracting", "baneful"]
 	}, {
 		id: "charmed",
-		icon:`${PERSONA_ICONS_PATH}/P3R_Charm_Icon.png`,
+		img:`${PERSONA_ICONS_PATH}/P3R_Charm_Icon.png`,
 		// icon:  "icons/svg/heal.svg",
 		tags: ["baneful"]
 	}, {
 		id: "blocking",
-		icon:  "icons/svg/shield.svg",
+		img:  "icons/svg/shield.svg",
 		tags: ["beneficial"]
 	}, {
 		id: "curse",
-		icon:  "icons/magic/unholy/strike-body-life-soul-purple.webp",
+		img:  "icons/magic/unholy/strike-body-life-soul-purple.webp",
 		tags: ["lethal"]
 	}, {
 		id: "confused",
-		icon:  "icons/svg/stoned.svg",
+		img:  "icons/svg/stoned.svg",
 		tags: ["distracting", "baneful"]
 	}, {
 		id: "down",
-		icon:  "icons/svg/falling.svg",
+		img:  "icons/svg/falling.svg",
 		tags: ["distracting", "baneful"]
 	}, {
 		id: "dizzy",
-		icon:  "icons/svg/daze.svg",
+		img:  "icons/svg/daze.svg",
 		tags: ["distracting", "baneful"]
 	}, {
 		id: "despair",
-		icon:  "icons/svg/cave.svg",
+		img:  "icons/svg/cave.svg",
 		tags: ["distracting", "baneful"]
 	}, {
 		id: "sealed",
-		icon:  "icons/svg/silenced.svg",
+		img:  "icons/svg/silenced.svg",
 		tags: ["baneful"]
 	}, {
 		id: "expel",
-		icon:  "icons/magic/light/explosion-star-glow-silhouette.webp",
+		img:  "icons/magic/light/explosion-star-glow-silhouette.webp",
 		tags: ["lethal"]
 	}, {
 		id: "fading",
-		icon:  "icons/svg/invisible.svg",
+		img:  "icons/svg/invisible.svg",
 		tags: ["incapacitating", "distracting", "baneful", "fade"],
 	}, {
 		id: "full-fade",
-		icon:  "icons/svg/door-exit.svg",
+		img:  "icons/svg/door-exit.svg",
 		tags: ["incapacitating", "fade"],
 	}, {
 		id: "fear",
-		icon:`${PERSONA_ICONS_PATH}/P3R_Fear_Icon.png`,
+		img:`${PERSONA_ICONS_PATH}/P3R_Fear_Icon.png`,
 		// icon:  "icons/svg/terror.svg",
 		tags: ["distracting", "baneful"],
 	}, {
 		id: "poison",
-		icon:  "icons/svg/poison.svg",
+		img:  "icons/svg/poison.svg",
 		tags: ["baneful"],
 	}, {
 		id: "vulnerable",
-		icon:  "icons/svg/paralysis.svg",
+		img:  "icons/svg/paralysis.svg",
 		tags: ["baneful"],
 	}, {
 		id: "frozen",
-		icon:`${PERSONA_ICONS_PATH}/P3R_Freeze_Icon.png`,
+		img:`${PERSONA_ICONS_PATH}/P3R_Freeze_Icon.png`,
 		tags: ["baneful", "distracting"],
 	}, {
 		id: "sleep",
-		icon:  "icons/svg/sleep.svg",
+		img:  "icons/svg/sleep.svg",
 		tags: ["baneful", "distracting", "incapacitating"],
 	}, {
 		id: "shock",
-		icon:  "icons/svg/lightning.svg",
+		img:  "icons/svg/lightning.svg",
 		tags: ["baneful", "distracting", "incapacitating"],
 	}, {
 		id: "blind",
-		icon: "icons/svg/blind.svg",
+		img: "icons/svg/blind.svg",
 		tags: ["baneful", "distracting"],
 	}, {
 		id: "mouse",
-		icon: "icons/creatures/mammals/rodent-rat-green.webp",
+		img: "icons/creatures/mammals/rodent-rat-green.webp",
 		tags: ["baneful", "distracting"],
 	// }, {
 		// id: "buffed",
@@ -99,112 +99,112 @@ export const STATUS_EFFECT_LIST = [
 		// tags: [],
 	}, {
 		id: "defense-boost",
-		icon:  "icons/svg/mountain.svg",
+		img:  "icons/svg/mountain.svg",
 		tags: ["buff"],
 	},{
 		id: "defense-nerf",
-		icon:  "icons/svg/net.svg",
+		img:  "icons/svg/net.svg",
 		tags: ["debuff"],
 	}, {
 		id: "attack-boost",
-		icon:  "icons/svg/light.svg",
+		img:  "icons/svg/light.svg",
 		tags: ["buff"],
 	}, {
 		id: "attack-nerf",
-		icon:  "icons/svg/light-off.svg",
+		img:  "icons/svg/light-off.svg",
 		tags: ["debuff"],
 	}, {
 		id: "damage-boost",
-		icon:  "icons/svg/pawprint.svg",
+		img:  "icons/svg/pawprint.svg",
 		tags: ["buff"],
 	}, {
 		id: "damage-nerf",
-		icon:  "icons/svg/direction.svg",
+		img:  "icons/svg/direction.svg",
 		tags: ["debuff"],
 	}, {
 		id: "bonus-action",
-		icon:  "icons/svg/angel.svg",
+		img:  "icons/svg/angel.svg",
 		tags: [],
 	}, {
 		id: "magic-charge",
-		icon:  "icons/magic/lightning/bolt-strike-explosion-blue.webp",
+		img:  "icons/magic/lightning/bolt-strike-explosion-blue.webp",
 		tags: ["beneficial"],
 	}, {
 		id: "power-charge",
-		icon:  "icons/magic/control/buff-strength-muscle-damage-orange.webp",
+		img:  "icons/magic/control/buff-strength-muscle-damage-orange.webp",
 		tags: ["beneficial"],
 	}, {
 		id: "crippled",
-		icon:  "icons/skills/wounds/injury-eyes-blood-red.webp",
+		img:  "icons/skills/wounds/injury-eyes-blood-red.webp",
 		tags: ["downtime", "distracting", "baneful"],
 	}, {
 		id: "injured",
-		icon:  "icons/skills/wounds/injury-triple-slash-bleed.webp",
+		img:  "icons/skills/wounds/injury-triple-slash-bleed.webp",
 		tags: ["downtime", "baneful"],
 	}, {
 		id: "jailed",
-		icon:  "icons/environment/traps/steel.webp",
+		img:  "icons/environment/traps/steel.webp",
 		tags: ["downtime", "distracting"],
 	}, {
 		id: "rested",
-		icon:  "icons/skills/social/thumbsup-approval-like.webp",
+		img:  "icons/skills/social/thumbsup-approval-like.webp",
 		tags: ["downtime", "fatigue"],
 	}, {
 		id: "exhausted",
-		icon:  "icons/svg/unconscious.svg",
+		img:  "icons/svg/unconscious.svg",
 		tags: ["downtime", "baneful", "fatigue"],
 	}, {
 		id: "tired",
-		icon:   "icons/svg/down.svg",
+		img:   "icons/svg/down.svg",
 		tags: ["downtime", "fatigue"],
 	}, {
 		id: "fatigued",
-		icon:   "icons/svg/down.svg",
+		img:   "icons/svg/down.svg",
 		tags: ["downtime", "fatigue"],
 	}, {
 		id: "sticky",
-		icon:   "icons/svg/anchor.svg",
+		img:   "icons/svg/anchor.svg",
 		tags: ["identifier"],
 	}, {
 		id: "baton-pass",
-		icon: "icons/weapons/staves/staff-orb-red.webp",
+		img: "icons/weapons/staves/staff-orb-red.webp",
 		tags: ["out-of-turn-action"],
 	}, {
 		id: "teamwork-shift",
-		icon: "icons/skills/social/diplomacy-handshake.webp",
+		img: "icons/skills/social/diplomacy-handshake.webp",
 		tags: ["out-of-turn-action", "enable-teamwork"],
 	}, {
 		id: "tactical-shift",
-		icon: "icons/svg/wingfoot.svg",
+		img: "icons/svg/wingfoot.svg",
 		tags: ["out-of-turn-action"],
 	}, {
 		id:"challenged",
-		icon: "icons/skills/melee/swords-parry-block-blue.webp",
+		img: "icons/skills/melee/swords-parry-block-blue.webp",
 		tags: [],
 	},{
 		id:"protected",
-		icon: "icons/magic/holy/barrier-shield-winged-cross.webp",
+		img: "icons/magic/holy/barrier-shield-winged-cross.webp",
 		tags: ["beneficial"],
 
 	},{
 		id:"rage",
-		icon: "icons/skills/melee/unarmed-punch-fist.webp",
+		img: "icons/skills/melee/unarmed-punch-fist.webp",
 		tags: ["baneful"],
 	}, {
 		id:"phys-shield",
-		icon: "icons/equipment/shield/heater-steel-grey.webp",
+		img: "icons/equipment/shield/heater-steel-grey.webp",
 		tags: ["beneficial"],
 	}, {
 		id:"magic-shield",
-		icon: "icons/equipment/shield/heater-steel-segmented-purple.webp",
+		img: "icons/equipment/shield/heater-steel-segmented-purple.webp",
 		tags: ["beneficial"],
 	}, {
 		id:"fight-in-spirit-attack",
-		icon: "icons/skills/melee/strike-polearm-light-orange.webp",
+		img: "icons/skills/melee/strike-polearm-light-orange.webp",
 		tags: ["beneficial"],
 	}, {
 		id:"fight-in-spirit-defense",
-		icon: "icons/skills/melee/shield-block-gray-yellow.webp",
+		img: "icons/skills/melee/shield-block-gray-yellow.webp",
 		tags: ["beneficial"],
 		changes: [
 			{
@@ -215,7 +215,7 @@ export const STATUS_EFFECT_LIST = [
 		],
 	}, {
 		id:"preparing-fusion",
-		icon: "icons/skills/social/diplomacy-unity-alliance.webp",
+		img: "icons/skills/social/diplomacy-unity-alliance.webp",
 		tags: [],
 	},
 ] as const satisfies Omit<StatusEffectObject, "name">[];
@@ -248,8 +248,8 @@ const STATUS_PROPERTY_TAGS = [
 ] as const;
 
 CONFIG.statusEffects = STATUS_EFFECT_LIST
-	.map( ({id, icon, tags})=> {
-	return {id, icon, tags, name:`persona.status.${id}`};
+	.map( ({id, img, tags})=> {
+	return {id, img, tags, name:`persona.status.${id}`};
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

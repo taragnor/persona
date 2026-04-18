@@ -16,26 +16,61 @@ import {PersonaTargetting} from "./combat/persona-targetting.js";
 
 export class TriggeredEffect {
 
-    static async onTrigger<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation) : Promise<CombatResult> {
-    const result = new CombatResult();
+  static async onTrigger<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation) : Promise<CombatResult> {
     const situationCopy = this._setupSituation(trigger, actor, situation);
-    if (situationCopy == null) {return result;}
+    if (!situationCopy) {return new CombatResult();}
     const triggers = this.getTriggerList(trigger, actor, situationCopy);
-    if (PersonaSettings.debugMode()) {
-      console.debug( `${actor?.name ?? "void actor"} triggerList (${trigger}) : \n${triggers.map( trig=> trig.toString()).join("\n")}`);
-    }
-    for (const eff of triggers) {
+    const consequences = this._getTriggerConsequences(triggers, situationCopy );
+    const res = await ConsequenceProcessor.consequencesToResult(consequences ,undefined, situationCopy, null);
+    return res;
+  }
+
+  static onTrigger_consequences<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation) : SourcedConsequence[] {
+    const situationCopy = this._setupSituation(trigger, actor, situation);
+    if (situationCopy == null) {return [];}
+    const triggers = this.getTriggerList(trigger, actor, situationCopy);
+    const consequences = this._getTriggerConsequences(triggers, situationCopy );
+    return consequences;
+  }
+
+  // static async onTrigger<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation) : Promise<CombatResult> {
+    // const situationCopy = this._setupSituation(trigger, actor, situation);
+    // if (situationCopy == null) {return new CombatResult();}
+    // const triggers = this.getTriggerList(trigger, actor, situationCopy);
+    // if (PersonaSettings.debugMode()) {
+    //   console.debug( `${actor?.name ?? "void actor"} triggerList (${trigger}) : \n${triggers.map( trig=> trig.toString()).join("\n")}`);
+    // }
+    // const consequences = this._getTriggerConsequences(triggers, situationCopy );
+    // const consequences = this.onTrigger_consequences(trigger, actor, situation);
+    // const res = await ConsequenceProcessor.consequencesToResult(consequences ,undefined, situationCopy, null);
+    // return res;
+
+    // for (const eff of triggers) {
+    //   try {
+    //     const validCons = eff.getActiveConsequences(situationCopy);
+    //     const res = await ConsequenceProcessor.consequencesToResult(validCons ,undefined, situationCopy, actor, actor, null);
+    //     result.merge(res);
+    //   } catch (e) {
+    //     const source = eff.source ? PersonaDB.find(eff.source) : undefined;
+    //     PersonaError.softFail(`Problem with triggered effects ${source?.name ?? "Unknown source"} running on actor ${actor?.name ?? "none"}`, e);
+    //     continue;
+    //   }
+    // }
+    // return result;
+  // }
+
+
+  private static _getTriggerConsequences ( triggers: ConditionalEffectC[], situation: Situation) {
+    return triggers.flatMap ( CE => {
       try {
-        const validCons = eff.getActiveConsequences(situationCopy);
-        const res = await ConsequenceProcessor.consequencesToResult(validCons ,undefined, situationCopy, actor, actor, null);
-        result.merge(res);
+        return CE.getActiveConsequences(situation);
       } catch (e) {
-        const source = eff.source ? PersonaDB.find(eff.source) : undefined;
-        PersonaError.softFail(`Problem with triggered effects ${source?.name ?? "Unknown source"} running on actor ${actor?.name ?? "none"}`, e);
-        continue;
+        const source = CE.findSource();
+        const owner = CE.findOwner();
+        PersonaError.softFail(`Problem with triggered effects ${source?.name ?? "Unknown source"} running on owner ${owner?.name ?? "none"}`, e);
+        return [];
       }
-    }
-    return result;
+    });
   }
 
 private static _setupSituation< T extends Trigger>( trigger: T, actor ?: ValidAttackers, situation ?: Situation ) : N<Situation>{
@@ -139,47 +174,50 @@ private static _setupSituation< T extends Trigger>( trigger: T, actor ?: ValidAt
 }
 
 static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Situation) :  ConditionalEffectC[] {
-	const triggers : ConditionalEffectC[] = PersonaDB.getGlobalModifiers().flatMap( x=> x
-		.getTriggeredEffects(null, {triggerType: trigger})
-		//may not need this
-		// .filter(x=> x.conditions.some( x=> x.type == "on-trigger" && x.trigger == trigger))
-	);
-	if (actor) {
-		triggers.push(...actor.triggersOn(trigger));
-	}
-	if (situation.usedPower) {
-		const power = PersonaDB.findItem(situation.usedPower);
-		const user = situation.user ? PersonaDB.findActor(situation.user) : null;
-		const PowerTriggers = power.getTriggeredEffects(user, {triggerType: trigger});
-		// .filter ( ce => PersonaItem.triggersOn(ce, trigger));
-		triggers.push(...PowerTriggers);
-	}
-	if (!actor) {
-		const rm = Metaverse.activeRoomModifiers()
-			.flatMap (mod => mod.getEffects(null));
-		triggers.push(...rm);
-		const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
-		triggers.push(...PCTriggers);
-	}
-	// if (PersonaCombat.combat) {
-	// 	const roomEffects = PersonaCombat.combat?.getRoomEffects() ?? [];
-	// 	triggers.push(
-	// 		...roomEffects.flatMap (RE=> RE.getEffects(null))
-	// 	);
-	// } else {
-	// 	const arr = Metaverse.getRegion()?.allRoomEffects ?? [];
-	// 	triggers.push(
-	// 		...arr.flatMap (RE=> RE.getEffects(null))
-	// 	);
-	// 	const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
-	// 	triggers.push(...PCTriggers);
-	// }
-	const filteredEffects = removeDuplicates(triggers
-		.filter ( x=>
-			x.conditionalType == "triggered"
-			&& x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == trigger)
-		)
-	);
+  const triggers : ConditionalEffectC[] = PersonaDB.getGlobalModifiers().flatMap( x=> x
+    .getTriggeredEffects(null, {triggerType: trigger})
+    //may not need this
+    // .filter(x=> x.conditions.some( x=> x.type == "on-trigger" && x.trigger == trigger))
+  );
+  if (actor) {
+    triggers.push(...actor.triggersOn(trigger));
+  }
+  if (situation.usedPower) {
+    const power = PersonaDB.findItem(situation.usedPower);
+    const user = situation.user ? PersonaDB.findActor(situation.user) : null;
+    const PowerTriggers = power.getTriggeredEffects(user, {triggerType: trigger});
+    // .filter ( ce => PersonaItem.triggersOn(ce, trigger));
+    triggers.push(...PowerTriggers);
+  }
+  if (!actor) {
+    const rm = Metaverse.activeRoomModifiers()
+      .flatMap (mod => mod.getEffects(null));
+    triggers.push(...rm);
+    const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
+    triggers.push(...PCTriggers);
+  }
+  // if (PersonaCombat.combat) {
+  // 	const roomEffects = PersonaCombat.combat?.getRoomEffects() ?? [];
+  // 	triggers.push(
+  // 		...roomEffects.flatMap (RE=> RE.getEffects(null))
+  // 	);
+  // } else {
+  // 	const arr = Metaverse.getRegion()?.allRoomEffects ?? [];
+  // 	triggers.push(
+  // 		...arr.flatMap (RE=> RE.getEffects(null))
+  // 	);
+  // 	const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
+  // 	triggers.push(...PCTriggers);
+  // }
+  const filteredEffects = removeDuplicates(triggers
+    .filter ( x=>
+      x.conditionalType == "triggered"
+      && x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == trigger)
+    )
+  );
+  if (PersonaSettings.debugMode()) {
+    console.debug( `${actor?.name ?? "void actor"} triggerList (${trigger}) : \n${triggers.map( trig=> trig.toString()).join("\n")}`);
+  }
 	return filteredEffects;
 }
 

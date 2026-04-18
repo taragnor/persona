@@ -1282,13 +1282,13 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
         return false;
       }
       for (const target of subjects) {
-        // const targetActor = target instanceof PersonaActor ? target : target.actor;
         const power = PersonaDB.findItem(situation.usedPower);
-        if (power.system.type == "skillCard") {continue;}
+        if (power.isSkillCard()) {continue;}
         if (!situation.attacker) {continue;}
         const attacker = PersonaDB.findActor(situation?.attacker);
-        const resist = target.elemResist((power as Usable).getDamageType(attacker));
-        if (resist == "weakness") {return true;}
+        const pierce = CombatEngine.hasPierce(attacker.persona(), power, situation);
+        const resist = target.elemResist(power.getDamageType(attacker));
+        if (resist == "weakness" && !pierce) {return true;}
       }
       return false;
     }

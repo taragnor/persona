@@ -3,15 +3,18 @@ import {PersonaSettings} from "../../config/persona-settings.js";
 import {AttackResult, CombatResult} from "../combat/combat-result.js";
 import {ConsequenceProcessed, PersonaCombat} from "../combat/persona-combat.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
+import {Persona} from "../persona-class.js";
+import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 
 export class ConsequenceProcessor {
 
-	static async consequencesToResult(cons: SourcedConsequence<NonDeprecatedConsequence>[], power: U<ModifierContainer>, situation: Situation, attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkResult: AttackResult | null): Promise<CombatResult> {
+	static async consequencesToResult(cons: SourcedConsequence<NonDeprecatedConsequence>[], power: U<ModifierContainer>, situation: Situation, atkResult: AttackResult | null): Promise<CombatResult> {
 		const CombatRes = new CombatResult(atkResult);
 		try {
-			const x = this.ProcessConsequences(power, situation, cons, attacker, target, atkResult);
-			const result = await this.getCombatResultFromConsequences(x.consequences, situation, attacker, target, atkResult);
+      const attacker = (situation.attacker) ? PersonaDB.findActor(situation.attacker)?.persona() : undefined;
+			const x = this.ProcessConsequences(power, situation, cons, attacker, atkResult);
+			const result = await this.getCombatResultFromConsequences(x.consequences, situation, atkResult);
 			CombatRes.merge(result);
 		}
 		catch (e) {
@@ -23,8 +26,7 @@ export class ConsequenceProcessor {
 
 	static processConsequences_simple(consequence_list: SourcedConsequence<NonDeprecatedConsequence>[], situation: Situation): ConsequenceProcessed {
 		let consequences : ConsequenceProcessed['consequences'] = [];
-		for (const cons of consequence_list) {
-			const applyTo = "applyTo" in cons ? cons.applyTo ?? "target": "target";
+		for (const cons of consequence_list) { const applyTo = "applyTo" in cons ? cons.applyTo ?? "target": "target";
 			const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
 			consequences= consequences.concat(this.processConsequence_simple(cons, consTargets));
 		}
@@ -33,27 +35,27 @@ export class ConsequenceProcessor {
 		};
 	}
 
-	static ProcessConsequences(power: U<ModifierContainer>, situation: Situation, relevantConsequences: SourcedConsequence<NonDeprecatedConsequence>[], attacker: ValidAttackers | undefined, target: ValidAttackers | undefined, atkresult : Partial<AttackResult> | null)
-		: ConsequenceProcessed {
-			let consequences : ConsequenceProcessed['consequences']= [];
-			for (const cons of relevantConsequences) {
-				const sourcedC = {
-					...cons,
-				};
-				if (attacker) {
-					const newCons = this.processConsequence(power, situation, sourcedC, attacker, target, atkresult);
-					consequences = consequences.concat(newCons);
-				} else {
-					const applyTo = "applyTo" in sourcedC ? sourcedC.applyTo ?? "target" : "target";
-					const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
-					const newCons = this.processConsequence_simple( sourcedC, consTargets);
-					consequences = consequences.concat(newCons);
-				}
-			}
-			return {consequences} satisfies ConsequenceProcessed;
-		}
+  static ProcessConsequences(power: U<ModifierContainer>, situation: Situation, relevantConsequences: SourcedConsequence<NonDeprecatedConsequence>[], attackerPersona: U<Persona>, atkresult : Partial<AttackResult> | null)
+    : ConsequenceProcessed {
+      let consequences : ConsequenceProcessed['consequences']= [];
+      for (const cons of relevantConsequences) {
+        const sourcedC = {
+          ...cons,
+        };
+        if (attackerPersona) {
+          const newCons = this.processConsequence(power, situation, sourcedC, attackerPersona, atkresult);
+          consequences = consequences.concat(newCons);
+        } else {
+          const applyTo = "applyTo" in sourcedC ? sourcedC.applyTo ?? "target" : "target";
+          const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
+          const newCons = this.processConsequence_simple( sourcedC, consTargets);
+          consequences = consequences.concat(newCons);
+        }
+      }
+      return {consequences} satisfies ConsequenceProcessed;
+    }
 
-  static processConsequence( power: U<ModifierContainer>, situation: Situation, cons: SourcedConsequence<NonDeprecatedConsequence>, attacker: ValidAttackers, _target : ValidAttackers | undefined, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed['consequences'] {
+  static processConsequence( power: U<ModifierContainer>, situation: Situation, cons: SourcedConsequence<NonDeprecatedConsequence>, attackerPersona: Persona, atkresult ?: Partial<AttackResult> | null) : ConsequenceProcessed['consequences'] {
     //need to fix this so it knows who the target actual is so it can do a proper compariosn, right now when applying to Self it won't consider resistance or consider the target's resist.
     const applyTo = "applyTo" in cons ? cons.applyTo ?? "target" : "target";
     const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
@@ -67,7 +69,7 @@ export class ConsequenceProcessor {
       case "combat-effect": {
         switch (cons.combatEffect) {
           case 'damage':
-            return this.processConsequence_damage(cons, consTargets, attacker, power, situation);
+            return this.processConsequence_damage(cons, consTargets, attackerPersona, power, situation);
           case 'addStatus': case 'removeStatus':
             if (!applyToSelf && (absorb || block)) {return [];}
             return consTargets.map( target => {
@@ -86,8 +88,6 @@ export class ConsequenceProcessor {
 			case 'modifier-new':
 			case 'add-creature-tag':
 				break;
-			// case 'expend-slot':
-			// 	return targets.map( applyTo => ({applyTo, cons}));
 			case 'other-effect':
 			case 'set-flag':
 			case 'add-power-to-list':
@@ -155,11 +155,11 @@ export class ConsequenceProcessor {
 		return [];
 	}
 
-	static processConsequence_damage( cons: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: ValidAttackers, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'] {
-		return PersonaSettings.getDamageSystem().processConsequence_damage(cons, targets, attacker, powerUsed, situation);
+	static processConsequence_damage( cons: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attackerPersona: Persona, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'] {
+		return PersonaSettings.getDamageSystem().processConsequence_damage(cons, targets, attackerPersona, powerUsed, situation);
 	}
 
-	static async getCombatResultFromConsequences(consList: ConsequenceProcessed['consequences'], situation: Situation, _attacker: ValidAttackers | undefined, _target : ValidAttackers | undefined, atkResult ?: AttackResult | null ) : Promise<CombatResult> {
+	static async getCombatResultFromConsequences(consList: ConsequenceProcessed['consequences'], situation: Situation, atkResult ?: AttackResult | null ) : Promise<CombatResult> {
 		const result = new CombatResult(atkResult);
 		for (const cons of consList) {
 			if (cons.applyTo == 'global') {

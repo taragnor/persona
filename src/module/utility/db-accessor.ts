@@ -353,8 +353,9 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		return item.effects.get(accessor.effectId) as T;
 	}
 
-	find<T extends UniversalAccessorTypes>( accessor: UniversalAccessor<T>) : T extends infer R ? R | undefined : never {
-		type returnType = T extends infer R ? R | undefined : never;
+	find<const T extends UniversalAccessorTypes>( accessor: UniversalAccessor<T>) : T extends infer R ? R : undefined {
+		type returnType = T extends infer R ? R : undefined;
+    if (accessor == undefined) {return undefined as returnType; }
 		if ("actorId" in accessor) {
 			return this.findActor(accessor) as returnType;
 		}
@@ -489,13 +490,19 @@ type UniversalItemAccessor<T extends Item<any>= Item<any>> = {
 
 type UniversalAccessorTypes = Actor | TokenDocument | Item | ActiveEffect;
 
-// type UniversalAccessor<T extends UniversalAccessorTypes> = UniversalActorAccessor<T> | UniversalItemAccessor<T> | UniversalTokenAccessor<T> | UniversalAEAccessor<T>;
+// type UniversalAccessor<T extends UniversalAccessorTypes = UniversalAccessorTypes> = UniversalActorAccessor<T extends Actor ? T : never> | UniversalItemAccessor<T extends Item ? T : never> | UniversalTokenAccessor<T extends TokenDocument ? T : never> | UniversalAEAccessor<T extends ActiveEffect ? T : never>;
 
 type UniversalAccessor<T extends UniversalAccessorTypes = UniversalAccessorTypes> =
 	(T extends Actor ? UniversalActorAccessor<T> : never)
 	| (T extends TokenDocument ? UniversalTokenAccessor<T> : never)
 	| (T extends Item ? UniversalItemAccessor<T> : never)
 	| (T extends ActiveEffect ? UniversalAEAccessor<T>: never);
+
+// type UniversalAccessor<T extends UniversalAccessorTypes = UniversalAccessorTypes> =
+// 	(T extends Actor ? UniversalActorAccessor<T> : never)
+// 	| (T extends TokenDocument ? UniversalTokenAccessor<T> : never)
+// 	| (T extends Item ? UniversalItemAccessor<T> : never)
+// 	| (T extends ActiveEffect ? UniversalAEAccessor<T>: never);
 
 type UniversalAEAccessor<T extends ActiveEffect<any,any> = ActiveEffect> =
 	{
@@ -506,6 +513,14 @@ type UniversalAEAccessor<T extends ActiveEffect<any,any> = ActiveEffect> =
 		| { item: UniversalItemAccessor}
 	);
 
+type AccessedItem<T> =
+  T extends undefined ? undefined
+  : T extends UniversalAccessor<infer R>
+  ? R extends UniversalAccessorTypes ? R
+  : never
+  : never;
+
 }
 
 
+type RR = AccessedItem<UniversalAccessor<Actor | Item>>;

@@ -274,7 +274,7 @@ export class CombatEngine {
 		return result;
 	}
 
-	private async getBaseSituation(attacker: Persona, target: Persona, usableOrCard: UsableAndCard, rollData: AttackRollData) : Promise<BaseAttackRollSituation & Situation> {
+	private getBaseSituation(attacker: Persona, target: Persona, usableOrCard: UsableAndCard, rollData: AttackRollData) : BaseAttackRollSituation & Situation {
 		const activeCombat  = this.combat ? Boolean(this.combat.combatants.find( x=> x.actor?.system.type != attacker.user.system.type)): false;
 		const baseProtoSituation = {
 			target: target.user.accessor,
@@ -289,13 +289,13 @@ export class CombatEngine {
 		} satisfies Situation;
 		const baseSituation = {
 			...baseProtoSituation,
-      addedTags: await this.determineAddedPowerTags(attacker, target, usableOrCard, baseProtoSituation),
+      addedTags: this.determineAddedPowerTags(attacker, target, usableOrCard, baseProtoSituation),
 			rollType: rollData.rollType,
 		} satisfies BaseAttackRollSituation & Situation;
 		return baseSituation;
 	}
 
-  private async determineAddedPowerTags(attacker: Persona, target: Persona, usableOrCard: UsableAndCard, _situation: Situation) : Promise<PowerTag[]> {
+  private determineAddedPowerTags(attacker: Persona, target: Persona, usableOrCard: UsableAndCard, _situation: Situation) : PowerTag[] {
     type S = Prettify<Situation & {trigger: "get-added-power-tags"}>;
     const targetActor = target.user;
     const attackerActor = attacker.user;
@@ -308,9 +308,16 @@ export class CombatEngine {
       triggeringCharacter: attackerActor.accessor,
       triggeringUser: game.user,
     } satisfies Situation & {trigger: "get-added-power-tags"};
-    //TODO: check this and get added roll tags
-    const effects = await TriggeredEffect.onTrigger("get-added-power-tags", attackerActor, trigSit);
-    return [];
+    const consList = TriggeredEffect.onTrigger_consequences("get-added-power-tags", attackerActor, trigSit);
+    const tags = consList
+      .filter( cons=> cons.type == "combat-effect"
+        && cons.combatEffect == "add-power-tag-to-attack")
+      .map (cons => PersonaItem.resolveTag(cons.powerTag));
+    if (tags.length > 0) {
+      const tagNames= tags.map ( tag=> tag instanceof PersonaItem ? tag.name : tag);
+      console.log(`Adding Tag: ${tagNames.join()}`);
+    }
+    return tags;
   }
 
 	private generateRollTags(rollType: AttackRollType): NonNullable<Situation['rollTags']> {
@@ -368,8 +375,8 @@ export class CombatEngine {
 			&& roll.natural <= range.high;
 	}
 
-	async generateAttackSituation (attacker: Persona, target: Persona, power: Usable, rollData: AttackRollData, rollTotal: number, _options: CombatOptions = {}): Promise<ProtoResultAttackSituation> {
-		const baseSituation = await this.getBaseSituation(attacker, target, power, rollData);
+	generateAttackSituation (attacker: Persona, target: Persona, power: Usable, rollData: AttackRollData, rollTotal: number, _options: CombatOptions = {}): ProtoResultAttackSituation {
+		const baseSituation = this.getBaseSituation(attacker, target, power, rollData);
 		const def = power.system.defense;
 		const defenseCalc = target.getDefense(def).eval(baseSituation);
 		const defenseVal = def != 'none' ? defenseCalc.total: 0;
@@ -423,9 +430,9 @@ export class CombatEngine {
 		if (power.isSkillCard()) {
 			return this.processSkillCard(attacker, power, target, rollData);
 		}
-		const baseSituation = await this.getBaseSituation(attacker, target, power, rollData);
+		const baseSituation = this.getBaseSituation(attacker, target, power, rollData);
 		const rollBundle = this.makeRollBundle(rollData, attacker, target, power, baseSituation, options );
-		const situation = await this.generateAttackSituation(attacker, target, power, rollData, rollBundle.total, options);
+		const situation = this.generateAttackSituation(attacker, target, power, rollData, rollBundle.total, options);
 		rollBundle.DC = situation?.DC;
 		return await this.generateAttackResult(attacker, target, power, rollBundle, situation);
 	}
@@ -490,7 +497,7 @@ export class CombatEngine {
 			if (PersonaSettings.debugMode()) {
 				console.debug(`Override to ${finalResult.result}`);
 			}
-			return this.getWeaknessSitRep(attacker, target, power, finalResult.result);
+			return this.getWeaknessSitRep(attacker, target, power, finalResult.result, resultSituation);
 		}
 		return null;
 	}
@@ -512,9 +519,23 @@ export class CombatEngine {
 		}
 	}
 
-	private getWeaknessSitRep (attacker: Persona, target: Persona, power: Usable, result: AttackResultData["result"] ) : Pick<PostAttackRollSituation, "result" | "resisted" | "struckWeakness">  {
+  static hasAddedTag (situation: Situation, tag: PowerTag) : boolean {
+    if ("addedTags" in situation) {
+      return PersonaItem.hasTag(situation.addedTags ?? [], tag);
+    }
+    return false;
+  }
+
+  static hasPierce(attacker: Persona, power: Usable, situation: U<Situation>) {
+		const pierce = power.hasTag('pierce', attacker) ||
+      (situation ? CombatEngine.hasAddedTag(situation, "pierce") : false);
+    return pierce;
+  }
+
+	private getWeaknessSitRep (attacker: Persona, target: Persona, power: Usable, result: AttackResultData["result"] , situation : Situation) : Pick<PostAttackRollSituation, "result" | "resisted" | "struckWeakness">  {
 		const element = power.getDamageType(attacker);
 		const resistance = target.elemResist(element);
+		const pierce = CombatEngine.hasPierce(attacker, power, situation);
 		switch (result) {
 			case "fumble":
 			case "reflect":
@@ -524,14 +545,14 @@ export class CombatEngine {
 			case "miss":
 				return {
 					result,
-					resisted: resistance  == "resist",
+					resisted: !pierce && resistance  == "resist",
 					struckWeakness: false,
 				};
 			case "hit":
 			case "crit":
 				return {
 					result,
-					resisted: resistance  == "resist",
+					resisted: !pierce && resistance  == "resist",
 					struckWeakness : resistance == "weakness",
 				};
 			default:
@@ -544,26 +565,26 @@ export class CombatEngine {
 	private getBaseResult(attacker: Persona, target: Persona, power: Usable, situation: Situation & AttackRollSituation) : AttackResultData {
 		const testNullify = this.checkAttackNullifiers(attacker, power, target, situation);
 		if (testNullify) {
-			return this.getWeaknessSitRep(attacker, target, power, testNullify);
+			return this.getWeaknessSitRep(attacker, target, power, testNullify, situation);
 		}
 		const def = power.system.defense;
 		if (def == 'none') {
 			if (this.checkCritical(attacker, target, power, situation)) {
-				return this.getWeaknessSitRep(attacker, target, power, "crit");
+				return this.getWeaknessSitRep(attacker, target, power, "crit", situation);
 			} else {
-				return this.getWeaknessSitRep(attacker, target, power, "hit");
+				return this.getWeaknessSitRep(attacker, target, power, "hit", situation);
 			}
 		}
 		if (this.checkFumble(attacker, target, power, situation)) {
-			return this.getWeaknessSitRep(attacker, target, power, "fumble");
+			return this.getWeaknessSitRep(attacker, target, power, "fumble", situation);
 		}
 		if (this.checkMiss(attacker, target, power, situation)) {
-			return this.getWeaknessSitRep(attacker, target, power, "miss");
+			return this.getWeaknessSitRep(attacker, target, power, "miss", situation);
 		}
 		if (this.checkCritical(attacker, target, power, situation)) {
-			return this.getWeaknessSitRep(attacker, target, power, "crit");
+			return this.getWeaknessSitRep(attacker, target, power, "crit", situation);
 		}
-		return this.getWeaknessSitRep(attacker, target, power, "hit");
+		return this.getWeaknessSitRep(attacker, target, power, "hit", situation);
 	}
 
 	private checkCritical( attacker: Persona, target: Persona,  power: Usable, situation: ProtoResultAttackSituation): boolean {
@@ -608,7 +629,7 @@ export class CombatEngine {
 		if (power.hasTag("theurgy", attacker)) {return null;}
 		const element = power.getDamageType(attacker);
 		const resist = target.elemResist(element);
-		const pierce = power.hasTag('pierce', attacker) || PersonaItem.hasTag(situation.addedTags ?? [], "pierce");
+		const pierce = CombatEngine.hasPierce(attacker, power, situation);
 		switch (resist) {
 			case 'reflect': {
 				return situation.rollType != "reflect" ? "reflect" : "block";
@@ -713,7 +734,7 @@ export class CombatEngine {
 	}
 
 	async processSkillCard( attacker: Persona, usableOrCard: UsableAndCard, target: Persona, rollData: AttackRollData) : Promise<AttackResult> {
-		const situation = await this.getBaseSituation(attacker, target, usableOrCard, rollData);
+		const situation = this.getBaseSituation(attacker, target, usableOrCard, rollData);
 		const r = await new Roll('1d20').roll();
 		const emptyList = new ModifierList();
 		const roll = new RollBundle('Activation Roll Skiill Card', r, attacker.user.isPC(), emptyList, situation);
@@ -874,13 +895,16 @@ export class CombatEngine {
 		const attackerEffects= attacker.getEffects(['passive']);
 		const defenderEffects = target.getEffects(['defensive']);
 		const powerEffects= power.getEffects(attacker, {CETypes: ['on-use', 'passive']});
+    const extraTagEffects = (situation.addedTags ?? [])
+    .flatMap ( tag => tag instanceof PersonaItem ? tag.getEffects(null ) : []);
 		const sourcedEffects = [...attackerEffects];
 		const eqTest = (a: ConditionalEffectC, b: ConditionalEffectC) => a.equals(b);
 		sourcedEffects.pushUniqueS(eqTest, ...defenderEffects);
 		sourcedEffects.pushUniqueS(eqTest, ...powerEffects);
+    sourcedEffects.pushUniqueS(eqTest, ...extraTagEffects);
 		const CombatRes = new CombatResult(atkResult);
 		const consequences = sourcedEffects.flatMap( eff => eff.getActiveConsequences(situation));
-		const res = await ConsequenceProcessor.consequencesToResult(consequences, power,  situation, attacker, target, atkResult);
+		const res = await ConsequenceProcessor.consequencesToResult(consequences, power,  situation, atkResult);
 		CombatRes.merge(res);
 		if (PersonaSettings.debugMode() && game.user.isGM) {
 			console.debug(res);

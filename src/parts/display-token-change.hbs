@@ -46,9 +46,6 @@
 		{{#if (eq effect.combatEffect "auto-end-turn")}}
 		Automatically End Turn
 		{{/if}}
-		{{#if (eq effect.type "recover-slot")}}
-		Recover {{effect.amt}} Slot ({{effect.slot}}), (auto applied)
-		{{/if}}
 		{{#if (eq effect.type "inspiration-cost")}}
 		Inspiration Paid: {{effect.amount}}
 		{{/if}}
@@ -73,7 +70,7 @@
 
 		{{/if}}
 
-		{{#if (eq effect.type "scan")}}
+		{{#if (eq effect.combatEffect "scan")}}
 		Scan Lvl. {{effect.level}}
 		{{/if}}
 		{{#if (eq effect.type "hp-loss")}}
