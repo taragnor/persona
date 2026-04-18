@@ -26,7 +26,6 @@ export class PowerTargetSelectionPanel extends PersonaPanel {
     html.find("button.target").on("click", ev => void this._onTargetSelect(ev));
   }
 
-
   targetList() :readonly (ValidAttackers | PToken)[] {
     return this._targetList()
       .filter( t=>

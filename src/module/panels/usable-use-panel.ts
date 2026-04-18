@@ -53,22 +53,16 @@ export class UsableUsePanel extends UsableListPanel {
 
 Hooks.on("updateCombat", (_combat: PersonaCombat, changes : DeepPartial<PersonaCombat>) => {
   const activePanels = UsableUsePanel.getInstances<UsableUsePanel>(UsableUsePanel);
-  for (const panel of activePanels) {
-    void panel.onUpdateCombat(changes);
-  }
+  activePanels.forEach( panel => void panel.onUpdateCombat(changes));
 });
 
 Hooks.on("updateItem", (item: PersonaItem) => {
   const activePanels = UsableUsePanel.getInstances<UsableUsePanel>(UsableUsePanel);
-  for (const panel of activePanels) {
-    void panel.onUpdateItem(item);
-  }
+  activePanels.forEach( panel => void panel.onUpdateItem(item));
 });
 
 Hooks.on("updateActor", (actor: PersonaActor) => {
   const activePanels = UsableUsePanel.getInstances<UsableUsePanel>(UsableUsePanel);
-  for (const panel of activePanels) {
-    void panel.onUpdateActor(actor);
-  }
+  activePanels.forEach( panel => void panel.onUpdateActor(actor));
 });
 
