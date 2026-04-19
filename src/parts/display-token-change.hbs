@@ -34,7 +34,7 @@
 	{{#each change.otherEffects as |effect|}}
 	<span class="other-effect">
 		{{#if (eq effect.type "set-flag")}}
-		{{#if effect.state}}Set {{else}} Clear{{/if}}
+		{{#if effect.flagState}}Set {{else}} Clear{{/if}}
 		Flag ---  {{getEffectFlagName ../change.actor effect}}
 		{{/if}}
 		{{#if (eq effect.type "expend-item")}}
