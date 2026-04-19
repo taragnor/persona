@@ -176,9 +176,11 @@ export const SOCIAL_LINK_OR_TAROT_OTHER = {
 
 } as const;
 
-export type SocialLinkIdOrTarot = TarotCard
-	| keyof typeof SOCIAL_LINK_OR_TAROT_OTHER
-	|  AnyStringObject;
+export type SocialLinkIdOrTarot =
+  keyof typeof SOCIAL_LINK_OR_TAROT_OTHER
+  | SocialLink["id"]
+  | Tarot["id"]
+  | TarotCard ;
 
 export type AnyStringObject = {__nonsensePhantomData: number}; // a placehodler to allow typescript to handle satisfies cases better, it represents any string without having the entire type turn to string
 

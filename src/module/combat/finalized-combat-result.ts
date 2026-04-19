@@ -5,7 +5,7 @@ import { PToken } from "./persona-combat.js";
 import { PersonaSockets } from "../persona.js";
 import { PersonaError } from "../persona-error.js";
 import { EvaluatedDamage } from "./damage-calc.js";
-import { StatusEffect } from "../../config/consequence-types.js";
+import { LocalEffect, StatusEffect } from "../../config/consequence-types.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 
 import { CombatResult } from "./combat-result.js";
@@ -21,6 +21,7 @@ import {ConsequenceApplier} from "./consequence-applier.js";
 import {PersonaSFX} from "./persona-sfx.js";
 import {TriggeredEffect} from "../triggered-effect.js";
 import {sleep} from "../utility/async-wait.js";
+import {LocalEffectCombatResult} from "./local-effect-combat-result.js";
 
 const SAFETY_SLEEP_DURATION = 2500 as const;
 
@@ -36,6 +37,7 @@ export class FinalizedCombatResult {
 	sounds: {sound: ValidSound, timing: "pre" | "post"}[] = [];
 	globalOtherEffects: OtherEffect[] = [];
 	chainedResults: FinalizedCombatResult[]= [];
+  globalLocalEffects: Sourced<LocalEffect>[] = [];
 
 	constructor( cr: CombatResult | null) {
 		if (cr == null ) {return;}
@@ -51,6 +53,7 @@ export class FinalizedCombatResult {
 		ret.globalOtherEffects = x.globalOtherEffects;
 		ret.id = x.id;
 		ret.chainedResults = x.chainedResults.map( subresult=> FinalizedCombatResult.fromJSON(JSON.stringify(subresult)));
+    ret.globalLocalEffects = x.globalLocalEffects;
 		return ret;
 	}
 
@@ -62,6 +65,7 @@ export class FinalizedCombatResult {
 			globalOtherEffects : this.globalOtherEffects,
 			id: this.id,
 			chainedResults: this.chainedResults,
+      globalLocalEffects: this.globalLocalEffects,
 		};
 		const json = JSON.stringify(obj);
 		return json;
@@ -79,6 +83,7 @@ export class FinalizedCombatResult {
 			case this.globalOtherEffects.length > 0:
 			case this.sounds.length > 0:
 			case this.chainedResults.length > 0:
+			case this.globalLocalEffects.length > 0:
 				return this;
 		}
 		return undefined;
@@ -132,89 +137,11 @@ export class FinalizedCombatResult {
 		.map( cost=> this.#resolveActorChange(cost))
 		.filter( cost => !FinalizedCombatResult.changeIsEmpty(cost));
 		this.globalOtherEffects = cr.globalOtherEffects;
+    this.globalLocalEffects = cr.globalLocalEffects;
 		this.sounds = cr.sounds;
-		// for (const changes of cr.attacks.values()) {
-		// 	for (const change of changes) {
-		// 		this.#finalizeOtherEffects(change);
-		// 	}
-		// }
-		// for (const cost of cr.costs) {
-		// 	this.#finalizeOtherEffects(cost);
-		// }
 	}
 
 
-  // #finalizeOtherEffects(change: ActorChange<ValidAttackers>) {
-  //   const actor = PersonaDB.findActor(change.actor);
-  //   for (const otherEffect of change.otherEffects) {
-  //     switch (otherEffect.type) {
-          // case "extraTurn": {
-          //   const bonusAction : StatusEffect = {
-          //     id: "bonus-action",
-          //     duration: {
-          //       dtype:  "UEoT",
-          //       actorTurn: actor.accessor,
-          //     },
-          //     activationRoll: otherEffect.activation,
-          //   };
-          //   change.addStatus.push(bonusAction);
-          //   break;
-          // }
-        // case "combat-effect": {
-        //   switch (otherEffect.combatEffect) {
-        //     case "extraTurn": {
-        //       const bonusAction : StatusEffect = {
-        //         id: "bonus-action",
-        //         duration: {
-        //           dtype:  "UEoT",
-        //           actorTurn: actor.accessor,
-        //         },
-        //         activationRoll: otherEffect.activation,
-        //       };
-        //       change.addStatus.push(bonusAction);
-        //       break;
-        //     }
-        //   }
-        //   break;
-        // }
-          // case "alter-energy":
-          // case "alter-theurgy":
-          // case "raise-resistance":
-          // case "lower-resistance":
-          // case "display-message":
-          // case "hp-loss":
-          // case "extra-attack":
-          // case "set-hp":
-          // case "apply-recovery":
-          // case "scan":
-        // case "expend-item":
-        // case "dungeon-action":
-        // case "set-flag":
-        // case "inspiration-cost":
-        // case "use-power":
-        // case "social-card-action":
-        // case "add-power-to-list":
-        // case "teach-power":
-        // case "alter-mp":
-        //   break;
-        // case "alter-fatigue-lvl":
-        // case "perma-buff":
-        // case "alter-variable":
-        // case "play-sound":
-        // case "gain-levels":
-        // case "cancel":
-        // case "set-roll-result":
-        // case "inventory-action":
-        // case "raise-status-resistance":
-        // case "display-msg":
-        //   break;
-        // default:
-        //   otherEffect satisfies never;
-      // }
-
-		// }
-		// // CombatResult.normalizeChange(change);
-	// }
 
 	addFlag(actor: PersonaActor, flag: OtherEffect) {
 		const item = this.tokenFlags.find(x=> x.actor.actorId ==  actor.accessor.actorId );
@@ -238,19 +165,18 @@ export class FinalizedCombatResult {
 		this.tokenFlags = [];
 	}
 
-	async toMessage( header: string) : Promise<void>;
-	async toMessage( effectName: string, initiator: U<PersonaActor>) : Promise<void>;
-	async toMessage( effectNameOrHeader: string, initiator?: U<PersonaActor>) : Promise<void> {
+	async toMessage( header: string) : Promise<boolean>;
+	async toMessage( effectName: string, initiator: U<PersonaActor>) : Promise<boolean>;
+	async toMessage( effectNameOrHeader: string, initiator?: U<PersonaActor>) : Promise<boolean> {
 		let initiatorToken : PToken | undefined;
 		if (game.combat) {
 			initiatorToken = initiator ? PersonaCombat.getPTokenFromActorAccessor(initiator.accessor) : undefined;
 		}
 		const output = new CombatOutput(this, initiatorToken);
 		try {
-			await this.autoApplyResult();
-			// TimeLog.log("Finished Applying Result");
-			void output.renderMessage(effectNameOrHeader, initiator);
-			return;
+			const completedWithoutError = await this.autoApplyResult();
+			void output.renderMessage(effectNameOrHeader, initiator, {error: !completedWithoutError});
+			return completedWithoutError;
 		} catch (e) {
 			const html = await output.generateHTML(effectNameOrHeader, initiator);
 			const rolls : RollBundle[] = this.attacks
@@ -268,59 +194,79 @@ export class FinalizedCombatResult {
 				user: game.user,
 				style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 			}, {});
-			return;
+			return false;
 		}
 	}
 
-	async autoApplyResult() {
+	async autoApplyResult() : Promise<boolean> {
 		if (game.user.isGM) {
-			const power = this.power;
-			const attacker = this.attacker;
-			try {
-				if (power && attacker) {
-					void PersonaSFX.onUsePowerStart(this.power, attacker);
-					// TimeLog.log("Finished on Use Power Start SFX");
-				}
-				await this.#apply();
-			} catch (e) {
-				PersonaError.softFail("Problem with GM apply");
-				Debug(e);
-				Debug(this);
-				throw e;
-			}
-			return;
-		}
-		const gmTarget = game.users.find(x=> x.isGM && x.active);
-		if (!gmTarget) {
-			throw new PersonaError("Can't apply no GM connected");
-		}
-		const sendObj = {
-			resultObj : this.toJSON(),
-			sender: game.user.id,
-		};
-		try {
-			await PersonaSockets.verifiedSend("COMBAT_RESULT_APPLY", sendObj, gmTarget.id);
-      await sleep(SAFETY_SLEEP_DURATION); //make sure all data is recorded on server
-		}
-		catch (e) {
-			switch (true) {
-				case e instanceof TimeoutError: {
-					PersonaError.softFail( "Timeout Error from Server", e);
-					break;
-				}
-				case e instanceof VerificationFailedError :{
-					PersonaError.softFail( "Verification Error on the GM computer", e);
-					break;
-				}
-				case e instanceof SocketsNotConnectedError: {
-					PersonaError.softFail( "Network Sockets not connected", e);
-					break;
-				}
-				default:
-					PersonaError.softFail( "Something went wrong with sending combat result", e);
-			}
-		}
+      return await this.autoApplyResult_GM();
+		} else {
+      return await this.autoApplyResult_PC();
+    }
 	}
+
+  private extractLocalEffects() : LocalEffectCombatResult {
+    const local = this.globalLocalEffects;
+    this.globalLocalEffects = [];
+    //TODO: go through actor changes and separaet them, deleting local effects from actor changes,
+      const actorChanges : [PersonaActor, LocalEffect[]][] = [];
+    return new LocalEffectCombatResult(globals, actorChanges);
+  }
+
+  private async autoApplyResult_PC() :Promise<boolean> {
+    const gmTarget = game.users.find(x=> x.isGM && x.active);
+    if (!gmTarget) {
+      throw new PersonaError("Can't apply no GM connected");
+    }
+    const local = this.extractLocalEffects();
+    const sendObj = {
+      resultObj : this.toJSON(),
+      sender: game.user.id,
+    };
+    try {
+      await ConsequenceApplier.applyLocalEffects(local);
+      await PersonaSockets.verifiedSend("COMBAT_RESULT_APPLY", sendObj, gmTarget.id);
+      await sleep(SAFETY_SLEEP_DURATION); //make sure all data is recorded on server
+      return true;
+    }
+    catch (e) {
+      switch (true) {
+        case e instanceof TimeoutError: {
+          PersonaError.softFail( "Timeout Error from Server", e);
+          return false;
+        }
+        case e instanceof VerificationFailedError :{
+          PersonaError.softFail( "Verification Error on the GM computer", e);
+          return false;
+        }
+        case e instanceof SocketsNotConnectedError: {
+          PersonaError.softFail( "Network Sockets not connected", e);
+          return false;
+        }
+        default:
+          PersonaError.softFail( "Something went wrong with sending combat result", e);
+          return false;
+      }
+    }
+  }
+
+  private async autoApplyResult_GM() : Promise<boolean> {
+    const power = this.power;
+    const attacker = this.attacker;
+    try {
+      if (power && attacker) {
+        void PersonaSFX.onUsePowerStart(this.power, attacker);
+      }
+      await this.#apply();
+      return true;
+    } catch (e) {
+      PersonaError.softFail("Problem with GM apply",e);
+      Debug(e);
+      Debug(this);
+      return false;
+    }
+  }
 
 	static async applyHandler(x: SocketMessage["COMBAT_RESULT_APPLY"]) : Promise<void> {
 		const {resultObj} = x;
@@ -403,6 +349,7 @@ export class FinalizedCombatResult {
 			this.costs.push(...chain.costs);
 			this.sounds.push(...chain.sounds);
 			this.tokenFlags.push(...chain.tokenFlags);
+      this.globalLocalEffects.push(...chain.globalLocalEffects);
 		}
 		this.chainedResults = [];
 		return this;

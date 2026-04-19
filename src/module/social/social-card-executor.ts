@@ -108,23 +108,24 @@ export class SocialCardExecutor {
 			eventList.push(...questionsAsEvents);
 		}
 		const cardData : CardData = {
-			card,
-			actor,
-			linkId: activity.id,
-			activity,
-			cameos,
-			perk,
-			eventsChosen: [],
-			eventsRemaining: card.system.num_of_events,
-			situation,
-			forceEventLabel: null,
-			eventList,
-			replaceSet,
-			variables: {},
-			extraCardTags: [],
-			currentEvent: null,
-			item: undefined,
-		};
+      card,
+      actor,
+      linkId: activity.id,
+      activity,
+      cameos,
+      perk,
+      eventsChosen: [],
+      eventsRemaining: card.system.num_of_events,
+      situation,
+      forceEventLabel: null,
+      eventList,
+      replaceSet,
+      variables: {},
+      extraCardTags: [],
+      currentEvent: null,
+      item: undefined,
+      socialTarget: activity instanceof PersonaActor ? activity.id : undefined,
+    };
 		return cardData;
 	}
 
@@ -587,6 +588,7 @@ export class SocialCardExecutor {
 export type CardData = {
 	card: SocialCard,
 	actor: PC,
+  socialTarget: U<SocialLink["id"]>,
 	linkId: PersonaActor["id"] | SocialCard["id"],
 	activity: Activity | SocialLink,
 	cameos: SocialLink[],

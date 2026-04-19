@@ -12,7 +12,6 @@ import { PersonaSocial } from '../social/persona-social.js';
 import { PersonaSFX } from './persona-sfx.js';
 import { PersonaSettings } from '../../config/persona-settings.js';
 import { ModifierContainer } from '../item/persona-item.js';
-import { Consequence } from '../../config/consequence-types.js';
 import { TurnAlert } from '../utility/turnAlert.js';
 import { EngagementChecker } from './engageChecker.js';
 import { Metaverse } from '../metaverse.js';
@@ -963,13 +962,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 //     return ret;
 //   }
 
-  static createTargettingContextList(situation: Partial<Situation>, cons : Consequence | null) : TargettingContextList {
+  static createTargettingContextList(situation: Partial<Situation>, cons : Sourced<NonDeprecatedConsequence> | null) : TargettingContextList {
     const {target, attacker, user, cameo} = situation;
     const triggeringCharacter = 'triggeringCharacter' in situation ? situation.triggeringCharacter : undefined;
-    const owner = [];
-    if (cons && cons.actorOwner) {
-      if (cons.actorOwner)
-      {owner.push(cons.actorOwner);}
+    const owner : UniversalActorAccessor<PersonaActor>[] = [];
+    if (cons && cons.owner) {
+      if (cons.owner)
+      {owner.push(cons.owner);}
     }
     const foes :TargettingContextList['all-foes'] = [];
     const allies : TargettingContextList['all-allies'] = [];
@@ -1099,8 +1098,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         return attacker ? [attacker]: []; }
       case 'owner':
         if (cons) {
-          if (cons.actorOwner) {
-            const pt =  this.getPTokenFromActorAccessor(cons.actorOwner);
+          if (cons.owner) {
+            const pt =  this.getPTokenFromActorAccessor(cons.owner);
             if (pt && pt.actor) {return [pt.actor];}
           }
           if (cons.owner) {

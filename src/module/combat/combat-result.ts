@@ -1,7 +1,7 @@
 import { DAMAGETYPES } from "../../config/damage-types.js";
 import { FinalizedCombatResult } from "./finalized-combat-result.js";
 import { ConsequenceProcessed } from "./persona-combat.js";
-import { ConsequenceAmount, NewDamageConsequence } from "../../config/consequence-types.js";
+import { ConsequenceAmount, LocalEffect, NewDamageConsequence } from "../../config/consequence-types.js";
 import { DamageCalculation } from "./damage-calc.js";
 import { PostAttackRollSituation } from "../../config/situation.js";
 import { PersonaItem} from "../item/persona-item.js";
@@ -36,6 +36,8 @@ export class CombatResult  {
 	costs: ActorChange<ValidAttackers>[] = [];
 	sounds: {sound: ValidSound, timing: "pre" | "post"}[] = [];
 	globalOtherEffects: OtherEffect[] = [];
+  globalLocalEffects: LocalEffect[] = [];
+
 
 	constructor(atkResult ?: AttackResult | null) {
 		this.id = ++CombatResult.lastId;
@@ -48,8 +50,8 @@ export class CombatResult  {
 		return new FinalizedCombatResult(this);
 	}
 
-	findEffects<T extends Sourced<OtherEffect>["type"]>(effectType: T): (Sourced<OtherEffect> & {type:T})[] {
-		const arr = [] as (Sourced<OtherEffect> & {type:T})[];
+	findEffects<T extends Sourced<OtherEffect | LocalEffect>["type"]>(effectType: T): (Sourced<OtherEffect | LocalEffect> & {type:T})[] {
+		const arr = [] as (Sourced<OtherEffect | LocalEffect> & {type:T})[];
 		for (const v of this.attacks.values()) {
 			for (const eff of v.flatMap(chg => chg.otherEffects) ) {
 				if (eff.type == effectType)
@@ -60,6 +62,11 @@ export class CombatResult  {
 			if (eff.type == effectType)
 				{arr.push( eff as Sourced<OtherEffect> & {type:T});}
 		}
+    for (const eff of this.globalLocalEffects) {
+			if (eff.type == effectType)
+				{arr.push( eff as Sourced<LocalEffect> & {type:T});}
+    }
+
 		return arr;
 	}
 
@@ -117,6 +124,7 @@ export class CombatResult  {
 				damage: {},
 				addStatus: [],
 				removeStatus: [],
+        localEffects: []
 			};
 		}
 		return undefined;
@@ -335,14 +343,7 @@ export class CombatResult  {
         break;
       case "set-flag": {
         if (!effect) {break;}
-        // const target = PersonaDB.findActor(situation.target);
         try {
-          // let embeddedEffects: readonly SourcedConditionalEffect[]= [];
-          // const source = cons.source;
-          // if (cons.flagState && cons.applyEmbedded && source && "getEmbeddedEffects" in source && source.getEmbeddedEffects != undefined) {
-          //   const owner = cons.owner ? PersonaDB.findActor(cons.owner) : null;
-          //   embeddedEffects = source.getEmbeddedEffects(owner);
-          // }
           if (cons.flagState) {
             const duration = convertConsToStatusDuration(cons, target!, situation);
             effect.otherEffects.push( {
@@ -354,15 +355,6 @@ export class CombatResult  {
               ...cons,
             });
           }
-          // type: "set-flag",
-          // flagId: cons.flagId ?? "",
-          // flagName: cons.flagState ? cons.flagName ?? "" : "",
-          // state: cons.flagState ?? true,
-          // duration: dur,
-          // embeddedEffects,
-          // clearOnDeath: cons.flagState ? cons.clearOnDeath : false,
-          // statusTagId: "statusTagId" in cons ? cons.statusTagId ?? "" : "",
-          // } satisfies OtherEffect);
         } catch (e) {
           PersonaError.softFail(`Problem converting set Flag duration: ${cons?.flagId ?? "unknown Flag Id" }`, e);
         }
@@ -399,16 +391,12 @@ export class CombatResult  {
         break;
       case "use-power":  {
         if (!effect) {break;}
-        if (!cons.actorOwner) {
+        if (!cons.owner) {
           PersonaError.softFail("No actor owner for usepower ability");
           break;
         }
         effect.otherEffects.push( {
           ...cons,
-          // newAttacker:  cons.actorOwner,
-          // type: cons.type,
-          // powerId : cons.powerId,
-          // target: cons.target,
         });
         break;
       }
@@ -419,7 +407,7 @@ export class CombatResult  {
         if ("amount" in cons) {
           const sourced=  ConsequenceAmountResolver.extractSourcedFromField(cons, "amount");
           const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situation) ?? 1;
-          effect.otherEffects.push( {
+          effect.localEffects.push( {
             ...cons,
             amount,
           }
@@ -735,8 +723,9 @@ export interface ActorChange<T extends PersonaActor> {
 	actor: UniversalActorAccessor<T>;
 	damage: Partial<Record<NonNullable<DamageCalculation["damageType"]>, DamageCalculation>>;
 	addStatus: StatusEffect[],
-	otherEffects: (Sourced<OtherEffect>)[]
+	otherEffects: (Sourced<OtherEffect>)[],
 	removeStatus: Pick<StatusEffect, "id">[],
+  localEffects: LocalEffect[],
 }
 
 

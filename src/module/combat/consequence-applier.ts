@@ -1,4 +1,4 @@
-import {OtherEffect, StatusEffect} from "../../config/consequence-types.js";
+import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
 import {PersonaItem} from "../item/persona-item.js";
@@ -9,6 +9,7 @@ import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaSounds} from "../persona-sounds.js";
 import {PersonaVariables} from "../persona-variables.js";
+import {SocialActionExecutor} from "../social/exec-social-action.js";
 import {TriggeredEffect} from "../triggered-effect.js";
 import {EvaluatedDamage} from "./damage-calc.js";
 import {FinalizedCombatResult, ResolvedActorChange} from "./finalized-combat-result.js";
@@ -16,6 +17,16 @@ import {PersonaCombat, PToken} from "./persona-combat.js";
 import {PersonaSFX} from "./persona-sfx.js";
 
 export class ConsequenceApplier {
+
+  static async applyLocalEffects( effects: Sourced<LocalEffect>[]) : Promise<boolean> {
+    for (const eff of effects) {
+      switch (eff.type) {
+        case "social-card-action":
+        await SocialActionExecutor.execSocialCardAction(eff);
+      }
+
+    }
+  }
 
   static async applyActorChange (change: ResolvedActorChange<ValidAttackers>, power: U<UsableAndCard>, attacker ?: UniversalTokenAccessor<PToken>) : Promise<FinalizedCombatResult[]> {
     if (!game.user.isGM) {
@@ -82,7 +93,11 @@ export class ConsequenceApplier {
     const actor = targetToken.actor;
     const chained : FinalizedCombatResult[] = [];
     const attackerActor = PersonaDB.findToken(attacker)?.actor;
-    if (!attackerActor) {return [];}
+    if (!attackerActor) {
+      if (status.id == "down") {
+        console.log(`Bailing on calling inflict status trigger on ${status.id} due to no attackerActor provided`);
+        return [];}
+    }
     console.log(`On inflict status: ${status.id} ${actor.name}`);
     const sitPartial ={
       target: actor.accessor,

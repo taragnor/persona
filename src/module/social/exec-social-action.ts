@@ -1,5 +1,5 @@
 import {CardTag} from "../../config/card-tags.js";
-import {ConsequenceAmount, SocialCardActionConsequence, VariableAction} from "../../config/consequence-types.js";
+import {ConsequenceAmount, LocalEffect, SocialCardActionConsequence, VariableAction} from "../../config/consequence-types.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
 import {PersonaError} from "../persona-error.js";
 import {resolveActorIdOrTarot} from "../preconditions.js";
@@ -33,15 +33,15 @@ export class SocialActionExecutor {
 		return this.cardExecutor.cardData;
 	}
 
-	static async execSocialCardAction(eff: Sourced<SocialCardActionConsequence>, situation: Situation) : Promise<void> {
+	static async execSocialCardAction(eff: Sourced<LocalEffect & {type: "social-card-action"}>) : Promise<void> {
 		try{
-			await this._execSocialCardAction(eff, situation);
+			await this._execSocialCardAction(eff);
 		} catch (e) {
 			PersonaError.softFail(`Error Executing Social Action ${eff.cardAction}`, e);
 		}
 	}
 
-	private static async _execSocialCardAction(eff: Sourced<SocialCardActionConsequence>, situation: Situation) : Promise<void> {
+	private static async _execSocialCardAction(eff: Sourced<LocalEffect> & {type : "social-card-action"}) : Promise<void> {
 		switch (eff.cardAction) {
 			case "stop-execution":
 				this.cardExecutor.stopCardExecution();
@@ -52,19 +52,20 @@ export class SocialActionExecutor {
 				this.handler.addExtraEvent(1);
 				break;
 			case "inc-events": {
-				const amount = this.resolveConsAmount(eff, situation);
-				if (!amount) {return;}
-				this.handler.addExtraEvent(amount ?? 0);
+				// const amount = this.resolveConsAmount(eff, situation);
+				if (!eff.amount) {return;}
+				this.handler.addExtraEvent(eff.amount ?? 0);
 				break;
 			}
 			case "gain-money": {
-				const amount = this.resolveConsAmount(eff, situation);
+        const amount = eff.amount;
+				// const amount = this.resolveConsAmount(eff, situation);
 				if (!amount) {return;}
-				await PersonaSocial.gainMoney(this.cardData.actor, amount ?? 0);
+				await PersonaSocial.gainMoney(this.cardData.actor, amount?? 0);
 				break;
 			}
 			case "modify-progress-tokens": {
-				await this.modifyProgress(eff ?? 0, situation);
+				await this.modifyProgress(eff ?? 0);
 				break;
 			}
 			case "alter-student-skill": {
@@ -72,13 +73,15 @@ export class SocialActionExecutor {
 						PersonaError.softFail("No student skill given");
 						break;
 					}
-				const amount = this.resolveConsAmount(eff, situation);
+        const amount = eff.amount;
+				// const amount = this.resolveConsAmount(eff, situation);
 				if (!amount) {return;}
 				await PersonaSocial.alterStudentSkill( this.mainActor, eff.studentSkill, amount ?? 0);
 				break;
 			}
 			case "modify-progress-tokens-cameo": {
-				const amount = this.resolveConsAmount(eff, situation);
+				// const amount = this.resolveConsAmount(eff, situation);
+				const amount = eff.amount;
 				if (!amount) {return;}
 				await this.modifyCameoProgress(amount);
 				break;
@@ -172,25 +175,27 @@ export class SocialActionExecutor {
 		return amount;
 	}
 
-	static async modifyProgress(eff: Sourced<SocialCardActionConsequence> & {cardAction: "modify-progress-tokens"}, situation: Situation ) {
-		const choice = eff.socialLinkIdOrTarot;
-		if (choice == undefined || choice == "target") {
-			const amount = this.resolveConsAmount(eff, situation);
-			if (!amount) {return;}
-			return this.modifyTargetProgress(amount);
-		}
-		if (choice == "cameo") {
-			const amount = this.resolveConsAmount(eff, situation);
-			if (!amount) {return;}
-			return this.modifyCameoProgress(amount);
-		}
-		const target = resolveActorIdOrTarot(choice as string);
+	static async modifyProgress(eff: Sourced<LocalEffect> & {type : "social-card-action", cardAction: "modify-progress-tokens"}) {
+		const choice = eff.linkId ?? this.cardData.socialTarget ?? this.cardData.actor.id;
+		// if (choice == undefined || choice == "target") {
+		// 	const amount = this.resolveConsAmount(eff, situation);
+		// 	if (!amount) {return;}
+		// 	return this.modifyTargetProgress(amount);
+		// }
+		// if (choice == "cameo") {
+      // const amount =eff.amount;
+		// 	// const amount = this.resolveConsAmount(eff, situation);
+		// 	if (!amount) {return;}
+		// 	return this.modifyCameoProgress(amount);
+		// }
+		const target = resolveActorIdOrTarot(choice);
 		if (!target) {
 			PersonaError.softFail(`Can't find target for ${choice as string}`);
 			return;
 		}
 		const actor  = this.cardData.actor;
-		const amount = this.resolveConsAmount(eff, situation);
+		// const amount = this.resolveConsAmount(eff, situation);
+		const amount = eff.amount;
 		if (!amount) {return;}
 		await actor.socialLinkProgress(target.id, amount);
 	}

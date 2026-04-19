@@ -4,7 +4,7 @@ import {Defense} from "../../config/defense-types.js";
 import {ModifierTarget, NonDeprecatedModifierType} from "../../config/item-modifiers.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {PowerTag} from "../../config/power-tags.js";
-import {AnyStringObject} from "../../config/precondition-types.js";
+import {AnyStringObject, SocialLinkIdOrTarot} from "../../config/precondition-types.js";
 import {AttackRollSituation, BaseAttackRollSituation, PostAttackRollSituation, RollSituation} from "../../config/situation.js";
 import {PersonaCombatStats} from "../actor/persona-combat-stats.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
@@ -1113,7 +1113,7 @@ export class CombatEngine {
 				await res.addEffect(null, attacker.actor, {
 					type:'inspiration-cost',
 					amount: power.system.inspirationCost,
-					socialLinkIdOrTarot: power.system.inspirationId as unknown as AnyStringObject,
+					socialLinkIdOrTarot: power.system.inspirationId as SocialLinkIdOrTarot,
 					source: power.accessor,
 					owner: attacker.actor.accessor,
 					realSource: undefined,

@@ -64,27 +64,33 @@ export class CombatOutput {
 		return html;
 	};
 
-	async renderMessage( header: string) : Promise<ChatMessage>;
-	async renderMessage( effectName: string, initiator: U<PersonaActor>) : Promise<ChatMessage>;
-	async renderMessage( effectNameOrHeader: string, initiator?: U<PersonaActor>) : Promise<ChatMessage> {
-		const rolls : RollBundle[] = this.result.attacks
-		.flatMap( (attack) => attack.atkResult.roll? [attack.atkResult.roll] : []);
-		const html = await this.generateHTML(effectNameOrHeader, initiator);
-		const initiatorToken= this.initiatorToken;
-		const chatMsg = await ChatMessage.create( {
-			speaker: {
-				scene: initiatorToken?.parent?.id ?? initiator?.token?.parent.id,
-				actor: initiatorToken?.actor?.id ?? initiator?.id,
-				token:  initiatorToken?.id,
-				alias: initiatorToken?.name ?? "System",
-			},
-			rolls: rolls.map( rb=> rb.roll),
-			content: html,
-			user: game.user,
-			style: CONST?.CHAT_MESSAGE_STYLES.OTHER,
-		}, {});
-		return chatMsg;
-	}
+  async renderMessage( header: string) : Promise<ChatMessage>;
+  async renderMessage( effectName: string, initiator: U<PersonaActor>, options ?: {error: boolean}) : Promise<ChatMessage>;
+  async renderMessage( effectNameOrHeader: string, initiator?: U<PersonaActor>, options ?: {error: boolean}) : Promise<ChatMessage> {
+    const rolls : RollBundle[] = this.result.attacks
+    .flatMap( (attack) => attack.atkResult.roll? [attack.atkResult.roll] : []);
+    const html = await this.generateHTML(effectNameOrHeader, initiator);
+    const errorMsg =     options?.error 
+    ? ` <div class="error">
+          <h3> ERROR DETECTED </h3>
+        </div>`
+    : "";
+    const content = `${errorMsg}${html}`;
+    const initiatorToken= this.initiatorToken;
+    const chatMsg = await ChatMessage.create( {
+      speaker: {
+        scene: initiatorToken?.parent?.id ?? initiator?.token?.parent.id,
+        actor: initiatorToken?.actor?.id ?? initiator?.id,
+        token:  initiatorToken?.id,
+        alias: initiatorToken?.name ?? "System",
+      },
+      rolls: rolls.map( rb=> rb.roll),
+      content,
+      user: game.user,
+      style: CONST?.CHAT_MESSAGE_STYLES.OTHER,
+    }, {});
+    return chatMsg;
+  }
 
 
 }
