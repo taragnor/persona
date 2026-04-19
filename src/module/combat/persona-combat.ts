@@ -140,6 +140,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
   get validEngagementCombatants(): PersonaCombatant[] {
     return this.combatants.contents.filter( comb => {
+      if (!comb.token || !comb.token.actor) {return false;}
       const actor = comb.token.actor;
       if (!actor) {return false;}
       if (actor.hasStatus('charmed')) {return false;}
@@ -1282,7 +1283,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         .filter( x=> x.actor)
         .map(x=> x.token))
       : (game.scenes.current.tokens
-        .filter( (x : TokenDocument<PersonaActor>) => x.actor != undefined && (x.actor?.isPC() || x.actor?.isNPCAlly())
+        .filter( (x : TokenDocument<PersonaActor>) => x.actor != undefined && (x?.actor?.isPC() || x?.actor?.isNPCAlly())
         ));
     const targets= tokens.filter( x => {
       const actor = x.actor as ValidAttackers | undefined;

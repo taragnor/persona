@@ -547,7 +547,7 @@ export class OpenerManager {
     console.log("On Opener Select");
     ev.stopPropagation();
     const openerIndex = Number(HTMLTools.getClosestData(ev, "openerIndex"));
-    const targetIndex = Number(HTMLTools.getClosestDataSafe(ev, "target-index", -1));
+    const targetIndex = Number(HTMLTools.getClosestDataSafe(ev, "targetIndex", -1));
     if (Number.isNaN(targetIndex) || targetIndex == -1) {
       await PersonaCombat.combat?.openers.execOpeningOption( openerIndex);
       return;

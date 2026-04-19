@@ -12,17 +12,16 @@
   <span class="option-name">
     {{opt.optionName}}
   </span>
-  <button class="targeted-action" data-power-id="{{opt.power.powerId}}" title="{{opt.toolTip}}">
+  <div class="targeted-action" data-power-id="{{opt.power.powerId}}" title="{{opt.toolTip}}">
     <span class="option-targets">
       (
       {{#each opt.power.targets as |targetId t|}}
-      <a class="option-target" data-target-id="{{targetId}}" data-target-index="{{t}}">
-        {{getCombatantTokenNameByCombatantId targetId}}
-      </a>
+        <button class="option-target" data-target-id="{{targetId}}" data-target-index="{{t}}">
+          {{getCombatantTokenNameByCombatantId targetId}}
+        </button>
       {{/each}}
       )
     </span>
   </div>
   {{/if}}
-
 </div>

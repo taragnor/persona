@@ -163,6 +163,12 @@ export class CombatHooks {
 			$(elem).find('.outer-roll-block').on('click', (ev) => void PersonaCombat._openRollBlock(ev));
 		});
 
+    Hooks.on("deleteToken", (tok) => {
+      PersonaCombat.combat?.combatants.contents
+        .filter( comb => comb.token == tok || comb.token == undefined)
+        .forEach(comb=> void comb.delete());
+    });
+
 	}
 
 }

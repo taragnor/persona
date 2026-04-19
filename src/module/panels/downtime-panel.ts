@@ -15,7 +15,7 @@ export class DowntimePanel extends PersonaPanel {
   }
 
   async setActor(actor: PC) {
-    if (this.actor != actor) {
+    if (this.actor != actor && actor.isOwner) {
       this.actor = actor;
       await this.activate();
     }
@@ -71,6 +71,13 @@ export class DowntimePanel extends PersonaPanel {
         enabled: () => true,
         visible: () => true,
         cssClasses : ["tall-button"]
+      }, {
+        label: "End Turn",
+        onPress: () => PersonaCombat.combat?.nextTurn(),
+        enabled: () => true,
+        visible: () => (PersonaCombat.combat?.combatant?.actor == this.actor) && this.actor != undefined,
+        cssClasses : ["tall-button"]
+
       }
     ];
   }
@@ -219,10 +226,9 @@ Hooks.on("controlToken", async (token : Token<PersonaActor>, selected: boolean) 
   }
   const actor = token?.document?.actor;
   if (!actor || !actor.isOwner) {return;}
-  const combat = PersonaCombat.combat;
-  if (!combat || !combat.isSocial) {return;}
   if (actor.isRealPC()) {
     await PersonaSocial.panel.setActor(actor);
+    await PersonaSocial.panel.activate();
   }
 });
 

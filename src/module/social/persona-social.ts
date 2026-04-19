@@ -86,6 +86,7 @@ export class PersonaSocial {
     {
       TurnAlert.alert();
       await this.panel.setActor(pc);
+      await this.panel.activate();
     }
     if (!game.user.isGM) {return;}
     //only GM access beyond this point
