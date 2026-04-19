@@ -168,7 +168,11 @@ export class ConsequenceApplier {
   private static async _applyOtherEffect(actor: ValidAttackers, _token: PToken | undefined, otherEffect: Sourced<OtherEffect>, mutableState: MutableActorState): Promise<void> {
     switch (otherEffect.type) {
       case "expend-item": {
-        const item = otherEffect.source;
+        if (!otherEffect.source) {
+          PersonaError.softFail(`No item source type to expend`);
+          return;
+        }
+        const item = PersonaDB.find(otherEffect.source);
         if (!item) {
           PersonaError.softFail(`Couldn't find personal Item to expend`);
           return;

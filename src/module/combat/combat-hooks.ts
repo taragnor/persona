@@ -148,15 +148,16 @@ export class CombatHooks {
       });
     });
 
-		Hooks.on("renderChatMessageHTML", (_msg, html) => {
-			const elem = $(html);
-			if (elem.find(".opener-block").length > 0) {
-				PersonaCombat.addOpeningActionListeners(elem);
-			}
+    Hooks.on("renderChatMessageHTML", (_msg, html) => {
+      const elem = $(html);
+      PersonaCombat.addOpeningActionListeners(elem);
+      // if (elem.find(".opener-block").length > 0) {
+      //   PersonaCombat.addOpeningActionListeners(elem);
+      // }
       if (PersonaCombat.combat && !PersonaCombat.combat.isSocial) {
         PersonaCombat.combat.followUp.activateListeners(elem);
       }
-		});
+    });
 
 		Hooks.on("renderChatMessageHTML", (_msg, elem) => {
 			$(elem).find('.outer-roll-block').on('click', (ev) => void PersonaCombat._openRollBlock(ev));

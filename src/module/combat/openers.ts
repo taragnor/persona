@@ -17,6 +17,7 @@ export class OpenerManager {
   static OPENER_MSG_ID_FLAG = "openerMsgId" as const;
 
   static OPENING_ACTION_FLAG_NAME = "openingActionData" as const;
+  static OPENING_CHAT_NAME = "openerChatMsgId" as const;
   constructor(combat: PersonaCombat) {
     this.combat = combat;
   }
@@ -26,30 +27,39 @@ export class OpenerManager {
   }
 
   private async getOpenerMsg(combatant: PersonaCombatant, data: OpenerOptionsReturn[], roll: Roll) {
-    const openerMsg = await foundry.applications.handlebars.renderTemplate('systems/persona/parts/openers-list.hbs', {roll, openers: data, combatant});
-    return {
-      openerMsg: openerMsg,
-      roll: roll
-    };
+    try {
+      const openerMsg = await foundry.applications.handlebars.renderTemplate('systems/persona/parts/openers-list.hbs', {roll, openers: data, combatant});
+      return {
+        openerMsg: openerMsg,
+        roll: roll
+      };
+    } catch (e) {
+      PersonaError.softFail("Problem with rendering Opener", e);
+      return {
+        openerMsg: "ERROR",
+        roll,
+      };
+    }
   }
-
 
   async storeOpenerChatMsg(msgId: U<ChatMessage["id"]>) {
     if (!msgId) {
-      await this.combat.unsetFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME);
+      await this.combat.unsetFlag("persona", OpenerManager.OPENING_CHAT_NAME);
       return;
     }
-    await this.combat.setFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME, msgId);
+    await this.combat.setFlag("persona", OpenerManager.OPENING_CHAT_NAME, msgId);
   }
 
   get chatMessage() : U<ChatMessage> {
-    const msgId= this.combat.getFlag<ChatMessage["id"]>("persona", OpenerManager.OPENING_ACTION_FLAG_NAME);
+    const msgId= this.combat.getFlag<ChatMessage["id"]>("persona", OpenerManager.OPENING_CHAT_NAME);
     if (!msgId) {return undefined;}
     return game.messages.get(msgId);
   }
 
 
   private async storeOpenerChoices (openingReturn: OpenerOptionsReturn[]) {
+    console.log("Openers choices stored");
+    Debug(openingReturn);
     const options = openingReturn.flatMap ( or => or.options);
     await this.combat.setFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME, options);
   }
@@ -59,7 +69,12 @@ export class OpenerManager {
   }
 
   getOpenerChoices()  : OpenerOption[] {
-    return (this.combat.getFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME) as OpenerOption[]) ?? [];
+    const choices = (this.combat.getFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME) as OpenerOption[]);
+    if (typeof choices != "object")  {
+      Debug (choices);
+      return [];
+    }
+    return choices;
   }
 
   public async execOpeningRoll(combatant: PersonaCombatant) : Promise< U<{openerMsg:  string, roll: Roll}>> {
@@ -69,7 +84,6 @@ export class OpenerManager {
     const {data, roll} = openingReturn;
     return await this.getOpenerMsg(combatant, data, roll);
   }
-
 
   private async _execOpeningRoll( combatant: PersonaCombatant) : Promise<{data: OpenerOptionsReturn[], roll: Roll} | null> {
     const returns :OpenerOptionsReturn[]= [];
