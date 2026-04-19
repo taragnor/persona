@@ -1108,9 +1108,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   private _explorationCheck (usable: UsableAndCard) : N<FailReason> {
-    if (usable.hasTag("exploration", this)) {
-      const combat = PersonaCombat.combat;
-      if (combat && !combat.isSocial) {
+    if (usable.hasTag("exploration", this) && !usable.hasTag("combat", this)) {
+      if (Metaverse.getPhase() == "combat") {
         return "Can't use this during combat";
       }
     }

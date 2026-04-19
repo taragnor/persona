@@ -34,8 +34,8 @@ export const ROOM_FLAVORS : RoomFlavorText[] = [
     weight: 0.333,
     gmNote: "Can be mined with a Data Miner. Contains financial Data, get 300R",
   }, {
-    newName: "Concordia Daemon Processing Node",
-    text: "This area seems to contain some kind of secuirity device, it has a concordia signature on it. It does seem important, but do you smash it or try to examine it." ,
+    newName: "Concordia Processing Node",
+    text: "This area seems to contain some kind of secuirity device, it has a concordia signature on it. It does seem important, but do you smash it or try to examine it?" ,
     hazard: "Summons a daemon encounter",
     secret: "Grants a new daemon persona or skillCard",
     gmNote: "",
@@ -43,7 +43,7 @@ export const ROOM_FLAVORS : RoomFlavorText[] = [
     hiddenRoom: true,
   }, {
     newName: "Concordia Daemon Processing Node",
-    text: "This area seems to contain some kind of secuirity device, it has a concordia signature on it. It does seem important, but do you smash it or try to examine it." ,
+    text: "This area seems to contain some kind of secuirity device, it has a concordia signature on it. It does seem important, but do you smash it or try to examine it?" ,
     hazard: "Summons a daemon encounter",
     secret: "Reveals Cheshy as a daemon",
     gmNote: "Reveals Cheshy's true nature",

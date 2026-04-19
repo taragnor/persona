@@ -1946,8 +1946,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   canBeUsedOnAllies(this: Usable) : boolean {
     const targets = this.targets();
     switch (targets) {
-      case "1-engaged":
-      case "1-nearby":
       case "1-nearby-dead":
       case "1-random-enemy":
       case "1d4-random":
@@ -1959,6 +1957,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case "everyone":
       case "everyone-even-dead":
         return false;
+      case "1-engaged":
+      case "1-nearby":
       case "self":
       case "all-allies":
       case "all-dead-allies":
