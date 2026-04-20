@@ -112,6 +112,7 @@ export class FinalizedCombatResult {
 			addStatus: change.addStatus,
 			otherEffects: change.otherEffects,
 			removeStatus: change.removeStatus,
+      localEffects: change.localEffects,
 		};
 		return resolved;
 	}
@@ -198,20 +199,31 @@ export class FinalizedCombatResult {
 		}
 	}
 
-	async autoApplyResult() : Promise<boolean> {
-		if (game.user.isGM) {
+  async autoApplyResult() : Promise<boolean> {
+    try {
+      const locals = this.extractLocalEffects();
+      await locals.execute();
+    } catch (e) {
+      PersonaError.softFail(e);
+    }
+    if (game.user.isGM) {
       return await this.autoApplyResult_GM();
-		} else {
+    } else {
       return await this.autoApplyResult_PC();
     }
-	}
+  }
 
   private extractLocalEffects() : LocalEffectCombatResult {
-    const local = this.globalLocalEffects;
+    const globalLocal = this.globalLocalEffects;
     this.globalLocalEffects = [];
     //TODO: go through actor changes and separaet them, deleting local effects from actor changes,
-      const actorChanges : [PersonaActor, LocalEffect[]][] = [];
-    return new LocalEffectCombatResult(globals, actorChanges);
+      const actorChanges : [PersonaActor["accessor"], Sourced<LocalEffect>[]] [] = [];
+    for (const atk of this.attacks) {
+      const localEffects = atk.changes.map(chg => [chg.actor, chg.localEffects] as (typeof actorChanges)[number]);
+      actorChanges.push( ...localEffects);
+      atk.changes.forEach( chg => chg.localEffects = []);
+    }
+    return new LocalEffectCombatResult(globalLocal, actorChanges);
   }
 
   private async autoApplyResult_PC() :Promise<boolean> {
@@ -219,13 +231,11 @@ export class FinalizedCombatResult {
     if (!gmTarget) {
       throw new PersonaError("Can't apply no GM connected");
     }
-    const local = this.extractLocalEffects();
     const sendObj = {
       resultObj : this.toJSON(),
       sender: game.user.id,
     };
     try {
-      await ConsequenceApplier.applyLocalEffects(local);
       await PersonaSockets.verifiedSend("COMBAT_RESULT_APPLY", sendObj, gmTarget.id);
       await sleep(SAFETY_SLEEP_DURATION); //make sure all data is recorded on server
       return true;
@@ -444,11 +454,12 @@ export class FinalizedCombatResult {
 }
 
 export interface ResolvedActorChange<T extends PersonaActor> {
-	actor: UniversalActorAccessor<T>;
-	damage: EvaluatedDamage[];
-	addStatus: StatusEffect[],
-	otherEffects: Sourced<OtherEffect>[]
-	removeStatus: Pick<StatusEffect, "id">[],
+  actor: UniversalActorAccessor<T>;
+  damage: EvaluatedDamage[];
+  addStatus: StatusEffect[];
+  otherEffects: Sourced<OtherEffect>[];
+  removeStatus: Pick<StatusEffect, "id">[];
+  localEffects: Sourced<LocalEffect>[];
 }
 
 interface ResolvedAttackResult<T extends ValidAttackers = ValidAttackers> {

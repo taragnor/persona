@@ -18,13 +18,18 @@ import {PersonaSFX} from "./persona-sfx.js";
 
 export class ConsequenceApplier {
 
-  static async applyLocalEffects( effects: Sourced<LocalEffect>[]) : Promise<boolean> {
-    for (const eff of effects) {
-      switch (eff.type) {
-        case "social-card-action":
-        await SocialActionExecutor.execSocialCardAction(eff);
-      }
+  public static async applyLocalEffect( effect: Sourced<LocalEffect>, actor : N<PersonaActor>) : Promise<void> {
+    await PersonaError.asyncErrorWrapper(  () => this._applyLocalEffect(effect, actor));
+  }
 
+  private static async _applyLocalEffect( effect: Sourced<LocalEffect>, actor : N<PersonaActor>) : Promise<void> {
+    switch (effect.type) {
+      case "social-card-action":
+        await SocialActionExecutor.execSocialCardAction(effect);
+        break;
+      default:
+        effect.type satisfies never;
+        throw new Error(`Unknown Type ${effect.type as string}`);
     }
   }
 
@@ -238,43 +243,43 @@ export class ConsequenceApplier {
         }
         break;
       }
-      // case "lower-resistance":
-      // case "raise-resistance":
-      // case "display-message":
+        // case "lower-resistance":
+        // case "raise-resistance":
+        // case "display-message":
       case "add-power-to-list":
         break;
       case "inspiration-cost":
         if (actor.isRealPC()) {
-          await actor.spendInspiration(otherEffect.linkId, otherEffect.amount);
+          if (otherEffect.linkId) {
+            await actor.spendInspiration(otherEffect.linkId, otherEffect.amount);
+          }
         }
         break;
-      // case "hp-loss":
-      //   await actor.modifyHP(-otherEffect.amount);
-      //   break;
-      // case "extra-attack":
-      //   break;
+        // case "hp-loss":
+        //   await actor.modifyHP(-otherEffect.amount);
+        //   break;
+        // case "extra-attack":
+        //   break;
       case "use-power":
         break;
-      // case "scan":
-      //   if (actor.isShadow()) {
-      //     if (otherEffect.downgrade == false) {
-      //       await actor.increaseScanLevel(otherEffect.amount);
-      //       void PersonaSFX.onScan(token, otherEffect.amount);
-      //     } else {
-      //       await actor.decreaseScanLevel(otherEffect.amount ?? 0);
-      //     }
-      //   }
-      //   break; // done elsewhere for local player
-      case "social-card-action":
-        break;
+        // case "scan":
+        //   if (actor.isShadow()) {
+        //     if (otherEffect.downgrade == false) {
+        //       await actor.increaseScanLevel(otherEffect.amount);
+        //       void PersonaSFX.onScan(token, otherEffect.amount);
+        //     } else {
+        //       await actor.decreaseScanLevel(otherEffect.amount ?? 0);
+        //     }
+        //   }
+        //   break; // done elsewhere for local player
       case "dungeon-action":
         await Metaverse.executeDungeonAction(otherEffect);
         break;
-      // case "alter-energy":
-      //   if (actor.isShadow()) {
-      //     await actor.alterEnergy(otherEffect.amount);
-      //   }
-      //   break;
+        // case "alter-energy":
+        //   if (actor.isShadow()) {
+        //     await actor.alterEnergy(otherEffect.amount);
+        //   }
+        //   break;
       case "alter-mp":
         switch (otherEffect.subtype) {
           case "direct":
@@ -324,11 +329,13 @@ export class ConsequenceApplier {
             break;
           }
           case "global":
-          case "scene":
-          case "social-temp": {
+          case "scene": {
             await PersonaVariables.alterVariable(varCons, varCons.situation);
             break;
           }
+          default:
+            varCons satisfies never;
+            PersonaError.softFail(`attempt to alter invalid Variable type :${varCons as string}`, varCons );
         }
         break;
       }

@@ -46,6 +46,16 @@ export class PersonaError extends Error {
     }
   }
 
+  static async asyncErrorWrapper(fn: () => Promise<void | undefined>, ...args: unknown[]): Promise<void> {
+    try {
+      await fn();
+    } catch (e)  {
+      if (e instanceof Error) {
+        PersonaError.softFail(e, ...args);
+      }
+    }
+  }
+
 	 static logTrace() : void {
 			console.log(this.getTrace());
 	 }

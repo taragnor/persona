@@ -6,7 +6,6 @@ import { DamageCalculation } from "./damage-calc.js";
 import { PostAttackRollSituation } from "../../config/situation.js";
 import { PersonaItem} from "../item/persona-item.js";
 import { getSocialLinkTarget, multiCheckToArray } from "../preconditions.js";
-import { SocialCardActionConsequence } from "../../config/consequence-types.js";
 import { OtherEffect } from "../../config/consequence-types.js";
 import { StatusEffect } from "../../config/consequence-types.js";
 import { ValidSound } from "../persona-sounds.js";
@@ -17,7 +16,6 @@ import { PersonaCombat } from "./persona-combat.js";
 import { PersonaDB } from "../persona-db.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
-import {SocialActionExecutor} from "../social/exec-social-action.js";
 import {ATTACK_RESULT} from "../../config/attack-result-config.js";
 import {PersonaAE, StatusDuration} from "../persona-ae.js";
 
@@ -36,7 +34,7 @@ export class CombatResult  {
 	costs: ActorChange<ValidAttackers>[] = [];
 	sounds: {sound: ValidSound, timing: "pre" | "post"}[] = [];
 	globalOtherEffects: OtherEffect[] = [];
-  globalLocalEffects: LocalEffect[] = [];
+  globalLocalEffects: Sourced<LocalEffect>[] = [];
 
 
 	constructor(atkResult ?: AttackResult | null) {
@@ -297,7 +295,7 @@ export class CombatResult  {
     }
   }
 
-  async addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
+  addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
     if (!target && situation.target) {
       target = PersonaDB.findActor(situation.target);
     }
@@ -402,19 +400,35 @@ export class CombatResult  {
       }
       case "social-card-action": {
         //must be executed playerside as event execution is a player thing
-        await SocialActionExecutor.execSocialCardAction(cons, situation);
-        if (!effect) {break;}
+        // await SocialActionExecutor.execSocialCardAction(cons);
+        // if (!effect) {break;}
         if ("amount" in cons) {
           const sourced=  ConsequenceAmountResolver.extractSourcedFromField(cons, "amount");
           const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situation) ?? 1;
-          effect.localEffects.push( {
-            ...cons,
-            amount,
+          if ("socialLinkIdOrTarot" in cons) {
+            const socialTarget = getSocialLinkTarget(cons.socialLinkIdOrTarot, situation, undefined);
+            if (!socialTarget)  {
+              PersonaError.softFail(`Couldn't resolve social target $cons.socialLinkIdOrTarot}`, cons);
+              break;
+            }
+            this.globalLocalEffects.push( {
+              __localEffect: true,
+              ...cons,
+              amount,
+              linkId: socialTarget.id,
+            });
+          } else {
+            this.globalLocalEffects.push( {
+              __localEffect: true,
+              ...cons,
+              amount,
+            });
           }
-          );
-        }
-        else {
-          effect.otherEffects.push( cons);
+        } else {
+          this.globalLocalEffects.push( {
+            __localEffect : true,
+            ...cons
+          });
         }
         break;
       }
@@ -454,27 +468,30 @@ export class CombatResult  {
           ...cons,
           situation: situation,
         };
-        if (cons.varType == "social-temp") {
+        if (alterVarCons.varType == "social-temp") {
           //social stuff must be executed player side
           if (cons.operator == "set-range") {
-            const otherEffect : Sourced<SocialCardActionConsequence> & {cardAction: "set-temporary-variable"} = {
+            const localEffect : Sourced<LocalEffect> & {cardAction: "set-temporary-variable"} = {
               ...cons,
+              __localEffect : true,
               type: "social-card-action",
               cardAction: "set-temporary-variable",
             };
-            await SocialActionExecutor.execSocialCardAction(otherEffect, situation);
-          }
-          if (cons.operator != "set-range") {
+            this.globalLocalEffects.push( localEffect);
+            // await SocialActionExecutor.execSocialCardAction(otherEffect, situation);
+          } else {
             const amount = this.resolveConsequenceAmount(cons, situation, "value");
-            const otherEffect : Sourced<SocialCardActionConsequence> & {cardAction: "set-temporary-variable"} = {
+            const localEffect : Sourced<LocalEffect> & {cardAction: "set-temporary-variable"} = {
               ...cons,
+              __localEffect: true,
               type: "social-card-action",
               cardAction: "set-temporary-variable",
               variableId: cons.variableId,
               operator: cons.operator,
               value: amount,
             };
-            await SocialActionExecutor.execSocialCardAction(otherEffect, situation);
+            this.globalLocalEffects.push(localEffect);
+            // await SocialActionExecutor.execSocialCardAction(otherEffect, situation);
           }
           break;
         }
@@ -638,7 +655,8 @@ export class CombatResult  {
 			damage: this.combineDamage(initial.damage, other.damage),
 			addStatus : initial.addStatus.concat(other.addStatus),
 			removeStatus : initial.removeStatus.concat(other.removeStatus),
-			otherEffects: initial.otherEffects.concat(other.otherEffects)
+			otherEffects: initial.otherEffects.concat(other.otherEffects),
+      localEffects: initial.localEffects.concat(other.localEffects),
 		};
 	}
 
@@ -725,7 +743,7 @@ export interface ActorChange<T extends PersonaActor> {
 	addStatus: StatusEffect[],
 	otherEffects: (Sourced<OtherEffect>)[],
 	removeStatus: Pick<StatusEffect, "id">[],
-  localEffects: LocalEffect[],
+  localEffects: Sourced<LocalEffect>[],
 }
 
 

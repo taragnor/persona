@@ -257,6 +257,7 @@ type VariableTypes = ({
 		applyTo : ConsequenceTarget,
 	} | {
 		varType: "social-temp",
+    __localEffect: true,
 	});
 
 export type NonDeprecatedDamageCons = NonDeprecatedConsequence & {type: "combat-effect", combatEffect: "damage"};

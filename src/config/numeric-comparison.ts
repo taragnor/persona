@@ -561,6 +561,7 @@ function DeriveOperand1 (old: NumericComparisonOld) : NumericOperand {
 				comparisonTarget: "variable-value",
 				varType: "social-temp",
 				variableId: old.variableId,
+        __localEffect: true,
 			};
 		case "combat-result-based":
 			return {
@@ -602,6 +603,7 @@ function DeriveOperand1 (old: NumericComparisonOld) : NumericOperand {
 						comparisonTarget: old.comparisonTarget,
 						varType: old.varType,
 						variableId: old.variableId,
+            __localEffect: true,
 					};
 				default:
 					old satisfies never;
