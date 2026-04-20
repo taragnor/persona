@@ -206,14 +206,12 @@ export class CombatResult  {
         break;
       }
       case "extraAttack": {
-        if (!effect) { break;
-          console.warn("No effect to extra attack, can't iadd");
+        if (!effect) {
+          PersonaError.softFail("No effect to extra attack, can't iadd");
+          break;
         }
         effect.otherEffects.push({
           ...cons,
-          // type: "extra-attack",
-          // maxChain: cons.amount ?? 1,
-          // iterativePenalty: -Math.abs(cons.iterativePenalty ?? 0),
         });
         break;
       }

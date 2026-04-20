@@ -23,8 +23,8 @@ import {TriggeredEffect} from "../triggered-effect.js";
 import {sleep} from "../utility/async-wait.js";
 import {LocalEffectCombatResult} from "./local-effect-combat-result.js";
 
-const SAFETY_SLEEP_DURATION = 2250 as const;
-const DELAY_FOR_UPDATES_TO_GET_THERE_FIRST = 150 as const;
+const SAFETY_SLEEP_DURATION = 750 as const;
+const DELAY_FOR_UPDATES_TO_GET_THERE_FIRST = 25 as const;
 
 export class FinalizedCombatResult {
 	static pendingPromises: Map< CombatResult["id"], (val: unknown) => void> = new Map();
