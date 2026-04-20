@@ -34,8 +34,8 @@ export async function antiLoop(lockObj: object,  fn: () => Promise<unknown>, opt
     if (e instanceof Error) {
       console.log(e.message);
       console.log(e.stack);
+      Debug(e);
     }
-    throw e;
   }
   lockedObjects.delete(lockObj);
 }
