@@ -30,6 +30,7 @@ import {SocialCardExecutor} from "./social-card-executor.js";
 import {weightedChoice} from "../utility/array-tools.js";
 import {ConditionalEffectPrinter} from "../conditionalEffects/conditional-effect-printer.js";
 import {DowntimePanel} from "../panels/downtime-panel.js";
+import {Helpers} from "../utility/helpers.js";
 
 export class PersonaSocial {
 	static allowMetaverse: boolean = true;
@@ -345,6 +346,7 @@ export class PersonaSocial {
     if (!this.turnCheck(actor, true)) {
       return;
     }
+    Helpers.pauseCheck();
 		await this.#socialEncounter(actor, activity);
 	}
 

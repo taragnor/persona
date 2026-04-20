@@ -2,10 +2,12 @@ import {StatusEffect} from "../../config/consequence-types.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {RollSituation} from "../../config/situation.js";
 import {FollowUpPanel} from "../panels/follow-up-panel.js";
+import {UsableListPanel} from "../panels/usable-list-panel.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {SidePanelManager} from "../side-panel/side-panel-manager.js";
 import {PersonaSocial} from "../social/persona-social.js";
+import {lockObject} from "../utility/anti-loop.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {FlagChangeDiffObject} from "./openers.js";
 import {CombatPanel} from "./panels/combat-panel.js";
@@ -39,6 +41,10 @@ export class FollowUpManager {
     if (PersonaSettings.get("followUpToChat")) {
       await this.sendFollowUpsToChat(list);
     }
+  }
+
+  async onEndTurn() {
+    await this.panel.pop();
   }
 
   private async sendFollowUpsToChat(list: FollowUpActionData[]) {
@@ -244,40 +250,56 @@ export class FollowUpManager {
 
   private async _onAreaPowerFollowUp(ev: JQuery.ClickEvent) {
     ev.stopPropagation();
+    await lockObject(this, async () => {
     const {power, comb} = this.getPowerAndCombatant(ev);
     // await CombatPanel.instance.setMode("main");
     await this.combat.combatEngine.usePower(comb.token, power);
     await this.panel.pop();
+    }, {
+      "inUseMsg": "Already doing another follow up",
+      "timeoutMs": UsableListPanel.USE_POWER_TIMEOUT
+    });
+
   }
 
   private async _onSingleTargetFollowUp (ev: JQuery.ClickEvent) {
     ev.stopPropagation();
+    await lockObject(this, async () => {
     const {power, comb} = this.getPowerAndCombatant(ev);
     const target = this.getPowerTarget(ev);
     // await CombatPanel.instance.setMode("main");
     await this.combat.combatEngine.usePower(comb.token, power, [target.token]);
     await this.panel.pop();
+    }, {
+      "inUseMsg":"already doing another follow up",
+      "timeoutMs": UsableListPanel.USE_POWER_TIMEOUT
+    } );
   }
 
   private async _onTeamworkMove(ev: JQuery.ClickEvent) {
     ev.stopPropagation();
-    const comb = this.getCombatant(ev);
-    const teammateId = HTMLTools.getClosestData(ev, "teammateId");
-    const combat = this.combat;
-    const teammate =combat?.combatants.find(c => c.id == teammateId) as PersonaCombatant;
-    if (!combat  || !teammate) {throw new PersonaError(`Can't find combatnat target ${teammateId}`);}
-    await this.callToTeammate(comb, teammate);
-    if (teammate.isOwner) {
-      await this.panel.pop();
-      await this.prepareToActOnTeammateAction(teammate.actor, comb.actor);
-      // await CombatPanel.instance.setTarget(teammate.token);
-      await CombatPanel.instance.setMode("main");
-      return;
-    }
-    if ( await this.combat?.callOnTeammateForTeamworkMove(teammate, comb.token )) {
-      await this.panel.pop();
-      // await CombatPanel.instance.setMode("main");
-    }
+    await lockObject(this, async () => {
+      const comb = this.getCombatant(ev);
+      const teammateId = HTMLTools.getClosestData(ev, "teammateId");
+      const combat = this.combat;
+      const teammate =combat?.combatants.find(c => c.id == teammateId) as PersonaCombatant;
+      if (!combat  || !teammate) {throw new PersonaError(`Can't find combatnat target ${teammateId}`);}
+      await this.callToTeammate(comb, teammate);
+      if (teammate.isOwner) {
+        await this.panel.pop();
+        await this.prepareToActOnTeammateAction(teammate.actor, comb.actor);
+        // await CombatPanel.instance.setTarget(teammate.token);
+        await CombatPanel.instance.setMode("main");
+        return;
+      }
+      if ( await this.combat?.callOnTeammateForTeamworkMove(teammate, comb.token )) {
+        await this.panel.pop();
+        // await CombatPanel.instance.setMode("main");
+      }
+    }, {
+      "inUseMsg":"already doing another follow up",
+      "timeoutMs": UsableListPanel.USE_POWER_TIMEOUT
+    } );
   }
 
   async callToTeammate(initiator: PersonaCombatant, teammate: PersonaCombatant) {

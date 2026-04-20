@@ -52,7 +52,7 @@ export class CombatHooks {
             }
           } else {
             if (combat.combatant) {
-              await combat.startCombatantTurn(combat.combatant as PersonaCombatant);
+              await combat.startCombatantTurn(combat.combatant);
             }
           }
         }

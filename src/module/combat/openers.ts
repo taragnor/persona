@@ -1,9 +1,11 @@
 import {StatusEffectId} from "../../config/status-effects.js";
 import {OpenerPanel} from "../panels/openers-panel.js";
+import {UsableListPanel} from "../panels/usable-list-panel.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaRoller} from "../persona-roll.js";
 import {SidePanelManager} from "../side-panel/side-panel-manager.js";
+import {lockObject} from "../utility/anti-loop.js";
 import {randomSelect} from "../utility/array-tools.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {EngagementChecker} from "./engageChecker.js";
@@ -58,8 +60,27 @@ export class OpenerManager {
     await this.combat.setFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME, openingReturn);
   }
 
+  async onEndCombat() {
+    await PersonaError.asyncErrorWrapper(
+      async () => await this.clearOpenerChoices()
+    );
+  }
+
+  async onEndTurn() {
+    //this may be run by PCs so can't do any GM functions
+    void this.panel.pop();
+    if (game.user.isGM) {
+      await this.clearOpenerChoices();
+    }
+  }
+
   private async clearOpenerChoices()  {
+    if (!game.user.isGM) {
+      PersonaError.softFail(`${game.user.name} trying to clear Opener Choices, this requires GM permissions`);
+      return;
+    }
     await this.combat.unsetFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME);
+    await this.storeOpenerChatMsg(undefined);
   }
 
   getOpenerChoices()  : readonly OpenerOptionsGroups[] {
@@ -540,16 +561,21 @@ export class OpenerManager {
   }
 
   async _onOpenerSelect (ev: JQuery.ClickEvent) {
-    console.log("On Opener Select");
     ev.stopPropagation();
-    const groupIndex = Number(HTMLTools.getClosestData(ev, "groupIndex"));
-    const openerIndex = Number(HTMLTools.getClosestData(ev, "openerIndex"));
-    const targetIndex = Number(HTMLTools.getClosestDataSafe(ev, "targetIndex", -1));
-    if (Number.isNaN(targetIndex) || targetIndex == -1) {
-      await PersonaCombat.combat?.openers.execOpeningOption(groupIndex,  openerIndex);
-      return;
-    }
-    await PersonaCombat.combat?.openers.execOpeningOption( groupIndex, openerIndex, targetIndex);
+    await lockObject(this, async () => {
+      const groupIndex = Number(HTMLTools.getClosestData(ev, "groupIndex"));
+      const openerIndex = Number(HTMLTools.getClosestData(ev, "openerIndex"));
+      const targetIndex = Number(HTMLTools.getClosestDataSafe(ev, "targetIndex", -1));
+      if (Number.isNaN(targetIndex) || targetIndex == -1) {
+        await PersonaCombat.combat?.openers.execOpeningOption(groupIndex,  openerIndex);
+        return;
+      }
+      await PersonaCombat.combat?.openers.execOpeningOption( groupIndex, openerIndex, targetIndex);
+    }, {
+      "inUseMsg":"already doing another follow up",
+      "timeoutMs": UsableListPanel.USE_POWER_TIMEOUT
+    } );
+
   }
 
   activateListeners(html: JQuery) {
@@ -559,8 +585,7 @@ export class OpenerManager {
 
   async cleanUpAfterOpener() {
     await this.panel.pop();
-    await this.clearOpenerChoices();
-    await this.storeOpenerChatMsg(undefined);
+    // await this.clearOpenerChoices();
   }
 
   async modifyOpenerMsg( opener: OpenerOption) {

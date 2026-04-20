@@ -23,7 +23,8 @@ import {TriggeredEffect} from "../triggered-effect.js";
 import {sleep} from "../utility/async-wait.js";
 import {LocalEffectCombatResult} from "./local-effect-combat-result.js";
 
-const SAFETY_SLEEP_DURATION = 2500 as const;
+const SAFETY_SLEEP_DURATION = 1250 as const;
+const DELAY_FOR_UPDATES_TO_GET_THERE_FIRST = 1250 as const;
 
 export class FinalizedCombatResult {
 	static pendingPromises: Map< CombatResult["id"], (val: unknown) => void> = new Map();
@@ -295,6 +296,7 @@ export class FinalizedCombatResult {
 			await this.#applyGlobalOtherEffects();
 			this.#onUsePowerTriggered();
 			await this.#applyChained();
+      await sleep(DELAY_FOR_UPDATES_TO_GET_THERE_FIRST);
 		} catch (e) {
 			PersonaError.softFail("Trouble executing combat result", e, this);
 		}

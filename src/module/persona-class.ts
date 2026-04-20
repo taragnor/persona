@@ -28,6 +28,7 @@ import {PersonaAura} from "./persona-auras.js";
 import {PowerLearningSystem} from "./power-learning.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaSocial} from "./social/persona-social.js";
+import {Helpers} from "./utility/helpers.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidAttackers = ValidAttackers> implements PersonaI {
   #combatStats: U<PersonaCombatStats>;
@@ -1056,12 +1057,20 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       || this._checkConditionals(usable)
       || this._checkTeamworkMove(usable)
       || this._checkCooldown(usable)
+      || this._pauseCheck()
     ;
     if (msg === null) {return true;}
     if (outputReason) {
       ui.notifications.warn(msg);
     }
     return false;
+  }
+
+  private _pauseCheck() : N<FailReason> {
+		if (game.paused && !game.user.isGM) {
+      return "Game is Paused";
+    }
+    return null;
   }
 
   private _checkTeamworkMove(power: UsableAndCard) :N<FailReason> {

@@ -223,6 +223,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
   async onEndCombat() : Promise<void> {
     if (!game.user.isGM) {return;}
+    void this.openers.onEndCombat();
     void this.refreshActorSheets();
     await this.generateTreasureAndXP();
     if (this.isSocial && await HTMLTools.confirmBox('Enter Meta', 'Enter Metaverse?', true)) {
@@ -680,6 +681,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       };
       await ChatMessage.create(messageData, {});
     }
+    await this.followUp.onEndTurn();
+    await this.openers.onEndTurn();
   }
 
   handleStartTurnEffects(combatant: Combatant<ValidAttackers>): string[] {
