@@ -17,8 +17,21 @@ export class DowntimePanel extends PersonaPanel {
   async setActor(actor: PC) {
     if (this.actor != actor && actor.isOwner) {
       this.actor = actor;
-      await this.activate();
+      await super.activate();
     }
+  }
+
+  override async activate() {
+    if (this.actor == undefined && !game.user.isGM && PersonaCombat.combat) {
+      const myPC = PersonaCombat.combat.combatants.contents
+        .map( comb=> comb.actor)
+        .filter( actor => actor != undefined && actor.isPC())
+        .find( actor => actor.isOwner);
+      if (myPC) {
+        await this.setActor(myPC);
+      }
+    }
+    await super.activate();
   }
 
   override get templatePath(): string {
