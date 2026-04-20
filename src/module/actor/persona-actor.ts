@@ -1847,9 +1847,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     //potency can change in checkStatusNullification so its important to wait to unpack it until here
     await newEffect.setPotency(statusEffect.potency || 1);
     const adjustedDuration = this.getAdjustedDuration(duration, id);
-    if ("activationRoll" in statusEffect) {
-      await newEffect.setActivationRoll(statusEffect.activationRoll);
-    }
     await newEffect.setDuration(adjustedDuration);
     return true;
   }

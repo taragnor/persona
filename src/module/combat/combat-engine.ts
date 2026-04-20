@@ -189,6 +189,9 @@ export class CombatEngine {
 		for (let atkNum = 0; atkNum < num_of_attacks; ++atkNum) {
 			rollType = atkNum > 0 ? 'iterative': rollType;
 			const atkResult = await this.attackRollProcess( attacker, power, target, rollType == 'standard' && atkNum==0 ? 'activation' : rollType, options);
+      if (atkResult.activationRoll) {
+        result.activationRoll = atkResult.activationRoll;
+      }
 			const this_result = this.processEffects(atkResult);
 			result.merge(this_result);
 			const secondary = await this.handleSecondaryAttacks(this_result, atkResult, power, attacker, target, rollType, options);
@@ -345,7 +348,6 @@ export class CombatEngine {
 			&& !this.combat.isSocial
 			&& attackRollData.rollType == "activation"
     ) {
-			this.combat.setLastActivationRoll(attackRollData.natural);
 		}
 	}
 
@@ -440,34 +442,37 @@ export class CombatEngine {
 		return this.generateAttackResult(attacker, target, power, rollBundle, situation);
 	}
 
-	private generateAttackResult(attacker: Persona, target: Persona, power: Usable, rollBundle: RollBundle, situation: ProtoResultAttackSituation): AttackResult {
-		const addonAttackResultData = {
-			ailmentRange: situation.ailmentRange,
-			instantKillRange: situation.instantKillRange,
-			critRange: situation.critRange,
-			situation,
-		};
-		const {result, resisted, struckWeakness} = this.determineAttackResult(attacker, target, power, rollBundle, situation);
-		const baseData = this.getBaseAttackResult(rollBundle, attacker, target, power);
-		const situationFull : AttackResult["situation"] = {
-			...situation,
-			result,
-			withinAilmentRange : situation.withinAilmentRange ?? false,
-			withinInstantKillRange: situation.withinInstantKillRange ?? false,
-			withinCritRange: situation.withinCritRange ?? false,
-			resisted,
-			struckWeakness,
-		};
-		const attackResult : AttackResult = {
-			...baseData,
-			...addonAttackResultData,
-			situation: situationFull,
-			result,
-			hitWeakness : struckWeakness,
-			hitResistance : resisted,
-		};
-		return attackResult;
-	}
+  private generateAttackResult(attacker: Persona, target: Persona, power: Usable, rollBundle: RollBundle, situation: ProtoResultAttackSituation): AttackResult {
+    const addonAttackResultData = {
+      ailmentRange: situation.ailmentRange,
+      instantKillRange: situation.instantKillRange,
+      critRange: situation.critRange,
+      situation,
+    };
+    const {result, resisted, struckWeakness} = this.determineAttackResult(attacker, target, power, rollBundle, situation);
+    const baseData = this.getBaseAttackResult(rollBundle, attacker, target, power);
+    const situationFull : AttackResult["situation"] = {
+      ...situation,
+      result,
+      withinAilmentRange : situation.withinAilmentRange ?? false,
+      withinInstantKillRange: situation.withinInstantKillRange ?? false,
+      withinCritRange: situation.withinCritRange ?? false,
+      resisted,
+      struckWeakness,
+    };
+    const attackResult : AttackResult = {
+      ...baseData,
+      ...addonAttackResultData,
+      situation: situationFull,
+      result,
+      hitWeakness : struckWeakness,
+      hitResistance : resisted,
+    };
+    if ( situation.rollTags.includes("activation") && rollBundle.natural > 0) {
+      attackResult.activationRoll = rollBundle.natural;
+    }
+    return attackResult;
+  }
 
 	private determineAttackResult(attacker: Persona, target: Persona, power: Usable, _roll: RollBundle, situation: ProtoResultAttackSituation) : AttackResultData {
 		const result = this.getBaseResult(attacker, target,power, situation);

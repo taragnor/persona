@@ -39,6 +39,7 @@ export class FinalizedCombatResult {
 	globalOtherEffects: OtherEffect[] = [];
 	chainedResults: FinalizedCombatResult[]= [];
   globalLocalEffects: Sourced<LocalEffect>[] = [];
+  activationRoll: number;
 
 	constructor( cr: CombatResult | null) {
 		if (cr == null ) {return;}
@@ -55,6 +56,7 @@ export class FinalizedCombatResult {
 		ret.id = x.id;
 		ret.chainedResults = x.chainedResults.map( subresult=> FinalizedCombatResult.fromJSON(JSON.stringify(subresult)));
     ret.globalLocalEffects = x.globalLocalEffects;
+    ret.activationRoll = x.activationRoll;
 		return ret;
 	}
 
@@ -67,6 +69,7 @@ export class FinalizedCombatResult {
 			id: this.id,
 			chainedResults: this.chainedResults,
       globalLocalEffects: this.globalLocalEffects,
+      activationRoll: this.activationRoll,
 		};
 		const json = JSON.stringify(obj);
 		return json;
@@ -141,9 +144,8 @@ export class FinalizedCombatResult {
 		this.globalOtherEffects = cr.globalOtherEffects;
     this.globalLocalEffects = cr.globalLocalEffects;
 		this.sounds = cr.sounds;
+    this.activationRoll = cr.activationRoll ?? -1;
 	}
-
-
 
 	addFlag(actor: PersonaActor, flag: OtherEffect) {
 		const item = this.tokenFlags.find(x=> x.actor.actorId ==  actor.accessor.actorId );
@@ -160,7 +162,6 @@ export class FinalizedCombatResult {
 
 	hasFlag(actor: PersonaActor, flag: OtherEffect["type"]) : boolean{
 		return Boolean(this.tokenFlags.find(x=> x.actor.actorId == actor.id)?.effects.find( eff=> eff.type == flag));
-
 	}
 
 	clearFlags() {

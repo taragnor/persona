@@ -39,7 +39,7 @@ export class FollowUpManager {
     await CombatPanel.instance.setTarget(token);
     await SidePanelManager.push(this.panel);
     await this.panel.updatePanel();
-    if (PersonaSettings.get("followUpToChat")) {
+    if (PersonaSettings.get("followUpToChat") && list.length > 0) {
       await this.sendFollowUpsToChat(list, activationRoll);
     }
   }

@@ -71,7 +71,6 @@ type StatusEffect_FollowUp = {
 	duration: StatusDuration & {
 		dtype: "UEoT";
 	},
-	activationRoll: number,
 }
 
 export type EnhancedSourcedConsequence<C extends Consequence = Consequence> = SourcedConsequence<C> & {

@@ -35,6 +35,7 @@ export class CombatResult  {
 	sounds: {sound: ValidSound, timing: "pre" | "post"}[] = [];
 	globalOtherEffects: OtherEffect[] = [];
   globalLocalEffects: Sourced<LocalEffect>[] = [];
+  activationRoll: U<number>;
 
 
 	constructor(atkResult ?: AttackResult | null) {
@@ -235,7 +236,6 @@ export class CombatResult  {
             dtype:  "UEoT",
             actorTurn: effect.actor,
           },
-          activationRoll: combat.lastActivationRoll,
         });
         break;
       }
@@ -605,6 +605,7 @@ export class CombatResult  {
 				}
 			}
 			this.globalOtherEffects = this.globalOtherEffects.concat(other.globalOtherEffects);
+      this.activationRoll = this.activationRoll && this.activationRoll > 0 ? this.activationRoll : other.activationRoll;
 		}
 	}
 
@@ -763,6 +764,7 @@ export type AttackResult = {
 	ailmentRange: U<{low: number, high: number}>
 	instantKillRange: U<{low: number, high:number}>;
 	critRange: U<{low: number, high:number}>;
+  activationRoll?: number;
 };
 
 // function resolveStatusDurationAnchor (anchor: ConsequenceTarget, atkResult: AttackResult) : UniversalActorAccessor<ValidAttackers> | null {

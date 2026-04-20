@@ -61,7 +61,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   _engagedList: EngagementList;
   consecutiveCombat: number =0;
   defeatedFoes : ValidAttackers[] = [];
-  private _lastActivationRoll: number;
   combatEngine: CombatEngine;
   openers: OpenerManager;
   followUp: FollowUpManager;
@@ -85,15 +84,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     startedList.pushUnique(combatant.id);
     await this.setFlag('persona', 'startedCombatList', startedList);
   }
-
-  setLastActivationRoll(val: number) {
-    this._lastActivationRoll = val;
-  }
-
-  get lastActivationRoll(): number {
-    return this._lastActivationRoll;
-  }
-
 
   static get combat() : U<PersonaCombat> {
     return game?.combat as U<PersonaCombat>;
@@ -473,7 +463,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
   async startCombatantTurn( combatant: Combatant<PersonaActor>){
     if (!PersonaCombat.isPersonaCombatant(combatant)) {return;}
-    this.setLastActivationRoll(-1);
     const actor = combatant.actor;
     if (!game.user.isGM && actor.isOwner) {
       await this.panel.activate(true);
@@ -742,7 +731,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     if (!power) {return;}
     const comb = this.combatant;
     if (!comb || !PersonaCombat.isPersonaCombatant(comb)) {return;}
-    if ( await this.checkFollowUpAction(attacker)) {
+    if ( await this.checkFollowUpAction(attacker, result.activationRoll)) {
       return;
     }
     if (comb?.token == attacker) {
@@ -767,10 +756,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     }
   }
 
-  async checkFollowUpAction(attacker: PToken ) {
+  async checkFollowUpAction(attacker: PToken, activationRoll: number ) {
     const status = attacker.actor.effects.find( eff=> eff.statuses.has("bonus-action"));
-    if (status && status.activationRoll) {
-      await this.followUp.onFollowUpAction(attacker, status.activationRoll);
+    if (status && activationRoll > 0) {
+      await this.followUp.onFollowUpAction(attacker, activationRoll);
       return true;
     }
     return false;
