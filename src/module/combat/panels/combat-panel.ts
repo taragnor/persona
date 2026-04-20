@@ -8,6 +8,7 @@ import {PersonaPanel} from "../../panels/sub-panel.js";
 import {UsableListPanel} from "../../panels/usable-list-panel.js";
 import {PersonaDB} from "../../persona-db.js";
 import {PersonaError} from "../../persona-error.js";
+import {sleep} from "../../utility/async-wait.js";
 import {HTMLTools} from "../../utility/HTMLTools.js";
 import {OpenerOption} from "../openers.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "../persona-combat.js";
@@ -18,6 +19,8 @@ export class CombatPanel extends PersonaPanel {
   private _openers: OpenerOption[] = [];
   mode: "main" | "tactical";
   tacticalTarget: U<PToken>;
+  deferUpdate = false;
+  static DEFER_SLEEP_TIME = 300;
 
   constructor() {
     super ("combat-panel");
@@ -272,9 +275,20 @@ export class CombatPanel extends PersonaPanel {
   override async updatePanel() {
     if (this.combat == undefined) {
       await this.deactivate();
+      this.deferUpdate= false;
       return;
     }
-    return await super.updatePanel();
+    await super.updatePanel();
+    this.deferUpdate= false;
+  }
+
+  async updatePanelDeferred() {
+    if (this.deferUpdate) {return;}
+    this.deferUpdate = true;
+    await sleep(CombatPanel.DEFER_SLEEP_TIME);
+    if (!this.deferUpdate) {return;}
+    await this.updatePanel();
+    this.deferUpdate = false;
   }
 
   private async _onReturnToMainButton(ev: JQuery.ClickEvent) {
@@ -285,7 +299,7 @@ export class CombatPanel extends PersonaPanel {
 
   async setMode( mode: CombatPanel["mode"]) {
     this.mode = mode;
-    await this.updatePanel();
+    await this.updatePanelDeferred();
   }
 
   private async _onSelectEndTurn( _ev ?: JQuery.ClickEvent) {
@@ -425,7 +439,7 @@ export class CombatPanel extends PersonaPanel {
 
     Hooks.on("refreshToken", (token) => {
       if (this.instance.target == token.document) {
-        void this.instance.updatePanel();
+        void this.instance.updatePanelDeferred();
       }
     });
 

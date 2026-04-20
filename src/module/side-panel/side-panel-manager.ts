@@ -6,6 +6,12 @@ export class SidePanelManager {
   private static  HTMLPanel: U<JQuery<HTMLElement>>;
   private static _activePanel : U<SidePanel>;
   private static panelStack: SidePanel[] = [];
+  private static debugStats :  {
+    lastRendered:U < SidePanel>,
+    lastTimeRendered : number,
+      amountRendered: number,
+  }  = {lastRendered: undefined, lastTimeRendered: 0,
+    amountRendered: 0};
 
   static get panel()  {
     const infoPanel = $(document).find(this.CSSClassSelector);
@@ -104,10 +110,46 @@ export class SidePanelManager {
     return panel;
   }
 
+
+  static debug_resetRenderingStats(panel: SidePanel, time: number) {
+    this.debugStats = {
+      amountRendered : 1,
+      lastRendered : panel,
+      lastTimeRendered : time,
+    };
+  }
+
+  static debug_trackRendering(sidePanel : SidePanel) {
+    const time = Date.now();
+    const stats = this.debugStats;
+    const timeDiff = time - stats.lastTimeRendered;
+    if (stats.lastRendered != sidePanel) {
+      this.debug_resetRenderingStats(sidePanel, time);
+      console.log(`rendering new ${sidePanel?.panelName ?? "No Panel given"}`);
+      return;
+    }
+    if (timeDiff > 750) {
+      this.debug_resetRenderingStats(sidePanel, time);
+      console.log(`rendering ${sidePanel?.panelName ?? "No Panel given"}`);
+      return;
+    }
+    stats.amountRendered += 1;
+    stats.lastTimeRendered =  time;
+    if (stats.amountRendered <= 3)  {
+      console.log(`rendering ${sidePanel?.panelName ?? "No Panel given"}`);
+      return;
+    }
+    console.warn(`possibly excessive rendering (count: ${stats.amountRendered}) : ${sidePanel?.panelName ?? "No Panel given"}`);
+  }
+
+  static debugMode() : boolean {
+    return PersonaSettings.debugMode();
+  }
+
   static async renderPanel(sidePanel: SidePanel) {
     await sidePanel.waitUntilReady();
-    if (PersonaSettings.debugMode()) {
-      console.log(`rendering ${sidePanel?.panelName ?? "No Panel given"}`);
+    if (this.debugMode()) {
+      this.debug_trackRendering(sidePanel);
     }
     if (this._activePanel != sidePanel ) {
       if (this._activePanel != undefined
@@ -132,7 +174,10 @@ export class SidePanelManager {
     </div>
     `;
     panel.html(div);
+    const panelData = panel.find(".panel-data");
     this._activePanel?._activateListeners(panel.find(".panel-data"));
+    Hooks.callAll("renderSidePanel", sidePanel, panelData);
+
   }
 
   private static createContainer() : typeof SidePanelManager["HTMLPanel"] {
@@ -150,16 +195,26 @@ export class SidePanelManager {
   }
 
   static async onPauseChange( _state: boolean) {
-    if (this._activePanel) {
-      await this.renderPanel(this._activePanel);
+    const panel = this._activePanel;
+    if (panel) {
+      await this.renderPanel(panel);
     }
   }
 
 }
 
 Hooks.on("pauseGame" , (state) => {
-  SidePanelManager.onPauseChange(state);
+  void SidePanelManager.onPauseChange(state);
 });
 
 //@ts-expect-error adding to global scope
 window.panels  = SidePanelManager;
+
+declare global {
+  interface HOOKS {
+    "renderSidePanel" : (panel: SidePanel, element: JQuery) => unknown;
+
+  }
+
+
+}
