@@ -39,7 +39,7 @@ export class FinalizedCombatResult {
 	globalOtherEffects: OtherEffect[] = [];
 	chainedResults: FinalizedCombatResult[]= [];
   globalLocalEffects: Sourced<LocalEffect>[] = [];
-  activationRoll: number;
+  options : CombatResultOptions = {activationRoll: -1};
 
 	constructor( cr: CombatResult | null) {
 		if (cr == null ) {return;}
@@ -56,7 +56,7 @@ export class FinalizedCombatResult {
 		ret.id = x.id;
 		ret.chainedResults = x.chainedResults.map( subresult=> FinalizedCombatResult.fromJSON(JSON.stringify(subresult)));
     ret.globalLocalEffects = x.globalLocalEffects;
-    ret.activationRoll = x.activationRoll;
+    ret.options = x.options;
 		return ret;
 	}
 
@@ -69,7 +69,7 @@ export class FinalizedCombatResult {
 			id: this.id,
 			chainedResults: this.chainedResults,
       globalLocalEffects: this.globalLocalEffects,
-      activationRoll: this.activationRoll,
+      options: this.options,
 		};
 		const json = JSON.stringify(obj);
 		return json;
@@ -144,7 +144,9 @@ export class FinalizedCombatResult {
 		this.globalOtherEffects = cr.globalOtherEffects;
     this.globalLocalEffects = cr.globalLocalEffects;
 		this.sounds = cr.sounds;
-    this.activationRoll = cr.activationRoll ?? -1;
+    this.options = {
+      activationRoll: cr.activationRoll ?? -1,
+    };
 	}
 
 	addFlag(actor: PersonaActor, flag: OtherEffect) {
@@ -168,38 +170,59 @@ export class FinalizedCombatResult {
 		this.tokenFlags = [];
 	}
 
-	async toMessage( header: string) : Promise<boolean>;
-	async toMessage( effectName: string, initiator: U<PersonaActor>) : Promise<boolean>;
-	async toMessage( effectNameOrHeader: string, initiator?: U<PersonaActor>) : Promise<boolean> {
-		let initiatorToken : PToken | undefined;
-		if (game.combat) {
-			initiatorToken = initiator ? PersonaCombat.getPTokenFromActorAccessor(initiator.accessor) : undefined;
-		}
-		const output = new CombatOutput(this, initiatorToken);
-		try {
-			const completedWithoutError = await this.autoApplyResult();
-			void output.renderMessage(effectNameOrHeader, initiator, {error: !completedWithoutError});
-			return completedWithoutError;
-		} catch (e) {
-			const html = await output.generateHTML(effectNameOrHeader, initiator);
-			const rolls : RollBundle[] = this.attacks
-				.flatMap( (attack) => attack.atkResult.roll? [attack.atkResult.roll] : []);
-			PersonaError.softFail("Error with automatic result application", e, this, html);
-			await ChatMessage.create( {
-				speaker: {
-					scene: initiatorToken?.parent?.id ?? initiator?.token?.parent.id,
-					actor: initiatorToken?.actor?.id ?? initiator?.id,
-					token:  initiatorToken?.id,
-					alias: initiatorToken?.name ?? "System",
-				},
-				rolls: rolls.map( rb=> rb.roll),
-				content: "ERROR WITH APPLYING COMBAT RESULT",
-				user: game.user,
-				style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-			}, {});
-			return false;
-		}
-	}
+  async toMessage( header: string) : Promise<boolean>;
+  async toMessage( effectName: string, initiator: U<PersonaActor>) : Promise<boolean>;
+  async toMessage( effectNameOrHeader: string, initiator?: U<PersonaActor>) : Promise<boolean> {
+    this.options.printData = {
+      effectNameOrHeader : effectNameOrHeader,
+      initiator : initiator ? initiator.accessor : undefined,
+    };
+    return await this.autoApplyResult();
+  }
+
+  private async _toMessage( effectNameOrHeader: string, initiator?: U<PersonaActor>) {
+    if (!game.user.isGM) {
+      ui.notifications.warn("Player Accessing this function, shouldn' thappen");
+    }
+    let initiatorToken : PToken | undefined;
+    if (game.combat) {
+      initiatorToken = initiator ? PersonaCombat.getPTokenFromActorAccessor(initiator.accessor) : undefined;
+    }
+    try {
+      this.compressChained();
+      const output = new CombatOutput(this, initiatorToken);
+      // const completedWithoutError = await this.autoApplyResult();
+      // if (!completedWithoutError) {throw new PersonaError("Error with handling autoApplyResult")};
+      void output.renderMessage(effectNameOrHeader, initiator);
+      return true;
+    } catch (e) {
+      await this._toMessage_error(effectNameOrHeader, initiator, initiatorToken, e as unknown);
+      return false;
+    }
+
+  }
+
+  private async _toMessage_error( effectNameOrHeader: string, initiator: U<PersonaActor>, initiatorToken: U<PToken>, e : Unknown<Error>) {
+    const output = new CombatOutput(this, initiatorToken);
+    const html = await output.generateHTML(effectNameOrHeader, initiator);
+    const rolls : RollBundle[] = this.attacks
+      .flatMap( (attack) => attack.atkResult.roll? [attack.atkResult.roll] : []);
+    PersonaError.softFail("Error with automatic result application", e, this, html);
+    await ChatMessage.create( {
+      speaker: {
+        scene: initiatorToken?.parent?.id,
+        actor: initiatorToken?.actor?.id ?? initiator?.id,
+        token:  initiatorToken?.id,
+        alias: initiatorToken?.name ?? "System",
+      },
+      rolls: rolls.map( rb=> rb.roll),
+      content: "ERROR WITH APPLYING COMBAT RESULT",
+      user: game.user,
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+    }, {});
+    return false;
+
+}
 
   async autoApplyResult() : Promise<boolean> {
     try {
@@ -263,32 +286,37 @@ export class FinalizedCombatResult {
     }
   }
 
-  private async autoApplyResult_GM() : Promise<boolean> {
-    const power = this.power;
-    const attacker = this.attacker;
-    try {
-      if (power && attacker) {
-        void PersonaSFX.onUsePowerStart(this.power, attacker);
-      }
-      await this.#apply();
-      await sleep(DELAY_FOR_UPDATES_TO_GET_THERE_FIRST);
-      return true;
-    } catch (e) {
-      PersonaError.softFail("Problem with GM apply",e);
-      Debug(e);
-      Debug(this);
-      return false;
+private async autoApplyResult_GM() : Promise<boolean> {
+  const power = this.power;
+  const attacker = this.attacker;
+  try {
+    if (power && attacker) {
+      void PersonaSFX.onUsePowerStart(this.power, attacker);
     }
+    await this.#apply();
+    if (this.options.printData) {
+      const {effectNameOrHeader, initiator} = this.options.printData;
+      const initiatorActor = initiator ? PersonaDB.find(initiator): undefined;
+      await this._toMessage(effectNameOrHeader, initiatorActor);
+    }
+    await sleep(DELAY_FOR_UPDATES_TO_GET_THERE_FIRST);
+    return true;
+  } catch (e) {
+    PersonaError.softFail("Problem with GM apply",e);
+    Debug(e);
+    Debug(this);
+    return false;
   }
+}
 
-	static async applyHandler(x: SocketMessage["COMBAT_RESULT_APPLY"]) : Promise<void> {
+	static async applyHandler(x: SocketMessage["COMBAT_RESULT_APPLY"]) : Promise<boolean> {
 		const {resultObj} = x;
 		const result = FinalizedCombatResult.fromJSON(resultObj);
-		await result.#apply();
+    return await result.autoApplyResult_GM();
 	}
 
 	async applyButtonTrigger() {
-		return this.#apply();
+    return this.autoApplyResult_GM();
 	}
 
 	async #apply(): Promise<void> {
@@ -513,3 +541,11 @@ declare global {
 	}
 }
 
+
+type CombatResultOptions = {
+  activationRoll: number;
+  printData?: {
+    effectNameOrHeader: string;
+    initiator: U<UniversalActorAccessor<PersonaActor>>;
+  }
+}

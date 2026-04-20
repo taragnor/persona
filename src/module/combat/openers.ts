@@ -572,7 +572,7 @@ export class OpenerManager {
       }
       await PersonaCombat.combat?.openers.execOpeningOption( groupIndex, openerIndex, targetIndex);
     }, {
-      "inUseMsg":"already doing another follow up",
+      "inUseMsg":"already doing another opener",
       "timeoutMs": UsableListPanel.USE_POWER_TIMEOUT
     } );
 

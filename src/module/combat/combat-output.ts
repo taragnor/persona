@@ -35,23 +35,23 @@ export class CombatOutput {
     }
 	}
 
-	async HTMLBody(): Promise<string> {
+  async HTMLBody(): Promise<string> {
     try {
-		this.result.compressChained();
-		// this.compressChained();
-		const attacks = this.result.attacks.map( (attack)=> {
-			return {
-				attackResult: attack.atkResult,
-				changes: attack.changes,
-			};
-		});
-		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-body.hbs", {attacks, escalation: 0, result: this, costs: this.result.costs});
-		return html;
+      this.result.compressChained();
+      // this.compressChained();
+      const attacks = this.result.attacks.map( (attack)=> {
+        return {
+          attackResult: attack.atkResult,
+          changes: attack.changes,
+        };
+      });
+      const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-body.hbs", {attacks, escalation: 0, result: this, costs: this.result.costs});
+      return html;
     } catch (e) {
       PersonaError.softFail((e as Error).toString(), e);
       return "ERROR";
     }
-	}
+  }
 
 	async generateHTML(effectNameOrHeader: string, initiator: U<PersonaActor>) : Promise<string> {
 		let header: string;

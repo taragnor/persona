@@ -731,7 +731,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     if (!power) {return;}
     const comb = this.combatant;
     if (!comb || !PersonaCombat.isPersonaCombatant(comb)) {return;}
-    if ( await this.checkFollowUpAction(attacker, result.activationRoll)) {
+    if ( await this.checkFollowUpAction(attacker, result?.options?.activationRoll ?? -1)) {
       return;
     }
     if (comb?.token == attacker) {

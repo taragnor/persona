@@ -41,3 +41,7 @@ type Prettify<T> = {
 
   type DeepWriteable<T> = { -readonly [P in keyof T]: DeepWriteable<T[P]> };
 
+/** Used to denote an unknown type but the T allows documented suggestions as to what the type should be. Often used for caught unknowns */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type Unknown<T> = unknown;
+
