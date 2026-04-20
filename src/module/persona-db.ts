@@ -10,7 +10,8 @@ import {SocialEncounterCard} from "./social/social-card-executor.js";
 
 declare global {
 	interface HOOKS {
-		"DBrefresh": () => unknown,
+		"DBrefresh": (db: PersonaDatabase) => unknown,
+      "DBLoaded": (db: PersonaDatabase) => unknown,
 	}
 }
 
@@ -51,12 +52,13 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			allUniversalModifierTypes: undefined,
 			roomModifiers: undefined,
 		};
-		Hooks.callAll("DBrefresh");
+		Hooks.callAll("DBrefresh", this);
 		return newCache;
 	}
 
 	override postLoadActions() {
 		this.#resetCache();
+    Hooks.callAll("DBLoaded", this);
 	}
 
 	clearCache() {

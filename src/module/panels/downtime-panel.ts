@@ -244,3 +244,9 @@ Hooks.on("deleteCombat", (_combat) => {
   void panel.deactivate();
 });
 
+Hooks.on("DBLoaded", async () => {
+  if (Metaverse.getPhase() == "downtime") {
+    await PersonaSocial.panel.activate();
+  }
+});
+

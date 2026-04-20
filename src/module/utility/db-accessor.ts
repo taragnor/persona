@@ -490,19 +490,11 @@ type UniversalItemAccessor<T extends Item<any>= Item<any>> = {
 
 type UniversalAccessorTypes = Actor | TokenDocument | Item | ActiveEffect;
 
-// type UniversalAccessor<T extends UniversalAccessorTypes = UniversalAccessorTypes> = UniversalActorAccessor<T extends Actor ? T : never> | UniversalItemAccessor<T extends Item ? T : never> | UniversalTokenAccessor<T extends TokenDocument ? T : never> | UniversalAEAccessor<T extends ActiveEffect ? T : never>;
-
 type UniversalAccessor<T extends UniversalAccessorTypes = UniversalAccessorTypes> =
 	(T extends Actor ? UniversalActorAccessor<T> : never)
 	| (T extends TokenDocument ? UniversalTokenAccessor<T> : never)
 	| (T extends Item ? UniversalItemAccessor<T> : never)
 	| (T extends ActiveEffect ? UniversalAEAccessor<T>: never);
-
-// type UniversalAccessor<T extends UniversalAccessorTypes = UniversalAccessorTypes> =
-// 	(T extends Actor ? UniversalActorAccessor<T> : never)
-// 	| (T extends TokenDocument ? UniversalTokenAccessor<T> : never)
-// 	| (T extends Item ? UniversalItemAccessor<T> : never)
-// 	| (T extends ActiveEffect ? UniversalAEAccessor<T>: never);
 
 type UniversalAEAccessor<T extends ActiveEffect<any,any> = ActiveEffect> =
 	{
