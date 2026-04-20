@@ -11,6 +11,7 @@ class Application {
 	_scrollPositions: unknown[];
 	_searchFilters: unknown[];
 	_dragDrop: unknown[];
+  /** state of > 0 seems to be open*/
 	_state: number;
 	_getHeaderButtons() : HeaderButtons[];
 	template: string;

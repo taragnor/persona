@@ -19,9 +19,11 @@ import {TarotPrinter} from "../../printers/tarot-list.js";
 import {TalentPrinter} from "../../printers/talent-list.js";
 import {STAT_DEVIATION_LOCTABLE} from "../persona-combat-stats.js";
 
+
 export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSheet<PersonaActor> {
 
-	#activeQuestion = -1;
+  #activeQuestion = -1;
+  static openSheets : Set<PersonaActorSheetBase> = new Set();
 
 	constructor(obj: object, options: object) {
 		super(obj, options );
@@ -241,6 +243,18 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 	showTalentTable(_ev : JQuery.ClickEvent) {
 		void TalentPrinter.open();
 	}
+
+  override render(...args: Parameters<ActorSheet<Actor>["render"]>) {
+    PersonaActorSheetBase.openSheets.add(this);
+    return super.render(...args);
+  }
+
+  static onPause() {
+    const remainingOpen = Array.from(this.openSheets)
+      .filter(sh => sh._state > 0);
+    this.openSheets.forEach( sh => sh.render(false));
+    this.openSheets = new Set(remainingOpen);
+  }
 }
 
 Hooks.on("renderActorSheet", (sheet: PersonaActorSheetBase) => {
@@ -248,3 +262,8 @@ Hooks.on("renderActorSheet", (sheet: PersonaActorSheetBase) => {
 		PersonaActorSheetBase.autoResize(this);
 	});
 });
+
+Hooks.on("pauseGame", (_state) => {
+  PersonaActorSheetBase.onPause();
+});
+

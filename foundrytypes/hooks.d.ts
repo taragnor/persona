@@ -74,6 +74,7 @@ declare interface HOOKS {
 	/** selected is true for the token selected and false for a token unselected*/
 	"controlToken": (token: Token, selected: boolean) => unknown;
 	"renderHandlebarsApplication": (app: foundryApps.ApplicationV2, html: HTMLElement, data: Record< string, unknown>, renderOptions: Record<string, unknown>) => unknown;
+  "pauseGame" : (state: boolean, metaData: object) => unknown
 };
 
 type PreCreateHook<T extends FoundryDocument> = (document: T, documentData: {name:string, type:string} & Record<string, unknown>, metaData: Record<string, unknown>, id:string) => unknown;

@@ -40,7 +40,6 @@ export async function antiLoop(lockObj: object,  fn: () => Promise<unknown>, opt
   lockedObjects.delete(lockObj);
 }
 
-
 interface LockObjectOptions {
 	 timeoutMs?: number;
 	 inUseMsg?: string;

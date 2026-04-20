@@ -149,7 +149,17 @@ export class SidePanelManager {
     return this.HTMLPanel;
   }
 
+  static async onPauseChange( _state: boolean) {
+    if (this._activePanel) {
+      await this.renderPanel(this._activePanel);
+    }
+  }
+
 }
+
+Hooks.on("pauseGame" , (state) => {
+  SidePanelManager.onPauseChange(state);
+});
 
 //@ts-expect-error adding to global scope
 window.panels  = SidePanelManager;
