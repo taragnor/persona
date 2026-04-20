@@ -128,7 +128,6 @@ export class CombatPanel extends PersonaPanel {
     html.find(".active-control-panel .main-power .pretty-power-name").on("click", ev => void this._onClickPower(ev));
     html.find(".active-control-panel button.basic-power").on("click", (ev) => void this._onClickPower(ev));
     html.find(".control-panel .token-name").on("click", ev => void this.openToken(ev));
-    // html.find(".control-panel button.inventory-button").on("click", (ev) => void this._onInventoryButton(ev));
     html.find(".control-panel button.return-button").on("click", (ev) => void this._onReturnToMainButton(ev));
     html.find(".active-control-panel .inventory-item:not(.faded)").on("click", (ev) => void this._onUseItem(ev));
     html.find(".control-panel .tacticalMode").on("click", (ev) => void this._onTacticalMode(ev));
@@ -137,11 +136,7 @@ export class CombatPanel extends PersonaPanel {
     html.find(".control-panel button.persona-name-button").on("click", (ev) => void this._onPersonaSwitchButton(ev));
     html.rightclick( (ev) => this._onReturnToMainButton(ev));
     html.find(".control-panel button.no-opener").on("click", (ev) => void this._onReturnToMainButton(ev));
-    // html.find(".control-panel button.act-again").on("click", (ev) => void this._onReturnToMainButton(ev));
     html.find(".control-panel .follow-ups .follow-up").on("click", (ev) => void this._onSelectFollowUp(ev));
-    // html.find(".control-panel .opener-list .option-target").on("click", (ev) => void this._onSelectOpenerTarget(ev));
-    // html.find(".control-panel .opener-list .simple-action").on("click", (ev) => void this._onSelectSimpleOpener(ev));
-    // html.find(".active-control-panel button.end-turn").on("click", (ev) => void this._onSelectEndTurn(ev));
     html.find(".follow-ups button.act-again").on("click", (ev) => void this._onReturnToMainButton(ev));
     if (this.combat) {
       this.combat.followUp.activateListeners(html);
@@ -158,36 +153,17 @@ export class CombatPanel extends PersonaPanel {
     return true;
   }
 
-  // async setOpeningActionChoices(combatant: PersonaCombatant, openerList: OpenerOption[]) : Promise<void> {
-  //   if (openerList.length == 0) {return;}
-  //   if (!await this.selectCombatantIfNeeded(combatant)) {
-  //     return;
-  //   }
-  //   this._openers = openerList;
-  //   await this.setMode("opener");
-  //   // console.log(`Set opening actions: ${openerList.length}`);
-  // }
-
-  // async setFollowUpChoices( combatant: PersonaCombatant, followUpList : CombatPanel["_followUps"])  : Promise<void>{
-  //   if (followUpList.length == 0) {return;}
-  //   if (!await this.selectCombatantIfNeeded(combatant)) {
-  //     return;
-  //   }
-  //   this._followUps = followUpList;
-  //   await this.setMode("followUp");
-  // }
-
   async setTacticalTarget(token: UN<PToken>) {
     if (!PersonaSettings.combatPanel()) {return;}
     if (this.tacticalTarget == token) {return;}
     if (token == undefined) {
       this.tacticalTarget = undefined;
-      await this.updatePanel();
+      await this.updatePanelDeferred();
       return;
     }
     if (!token.actor.isValidCombatant()) {return;}
     this.tacticalTarget = token;
-    await this.updatePanel();
+    await this.updatePanelDeferred();
   }
 
   async setTarget(token: UN<PToken>) {
@@ -205,7 +181,7 @@ export class CombatPanel extends PersonaPanel {
     await this.setMode("main");
     try {
       await this.setTacticalTarget(null);
-      await this.updatePanel();
+      await this.updatePanelDeferred();
     } catch (e) {
       if (e instanceof Error) {
         PersonaError.softFail(e.message, e);
@@ -275,14 +251,18 @@ export class CombatPanel extends PersonaPanel {
   override async updatePanel() {
     if (this.combat == undefined) {
       await this.deactivate();
-      this.deferUpdate= false;
+      this.deferUpdate = false;
       return;
     }
     await super.updatePanel();
-    this.deferUpdate= false;
+    this.deferUpdate = false;
   }
 
-  async updatePanelDeferred() {
+  public async updatePanelImmediate() {
+    await this.updatePanel();
+  }
+
+  public async updatePanelDeferred() {
     if (this.deferUpdate) {return;}
     this.deferUpdate = true;
     await sleep(CombatPanel.DEFER_SLEEP_TIME);
@@ -433,7 +413,7 @@ export class CombatPanel extends PersonaPanel {
 
     Hooks.on("updateActor", (actor) => {
       if (this.instance.target?.actor == actor) {
-        void this.instance.updatePanel();
+        void this.instance.updatePanelDeferred();
       }
     });
 
@@ -445,12 +425,12 @@ export class CombatPanel extends PersonaPanel {
 
     Hooks.on("updateToken", (token) => {
       if (this.instance.target == token) {
-        void this.instance.updatePanel();
+        void this.instance.updatePanelDeferred();
       }
     });
 
     Hooks.on("updateCombat", () => {
-      void this.instance.updatePanel();
+      void this.instance.updatePanelDeferred();
     });
 
     Hooks.on("hoverToken", (token, isSelecting) => {
