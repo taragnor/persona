@@ -61,7 +61,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   _engagedList: EngagementList;
   consecutiveCombat: number =0;
   defeatedFoes : ValidAttackers[] = [];
-  lastActivationRoll: number;
+  private _lastActivationRoll: number;
   combatEngine: CombatEngine;
   openers: OpenerManager;
   followUp: FollowUpManager;
@@ -85,6 +85,15 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     startedList.pushUnique(combatant.id);
     await this.setFlag('persona', 'startedCombatList', startedList);
   }
+
+  setLastActivationRoll(val: number) {
+    this._lastActivationRoll = val;
+  }
+
+  get lastActivationRoll(): number {
+    return this._lastActivationRoll;
+  }
+
 
   static get combat() : U<PersonaCombat> {
     return game?.combat as U<PersonaCombat>;
@@ -464,6 +473,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
   async startCombatantTurn( combatant: Combatant<PersonaActor>){
     if (!PersonaCombat.isPersonaCombatant(combatant)) {return;}
+    this.setLastActivationRoll(-1);
     const actor = combatant.actor;
     if (!game.user.isGM && actor.isOwner) {
       await this.panel.activate(true);
@@ -732,7 +742,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     if (!power) {return;}
     const comb = this.combatant;
     if (!comb || !PersonaCombat.isPersonaCombatant(comb)) {return;}
-    if ( await this.checkUpFollowUpAction(attacker)) {
+    if ( await this.checkFollowUpAction(attacker)) {
       return;
     }
     if (comb?.token == attacker) {
@@ -757,9 +767,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     }
   }
 
-  async checkUpFollowUpAction(attacker: PToken ) {
+  async checkFollowUpAction(attacker: PToken ) {
     const status = attacker.actor.effects.find( eff=> eff.statuses.has("bonus-action"));
-    if (status) {
+    if (status && status.activationRoll) {
       await this.followUp.onFollowUpAction(attacker, status.activationRoll);
       return true;
     }
@@ -1765,14 +1775,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     // Create multiple chat messages
     // await ChatMessage.implementation.create(messages);
     return this;
-  }
-
-  async onFollowUpAction(token: PToken, activationRoll: number) : Promise<void> {
-    try {
-      await this.followUp.onFollowUpAction(token, activationRoll);
-    } catch (e) {
-      PersonaError.softFail("Problem with onFollowUpAction", e);
-    }
   }
 
   async generateInitRollMessage<R extends Roll>(rolls: {combatant: Combatant, roll: R}[], messageOptions: Foundry.MessageOptions = {}): Promise<ChatMessage<R>> {

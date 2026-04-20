@@ -95,7 +95,7 @@ export class ConsequenceApplier {
   }
 
   private static async _resolveCombatStatus(targetToken: PToken, attacker: UniversalTokenAccessor<PToken>, status: StatusEffect, power: U<Usable>) : Promise<FinalizedCombatResult[]> {
-    const actor = targetToken.actor;
+    const targetActor = targetToken.actor;
     const chained : FinalizedCombatResult[] = [];
     const attackerActor = PersonaDB.findToken(attacker)?.actor;
     if (!attackerActor) {
@@ -103,9 +103,9 @@ export class ConsequenceApplier {
         console.log(`Bailing on calling inflict status trigger on ${status.id} due to no attackerActor provided`);
         return [];}
     }
-    console.log(`On inflict status: ${status.id} ${actor.name}`);
+    console.log(`On inflict status: ${status.id} ${targetActor.name}`);
     const sitPartial ={
-      target: actor.accessor,
+      target: targetActor.accessor,
       triggeringCharacter: attackerActor.accessor,
       attacker: attackerActor.accessor,
       trigger : "on-inflict-status",
@@ -113,7 +113,7 @@ export class ConsequenceApplier {
       statusEffect: status.id,
       triggeringUser: game.user,
     } as const;
-    for (const user of [actor, attackerActor]) {
+    for (const user of [attackerActor, targetActor]) {
       const situation : Situation =  {
         ...sitPartial,
         user: user.accessor,
@@ -122,6 +122,7 @@ export class ConsequenceApplier {
         .finalize()
         .emptyCheck() ;
       if (eff) {
+        console.log("Pushing Chained effect after knockdown");
         chained.push(eff);
       }
       if ((status.id == "curse" || status.id == "expel")) {

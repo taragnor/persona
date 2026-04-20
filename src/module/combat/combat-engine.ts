@@ -343,8 +343,9 @@ export class CombatEngine {
 	private storeActivationRoll(attackRollData: AttackRollData) {
 		if (this.combat
 			&& !this.combat.isSocial
-			&& attackRollData.rollType == "activation") {
-			this.combat.lastActivationRoll = attackRollData.roll.total;
+			&& attackRollData.rollType == "activation"
+    ) {
+			this.combat.setLastActivationRoll(attackRollData.natural);
 		}
 	}
 
@@ -408,20 +409,22 @@ export class CombatEngine {
 		return bundle;
 	}
 
-	async makeAttackRoll( rollType: AttackRollData["rollType"], options : CombatOptions) : Promise<AttackRollData> {
-		const roll = await (options.setRoll ? new Roll(`0d1+${options.setRoll}`).roll():  new Roll('1d20').roll());
-		const rollTags = this.generateRollTags(rollType);
-		rollTags.pushUnique('attack');
-		PersonaRoller.hideAnimation(roll);
-		const attackRollData : AttackRollData = {
-			roll,
-			rollType,
-			rollTags,
-			natural: roll.total,
-		};
-		this.storeActivationRoll(attackRollData);
-		return attackRollData;
-	}
+  async makeAttackRoll( rollType: AttackRollData["rollType"], options : CombatOptions) : Promise<AttackRollData> {
+    const roll = await (options.setRoll ? new Roll(`0d1+${options.setRoll}`).roll():  new Roll('1d20').roll());
+    const rollTags = this.generateRollTags(rollType);
+    rollTags.pushUnique('attack');
+    PersonaRoller.hideAnimation(roll);
+    const attackRollData : AttackRollData = {
+      roll,
+      rollType,
+      rollTags,
+      natural: roll.total,
+    };
+    if (!options.simulated) {
+      this.storeActivationRoll(attackRollData);
+    }
+    return attackRollData;
+  }
 
 	private async attackRollProcess ( attackerToken: PToken, power: UsableAndCard, targetToken: PToken, rollType: AttackRollType, options: CombatOptions = {}) : Promise<AttackResult> {
 		const attacker = attackerToken.actor.persona();

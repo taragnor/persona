@@ -205,7 +205,9 @@ export class CombatResult  {
         break;
       }
       case "extraAttack": {
-        if (!effect) {break;}
+        if (!effect) { break;
+          console.warn("No effect to extra attack, can't iadd");
+        }
         effect.otherEffects.push({
           ...cons,
           // type: "extra-attack",
@@ -223,7 +225,7 @@ export class CombatResult  {
         }
         if (!effect) {break;}
         const combat = game.combat as PersonaCombat;
-        if (!combat || combat.isSocial || combat.lastActivationRoll == undefined) {break;}
+        if (!combat || combat.isSocial) {break;}
         if (effect.addStatus.some( x=> x.id =="bonus-action")) {
           break;
         }
@@ -296,7 +298,7 @@ export class CombatResult  {
   }
 
   addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
-    if (!target && situation.target) {
+    if (target == undefined && situation.target != undefined) {
       target = PersonaDB.findActor(situation.target);
     }
     const effect = this.#getEffect(target);

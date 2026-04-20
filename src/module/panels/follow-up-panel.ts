@@ -5,11 +5,11 @@ import {PersonaPanel} from "./sub-panel.js";
 
 export class FollowUpPanel extends PersonaPanel {
 
-  followUps: FollowUpActionData[];
+  followUps: FollowUpActionData[] = [];
+  activationRoll: number = -1;;
 
-  constructor(data : FollowUpActionData[] = []) {
+  constructor() {
     super ("follow-up-panel");
-    void this.setFollowUps(data);
   }
 
   protected override buttonConfig() {
@@ -27,11 +27,12 @@ export class FollowUpPanel extends PersonaPanel {
     await PersonaCombat.combat?.openers.cleanUpAfterOpener();
   }
 
-  async setFollowUps(data: FollowUpActionData[]) {
+  async setFollowUps(data: FollowUpActionData[], activationRoll: number) {
     this.followUps = data;
     if (data.length > 0) {
       await this.updatePanel();
     }
+    this.activationRoll = activationRoll;
   }
 
   override activateListeners(html: JQuery) {
@@ -49,6 +50,7 @@ export class FollowUpPanel extends PersonaPanel {
     return {
       ...data,
       followUps: this.followUps,
+      roll: this.activationRoll,
     };
   }
 

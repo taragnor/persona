@@ -29,17 +29,18 @@ export class FollowUpManager {
   }
 
   async onFollowUpAction(token: PToken, activationRoll: number) {
-    console.debug('Calling On Follow Up Action');
+    console.debug(`Calling On Follow Up Action ${activationRoll}`);
     const combatant = token.object ? this.combat.getCombatantByToken(token): null;
     if (!combatant || !combatant.actor || !PersonaCombat.isPersonaCombatant(combatant)) {return;}
     if (combatant.actor && combatant.actor.hasStatus('down')) {return;}
     const list = this.usableFollowUpsList(combatant, activationRoll);
     // await CombatPanel.instance.setFollowUpChoices(combatant, list);
-    await this.panel.setFollowUps(list);
+    await this.panel.setFollowUps(list, activationRoll);
     await CombatPanel.instance.setTarget(token);
     await SidePanelManager.push(this.panel);
+    await this.panel.updatePanel();
     if (PersonaSettings.get("followUpToChat")) {
-      await this.sendFollowUpsToChat(list);
+      await this.sendFollowUpsToChat(list, activationRoll);
     }
   }
 
@@ -47,9 +48,10 @@ export class FollowUpManager {
     await this.panel.pop();
   }
 
-  private async sendFollowUpsToChat(list: FollowUpActionData[]) {
+  private async sendFollowUpsToChat(list: FollowUpActionData[], activationRoll: number) {
     const templateData = {
-      followUps : list
+      followUps : list,
+      roll: activationRoll,
     };
     const msg = await foundry.applications.handlebars.renderTemplate("systems/persona/parts/combat-panel-follow-up-list.hbs", templateData);
     const messageData: MessageData = {
