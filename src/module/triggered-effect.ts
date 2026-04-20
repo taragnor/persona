@@ -16,14 +16,14 @@ import {PersonaTargetting} from "./combat/persona-targetting.js";
 
 export class TriggeredEffect {
 
-  static async onTrigger<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation) : Promise<CombatResult> {
+  static onTrigger<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation) : CombatResult {
     const situationCopy = this._setupSituation(trigger, actor, situation);
     if (!situationCopy) {
       PersonaError.softFail(`Trigger Fizzle: ${trigger}`, situation);
       return new CombatResult();}
     const triggers = this.getTriggerList(trigger, actor, situationCopy);
     const consequences = this._getTriggerConsequences(triggers, situationCopy );
-    const res = await ConsequenceProcessor.consequencesToResult(consequences ,undefined, situationCopy, null);
+    const res = ConsequenceProcessor.consequencesToResult(consequences ,undefined, situationCopy, null);
     return res;
   }
 
@@ -224,23 +224,23 @@ static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Sit
 }
 
 	static async autoApplyTrigger(...args : Parameters<typeof TriggeredEffect["onTrigger"]>) : Promise<void> {
-		const CR = await this.autoTriggerToCR(...args);
+		const CR = this.autoTriggerToCR(...args);
 		await CR?.autoApplyResult();
 	}
 
-	static async autoTriggerToCR(...args : Parameters<typeof TriggeredEffect["onTrigger"]>) : Promise<U<CombatResult>> {
-		const CR = await this.onTrigger(...args);
+	static autoTriggerToCR(...args : Parameters<typeof TriggeredEffect["onTrigger"]>) : U<CombatResult> {
+		const CR = this.onTrigger(...args);
 		return CR.emptyCheck();
 	}
 
 	static async execNonCombatTrigger( trigger: NonCombatTriggerTypes, actor: PC, situation ?: Situation, msg = "Triggered Effect") : Promise<void> {
-		await (await this.onTrigger(trigger, actor, situation))
+		await (this.onTrigger(trigger, actor, situation))
 		.emptyCheck()
 		?.toMessage(msg, actor);
 	}
 
 	static async execCombatTrigger(trigger: CombatTriggerTypes, actor: ValidAttackers, situation?: Situation) : Promise<void> {
-		const triggerResult = (await this.onTrigger(trigger, actor, situation))
+		const triggerResult = (this.onTrigger(trigger, actor, situation))
 		.emptyCheck();
 		if (!triggerResult) {return;}
 		const usePowers = triggerResult.findEffects("use-power");

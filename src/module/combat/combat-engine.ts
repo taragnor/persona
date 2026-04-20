@@ -4,7 +4,7 @@ import {Defense} from "../../config/defense-types.js";
 import {ModifierTarget, NonDeprecatedModifierType} from "../../config/item-modifiers.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {PowerTag} from "../../config/power-tags.js";
-import {AnyStringObject, SocialLinkIdOrTarot} from "../../config/precondition-types.js";
+import {SocialLinkIdOrTarot} from "../../config/precondition-types.js";
 import {AttackRollSituation, BaseAttackRollSituation, PostAttackRollSituation, RollSituation} from "../../config/situation.js";
 import {PersonaCombatStats} from "../actor/persona-combat-stats.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
@@ -112,7 +112,7 @@ export class CombatEngine {
       await this.handlePlayerInputModifier(options);
       const result = new CombatResult();
       result.merge(await this.usePowerOn(attacker, power, targets, 'standard', options));
-      const costs = await this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
+      const costs = this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
       result.merge(costs);
       const finalizedResult = result.finalize();
       if (options.simulated) { return finalizedResult;}
@@ -189,7 +189,7 @@ export class CombatEngine {
 		for (let atkNum = 0; atkNum < num_of_attacks; ++atkNum) {
 			rollType = atkNum > 0 ? 'iterative': rollType;
 			const atkResult = await this.attackRollProcess( attacker, power, target, rollType == 'standard' && atkNum==0 ? 'activation' : rollType, options);
-			const this_result = await this.processEffects(atkResult);
+			const this_result = this.processEffects(atkResult);
 			result.merge(this_result);
 			const secondary = await this.handleSecondaryAttacks(this_result, atkResult, power, attacker, target, rollType, options);
 			result.merge(secondary);
@@ -434,17 +434,17 @@ export class CombatEngine {
 		const rollBundle = this.makeRollBundle(rollData, attacker, target, power, baseSituation, options );
 		const situation = this.generateAttackSituation(attacker, target, power, rollData, rollBundle.total, options);
 		rollBundle.DC = situation?.DC;
-		return await this.generateAttackResult(attacker, target, power, rollBundle, situation);
+		return this.generateAttackResult(attacker, target, power, rollBundle, situation);
 	}
 
-	private async generateAttackResult(attacker: Persona, target: Persona, power: Usable, rollBundle: RollBundle, situation: ProtoResultAttackSituation): Promise<AttackResult> {
+	private generateAttackResult(attacker: Persona, target: Persona, power: Usable, rollBundle: RollBundle, situation: ProtoResultAttackSituation): AttackResult {
 		const addonAttackResultData = {
 			ailmentRange: situation.ailmentRange,
 			instantKillRange: situation.instantKillRange,
 			critRange: situation.critRange,
 			situation,
 		};
-		const {result, resisted, struckWeakness} = await this.determineAttackResult(attacker, target, power, rollBundle, situation);
+		const {result, resisted, struckWeakness} = this.determineAttackResult(attacker, target, power, rollBundle, situation);
 		const baseData = this.getBaseAttackResult(rollBundle, attacker, target, power);
 		const situationFull : AttackResult["situation"] = {
 			...situation,
@@ -466,18 +466,18 @@ export class CombatEngine {
 		return attackResult;
 	}
 
-	private async determineAttackResult(attacker: Persona, target: Persona, power: Usable, _roll: RollBundle, situation: ProtoResultAttackSituation) : Promise<AttackResultData> {
+	private determineAttackResult(attacker: Persona, target: Persona, power: Usable, _roll: RollBundle, situation: ProtoResultAttackSituation) : AttackResultData {
 		const result = this.getBaseResult(attacker, target,power, situation);
 		const resultSituation = {
 			...situation,
 			...result,
 		};
-		const override = await this.checkOverride(attacker, target, power, resultSituation);
+		const override = this.checkOverride(attacker, target, power, resultSituation);
 		return override ?? result;
 	}
 
-	private async checkOverride(attacker : Persona, target: Persona, power: Usable, resultSituation: Situation & AttackRollSituation & AttackResultData) : Promise<N<AttackResultData>> {
-		const overrideResult = (await TriggeredEffect.onTrigger("on-use-power", attacker.user, resultSituation))
+	private checkOverride(attacker : Persona, target: Persona, power: Usable, resultSituation: Situation & AttackRollSituation & AttackResultData) : N<AttackResultData> {
+		const overrideResult = (TriggeredEffect.onTrigger("on-use-power", attacker.user, resultSituation))
 		.globalOtherEffects.filter( eff=> eff.type == "set-roll-result");
 		const rank = this.rankAttackResult;
 		if (overrideResult.length) {
@@ -679,7 +679,7 @@ export class CombatEngine {
 		return false;
 	}
 
-	async processEffects(atkResult: AttackResult) : Promise<CombatResult> {
+	processEffects(atkResult: AttackResult) : CombatResult {
 		const CombatRes = new CombatResult();
 		const {result } = atkResult;
 		switch (result) {
@@ -698,7 +698,7 @@ export class CombatEngine {
 						realSource: undefined,
 						applyTo: "target",
 					};
-					await reflectRes.addEffect(atkResult, targetActor, cons, atkResult.situation );
+					reflectRes.addEffect(atkResult, targetActor, cons, atkResult.situation );
 				}
 				if (targetActor.hasStatus('phys-shield') && this.canBeReflectedByPhysicalShield(power, attacker.actor.persona())) {
 					const cons : SourcedConsequence = {
@@ -710,7 +710,7 @@ export class CombatEngine {
 						realSource: undefined,
 						applyTo: "target",
 					};
-					await reflectRes.addEffect(atkResult, targetActor, cons, atkResult.situation);
+					reflectRes.addEffect(atkResult, targetActor, cons, atkResult.situation);
 				}
 				CombatRes.merge(reflectRes);
 				return CombatRes; }
@@ -728,7 +728,7 @@ export class CombatEngine {
 				result satisfies never;
 				PersonaError.softFail(`Unknown hit result ${result as string}`);
 		}
-		const powerEffects = await this.processPowerEffectsOnTarget(atkResult);
+		const powerEffects = this.processPowerEffectsOnTarget(atkResult);
 		CombatRes.merge(powerEffects);
 		return CombatRes;
 	}
@@ -887,7 +887,7 @@ export class CombatEngine {
 		return defenseMod;
 	}
 
-	async processPowerEffectsOnTarget(atkResult: AttackResult) : Promise<CombatResult> {
+	processPowerEffectsOnTarget(atkResult: AttackResult) : CombatResult {
 		const {situation} = atkResult;
 		const power = PersonaDB.findItem(atkResult.power);
 		const attacker = atkResult.attacker ? PersonaDB.findToken(atkResult.attacker).actor : PersonaDB.findActor(atkResult.situation.attacker);
@@ -904,7 +904,7 @@ export class CombatEngine {
     sourcedEffects.pushUniqueS(eqTest, ...extraTagEffects);
 		const CombatRes = new CombatResult(atkResult);
 		const consequences = sourcedEffects.flatMap( eff => eff.getActiveConsequences(situation));
-		const res = await ConsequenceProcessor.consequencesToResult(consequences, power,  situation, atkResult);
+		const res = ConsequenceProcessor.consequencesToResult(consequences, power,  situation, atkResult);
 		CombatRes.merge(res);
 		if (PersonaSettings.debugMode() && game.user.isGM) {
 			console.debug(res);
@@ -1106,11 +1106,11 @@ export class CombatEngine {
 		return true;
 	}
 
-	async #processPowerCost (attacker: PToken, situation: Situation, power: Power, _costModifiers: OtherEffect[]) : Promise <CombatResult> {
+	#processPowerCost (attacker: PToken, situation: Situation, power: Power, _costModifiers: OtherEffect[]) : CombatResult {
 		const res = new CombatResult();
 		if (power.system.subtype == 'social-link') {
 			if (power.system.inspirationId) {
-				await res.addEffect(null, attacker.actor, {
+				res.addEffect(null, attacker.actor, {
 					type:'inspiration-cost',
 					amount: power.system.inspirationCost,
 					socialLinkIdOrTarot: power.system.inspirationId as SocialLinkIdOrTarot,
@@ -1131,12 +1131,12 @@ export class CombatEngine {
 				realSource: undefined,
 				applyTo: "attacker",
 			}, power.getDamageType(attacker.actor));
-			await res.addEffect(null, attacker.actor, deprecatedConvert, situation );
+			res.addEffect(null, attacker.actor, deprecatedConvert, situation );
 		}
 		if (!attacker.actor.isShadow()
 			&& power.system.subtype == 'magic'
 			&& power.mpCost(attacker.actor.persona()) > 0) {
-			await res.addEffect(null, attacker.actor, {
+			res.addEffect(null, attacker.actor, {
 				type: 'alter-mp',
 				subtype: 'direct',
 				amount: -power.mpCost(attacker.actor.persona()),
@@ -1149,7 +1149,7 @@ export class CombatEngine {
 		if (attacker.actor.isShadow()) {
 			const ecost = power.energyCost(attacker.actor.persona());
 			if (power.energyCost(attacker.actor.persona()) > 0) {
-				await res.addEffect(null, attacker.actor, {
+				res.addEffect(null, attacker.actor, {
 					type: "combat-effect",
 					combatEffect: 'alter-energy',
 					amount: -ecost,
@@ -1162,7 +1162,7 @@ export class CombatEngine {
 		}
 		const cooldown = power.getCooldown(attacker.actor);
 		if (power.isPower() && cooldown > 0) {
-			await res.addEffect(null, attacker.actor, {
+			res.addEffect(null, attacker.actor, {
 				type: "combat-effect",
 				combatEffect: 'set-cooldown',
 				powerId: power.id,
@@ -1177,7 +1177,7 @@ export class CombatEngine {
 		return res;
 	}
 
-	async #processCosts(attacker: PToken , usableOrCard: UsableAndCard, _costModifiers: OtherEffect[]) : Promise<CombatResult> {
+	#processCosts(attacker: PToken , usableOrCard: UsableAndCard, _costModifiers: OtherEffect[]) : CombatResult {
 		const situation : Situation = {
 			user: attacker.actor.accessor,
 			attacker: attacker.actor.accessor,
@@ -1187,7 +1187,7 @@ export class CombatEngine {
 		switch (usableOrCard.system.type) {
 			case 'power': {
 				const power  = usableOrCard as Power;
-				res.merge(await this.#processPowerCost(attacker, situation, power, _costModifiers));
+				res.merge(this.#processPowerCost(attacker, situation, power, _costModifiers));
 				break;
 			}
 			case 'skillCard':
@@ -1195,7 +1195,7 @@ export class CombatEngine {
 				const consumable = usableOrCard as Consumable;
 				if (consumable.isSkillCard()
 					|| consumable.system.subtype == 'consumable') {
-					await res.addEffect(null, attacker.actor, {
+					res.addEffect(null, attacker.actor, {
 						type: 'expend-item',
 						source: usableOrCard.accessor,
 						owner: attacker.actor.accessor,

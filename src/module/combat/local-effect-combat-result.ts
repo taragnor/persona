@@ -1,7 +1,6 @@
 import {LocalEffect} from "../../config/consequence-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaDB} from "../persona-db.js";
-import {PersonaError} from "../persona-error.js";
 import {ConsequenceApplier} from "./consequence-applier.js";
 
 export class LocalEffectCombatResult {

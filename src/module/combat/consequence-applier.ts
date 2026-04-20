@@ -22,7 +22,7 @@ export class ConsequenceApplier {
     await PersonaError.asyncErrorWrapper(  () => this._applyLocalEffect(effect, actor));
   }
 
-  private static async _applyLocalEffect( effect: Sourced<LocalEffect>, actor : N<PersonaActor>) : Promise<void> {
+  private static async _applyLocalEffect( effect: Sourced<LocalEffect>, _actor : N<PersonaActor>) : Promise<void> {
     switch (effect.type) {
       case "social-card-action":
         await SocialActionExecutor.execSocialCardAction(effect);
@@ -118,7 +118,7 @@ export class ConsequenceApplier {
         ...sitPartial,
         user: user.accessor,
       };
-      const eff = (await TriggeredEffect.onTrigger("on-inflict-status", user, situation))
+      const eff = (TriggeredEffect.onTrigger("on-inflict-status", user, situation))
         .finalize()
         .emptyCheck() ;
       if (eff) {
@@ -153,12 +153,12 @@ export class ConsequenceApplier {
         damageType: dmg.damageType,
         triggeringUser: game.user,
       };
-      const preCR = (await TriggeredEffect.onTrigger("pre-take-damage", actor, situation)).finalize();
+      const preCR = (TriggeredEffect.onTrigger("pre-take-damage", actor, situation)).finalize();
       if (preCR.hasCancelRequest()) {
         ret.push(preCR);
         return ret;
       }
-      const CR = (await TriggeredEffect
+      const CR = (TriggeredEffect
         .autoTriggerToCR("on-damage", actor, situation))
         ?.finalize();
       if (CR) { ret.push(CR);}
@@ -559,7 +559,7 @@ export class ConsequenceApplier {
       for (const comb of combat.combatants) {
         if (!comb.actor) {continue;}
         situation.user = comb.actor.accessor;
-        ret.push((await TriggeredEffect.onTrigger("on-kill-target", comb.actor, situation)).finalize());
+        ret.push((TriggeredEffect.onTrigger("on-kill-target", comb.actor, situation)).finalize());
       }
     }
     void NavigatorVoiceLines.onTargetKilled(target.actor, combat);

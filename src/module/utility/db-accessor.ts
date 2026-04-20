@@ -522,5 +522,3 @@ type AccessedItem<T> =
 
 }
 
-
-type RR = AccessedItem<UniversalAccessor<Actor | Item>>;

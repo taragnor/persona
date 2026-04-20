@@ -179,6 +179,7 @@ export const SOCIAL_LINK_OR_TAROT_OTHER = {
 export type SocialLinkIdOrTarot =
   keyof typeof SOCIAL_LINK_OR_TAROT_OTHER
   | SocialLink["id"]
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
   | Tarot["id"]
   | TarotCard ;
 

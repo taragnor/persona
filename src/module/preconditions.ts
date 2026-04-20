@@ -9,7 +9,6 @@ import { AttackResult } from "./combat/combat-result.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaSocial } from "./social/persona-social.js";
 import { MultiCheckOrSingle, NonDeprecatedPrecondition, SOCIAL_LINK_OR_TAROT_OTHER } from "../config/precondition-types.js";
-import { AnyStringObject } from "../config/precondition-types.js";
 import { SocialLinkIdOrTarot } from "../config/precondition-types.js";
 import { MultiCheck } from "../config/precondition-types.js";
 import { UserComparisonTarget } from "../config/precondition-types.js";
@@ -983,7 +982,6 @@ export function resolveActorIdOrTarot (targetIdOrTarot: PersonaActor["id"] | Tar
       return idTest;
     }
   }
-  // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
   return PersonaDB.getSocialLinkByTarot(targetIdOrTarot);
 }
 

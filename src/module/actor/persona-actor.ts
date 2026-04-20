@@ -1828,7 +1828,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
         statusEffect: id,
         target: this.accessor,
       };
-      const ret = (await TriggeredEffect.onTrigger("pre-inflict-status", this, situation)).finalize();
+      const ret = (TriggeredEffect.onTrigger("pre-inflict-status", this, situation)).finalize();
       await ret
         .emptyCheck()
         ?.toMessage("Response to acquiring Status", this);

@@ -375,7 +375,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 	}
 
-	async displayDamageStack(event: JQuery.ClickEvent) {
+	displayDamageStack(event: JQuery.ClickEvent) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		if (powerId == undefined) {
 			throw new PersonaError(`Can't find power`);
@@ -386,8 +386,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 		const targets= PersonaTargetting.targettedPTokens()
 			.filter( x=> x.actor.persona().effectiveScanLevel >=2 ) ;
-		await power.displayDamageStack(this.actor.persona(), targets[0] ?? null);
-		const stack = await power.getDamageStack(this.actor, targets[0] ?? null);
+		power.displayDamageStack(this.actor.persona(), targets[0] ?? null);
+		const stack = power.getDamageStack(this.actor, targets[0] ?? null);
 		$(event.currentTarget).prop('title', stack);
 	}
 

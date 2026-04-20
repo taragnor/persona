@@ -501,8 +501,7 @@ export class CombatResult  {
             effect?.otherEffects.push({
               ...alterVarCons,
               value,
-            }
-            );
+            });
           } else {
             this.globalOtherEffects.push({
               ... alterVarCons,

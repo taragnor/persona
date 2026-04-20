@@ -9,12 +9,12 @@ import {PersonaError} from "../persona-error.js";
 
 export class ConsequenceProcessor {
 
-	static async consequencesToResult(cons: SourcedConsequence<NonDeprecatedConsequence>[], power: U<ModifierContainer>, situation: Situation, atkResult: AttackResult | null): Promise<CombatResult> {
+	static consequencesToResult(cons: SourcedConsequence<NonDeprecatedConsequence>[], power: U<ModifierContainer>, situation: Situation, atkResult: AttackResult | null): CombatResult {
 		const CombatRes = new CombatResult(atkResult);
 		try {
       const attacker = (situation.attacker) ? PersonaDB.findActor(situation.attacker)?.persona() : undefined;
 			const x = this.ProcessConsequences(power, situation, cons, attacker, atkResult);
-			const result = await this.getCombatResultFromConsequences(x.consequences, situation, atkResult);
+			const result = this.getCombatResultFromConsequences(x.consequences, situation, atkResult);
 			CombatRes.merge(result);
 		}
 		catch (e) {
@@ -159,14 +159,14 @@ export class ConsequenceProcessor {
 		return PersonaSettings.getDamageSystem().processConsequence_damage(cons, targets, attackerPersona, powerUsed, situation);
 	}
 
-	static async getCombatResultFromConsequences(consList: ConsequenceProcessed['consequences'], situation: Situation, atkResult ?: AttackResult | null ) : Promise<CombatResult> {
+	static getCombatResultFromConsequences(consList: ConsequenceProcessed['consequences'], situation: Situation, atkResult ?: AttackResult | null ) : CombatResult {
 		const result = new CombatResult(atkResult);
 		for (const cons of consList) {
 			if (cons.applyTo == 'global') {
-				await result.addEffect(atkResult, undefined, cons.cons, situation);
+				result.addEffect(atkResult, undefined, cons.cons, situation);
 				continue;
 			}
-			await result.addEffect(atkResult, cons.applyTo, cons.cons, situation);
+			result.addEffect(atkResult, cons.applyTo, cons.cons, situation);
 		}
 		return result;
 	}

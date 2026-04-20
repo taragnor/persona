@@ -373,7 +373,7 @@ export class PersonaSocial {
 		const processed= ConsequenceProcessor.processConsequences_simple(results, situation);
 		const result = new CombatResult();
 		for (const c of processed.consequences) {
-			await result.addEffect(null, actor, c.cons, situation);
+			result.addEffect(null, actor, c.cons, situation);
 		}
 		await result.emptyCheck()
 			?.autoApplyResult();

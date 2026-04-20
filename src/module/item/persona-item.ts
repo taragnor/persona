@@ -1628,21 +1628,21 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   /** used for damage calculation estaimate for char sheet*/
-  async generateSimulatedResult(this: Usable, user: ValidAttackers, target: N<PToken>, situation: AttackResult['situation']) : Promise<CombatResult | undefined>;
-  async generateSimulatedResult(this: Usable, user: ValidAttackers, target: N<PToken>, simulatedNat: number) : Promise<CombatResult | undefined>;
-  async generateSimulatedResult (this: Usable, user: ValidAttackers, target: N<PToken>, simulatedSitOrNat: number | AttackResult['situation']) : Promise<CombatResult | undefined> {
+  generateSimulatedResult(this: Usable, user: ValidAttackers, target: N<PToken>, situation: AttackResult['situation']) : CombatResult | undefined;
+  generateSimulatedResult(this: Usable, user: ValidAttackers, target: N<PToken>, simulatedNat: number) : CombatResult | undefined;
+  generateSimulatedResult (this: Usable, user: ValidAttackers, target: N<PToken>, simulatedSitOrNat: number | AttackResult['situation']) : CombatResult | undefined {
     const token = user.getActiveTokens(true)
     .map(x=> x.document) as PToken[];
     if (!token || token.length ==0) {return undefined;}
     if (typeof simulatedSitOrNat == 'number') {
-      return await PersonaCombat.getSimulatedResult(token[0], this,target ?? token[0], simulatedSitOrNat);
+      return PersonaCombat.getSimulatedResult(token[0], this,target ?? token[0], simulatedSitOrNat);
     } else {
-      return await PersonaCombat.getSimulatedResult(token[0], this,target ?? token[0], simulatedSitOrNat);
+      return PersonaCombat.getSimulatedResult(token[0], this,target ?? token[0], simulatedSitOrNat);
     }
   }
 
-  async generateSimulatedDamageObject(this: Usable, user: ValidAttackers, simulatedNat: number, target : N<PToken>) {
-    const result = await this.generateSimulatedResult(user, target, simulatedNat);
+  generateSimulatedDamageObject(this: Usable, user: ValidAttackers, simulatedNat: number, target : N<PToken>) {
+    const result = this.generateSimulatedResult(user, target, simulatedNat);
     if (!result) {return undefined;}
     const finalized = result.finalize();
     const atkResult = finalized.attacks[0]?.atkResult;
@@ -1656,18 +1656,18 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return {damage, critRange, instantKillChance, ailmentRange};
   }
 
-  async displayDamageStack(this: Usable, persona: Persona, target: N<PToken>) : Promise<string> {
-    const st = await this.getDamageStack(persona.user, target);
+  displayDamageStack(this: Usable, persona: Persona, target: N<PToken>) : string {
+    const st = this.getDamageStack(persona.user, target);
     console.log(`Damage stack ${st} vs ${target?.name ?? persona.user.name}`);
     return st;
   }
 
-  async getDamageStack(this: Usable, user: ValidAttackers, target: N<PToken>): Promise<string> {
+  getDamageStack(this: Usable, user: ValidAttackers, target: N<PToken>): string {
     const printRange = function (name: string, range: U<{high: number, low: number}>) {
       if (!range) {return "";}
       return `${name} : ${range.low} - ${range.high}`;
     };
-    const estimate = await this.generateSimulatedDamageObject(user, 6, target);
+    const estimate = this.generateSimulatedDamageObject(user, 6, target);
     const otherString = `
     ${printRange("Critical Range",  estimate?.critRange)}
     ${printRange("Ailment Range",  estimate?.ailmentRange)}
@@ -1701,10 +1701,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case 'standalone':
       case 'weapon':
       case 'magic': {
-        const high = await this.generateSimulatedDamageObject(user, 6, target);
+        const high = this.generateSimulatedDamageObject(user, 6, target);
         //allow wait period to make it slightly more performant
         await sleep(10);
-        const low = await this.generateSimulatedDamageObject(user, 5, target);
+        const low = this.generateSimulatedDamageObject(user, 5, target);
         return {
           high: Math.abs(high?.damage.hpChange ?? 0),
           low: Math.abs(low?.damage.hpChange ?? 0) ,

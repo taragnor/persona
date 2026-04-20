@@ -132,7 +132,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       user: comb.actor.accessor,
       triggeringCharacter: comb.actor.accessor,
     };
-    const CR = await TriggeredEffect
+    const CR = TriggeredEffect
     .autoTriggerToCR('on-combat-start', token.actor, situation);
     return CR?.finalize();
   }
@@ -288,11 +288,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         user: comb.actor!.accessor,
         combatOutcome: PCsWin ? "win" : "draw",
       };
-      const CR =  await TriggeredEffect.autoTriggerToCR('on-combat-end', comb.actor, situation);
+      const CR =  TriggeredEffect.autoTriggerToCR('on-combat-end', comb.actor, situation);
       return await CR?.toMessage('End Combat Triggered Effect', comb.actor);
     });
     await Promise.allSettled(promises);
-    const CR = await TriggeredEffect.autoTriggerToCR('on-combat-end-global');
+    const CR = TriggeredEffect.autoTriggerToCR('on-combat-end-global');
     await CR?.toMessage('End Combat Global Trigger', undefined);
   }
 
@@ -655,7 +655,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
           user: user.token.actor.accessor,
           activeCombat: true,
         };
-        const CR = await TriggeredEffect.autoTriggerToCR('end-turn', user.actor, situation);
+        const CR = TriggeredEffect.autoTriggerToCR('end-turn', user.actor, situation);
         await CR?.toMessage('On End Turn', combatant.actor);
       }
     }
@@ -848,9 +848,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     await this.setFlag('persona', 'autoEndTurn', val);
   }
 
-  static async getSimulatedResult(attacker: PToken, power: UsableAndCard, target: PToken, situation : AttackResult['situation']) : Promise<CombatResult>;
-  static async getSimulatedResult(attacker: PToken, power: UsableAndCard, target: PToken, simNaturalRoll: number) : Promise<CombatResult>;
-  static async getSimulatedResult(attacker: PToken, power: UsableAndCard, target: PToken, simSitOrNat: AttackResult['situation'] |  number) : Promise<CombatResult> {
+  static getSimulatedResult(attacker: PToken, power: UsableAndCard, target: PToken, situation : AttackResult['situation']) : CombatResult;
+  static getSimulatedResult(attacker: PToken, power: UsableAndCard, target: PToken, simNaturalRoll: number) : CombatResult;
+  static getSimulatedResult(attacker: PToken, power: UsableAndCard, target: PToken, simSitOrNat: AttackResult['situation'] |  number) : CombatResult {
     let situation : AttackResult['situation'];
     const combat = game.combat as PersonaCombat | undefined;
     if (typeof simSitOrNat == 'number') {
@@ -900,7 +900,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       roll: null,
     };
     const proc = new CombatEngine(undefined);
-    const CR = await proc.processEffects(simAtkResult);
+    const CR = proc.processEffects(simAtkResult);
     return CR;
   }
 

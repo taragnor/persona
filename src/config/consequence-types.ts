@@ -27,7 +27,6 @@ import {AttackResult} from "../module/combat/combat-result.js";
 import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js";
 import {StatusDuration} from "../module/persona-ae.js";
 import {PowerTagOrId} from "./power-tags.js";
-import {PersonaActor} from "../module/actor/persona-actor.js";
 
 
 export type OtherEffect = {__localEffect?: undefined} &

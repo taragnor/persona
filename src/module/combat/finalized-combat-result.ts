@@ -293,7 +293,7 @@ export class FinalizedCombatResult {
 			await this.#processAttacks();
 			await this.#applyCosts();
 			await this.#applyGlobalOtherEffects();
-			await this.#onUsePowerTriggered();
+			this.#onUsePowerTriggered();
 			await this.#applyChained();
 		} catch (e) {
 			PersonaError.softFail("Trouble executing combat result", e, this);
@@ -379,7 +379,7 @@ export class FinalizedCombatResult {
 		}
 	}
 
-	async #onUsePowerTriggered() {
+	#onUsePowerTriggered() {
 		const attacker = this.attacker;
 		const power = this.power;
 		if (!attacker && this.attacks.length > 0) {
@@ -404,7 +404,7 @@ export class FinalizedCombatResult {
 			triggeringUser: game.user,
 			combatResult: this,
 		};
-		const trigg= (await TriggeredEffect.onTrigger('on-use-power', attacker.actor, situation)).finalize();
+		const trigg= (TriggeredEffect.onTrigger('on-use-power', attacker.actor, situation)).finalize();
 		this.addChained(trigg);
 	}
 
