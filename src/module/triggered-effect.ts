@@ -178,8 +178,6 @@ private static _setupSituation< T extends Trigger>( trigger: T, actor ?: ValidAt
 static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Situation) :  ConditionalEffectC[] {
   const triggers : ConditionalEffectC[] = PersonaDB.getGlobalModifiers().flatMap( x=> x
     .getTriggeredEffects(null, {triggerType: trigger})
-    //may not need this
-    // .filter(x=> x.conditions.some( x=> x.type == "on-trigger" && x.trigger == trigger))
   );
   if (actor) {
     triggers.push(...actor.triggersOn(trigger));
@@ -188,7 +186,6 @@ static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Sit
     const power = PersonaDB.findItem(situation.usedPower);
     const user = situation.user ? PersonaDB.findActor(situation.user) : null;
     const PowerTriggers = power.getTriggeredEffects(user, {triggerType: trigger});
-    // .filter ( ce => PersonaItem.triggersOn(ce, trigger));
     triggers.push(...PowerTriggers);
   }
   if (!actor) {
@@ -198,26 +195,13 @@ static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Sit
     const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
     triggers.push(...PCTriggers);
   }
-  // if (PersonaCombat.combat) {
-  // 	const roomEffects = PersonaCombat.combat?.getRoomEffects() ?? [];
-  // 	triggers.push(
-  // 		...roomEffects.flatMap (RE=> RE.getEffects(null))
-  // 	);
-  // } else {
-  // 	const arr = Metaverse.getRegion()?.allRoomEffects ?? [];
-  // 	triggers.push(
-  // 		...arr.flatMap (RE=> RE.getEffects(null))
-  // 	);
-  // 	const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
-  // 	triggers.push(...PCTriggers);
-  // }
   const filteredEffects = removeDuplicates(triggers
     .filter ( x=>
       x.conditionalType == "triggered"
       && x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == trigger)
     )
   );
-  if (game.user.isGM) {
+  if (game.user.isGM && PersonaSettings.debugMode()) {
     console.debug( `${actor?.name ?? "void actor"} triggerList (${trigger}) : \n${triggers.map( trig=> trig.toString()).join("\n")}`);
   }
 	return filteredEffects;
