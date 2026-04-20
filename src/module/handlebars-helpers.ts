@@ -1126,24 +1126,23 @@ export class PersonaHandleBarsHelpers {
       return power.hasTag("theurgy", null);
     },
 
-    "craftingList": function () {
-      const CRAFTING_TREASURE_LIST = Object.fromEntries(
-        [["", "-"]].concat(
-          PersonaDB.treasureItems()
-          .filter( item => item.isCraftingItem || item.isSecondaryCraftingItem)
-          .sort( (a, b) => a.name.localeCompare(b.name))
-          .map( x=> [x.id, x.name])
-        )
-      ) as Record<Item["id"], string>;
-      return CRAFTING_TREASURE_LIST;
-    },
-
-    "ownsOwnEffects": function (owner: PersonaItem | PersonaActor) {
-      if (owner instanceof PersonaActor) {
-        return true;
-      }
+  "craftingList": function () {
+    const CRAFTING_TREASURE_LIST = Object.fromEntries(
+      [["", "-"]].concat(
+        PersonaDB.treasureItems()
+        .filter( item => item.isCraftingItem || item.isSecondaryCraftingItem)
+        .sort( (a, b) => a.name.localeCompare(b.name))
+        .map( x=> [x.id, x.name])
+      )
+    ) as Record<Item["id"], string>;
+    return CRAFTING_TREASURE_LIST;
+  },
+  "ownsOwnEffects": function (owner: PersonaItem | PersonaActor) {
+    if (owner instanceof PersonaItem) {
       return owner.itemBase == owner;
-    },
+    }
+    return true;
+  },
 
     "getBaseItem": function<T extends PersonaItem | PersonaActor | PersonaAE> (owner: T) :T  {
       if (owner instanceof PersonaItem) {
