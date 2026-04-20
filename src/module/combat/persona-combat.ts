@@ -148,7 +148,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     }) as PersonaCombatant[];
   }
 
+  get panel() : CombatPanel {
+    return CombatPanel.instance;
+  }
+
   override async startCombat(options: StartCombatOptions = {}) {
+    await this.panel.activate();
     let msg = '';
     this._engagedList = new EngagementList(this);
     await this._engagedList.flushData();
@@ -460,8 +465,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     if (!PersonaCombat.isPersonaCombatant(combatant)) {return;}
     const actor = combatant.actor;
     if (!game.user.isGM && actor.isOwner) {
-      void CombatPanel.instance.setTarget(combatant.token);
-      void CombatPanel.instance.activate();
+      await this.panel.activate(true);
+      await this.panel.setTarget(combatant.token);
     }
     if (!game.user.isGM) {return;}
     await this.resetBatonStates();
@@ -485,10 +490,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       this.handleStartTurnEffects(combatant),
     );
     await this.execStartingTrigger(combatant);
-    const openingData = await this.openers.execOpeningRoll(combatant);
-    if (openingData) {
-      startTurnMsg.push(openingData.openerMsg);
-      baseRolls.push(openingData.roll);
+    const openingRoll = await this.openers.makeOpeningRoll();
+    baseRolls.push(openingRoll);
+    const openerMsg = await this.openers.onOpeningRoll(openingRoll.total, combatant);
+    if (openerMsg) {
+      startTurnMsg.push(openerMsg);
     }
     const speaker = {alias: 'Combat Turn Start'};
     const messageData = {
@@ -505,6 +511,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       await sleep(PersonaCombat.WAIT_FOR_FOUNRY_DELAY);
       await msg.update({'author': actorOwner});
     }
+  }
+
+  override get combatant() : U<PersonaCombatant> {
+    const comb = super.combatant;
+    if (!comb || !PersonaCombat.isPersonaCombatant(comb)) {return undefined;}
+    return comb;
   }
 
   static addOpeningActionListeners(elem: JQuery) : void {
@@ -528,7 +540,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       ui.notifications.warn('Not your turn');
       return;
     }
-    return combatant as PersonaCombatant;
+    return combatant;
   }
 
   async execStartingTrigger(combatant: PersonaCombat['combatant']) {
@@ -1373,10 +1385,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     return EngagementChecker.isEngagedBy(c1, c2, this);
   }
 
-  getCombatantFromTokenAcc(acc: UniversalTokenAccessor<PToken>): Combatant<ValidAttackers> {
+  getCombatantFromTokenAcc(acc: UniversalTokenAccessor<PToken>): PersonaCombatant {
     const token = PersonaDB.findToken(acc);
     const combatant = this.combatants.find( x=> x?.actor?.id == token.actor.id);
-    if (!combatant) {
+    if (!combatant || !PersonaCombat.isPersonaCombatant(combatant)) {
       throw new PersonaError(`Can't find combatant for ${token.name}. are you sure this token is in the fight? `);
     }
     return combatant;
@@ -1877,7 +1889,7 @@ export type ConsequenceProcessed = {
 
 CombatHooks.init();
 
-export type PersonaCombatant = NonNullable<PersonaCombat['combatant']> & {actor: ValidAttackers , token: PToken, parent: PersonaCombat};
+export type PersonaCombatant = Combatant<ValidAttackers> & {actor: ValidAttackers , token: PToken, parent: PersonaCombat};
 
 
 type IntoCombatant = PersonaCombatant | UniversalTokenAccessor<PToken> | UniversalActorAccessor<ValidAttackers>;

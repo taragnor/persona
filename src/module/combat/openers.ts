@@ -26,19 +26,13 @@ export class OpenerManager {
     return OpenerManager.panel;
   }
 
-  private async getOpenerMsg(combatant: PersonaCombatant, data: OpenerOptionsReturn[], roll: Roll) {
+  private async getOpenerMsg(combatant: PersonaCombatant, data: OpenerOptionsGroups[], rollTotal: number): Promise<string> {
     try {
-      const openerMsg = await foundry.applications.handlebars.renderTemplate('systems/persona/parts/openers-list.hbs', {roll, openers: data, combatant});
-      return {
-        openerMsg: openerMsg,
-        roll: roll
-      };
+      const openerMsg = await foundry.applications.handlebars.renderTemplate('systems/persona/parts/openers-list.hbs', {roll: rollTotal, openers: data, combatant});
+      return openerMsg;
     } catch (e) {
       PersonaError.softFail("Problem with rendering Opener", e);
-      return {
-        openerMsg: "ERROR",
-        roll,
-      };
+      return"ERROR";
     }
   }
 
@@ -57,42 +51,50 @@ export class OpenerManager {
   }
 
 
-  private async storeOpenerChoices (openingReturn: OpenerOptionsReturn[]) {
+  private async storeOpenerChoices (openingReturn: OpenerOptionsGroups[]) {
     console.log("Openers choices stored");
     Debug(openingReturn);
-    const options = openingReturn.flatMap ( or => or.options);
-    await this.combat.setFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME, options);
+    // const options = openingReturn.flatMap ( or => or.options);
+    await this.combat.setFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME, openingReturn);
   }
 
   private async clearOpenerChoices()  {
     await this.combat.unsetFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME);
   }
 
-  getOpenerChoices()  : OpenerOption[] {
-    const choices = (this.combat.getFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME) as OpenerOption[]);
-    if (typeof choices != "object")  {
+  getOpenerChoices()  : readonly OpenerOptionsGroups[] {
+    const choices = (this.combat.getFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME) as OpenerOptionsGroups[]);
+    if (typeof choices != "object" || !Array.isArray(choices))  {
       Debug (choices);
       return [];
     }
     return choices;
   }
 
-  public async execOpeningRoll(combatant: PersonaCombatant) : Promise< U<{openerMsg:  string, roll: Roll}>> {
-    const openingReturn = await this._execOpeningRoll(combatant);
-    if (!openingReturn) {return undefined;}
-    await this.storeOpenerChoices(openingReturn.data);
-    const {data, roll} = openingReturn;
-    return await this.getOpenerMsg(combatant, data, roll);
+  public async makeOpeningRoll() : Promise<Roll> {
+    const openingRoll = await PersonaRoller.hiddenRoll();
+    return openingRoll;
   }
 
-  private async _execOpeningRoll( combatant: PersonaCombatant) : Promise<{data: OpenerOptionsReturn[], roll: Roll} | null> {
-    const returns :OpenerOptionsReturn[]= [];
+  public async onOpeningRoll(rollTotal: number, combatant : U<PersonaCombatant> = PersonaCombat?.combat?.combatant ) : Promise< U<string>> {
+    if (!combatant) {
+      PersonaError.softFail("No combatnt to make opening roll wtih");
+      return "ERROR";
+    }
+    const openingData = await this._execOpeningRoll(combatant, rollTotal);
+    if (!openingData) {return undefined;}
+    await this.storeOpenerChoices(openingData);
+    return await this.getOpenerMsg(combatant, openingData, rollTotal);
+  }
+
+  private async _execOpeningRoll( combatant: PersonaCombatant, rollValue: number) : Promise<OpenerOptionsGroups[] | null> {
+    const returns :OpenerOptionsGroups[]= [];
     if (this.combat.isSocial) {return null;}
     const actor = combatant.actor;
     if (!actor) {return null;}
-    const openingRoll = await PersonaRoller.hiddenRoll();
+    // const openingRoll = await PersonaRoller.hiddenRoll();
     // const openingRoll = new Roll('1d20');
-    const rollValue = openingRoll.total;
+    // const rollValue = openingRoll.total;
     const situation : Situation = {
       user: actor.accessor,
       naturalRoll: rollValue,
@@ -115,23 +117,17 @@ export class OpenerManager {
     );
     const mandatory = returns.find(r => r.options.some( o=> o.mandatory));
     if (mandatory) {
-      return  {
-        roll: openingRoll,
-        data: [{
+      return  [{
           msg: mandatory.msg,
           options: [mandatory.options.find(x=> x.mandatory)!],
-        }]
-      };
+        }];
     };
     const data = returns.filter(x=> x.msg.length > 0);
-    return {
-      roll: openingRoll,
-      data,
-    };
+    return data;
   }
 
-  private async fadingRoll( combatant: Combatant<ValidAttackers> , situation: Situation) : Promise<OpenerOptionsReturn> {
-    const options : OpenerOptionsReturn['options'] = [];
+  private async fadingRoll( combatant: Combatant<ValidAttackers> , situation: Situation) : Promise<OpenerOptionsGroups> {
+    const options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     if (!situation.rollTags?.includes('opening')) {return {msg, options};}
     const actor = combatant.actor;
@@ -203,8 +199,8 @@ export class OpenerManager {
     return { msg, options};
   }
 
-  private mandatoryOtherOpeners( combatant: PersonaCombatant, situation: Situation): OpenerOptionsReturn {
-    let options : OpenerOptionsReturn['options'] = [];
+  private mandatoryOtherOpeners( combatant: PersonaCombatant, situation: Situation): OpenerOptionsGroups {
+    let options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     if (!combatant.actor) {return { msg, options};}
     const mandatoryActions = combatant.actor.openerActions.filter( x=> x.hasTag('mandatory', combatant.actor));
@@ -235,8 +231,8 @@ export class OpenerManager {
     return {msg, options};
   }
 
-  private saveVsSleep( combatant: Combatant<ValidAttackers>) : OpenerOptionsReturn {
-    const options : OpenerOptionsReturn['options'] = [];
+  private saveVsSleep( combatant: Combatant<ValidAttackers>) : OpenerOptionsGroups {
+    const options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     if (!combatant?.actor?.hasStatus('sleep'))  {
       return {msg, options};
@@ -251,8 +247,8 @@ export class OpenerManager {
     return {msg, options};
   }
 
-  private saveVsDizzy( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsReturn {
-    const options : OpenerOptionsReturn['options'] = [];
+  private saveVsDizzy( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsGroups {
+    const options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     const saveTotal = this.mockOpeningSaveTotal(combatant, situation, 'dizzy');
     if (saveTotal == undefined) {
@@ -273,8 +269,8 @@ export class OpenerManager {
     return {msg, options};
   }
 
-  private saveVsFear( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsReturn {
-    const options : OpenerOptionsReturn['options'] = [];
+  private saveVsFear( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsGroups {
+    const options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     const saveTotal = this.mockOpeningSaveTotal(combatant, situation, 'fear');
     if (saveTotal == undefined) {
@@ -308,9 +304,9 @@ export class OpenerManager {
     return {msg, options};
   }
 
-  private rageOpener( combatant: Combatant<ValidAttackers> , _situation: Situation) : OpenerOptionsReturn {
+  private rageOpener( combatant: Combatant<ValidAttackers> , _situation: Situation) : OpenerOptionsGroups {
     const msg : string[] = [];
-    const options : OpenerOptionsReturn['options'] = [];
+    const options : OpenerOptionsGroups['options'] = [];
     if (combatant?.actor?.hasStatus('rage')) {
       msg.push('Battle Rage');
       options.push({
@@ -323,8 +319,8 @@ export class OpenerManager {
     return {msg, options};
   }
 
-  private saveVsConfusion ( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsReturn {
-    const options : OpenerOptionsReturn['options'] = [];
+  private saveVsConfusion ( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsGroups {
+    const options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     const saveTotal = this.mockOpeningSaveTotal(combatant, situation, 'confused');
     if (saveTotal == undefined) {
@@ -358,8 +354,8 @@ export class OpenerManager {
     return {msg, options};
   }
 
-  private saveVsCharm ( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsReturn {
-    const options : OpenerOptionsReturn['options'] = [];
+  private saveVsCharm ( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsGroups {
+    const options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     const saveTotal = this.mockOpeningSaveTotal(combatant, situation, 'charmed');
     if (saveTotal == undefined) {
@@ -411,8 +407,8 @@ export class OpenerManager {
     return {msg, options};
   }
 
-  private disengageOpener( combatant: PersonaCombatant, situation: Situation) :OpenerOptionsReturn {
-    const options : OpenerOptionsReturn['options'] = [];
+  private disengageOpener( combatant: PersonaCombatant, situation: Situation) :OpenerOptionsGroups {
+    const options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     const rollValue = situation.naturalRoll ?? -999;
     if (!situation.rollTags?.includes('opening')) {return {msg, options};}
@@ -423,7 +419,7 @@ export class OpenerManager {
     }
     const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token as PToken);
     if (!this.combat.isEngagedByAnyFoe(accessor)) {
-      const ret : OpenerOptionsReturn = {
+      const ret : OpenerOptionsGroups = {
         msg, options
       };
       return ret;
@@ -456,14 +452,14 @@ export class OpenerManager {
             mandatory: false,
           });
         }
-        break; 
+        break;
       }
     }
     return { msg, options};
   }
 
-  private saveVsDespair ( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsReturn {
-    const options : OpenerOptionsReturn['options'] = [];
+  private saveVsDespair ( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsGroups {
+    const options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     const saveTotal = this.mockOpeningSaveTotal(combatant, situation, 'despair');
     if (saveTotal == undefined) {
@@ -487,8 +483,8 @@ export class OpenerManager {
     return {msg, options};
   }
 
-  private otherOpeners( combatant: PersonaCombatant, situation: Situation): OpenerOptionsReturn {
-    let options : OpenerOptionsReturn['options'] = [];
+  private otherOpeners( combatant: PersonaCombatant, situation: Situation): OpenerOptionsGroups {
+    let options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     const actor = combatant.actor;
     if (!actor) {return { msg, options};}
@@ -546,13 +542,14 @@ export class OpenerManager {
   async _onOpenerSelect (ev: JQuery.ClickEvent) {
     console.log("On Opener Select");
     ev.stopPropagation();
+    const groupIndex = Number(HTMLTools.getClosestData(ev, "groupIndex"));
     const openerIndex = Number(HTMLTools.getClosestData(ev, "openerIndex"));
     const targetIndex = Number(HTMLTools.getClosestDataSafe(ev, "targetIndex", -1));
     if (Number.isNaN(targetIndex) || targetIndex == -1) {
-      await PersonaCombat.combat?.openers.execOpeningOption( openerIndex);
+      await PersonaCombat.combat?.openers.execOpeningOption(groupIndex,  openerIndex);
       return;
     }
-    await PersonaCombat.combat?.openers.execOpeningOption( openerIndex, targetIndex);
+    await PersonaCombat.combat?.openers.execOpeningOption( groupIndex, openerIndex, targetIndex);
   }
 
   activateListeners(html: JQuery) {
@@ -592,33 +589,42 @@ export class OpenerManager {
     return false;
   }
 
-  async requestOpenerChoice() {
-    const comb = this.combat.combatant;
-    if (!comb || !PersonaCombat.isPersonaCombatant(comb)) {
-      return;
-    }
-    if (game.user.isGM && comb.actor.hasActivePlayerOwner) {
-      return;
-    }
-    if (!comb.actor.isOwner) { return; }
-    await CombatPanel.instance.setTarget(comb.token);
-    await CombatPanel.instance.activate();
-    const choices = this.getOpenerChoices();
-    if (choices.length == 0) {return;}
-    if (choices.some( c => c.mandatory)) {
-      await this._execOpener(choices.find( c=> c.mandatory)!);
-      return;
-    }
-    if (choices.length > 0) {
-      this.panel.setOpenerList(comb, this.getOpenerChoices());
-      await SidePanelManager.push(this.panel);
-    }
+  static getMandatory(data: readonly OpenerOptionsGroups[]) : N<{group: OpenerOptionsGroups, option: OpenerOption}> { const group = data
+      .find(r => r.options
+        .some( o=> o.mandatory)
+      );
+    if (!group) {return null;}
+    const option = group.options
+      .find(o => o.mandatory)!;
+    return {group, option};
   }
 
-  async execOpeningOption( openerIndex: number, targetIndex?: number) : Promise<void> {
-    const option = this.getOpenerChoices()[openerIndex];
+
+  async requestOpenerChoice() {
+    console.log("Requesting Opener Choice");
+    const comb = this.combat.combatant;
+    if (!comb) { return; }
+    if (!comb.actor.isOwner) { return; }
+    if (game.user.isGM && comb.actor.hasActivePlayerOwner) { return; }
+    const choices = this.getOpenerChoices();
+    if (choices.length == 0) {return;}
+    await CombatPanel.instance.setTarget(comb.token);
+    await CombatPanel.instance.activate();
+    const mandatory = OpenerManager.getMandatory(choices);
+    if (mandatory) {
+      console.log("Executing Mandatory Opener");
+      await this._execOpener(mandatory.option);
+      return;
+    }
+    this.panel.setOpenerList(comb, choices);
+    await SidePanelManager.push(this.panel);
+  }
+
+  async execOpeningOption( groupIndex: number, openerIndex: number, targetIndex?: number) : Promise<void> {
+    const choices = this.getOpenerChoices();
+    const option = choices[groupIndex].options[openerIndex];
     if (!option) {
-      PersonaError.softFail(`Can't find Opener option at index ${openerIndex}`);
+      PersonaError.softFail(`Can't find Opener option at group ${groupIndex}, option ${openerIndex}, `, choices);
       return;
     }
     await this._execOpener(option, targetIndex);
@@ -658,7 +664,11 @@ export class OpenerManager {
 
   async execOpenerPower(combatant: PersonaCombatant, powerData: NonNullable<OpenerOption["power"]>, targetIndex ?: number) {
     const {powerId, targets} = powerData;
-    const targetId = targetIndex && targets ? targets[targetIndex]: undefined;
+    const targetId =
+      targetIndex != undefined
+      && targetIndex >= 0
+      && targets != undefined
+      && targets.length > 0 ? targets[targetIndex]: undefined;
     const power = combatant.actor.openerActions
       .find( pwr=> pwr.id == powerId)
       ?? (combatant.actor.items.find( item=> item.id == powerId));
@@ -732,7 +742,9 @@ export class OpenerManager {
 
 }
 
-export type OpenerOptionsReturn = {
+export type OpenerOptionGroup = OpenerOptionsGroups;
+
+type OpenerOptionsGroups = {
   msg: string[],
   options: OpenerOption[]
 }

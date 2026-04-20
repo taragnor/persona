@@ -49,6 +49,7 @@ namespace Foundry {
 
 	}
 
+
 	type CombatUpdateData = {
 		/** The current round of combat */
 		round: number,

@@ -270,7 +270,10 @@ export class CombatPanel extends PersonaPanel {
   }
 
   override async updatePanel() {
-    if (this.combat == undefined) {await this.deactivate(); return;}
+    if (this.combat == undefined) {
+      await this.deactivate();
+      return;
+    }
     return await super.updatePanel();
   }
 

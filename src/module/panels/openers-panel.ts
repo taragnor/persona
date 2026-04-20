@@ -1,10 +1,10 @@
-import {OpenerOption} from "../combat/openers.js";
+import {OpenerManager, OpenerOptionGroup} from "../combat/openers.js";
 import {PersonaCombat, PersonaCombatant} from "../combat/persona-combat.js";
 import {SubPanel} from "./sub-panel.js";
 
 export class OpenerPanel extends SubPanel {
 
-  private _openers: readonly OpenerOption[] = [];
+  private _openers: readonly OpenerOptionGroup[] = [];
   private _combatant: PersonaCombatant;
 
   constructor () {
@@ -16,9 +16,13 @@ export class OpenerPanel extends SubPanel {
       {
         label: "No Opener",
         onPress: () => this._onReturnToMainButton(undefined),
-        visible: () => !this._openers.some ( opener=> opener.mandatory),
+        visible: () => !OpenerManager.getMandatory(this._openers),
       }
     ];
+  }
+
+  protected override allowRightClickPop() : boolean {
+    return !OpenerManager.getMandatory(this._openers);
   }
 
   override async updatePanel() {
@@ -32,12 +36,12 @@ export class OpenerPanel extends SubPanel {
   override async getData() {
     return {
       ...await super.getData(),
-      openers: this._openers,
+      groups: this._openers,
       combatant: this._combatant,
     };
   }
 
-  setOpenerList(combatant: PersonaCombatant, list: readonly OpenerOption[]) {
+  setOpenerList(combatant: PersonaCombatant, list: readonly OpenerOptionGroup[]) {
     this._combatant = combatant;
     this._openers = list;
   }

@@ -47,9 +47,8 @@ export class CombatHooks {
         const currentActor = combat?.combatant?.actor;
         if (currentActor && diffObject.direction > 0) {
           if (combat.isSocial) {
-            if (currentActor.system.type == "pc") {
-              // console.log("Hook start social combat turn");
-              await PersonaSocial.startSocialTurn(currentActor as PC);
+            if (currentActor.isPC()) {
+              await PersonaSocial.startSocialTurn(currentActor);
             }
           } else {
             if (combat.combatant) {
@@ -61,11 +60,10 @@ export class CombatHooks {
     });
 
 		Hooks.on("updateCombat", async (combat: PersonaCombat, diff) => {
-			const changes = diff as FlagChangeDiffObject;
-			if (!changes.flags) {return;}
-			if (!combat.combatant
-				|| !PersonaCombat.isPersonaCombatant(combat.combatant)) {return;}
-			await combat.openers.onUpdateCombat(changes);
+			// const changes = diff as FlagChangeDiffObject;
+			// if (!changes.flags) {return;}
+			// if (!combat.combatant) {return;}
+			await combat.openers.onUpdateCombat(diff as FlagChangeDiffObject );
 		});
 
 		Hooks.on("combatStart", async (combat: PersonaCombat) => {

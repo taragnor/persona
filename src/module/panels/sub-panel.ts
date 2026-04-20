@@ -23,9 +23,16 @@ export abstract class PersonaPanel extends SidePanel {
 
 export abstract class SubPanel extends PersonaPanel {
 
+  protected allowRightClickPop() : boolean {
+    return true;
+  }
+
   override activateListeners(html : JQuery) {
     super.activateListeners(html);
-    html.rightclick( (ev) => this._onReturnToMainButton(ev));
+    if (this.allowRightClickPop()) {
+      html.rightclick( (ev) => this._onReturnToMainButton(ev));
+    }
+
   }
 
   protected async _onReturnToMainButton(ev ?: U<JQuery.Event>) {

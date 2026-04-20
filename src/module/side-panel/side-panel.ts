@@ -43,8 +43,14 @@ export abstract class SidePanel {
     return false;
   }
 
-  async activate() {
-    await SidePanelManager.activate(this);
+  //** if conditional activaiton is selected it will only activate if it's not currently active or part of the panel stack
+  async activate(conditional: boolean = false) {
+    if (!conditional ||
+      ( !SidePanelManager.isActive(this) &&
+        !SidePanelManager.isOnPanelStack(this))
+    ) {
+        await SidePanelManager.activate(this);
+      }
   }
 
   protected prereqs() : (() => boolean)[] {

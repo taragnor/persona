@@ -113,13 +113,15 @@ export class PersonaHandleBarsHelpers {
       }
     },
 
-    "getCombatant" : function (id: PersonaCombatant["id"]) : U<PersonaCombat["combatant"]> {
+    "getCombatant" : function (id: PersonaCombatant["id"]) : PersonaCombat["combatant"] {
       const combat= PersonaCombat.combat;
       if (!combat) {
         PersonaError.softFail("combat is undefined, can't find combatant");
         return undefined;
       }
-      return combat.combatants.get(id);
+      const comb=  combat.combatants.get(id);
+      if (!comb || !PersonaCombat.isPersonaCombatant(comb)) {return undefined;}
+      return comb;
     },
 
     "getCombatantTokenNameByCombatantId": function (id: PersonaCombatant["id"]) {

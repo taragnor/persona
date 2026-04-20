@@ -1,9 +1,14 @@
 <h3>Choose Opening Action</h3>
 <section class="opener-list" data-combatant-id="{{combatant.id}}">
-<ul class="options-list">
-	{{#each openers as |opt j|}}
-  <li class="opener-option" data-opener-index="{{j}}">
-		{{> "systems/persona/parts/opener-option-links.hbs" opt=opt}}
-	</li>
-	{{/each}}
-</ul>
+  {{#each groups as |opener i|}}
+  <div class="opener" data-group-index="{{i}}">
+    <ul class="options-list">
+      {{#each opener.options as |opt j|}}
+      <li class="opener-option" data-opener-index="{{j}}">
+        {{> "systems/persona/parts/opener-option-links.hbs" opt=opt}}
+      </li>
+      {{/each}}
+    </ul>
+  </div>
+  {{/each}}
+</section>

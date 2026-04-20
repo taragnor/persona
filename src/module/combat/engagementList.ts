@@ -30,7 +30,7 @@ export class EngagementList {
 
 	getCombatant(id: CombatantId) : NonNullable<PersonaCombat["combatant"]> {
 		const comb =  this.parent.combatants.get(id);
-		if (!comb) {
+		if (!comb || !PersonaCombat.isPersonaCombatant(comb)) {
 			throw new PersonaError(`Can't find combanat for id ${id}`);
 		}
 		return comb;
