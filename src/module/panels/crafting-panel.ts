@@ -73,11 +73,11 @@ export class CraftingPanel extends SubPanel {
 
   private async craftRecipe(recipe: CraftingRecipe) {
     if (recipe.products.length == 0 || recipe.components.length == 0) {
-    if (!await HTMLTools.confirmBox("Are you sure?", `Are you sure you want to craft ${recipe.products[0].item.displayedName} `)) {
-      return;
-    }
       Debug(recipe);
       throw new PersonaError("Bugged recipe");
+    }
+    if (!await HTMLTools.confirmBox("Are you sure?", `Are you sure you want to craft ${recipe.products[0].item.displayedName} `)) {
+      return;
     }
     await this.unifiedCraftingInventory().expendItems(recipe.components);
     for (const product of recipe.products) {
