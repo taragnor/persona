@@ -5,6 +5,7 @@ import {PersonaError} from "../persona-error.js";
 import {PersonaSockets} from "../persona.js";
 import {PersonaRegion} from "../region/persona-region.js";
 import {Helpers} from "../utility/helpers.js";
+import {CraftingPanel} from "./crafting-panel.js";
 import {ExplorationPowerPanel} from "./explorationPowerPanel.js";
 import {ItemUsePanel} from "./item-use-panel.js";
 import {PersonaPanel} from "./sub-panel.js";
@@ -53,14 +54,22 @@ export class ExplorationPanel extends PersonaPanel {
   }
 
   override buttonConfig() : SidePanel.ButtonConfig[] {
+    const myPC = PersonaDB.activePCParty().find (
+      member => member.isRealPC() && member.isTrueOwner);
     const buttons =  [ {
       label: "Search Room",
       onPress : () => this.searchButton(),
       enabled : () => this.region != undefined && this.region.isSearchable && !PersonaCombat.combat,
-    }
+    }, {
+        label: "Crafting",
+        onPress: () => CraftingPanel.open(myPC as PC),
+        enabled: () => CraftingPanel.allowCrafting(),
+        visible: () => myPC != undefined && myPC.isRealPC(),
+        cssClasses : ["tall-button"]
+    },
     ];
     const ownedMembers = PersonaDB.activePCParty()
-      .filter (member => member.isOwner);
+    .filter (actor => actor.isPCLike() && actor.isOwner);
     for (const member of ownedMembers) {
       if (member.persona().explorationPowers.length == 0) {continue;}
       buttons.push( {

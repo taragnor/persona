@@ -3,6 +3,7 @@ import {PersonaCombat} from "../combat/persona-combat.js";
 import {Metaverse} from "../metaverse.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaSocial} from "../social/persona-social.js";
+import {CraftingPanel} from "./crafting-panel.js";
 import {ItemUsePanel} from "./item-use-panel.js";
 import {PersonaPanel} from "./sub-panel.js";
 import {UsableUsePanel} from "./usable-use-panel.js";
@@ -83,6 +84,12 @@ export class DowntimePanel extends PersonaPanel {
         onPress: () => this._openInventoryPanel(),
         enabled: () => true,
         visible: () => true,
+        cssClasses : ["tall-button"]
+      }, {
+        label: "Crafting",
+        onPress: () => CraftingPanel.open(this.actor!),
+        enabled: () => CraftingPanel.allowCrafting(),
+        visible: () => this.actor != undefined,
         cssClasses : ["tall-button"]
       }, {
         label: "End Turn",

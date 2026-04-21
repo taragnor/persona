@@ -270,6 +270,12 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.#cache.treasureItems;
 	}
 
+  craftableItems() : readonly TreasureItem[] {
+    return this.treasureItems()
+      .filter (item => item.system.craftingRecipes
+        && item.system.craftingRecipes.length > 0);
+  }
+
 	dungeonScenes(): readonly Scene[] {
 		return game.scenes.contents;
 	}

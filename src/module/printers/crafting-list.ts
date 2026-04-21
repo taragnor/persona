@@ -10,9 +10,7 @@ export class CraftingPrinter extends Application {
 
   override async getData() {
     const data = await super.getData();
-    data.craftables = PersonaDB.treasureItems()
-    .filter (item => item.system.craftingRecipes
-      && item.system.craftingRecipes.length > 0);
+    data.craftables = PersonaDB.craftableItems();
     return data;
   }
 

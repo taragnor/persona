@@ -779,14 +779,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   hasTag(this: UsableAndCard | InvItem | Weapon, tags: (PowerTag | EquipmentTag) | (PowerTag | EquipmentTag)[], user: N<ValidAttackers | Persona>) : boolean {
     if (user instanceof Persona) { user = user.user; }
     const list = this.tagList(user ?? null);
-    // if (!Array.isArray(tags)) {
-    //   tags = [tags];
-    // }
-    // const modTagList = tags.map( tag => tag instanceof PersonaItem ? tag.system.linkedInternalTag ?? tag.id : tag);
     return PersonaItem.hasTag(list, tags);
-    // return modTagList.some( tag=> list
-    //   .some(t=> t instanceof PersonaItem ? t.system.linkedInternalTag == tag || t.id == tag : t == tag )
-    // );
   }
 
   static hasTag( tagListToSearch: readonly (Tag | string)[], tagsToLookFor: (PowerTag | EquipmentTag) | (PowerTag | EquipmentTag)[]) : boolean {
@@ -2060,7 +2053,7 @@ isCraftingMaterial(): boolean {
     return this.system.slot == "crafting";
   }
   if (this.isConsumable()) {
-    return this.hasTag("crafting", null);
+    return this.hasTag(["crafting", "secondary-crafting"], null);
   }
   return false;
 }
