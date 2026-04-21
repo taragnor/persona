@@ -2824,12 +2824,7 @@ getAllegiance()  : Team {
 			return "Neutral";
 	}
 }
-
-async expendConsumable(item: Carryable, amountUsed = 1) {
-	// if (item.system.type == "power") {
-	// 	PersonaError.softFail("Can't expend a power, this function requires an item");
-	// 	return;
-	// }
+async removeItem(item: Carryable, amountUsed: number) {
 	const amount = item.system.amount;
 	if (amount <= amountUsed) {
 		await item.delete();
@@ -2837,8 +2832,13 @@ async expendConsumable(item: Carryable, amountUsed = 1) {
 	}
 	if (amount > amountUsed) {
 		await item.update({"system.amount": amount-amountUsed});
+    await Logger.sendToChat(`${this.name} removed ${amountUsed} of ${item.name} (original Amount : ${amount})`);
 		return;
 	}
+}
+
+async expendItem(item: Carryable, amountUsed = 1) {
+  return this.removeItem(item, amountUsed);
 }
 
 roomModifiers() : ModifierContainer[] {

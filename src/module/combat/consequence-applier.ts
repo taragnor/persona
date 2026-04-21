@@ -201,7 +201,7 @@ export class ConsequenceApplier {
         if (item instanceof PersonaItem && item.isCarryableType()) {
           // const item = PersonaDB.find(otherEffect.source);
           if ( item.parent) {
-            await item.parent.expendConsumable(item);
+            await item.parent.expendItem(item);
           }
           return;
         }
@@ -423,7 +423,7 @@ export class ConsequenceApplier {
           PersonaError.softFail(`Can't remove non-carryable type: ${item.name}`);
           break;
         }
-        await actor.expendConsumable(item,amount);
+        await actor.expendItem(item,amount);
         break;
       }
       case "add-card-item":

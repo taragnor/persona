@@ -62,7 +62,7 @@ export class ExplorationPanel extends PersonaPanel {
       enabled : () => this.region != undefined && this.region.isSearchable && !PersonaCombat.combat,
     }, {
         label: "Crafting",
-        onPress: () => CraftingPanel.open(myPC as PC),
+        onPress: () => CraftingPanel.open(myPC as PC, this),
         enabled: () => CraftingPanel.allowCrafting(),
         visible: () => myPC != undefined && myPC.isRealPC(),
         cssClasses : ["tall-button"]

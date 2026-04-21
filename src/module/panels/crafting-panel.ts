@@ -1,14 +1,18 @@
-import {PersonaActor} from "../actor/persona-actor.js";
 import {ItemSpecifier, UniversalCraftingInventory} from "../item/universal-crafting-inventory.js";
 import {Metaverse} from "../metaverse.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {SubPanel} from "./sub-panel.js";
+import { SidePanel } from "../side-panel/side-panel.js";
+import {EnchantedTreasureFormat} from "../exploration/treasure-system.js";
 
 export class CraftingPanel extends SubPanel {
 
   static panel : CraftingPanel = new CraftingPanel();
   actor: PC;
+  private cachedData = {
+    _inventory: undefined as U<UniversalCraftingInventory>
+  };
 
   constructor() {
     super ("crafting-panel");
@@ -16,6 +20,12 @@ export class CraftingPanel extends SubPanel {
 
   override get templatePath(): U<string> {
     return "systems/persona/sheets/panels/crafting-panel.hbs";
+  }
+
+  clearCache() {
+    this.cachedData = {
+      _inventory: undefined,
+    };
   }
 
   craftingRecipes() : CraftingRecipe[] {
@@ -26,6 +36,7 @@ export class CraftingPanel extends SubPanel {
   }
 
   override buttonConfig() : SidePanel.ButtonConfig[] {
+    this.clearCache();
     if (!this.actor.isOwner) {return super.buttonConfig();}
     const buttons = this.craftingRecipes()
       .map (recipe => this.craftingRecipeToButton(recipe))
@@ -43,7 +54,7 @@ export class CraftingPanel extends SubPanel {
         .join( ", ");
       return {
         label:  `${label}`,
-        onPress : () => 0,
+        onPress : () => this.craftRecipe(recipe),
         enabled : this.canCraftRecipe(recipe),
         cssClasses: ["crafting-button"],
         tooltip: this.generateTooltip(recipe),
@@ -56,6 +67,23 @@ export class CraftingPanel extends SubPanel {
         enabled : false,
         "cssClasses": ["error-button"],
       };
+    }
+  }
+
+  private async craftRecipe(recipe: CraftingRecipe) {
+    if (recipe.products.length == 0 || recipe.components.length == 0) {
+      Debug(recipe);
+      throw new PersonaError("Bugged recipe");
+    }
+    await this.unifiedCraftingInventory().expendItems(recipe.components);
+    for (const product of recipe.products) {
+      const treasureItem :EnchantedTreasureFormat = {
+        item: product.item.accessor,
+        enchantments: []
+      };
+      for (let i = 0 ; i< product.amount; ++i) {
+        await this.actor.addTreasureItem(treasureItem);
+      }
     }
   }
 
@@ -105,8 +133,11 @@ export class CraftingPanel extends SubPanel {
     };
   }
 
-  unifiedCraftingInventory ()  :UniversalCraftingInventory {
-    return new UniversalCraftingInventory();
+  unifiedCraftingInventory ()  : UniversalCraftingInventory {
+    if (!this.cachedData._inventory) {
+    this.cachedData._inventory =  new UniversalCraftingInventory();
+      }
+    return this.cachedData._inventory;
   }
 
   canCraftRecipe(recipe: CraftingRecipe) : boolean {
@@ -123,9 +154,13 @@ export class CraftingPanel extends SubPanel {
     return Metaverse.getPhase() == "downtime";
   }
 
-  static async open(actor: PC) {
+  static async open(actor: PC, openingPanel : N<SidePanel>) {
     this.panel.setActor(actor);
-    await this.panel.activate();
+    if (openingPanel) {
+      await openingPanel.push(this.panel);
+    } else {
+      await this.panel.activate();
+    }
   }
 }
 

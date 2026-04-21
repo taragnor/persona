@@ -87,7 +87,7 @@ export class DowntimePanel extends PersonaPanel {
         cssClasses : ["tall-button"]
       }, {
         label: "Crafting",
-        onPress: () => CraftingPanel.open(this.actor!),
+        onPress: () => CraftingPanel.open(this.actor!, this),
         enabled: () => CraftingPanel.allowCrafting(),
         visible: () => this.actor != undefined,
         cssClasses : ["tall-button"]

@@ -1,12 +1,16 @@
 import {PersonaActor} from "../actor/persona-actor.js";
+import {PersonaError} from "../persona-error.js";
 import {PersonaItem} from "./persona-item.js";
 
 export class UniversalCraftingInventory {
 
-  itemList : OwnedCraftingMaterial[];
+  private _itemList : OwnedCraftingMaterial[];
+  private _sortedMap: Map<PersonaItem["id"], OwnedCraftingMaterial[]>;
+
 
   constructor() {
-    this.itemList = this.getUnifiedCraftingInventory();
+    this._itemList = this.getUnifiedCraftingInventory();
+    this._sortedMap = this.generateSortedItemList();
   }
 
   getUnifiedCraftingInventory ()  :OwnedCraftingMaterial[] {
@@ -25,10 +29,13 @@ export class UniversalCraftingInventory {
     return unifiedInventory;
   }
 
-  get sortedItemList() : Map<PersonaItem["id"], OwnedCraftingMaterial[]>
-  {
+  get sortedItemList() : Map<PersonaItem["id"], OwnedCraftingMaterial[]> {
+    return this._sortedMap;
+  }
+
+  generateSortedItemList() : Map<PersonaItem["id"], OwnedCraftingMaterial[]> {
     const map: Map<PersonaItem["id"], OwnedCraftingMaterial[]> = new Map();
-    this.itemList.forEach( data => {
+    this._itemList.forEach( data => {
       const id = data.item.itemBase.id;
       const entry = map.get(id);
       if (!entry) {
@@ -50,6 +57,7 @@ export class UniversalCraftingInventory {
   }
 
 
+
   private hasItem(spec: ItemSpecifier) :boolean {
     const entry = this.sortedItemList.get(spec.item.itemBase.id);
    if ( entry  == undefined) {return false;}
@@ -57,6 +65,42 @@ export class UniversalCraftingInventory {
     return spec.amount <= totalAmt;
   }
 
+  public async expendItems(specs: ItemSpecifier[]) : Promise<void> {
+    if (!this.hasItems(specs))  {
+      throw new PersonaError("You don't have the needed items");
+    }
+    for (const spec of specs) {
+      await this.expendItem(spec);
+    }
+  }
+
+  private async expendItem(spec: ItemSpecifier) : Promise<void> {
+    let amountRequired= spec.amount;
+    const entry = this.sortedItemList.get(spec.item.itemBase.id);
+   if ( entry  == undefined) {
+     Debug(this);
+     throw new PersonaError("Item not present in UnifiedCrafting INventory")
+     ;}
+    const ownedByMyPC = entry.filter( e =>e.owner.isTrueOwner);
+    const ownedByPartyToken = entry.filter( e=> e.owner.isPC() && !e.owner.isRealPC());
+    const ownedByOther = entry.filter( e=> !e.owner.isTrueOwner && e.owner.isPCLike());
+
+    for (const group of [ownedByMyPC, ownedByPartyToken, ownedByOther]) {
+      if (amountRequired <= 0) {return;}
+      for (const element of group) {
+        const amtToTake = Math.clamp(amountRequired, 0,element.amount);
+        if (!element.owner.isOwner) {
+          PersonaError.softFail(`You don't own ${element.owner.name} and thus can't use their items for crafting`);
+          continue;
+        }
+        await element.owner.removeItem(element.item, amtToTake);
+        element.amount -= amtToTake;
+        amountRequired -= amtToTake;
+      }
+    }
+    if (amountRequired <= 0) {return;}
+    throw new PersonaError("Insufficient Components to Craft!");
+  }
 
 
 }
