@@ -1117,6 +1117,7 @@
 	"persona.creatureType.pc-d-mon": "PC D-Mon",
 	"persona.creatureType.lone-persona" : "Lone Persona",
 	"persona.creatureType.custom-persona" : "Custom Persona",
+	"persona.creatureType.party-token" : "Party Token",
 	"persona.creatureType.simulated": "Simulated",
 	"persona.creatureType.persona": "Persona",
 	"persona.creatureType.student": "Student",

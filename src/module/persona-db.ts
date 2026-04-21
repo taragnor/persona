@@ -276,6 +276,12 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
         && item.system.craftingRecipes.length > 0);
   }
 
+  partyTokenActor() : U<PC> {
+    const actor = this.allActors().find( x=>
+      x.isPC() && x.hasPlayerOwner && !x.isRealPC() && x.hasTag("party-token"));
+    return actor?.isPC() ? actor : undefined;
+  }
+
 	dungeonScenes(): readonly Scene[] {
 		return game.scenes.contents;
 	}

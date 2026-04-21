@@ -63,7 +63,9 @@ export const PERSONA_TAG_LIST = [
 	"persona",
 	"lone-persona",
 	"custom-persona",
+  "party-token", //denotes the party token for the PersonaDB
 ] as const;
+
 
 export type PersonaTag = typeof PERSONA_TAG_LIST[number] | ShadowRole;
 
