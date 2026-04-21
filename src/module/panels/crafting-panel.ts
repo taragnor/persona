@@ -5,6 +5,7 @@ import {PersonaError} from "../persona-error.js";
 import {SubPanel} from "./sub-panel.js";
 import { SidePanel } from "../side-panel/side-panel.js";
 import {EnchantedTreasureFormat} from "../exploration/treasure-system.js";
+import {HTMLTools} from "../utility/HTMLTools.js";
 
 export class CraftingPanel extends SubPanel {
 
@@ -72,6 +73,9 @@ export class CraftingPanel extends SubPanel {
 
   private async craftRecipe(recipe: CraftingRecipe) {
     if (recipe.products.length == 0 || recipe.components.length == 0) {
+    if (!await HTMLTools.confirmBox("Are you sure?", `Are you sure you want to craft ${recipe.products[0].item.displayedName} `)) {
+      return;
+    }
       Debug(recipe);
       throw new PersonaError("Bugged recipe");
     }
