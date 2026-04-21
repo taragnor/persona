@@ -1740,7 +1740,29 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
   }
 
-  get description(): SafeString {
+  get description() {
+    switch (this.system.type) {
+      case 'consumable':
+      case 'item':
+      case 'power':
+      case 'focus':
+      case 'talent':
+      case 'universalModifier':
+      case 'tag':
+      case 'weapon':
+        return this.system.description;
+      case 'characterClass':
+      case 'skillCard':
+      case 'socialCard':
+        return "";
+      default:
+        this.system satisfies never;
+        return "";
+    }
+
+  }
+
+  get descriptionHTML(): SafeString {
     switch (this.system.type) {
       case 'consumable':
       case 'item':
