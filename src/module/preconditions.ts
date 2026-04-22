@@ -33,6 +33,7 @@ import {ContainerTypes, PersonaItem} from "./item/persona-item.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaAE} from "./persona-ae.js";
 import {Persona} from "./persona-class.js";
+import {PowerTag} from "../config/power-tags.js";
 
 /** @deprecated Use ConditionalEffectC.getActiveConsequences instead */
 export function getActiveConsequences(condEffect: ConditionalEffectC, situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {
@@ -58,7 +59,7 @@ export function testPrecondition (condition: SourcedPrecondition, situation: Sit
     case "miss-all-targets":
       return false; //placeholder
     case "save-versus":
-      if (!situation.saveVersus) {return false;}
+      if (!("saveVersus" in situation) || !situation.saveVersus) {return false;}
       return situation.saveVersus == condition.status;
     case "on-trigger":
       return triggerComparison(condition, situation);
@@ -93,6 +94,13 @@ export function testPrecondition (condition: SourcedPrecondition, situation: Sit
   }
 }
 
+export function checkSituationProp<T extends keyof MergeUnion<S>, S extends Situation>(situation: S, prop: T): situation is NonNullableProps<HasKey<S, T>> & {[k in T]: NonNullable<S[k]>}
+{
+  if (!(prop in situation) || situation[prop] == undefined ) {
+    return false;
+  }
+  return true;
+}
 
 function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, situation: Situation) : boolean {
   // if (condition.type != "numeric") {throw new PersonaError("Not a numeric comparison");}
@@ -100,11 +108,15 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
   let testCase = ("num" in condition) ? condition.num : 0;
   switch (condition.comparisonTarget) {
     case "natural-roll":
+      if (!checkSituationProp(situation, "naturalRoll")) {
+        return false; };
       if (situation.naturalRoll == undefined)
       {return false;}
       target = situation.naturalRoll;
       break;
     case "activation-roll":
+      if (!checkSituationProp(situation, "naturalRoll")) {
+        return false; };
       if (situation.naturalRoll == undefined) {return false;}
       if (!situation?.rollTags?.includes("activation"))
       {return false;}
@@ -118,11 +130,15 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       break;
     }
     case "total-roll":
+      if (!checkSituationProp(situation, "rollTotal")) {
+        return false; };
       if (situation.rollTotal == undefined)
       {return false;}
       target = situation.rollTotal;
       break;
     case "talent-level": {
+      if (!checkSituationProp(situation, "user")) {
+        return false; };
       if (!situation.user) {return false;}
       const user = PersonaDB.findActor(situation.user);
       const sourceItem = condition.source;
@@ -134,6 +150,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       break;
     }
     case "social-link-level": {
+      if (!checkSituationProp(situation, "user")) { return false; };
       if (!situation.user) {return false;}
       const actor = PersonaDB.findActor(situation.user);
       if (condition.socialLinkIdOrTarot == "SLSource"){
@@ -155,6 +172,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       }
     }
     case "student-skill": {
+      if (!checkSituationProp(situation, "user")) { return false; };
       if (!situation.user) {return false;}
       const actor = PersonaDB.findActor(situation.user);
       if (actor.system.type != "pc") {return false;}
@@ -162,6 +180,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       break;
     }
     case "character-level": {
+      if (!checkSituationProp(situation, "user")) { return false; };
       if (!situation.user) {return false;}
       const actor = PersonaDB.findActor(situation.user);
       if (!actor) { return false;}
@@ -169,6 +188,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       break;
     }
     case "has-resources": {
+      if (!checkSituationProp(situation, "user")) { return false; };
       if (!situation.user) {return false;}
       const actor = PersonaDB.findActor(situation.user);
       if (actor.system.type != "pc") {return false;}
@@ -176,20 +196,22 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       break;
     }
     case "resistance-level" : {
+      if (!checkSituationProp(situation, "usedPower")) { return false; };
+      if (!checkSituationProp(situation, "attacker")) { return false; };
+      if (!checkSituationProp(situation, "usedPower")) { return false; };
       const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
       if (!subject) {return false;}
       testCase = RESIST_STRENGTH_LIST.indexOf(condition.resistLevel);
       let element : DamageType = condition.element;
       if (element == "by-power") {
-        if (!situation.usedPower) {return false;}
         const power = PersonaDB.findItem(situation.usedPower);
-        if (power.system.type == "skillCard") {return false;}
-        if (!situation.attacker) {return false;}
-        const attacker = PersonaDB.findActor(situation?.attacker);
-        element = (power as Usable).getDamageType(attacker);
+        if (power.isSkillCard()) {return false;}
+        const attacker = PersonaDB.findActor(situation.attacker as UniversalActorAccessor<PersonaActor>);
+        if (!attacker.isValidCombatant()){ return false;}
+        element = power.getDamageType(attacker);
         if (element == "healing" || element == "untyped" || element == "all-out" || element =="none" ) {return false;}
       }
-      if (subject.system.type == "npc") {return false;}
+      if (subject.isNPC()) {return false;}
       const targetResist = subject.persona().resists[element]?? "normal";
       target = RESIST_STRENGTH_LIST.indexOf(targetResist);
       break;
@@ -258,11 +280,14 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       break;
     }
     case "opening-roll": {
-      if (situation.naturalRoll == undefined  || !situation.rollTags?.includes("opening")) {return false;}
+      if (!checkSituationProp(situation, "naturalRoll")) { return false; };
+      if (!situation.rollTags?.includes("opening")) {return false;}
       target = situation.naturalRoll;
       break;
     }
     case "links-dating": {
+      if (!checkSituationProp(situation, "user")) { return false; };
+      if (!checkSituationProp(situation, "attacker")) { return false; };
       const subjectAcc = situation.user ?? situation.attacker;
       if (!subjectAcc) {return false;}
       const subject = PersonaDB.findActor(subjectAcc);
@@ -312,6 +337,8 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       break;
     }
     case "progress-tokens-with": {
+      if (!checkSituationProp(situation, "user")) { return false; };
+      if (!checkSituationProp(situation, "attacker")) { return false; };
       const targetActor = getSubjectActors(condition, situation, "conditionTarget")[0];
       if (!targetActor || !targetActor.isSocialLink()) {
         return false;
@@ -578,11 +605,8 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
     }
 
     case "is-same-arcana": {
-      if (!situation.attacker) {return undefined;}
-      const actor = PersonaDB.findActor(situation.attacker);
-      if(!situation.target) {
-        return undefined;
-      }
+      if (!checkSituationProp(situation, "attacker")) { return undefined; };
+      const actor = PersonaDB.findActor<SocialLink | ValidAttackers>(situation.attacker);
       const targetActor = getSubjectActors(condition, situation,  "conditionTarget")[0];
       if (!targetActor) {return undefined;}
       return actor.system.tarot == targetActor.system.tarot;
@@ -669,6 +693,7 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
     }
 
     case "cameo-in-scene": {
+      if (!checkSituationProp(situation, "cameo")) { return undefined; };
       return Boolean(situation.cameo);
     }
 
@@ -745,17 +770,16 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
   switch (condition.tagComparisonType) {
     case undefined:
     case "power": {
-      if (!situation.usedPower) {
-        return undefined;
-      }
+      if (!checkSituationProp(situation, "usedPower")) { return undefined; };
       const power = PersonaDB.findItem(situation.usedPower);
       if (!power) {return undefined;}
       let user: ValidAttackers | null;
       switch (true) {
-        case situation.attacker != undefined:
+        // case situation.attacker != undefined:
+        case checkSituationProp(situation, "attacker"):
           user = PersonaDB.findActor(situation.attacker);
           break;
-        case situation.user != undefined:
+        case checkSituationProp(situation, "user"):
           user = PersonaDB.findActor(situation.user);
           break;
         default:
@@ -763,7 +787,7 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
           break;
       }
       const extraTags = "addedTags" in situation ? situation.addedTags ?? [] : [];
-      const powerTags = power.tagList(user).concat(extraTags);
+      const powerTags = power.tagList(user).concat(extraTags as PowerTag[] );//TODO: Fix Later. this is ahack to avoid a typeerror
       const tagList = unifiedTagList(powerTags);
       if (condition.powerTag == undefined) {
         //weird Sachi Error
@@ -784,6 +808,7 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
       return multiCheckTest(condition.creatureTag, x => target.hasCreatureTag(x));
     }
     case "roll": {
+      if (!checkSituationProp(situation, "rollTags")) { return undefined; };
       const rollTags = unifiedTagList(situation.rollTags);
       // const rollTags = (situation.rollTags ?? [])
       // .flatMap (tag => typeof tag == "string"? [tag] : [tag.id, tag.system.linkedInternalTag]);
@@ -936,18 +961,22 @@ function resolveSocialNonIDTarget (
     switch (test) {
       case "target":
       case "": {
-        return situation.socialTarget?.actorId
-        ?? situation.target?.actorId
-        ?? undefined;
+        if (checkSituationProp(situation, "target")) {
+          return situation.target.actorId;
+        }
+        return undefined;
       }
       case "attacker": {
-        return  situation.attacker?.actorId ?? undefined;
+        if (!checkSituationProp(situation, "attacker")) { return undefined; }
+        return  situation.attacker.actorId;
       }
       case "user": {
-        return situation.user?.actorId ?? undefined;
+        if (!checkSituationProp(situation, "user")) { return undefined; }
+        return situation.user.actorId;
       }
       case "cameo": {
-        return situation.cameo?.actorId ?? undefined;
+        if (!checkSituationProp(situation, "cameo")) { return undefined; }
+        return situation.cameo.actorId;
       }
       case "SLSource": {
         let x : U<typeof targetIdOrTarot>= targetIdOrTarot;
@@ -1023,23 +1052,26 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
       return [];
     }
     case "attacker":
+      if (!checkSituationProp(situation, "attacker")) { return []; }
       if (situation.attacker?.token){
         const tok =  PersonaDB.findToken(situation.attacker.token) as PToken ;
         return tok ? [tok] : [];
       } else {
-        const tok = situation.attacker ? PersonaDB.findActor(situation.attacker): undefined;
+        const tok = situation.attacker ? PersonaDB.findActor<SocialLink | ValidAttackers>(situation.attacker): undefined;
         return tok ? [tok] : [];
       }
     case "target": {
+        if (!checkSituationProp(situation, "target")) { return []; }
       if (situation.target?.token) {
         const tok = PersonaDB.findToken(situation.target.token) as PToken | undefined;
         return tok ? [tok] : [];
       }
-      const target : UniversalActorAccessor<ValidAttackers | ValidSocialTarget> | undefined = situation.target ?? situation.socialTarget;
-      const tok = target ? PersonaDB.findActor(target): undefined;
-      return tok ? [tok] : [];
+      // const target : UniversalActorAccessor<ValidAttackers | ValidSocialTarget> | undefined = situation.target ?? situation.socialTarget;
+      const actor = situation.target ? PersonaDB.findActor<SocialLink | ValidAttackers>(situation.target): undefined;
+      return actor ? [actor] : [];
     }
     case "user":
+        if (!checkSituationProp(situation, "user")) { return []; }
       if (!situation.user) {return [];}
       if (situation?.user?.token) {
         const tok =  PersonaDB.findToken(situation.user.token) as PToken | undefined;
@@ -1058,6 +1090,7 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
         return actor ? [actor] : [];
       }
     case "cameo":
+        if (!checkSituationProp(situation, "cameo")) { return []; }
       if (!situation.cameo) {return [];}
       if (situation.cameo.token) {
         const tok =  PersonaDB.findToken(situation.cameo.token) as PToken | undefined;
@@ -1093,13 +1126,12 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
     }
     default: {
       condTarget satisfies undefined;
-      if (situation.target?.token) {
+
+      if (checkSituationProp(situation, "target") && situation.target?.token) {
         const tok = PersonaDB.findToken(situation.target.token) as PToken | undefined;
         return tok ? [tok] : [];
       }
-      if (!situation.user) {
-        return [];
-      }
+        if (!checkSituationProp(situation, "user")) { return []; }
       const actor=  PersonaDB.findActor(situation.user);
       return actor ? [actor] : [];
     }
@@ -1215,7 +1247,7 @@ export function numberOfOthersWithResolver(condition: Sourced<NumberOfOthersWith
 }
 
 function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "power-has"}, situation: Situation) : U<boolean> {
-  if (!situation.usedPower) {return undefined;}
+  if (!checkSituationProp(situation, "usedPower")) { return undefined; }
   const power = PersonaDB.findItem(situation.usedPower);
   switch (condition.powerProp) {
     case "power-target-type-is": {
@@ -1235,8 +1267,12 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
     }
     case "damage-type-is": {
       if (!power || power.isSkillCard()) {return undefined;}
-      if (!situation.attacker && !situation.user) {return undefined;}
-      const attackerAcc = situation.attacker ? situation.attacker : situation.user!;
+      const attackerAcc = checkSituationProp(situation, "attacker")
+      ? situation.attacker
+      : checkSituationProp(situation, "user")
+      ? situation.user
+      : undefined;
+      if (!attackerAcc) {return undefined;}
       const attacker = PersonaDB.findActor(attackerAcc);
       if (!attacker) {return undefined;}
       const dtype = power.getDamageType(attacker);
@@ -1291,10 +1327,9 @@ function rollPropertyIs(condition : SourcedPrecondition  & {type: "boolean"; boo
 
 function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "combat-comparison"}, situation: Situation)  : U<boolean> {
   if (condition.combatProp == "in-combat") {
-    if (situation.activeCombat) {return true;}
+    if (Metaverse.getPhase() == "combat") {return true;}
     const combat = PersonaCombat.combat;
-    if (combat && !combat.isSocial) {return true;}
-    return false;
+    return combat && !combat.isSocial;
   }
   if (condition.combatProp == "combat-result-is") {
     if ("combatOutcome" in situation) {
@@ -1328,13 +1363,11 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
       });
     }
     case "struck-weakness": {
-      if (!situation.usedPower) {
-        return false;
-      }
+      if (!("usedPower" in situation) || !situation.usedPower) { return undefined; }
       for (const target of subjects) {
         const power = PersonaDB.findItem(situation.usedPower);
         if (power.isSkillCard()) {continue;}
-        if (!situation.attacker) {continue;}
+        if (!checkSituationProp(situation, "attacker")) {continue;}
         const attacker = PersonaDB.findActor(situation?.attacker);
         const pierce = CombatEngine.hasPierce(attacker.persona(), power, situation);
         const resist = target.elemResist(power.getDamageType(attacker));
@@ -1372,12 +1405,12 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
         const arr = typeof condition.powerDamageType == "string" ? [condition.powerDamageType] : multiCheckToArray(condition.powerDamageType);
         return arr.some( dtype => {
           if (dtype == "by-power") {
-            if (!situation.usedPower) { return undefined; }
+            if (!checkSituationProp(situation, "usedPower")) { return undefined; }
+            if (!checkSituationProp(situation, "attacker")) { return undefined; }
             const power = PersonaDB.findItem(situation.usedPower);
-            if (power.system.type == "skillCard") {return undefined;}
-            if (!situation.attacker) {return undefined;}
+            if (power.isSkillCard()) {return undefined;}
             const attacker = PersonaDB.findActor(situation?.attacker);
-            dtype = (power as Usable).getDamageType(attacker);
+            dtype = power.getDamageType(attacker);
           }
           // if (targetActor.system.type == "npc") {return undefined;}
           const resist = target.elemResist(dtype);
@@ -1417,7 +1450,7 @@ function resolveSocialAvailabilityCheck(condition: SourcedPrecondition & {type: 
   }
   let target1 = getSubjectActors(condition, situation,  "conditionTarget")[0];
   if (!target1) {
-    if (!situation.user) {return undefined;}
+    if (!checkSituationProp(situation, "user")) { return undefined; }
     target1 = PersonaDB.findActor(situation.user);
     if (!target1) {return undefined;}
   }

@@ -7,7 +7,6 @@ import { PERMA_BUFFS } from "../../config/perma-buff-type.js";
 import { PermaBuffType } from "../../config/perma-buff-type.js";
 import { Trigger } from "../../config/triggers.js";
 import { PersonaRoller } from "../persona-roll.js";
-import { RollSituation } from "../../config/situation.js";
 import { randomSelect } from "../utility/array-tools.js";
 import { MainModifierOptions, Persona } from "../persona-class.js";
 import { SHADOW_CREATURE_TYPE, SHADOW_ROLE } from "../../config/shadow-types.js";
@@ -446,10 +445,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return basic;
   }
 
-	private async _setLevelTo(this: NPCAlly, lvl: number) {
-		if (!this.isNPCAlly()) {return;}
-		await this.update( {"system.combat.personaStats.pLevel" : lvl});
-	}
+	// private async _setLevelTo(this: NPCAlly, lvl: number) {
+	// 	if (!this.isNPCAlly()) {return;}
+	// 	await this.update( {"system.combat.personaStats.pLevel" : lvl});
+	// }
 
 	isPCLike(): this is NPCAlly | RealPC {
 		return this.isRealPC() || this.isNPCAlly();
@@ -2951,7 +2950,13 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
 		}
 		await this.fullHeal();
 		await this.endEffectsOfDurationOrLess( {dtype :"expedition"});
-		await TriggeredEffect.autoApplyTrigger("exit-metaverse", this);
+    const situation = {
+      trigger : "exit-metaverse",
+      triggeringUser: game.user,
+      user: this.accessor,
+      triggeringCharacter: this.accessor,
+    } satisfies Situation;
+		await TriggeredEffect.autoApplyTrigger("exit-metaverse", this, situation);
 	} catch (e) {
 		Debug(e);
 		console.log(e);
@@ -3560,7 +3565,6 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 	if (this.isShadow()) {
 		const situation : Situation = {
 			user: this.accessor,
-			activeCombat: true,
 		};
 		const bonusEnergy = 3 + this.persona().getBonuses("energy-per-turn").total(situation);
 		await this.alterEnergy(bonusEnergy);
@@ -4061,26 +4065,28 @@ async alterEnergy(this: Shadow, amt: number) {
   await this.setEnergy(this.system.combat.energy.value + amt);
 }
 
-async onRoll(situation: RollSituation & Situation) {
-	console.log(`${this.name} is making a roll with tags: ${situation.rollTags
-			.map( tag => typeof tag == "string" ? tag : tag.name)
-			.join(", ")}`);
-	if (!this.isValidCombatant()) {return;}
-	if (this.isPC() ) {
-		if (situation.rollTags.includes("fatigue")) {
-			await this.update({"system.fatigue.hasMadeFatigueRollToday" : true});
-		}
-	}
-	const rollSituation : Situation = {
-		user: this.accessor,
-		triggeringCharacter: this.accessor,
-		trigger: "on-roll",
-		rollTags: situation.rollTags,
-		naturalRoll: situation.naturalRoll,
-		rollTotal: situation.rollTotal,
-		triggeringUser: game.user,
-	};
-	await TriggeredEffect.autoApplyTrigger("on-roll", this, rollSituation);
+async onRoll(situation: SituationTypes.Roll) {
+  console.log(`${this.name} is making a roll with tags: ${situation.rollTags
+      .map( tag => typeof tag == "string" ? tag : tag.name)
+      .join(", ")}`);
+  if (!this.isValidCombatant()) {return;}
+  if (this.isPC() ) {
+    if (situation.rollTags.includes("fatigue")) {
+      await this.update({"system.fatigue.hasMadeFatigueRollToday" : true});
+    }
+  }
+  const rollSituation : Situation = {
+    user: this.accessor,
+    triggeringCharacter: this.accessor,
+    trigger: "on-roll",
+    rollTags: situation.rollTags,
+    naturalRoll: situation.naturalRoll,
+    rollTotal: situation.rollTotal,
+    triggeringUser: game.user,
+    DC: undefined,
+    addedTags: situation.rollTags,
+  };
+  await TriggeredEffect.autoApplyTrigger("on-roll", this, rollSituation);
 }
 
 async onCombatStart() {

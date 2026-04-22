@@ -3,9 +3,8 @@ import { FinalizedCombatResult } from "./finalized-combat-result.js";
 import { ConsequenceProcessed } from "./persona-combat.js";
 import { ConsequenceAmount, LocalEffect, NewDamageConsequence } from "../../config/consequence-types.js";
 import { DamageCalculation } from "./damage-calc.js";
-import { PostAttackRollSituation } from "../../config/situation.js";
 import { PersonaItem} from "../item/persona-item.js";
-import { getSocialLinkTarget, multiCheckToArray } from "../preconditions.js";
+import { checkSituationProp, getSocialLinkTarget, multiCheckToArray } from "../preconditions.js";
 import { OtherEffect } from "../../config/consequence-types.js";
 import { StatusEffect } from "../../config/consequence-types.js";
 import { ValidSound } from "../persona-sounds.js";
@@ -78,12 +77,12 @@ export class CombatResult  {
 		if (!effect) {return undefined;}
 		let damageType = cons.damageType;
 		if (damageType == "by-power") {
-			if (!situation.usedPower) {
-				PersonaError.softFail("Can't get situation: Used Power for determining damage type");
+			if (!("usedPower" in situation) || !situation.usedPower) {
+				PersonaError.softFail("Can't get situation => Used Power for determining damage type", situation);
 				return undefined;
 			}
-			if (!situation.attacker) {
-				PersonaError.softFail("Can't get situation: attacker for determining damage type");
+			if (!("attacker" in situation) || !situation.attacker) {
+				PersonaError.softFail("Can't get situation => attacker for determining damage type");
 				return undefined;
 			}
 			const power = PersonaDB.findItem(situation.usedPower);
@@ -180,8 +179,11 @@ export class CombatResult  {
 	}
 
   private addEffect_combatEffect( cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "combat-effect"}, effect: ActorChange<ValidAttackers>, target: U<ValidAttackers>, situation: Readonly<Situation>) {
-    if (!target && situation.target) {
-      target = PersonaDB.findActor(situation.target);
+    if (!target && checkSituationProp(situation, "target")) {
+      const sitTarget = PersonaDB.findActor<PersonaActor>(situation.target);
+      if (sitTarget.isValidCombatant()) {
+        target = sitTarget;
+      }
     }
     switch (cons.combatEffect) {
       case "damage":
@@ -216,7 +218,7 @@ export class CombatResult  {
         break;
       }
       case "extraTurn": {
-        if (situation.usedPower) {
+        if (checkSituationProp(situation, "usedPower")) {
           const user = situation.user ? PersonaDB.findActor(situation.user) : null;
           const power = PersonaDB.findItem(situation.usedPower);
           if (power.isOpener(user)) {break;}
@@ -295,11 +297,11 @@ export class CombatResult  {
     }
   }
 
-  addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
-    if (target == undefined && situation.target != undefined) {
-      target = PersonaDB.findActor(situation.target);
+  addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | SocialLink | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
+    if (target == undefined && checkSituationProp(situation, "target")) {
+      target = PersonaDB.findActor<ValidAttackers | SocialLink>(situation.target);
     }
-    const effect = this.#getEffect(target);
+    const effect = target && target.isValidCombatant() ? this.#getEffect(target): undefined;
     switch (cons.type) {
       case "none":
         break;
@@ -340,10 +342,10 @@ export class CombatResult  {
       case "other-effect":
         break;
       case "set-flag": {
-        if (!effect) {break;}
+        if (!effect || !target || !target.isValidCombatant()) {break;}
         try {
           if (cons.flagState) {
-            const duration = convertConsToStatusDuration(cons, target!, situation);
+            const duration = convertConsToStatusDuration(cons, target, situation);
             effect.otherEffects.push( {
               ...cons,
               duration,
@@ -455,7 +457,7 @@ export class CombatResult  {
       case "add-creature-tag":
         break;
       case "combat-effect":
-        if (!effect) {break;}
+        if (!effect || !target || !target.isValidCombatant()) {break;}
         this.addEffect_combatEffect(cons, effect, target, situation);
         // effect.otherEffects.push(cons);
         break;
@@ -702,7 +704,7 @@ export class CombatResult  {
   addEffect_combatEffect_addStatus(  cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "combat-effect", combatEffect:"addStatus"}, effect: ActorChange<ValidAttackers>, target: U<ValidAttackers>, situation: Readonly<Situation>) {
     if (!effect || !target) {return;}
     let status_damage : number | undefined = undefined;
-    if (situation.attacker && situation.usedPower &&  cons.statusName == "burn") {
+    if ("attacker" in situation && "usedPower" in situation && situation.attacker && situation.usedPower &&  cons.statusName == "burn") {
       const power = PersonaDB.findItem(situation.usedPower);
       if (power.isSkillCard()) {
         PersonaError.softFail("Skill Card shouldn't be here");
@@ -757,7 +759,7 @@ export type AttackResult = {
 	target: N<UniversalTokenAccessor<PToken>>,
 	attacker: N<UniversalTokenAccessor<PToken>>,
 	power: UniversalItemAccessor<UsableAndCard>,
-	situation: Situation & PostAttackRollSituation,
+	situation: HasKey<SituationComponent.Roll, "resisted">,
 	roll: RollBundle | null ,
 	ailmentRange: U<{low: number, high: number}>
 	instantKillRange: U<{low: number, high:number}>;
@@ -877,9 +879,18 @@ function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-fl
         const actor = PersonaCombat.solveEffectiveTargetsForce(cons.durationApplyTo, situation, cons).at(0);
         if (!actor) {
           PersonaError.softFail(`Can't find actor for actorTurn property in Status, defaulting to user`);
+          const actorTurn = "user" in situation
+            ? situation.user
+            : "triggeringCharacter" in situation
+            ? situation.triggeringCharacter
+            : undefined;
+          if (!actorTurn) {
+            PersonaError.softFail(`Can't find actor for actorTurn property in Status, defaulting to instant Status`);
+            return {dtype: "instant"};
+          }
           return {
             dtype: dur,
-            actorTurn: situation.user ? situation.user : situation["triggering-character"] ? situation["triggering-character"] : situation.target!,
+            actorTurn: actorTurn,
           };
           //TODO: need to bail here
         }

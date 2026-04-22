@@ -45,3 +45,26 @@ type Prettify<T> = {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type Unknown<T> = unknown;
 
+type MergeUnion<T> = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [K in T extends any ? keyof T : never]?:
+    T extends { [P in K]?: infer V } ? V : never;
+};
+
+type ValidProp<T extends object> = {
+  [K in keyof Required<T>]: T[K] extends unknown ? NonNullable<T[K]>: never
+};
+
+
+
+type HasKey<T, K extends keyof MergeUnion<T>> =
+  T extends unknown
+    ? K extends keyof T
+      ? T
+      : never
+    : never;
+
+type NonNullableProps<T> =
+  T extends unknown
+    ? { [K in keyof T]: NonNullable<T[K]> }
+    : never;

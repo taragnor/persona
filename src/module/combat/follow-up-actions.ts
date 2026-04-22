@@ -1,6 +1,5 @@
 import {StatusEffect} from "../../config/consequence-types.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
-import {RollSituation} from "../../config/situation.js";
 import {FollowUpPanel} from "../panels/follow-up-panel.js";
 import {UsableListPanel} from "../panels/usable-list-panel.js";
 import {PersonaDB} from "../persona-db.js";
@@ -85,15 +84,21 @@ export class FollowUpManager {
         const actor = ally.actor;
         if (!actor || !actor.teamworkMove ) {return [];}
         if (!actor.persona().canUsePower(actor.teamworkMove, false)) {return [];}
-        const situation : CombatRollSituation = {
+        const situation : Situation = {
           attacker: actor.accessor,
           naturalRoll: activationRoll,
           rollTags: ['attack', 'activation'],
           rollTotal : activationRoll,
           user: actor.accessor,
-        };
+          DC: undefined,
+          addedTags: [],
+        } satisfies Situation;
         if (!actor.teamworkMove.testTeamworkPrereqs(situation, actor)) {return [];}
-        const targets = PersonaTargetting.getValidTargetsFor(actor.teamworkMove, combatant, situation);
+      const comb = (PersonaCombat.combat ?
+        PersonaCombat.combat.combatants.contents :
+        []) ?? [];
+      const possibleTargets = comb.filter( x=> PersonaCombat.isPersonaCombatant(x));
+        const targets = PersonaTargetting.getValidTargetsFor(actor.teamworkMove, combatant, possibleTargets, situation);
         if (targets.length == 0) {return [];}
         return [{
           combatant,
@@ -155,12 +160,14 @@ export class FollowUpManager {
     const combatant = token.object ? this.combat.getCombatantByToken(token): null;
     if (!combatant || !combatant.actor) {return [];}
     const actor = combatant.actor;
-    const situation : CombatRollSituation = {
+    const situation = {
       naturalRoll: activationRoll,
       rollTags: ['attack', 'activation'],
       rollTotal: activationRoll,
       user: actor.accessor,
-    };
+      DC: undefined,
+      addedTags: [],
+    } satisfies Situation;
     const persona = actor.persona();
     const followUpMoves = actor.powers
       .filter(pwr => pwr.isFollowUpMove()
@@ -363,9 +370,6 @@ export type FollowUpActionData = {
 } | {
   type: "act-again";
 };
-
-type CombatRollSituation = RollSituation & Situation;
-
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type

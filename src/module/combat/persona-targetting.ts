@@ -49,7 +49,6 @@ export class PersonaTargetting {
 				attacker: attacker.actor.accessor,
 				target: target.actor.accessor,
 				usedPower: power.accessor,
-				activeCombat: !!PersonaCombat.combat,
 			};
       return power.targetMeetsConditions(attacker.actor, target.actor, situation);
     });
@@ -188,7 +187,7 @@ export class PersonaTargetting {
 		}
 	}
 
-  static getValidTargetsFor(usable: Usable, user: PersonaCombatant, situation ?: Situation, possibleTargets?: PersonaCombatant[]) : PersonaCombatant[] {
+  static getValidTargetsFor(usable: Usable, user: PersonaCombatant,  possibleTargets?: PersonaCombatant[], situation ?: Situation) : PersonaCombatant[] {
     const userActor = user.token.actor;
     if (!userActor) {return [];}
     if (possibleTargets == undefined) {
@@ -207,10 +206,10 @@ export class PersonaTargetting {
   }
 
   getValidTargetsFor( user: PersonaCombatant, situation ?: Situation, possibleTargets?: PersonaCombatant[]) : PersonaCombatant[] {
-    return PersonaTargetting.getValidTargetsFor(this.power, user, situation, possibleTargets);
+    return PersonaTargetting.getValidTargetsFor(this.power, user, possibleTargets, situation);
   }
 
-  static isValidTargetFor(usable: Usable, user: PersonaCombatant, target: PersonaCombatant, situation?: Situation): boolean {
+  static isValidTargetFor(usable: Usable, user: PersonaCombatant, target: PersonaCombatant, situation?:Situation): boolean {
     const userActor = user.token.actor;
     const targetActor = target.token.actor;
     if (!userActor || !targetActor) {return false;}
@@ -228,70 +227,68 @@ export class PersonaTargetting {
     return true;
   }
 
-  isValidTargetFor(user: ValidAttackers, target: ValidAttackers, situation?: Situation): boolean {
+  isValidTargetFor(user: ValidAttackers, target: ValidAttackers, baseSit?: Situation): boolean {
     const power = this.power;
-    if (!situation) {
-      situation = {
-        user : user.accessor,
-        attacker: user.accessor,
-        target: target.accessor,
-      };
-    } else {
-      situation = {
-        ...situation,
-        target: target.accessor
-      };
-    }
-    const targets = power.targets();
-    switch (targets) {
-      case '1-engaged':
-      case '1-nearby':
-      case '1d4-random':
-      case '1d4-random-rep':
-      case '1d3-random':
-      case '1d3-random-rep':
-        if (!target.isAlive()) {return false;}
-        break;
-      case '1-nearby-dead':
-        if (target.isAlive()) {return false;}
-        break;
-      case 'self':
-        if (user != target) {return false;}
-        break;
-      case '1-random-enemy':
-      case 'all-enemies':
-        if (PersonaCombat.isSameTeam(user, target)) {return false;}
-        if (!target.isAlive()) {return false;}
-        break;
-      case 'all-allies':
-        if (!PersonaCombat.isSameTeam(user, target)) {return false;}
-        if (!target.isAlive()) {return false;}
-        break;
-      case 'all-dead-allies':
-        if (!PersonaCombat.isSameTeam(user, target)) {return false;}
-        if (target.isAlive()) {return false;}
-        break;
-      case 'all-others':
-        if (user == target) {return false;}
-        if (target.isAlive()) {return false;}
-        break;
-      case 'everyone':
-        if (!target.isAlive()) {return false;}
-        break;
-      case 'everyone-even-dead':
-        break;
-      default:
-        targets satisfies never;
-    }
-    if (power.isOpener(user)) {
-      const sourced = ConditionalEffectManager.getConditionals(power.system.openerConditions, power, user, power );
-      if (!testPreconditions(sourced, situation)) {return false;}
-    }
-    const sourcedTC = ConditionalEffectManager.getConditionals(power.system.validTargetConditions, power, user, power );
-    return testPreconditions(sourcedTC, situation);
+    const situation = !baseSit ? {
+      user : user.accessor,
+      attacker: user.accessor,
+      target: target.accessor,
+      usedPower: power.accessor,
+    }: {
+      ...baseSit as SituationTypes.UserOnlySituation, //put this in so it wouldn't be fussy about types
+      user : user.accessor,
+      attacker: user.accessor,
+      target: target.accessor,
+      usedPower: power.accessor,
+    } satisfies Situation;
+  const targets = power.targets();
+  switch (targets) {
+    case '1-engaged':
+    case '1-nearby':
+    case '1d4-random':
+    case '1d4-random-rep':
+    case '1d3-random':
+    case '1d3-random-rep':
+      if (!target.isAlive()) {return false;}
+      break;
+    case '1-nearby-dead':
+      if (target.isAlive()) {return false;}
+      break;
+    case 'self':
+      if (user != target) {return false;}
+      break;
+    case '1-random-enemy':
+    case 'all-enemies':
+      if (PersonaCombat.isSameTeam(user, target)) {return false;}
+      if (!target.isAlive()) {return false;}
+      break;
+    case 'all-allies':
+      if (!PersonaCombat.isSameTeam(user, target)) {return false;}
+      if (!target.isAlive()) {return false;}
+      break;
+    case 'all-dead-allies':
+      if (!PersonaCombat.isSameTeam(user, target)) {return false;}
+      if (target.isAlive()) {return false;}
+      break;
+    case 'all-others':
+      if (user == target) {return false;}
+      if (target.isAlive()) {return false;}
+      break;
+    case 'everyone':
+      if (!target.isAlive()) {return false;}
+      break;
+    case 'everyone-even-dead':
+      break;
+    default:
+      targets satisfies never;
   }
-
-
+  if (power.isOpener(user)) {
+    const sourced = ConditionalEffectManager.getConditionals(power.system.openerConditions, power, user, power );
+    if (!testPreconditions(sourced, situation)) {return false;}
+  }
+  const sourcedTC = ConditionalEffectManager.getConditionals(power.system.validTargetConditions, power, user, power );
+  return testPreconditions(sourcedTC, situation);
+}
 
 }
 

@@ -394,7 +394,12 @@ export class Metaverse {
 			});
 		}
 		await StepsClock.instance.inc();
-		await TriggeredEffect.autoApplyTrigger("on-metaverse-turn");
+    const situation = {
+      trigger: "on-metaverse-turn",
+      triggeringUser:game.user,
+    } satisfies Situation;
+
+		await TriggeredEffect.autoApplyTrigger("on-metaverse-turn", undefined, situation);
 		ui.notifications.notify("Passing Metaverse turn");
 	}
 

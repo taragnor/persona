@@ -26,7 +26,7 @@ import { ConditionalEffectManager } from '../conditional-effect-manager.js';
 import { localize } from '../persona.js';
 import { POWER_TAGS } from '../../config/power-tags.js';
 import { ModifierList, ModifierListItem } from '../combat/modifier-list.js';
-import { multiCheckToArray, testPreconditions } from '../preconditions.js';
+import { checkSituationProp, multiCheckToArray, testPreconditions } from '../preconditions.js';
 import { CardChoice, CardEvent, CardRoll } from '../../config/social-card-config.js';
 import { BASIC_PC_POWER_NAMES } from '../../config/basic-powers.js';
 import { BASIC_SHADOW_POWER_NAMES } from '../../config/basic-powers.js';
@@ -1117,7 +1117,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     );
   }
 
-  testOpenerPrereqs (this: UsableAndCard, situation: Situation, user: PersonaActor) : boolean {
+  testOpenerPrereqs (this: UsableAndCard, situation: SituationComponent.PowerUse & SituationComponent.RollParts.CompletedRollPart, user: PersonaActor) : boolean {
     switch (this.system.type) {
       case 'skillCard': return false;
       case 'power': case 'consumable':
@@ -1191,20 +1191,18 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       .filter ( x=> x!= undefined);
   }
 
-  modifiedHpCost(this: Usable, persona: Persona, situation ?: Situation) : number {
-    if (!situation) {
-      situation = {
-        user: persona.user.accessor,
-        usedPower: this.accessor,
-      };
-    }
+  modifiedHpCost(this: Usable, persona: Persona, sit ?: Situation) : number {
+    const situation = sit ? sit :  {
+      user: persona.user.accessor,
+      usedPower: this.accessor,
+    } satisfies Situation;
     const newHPCost = this.hpCost();
     if (newHPCost > 0) {
       const calcedHPPercent = (this.hpCost() /100) * persona.user.mhpEstimate;
-      return Math.round(calcedHPPercent * persona.hpCostMod().total(situation, 'percentage'));
+      return Math.round(calcedHPPercent * persona.hpCostMod().total(situation as SituationTypes.BonusQuerySituation, 'percentage'));
     }
     const oldHPCost = this.oldhpCost();
-    return Math.clamp(Math.round(oldHPCost * persona.hpCostMod().total(situation, 'percentage')), 0, 1000);
+    return Math.clamp(Math.round(oldHPCost * persona.hpCostMod().total(situation as SituationTypes.BonusQuerySituation, 'percentage')), 0, 1000);
   }
 
   powerCostString_PC(this: Power, persona: Persona) : string {
@@ -2622,15 +2620,13 @@ targetMeetsConditions(this: UsableAndCard, user: ValidAttackers, target: ValidAt
   const usable = this as Usable;
   if (!usable.system.validTargetConditions) {return true;}
   const conditions  = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user, this);
-  if (!situation) {
-    situation = {
-      attacker : user.accessor,
-      user: user.accessor,
-      target: target.accessor,
-      usedPower: usable.accessor,
-    };
-  }
-  return testPreconditions(conditions, situation);
+  const sit = situation ? situation : {
+    attacker : user.accessor,
+    user: user.accessor,
+    target: target.accessor,
+    usedPower: usable.accessor,
+  };
+  return testPreconditions(conditions, sit);
 }
 
 requiresTargetSelection(this: UsableAndCard) : boolean {
@@ -2881,7 +2877,7 @@ static resolveItemSelector(selector: ItemSelector, situation: Situation): Enchan
     }
       break;
     case "randomTreasure": {
-      if (!situation.user) {return [];}
+      if (!checkSituationProp(situation, "user")) {return [];}
       const user = PersonaDB.findActor(situation.user);
       const lvlMod = selector.treasureLevelModifier ?? 0;
       return TreasureSystem.generate(user.level + lvlMod, selector.rollModifier ?? 0, selector.minValue ?? 0);

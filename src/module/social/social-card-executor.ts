@@ -1,7 +1,6 @@
 import {CARD_RESTRICTOR_TAGS, CardTag} from "../../config/card-tags.js";
 import {HBS_TEMPLATES_DIR, PersonaSettings} from "../../config/persona-settings.js";
 import {RollTag} from "../../config/roll-tags.js";
-import {SocialCardSituation} from "../../config/situation.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-system.js";
@@ -91,11 +90,10 @@ export class SocialCardExecutor {
 		const cameo = cameos.length > 0 ? cameos[0].accessor : undefined;
 		const situation : CardData["situation"] = {
 			user: actor.accessor,
-			socialTarget: activity instanceof PersonaActor ?  activity.accessor: undefined,
-			attacker: actor.accessor,
+			target: activity instanceof PersonaActor ?  activity.accessor: undefined,
 			cameo,
-			isSocial: true,
 			socialRandom : Math.floor(Math.random() * 20) + 1,
+      addedTags: [],
 		};
 		if (cameos[0]) {
 			replaceSet["$CAMEO"] = cameos[0].name;
@@ -272,8 +270,7 @@ export class SocialCardExecutor {
 		const situation : Situation= {
 			user: actor.accessor,
 			attacker: actor.accessor,
-			socialTarget: link? link.actor.accessor : undefined,
-			isSocial: true,
+			target: link? link.actor.accessor : undefined,
 		};
 		const cardList = PersonaDB.socialEncounterCards();
 		if (cardList.length == 0) {
@@ -312,10 +309,9 @@ export class SocialCardExecutor {
 			const targetAcc = target?.accessor;
 			const situation: Situation = {
 				cameo: acc,
-				isSocial: true,
 				user: actor.accessor,
 				attacker: actor.accessor,
-				socialTarget: targetAcc,
+				target: targetAcc,
 				socialRandom : Math.floor(Math.random() * 20) + 1,
 			};
 			if (PersonaSocial.cameoDisqualifierStatuses.some( st => cameo.hasStatus(st))) { return false;}
@@ -602,7 +598,7 @@ export type CardData = {
 	eventsChosen: SocialCard["system"]["events"][number][];
 	eventsRemaining: number,
 	currentEvent: SocialCard["system"]["events"][number] | null;
-	situation: Situation & SocialCardSituation;
+	situation: SituationTypes.SocialCardSituation;
 	replaceSet: Record<string, string>;
 	sound?: FOUNDRY.AUDIO.Sound
 	variables: Record<string, number>;

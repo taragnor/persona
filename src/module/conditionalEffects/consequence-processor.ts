@@ -12,7 +12,7 @@ export class ConsequenceProcessor {
 	static consequencesToResult(cons: SourcedConsequence<NonDeprecatedConsequence>[], power: U<ModifierContainer>, situation: Situation, atkResult: AttackResult | null): CombatResult {
 		const CombatRes = new CombatResult(atkResult);
 		try {
-      const attacker = (situation.attacker) ? PersonaDB.findActor(situation.attacker)?.persona() : undefined;
+      const attacker = ("attacker" in situation && situation.attacker) ? PersonaDB.findActor<ValidAttackers  | SocialLink>(situation.attacker)?.persona() : undefined;
 			const x = this.ProcessConsequences(power, situation, cons, attacker, atkResult);
 			const result = this.getCombatResultFromConsequences(x.consequences, situation, atkResult);
 			CombatRes.merge(result);

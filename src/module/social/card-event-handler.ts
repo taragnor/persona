@@ -1,7 +1,6 @@
 import {CardTag} from "../../config/card-tags.js";
 import {HBS_TEMPLATES_DIR, PersonaSettings} from "../../config/persona-settings.js";
 import {RollTag} from "../../config/roll-tags.js";
-import {RollSituation} from "../../config/situation.js";
 import {CardChoice, CardEvent, CardRoll} from "../../config/social-card-config.js";
 import {StudentSkill, StudentSkillExt} from "../../config/student-skills.js";
 import { PersonaActor} from "../actor/persona-actor.js";
@@ -131,12 +130,18 @@ export class SocialCardEventHandler {
 				const link = this.owner.link;
 				const activityOrActor = "actor" in link ? link.actor: link.activity;
 				const skill = this.resolvePrimarySecondarySocialStat(cardRoll.studentSkill, activityOrActor);
+        const rollSituation = {
+          ...cardData.situation,
+          rollTags: [],
+          DC: undefined,
+        } satisfies SituationTypes.PreRoll;
 				const roll = await PersonaRoller.rollSocialStat(cardData.actor, skill, {
 					askForModifier: true,
 					rollTags,
 					DC: 0,
 					DCMods,
-					situation: cardData.situation,
+          situation: rollSituation,
+					// situation: cardData.situation,
 					label: `Card Roll (${skill} ${cardRoll.modifier || ""})`,
 				});
 				await roll.toModifiedMessage(true);
@@ -150,13 +155,19 @@ export class SocialCardEventHandler {
 			}
 			case "save": {
 				const DCMods = this.getCardRollDCModifiers(cardData, cardRoll, rollTags);
+        const rollSituation = {
+          ...cardData.situation,
+          rollTags: [],
+          DC: undefined,
+        } satisfies SituationTypes.PreRoll;
 				const saveResult = await PersonaRoller.rollSave(cardData.actor,  {
 					askForModifier: true,
 					DC: 0,
 					DCMods,
 					label: "Card Roll (Saving Throw)",
 					rollTags,
-					situation: cardData.situation,
+					situation: rollSituation,
+					// situation: cardData.situation,
 				});
 				await saveResult.toModifiedMessage(true);
 				const situation = saveResult.resolvedSituation();
@@ -606,7 +617,7 @@ export class SocialCardEventHandler {
 		return this.getBaseSkillDC(cardData) - 5;
 	}
 
-	async #onCardRoll(cardData: CardData, cardRoll: CardChoice["roll"], situation: Situation & RollSituation) {
+	async #onCardRoll(cardData: CardData, cardRoll: CardChoice["roll"], situation: SituationTypes.PreRoll) {
 		const userAcc = situation.user;
 		if (!userAcc) {
 			PersonaError.softFail("No user in Card Roll Situation");

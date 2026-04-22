@@ -191,9 +191,9 @@ type VariableSpecifier = {
 export function createTargettingContextListFromSituation( situation: Situation) : Partial<TargettingContextList> {
 	 const list : Partial<TargettingContextList> = {};
 
-	 function copyToListPartial< T extends keyof TargettingContextList & keyof Situation> ( partial: Partial<TargettingContextList>, sit: Situation, key: T) {
-			if (key in sit && sit[key] != undefined) {
-				 const x= [sit[key]] as NonNullable<Partial<TargettingContextList>[T]>;
+	 function copyToListPartial< T extends keyof TargettingContextList & keyof MergeUnion<Situation>> ( partial: Partial<TargettingContextList>, sit: Situation, key: T) {
+			if (key in sit && sit[key as keyof typeof sit] != undefined) {
+				 const x= [sit[key as keyof typeof sit]] as NonNullable<Partial<TargettingContextList>[T]>;
 				 partial[key]= x;
 			}
 	 }
@@ -203,67 +203,3 @@ export function createTargettingContextListFromSituation( situation: Situation) 
 	 copyToListPartial(list, situation, "attacker");
 	 return list;
 }
-
-//type Mutator<T extends AlterVariableConsequence> =
-//	//unknwon trick oddly seems to extend to unions
-//	T extends unknown ?
-//	(
-//		Required<T>
-//	& (
-//		T extends {value: ConsequenceAmount}
-//		? {
-//			value: PreparedConsequenceAmountV2<T["value"]>,
-//			// found: true
-//		}
-//		: {}
-//	)
-//	) : never;
-
-
-//type PreparedConsequenceAmountV2<T extends ConsequenceAmount= ConsequenceAmountV2> =
-//	T extends number
-//	? number
-//	: SourcedConsequenceAmountV2<Exclude<T, number>>;
-//	// : T extends unknown ? (
-//	// Required<T>
-//	// // & {test: string}
-//	// & (
-//	// 	T extends VariableAmount
-//	// 	? Required<VariableAmount>
-//	// 	: {}
-//	// )
-//	// & (
-//	// 	T extends AmountOperation
-//	// 	? {
-//	// 		type: "operation",
-//	// 		amt1: PreparedConsequenceAmountV2<ConsequenceAmountV2>;
-//	// 		amt2: PreparedConsequenceAmountV2<ConsequenceAmountV2>;
-//	// 	}
-//	// 	:{}
-//	// )
-//	// ) : never;
-
-//type SourcedConsequenceAmountV2<T extends ConsequenceAmountV2 = ConsequenceAmountV2> =
-//	// Sourced<ActualConsequenceAmountV2<T>>;
-//	Sourced<test>;
-
-
-//type ActualConsequenceAmountV2<T extends ConsequenceAmountV2 = ConsequenceAmountV2> =
-//	T extends unknown ? (
-//		Required<T>
-//		// & {test: string}
-//		& (
-//			T extends VariableAmount
-//			? Required<VariableAmount>
-//			: {}
-//		)
-//		& (
-//			T extends AmountOperation
-//			? {
-//				type: "operation",
-//				amt1: ActualConsequenceAmountV2<ConsequenceAmountV2>;
-//				amt2: ActualConsequenceAmountV2<ConsequenceAmountV2>;
-//			}
-//			:{}
-//		)
-//	) : never;

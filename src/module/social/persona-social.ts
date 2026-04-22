@@ -355,18 +355,17 @@ export class PersonaSocial {
 		return this.#drawnCardIds;
 	}
 
-	static async execTrigger( trigger: NonCombatTriggerTypes, actor: PC, situation ?: Situation, msg = "Triggered Effect"): Promise<void> {
+	static async execTrigger( trigger: NonCombatTriggerTypes, actor: PC, situation : Situation, msg = "Triggered Effect"): Promise<void> {
 		return await TriggeredEffect.execNonCombatTrigger(trigger, actor, situation, msg);
 	}
 
 	static async awardPerk(target: PC, socialLink: SocialLink) {
-		const situation : Situation = {
+		const situation = {
+      trigger: "on-attain-tarot-perk",
 			user: target.accessor,
 			tarot: socialLink.tarot?.name as TarotCard,
 			target: target.accessor,
-			socialTarget: target.accessor,
-		};
-		// console.log(situation);
+		} satisfies Situation;
 		await this.execTrigger("on-attain-tarot-perk", target, situation, `Gains Perk (${socialLink.tarot?.name})`) ;
 	}
 
@@ -484,9 +483,8 @@ export class PersonaSocial {
 		const situation: Situation = {
 			user: pc.accessor,
 			attacker: pc.accessor,
-			isSocial: true,
-			// target: target.accessor,
-			socialTarget: target.accessor,
+			target: target.accessor,
+			// socialTarget: target.accessor,
 		};
 		if (!target.isNPC()) {return true;}
 		const sourced = target.system.conditions.map( cond => ({
@@ -711,7 +709,7 @@ export class PersonaSocial {
 private static _isAvailable_SL(sl : SocialLink, pc: PC): boolean {
   const sit: Situation = {
     user: pc.accessor,
-    socialTarget: sl.accessor,
+    target: sl.accessor,
   };
   if(!testPreconditions(sl.getAvailabilityConditions(), sit)) {
     return false;
@@ -729,7 +727,6 @@ private static _isAvailable_SL(sl : SocialLink, pc: PC): boolean {
     const sit: Situation = {
       user: pc.accessor,
       attacker: pc.accessor,
-      isSocial: true,
     };
     const sourcedConditions = ConditionalEffectManager.getConditionals(activity.system.conditions, null, null, null );
     if(!testPreconditions(sourcedConditions, sit)) {return false;}

@@ -28,7 +28,6 @@ import {PersonaAura} from "./persona-auras.js";
 import {PowerLearningSystem} from "./power-learning.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaSocial} from "./social/persona-social.js";
-import {Helpers} from "./utility/helpers.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidAttackers = ValidAttackers> implements PersonaI {
   #combatStats: U<PersonaCombatStats>;
@@ -440,10 +439,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return XPGain;
   }
 
-  get baseSituation() : Required<Pick<Situation, "user" | "persona">> {
+  get baseSituation() : SituationComponent.User {
     return {
       user: this.user.accessor,
-      persona: this,
     };
   }
 

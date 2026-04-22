@@ -13,7 +13,7 @@ export abstract class DamageSystemBase implements DamageInterface {
 
 	BURN_PERCENT = 0.15 as const; //percentage damage of burn damage
 
-	getDamage(power: Usable, attackerPersona: Persona, targetPersona: Persona, situation ?: Situation, options : GetDamageOptions = {}) : DamageCalculation {
+	getDamage(power: Usable, attackerPersona: Persona, targetPersona: Persona, situation ?: Situation & SituationComponent.User, options : GetDamageOptions = {}) : DamageCalculation {
 		const damageType = power.getDamageType(attackerPersona);
 		const calc = this.getPowerDamage(power, attackerPersona, situation, options);
 		calc.setDamageType(damageType);
@@ -50,15 +50,14 @@ export abstract class DamageSystemBase implements DamageInterface {
 		}
 	}
 
-	getPowerDamage(power: Usable, attackerPersona: Persona, situation ?: Situation, damageOptions : GetDamageOptions = {}) : DamageCalculation {
-		if (!situation) {
-			situation = {
+	getPowerDamage(power: Usable, attackerPersona: Persona, baseSituation ?: DamageSystemSituation, damageOptions : GetDamageOptions = {}) : DamageCalculation {
+    const situation = baseSituation ? baseSituation :
+			{
 				user: attackerPersona.user.accessor ,
 				usedPower: power.accessor,
 				result: "hit",
 				attacker: attackerPersona.user.accessor
-			};
-		}
+			} satisfies Situation;
 		const typeOverride = damageOptions.overrideDamageType;
 		if (!typeOverride) {
 			if (power.getBaseDamageType() == 'none') {
@@ -137,7 +136,7 @@ abstract	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Pe
 		return this.getWeaponDamageByWpnLevel(low-1);
 	}
 
-	processConsequence_damage( consequence: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: Persona, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'] {
+	processConsequence_damage( consequence: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: Persona, powerUsed: U<ModifierContainer>, situation: DamageSystemSituation) : ConsequenceProcessed['consequences'] {
 		return targets.flatMap( target => {
 			const cons = this.process_damageConsOnTarget(consequence, target, attacker, powerUsed, situation);
 			if (cons != null) {
@@ -150,94 +149,98 @@ abstract	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Pe
 
 	}
 
-	protected process_damageConsOnTarget( cons: SourcedConsequence<NewDamageConsequence>, target: ValidAttackers, attacker: Persona, powerUsed: U<ModifierContainer>, situation: Situation) : N<ConsequenceProcessed['consequences'][number]["cons"]> {
-		const damageOptions : GetDamageOptions= {};
-		let dmgCalc: U<DamageCalculation>;
-		let damageType : U<RealDamageType> = cons.damageType != "by-power" ? cons.damageType : "none";
-		const power = powerUsed instanceof PersonaItem && powerUsed.isUsableType() ? powerUsed : undefined;
-		if (power && power.isUsableType()) {
-			damageType = cons.damageType != 'by-power' && cons.damageType != undefined ? cons.damageType : power.getDamageType(attacker);
-		}
-		cons = {
-			...cons,
-			damageType,
-		};
-		switch (cons.damageSubtype) {
-			case "set-to-const":
-			case "set-to-percent": {
-				return cons;
-			}
-		}
-		if (cons.damageType == undefined) {
-			PersonaError.softFail(`Damage type is undefined for ${power?.name ?? "Undefined Power"}`, cons);
-			return null;
-		}
-		switch (cons.damageSubtype) {
-			case 'low':
-			case 'high':
-			case 'odd-even': {
-				if (!power) {return null;}
-				if (situation.naturalRoll == undefined) {
-					PersonaError.softFail(`Can't get odd even for damage of ${power.displayedName.toString() }` );
-					return null;
-				}
-				if (cons.damageType != "by-power") {
-					damageOptions["overrideDamageType"] =  cons.damageType;
-				}
-				dmgCalc = power.damage.getDamage(power, attacker, target.persona(), situation, damageOptions);
-				const evenRoll = (situation.naturalRoll ?? 0) % 2 == 0;
-				if ( cons.damageSubtype == "high" || (cons.damageSubtype == "odd-even" && evenRoll)) {
-					dmgCalc.setApplyEvenBonus();
-				}
-				return {
-					...cons,
-					calc: dmgCalc,
-				};
-			}
-			case 'multiplier':
-				return cons;
-			case 'allout': {
-				const combat = PersonaCombat.combat;
-				if (!combat) { return null; }
-				const userTokenAcc = combat.getToken(situation.user);
-				if (!userTokenAcc) {
-					PersonaError.softFail(`Can't calculate All out damage - no token for ${situation?.user?.actorId ?? 'Null user'}`);
-					return null;
-				}
-				const userToken = PersonaDB.findToken(userTokenAcc);
-				if (!combat) {return null;}
-				const leader = combat.getCombatantByToken(userToken);
-				if (!leader) {return null;}
-				const allAttackers = combat
-				.getAllies(leader, true)
-				.map (ally => ally.actor)
-				.filter( ally => ally.canAllOutAttack());
-				const allOutDmg = this.calculateAllOutAttackDamage(userToken.actor, allAttackers, target, situation as AttackResult['situation']);
-				dmgCalc = new DamageCalculation("all-out");
-				for (const AOD of allOutDmg) {
-					const source = {
-						displayedName: `${AOD.contributor.displayedName} (${AOD.stack.join(', ')})`,
-					};
-					dmgCalc.add("base", AOD.amt, source.displayedName);
-				}
-				const evenRoll = (situation.naturalRoll ?? 0) % 2 == 0;
-				if ( evenRoll) {
-					dmgCalc.setApplyEvenBonus();
-				}
-				return {
-					...cons,
-					calc: dmgCalc,
-				};
-			}
-			case 'constant':
-			case 'percentage-current':
-			case 'percentage':
-			case 'mult-stack':
-				return cons;
-			default:
-				cons.damageSubtype satisfies never;
-				return null;
-		}
+  protected process_damageConsOnTarget( cons: SourcedConsequence<NewDamageConsequence>, target: ValidAttackers, attacker: Persona, powerUsed: U<ModifierContainer>, situation: SituationComponent.User & Situation) : N<ConsequenceProcessed['consequences'][number]["cons"]> {
+    const damageOptions : GetDamageOptions= {};
+    let dmgCalc: U<DamageCalculation>;
+    let damageType : U<RealDamageType> = cons.damageType != "by-power" ? cons.damageType : "none";
+    const power = powerUsed instanceof PersonaItem && powerUsed.isUsableType() ? powerUsed : undefined;
+    if (power && power.isUsableType()) {
+      damageType = cons.damageType != 'by-power' && cons.damageType != undefined ? cons.damageType : power.getDamageType(attacker);
+    }
+    cons = {
+      ...cons,
+      damageType,
+    };
+    switch (cons.damageSubtype) {
+      case "set-to-const":
+      case "set-to-percent": {
+        return cons;
+      }
+    }
+    if (cons.damageType == undefined) {
+      PersonaError.softFail(`Damage type is undefined for ${power?.name ?? "Undefined Power"}`, cons);
+      return null;
+    }
+    switch (cons.damageSubtype) {
+      case 'low':
+      case 'high':
+      case 'odd-even': {
+        if (!power) {return null;}
+        if (!("naturalRoll" in situation) || situation.naturalRoll == undefined) {
+          PersonaError.softFail(`Can't get odd even for damage of ${power.displayedName.toString() }` );
+          return null;
+        }
+        if (cons.damageType != "by-power") {
+          damageOptions["overrideDamageType"] =  cons.damageType;
+        }
+        dmgCalc = power.damage.getDamage(power, attacker, target.persona(), situation, damageOptions);
+        const evenRoll = (situation.naturalRoll ?? 0) % 2 == 0;
+        if ( cons.damageSubtype == "high" || (cons.damageSubtype == "odd-even" && evenRoll)) {
+          dmgCalc.setApplyEvenBonus();
+        }
+        return {
+          ...cons,
+          calc: dmgCalc,
+        };
+      }
+      case 'multiplier':
+        return cons;
+      case 'allout': {
+        const combat = PersonaCombat.combat;
+        if (!combat) { return null; }
+        const userTokenAcc = combat.getToken(situation.user);
+        if (!userTokenAcc) {
+          PersonaError.softFail(`Can't calculate All out damage - no token for ${situation?.user?.actorId ?? 'Null user'}`);
+          return null;
+        }
+        const userToken = PersonaDB.findToken(userTokenAcc);
+        if (!combat) {return null;}
+        const leader = combat.getCombatantByToken(userToken);
+        if (!leader) {return null;}
+        const allAttackers = combat
+        .getAllies(leader, true)
+        .map (ally => ally.actor)
+        .filter( ally => ally.canAllOutAttack());
+        const allOutDmg = this.calculateAllOutAttackDamage(userToken.actor, allAttackers, target, situation as AttackResult['situation']);
+        dmgCalc = new DamageCalculation("all-out");
+        for (const AOD of allOutDmg) {
+          const source = {
+            displayedName: `${AOD.contributor.displayedName} (${AOD.stack.join(', ')})`,
+          };
+          dmgCalc.add("base", AOD.amt, source.displayedName);
+        }
+        if (("naturalRoll" in situation)) {
+          const evenRoll = (situation.naturalRoll ?? 0) % 2 == 0;
+          if ( evenRoll) {
+            dmgCalc.setApplyEvenBonus();
+          }
+        } else {
+          PersonaError.softFail("Natural roll not present in situation,defaulting to odd damage");
+        }
+        return {
+          ...cons,
+          calc: dmgCalc,
+        };
+      }
+      case 'constant':
+      case 'percentage-current':
+      case 'percentage':
+      case 'mult-stack':
+        return cons;
+      default:
+        cons.damageSubtype satisfies never;
+        return null;
+    }
 
 	}
 
@@ -277,3 +280,5 @@ interface GetDamageOptions {
 	overrideDamageType ?:  RealDamageType;
 	ignoreDefenses?: boolean;
 }
+
+type DamageSystemSituation = Situation & SituationComponent.User;

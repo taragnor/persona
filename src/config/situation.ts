@@ -13,274 +13,422 @@ import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js"
 import {AttackRollType} from "../module/combat/combat-engine.js";
 import {PersonaAE} from "../module/persona-ae.js";
 
-export type UserSituation = {
-	user: UniversalActorAccessor<ValidAttackers>;
-};
 
-type TriggerSituation = TriggerSituation_base & (
-	CombatTrigger
-	| PresenceCheckTrigger
-	| EnterRegionTrigger
-	| ExplorationTrigger
-	| ClockTrigger
-	| OnRollTrigger
-	| OnAETimeoutTrigger
-	| OnPowerUsageCheckTrigger
-  | StartSocialTurnTrigger
-);
 
-type ExplorationTrigger = {
-	trigger: "on-open-door" | "on-search-end" | "on-attain-tarot-perk" | "enter-metaverse" | "exit-metaverse" | "on-metaverse-turn" | "on-active-scene-change";
-	triggeringCharacter?:  UniversalActorAccessor<ValidAttackers>;
+type SituationType = SituationTypes.AllSituations;
+
+declare global{
+
+namespace SituationTypes {
+
+export type AllSituations =
+  TriggerSituation  | MinorSituation | SocialCardSituation | AllRollSituations | BonusQuerySituation | PowerPricing
+  ;
+
+  export type MinorSituation = MinorPowerUseSituation
+    | UserOnlySituation;
+
+  type AllRollSituations = SituationComponent.Roll | SituationComponent.PreRoll;
+
+  export type Roll = SituationComponent.Roll;
+  export type PreRoll = SituationComponent.PreRoll;
+
+  export type SocialCardSituation = SituationComponent.SocialCard;
+
+  export type TriggerSituation = TriggeredSituation.TriggerSituation;
+
+  export type BonusQuerySituation = (OffensiveBonusSituation | DefensiveBonusSituation | PowerPricing | UserOnlyBonusSituation)
+    &  Partial<BonusQueryAdds>;
+
+  type MinorPowerUseSituation = SituationComponent.PowerUse & Partial<SituationComponent.User>;
+
+  type UserOnlySituation = SituationComponent.User;
+
+  type UserOnlyBonusSituation  = SituationComponent.User;
+
+  type OffensiveBonusSituation  = SituationComponent.User & SituationComponent.Attacker & Partial<SituationComponent.PowerUse>;
+
+  type DefensiveBonusSituation  = SituationComponent.User & SituationComponent.Targetted & Partial<SituationComponent.PowerUse>;
+
+  type PowerPricing = SituationComponent.UsedPower & Partial<SituationComponent.PowerUse>;
+
+  type BonusQueryAdds = {
+    statusEffect: StatusEffectId;
+  }
 }
 
-export type OnRollTrigger = {
-	trigger: "on-roll",
-	triggeringCharacter: UniversalActorAccessor<ValidAttackers>,
-	user: UniversalActorAccessor<ValidAttackers>,
-	} & RollSituation;
+namespace SituationComponent {
+  export type User =  {
+    user: UniversalActorAccessor<ValidAttackers>;
+  }
 
-type ClockTrigger = {
-	trigger: "on-clock-tick" | "on-clock-change",
-	triggeringClockId: string,
-}
+  export type Attacker  = User & {
+    attacker: UniversalActorAccessor<ValidAttackers>;
+  }
 
-type StartSocialTurnTrigger ={
-  trigger: "on-social-turn-start",
-  triggeringCharacter: UniversalActorAccessor<PC>,
-};
+  export type Targetted =  {
+    target: UniversalActorAccessor<ValidAttackers>,
+  };
 
+  export type TriggeringCharacter = Partial<User> & {
+    triggeringCharacter:  UniversalActorAccessor<ValidAttackers>;
+  }
 
-type OnPowerUsageCheckTrigger = UserSituation & {
-	trigger: "on-power-usage-check",
-	usedPower : UniversalItemAccessor<UsableAndCard>;
-}
+  export type SocialCard = AddedTags & User & {
+    socialRandom: number;
+    cameo : U<UniversalActorAccessor<ValidSocialTarget>>;
+    cardEventItem ?: U<EnchantedTreasureFormat>,
+    target : U<UniversalActorAccessor<ValidSocialTarget>>;
+  }
 
-type OnPowerStartUse = UserSituation & {
-	trigger: "get-added-power-tags",
-	usedPower : UniversalItemAccessor<UsableAndCard>;
-	target: UniversalActorAccessor<ValidAttackers>,
-	attacker: UniversalActorAccessor<ValidAttackers>,
-	triggeringCharacter: UniversalActorAccessor<ValidAttackers>,
-}
+  export type AddedTags = {
+    addedTags : (RollTag | CardTag |  Tag | PowerTag)[];
+  }
 
-type OnAETimeoutTrigger = {
-	trigger: "on-active-effect-time-out" | "on-active-effect-end",
-	activeEffect: UniversalAEAccessor<PersonaAE>,
-	user: UniversalActorAccessor<ValidAttackers>,
-	triggeringCharacter: UniversalActorAccessor<ValidAttackers>,
-	activeDuration: U<number>,  //number of turns active
-}
+  export type UsedPower = {
+    usedPower : UniversalItemAccessor<UsableAndCard>;
+  }
 
-type CombatTrigger = (
-	GenericCombatTrigger
-	| NonGenericCombatTrigger
-);
+  export type PowerUse = User & Targetted & AddedTags
+    & UsedPower;
 
-type GenericCombatTrigger = UserSituation & {
-	trigger: Exclude<CombatTriggerTypes, NonGenericCombatTrigger["trigger"]>;
-	triggeringCharacter?:  UniversalActorAccessor<ValidAttackers>;
-}
+  type Roll = RollParts.RollSituation;
+  type PreRoll = RollParts.PreRollSituation;
 
-type NonGenericCombatTrigger =
-	InflictStatusTrigger
-	| CombatGlobalTrigger
-	| UsePowerTrigger
-	| KillTargetTrigger
-	| CombatEndIndividual
-	| PreDamageTrigger
-	| StartEventTrigger
-	| EndEventTrigger
-  | OnPowerStartUse
-;
+  export namespace RollParts {
+    export type RollSituation = CompletedRoll;
+    export type PreRollSituation = PreRoll;
 
-type StartEventTrigger = {
-	trigger: "on-event-start" ;
-	event: UniversalItemAccessor<PersonaEvent>;
-}
+    export type CompletedRoll = PreRollCore & CompletedRollPart & (MinorRollSubtypes | CombatReportPart | OpeningRoll);
 
-type EndEventTrigger = {
-	trigger: "on-event-end" ;
-	event: UniversalItemAccessor<PersonaEvent>;
-}
+    type CompletedRollPart =  {
+      naturalRoll : number,
+      rollTotal : number;
+      result : AttackResult["result"];
+    };
 
-type PreDamageTrigger = UserSituation & {
-	trigger: "pre-take-damage",
-	triggeringCharacter: UniversalActorAccessor<ValidAttackers>, // the one who was damaged
-	attacker: UniversalActorAccessor<ValidAttackers>,
-	amt: number,
-	target: UniversalActorAccessor<ValidAttackers>, //same as triggering character
-	usedPower ?: UniversalItemAccessor<UsableAndCard>;
-	damageType: RealDamageType,
-}
+    type OpeningRoll = User & Exclude<CompletedRollPart, "result"> & {
+      rollType: "opener"
+    }
 
-type KillTargetTrigger = UserSituation & {
-	trigger: "on-kill-target",
-	triggeringCharacter: UniversalActorAccessor<ValidAttackers>,
-}
+    type PreRollCore = User & {
+      rollTags : (RollTag | CardTag | Tag)[],
+      DC : U<number>;
+      rollType ?: U<AttackRollType | "opener">;
+    } & AddedTags
+
+    export type PreRoll = User & PreRollCore
+      &  Partial<MinorRollSubtypes | CombatPreRollPart>;
+
+    type MinorRollSubtypes = SkillRollPart | SavingThrowPart | PowerUsePart;
+
+    type SavingThrowPart = {
+      saveVersus : N<StatusEffectId>;
+    }
+
+    type SkillRollPart = {
+      usedSkill : SocialStat;
+    };
+
+    type PowerUsePart = SituationComponent.User & SituationComponent.Attacker & SituationComponent.Targetted & {
+      usedPower : UniversalItemAccessor<UsableAndCard>;
+      rollType: AttackRollType,
+    }
 
 
-type UsePowerTrigger = UserSituation & {
-	trigger: "on-use-power",
-	triggeringCharacter: UniversalActorAccessor<ValidAttackers>;
-	combatResult: FinalizedCombatResult,
-}
+    type CombatPreRollPart = PowerUsePart & {
+      ailmentRange : AttackResult["ailmentRange"],
+      instantKillRange : AttackResult["instantKillRange"],
+      critRange : AttackResult["critRange"],
+      attackerPersona: Persona,
+      targetPersona: Persona,
+    }
 
-type InflictStatusTrigger_Generic = {
-	// trigger: "on-inflict-status" | "pre-inflict-status",
-	statusEffect: StatusEffectId,
-	usedPower : U<UniversalItemAccessor<UsableAndCard>>;
-	/**  The one recieving the status */
-	triggeringCharacter: UniversalActorAccessor<ValidAttackers>,
-	/**  The one recieving the status */
-	target: UniversalActorAccessor<ValidAttackers>,
+    type CombatReportPart = Partial<CombatPreRollPart> & PowerUsePart & CompletedRollPart & {
+      withinAilmentRange : boolean;
+      withinInstantKillRange : boolean;
+      withinCritRange : boolean;
+      resisted : boolean;
+      struckWeakness : boolean;
+      attackerPersona: Persona,
+      targetPersona: Persona,
+    }
 
-};
-
-type OnInflictStatusTrigger = UserSituation & InflictStatusTrigger_Generic & {
-	trigger: "on-inflict-status",
-	/** The one who inflicted the status */
-	attacker: UniversalActorAccessor<ValidAttackers>,
-};
-
-type OnPreInflictStatusTrigger =  UserSituation & InflictStatusTrigger_Generic & {
-	trigger :"pre-inflict-status",
-};
-
-type InflictStatusTrigger = 
-	OnInflictStatusTrigger
-	| OnPreInflictStatusTrigger;
-
-
-type CombatGlobalTrigger = CombatEndGlobal | CombatStartGlobal;
-
-type CombatEndGlobal = {
-	trigger: "on-combat-end-global",
-}
-
-type CombatStartGlobal = {
-	trigger: "on-combat-start-global",
+  }
 
 }
 
-type CombatEndIndividual = {
-	trigger: "on-combat-end",
-	triggeringCharacter: UniversalActorAccessor<ValidAttackers>,
-	hit: boolean,
-  combatOutcome: "win" | "draw" | "lose",
+namespace TriggeredSituation {
+  export type TriggerSituation = TriggerSituation_base &( 
+    ExplorationTrigger
+    | OnRollTrigger
+    | ClockTrigger
+    | StartSocialTurnTrigger
+    | OnPowerUsageCheckTrigger
+    | CombatTrigger
+  );
+
+  type ExplorationTrigger =  GenericExplorationTrigger
+    | EnterMetaverseTrigger
+    | EnterRegionTrigger
+    | PresenceCheckTrigger
+    | TarotPerkTrigger
+  ;
+
+  type GenericExplorationTrigger = Partial<SituationComponent.TriggeringCharacter> & {
+    trigger: "on-open-door" | "on-search-end" | "exit-metaverse" | "on-metaverse-turn" | "on-active-scene-change";
+  }
+
+  type TarotPerkTrigger = SituationComponent.User &  {
+    trigger: "on-attain-tarot-perk";
+    tarot : TarotCard;
+    target : U<UniversalActorAccessor<ValidSocialTarget>>;
+  }
+
+  type EnterMetaverseTrigger = SituationComponent.User
+    & SituationComponent.TriggeringCharacter
+    & {
+    trigger : "enter-metaverse";
+  }
+
+  type OnRollTrigger = SituationComponent.TriggeringCharacter &{
+    trigger: "on-roll",
+  } & SituationComponent.RollParts.CompletedRoll;
+
+  type ClockTrigger = {
+    trigger: "on-clock-tick" | "on-clock-change",
+    triggeringClockId: string,
+  }
+
+  type StartSocialTurnTrigger =SituationComponent.TriggeringCharacter  & {
+    trigger: "on-social-turn-start",
+  };
+
+
+  type OnPowerUsageCheckTrigger = SituationComponent.User &
+    SituationComponent.PowerUse & {
+      trigger: "on-power-usage-check",
+    }
+
+  type OnPowerStartUse = SituationComponent.User &
+    SituationComponent.Targetted
+    & SituationComponent.PowerUse
+    & SituationComponent.TriggeringCharacter
+    & {
+      trigger: "get-added-power-tags",
+    }
+
+  type NonGenericCombatTrigger =
+    InflictStatusTrigger
+    | CombatGlobalTrigger
+    | UsePowerTrigger
+    | KillTargetTrigger
+    | CombatEndIndividual
+    | PreDamageTrigger
+    | DamageTrigger
+    | StartEventTrigger
+    | EndEventTrigger
+    | OnPowerStartUse
+    | OnAETimeoutTrigger
+  ;
+
+  type OnAETimeoutTrigger = SituationComponent.TriggeringCharacter & {
+    trigger: "on-active-effect-time-out" | "on-active-effect-end",
+    activeEffect: UniversalAEAccessor<PersonaAE>,
+    user: UniversalActorAccessor<ValidAttackers>,
+    activeDuration: U<number>,  //number of turns active
+  }
+
+  type CombatTrigger = (
+    GenericCombatTrigger
+    | NonGenericCombatTrigger
+  );
+
+  type GenericCombatTrigger = SituationComponent.User
+    & Partial<SituationComponent.TriggeringCharacter>
+    & {
+    trigger: Exclude<CombatTriggerTypes, NonGenericCombatTrigger["trigger"]>;
+  }
+
+
+  type StartEventTrigger = {
+    trigger: "on-event-start" ;
+    event: UniversalItemAccessor<PersonaEvent>;
+  }
+
+  type EndEventTrigger = {
+    trigger: "on-event-end" ;
+    event: UniversalItemAccessor<PersonaEvent>;
+  }
+
+  type DamageTrigger =SituationComponent.User
+    & SituationComponent.Targetted & {
+      trigger: "on-damage",
+    }
+
+  type PreDamageTrigger = SituationComponent.User
+    & SituationComponent.Targetted //target is same as triggering character
+    & SituationComponent.TriggeringCharacter
+    & {
+      trigger: "pre-take-damage",
+      amt: number,
+      damageType: RealDamageType,
+    }
+
+  type KillTargetTrigger = SituationComponent.User & SituationComponent.Targetted & SituationComponent.Attacker & SituationComponent.TriggeringCharacter &{
+    trigger: "on-kill-target",
+  }
+
+
+  type UsePowerTrigger = SituationComponent.User &
+   SituationComponent.TriggeringCharacter
+    & {
+    trigger: "on-use-power",
+    combatResult: FinalizedCombatResult,
+  } & SituationComponent.Targetted;
+
+  type InflictStatusTrigger_Generic =
+    SituationComponent.Targetted
+    & Partial<SituationComponent.PowerUse>
+    /** one recieving the status*/
+    & SituationComponent.TriggeringCharacter
+    & {
+      // trigger: "on-inflict-status" | "pre-inflict-status",
+      statusEffect: StatusEffectId,
+      /**  The one recieving the status */
+      // target: UniversalActorAccessor<ValidAttackers>,
+    };
+
+  type OnInflictStatusTrigger = SituationComponent.User & InflictStatusTrigger_Generic & {
+    trigger: "on-inflict-status",
+    /** The one who inflicted the status */
+    attacker: UniversalActorAccessor<ValidAttackers>,
+  };
+
+  type OnPreInflictStatusTrigger =  SituationComponent.User & InflictStatusTrigger_Generic & {
+    trigger :"pre-inflict-status",
+  };
+
+  type InflictStatusTrigger =
+    OnInflictStatusTrigger
+    | OnPreInflictStatusTrigger;
+
+
+  type CombatGlobalTrigger = CombatEndGlobal | CombatStartGlobal;
+
+  type CombatEndGlobal = {
+    trigger: "on-combat-end-global",
+  }
+
+  type CombatStartGlobal = {
+    trigger: "on-combat-start-global",
+  }
+
+  type CombatEndIndividual = SituationComponent.User
+    & SituationComponent.TriggeringCharacter
+    & {
+      trigger: "on-combat-end",
+      result : AttackResult["result"],
+      combatOutcome: "win" | "draw" | "lose",
+    }
+
+  type TriggerSituation_base = {
+    triggeringUser : FoundryUser,
+  }
+
+  type PresenceCheckTrigger = {
+    trigger: "on-presence-check",
+    triggeringRegionId : string,
+  }
+
+  type EnterRegionTrigger =
+    Partial<SituationComponent.TriggeringCharacter> & {
+      trigger: "on-enter-region",
+      triggeringRegionId : string,
+    }
+
 }
 
-type TriggerSituation_base = {
-	triggeringUser : FoundryUser,
+
+
+
+
+
+
+
+export type PowerOnlySituation =
+  {
+    usedPower : UniversalItemAccessor<UsableAndCard>;//this is special due to consstraints
+    user?: undefined;
+  };
+
+
+// export type BaseAttackRollSituation<T extends object = object> =  RollSituation<T>
+//   & TargettedSituation & {
+//     rollType: AttackRollType,
+//     DC ?: U<number>;
+//   }
+
+// type CombatTypeSituation = UserSituation &
+//   {type: "combat"} & (
+//     BaseAttackRollSituation
+//     | AttackRollSituation
+//     | PostAttackRollSituation
+//   );
+
+
+// export type AttackRollSituation = BaseAttackRollSituation & {
+//   withinAilmentRange ?: boolean;
+//   withinInstantKillRange ?: boolean;
+//   withinCritRange ?: boolean;
+//   ailmentRange ?: AttackResult["ailmentRange"],
+//   instantKillRange ?: AttackResult["instantKillRange"],
+//   critRange ?: AttackResult["critRange"],
+//   DC : number;
+//   result ?: AttackResult["result"],
+// }
+
+// export type PostAttackRollSituation = AttackRollSituation & {
+//   withinAilmentRange : boolean;
+//   withinInstantKillRange : boolean;
+//   withinCritRange : boolean;
+//   ailmentRange ?: AttackResult["ailmentRange"],
+//   instantKillRange ?: AttackResult["instantKillRange"],
+//   critRange ?: AttackResult["critRange"],
+//   result : AttackResult["result"],
+//   DC : number;
+//   resisted : boolean;
+//   struckWeakness : boolean;
+// }
+
+
+//type SituationUniversal = {
+//	//more things can be added here all should be optional
+//	user?: UniversalActorAccessor<ValidAttackers>;
+//	persona?: Persona;
+//	usedPower ?: UniversalItemAccessor<UsableAndCard>;
+//	usedSkill ?: SocialStat;
+//	activeCombat ?: boolean ;
+//	target ?: UniversalActorAccessor<ValidAttackers>;
+//	attacker ?:UniversalActorAccessor<ValidAttackers>;
+//	saveVersus ?: StatusEffectId;
+//	statusEffect ?: StatusEffectId;
+//	eventCard ?: UniversalItemAccessor<SocialCard>,
+//	isSocial?: boolean,
+//	result ?: AttackResult["result"],
+//	tarot ?: TarotCard,
+//	socialTarget ?: UniversalActorAccessor<ValidSocialTarget>;
+//	cameo ?: UniversalActorAccessor<ValidSocialTarget>;
+//	"triggering-character" ?: never;
+//} & (RollSituation | NonRollSituation);
+
+  type Situation = SituationType;
 }
 
-type PresenceCheckTrigger = {
-	trigger: "on-presence-check",
-	triggeringRegionId : string,
-}
 
-type EnterRegionTrigger = {
-	trigger: "on-enter-region",
-	triggeringRegionId : string,
-	triggeringCharacter ?:  UniversalActorAccessor<ValidAttackers>;
-}
-
-type SituationType = SituationUniversal & (
-	TriggerSituation  | NonTriggerUserSituation | SocialCardSituation | CombatTypeSituation);
-
-type NonTriggerUserSituation =
-	PowerOnlySituation |
-	(UserSituation & {trigger?: never});
-
-type PowerOnlySituation = {
-	usedPower : UniversalItemAccessor<Usable>;
-	trigger?: never;
-	user?: never;
-};
-
-export type SocialCardSituation = UserSituation & {
-	attacker : UniversalActorAccessor<ValidSocialTarget>;
-	socialRandom :number;
-	socialTarget ?: UniversalActorAccessor<ValidSocialTarget>;
-	target ?: UniversalActorAccessor<ValidSocialTarget>;
-	isSocial: true;
-	cameo : UniversalActorAccessor<ValidSocialTarget> | undefined;
-	trigger ?: undefined;
-	cardEventItem ?: U<EnchantedTreasureFormat>,
-};
-
-//CHANGED THIS SO THAT IT WOULD force roll data when needed
-export type RollSituation = {
-	// activationRoll ?: boolean;
-	// openingRoll ?: number,
-	naturalRoll : number,
-	rollTags : (RollTag | CardTag | Tag)[],
-	rollTotal : number;
-	criticalHit ?: boolean;
-	DC ?: number;
-	addedTags ?: PowerTag[],
-}
-
-export type BaseAttackRollSituation = RollSituation & {
-	rollType: AttackRollType,
-	DC ?: number;
-	attacker :UniversalActorAccessor<ValidAttackers>;
-	target : UniversalActorAccessor<ValidAttackers>;
-}
-
-type CombatTypeSituation = UserSituation & (BaseAttackRollSituation | AttackRollSituation | PostAttackRollSituation);
+type v = Prettify<HasKey<Situation, "attacker"> & {usedPower: never}>
 
 
-export type AttackRollSituation = BaseAttackRollSituation & {
-	withinAilmentRange ?: boolean;
-	withinInstantKillRange ?: boolean;
-	withinCritRange ?: boolean;
-	ailmentRange ?: AttackResult["ailmentRange"],
-	instantKillRange ?: AttackResult["instantKillRange"],
-	critRange ?: AttackResult["critRange"],
-	DC : number;
-	result ?: AttackResult["result"],
-}
 
-export type PostAttackRollSituation = AttackRollSituation & {
-	withinAilmentRange : boolean;
-	withinInstantKillRange : boolean;
-	withinCritRange : boolean;
-	ailmentRange ?: AttackResult["ailmentRange"],
-	instantKillRange ?: AttackResult["instantKillRange"],
-	critRange ?: AttackResult["critRange"],
-	result : AttackResult["result"],
-	DC : number;
-	resisted : boolean;
-	struckWeakness : boolean;
-}
 
-type NonRollSituation = {
-	naturalRoll ?: undefined,
-	rollTags ?: (RollTag | CardTag | Tag)[];
-	rollTotal ?: undefined;
-}
 
-type SituationUniversal = {
-	//more things can be added here all should be optional
-	user?: UniversalActorAccessor<ValidAttackers>;
-	persona?: Persona;
-	usedPower ?: UniversalItemAccessor<UsableAndCard>;
-	usedSkill ?: SocialStat;
-	activeCombat ?: boolean ;
-	target ?: UniversalActorAccessor<ValidAttackers>;
-	attacker ?:UniversalActorAccessor<ValidAttackers>;
-	saveVersus ?: StatusEffectId;
-	statusEffect ?: StatusEffectId;
-	eventCard ?: UniversalItemAccessor<SocialCard>,
-	isSocial?: boolean,
-	result ?: AttackResult["result"],
-	tarot ?: TarotCard,
-	socialTarget ?: UniversalActorAccessor<ValidSocialTarget>;
-	cameo ?: UniversalActorAccessor<ValidSocialTarget>;
-	"triggering-character" ?: never;
-} & (RollSituation | NonRollSituation);
-
-declare global {
-	type Situation = SituationType;
-}

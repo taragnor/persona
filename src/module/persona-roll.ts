@@ -1,7 +1,5 @@
-import { UserSituation } from "../config/situation.js";
 import { StatusEffectId } from "../config/status-effects.js";
 import { HTMLTools } from "./utility/HTMLTools.js";
-import { RollSituation } from "../config/situation.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { PersonaError } from "./persona-error.js";
 import { ResolvedModifierList } from "./combat/modifier-list.js";
@@ -11,6 +9,7 @@ import { SocialStat } from "../config/student-skills.js";
 import { STUDENT_SKILLS } from "../config/student-skills.js";
 import {Calculation} from "./utility/calculation.js";
 import {CombatEngine} from "./combat/combat-engine.js";
+import {checkSituationProp} from "./preconditions.js";
 
 
 export class PersonaRoller {
@@ -31,7 +30,7 @@ export class PersonaRoller {
 			return this.hideAnimation(r);
 	 }
 
-	static async #makeRoll(rollName:string, mods: ModifierList, situation: Situation & {rollTags: NonNullable<Situation["rollTags"]>}, DC ?: number ): Promise<RollBundle & {modList: ResolvedMods}> {
+	static async #makeRoll(rollName:string, mods: ModifierList, situation: SituationComponent.RollParts.PreRoll, DC ?: number ): Promise<RollBundle & {modList: ResolvedMods}> {
 		const user = situation.user;
 		let playerRoll = !game.user.isGM;
 		if (user) {
@@ -46,13 +45,10 @@ export class PersonaRoller {
 		return bundle as RollBundle & {modList: ResolvedMods};
 	}
 
-	static #getDC(situation: UserSituation & Situation, options: RollOptions) : number | undefined {
+	static #getDC(situation: SituationComponent.RollParts.PreRoll, options: RollOptions) : number | undefined {
 		const {DCMods} = options;
 		let {DC} = options;
-		situation = {
-			...situation,
-			rollTags: options.rollTags ?? [],
-		};
+    situation["rollTags"] = options.rollTags ?? [];
 		if (DC != undefined && DCMods != undefined) {
 			const DCModsTotal = DCMods.total(situation);
 			DC += DCModsTotal;
@@ -79,79 +75,79 @@ export class PersonaRoller {
 		return mods;
 	}
 
-	static async rollSocialStat(pc: PC, socialStat: SocialStat, options  : RollOptions): Promise<RollBundle & {modList: ResolvedMods}> {
-		let {situation} = options;
-		if (!situation) {
-			situation = {
-				user: pc.accessor,
-				attacker: pc.accessor,
-			};
-		}
-		const rollTags =  options.rollTags.slice();
-		rollTags.pushUnique(socialStat);
-		rollTags.pushUnique("social");
-		const DC = this.#getDC(situation, options);
-		const situationWithRollTags = {
-			...situation,
-			rollTags: rollTags.concat(situation?.rollTags ?? []),
-			DC
-		};
-		const baseMods = pc.getSocialStat(socialStat);
-		const socialMods = pc.getPersonalBonuses("socialRoll");
-		const mods = await this.#compileModifiers(options, baseMods, socialMods);
-		const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
-		const rollName = skillName;
-		const bundle = await this.#makeRoll(rollName, mods, situationWithRollTags, DC);
-		const resSit = bundle.modList.resolvedSituation;
-		if (DC != undefined) {
-			if (resSit.rollTotal >= DC) {
-				resSit.result = "hit";
-			}
-			// resSit.hit = resSit.rollTotal >= DC;
-			if (resSit.rollTotal >= DC + 10) {
-				resSit.result = "crit";
-			}
-			// resSit.criticalHit = resSit.rollTotal >= DC + 10;
-		}
-		await pc.onRoll(resSit);
-		return bundle;
-	}
+  static async rollSocialStat(pc: PC, socialStat: SocialStat, options  : RollOptions): Promise<RollBundle & {modList: ResolvedMods}> {
+    const situation =  options.situation ? options.situation: {
+      user: pc.accessor,
+      DC: undefined,
+      rollTags: [],
+      addedTags: [],
+    };
+    const rollTags =  options.rollTags.slice();
+    rollTags.pushUnique(socialStat);
+    rollTags.pushUnique("social");
+    situation.rollTags.pushUnique(...rollTags);
+    const DC = this.#getDC(situation, options);
+    const baseMods = pc.getSocialStat(socialStat);
+    const socialMods = pc.getPersonalBonuses("socialRoll");
+    const mods = await this.#compileModifiers(options, baseMods, socialMods);
+    const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
+    const rollName = skillName;
+    const bundle = await this.#makeRoll(rollName, mods, situation, DC);
+    const resSit = bundle.modList.resolvedSituation;
+    let result : SituationTypes.Roll["result"] = "hit";
+    if (DC != undefined) {
+      if (resSit.rollTotal >= DC) {
+        result = "hit";
+      }
+      if (resSit.rollTotal >= DC + 10) {
+        result = "crit";
+      }
+    }
+    const sitFilledIn = {
+      ...resSit,
+      result,
+      usedSkill: socialStat,
+    };
+    await pc.onRoll(sitFilledIn);
+    return bundle;
+  }
 
-	static async rollSave (actor: ValidAttackers, options: SaveOptions): Promise< RollBundle & {modList: ResolvedMods}> {
-		const {saveVersus, label} = options;
-		let {rollTags, situation} = options;
-		rollTags = rollTags == undefined ? [] : rollTags;
-		const baseMods = actor.getSaveBonus();
-		rollTags = rollTags.slice();
-		rollTags.pushUnique("save");
-		const mods = await this.#compileModifiers(options, baseMods);
-		if (!situation) {
-			situation = {
-				user: PersonaDB.getUniversalActorAccessor(actor),
-				saveVersus: saveVersus ? saveVersus : undefined,
-			};
-		}
-		const maybeDC = this.#getDC(situation, options);
-		const DC = maybeDC ? maybeDC : 11;
-		const situationWithRollTags = {
-			...situation,
-			rollTags: rollTags.concat(situation?.rollTags ?? []),
-			saveVersus: situation.saveVersus ? situation.saveVersus : saveVersus,
-		} satisfies Situation;
-		const difficultyTxt = DC == 11 ? "normal" : DC == 16 ? "hard" : DC == 6 ? "easy" : "unknown difficulty";
-		const labelTxt = `Saving Throw (${label ? label + " " + difficultyTxt : ""})`;
-		const bundle = await this.#makeRoll(labelTxt, mods, situationWithRollTags, DC);
-		const resSit = bundle.modList.resolvedSituation;
-		if (DC != undefined) {
-			if (resSit.rollTotal >= DC) {
-				resSit.result = "hit";
-			}
-			// resSit.hit = resSit.rollTotal >= DC;
-			// resSit.criticalHit = false;
-		}
-		await actor.onRoll(resSit);
-		return bundle;
-	}
+  static async rollSave (actor: ValidAttackers, options: SaveOptions): Promise< RollBundle & {modList: ResolvedMods}> {
+    const {saveVersus, label} = options;
+    const rollTags = options.rollTags == undefined ? [] : options.rollTags.slice();
+    const baseMods = actor.getSaveBonus();
+    rollTags.pushUnique("save");
+    const mods = await this.#compileModifiers(options, baseMods);
+    const situation={
+      ...(options.situation ?? {}),
+      saveVersus: saveVersus ? saveVersus : undefined,
+      user: PersonaDB.getUniversalActorAccessor(actor),
+      rollTags: rollTags.concat(...options.situation?.rollTags ?? []),
+      DC: undefined,
+      addedTags : [],
+    };
+    const maybeDC = this.#getDC(situation, options);
+    const DC = maybeDC ? maybeDC : 11;
+    const difficultyTxt = DC == 11 ? "normal" : DC == 16 ? "hard" : DC == 6 ? "easy" : "unknown difficulty";
+    const labelTxt = `Saving Throw (${label ? label + " " + difficultyTxt : ""})`;
+    const bundle = await this.#makeRoll(labelTxt, mods, situation, DC);
+    const resSit = bundle.modList.resolvedSituation;
+    let result : "miss" | "hit" = "miss";
+    if (DC != undefined) {
+      if (resSit.rollTotal >= DC) {
+        result = "hit";
+      }
+      // resSit.hit = resSit.rollTotal >= DC;
+      // resSit.criticalHit = false;
+    }
+    const filledInRes = {
+      ...resSit,
+      result,
+      saveVersus: options.saveVersus ?? null,
+    };
+    await actor.onRoll(filledInRes);
+    return bundle;
+  }
 
 }
 
@@ -162,7 +158,7 @@ export class RollBundle {
 	DC ?: number;
 	_playerRoll: boolean;
 
-	constructor (rollName: typeof this["name"] ,roll : Roll, playerRoll : boolean,  modList ?: ModifierList | Calculation, situation ?: Situation, DC ?: number) {
+	constructor (rollName: typeof this["name"] ,roll : Roll, playerRoll : boolean,  modList ?: ModifierList | Calculation, situation ?: SituationTypes.PreRoll, DC ?: number) {
 		this._playerRoll = playerRoll;
 		if (!roll._evaluated)
 		{throw new Error("Can't construct a Roll bundle with unevaluated roll");}
@@ -210,26 +206,30 @@ export class RollBundle {
 		}
 	}
 
-	generateResolvedSituation(situation: Situation , total: number) : Situation & RollSituation {
+	generateResolvedSituation(situation: SituationTypes.PreRoll, total: number) : Omit<SituationTypes.Roll, "result"> {
 		if (situation.user) {
-			const rollSituation : Situation & RollSituation = {
-				...situation,
-				naturalRoll: this.roll.total,
-				rollTags: situation.rollTags ?? [],
-				rollTotal: this.roll.total + total,
-				user: situation.user,
-			};
+      const rollTags = checkSituationProp(situation, "rollTags") ? situation.rollTags : [];
+      const addedTags = checkSituationProp(situation, "addedTags") ? situation.rollTags : [];
+			const rollSituation = {
+        ...situation,
+        naturalRoll: this.roll.total,
+        rollTags: rollTags,
+        addedTags: addedTags,
+        rollTotal: this.roll.total + total,
+        user: situation.user,
+        DC: undefined,
+      } satisfies Omit<SituationTypes.Roll, "result">;
 			return rollSituation;
 		}
 		PersonaError.softFail("No user for this roll", situation);
-		return situation as Situation & RollSituation;
+		return situation as SituationTypes.Roll;
 	}
 
 	get gmRoll() : boolean {
 		return !this._playerRoll;
 	}
 
-	set situation(sit: Situation) {
+	set situation(sit: SituationTypes.PreRoll) {
 		if ("modtotal" in this.modList) {
 			throw new Error("can't change situation in resolved modList");
 		}
@@ -336,14 +336,14 @@ export class RollBundle {
 
 type UnresolvedMods = {
 	mods: ModifierList | Calculation,
-	situation: (Situation) | null,
+	situation: SituationComponent.RollParts.PreRoll | null,
 }
 
 type ResolvedMods = {
 	mods: ResolvedModifierList,
 	modtotal : number,
 	actor: UniversalActorAccessor<ValidAttackers> | undefined,
-	resolvedSituation: Situation & RollSituation,
+	resolvedSituation: Omit<SituationTypes.Roll, "result"> & Partial<Pick<SituationTypes.Roll, "result">>;
 };
 
 Hooks.on("renderChatMessageHTML", (_msg, html) => {
@@ -363,7 +363,7 @@ type RollOptions = {
 	DCMods ?: ModifierList,
 	askForModifier ?: boolean,
 	modifier ?: number,
-	rollTags : NonNullable<Situation["rollTags"]>,
+	rollTags : NonNullable<SituationComponent.RollParts.PreRoll["rollTags"]>,
 	modifierList ?: ModifierList,
-	situation ?: UserSituation & Situation,
+	situation ?: SituationComponent.RollParts.PreRoll,
 }

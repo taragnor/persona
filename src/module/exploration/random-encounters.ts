@@ -39,7 +39,7 @@ export class RandomEncounter {
       .concat(region.allRoomEffects)
       .flatMap(x=> x.getModifier("shadowPresence", null))
     );
-    const sPresence = region.shadowPresence > 0 ? region.shadowPresence + sModifiers.total(situation) : 0;
+    const sPresence = region.shadowPresence > 0 ? region.shadowPresence + sModifiers.total(situation as SituationTypes.BonusQuerySituation) : 0;
     if (sPresence > 0) {
       if( await this.#enemyPresenceRoll(encounterType, sPresence + modifier, region)) {
         return "shadows";

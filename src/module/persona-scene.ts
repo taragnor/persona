@@ -488,7 +488,11 @@ Hooks.on("updateScene", async (_scene: PersonaScene, diff) => {
 		if (game.combats.contents.some( (cmb: PersonaCombat) => cmb.isSocial)) {
 			await Logger.gmMessage("Social Scene still active, consider ending it before starting metaverse activity");
 		}
-		await TriggeredEffect.autoApplyTrigger("on-active-scene-change");
+    const situation = {
+      trigger: "on-active-scene-change",
+      triggeringUser: game.user,
+    } satisfies Situation;
+		await TriggeredEffect.autoApplyTrigger("on-active-scene-change", undefined, situation);
 	}
 });
 
@@ -498,14 +502,5 @@ Hooks.on("renderHandlebarsApplication", (app, html) => {
   if (app.document instanceof PersonaScene) {
     app.document._addExtraSheetHTML(htm);
   }
-  // htm.find(".encounter .shadow-name").on( "click", ev => {
-  //   const shadowId = HTMLTools.getClosestData<Shadow["id"]>(ev, "shadowId");
-  //   if (shadowId) {
-  //     const shadow = game.actors.get(shadowId);
-  //     if (shadow) {
-  //       shadow.sheet.render(true);
-  //     }
-  //   }
-  // });
 
 });

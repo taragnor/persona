@@ -203,7 +203,7 @@ export class SocialActionExecutor {
 	static async modifyTargetProgress(amt: number) {
 		const cardData =this.cardData;
 		const actor = cardData.actor;
-		if (cardData.situation.socialTarget) {
+		if (cardData.situation.target) {
 			const linkId = cardData.linkId;
 			await actor.socialLinkProgress(linkId, amt);
 		} else {

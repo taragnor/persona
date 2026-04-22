@@ -116,13 +116,17 @@ export class OpenerManager {
     // const openingRoll = await PersonaRoller.hiddenRoll();
     // const openingRoll = new Roll('1d20');
     // const rollValue = openingRoll.total;
-    const situation : Situation = {
+    const situation = {
+      rollType: "opener",
       user: actor.accessor,
       naturalRoll: rollValue,
       rollTags: ['opening'],
       rollTotal: rollValue,
-      activeCombat: true,
-    };
+      addedTags: [],
+      DC: undefined,
+      result: rollValue >= 11 ? "hit" : "miss",
+    } satisfies SituationComponent.Roll;
+
     returns.push(
       await this.fadingRoll(combatant, situation),
       this.mandatoryOtherOpeners(combatant, situation),
@@ -147,7 +151,7 @@ export class OpenerManager {
     return data;
   }
 
-  private async fadingRoll( combatant: Combatant<ValidAttackers> , situation: Situation) : Promise<OpenerOptionsGroups> {
+  private async fadingRoll( combatant: Combatant<ValidAttackers> , situation: SituationTypes.Roll) : Promise<OpenerOptionsGroups> {
     const options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     if (!situation.rollTags?.includes('opening')) {return {msg, options};}
@@ -220,23 +224,29 @@ export class OpenerManager {
     return { msg, options};
   }
 
-  private mandatoryOtherOpeners( combatant: PersonaCombatant, situation: Situation): OpenerOptionsGroups {
+  private mandatoryOtherOpeners( combatant: PersonaCombatant, situation: SituationComponent.Roll): OpenerOptionsGroups {
     let options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     if (!combatant.actor) {return { msg, options};}
     const mandatoryActions = combatant.actor.openerActions.filter( x=> x.hasTag('mandatory', combatant.actor));
     const usableActions = mandatoryActions
       .filter( action => {
-        const useSituation : Situation = {
-          ...situation,
+        const useSituation = {
+          rollTags: situation.rollTags,
+          naturalRoll: situation.naturalRoll,
+          rollTotal: situation.rollTotal,
+          result: situation.result,
+          addedTags: situation.addedTags,
+          user: situation.user,
+          target: situation.user,
           usedPower: action.accessor,
-        };
+        } satisfies Situation;
         return action.testOpenerPrereqs(useSituation, combatant.actor);
       });
     options = usableActions
       .flatMap( action =>  {
         const possibleTargets= this.combat.combatants.contents.filter (x=> PersonaCombat.isPersonaCombatant(x));
-        const targets= PersonaTargetting.getValidTargetsFor(action, combatant, situation, possibleTargets);
+        const targets= PersonaTargetting.getValidTargetsFor(action, combatant, possibleTargets, situation);
         if (targets.length == 0) {return [];}
         return [{
           combatant: combatant.id,
@@ -268,7 +278,7 @@ export class OpenerManager {
     return {msg, options};
   }
 
-  private saveVsDizzy( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsGroups {
+  private saveVsDizzy( combatant: Combatant<ValidAttackers> , situation: SituationComponent.Roll) : OpenerOptionsGroups {
     const options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     const saveTotal = this.mockOpeningSaveTotal(combatant, situation, 'dizzy');
@@ -290,7 +300,7 @@ export class OpenerManager {
     return {msg, options};
   }
 
-  private saveVsFear( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsGroups {
+  private saveVsFear( combatant: Combatant<ValidAttackers> , situation: SituationComponent.Roll) : OpenerOptionsGroups {
     const options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     const saveTotal = this.mockOpeningSaveTotal(combatant, situation, 'fear');
@@ -340,7 +350,7 @@ export class OpenerManager {
     return {msg, options};
   }
 
-  private saveVsConfusion ( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsGroups {
+  private saveVsConfusion ( combatant: Combatant<ValidAttackers> , situation: SituationComponent.Roll) : OpenerOptionsGroups {
     const options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     const saveTotal = this.mockOpeningSaveTotal(combatant, situation, 'confused');
@@ -375,7 +385,7 @@ export class OpenerManager {
     return {msg, options};
   }
 
-  private saveVsCharm ( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsGroups {
+  private saveVsCharm ( combatant: Combatant<ValidAttackers> , situation: SituationComponent.Roll) : OpenerOptionsGroups {
     const options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     const saveTotal = this.mockOpeningSaveTotal(combatant, situation, 'charmed');
@@ -428,7 +438,7 @@ export class OpenerManager {
     return {msg, options};
   }
 
-  private disengageOpener( combatant: PersonaCombatant, situation: Situation) :OpenerOptionsGroups {
+  private disengageOpener( combatant: PersonaCombatant, situation: SituationComponent.Roll) :OpenerOptionsGroups {
     const options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     const rollValue = situation.naturalRoll ?? -999;
@@ -479,32 +489,32 @@ export class OpenerManager {
     return { msg, options};
   }
 
-  private saveVsDespair ( combatant: Combatant<ValidAttackers> , situation: Situation) : OpenerOptionsGroups {
-    const options : OpenerOptionsGroups['options'] = [];
-    const msg : string[] = [];
-    const saveTotal = this.mockOpeningSaveTotal(combatant, situation, 'despair');
-    if (saveTotal == undefined) {
-      return {msg, options};
-    }
-    msg.push(`Resisting Despair (${saveTotal}) -->`);
-    switch (true) {
-      case (saveTotal >= 11):{
-        msg.push('Success');
-        break;
-      }
-      default:
-        msg.push('Failure (Miss Turn)');
-        options.push({
-          optionName: 'Wallow in Despair (Miss Turn)',
-          mandatory: true,
-        combatant: combatant.id,
-          optionEffects: ['skipTurn'],
-        });
-    }
-    return {msg, options};
-  }
+  // private saveVsDespair ( combatant: Combatant<ValidAttackers> , situation: RollSituation<Situation>) : OpenerOptionsGroups {
+  //   const options : OpenerOptionsGroups['options'] = [];
+  //   const msg : string[] = [];
+  //   const saveTotal = this.mockOpeningSaveTotal(combatant, situation, 'despair');
+  //   if (saveTotal == undefined) {
+  //     return {msg, options};
+  //   }
+  //   msg.push(`Resisting Despair (${saveTotal}) -->`);
+  //   switch (true) {
+  //     case (saveTotal >= 11):{
+  //       msg.push('Success');
+  //       break;
+  //     }
+  //     default:
+  //       msg.push('Failure (Miss Turn)');
+  //       options.push({
+  //         optionName: 'Wallow in Despair (Miss Turn)',
+  //         mandatory: true,
+  //       combatant: combatant.id,
+  //         optionEffects: ['skipTurn'],
+  //       });
+  //   }
+  //   return {msg, options};
+  // }
 
-  private otherOpeners( combatant: PersonaCombatant, situation: Situation): OpenerOptionsGroups {
+  private otherOpeners( combatant: PersonaCombatant, situation: SituationComponent.Roll): OpenerOptionsGroups {
     let options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     const actor = combatant.actor;
@@ -515,17 +525,24 @@ export class OpenerManager {
     const openerActions = actor.openerActions;
     const usableActions = openerActions
       .filter( action => {
-        const useSituation : Situation = {
-          ...situation,
+        const useSituation = {
+          // ...situation,
+          rollTags: situation.rollTags,
+          naturalRoll: situation.naturalRoll,
+          rollTotal: situation.rollTotal,
+          result: situation.result,
+          addedTags: situation.addedTags,
+          user: situation.user,
+          target: situation.user,
           usedPower: action.accessor,
-        };
+        } satisfies Situation;
         if (!actor.persona().canPayActivationCost(action)) {return false;}
         return action.testOpenerPrereqs(useSituation, combatant.actor);
       });
     options = usableActions
       .flatMap<OpenerOption>( action =>  {
         const possibleTargets= this.combat.combatants.contents.filter (x=> PersonaCombat.isPersonaCombatant(x));
-        const targets= PersonaTargetting.getValidTargetsFor(action, combatant, situation, possibleTargets);
+        const targets= PersonaTargetting.getValidTargetsFor(action, combatant, possibleTargets);
         if (targets.length == 0) {return [];}
         // const printableName = this.getOpenerPrintableName(action, targets);
         return [{
@@ -547,15 +564,15 @@ export class OpenerManager {
     return {msg, options};
   }
 
-  mockOpeningSaveTotal( combatant: Combatant<ValidAttackers> , situation: Situation, status: StatusEffectId) : number | undefined {
+  mockOpeningSaveTotal( combatant: Combatant<ValidAttackers> , situation: SituationComponent.Roll, status: StatusEffectId) : number | undefined {
     const rollValue = situation.naturalRoll ?? -999;
     if (!combatant.actor) {return undefined;}
     const statusEffect = combatant.actor.getStatus(status);
     if (!statusEffect && status != 'fading') {return undefined;}
-    const saveSituation : Situation = {
+    const saveSituation = {
       ...situation,
       saveVersus: status
-    };
+    } satisfies Situation;
     const saveBonus = combatant.actor.persona().getBonuses('save').total(saveSituation);
     return saveBonus + rollValue;
   }
@@ -811,3 +828,4 @@ declare global {
   interface CombatFlags extends Record<typeof OpenerManager["OPENING_ACTION_FLAG_NAME"], OpenerOption[]> {
   }
 }
+

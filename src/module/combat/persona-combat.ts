@@ -37,6 +37,7 @@ import {ModifierList} from './modifier-list.js';
 import {FollowUpManager} from './follow-up-actions.js';
 import {ConditionalEffectPrinter} from '../conditionalEffects/conditional-effect-printer.js';
 import {PersonaSockets} from '../persona.js';
+import {checkSituationProp} from '../preconditions.js';
 
 
 declare global {
@@ -127,7 +128,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     await this.setCombatantRanStartCombatTrigger(comb);
     const token = comb.token as PToken;
     const situation : Situation = {
-      activeCombat : true,
       user: comb.actor.accessor,
       triggeringCharacter: comb.actor.accessor,
     };
@@ -200,7 +200,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       .filter( x=> x.initiative == undefined)
       .map( c=> c.id);
     if (!this.isSocial) {
-      await TriggeredEffect.autoApplyTrigger('on-combat-start-global');
+      const situation =  {
+        trigger: "on-combat-start-global",
+        triggeringUser: game.user,
+      } satisfies Situation;
+      await TriggeredEffect.autoApplyTrigger('on-combat-start-global', undefined, situation);
     }
     if (unrolledInit.length > 0) {
       await this.rollInitiative(unrolledInit);
@@ -285,19 +289,24 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     const promises = this.combatants
     .filter (x=> x.actor != undefined)
     .map( async (comb) => {
-      const situation : Situation = {
+      const situation ={
         trigger: 'on-combat-end',
         triggeringUser: game.user,
-        hit: PCsWin,
+        result: PCsWin ? "hit" : "miss",
+        // hit: PCsWin,
         triggeringCharacter: comb.actor!.accessor,
         user: comb.actor!.accessor,
         combatOutcome: PCsWin ? "win" : "draw",
-      };
+      } satisfies Situation;
       const CR =  TriggeredEffect.autoTriggerToCR('on-combat-end', comb.actor, situation);
       return await CR?.toMessage('End Combat Triggered Effect', comb.actor);
     });
     await Promise.allSettled(promises);
-    const CR = TriggeredEffect.autoTriggerToCR('on-combat-end-global');
+    const situation = {
+      trigger: "on-combat-end-global",
+      triggeringUser: game.user,
+    } satisfies Situation;
+    const CR = TriggeredEffect.autoTriggerToCR('on-combat-end-global', undefined, situation);
     await CR?.toMessage('End Combat Global Trigger', undefined);
   }
 
@@ -553,7 +562,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
           triggeringCharacter: triggeringCharacter.accessor,
           triggeringUser: game.user,
           user: user.token.actor.accessor,
-          activeCombat: true,
         };
         await TriggeredEffect.execCombatTrigger('start-turn', user.token.actor, situation);
       }
@@ -665,7 +673,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
           triggeringUser: game.user,
           triggeringCharacter,
           user: user.token.actor.accessor,
-          activeCombat: true,
         };
         const CR = TriggeredEffect.autoTriggerToCR('end-turn', user.actor, situation);
         await CR?.toMessage('On End Turn', combatant.actor);
@@ -866,7 +873,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   static getSimulatedResult(attacker: PToken, power: UsableAndCard, target: PToken, simNaturalRoll: number) : CombatResult;
   static getSimulatedResult(attacker: PToken, power: UsableAndCard, target: PToken, simSitOrNat: AttackResult['situation'] |  number) : CombatResult {
     let situation : AttackResult['situation'];
-    const combat = game.combat as PersonaCombat | undefined;
     if (typeof simSitOrNat == 'number') {
       const simNaturalRoll = simSitOrNat;
       situation = {
@@ -877,10 +883,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         naturalRoll: simNaturalRoll,
         rollTags: ['attack'],
         rollTotal: simNaturalRoll,
-        hit: true,
         addedTags: ['pierce'],
-        criticalHit: false,
-        isSocial: false,
         rollType: "standard",
         DC: 0,
         result: "hit",
@@ -889,7 +892,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         withinCritRange: false,
         struckWeakness: false,
         resisted: false,
-        activeCombat:combat && !combat.isSocial ? Boolean(combat.combatants.find( x=> x.actor?.system.type != attacker.actor.system.type)): false ,
+        attackerPersona: attacker.actor.persona(),
+        targetPersona: target.actor.persona(),
       } satisfies AttackResult["situation"];
     } else {
       situation = simSitOrNat;
@@ -948,36 +952,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     return undefined;
   }
 
-
-//   static resistIKMod(targetPersona: Persona, power: Usable) : number {
-//     const fn = function (elem: RealDamageType) {
-//       const resist = targetPersona.elemResist(elem);
-//       switch (resist) {
-//         case "weakness":
-//           return -3;
-//         case "normal":
-//           return 0;
-//         case "resist": return 3;
-//         case "block":
-//         case "absorb":
-//         case "reflect": return 9999;
-//         default:
-//           resist satisfies never;
-//           return 0;
-//       }
-//     };
-//     let ret = 0;
-//     if (power.hasTag("dark")) {
-//       ret += fn ("dark");
-//     }
-//     if (power.hasTag("light")) {
-//       ret += fn ("light");
-//     }
-//     return ret;
-//   }
-
   static createTargettingContextList(situation: Partial<Situation>, cons : Sourced<NonDeprecatedConsequence> | null) : TargettingContextList {
-    const {target, attacker, user, cameo} = situation;
+    const {target, attacker, user, cameo} = situation as MergeUnion<typeof situation>;
     const triggeringCharacter = 'triggeringCharacter' in situation ? situation.triggeringCharacter : undefined;
     const owner : UniversalActorAccessor<PersonaActor>[] = [];
     if (cons && cons.owner) {
@@ -1015,9 +991,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
     const nav = PersonaDB.getNavigator();
     const context : TargettingContextList = {
-      target: target ? [target] : [],
+      target: target ? [target as ValidAttackers["accessor"]] : [],
       owner,
-      attacker: attacker ? [attacker] : [],
+      attacker: attacker ? [attacker as ValidAttackers["accessor"]] : [],
       user: user ? [user] : [],
       'triggering-character': triggeringCharacter ? [triggeringCharacter] : [],
       cameo: cameo ? [cameo] : [],
@@ -1101,15 +1077,15 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   static solveEffectiveTargets< T extends keyof Omit<TargettingContextList, "situation">>(applyTo :T, situation: Situation, cons?: SourcedConsequence) : readonly (ValidAttackers | ValidSocialTarget)[]  {
     switch (applyTo) {
       case 'target' : {
-        const target = situation.target
-        ? PersonaDB.findActor(situation.target)
-        : situation.socialTarget
-        ? PersonaDB.findActor(situation.socialTarget)
-        : undefined;
-        return target ? [target]: []; }
+        if (!checkSituationProp(situation, "target")) { return []; }
+        const target = PersonaDB.findActor<PersonaActor>(situation.target);
+        // : situation.socialTarget
+        // ? PersonaDB.findActor(situation.socialTarget)
+        return target ? [target as ValidAttackers]: []; }
       case 'attacker': {
-        const attacker = situation.attacker ? PersonaDB.findActor(situation.attacker) : undefined;
-        return attacker ? [attacker]: []; }
+        if (!checkSituationProp(situation, "attacker")) { return []; }
+        const attacker = PersonaDB.findActor<PersonaActor>(situation.attacker);
+        return attacker ? [attacker as ValidAttackers]: []; }
       case 'owner':
         if (cons) {
           if (cons.owner) {
@@ -1125,6 +1101,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         ui.notifications.notify("Can't find Owner of Consequnece");
         return [];
       case 'user': {
+        if (!checkSituationProp(situation, "user")) { return []; }
         if (!situation.user) {return [];}
         if (situation.user) {
           const userToken  = this.getPTokenFromActorAccessor(situation.user);
@@ -1139,21 +1116,20 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         return [];
       }
       case 'triggering-character': {
-        const triggerer = 'triggeringCharacter' in situation? situation.triggeringCharacter: undefined;
-        if (!triggerer) {
-          PersonaError.softFail(`Can't target triggering character for ${"trigger" in situation ? situation.trigger: ""}`, situation);
-          return [];
-        }
-        const token = this.getPTokenFromActorAccessor(triggerer);
+        if (!checkSituationProp(situation, "triggeringCharacter")) { return []; }
+        const token = this.getPTokenFromActorAccessor(situation.triggeringCharacter);
         if (token) { return [token.actor];}
-        const actor = PersonaDB.findActor(triggerer);
+        const actor = PersonaDB.findActor(situation.triggeringCharacter);
         if (actor) { return [actor];}
         return [];
       }
       case 'cameo': {
-        const cameo = 'cameo' in situation && situation.cameo ? PersonaDB.findActor(situation.cameo) : undefined;
+        if (!checkSituationProp(situation, "cameo")) { return []; }
+        const cameo = PersonaDB.findActor(situation.cameo);
         return cameo ? [cameo] : []; }
       case 'all-foes': {
+        if (!checkSituationProp(situation, "user")) { return []; }
+
         const user = situation.user ? PersonaDB.findActor(situation.user) : undefined;
         if (!user) {return [];}
         const userToken = this.getPTokenFromActorAccessor(user.accessor);
@@ -1161,6 +1137,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         return this.getAllEnemiesOf(userToken).map( x=> x.actor);
       }
       case 'all-allies': {
+        if (!checkSituationProp(situation, "user")) { return []; }
         const user = situation.user ? PersonaDB.findActor(situation.user) : undefined;
         if (!user) {return [];}
         const userToken = this.getPTokenFromActorAccessor(user.accessor);
@@ -1169,8 +1146,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         .map( x=> x.actor);
       }
       case undefined: {
-        const target = situation.target ? PersonaDB.findActor(situation.target) : undefined;
-        return target ? [target] : []; } //default to target since this is old material
+        if (!checkSituationProp(situation, "target")) { return []; }
+        const target = PersonaDB.findActor<PersonaActor>(situation.target);
+        return target ? [target as ValidAttackers] : []; } //default to target since this is old material
       case 'all-in-region': {
         let id : string | undefined;
         if ('triggeringRegionId' in situation) {
@@ -1189,7 +1167,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         return nav ? [nav] : [];
       }
       case "pc-party": {
-        return PersonaDB.activePCParty();
+        if (Metaverse.getPhase() != "combat") {
+          return PersonaDB.activePCParty();
+        }
+        return PersonaDB.activePCParty().filter(
+          member => PersonaCombat.combat!.combatants.contents.some( comb => comb.actor == member)
+        );
       }
       default:
         applyTo satisfies never;
@@ -1201,14 +1184,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     const attackerType = attacker.actor.getAllegiance();
     switch (targettingType) {
       case 'target': {
-        if (!situation.target) {return [];}
+        if (!checkSituationProp(situation, "target")) { return []; }
         const token = this.getPTokenFromActorAccessor(situation.target);
         if (token) {return [token];} else {return [];}
       }
       case 'owner':
         return [attacker];
       case 'attacker': {
-        if (!situation.attacker) {return [];}
+        if (!checkSituationProp(situation, "attacker")) { return []; }
         const token = this.getPTokenFromActorAccessor(situation.attacker);
         if (token) {return [token];} else {return [];}
       }
@@ -1233,6 +1216,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         return combat.validCombatants(attacker).flatMap( c=> c.actor ? [c.token as PToken] : []);
       }
       case 'user': {
+        if (!checkSituationProp(situation, "user")) { return []; }
         if (!situation.user) {return [];}
         const token = this.getPTokenFromActorAccessor(situation.user);
         if (token) {return [token];} else {return [];}
@@ -1402,9 +1386,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     await this.engagedList.setEngageWith(c1, c2);
   }
 
+  /**@deprecated this is a test*/
   static async disengageRoll( actor: ValidAttackers, DC = 11) : Promise<{total: number, rollBundle: RollBundle, success: boolean}> {
-    const situation : Situation = {
+    const situation : SituationTypes.PreRoll = {
       user: PersonaDB.getUniversalActorAccessor(actor),
+      rollTags: ["disengage"],
+      DC,
+      addedTags: [],
     };
     const mods = actor.getDisengageBonus();
     const labelTxt = 'Disengage Check';

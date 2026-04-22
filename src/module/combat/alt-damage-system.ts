@@ -65,7 +65,7 @@ export class AltDamageSystem extends DamageSystemBase {
 		return calc.merge(DR);
 	}
 
-	public getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
+	public getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: SituationTypes.BonusQuerySituation) : DamageCalculation {
 		const dtype = power.getDamageType(userPersona);
 		const calc = new DamageCalculation(dtype);
 		// calc.add("base", this.BASE_WEAPON_DMG, "Base Weapon Damage");
@@ -91,7 +91,7 @@ export class AltDamageSystem extends DamageSystemBase {
 		return calc ;
 	}
 
-	public getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Persona, situation: Situation) : DamageCalculation {
+	public getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Persona, situation: SituationTypes.BonusQuerySituation) : DamageCalculation {
 		const dtype = power.getDamageType(userPersona);
 		const isHealing = dtype == "healing";
 		const persona = userPersona;

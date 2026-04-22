@@ -128,7 +128,7 @@ export class ModifierList {
 	}
 
 	total(user: ValidAttackers, style ?: ModifierList["listType"]) : number;
-	total(situation: Situation , style ?: ModifierList["listType"]) : number;
+	total(situation: SituationTypes.BonusQuerySituation | SituationTypes.TriggerSituation , style ?: ModifierList["listType"]) : number;
 	total(situationOrActor: Situation | ValidAttackers , style = this.listType) : number {
 		const situation :Situation = situationOrActor instanceof PersonaActor  ? {user: situationOrActor.accessor} : situationOrActor;
 		const mods = this.validModifiers(situation, style);

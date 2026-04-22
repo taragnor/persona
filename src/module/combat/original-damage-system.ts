@@ -19,7 +19,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 	BASE_DAMAGE_LEVEL_DIVISOR = 0.5;
 	private _weaponDmgGrowth = new GrowthCalculator(1.20, 11, 4.5);
 
-	getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation {
+	getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: SituationTypes.BonusQuerySituation) : DamageCalculation {
 		const dtype = power.getDamageType(userPersona);
 		const calc = new DamageCalculation(dtype);
 		const str = this.strDamageBonus(userPersona);
@@ -128,7 +128,7 @@ export class OriginalDamageSystem extends DamageSystemBase {
 
 	}
 
-	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Persona, situation: Situation) : DamageCalculation {
+	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Persona, situation: SituationTypes.BonusQuerySituation) : DamageCalculation {
 		const persona = userPersona;
 		const magicDmg = this.magDamageBonus(userPersona);
 		const skillDamage = this.magicSkillDamage(power);

@@ -13,10 +13,11 @@ import {CombatEngine} from "./combat/combat-engine.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {PersonaSettings} from "../config/persona-settings.js";
 import {PersonaTargetting} from "./combat/persona-targetting.js";
+import {checkSituationProp} from "./preconditions.js";
 
 export class TriggeredEffect {
 
-  static onTrigger<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation) : CombatResult {
+  static onTrigger<T extends Trigger>(trigger: T, actor : U<ValidAttackers>, situation : Situation) : CombatResult {
     const situationCopy = this._setupSituation(trigger, actor, situation);
     if (!situationCopy) {
       PersonaError.softFail(`Trigger Fizzle: ${trigger}`, situation);
@@ -27,7 +28,7 @@ export class TriggeredEffect {
     return res;
   }
 
-  static onTrigger_consequences<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation) : SourcedConsequence[] {
+  static onTrigger_consequences<T extends Trigger>(trigger: T, actor : U<ValidAttackers>, situation : Situation) : SourcedConsequence[] {
     const situationCopy = this._setupSituation(trigger, actor, situation);
     if (!situationCopy) {return [];}
     const triggers = this.getTriggerList(trigger, actor, situationCopy);
@@ -120,19 +121,6 @@ private static _setupSituation< T extends Trigger>( trigger: T, actor ?: ValidAt
 					situation = newSit;
 					break;
 				}
-				case "enter-metaverse":
-				case "on-metaverse-turn":
-				case "exit-metaverse":
-				case "on-attain-tarot-perk":
-				case "on-search-end":
-				case "on-active-scene-change": {
-					const newSit : Situation = {
-						trigger: trigger,
-						triggeringUser: game.user,
-					};
-					situation = newSit;
-					break;
-				}
 				case "on-combat-start-global": {
 					const newSit : Situation = {
 						trigger: trigger,
@@ -141,6 +129,12 @@ private static _setupSituation< T extends Trigger>( trigger: T, actor ?: ValidAt
 					situation = newSit;
 					break;
 				}
+				case "enter-metaverse":
+				case "on-metaverse-turn":
+				case "exit-metaverse":
+				case "on-attain-tarot-perk":
+				case "on-search-end":
+				case "on-active-scene-change":
 				case "pre-inflict-status":
 				case "on-inflict-status":
 				case "on-enter-region":
@@ -182,7 +176,7 @@ static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Sit
   if (actor) {
     triggers.push(...actor.triggersOn(trigger));
   }
-  if (situation.usedPower) {
+  if (checkSituationProp(situation, "usedPower")) {
     const power = PersonaDB.findItem(situation.usedPower);
     const user = situation.user ? PersonaDB.findActor(situation.user) : null;
     const PowerTriggers = power.getTriggeredEffects(user, {triggerType: trigger});
@@ -217,13 +211,13 @@ static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Sit
 		return CR.emptyCheck();
 	}
 
-	static async execNonCombatTrigger( trigger: NonCombatTriggerTypes, actor: PC, situation ?: Situation, msg = "Triggered Effect") : Promise<void> {
+	static async execNonCombatTrigger( trigger: NonCombatTriggerTypes, actor: PC, situation : Situation, msg = "Triggered Effect") : Promise<void> {
 		await (this.onTrigger(trigger, actor, situation))
 		.emptyCheck()
 		?.toMessage(msg, actor);
 	}
 
-	static async execCombatTrigger(trigger: CombatTriggerTypes, actor: ValidAttackers, situation?: Situation) : Promise<void> {
+	static async execCombatTrigger(trigger: CombatTriggerTypes, actor: ValidAttackers, situation: Situation) : Promise<void> {
 		const triggerResult = (this.onTrigger(trigger, actor, situation))
 		.emptyCheck();
 		if (!triggerResult) {return;}
