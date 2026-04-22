@@ -209,7 +209,7 @@ export class SearchMenu {
       trigger: "on-search-end",
       triggeringUser: game.user,
     } as const satisfies Situation;
-		await TriggeredEffect.autoApplyTrigger("on-search-end", undefined, situation);
+		await TriggeredEffect.autoApplyTrigger(situation, undefined);
 		const {roll, result} = TensionPool.instance.nullResult();
 		if (roll) {
 			rolls.push(roll);

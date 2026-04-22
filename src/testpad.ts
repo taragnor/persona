@@ -8,3 +8,10 @@ type x =
 type RRR = NonNullableProps<HasKey<Situation, "attacker">>["attacker"];
 
 
+type XXXX = Prettify<
+  Pick< MergeUnion<Situation>, "result">
+  >
+
+
+  type V = Required<{x?: U<5>}>
+

@@ -1821,13 +1821,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     if (await this.checkStatusNullificaton(statusEffect)) {return false;}
     if (this.isValidCombatant()) {
       const situation: Situation ={
+        trigger: "pre-inflict-status",
         triggeringCharacter: this.accessor,
         triggeringUser: game.user,
         user: this.accessor,
         statusEffect: id,
         target: this.accessor,
       };
-      const ret = (TriggeredEffect.onTrigger("pre-inflict-status", this, situation)).finalize();
+      const ret = (TriggeredEffect.onTrigger(situation, this)).finalize();
       await ret
         .emptyCheck()
         ?.toMessage("Response to acquiring Status", this);
@@ -2900,18 +2901,13 @@ async onEnterMetaverse()  : Promise<void> {
 		if (this.system.type == "pc") {
 			await (this as PC).refreshSocialLink(this as PC);
 		}
-		const situation : Situation = {
+		const situation = {
 			trigger: "enter-metaverse",
-			triggeringUser: game.user,
 			triggeringCharacter: this.accessor,
 			user: this.accessor,
-		};
+		} as const;
 		await TriggeredEffect
-			.autoApplyTrigger("enter-metaverse", this, situation);
-		// await TriggeredEffect
-		// 	.onTrigger("enter-metaverse", this, situation)
-		// 	.emptyCheck()
-		// 	?.autoApplyResult();
+			.autoApplyTrigger(situation, this);
 	} catch (e) {
 		console.log(e);
 		PersonaError.softFail(`problem with onEnterMetaverse for ${this.name}`, e);
@@ -2955,8 +2951,8 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
       triggeringUser: game.user,
       user: this.accessor,
       triggeringCharacter: this.accessor,
-    } satisfies Situation;
-		await TriggeredEffect.autoApplyTrigger("exit-metaverse", this, situation);
+    } as const satisfies Situation;
+		await TriggeredEffect.autoApplyTrigger(situation, this);
 	} catch (e) {
 		Debug(e);
 		console.log(e);
@@ -4075,18 +4071,19 @@ async onRoll(situation: SituationTypes.Roll) {
       await this.update({"system.fatigue.hasMadeFatigueRollToday" : true});
     }
   }
-  const rollSituation : Situation = {
+  const rollSituation = {
+    ...situation,
     user: this.accessor,
     triggeringCharacter: this.accessor,
     trigger: "on-roll",
-    rollTags: situation.rollTags,
-    naturalRoll: situation.naturalRoll,
-    rollTotal: situation.rollTotal,
-    triggeringUser: game.user,
-    DC: undefined,
-    addedTags: situation.rollTags,
-  };
-  await TriggeredEffect.autoApplyTrigger("on-roll", this, rollSituation);
+    // rollTags: situation.rollTags,
+    // naturalRoll: situation.naturalRoll,
+    // rollTotal: situation.rollTotal,
+    // addedTags: situation.rollTags,
+    // DC: undefined,
+    // triggeringUser: game.user,
+  } as const;
+  await TriggeredEffect.autoApplyTrigger(rollSituation, this);
 }
 
 async onCombatStart() {

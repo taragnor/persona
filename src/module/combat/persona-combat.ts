@@ -127,12 +127,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     }
     await this.setCombatantRanStartCombatTrigger(comb);
     const token = comb.token as PToken;
-    const situation : Situation = {
+    const situation = {
+      trigger: "on-combat-start",
       user: comb.actor.accessor,
       triggeringCharacter: comb.actor.accessor,
-    };
+      triggeringUser: game.user,
+    } as const satisfies TriggeredSituation.Select<"on-combat-start">;
     const CR = TriggeredEffect
-    .autoTriggerToCR('on-combat-start', token.actor, situation);
+    .autoTriggerToCR(situation, token.actor);
     return CR?.finalize();
   }
 
@@ -203,8 +205,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       const situation =  {
         trigger: "on-combat-start-global",
         triggeringUser: game.user,
-      } satisfies Situation;
-      await TriggeredEffect.autoApplyTrigger('on-combat-start-global', undefined, situation);
+      } as const;
+      await TriggeredEffect.autoApplyTrigger(situation, undefined);
     }
     if (unrolledInit.length > 0) {
       await this.rollInitiative(unrolledInit);
@@ -293,12 +295,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         trigger: 'on-combat-end',
         triggeringUser: game.user,
         result: PCsWin ? "hit" : "miss",
-        // hit: PCsWin,
         triggeringCharacter: comb.actor!.accessor,
         user: comb.actor!.accessor,
         combatOutcome: PCsWin ? "win" : "draw",
-      } satisfies Situation;
-      const CR =  TriggeredEffect.autoTriggerToCR('on-combat-end', comb.actor, situation);
+      } satisfies TriggeredSituation.Select<"on-combat-end">;
+      const CR =  TriggeredEffect.autoTriggerToCR(situation, comb.actor);
       return await CR?.toMessage('End Combat Triggered Effect', comb.actor);
     });
     await Promise.allSettled(promises);
@@ -306,7 +307,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       trigger: "on-combat-end-global",
       triggeringUser: game.user,
     } satisfies Situation;
-    const CR = TriggeredEffect.autoTriggerToCR('on-combat-end-global', undefined, situation);
+    const CR = TriggeredEffect.autoTriggerToCR(situation, undefined);
     await CR?.toMessage('End Combat Global Trigger', undefined);
   }
 
@@ -563,7 +564,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
           triggeringUser: game.user,
           user: user.token.actor.accessor,
         };
-        await TriggeredEffect.execCombatTrigger('start-turn', user.token.actor, situation);
+        await TriggeredEffect.execCombatTrigger(situation, user.token.actor);
       }
     }
   }
@@ -576,7 +577,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   }
 
   toCombatant(c: IntoCombatant) : PersonaCombatant | undefined {
-    if (c instanceof Combatant) {return c;} 
+    if (c instanceof Combatant) {return c;}
     if (PersonaDB.isTokenAccessor(c))  {
       const tok= PersonaDB.findToken(c);
       return this.findCombatant(tok);
@@ -674,7 +675,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
           triggeringCharacter,
           user: user.token.actor.accessor,
         };
-        const CR = TriggeredEffect.autoTriggerToCR('end-turn', user.actor, situation);
+        const CR = TriggeredEffect.autoTriggerToCR(situation, user.actor);
         await CR?.toMessage('On End Turn', combatant.actor);
       }
     }

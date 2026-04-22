@@ -2,8 +2,6 @@ import { removeDuplicates } from "./utility/array-tools.js";
 import { Metaverse } from "./metaverse.js";
 import { PersonaError } from "./persona-error.js";
 import { PersonaActor } from "./actor/persona-actor.js";
-import { NonCombatTriggerTypes } from "../config/triggers.js";
-import { CombatTriggerTypes } from "../config/triggers.js";
 import { Trigger } from "../config/triggers.js";
 import { CombatResult } from "./combat/combat-result.js";
 import { PersonaDB } from "./persona-db.js";
@@ -15,53 +13,36 @@ import {PersonaSettings} from "../config/persona-settings.js";
 import {PersonaTargetting} from "./combat/persona-targetting.js";
 import {checkSituationProp} from "./preconditions.js";
 
+type TriggerParam<T extends Trigger=Trigger> = PartialKeys<TriggeredSituation.TriggerSituation, "triggeringUser"> & {trigger: T};
+
 export class TriggeredEffect {
 
-  static onTrigger<T extends Trigger>(trigger: T, actor : U<ValidAttackers>, situation : Situation) : CombatResult {
-    const situationCopy = this._setupSituation(trigger, actor, situation);
+  static onTrigger<const T extends Trigger>(situation: TriggeredSituation.Select<T>, actor : U<ValidAttackers>) : CombatResult;
+  static onTrigger<const T extends Trigger>(situation: TriggerParam<T>, actor : U<ValidAttackers>) : CombatResult ;
+  static onTrigger<const T extends Trigger>(situation: TriggerParam<T> | TriggeredSituation.Select<T>, actor : U<ValidAttackers>) : CombatResult {
+    const situationCopy = {
+      ...(situation satisfies TriggerParam<T>),
+      triggeringUser: game.user,
+    } satisfies TriggeredSituation.TriggerSituation;
     if (!situationCopy) {
-      PersonaError.softFail(`Trigger Fizzle: ${trigger}`, situation);
+      PersonaError.softFail(`Trigger Fizzle: ${situation.trigger}`, situation);
       return new CombatResult();}
-    const triggers = this.getTriggerList(trigger, actor, situationCopy);
+    const triggers = this.getTriggerList(situationCopy.trigger, actor, situationCopy);
     const consequences = this._getTriggerConsequences(triggers, situationCopy );
     const res = ConsequenceProcessor.consequencesToResult(consequences ,undefined, situationCopy, null);
     return res;
   }
 
-  static onTrigger_consequences<T extends Trigger>(trigger: T, actor : U<ValidAttackers>, situation : Situation) : SourcedConsequence[] {
-    const situationCopy = this._setupSituation(trigger, actor, situation);
+  static onTrigger_consequences<const T extends Trigger>(situation: TriggerParam<T>, actor : U<ValidAttackers>) : SourcedConsequence[] {
+    const situationCopy = {
+      ...(situation satisfies TriggerParam<T>),
+      triggeringUser: game.user,
+    } satisfies TriggeredSituation.TriggerSituation;
     if (!situationCopy) {return [];}
-    const triggers = this.getTriggerList(trigger, actor, situationCopy);
+    const triggers = this.getTriggerList(situationCopy.trigger, actor, situationCopy);
     const consequences = this._getTriggerConsequences(triggers, situationCopy );
     return consequences;
   }
-
-  // static async onTrigger<T extends Trigger>(trigger: T, actor ?: ValidAttackers, situation ?: Situation) : Promise<CombatResult> {
-    // const situationCopy = this._setupSituation(trigger, actor, situation);
-    // if (situationCopy == null) {return new CombatResult();}
-    // const triggers = this.getTriggerList(trigger, actor, situationCopy);
-    // if (PersonaSettings.debugMode()) {
-    //   console.debug( `${actor?.name ?? "void actor"} triggerList (${trigger}) : \n${triggers.map( trig=> trig.toString()).join("\n")}`);
-    // }
-    // const consequences = this._getTriggerConsequences(triggers, situationCopy );
-    // const consequences = this.onTrigger_consequences(trigger, actor, situation);
-    // const res = await ConsequenceProcessor.consequencesToResult(consequences ,undefined, situationCopy, null);
-    // return res;
-
-    // for (const eff of triggers) {
-    //   try {
-    //     const validCons = eff.getActiveConsequences(situationCopy);
-    //     const res = await ConsequenceProcessor.consequencesToResult(validCons ,undefined, situationCopy, actor, actor, null);
-    //     result.merge(res);
-    //   } catch (e) {
-    //     const source = eff.source ? PersonaDB.find(eff.source) : undefined;
-    //     PersonaError.softFail(`Problem with triggered effects ${source?.name ?? "Unknown source"} running on actor ${actor?.name ?? "none"}`, e);
-    //     continue;
-    //   }
-    // }
-    // return result;
-  // }
-
 
   private static _getTriggerConsequences ( triggers: ConditionalEffectC[], situation: Situation) {
     return triggers.flatMap ( CE => {
@@ -76,98 +57,98 @@ export class TriggeredEffect {
     });
   }
 
-private static _setupSituation< T extends Trigger>( trigger: T, actor ?: ValidAttackers, situation ?: Situation ) : N<Situation>{
-		if (!situation) {
-			switch (trigger) {
-				case "on-damage":
-				case "on-combat-start":
-				case "start-turn":
-				case "end-turn": {
-					if (!actor) {
-						PersonaError.softFail("NO Actor givent o trigger ${trigger}");
-						return null;
-					}
-					const newSit = {
-						trigger: trigger,
-						triggeringUser: game.user,
-						user : actor.accessor,
-						target : actor.accessor,
-						triggeringCharacter : actor.accessor,
-					} satisfies Situation;
-					situation = newSit;
-					break;
-				}
-				case "on-kill-target": {
-					//required its own thing for some reason since was giving TS errors
-					if (!actor) {
-						PersonaError.softFail("NO Actor givent o trigger ${trigger}");
-						return null;
-					}
-					const newSit = {
-						trigger: trigger,
-						triggeringUser: game.user,
-						user : actor.accessor,
-						target : actor.accessor,
-						triggeringCharacter : actor.accessor,
-					} satisfies Situation;
-					situation = newSit;
-					break;
-				}
-				case "on-combat-end-global": {
-					const newSit : Situation = {
-						trigger: trigger,
-						triggeringUser: game.user,
-					};
-					situation = newSit;
-					break;
-				}
-				case "on-combat-start-global": {
-					const newSit : Situation = {
-						trigger: trigger,
-						triggeringUser: game.user,
-					};
-					situation = newSit;
-					break;
-				}
-				case "enter-metaverse":
-				case "on-metaverse-turn":
-				case "exit-metaverse":
-				case "on-attain-tarot-perk":
-				case "on-search-end":
-				case "on-active-scene-change":
-				case "pre-inflict-status":
-				case "on-inflict-status":
-				case "on-enter-region":
-				case "on-presence-check":
-				case "on-clock-tick":
-				case "on-clock-change":
-				case "on-use-power":
-				case "on-roll":
-				case "on-combat-end":
-				case "on-open-door":
-				case "pre-take-damage":
-				case "on-active-effect-time-out":
-				case "on-active-effect-end":
-				case "on-power-usage-check":
-				case "on-event-start":
-				case "on-event-end":
-        case "on-social-turn-start":
-        case "get-added-power-tags":
-					PersonaError.softFail(`Must proivide a situation with this trigger:  ${trigger}`);
-					return null;
-				default:
-					trigger satisfies never;
-					PersonaError.softFail(`Bad TRigger ${trigger}`);
-					return null;
-			}
-		}
-		if (situation == undefined) {
-			PersonaError.softFail(`Cant' resolve trigger, no situation for ${trigger}`);
-			return null;
-		}
-		const situationCopy = { ...situation, trigger } as Situation; //copy the object so it doesn't permanently change it
-	 return situationCopy;
-}
+//private static _setupSituation< T extends Trigger>( trigger: T, actor ?: ValidAttackers, situation ?: Situation ) : N<Situation>{
+//		if (!situation) {
+//			switch (trigger) {
+//				case "on-damage":
+//				case "on-combat-start":
+//				case "start-turn":
+//				case "end-turn": {
+//					if (!actor) {
+//						PersonaError.softFail("NO Actor givent o trigger ${trigger}");
+//						return null;
+//					}
+//					const newSit = {
+//						trigger: trigger,
+//						triggeringUser: game.user,
+//						user : actor.accessor,
+//						target : actor.accessor,
+//						triggeringCharacter : actor.accessor,
+//					} satisfies Situation;
+//					situation = newSit;
+//					break;
+//				}
+//				case "on-kill-target": {
+//					//required its own thing for some reason since was giving TS errors
+//					if (!actor) {
+//						PersonaError.softFail("NO Actor givent o trigger ${trigger}");
+//						return null;
+//					}
+//					const newSit = {
+//						trigger: trigger,
+//						triggeringUser: game.user,
+//						user : actor.accessor,
+//						target : actor.accessor,
+//						triggeringCharacter : actor.accessor,
+//					} satisfies Situation;
+//					situation = newSit;
+//					break;
+//				}
+//				case "on-combat-end-global": {
+//					const newSit : Situation = {
+//						trigger: trigger,
+//						triggeringUser: game.user,
+//					};
+//					situation = newSit;
+//					break;
+//				}
+//				case "on-combat-start-global": {
+//					const newSit : Situation = {
+//						trigger: trigger,
+//						triggeringUser: game.user,
+//					};
+//					situation = newSit;
+//					break;
+//				}
+//				case "enter-metaverse":
+//				case "on-metaverse-turn":
+//				case "exit-metaverse":
+//				case "on-attain-tarot-perk":
+//				case "on-search-end":
+//				case "on-active-scene-change":
+//				case "pre-inflict-status":
+//				case "on-inflict-status":
+//				case "on-enter-region":
+//				case "on-presence-check":
+//				case "on-clock-tick":
+//				case "on-clock-change":
+//				case "on-use-power":
+//				case "on-roll":
+//				case "on-combat-end":
+//				case "on-open-door":
+//				case "pre-take-damage":
+//				case "on-active-effect-time-out":
+//				case "on-active-effect-end":
+//				case "on-power-usage-check":
+//				case "on-event-start":
+//				case "on-event-end":
+//        case "on-social-turn-start":
+//        case "get-added-power-tags":
+//					PersonaError.softFail(`Must proivide a situation with this trigger:  ${trigger}`);
+//					return null;
+//				default:
+//					trigger satisfies never;
+//					PersonaError.softFail(`Bad TRigger ${trigger}`);
+//					return null;
+//			}
+//		}
+//		if (situation == undefined) {
+//			PersonaError.softFail(`Cant' resolve trigger, no situation for ${trigger}`);
+//			return null;
+//		}
+//		const situationCopy = { ...situation, trigger } as Situation; //copy the object so it doesn't permanently change it
+//	 return situationCopy;
+//}
 
 static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Situation) :  ConditionalEffectC[] {
   const triggers : ConditionalEffectC[] = PersonaDB.getGlobalModifiers().flatMap( x=> x
@@ -211,23 +192,17 @@ static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Sit
 		return CR.emptyCheck();
 	}
 
-	static async execNonCombatTrigger( trigger: NonCombatTriggerTypes, actor: PC, situation : Situation, msg = "Triggered Effect") : Promise<void> {
-		await (this.onTrigger(trigger, actor, situation))
+	static async execNonCombatTrigger( situation: SituationTypes.TriggerSituation, actor: PC, msg = "Triggered Effect") : Promise<void> {
+		await (this.onTrigger(situation, actor))
 		.emptyCheck()
 		?.toMessage(msg, actor);
 	}
 
-	static async execCombatTrigger(trigger: CombatTriggerTypes, actor: ValidAttackers, situation: Situation) : Promise<void> {
-		const triggerResult = (this.onTrigger(trigger, actor, situation))
+	static async execCombatTrigger(situation: SituationTypes.TriggerSituation, actor: ValidAttackers) : Promise<void> {
+		const triggerResult = this.onTrigger(situation, actor)
 		.emptyCheck();
 		if (!triggerResult) {return;}
 		const usePowers = triggerResult.findEffects("use-power");
-		if (situation == undefined) {
-			situation = {
-				attacker: actor.accessor,
-				user: actor.accessor,
-			} satisfies Situation;
-		}
 		for (const usePower of usePowers) {
 			//TODO BUG: Extra attacks keep the main inputted modifier
 			try {

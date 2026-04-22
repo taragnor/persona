@@ -94,9 +94,11 @@ export function testPrecondition (condition: SourcedPrecondition, situation: Sit
   }
 }
 
-export function checkSituationProp<T extends keyof MergeUnion<S>, S extends Situation>(situation: S, prop: T): situation is NonNullableProps<HasKey<S, T>> & {[k in T]: NonNullable<S[k]>}
+export function checkSituationProp<T extends keyof MergeUnion<S>, S extends Situation>(situation: S, prop: T)
+  : situation is NonNullableProps<HasKey<S, T>> & {[k in T]: NonNullable<S[k]>}
 {
-  if (!(prop in situation) || situation[prop] == undefined ) {
+  const key : keyof S = prop as unknown as keyof S;
+  if (!(key in situation) || situation[key] == undefined  || situation[key] == null) {
     return false;
   }
   return true;
@@ -110,14 +112,12 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
     case "natural-roll":
       if (!checkSituationProp(situation, "naturalRoll")) {
         return false; };
-      if (situation.naturalRoll == undefined)
-      {return false;}
       target = situation.naturalRoll;
       break;
     case "activation-roll":
       if (!checkSituationProp(situation, "naturalRoll")) {
         return false; };
-      if (situation.naturalRoll == undefined) {return false;}
+
       if (!situation?.rollTags?.includes("activation"))
       {return false;}
       target = situation.naturalRoll;
@@ -199,7 +199,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       if (!checkSituationProp(situation, "usedPower")) { return false; };
       if (!checkSituationProp(situation, "attacker")) { return false; };
       if (!checkSituationProp(situation, "usedPower")) { return false; };
-      const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const subject = getSubjectActors(condition, situation as Situation, "conditionTarget")[0];
       if (!subject) {return false;}
       testCase = RESIST_STRENGTH_LIST.indexOf(condition.resistLevel);
       let element : DamageType = condition.element;
@@ -477,7 +477,7 @@ export function combatResultBasedNumericTarget(condition: CombatResultComparison
     return false;
   }
   let count = 0;
-  for (const { atkResult, changes } of situation.combatResult.attacks) {
+  for (const { atkResult, changes } of (situation?.combatResult?.attacks ?? [])) {
     const target = PersonaDB.findToken(atkResult.target!);
     const targetChanges = changes.filter( c=> {
       const changed = PersonaDB.findActor(c.actor);
@@ -493,6 +493,10 @@ export function combatResultBasedNumericTarget(condition: CombatResultComparison
 
 function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}, situation: Situation) : boolean {
   if (!("trigger" in situation)) {return false;}
+  //differentiate global situations from nonglobal
+  const globalSit = "global" in situation? situation.global : false;
+  const globalCond = "global" in condition ? condition.global : false;
+  if (globalSit != globalCond) {return false;}
   if (condition.trigger != situation.trigger) {return false;}
   switch (condition.trigger) {
     case "on-attain-tarot-perk":

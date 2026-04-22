@@ -376,30 +376,41 @@ export class Metaverse {
 		{return this.#sendPassTurnRequest();}
 	}
 
-	static async #passMetaverseTurn() {
-		console.log("Trying to pass MV turn");
-		const pcs = game.scenes.active.tokens.contents.filter( tok => tok.actor && (tok.actor as PersonaActor).isPC());
-		const ret : string[] = [];
-		for (const pc of pcs) {
-			ret.push(...await (pc.actor as PersonaActor).onMetaverseTimeAdvance());
-		}
-		if (ret.length > 0) {
-			const changes = ret
-				.map( x=> `<li>${x}</li>`)
-				.join("");
-			await ChatMessage.create( {
-				speaker: {alias: "Metaverse Exploration"},
-				content: `<ul>${changes}</ul>`,
-				style: CONST.CHAT_MESSAGE_STYLES.OOC,
-			});
-		}
-		await StepsClock.instance.inc();
-    const situation = {
+  static async #passMetaverseTurn() {
+    console.log("Trying to pass MV turn");
+    const pcs = game.scenes.active.tokens.contents.filter( tok => tok.actor && (tok.actor as PersonaActor).isPC());
+    const ret : string[] = [];
+    for (const pc of pcs) {
+      ret.push(...await (pc.actor as PersonaActor).onMetaverseTimeAdvance());
+    }
+    if (ret.length > 0) {
+      const changes = ret
+        .map( x=> `<li>${x}</li>`)
+        .join("");
+      await ChatMessage.create( {
+        speaker: {alias: "Metaverse Exploration"},
+        content: `<ul>${changes}</ul>`,
+        style: CONST.CHAT_MESSAGE_STYLES.OOC,
+      });
+    }
+    await StepsClock.instance.inc();
+    const global_situation = {
       trigger: "on-metaverse-turn",
       triggeringUser:game.user,
-    } satisfies Situation;
+      global: true,
+    } as const satisfies TriggeredSituation.Select<"on-metaverse-turn">;
+    await TriggeredEffect.autoApplyTrigger(global_situation, undefined);
+    for (const member of PersonaDB.activePCParty()) {
+      const indiv_sit = {
+      trigger: "on-metaverse-turn",
+        triggeringUser:game.user,
+        global: false,
+        user: member.accessor,
+        triggeringCharacter : member.accessor,
+    } as const satisfies TriggeredSituation.Select<"on-metaverse-turn">;
+    await TriggeredEffect.autoApplyTrigger(indiv_sit, undefined);
+    }
 
-		await TriggeredEffect.autoApplyTrigger("on-metaverse-turn", undefined, situation);
 		ui.notifications.notify("Passing Metaverse turn");
 	}
 
@@ -578,7 +589,7 @@ Hooks.on("updateWall", async function (_updateItem: WallDocument, changes: Recor
 			trigger: "on-open-door",
 			triggeringUser: game.users.get(userId)!,
 		};
-		await TriggeredEffect.autoApplyTrigger("on-open-door", undefined, situation);
+		await TriggeredEffect.autoApplyTrigger(situation, undefined);
 	}
 });
 
@@ -589,7 +600,7 @@ Hooks.on("clockTick", async function (clock: ProgressClock, _newAmt: number) {
 		triggeringUser: game.user,
 	};
 	// console.log("Triggering ClockTick");
-	await TriggeredEffect.autoApplyTrigger("on-clock-tick", undefined, situation);
+	await TriggeredEffect.autoApplyTrigger(situation, undefined);
 });
 
 Hooks.on("updateClock", async function (clock: ProgressClock, _newAmt: number, _delta: number) {
@@ -599,7 +610,7 @@ Hooks.on("updateClock", async function (clock: ProgressClock, _newAmt: number, _
 		triggeringUser: game.user,
 	};
 	// console.log("Triggering Clock Change");
-	await TriggeredEffect.autoApplyTrigger("on-clock-change", undefined, situation);
+	await TriggeredEffect.autoApplyTrigger(situation, undefined);
 });
 
 //@ts-expect-error adding to window

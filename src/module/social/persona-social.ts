@@ -14,7 +14,6 @@ import { PersonaSockets } from "../persona.js";
 import { TarotCard } from "../../config/tarot.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import { CombatResult } from "../combat/combat-result.js";
-import { NonCombatTriggerTypes } from "../../config/triggers.js";
 import { PersonaItem } from "../item/persona-item.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import { HBS_TEMPLATES_DIR } from "../../config/persona-settings.js";
@@ -133,12 +132,13 @@ export class PersonaSocial {
   }
 
   private static async execStartSocialTurnTriggers(pc: PC) {
-    const situation : Situation = {
+    const situation = {
       trigger: "on-social-turn-start",
+      user: pc.accessor,
       triggeringCharacter: pc.accessor,
       triggeringUser: game.user,
-    };
-    await TriggeredEffect.execNonCombatTrigger("on-social-turn-start", pc, situation, "Start Social Turn Triggered Effects");
+    } satisfies Situation;
+    await TriggeredEffect.execNonCombatTrigger(situation, pc, "Start Social Turn Triggered Effects");
   }
 
 	static async endSocialTurn( pc: PC) {
@@ -355,8 +355,8 @@ export class PersonaSocial {
 		return this.#drawnCardIds;
 	}
 
-	static async execTrigger( trigger: NonCombatTriggerTypes, actor: PC, situation : Situation, msg = "Triggered Effect"): Promise<void> {
-		return await TriggeredEffect.execNonCombatTrigger(trigger, actor, situation, msg);
+	static async execTrigger( situation: SituationTypes.TriggerSituation, actor: PC, msg = "Triggered Effect"): Promise<void> {
+		return await TriggeredEffect.execNonCombatTrigger(situation, actor, msg);
 	}
 
 	static async awardPerk(target: PC, socialLink: SocialLink) {
@@ -365,8 +365,9 @@ export class PersonaSocial {
 			user: target.accessor,
 			tarot: socialLink.tarot?.name as TarotCard,
 			target: target.accessor,
+      triggeringUser: game.user,
 		} satisfies Situation;
-		await this.execTrigger("on-attain-tarot-perk", target, situation, `Gains Perk (${socialLink.tarot?.name})`) ;
+		await this.execTrigger(situation, target, `Gains Perk (${socialLink.tarot?.name})`) ;
 	}
 
 	static async applyEffects(effects: ConditionalEffectC[], situation: Situation, actor: PC) {
@@ -380,7 +381,6 @@ export class PersonaSocial {
 			?.autoApplyResult();
 	}
 
-
 	static getSocialVariable(varId: string): number | undefined {
 		const exec = this._cardExecutor;
 		if (!exec) {
@@ -389,7 +389,6 @@ export class PersonaSocial {
 		}
 		return exec.getSocailVariable(varId);
 	}
-
 
 	static async alterStudentSkill(actor: PC, skill: StudentSkill, amt: number) {
 		await actor.alterSocialSkill(skill, amt);

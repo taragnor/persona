@@ -430,7 +430,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
         triggeringCharacter: this.parent.accessor,
         activeDuration
       };
-      await TriggeredEffect.autoApplyTrigger("on-active-effect-time-out", this.parent, situation);
+      await TriggeredEffect.autoApplyTrigger(situation, this.parent);
     }
     const duration = this.statusDuration;
     switch (duration.dtype) {
@@ -465,7 +465,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
         triggeringCharacter: this.parent.accessor,
         activeDuration
       };
-      await TriggeredEffect.autoApplyTrigger("on-active-effect-end", this.parent, situation);
+      await TriggeredEffect.autoApplyTrigger(situation, this.parent);
     }
     const duration = this.statusDuration;
     switch (duration.dtype) {

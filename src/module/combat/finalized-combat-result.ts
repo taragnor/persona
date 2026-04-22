@@ -426,7 +426,7 @@ private async autoApplyResult_GM() : Promise<boolean> {
 		if ((!attacker || !power)) {
 			return;
 		}
-		const situation : Situation = {
+		const situation = {
 			trigger: 'on-use-power',
 			user: attacker.actor.accessor,
 			attacker: attacker.actor.accessor,
@@ -434,8 +434,9 @@ private async autoApplyResult_GM() : Promise<boolean> {
 			triggeringCharacter : this.attacker.actor.accessor,
 			triggeringUser: game.user,
 			combatResult: this,
-		};
-		const trigg= (TriggeredEffect.onTrigger('on-use-power', attacker.actor, situation)).finalize();
+      addedTags: [],
+		} as const satisfies TriggeredSituation.Select<"on-use-power">;
+		const trigg= (TriggeredEffect.onTrigger(situation, attacker.actor)).finalize();
 		this.addChained(trigg);
 	}
 

@@ -492,7 +492,7 @@ Hooks.on("updateScene", async (_scene: PersonaScene, diff) => {
       trigger: "on-active-scene-change",
       triggeringUser: game.user,
     } satisfies Situation;
-		await TriggeredEffect.autoApplyTrigger("on-active-scene-change", undefined, situation);
+		await TriggeredEffect.autoApplyTrigger(situation, undefined);
 	}
 });
 

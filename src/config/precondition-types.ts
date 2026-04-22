@@ -67,13 +67,21 @@ type SimpleTrigger = {
 }
 
 type NonSimpleTrigger =
-	onInflictStatus
-	| onTarotPerk
-	| ClockTickTrigger
-	| StatusTimeOut
-	| EventTrigger
+  onInflictStatus
+  | onTarotPerk
+  | ClockTickTrigger
+  | StatusTimeOut
+  | EventTrigger
+  | OnMetaverseTurnTrigger
 ;
 
+type OnMetaverseTurnTrigger = GlobalSeparated<"on-metaverse-turn">;
+
+
+type GlobalSeparated<T extends Trigger> = {
+  trigger: T,
+  global: boolean
+}
 
 type EventTrigger = {
 	trigger: "on-event-start" | "on-event-end",

@@ -68,3 +68,4 @@ type NonNullableProps<T> =
   T extends unknown
     ? { [K in keyof T]: NonNullable<T[K]> }
     : never;
+

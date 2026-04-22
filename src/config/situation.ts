@@ -6,7 +6,7 @@ import { SocialStat } from "../config/student-skills.js";
 import { TarotCard } from "../config/tarot.js";
 import { StatusEffectId } from "./status-effects";
 import { AttackResult} from "../module/combat/combat-result.js";
-import { CombatTriggerTypes } from "./triggers.js";
+import { CombatTriggerTypes, Trigger } from "./triggers.js";
 import {RealDamageType} from "./damage-types.js";
 import {FinalizedCombatResult} from "../module/combat/finalized-combat-result.js";
 import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js";
@@ -62,7 +62,7 @@ namespace SituationComponent {
     user: UniversalActorAccessor<ValidAttackers>;
   }
 
-  export type Attacker  = User & {
+  export type Attacker  = SituationComponent.User & {
     attacker: UniversalActorAccessor<ValidAttackers>;
   }
 
@@ -70,11 +70,11 @@ namespace SituationComponent {
     target: UniversalActorAccessor<ValidAttackers>,
   };
 
-  export type TriggeringCharacter = Partial<User> & {
+  export type TriggeringCharacter = SituationComponent.User & {
     triggeringCharacter:  UniversalActorAccessor<ValidAttackers>;
   }
 
-  export type SocialCard = AddedTags & User & {
+  export type SocialCard = AddedTags & SituationComponent.User & {
     socialRandom: number;
     cameo : U<UniversalActorAccessor<ValidSocialTarget>>;
     cardEventItem ?: U<EnchantedTreasureFormat>,
@@ -89,8 +89,9 @@ namespace SituationComponent {
     usedPower : UniversalItemAccessor<UsableAndCard>;
   }
 
-  export type PowerUse = User & Targetted & AddedTags
-    & UsedPower;
+  export type PowerUse = SituationComponent.User &
+    Partial<Targetted> & AddedTags
+    & UsedPower & Partial<Attacker>;
 
   type Roll = RollParts.RollSituation;
   type PreRoll = RollParts.PreRollSituation;
@@ -107,17 +108,17 @@ namespace SituationComponent {
       result : AttackResult["result"];
     };
 
-    type OpeningRoll = User & Exclude<CompletedRollPart, "result"> & {
+    type OpeningRoll = SituationComponent.User & Exclude<CompletedRollPart, "result"> & {
       rollType: "opener"
     }
 
-    type PreRollCore = User & {
+    type PreRollCore = SituationComponent.User & {
       rollTags : (RollTag | CardTag | Tag)[],
       DC : U<number>;
       rollType ?: U<AttackRollType | "opener">;
     } & AddedTags
 
-    export type PreRoll = User & PreRollCore
+    export type PreRoll = SituationComponent.User & PreRollCore
       &  Partial<MinorRollSubtypes | CombatPreRollPart>;
 
     type MinorRollSubtypes = SkillRollPart | SavingThrowPart | PowerUsePart;
@@ -159,25 +160,43 @@ namespace SituationComponent {
 }
 
 namespace TriggeredSituation {
-  export type TriggerSituation = TriggerSituation_base &( 
-    ExplorationTrigger
+  export type TriggerSituation = TriggerSituation_base & TriggerTypes;
+
+  export type Select<T extends Trigger> = Prettify<
+    HasKey<SituationTypes.TriggerSituation, "trigger"> & {trigger:T}
+    >;
+
+  type TriggerTypes = ExplorationTrigger
     | OnRollTrigger
     | ClockTrigger
     | StartSocialTurnTrigger
     | OnPowerUsageCheckTrigger
-    | CombatTrigger
-  );
+    | CombatTrigger;
 
-  type ExplorationTrigger =  GenericExplorationTrigger
+type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
+
+    type ExplorationTrigger =  GenericExplorationTrigger
     | EnterMetaverseTrigger
     | EnterRegionTrigger
     | PresenceCheckTrigger
     | TarotPerkTrigger
+    | OnMetaverseTurn
   ;
 
   type GenericExplorationTrigger = Partial<SituationComponent.TriggeringCharacter> & {
-    trigger: "on-open-door" | "on-search-end" | "exit-metaverse" | "on-metaverse-turn" | "on-active-scene-change";
+    trigger: "on-open-door" | "on-search-end" | "exit-metaverse" | "on-active-scene-change";
   }
+
+  type OnMetaverseTurn = {
+    trigger: "on-metaverse-turn",
+  } & (
+    {
+    global: true
+    } | {
+      global : false,
+    } & SituationComponent.TriggeringCharacter
+  ) ;
+
 
   type TarotPerkTrigger = SituationComponent.User &  {
     trigger: "on-attain-tarot-perk";
@@ -235,7 +254,6 @@ namespace TriggeredSituation {
   type OnAETimeoutTrigger = SituationComponent.TriggeringCharacter & {
     trigger: "on-active-effect-time-out" | "on-active-effect-end",
     activeEffect: UniversalAEAccessor<PersonaAE>,
-    user: UniversalActorAccessor<ValidAttackers>,
     activeDuration: U<number>,  //number of turns active
   }
 
@@ -280,12 +298,12 @@ namespace TriggeredSituation {
   }
 
 
-  type UsePowerTrigger = SituationComponent.User &
-   SituationComponent.TriggeringCharacter
+  type UsePowerTrigger = SituationComponent.PowerUse
+    & SituationComponent.TriggeringCharacter
     & {
     trigger: "on-use-power",
-    combatResult: FinalizedCombatResult,
-  } & SituationComponent.Targetted;
+    combatResult ?: FinalizedCombatResult,
+  };
 
   type InflictStatusTrigger_Generic =
     SituationComponent.Targetted
@@ -426,9 +444,6 @@ export type PowerOnlySituation =
 }
 
 
-type v = Prettify<HasKey<Situation, "attacker"> & {usedPower: never}>
 
-
-
-
+type X = TriggeredSituation.Select<"on-use-power">;
 

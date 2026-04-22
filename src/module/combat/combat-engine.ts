@@ -295,11 +295,10 @@ export class CombatEngine {
 		return baseSituation;
 	}
 
-  private determineAddedPowerTags(attacker: Persona, target: Persona, usableOrCard: UsableAndCard, _situation: Situation) : PowerTag[] {
-    type S = Prettify<Situation & {trigger: "get-added-power-tags"}>;
+  private determineAddedPowerTags(attacker: Persona, target: Persona, usableOrCard: UsableAndCard, situation: Situation) : PowerTag[] {
     const targetActor = target.user;
     const attackerActor = attacker.user;
-    const trigSit : S = {
+    const trigSit = {
       trigger : "get-added-power-tags",
       usedPower: usableOrCard.accessor,
       target: targetActor.accessor,
@@ -307,8 +306,9 @@ export class CombatEngine {
       attacker: attackerActor.accessor,
       triggeringCharacter: attackerActor.accessor,
       triggeringUser: game.user,
-    } satisfies Situation & {trigger: "get-added-power-tags"};
-    const consList = TriggeredEffect.onTrigger_consequences("get-added-power-tags", attackerActor, trigSit);
+      addedTags: "addedTags" in situation ? situation.addedTags ?? [] : [],
+    } satisfies TriggeredSituation.Select<"get-added-power-tags">;
+    const consList = TriggeredEffect.onTrigger_consequences(trigSit, attackerActor);
     const tags = consList
       .filter( cons=> cons.type == "combat-effect"
         && cons.combatEffect == "add-power-tag-to-attack")
@@ -484,7 +484,13 @@ export class CombatEngine {
 	}
 
 	private checkOverride(attacker : Persona, target: Persona, power: Usable, resultSituation: AttackResult["situation"]) : N<AttackResultData> {
-		const overrideResult = (TriggeredEffect.onTrigger("on-use-power", attacker.user, resultSituation))
+    const trigSit ={
+      ...resultSituation,
+      trigger: "on-use-power",
+      triggeringUser: game.user,
+      triggeringCharacter: attacker.user.accessor,
+    } as const satisfies TriggeredSituation.Select<"on-use-power">;
+		const overrideResult = TriggeredEffect.onTrigger(trigSit, attacker.user)
 		.globalOtherEffects.filter( eff=> eff.type == "set-roll-result");
 		const rank = this.rankAttackResult;
 		if (overrideResult.length) {

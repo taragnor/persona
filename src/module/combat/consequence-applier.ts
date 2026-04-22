@@ -113,12 +113,13 @@ export class ConsequenceApplier {
       statusEffect: status.id,
       triggeringUser: game.user,
     } as const;
-    for (const user of [attackerActor, targetActor]) {
+    for (const SitUser of [attackerActor, targetActor]) {
       const situation : Situation =  {
         ...sitPartial,
-        user: user.accessor,
-      };
-      const eff = (TriggeredEffect.onTrigger("on-inflict-status", user, situation))
+        triggeringUser: game.user,
+        user: SitUser.accessor,
+      } as const satisfies TriggeredSituation.Select<"on-inflict-status">;
+      const eff = (TriggeredEffect.onTrigger(situation, SitUser))
         .finalize()
         .emptyCheck() ;
       if (eff) {
@@ -144,7 +145,7 @@ export class ConsequenceApplier {
     if (dmg.hpChange < 0) {
       const attacker = attackerToken ? attackerToken.actor.accessor : undefined;
       const actorAcc = actor.accessor;
-      const situation : Situation =  {
+      const situation =  {
         user: actorAcc,
         usedPower: power?.accessor,
         triggeringCharacter: actorAcc,
@@ -153,14 +154,21 @@ export class ConsequenceApplier {
         amt: -dmg.hpChange,
         damageType: dmg.damageType,
         triggeringUser: game.user,
-      };
-      const preCR = (TriggeredEffect.onTrigger("pre-take-damage", actor, situation)).finalize();
+      } as const;
+      const preDamageSit = {
+        ...situation,
+        trigger: "pre-take-damage",
+      } as const;
+      const preCR = (TriggeredEffect.onTrigger(preDamageSit, actor)).finalize();
       if (preCR.hasCancelRequest()) {
         ret.push(preCR);
         return ret;
       }
-      const CR = (TriggeredEffect
-        .autoTriggerToCR("on-damage", actor, situation))
+      const DamageSit= {
+        ...situation,
+        trigger: "on-damage",
+      } as const;
+      const CR = (TriggeredEffect .autoTriggerToCR(DamageSit, actor))
         ?.finalize();
       if (CR) { ret.push(CR);}
     }
@@ -560,7 +568,7 @@ export class ConsequenceApplier {
       for (const comb of combat.combatants) {
         if (!comb.actor) {continue;}
         situation.user = comb.actor.accessor;
-        ret.push((TriggeredEffect.onTrigger("on-kill-target", comb.actor, situation)).finalize());
+        ret.push((TriggeredEffect.onTrigger(situation, comb.actor)).finalize());
       }
     }
     void NavigatorVoiceLines.onTargetKilled(target.actor, combat);
