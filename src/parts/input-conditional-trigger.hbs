@@ -22,6 +22,7 @@
 <select name="{{strcat namePrefix 'timeoutTarget'}}">
   {{selectOptions POWERSTUFF.AE_TIMEOUT_TARGETS localize=true selected=cond.timeoutTarget}}
 </select>
+{{/if}}
 
 {{#if (eqAny cond.timeoutTarget "status")}}
 {{multicheck (strcat namePrefix 'statusId') POWERSTUFF.STATUSEFFECTS checked=cond.statusId localize=true}}
