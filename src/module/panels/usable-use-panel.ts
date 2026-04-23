@@ -30,7 +30,7 @@ export class UsableUsePanel extends UsableListPanel {
   }
 
   protected override async _useItemOrPower(actor: ValidAttackers, usable: Usable) {
-    await this.pop();
+    void this.pop();
     await super._useItemOrPower(actor, usable);
     return;
   }
