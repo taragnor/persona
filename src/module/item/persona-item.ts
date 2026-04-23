@@ -342,7 +342,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   async refreshItemBase(this: Carryable) {
-    if (this.system.itemBase) {return "no change";}
+    if (this.system.itemBase && this.parent != undefined) {return "no change";}
     const itemBase = this._deriveItemBase();
     if (this.parent instanceof PersonaActor) {
       // const item = PersonaDB.getItemByName(this.name);
@@ -371,7 +371,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       return this;
     }
     const baseId = this.system.itemBase ?? this._deriveItemBase()?.id;
-    if (this.system.itemBase == undefined) {
+    if (this.system.itemBase == undefined ||
+    (this.system.itemBase != this.id && this.parent == undefined)) {
       void this.refreshItemBase();
     }
     if (baseId && baseId != this.id) {

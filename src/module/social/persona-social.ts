@@ -688,7 +688,6 @@ export class PersonaSocial {
   }
 
   static availableStandardActionActivities(pc: PC) : SocialCard[] {
-		// return PersonaDB.allActivities().filter( activity=> Object.values(activity.system.weeklyAvailability).some (val => val));
     return PersonaDB.standardActionActivities()
     .filter (activity => this.isAvailable(activity, pc));
   }
