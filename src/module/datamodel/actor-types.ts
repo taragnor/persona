@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { PCAndAllyStuff } from "../../config/actor-parts.js";
+import { farmingData, PCAndAllyStuff } from "../../config/actor-parts.js";
 import { FREQUENCY } from "../../config/frequency.js";
 import { frequencyConvert2 } from "../../config/actor-parts.js";
 import { SocialQuestionDM } from "./item-types.js";
@@ -74,6 +74,7 @@ export class PCSchema extends window.foundry.abstract.TypeDataModel {
 			...PCSpecificStuff(),
 			...PCAndAllyStuff(),
 			...sharedAbilities(),
+      farming: farmingData(),
 			questions: new arr( new embedded(SocialQuestionDM)),
 			trueOwner: new id<User>(),
 		} as const;

@@ -33,6 +33,14 @@ export const personalBio = function () {
 	});
 };
 
+export const farmingData = function () {
+  return new sch( {
+    cropId: new id<Consumable>(),
+    amount: new num( {integer:true, initial: 0}),
+    daysLeft: new num( {integer:true, initial: 0}),
+  });
+};
+
 export type TalentData = {
 	talentId: string,
 	talentLevel: number,

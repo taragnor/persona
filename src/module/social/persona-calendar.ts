@@ -154,57 +154,79 @@ export class PersonaCalendar {
 		return true;
 	}
 
-	static async nextDay(extraMsgs : string[] = []) {
-		if(!game.user.isGM) {return;}
-		const rolls: Roll[] = [];
-		const requireManual = !(await this.advanceCalendar());
-		const date = this.getDateString();
-		const weekday = this.getCurrentWeekday();
-		const newWeather =  this.determineWeather(this.getCurrentDate());
-		await this.setWeather(newWeather);
-		const weather = this.getWeather();
-		if (weather != newWeather) {
-			PersonaError.softFail(`Weather is incorrect. Shoudl be ${newWeather}`);
-		}
-		const manualUpdate = requireManual ? `<h2> Requires Manaul date update </h2>`: "";
-		await PersonaSocial.updateLinkAvailability(weekday);
-		const doomsdayMsg = await this.advanceDoomsday();
-		extraMsgs.push(... await this.endDayForPCs());
-		extraMsgs = extraMsgs
-			.map( x=> `<div> ${x} </div>`);
-		const html = `
-		<div class="date">
-		${manualUpdate}
-		<h2> ${date} (${weekday}) </h2>
-		<div class="weather">
-		Weather: ${weather}
-		</div>
-			${extraMsgs.join("")}
-		${doomsdayMsg}
-		</div>
-			`;
-		const speaker: Foundry.ChatSpeakerObject = {
-			alias: "Calendar"
-		};
-		const msgData : MessageData = {
-			speaker,
-			content: html,
-			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-			rolls,
-		};
-		await ChatMessage.create(msgData,{} );
-		await this.onCalendarAdvance();
-		return date;
-	}
+  static async nextDay(extraMsgs : string[] = []) {
+    if(!game.user.isGM) {return;}
+    const rolls: Roll[] = [];
+    const requireManual = !(await this.advanceCalendar());
+    const date = this.getDateString();
+    const weekday = this.getCurrentWeekday();
+    const newWeather =  this.determineWeather(this.getCurrentDate());
+    await this.setWeather(newWeather);
+    const weather = this.getWeather();
+    if (weather != newWeather) {
+      PersonaError.softFail(`Weather is incorrect. Shoudl be ${newWeather}`);
+    }
+    const manualUpdate = requireManual ? `<h2> Requires Manaul date update </h2>`: "";
+    await PersonaSocial.updateLinkAvailability(weekday);
+    const doomsdayMsg = await this.advanceDoomsday();
+    extraMsgs.push(... await this.endDayForPCs());
+    try {
+      const advanceEvents = await this.onCalendarAdvance();
+      extraMsgs.push(advanceEvents);
+    } catch(e) {
+      PersonaError.softFail(e as Error);
+    }
+    extraMsgs = extraMsgs
+      .map( x=> `<div> ${x} </div>`);
+    const html = `
+    <div class="date">
+    ${manualUpdate}
+    <h2> ${date} (${weekday}) </h2>
+    <div class="weather">
+    Weather: ${weather}
+    </div>
+      ${extraMsgs.join("")}
+    ${doomsdayMsg}
+    </div>
+      `;
+    const speaker: Foundry.ChatSpeakerObject = {
+      alias: "Calendar"
+    };
+    const msgData : MessageData = {
+      speaker,
+      content: html,
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+      rolls,
+    };
+    await ChatMessage.create(msgData,{} );
+    return date;
+  }
 
-	static async onCalendarAdvance() {
-		Hooks.callAll("personaCalendarAdvance");
-		const actorPool : PersonaActor[] = ([]  as PersonaActor[])
-			.concat(PersonaDB.PCs())
-			.concat( PersonaDB.NPCAllies());
-		const promises = actorPool.map ( actor => actor.onCalendarAdvance());
-		await Promise.allSettled(promises);
-	}
+  static async onCalendarAdvance() : Promise<string> {
+    Hooks.callAll("personaCalendarAdvance");
+    const actorPool : PersonaActor[] = ([]  as PersonaActor[])
+    .concat(PersonaDB.PCs())
+    .concat( PersonaDB.NPCAllies())
+    .concat (PersonaDB.allNPCs())
+    ;
+    const promises = actorPool.map ( async (actor) => ([actor, await actor.onCalendarAdvance()]) );
+    const settled = await Promise.allSettled(promises);
+    const report = settled
+    .filter ( x=> x.status == "fulfilled")
+    .map ( x=> x.value as [PersonaActor, string[]])
+    .filter ( ([_actor, note]) => note.length > 0 )
+    .map( ([actor, notes]) => `
+    <div class="calendar-advance-report">
+    <span class="actor-name">
+    ${actor.displayedName}:
+    </span>
+    <span class="actor-notes">
+    ${notes.join(" ,")}
+    </span>
+  </div>
+      `);
+    return report.join("");
+  }
 
 	static async endDayForPCs(): Promise<string[]> {
 		const ret : string[] = [];

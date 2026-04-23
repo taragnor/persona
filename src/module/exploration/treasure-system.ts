@@ -428,6 +428,7 @@ export type EnchantedTreasureFormat = {
 	item: UniversalItemAccessor<TreasureItem>,
 	enchantments: Tag["id"][],
 	costMult ?: number,
+  amount?: number,
 }
 
 export type BattleTreasure = {

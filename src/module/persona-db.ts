@@ -29,6 +29,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	#resetCache() : PersonaDBCache {
 		const newCache =  this.#cache = {
 			powers: undefined,
+      NPCs: undefined,
 			shadows: undefined,
 			socialLinks: undefined,
 			treasureItems: undefined,
@@ -383,6 +384,13 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 		return this.#cache.pcs;
 	}
 
+  allNPCs(): readonly NPC[] {
+		if (this.#cache.NPCs) {return this.#cache.NPCs;}
+		this.#cache.NPCs=  this.allActors().filter( actor => actor.isNPC());
+		return this.#cache.NPCs;
+
+  }
+
 	allActivities(): readonly Activity[] {
 		return this.allSocialCards()
 			.filter( x=> (x.system.cardType !="social"));
@@ -587,6 +595,7 @@ type PersonaDBCache =	{
 	navigator: NPCAlly | undefined;
 	enchantments: U<Tag[]>;
 	pcs: PC[] | undefined;
+  NPCs: NPC[] | undefined;
 	teammateSocialLink: NPC | undefined;
 	personalSocialLink: NPC | undefined;
 	NPCAllies: U<NPCAlly[]>;

@@ -792,9 +792,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     );
   }
 
-  equals(other: PersonaItem) : boolean {
-    return this == other;
-  }
 
   baseItemExtraTags(user: N<ValidAttackers>) : readonly UnifiedTagData[] {
     const itemBase= this.itemBase;
@@ -2078,14 +2075,21 @@ isCraftingMaterial(): boolean {
   return false;
 }
 
+equals(other: PersonaItem) : boolean {
+  return this == other;
+}
+
 
 get isStackable() : boolean {
   return this.isCraftingMaterial() || this.isConsumable() || this.isSkillCard();
 }
 
 isStackableWith(a: TagBearingItem): boolean {
+  if (!this.isStackable || !a.isStackable) {return false;}
+
   const tagListA= a.tagList(null);
   const thisTagList = this.tagList(null);
+  if (this.itemBase != a.itemBase) {return false;}
   return this.isStackable && a.isStackable
     && this.name == a.name
     && tagListA.every(tag => thisTagList.includes(tag))

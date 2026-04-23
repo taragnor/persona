@@ -55,6 +55,7 @@ import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class
 import {antiLoop} from "../utility/anti-loop.js";
 import {PersonaAE, StatusDuration} from "../persona-ae.js";
 import {PowerLearningSystem} from "../power-learning.js";
+import {Farming} from "./farming.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -68,6 +69,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	// private _trackerAntiLoop : boolean = false;
 
 	static MPMap = new Map<number, number>;
+  _farming : U<Farming>;
 
 	cache: {
 		startingLevel: U<number>,
@@ -84,7 +86,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	constructor(...arr: unknown[]) {
 		super(...arr);
 		this.clearCache();
+    if (this.isPC())
+    this._farming = new Farming(this);
 	}
+
+  get farming() { return this._farming;}
 
 	clearCache() {
 		this.cache = {
@@ -301,10 +307,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
   async addTreasureItem( treasure: EnchantedTreasureFormat, quietLog = false) {
+    let logMsg = "";
     const baseItem = PersonaDB.findItem(treasure.item);
     const tags = baseItem.system.itemTags;
     if (treasure.enchantments.length == 0) {
-      return await this.addItem(baseItem);
+      return await this.addItem(baseItem, treasure.amount ?? 1);
     }
     const tagIds =
       [
@@ -319,14 +326,29 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       ...baseData,
       name,
     };
-    const item = (await this.createEmbeddedDocuments("Item", [itemData]))[0] as typeof baseItem;
+    const amount = treasure?.amount ?? 1;
+    const stackableItem = this.items
+      .find( ownedItem=> ownedItem.isStackableWith(baseItem)) as U<typeof baseItem>;
+    if (!stackableItem) {
+      //create new Item
+      const item = (await this.createEmbeddedDocuments("Item", [itemData]))[0] as typeof baseItem;
+      logMsg = `${this.name} gained Treasure Item : ${amount} ${item.name}`;
+      if (item.system.amount != amount) {
+        await item.update({"system.amount" : amount});
+      }
+      if (baseItem.id) {
+        await item.update({"system.itemBase" : baseItem.id});
+      }
+      return item;
+    } else {
+      //add to existing amt
+      const newAmt = stackableItem.system.amount + amount ;
+      await stackableItem.update({"system.amount" : newAmt});
+      logMsg = `${this.name} gained Treasure Item : ${stackableItem.name} (new Total: ${newAmt})`;
+    }
     if (this.hasPlayerOwner && !quietLog) {
-      void Logger.sendToChat(`${this.name} gained Treasure Item : ${item.name}`);
+      void Logger.sendToChat(logMsg);
     }
-    if (baseItem.id) {
-      await item.update({"system.itemBase" : baseItem.id});
-    }
-    return item;
   }
 
 	get inventory() : (Consumable | InvItem | Weapon | SkillCard)[] {
@@ -4089,14 +4111,18 @@ async onRoll(situation: SituationTypes.Roll) {
 async onCombatStart() {
 }
 
-async onCalendarAdvance() {
-	const PCCheck =  this.isNPCAlly() || this.isPC();
-	if (!PCCheck) {return;}
-	for (const eff of this.effects.contents) {
-		await eff.onCalendarAdvance();
-	}
+async onCalendarAdvance() : Promise<string[]> {
+  const arr : string [] = [];
+  const PCCheck =  this.isNPCAlly() || this.isPC();
+  if (!PCCheck) {return [];}
+  arr.push(
+    ...await this.checkEffectExpire( eff => eff.onCalendarAdvance()),
+  );
+  if (this.isPC() && this.farming) {
+    arr.push(...await this.farming.advanceCrops(1));
+  }
+  return arr;
 }
-
 
 async onKO() : Promise<void> {
 	if (this.isPCLike() && this.theurgyVal > 0) {
