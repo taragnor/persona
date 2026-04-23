@@ -289,7 +289,13 @@
 {{multicheck (strcat namePrefix 'powerDamageType') POWERSTUFF.DAMAGETYPES checked=cond.powerDamageType localize=true}}
 {{/if}}
 
-
 {{/if}}
 
+
+
+{{#if (eq cond.boolComparisonTarget "special-boolean")}}
+<select name="{{strcat namePrefix 'specialType'}}">
+	{{selectOptions POWERSTUFF.SPECIAL_BOOLEAN_SUBLIST localize=true selected=cond.specialType}}
+</select>
+{{/if}}
 

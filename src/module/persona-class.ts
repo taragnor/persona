@@ -1041,7 +1041,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.getBonuses("hpCostMult");
   }
 
-  canUsePower (usable: UsableAndCard, outputReason: boolean) : boolean {
+  canUsePower_getIneligibilityReason (usable: UsableAndCard) : N<string> {
     const msg =
       this._consumableCheck(usable)
       || this._explorationCheck(usable)
@@ -1057,6 +1057,25 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       || this._checkCooldown(usable)
       || this._pauseCheck()
     ;
+    return msg;
+  }
+
+  canUsePower (usable: UsableAndCard, outputReason: boolean) : boolean {
+    const msg = this.canUsePower_getIneligibilityReason(usable);
+      // this._consumableCheck(usable)
+      // || this._explorationCheck(usable)
+      // || this._combatTypeCheck(usable)
+      // || this._downtimeUsageCheck(usable)
+      // || this._powerInhibitingStatusCheck(usable)
+      // || this._powerTooStrong(usable)
+      // || this._deadCheck(usable)
+      // || this._isTrulyUsable(usable)
+      // || this._canPayActivationCostCheck(usable)
+      // || this._checkConditionals(usable)
+      // || this._checkTeamworkMove(usable)
+      // || this._checkCooldown(usable)
+      // || this._pauseCheck()
+    // ;
     if (msg === null) {return true;}
     if (outputReason) {
       ui.notifications.warn(msg);
@@ -1151,7 +1170,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     if (Metaverse.getPhase() != "downtime") {return null;}
     if (usable.hasTag("downtime-minor", this)) {
       if (!this.user.isPC()) {return "Only PCs can take downtime minor actions";}
-      if (!PersonaSocial.hasMinorSocialAction(this.user)) {
+      if (!PersonaSocial.hasMinorSocialAction(this.user) && !PersonaSettings.debugMode()) {
         return "You don't have a social minor action";
       }
     }

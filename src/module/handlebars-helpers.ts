@@ -265,6 +265,11 @@ export class PersonaHandleBarsHelpers {
       }
     },
 
+    'cantUseReason': (persona:Persona, power: Power) : string => {
+      const reason =  persona.canUsePower_getIneligibilityReason(power);
+      return reason ? reason : "Power is Usable";
+    },
+
     'canModifySearchChoice': (ownerId : User["id"]) => {
       const user = game.users.get(ownerId);
       if (game.user.isGM) {

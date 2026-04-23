@@ -248,6 +248,8 @@ export class ConditionalEffectPrinter {
 				return this.printRollPropertyConditional(cond);
 			case "combat-comparison":
 				return this.printCombatComparison(cond);
+      case "special-boolean":
+        return this.printSpecialBooleanComparison(cond);
 			default:
 				cond satisfies never;
 				return "";
@@ -350,6 +352,18 @@ export class ConditionalEffectPrinter {
 				return "ERROR";
 		}
 	}
+
+    static printSpecialBooleanComparison(cond: Precondition & {type: "boolean"; boolComparisonTarget: "special-boolean"}) : string {
+      switch (cond.specialType) {
+        case "farming-can-harvest":
+          return "Can harvest crops";
+        case "farming-can-plant":
+          return "Can Plant crops";
+        default:
+          cond.specialType satisfies never;
+          return "ERROR";
+      }
+    }
 
 	static getTagNameForHasTag(cond: Precondition & {type: "boolean"} & {boolComparisonTarget: "has-tag"}): string {
 		switch (cond.tagComparisonType) {
@@ -595,25 +609,33 @@ export class ConditionalEffectPrinter {
 
 	}
 
-	private static printInventoryAction (cons: Consequence & {type: "inventory-action"}) {
-		const amount = this.printConsequenceAmount(cons.amount);
-		switch (cons.invAction) {
-			case "add-item": {
-				return `Add ${amount} item`;
-			}
-			case "add-treasure": {
-				const treasureLevel = this.printConsequenceAmount(cons.treasureLevel);
-				return `Add ${amount} Treasure ${treasureLevel} , treasure Modifier:  ${cons.treasureModifier}, minLevel ${cons.minLevel}`;
-			}
-			case "remove-item":
-				return `remove ${amount} item`;
-			case "add-card-item":
-				return `add ${amount ?? 1} of card Item`;
-			default:
-				cons satisfies never;
-				return "ERROR";
-		}
-	}
+    private static printInventoryAction (cons: Consequence & {type: "inventory-action"}) {
+      if (cons.invAction == "harvest-crops") {
+        return "Harvest grown crops";
+      }
+      const amount = this.printConsequenceAmount(cons.amount);
+      switch (cons.invAction) {
+        case "add-item": {
+          return `Add ${amount} item`;
+        }
+        case "add-treasure": {
+          const treasureLevel = this.printConsequenceAmount(cons.treasureLevel);
+          return `Add ${amount} Treasure ${treasureLevel} , treasure Modifier:  ${cons.treasureModifier}, minLevel ${cons.minLevel}`;
+        }
+        case "remove-item":
+          return `remove ${amount} item`;
+        case "add-card-item":
+          return `add ${amount ?? 1} of card Item`;
+        case "plant-crops": {
+          const itemName = PersonaDB.getItemById(cons.cropId)?.name ?? "ERROR";
+          const daysToGrow = this.printConsequenceAmount(cons.daysToGrow);
+          return `Plant ${amount} ${itemName} (growth Time ${daysToGrow})`;
+        }
+        default:
+          cons satisfies never;
+          return "ERROR";
+      }
+    }
 
 
 	private static printConsequenceAmount(consAmt: ConsequenceAmount) : string {

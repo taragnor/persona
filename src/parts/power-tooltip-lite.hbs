@@ -1,3 +1,7 @@
+{{#if (not (canUsePower persona power))}}
+{{cantUseReason persona power}}
+
+{{/if}}
 {{power.name}}
 Tags: {{getPowerTagsL persona.user power}}
 {{#if (ne power.system.damageLevel "none")}}
@@ -6,3 +10,4 @@ Damage Level: {{power.system.damageLevel}}
 {{/if}}
 {{power.description}}
 Cost: {{powerCostString power persona}}
+

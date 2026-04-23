@@ -234,8 +234,8 @@ class SocialActivityPanel extends UsableUsePanel {
   }
 
   private async selectActivity(activity: SocialLink | Activity) {
+    void this.pop();
     await PersonaSocial.chooseActivity(this.actor, activity);
-    await this.pop();
   }
 }
 

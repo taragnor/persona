@@ -159,6 +159,13 @@ type InventoryActions = {
 } | {
 	invAction : Extract<keyof typeof INVENTORY_ACTION, "add-card-item">;
 	amount: ConsequenceAmount,
+} | {
+	invAction : Extract<keyof typeof INVENTORY_ACTION, "harvest-crops">;
+} | {
+	invAction : Extract<keyof typeof INVENTORY_ACTION, "plant-crops">;
+  amount: ConsequenceAmount,
+  cropId: Consumable["id"],
+  daysToGrow: ConsequenceAmount,
 }
 
 

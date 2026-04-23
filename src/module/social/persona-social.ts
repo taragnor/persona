@@ -663,6 +663,7 @@ export class PersonaSocial {
   }
 
   private static getDowntimeActionsRemaining(actor: PC, type: keyof DowntimeActionData) : number {
+    if (PersonaSettings.debugMode()) {return 1;}
     const data = actor.getFlag<DowntimeActionData>("persona", "socialActions");
     return data ? data[type] ?? 0 : 0;
   }

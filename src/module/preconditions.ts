@@ -762,6 +762,8 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
       return rollPropertyIs(condition, situation);
     case "combat-comparison":
       return combatComparison(condition, situation);
+    case "special-boolean":
+      return specialComparison(condition, situation);
     default :
       condition satisfies never;
       return undefined;
@@ -1485,6 +1487,26 @@ function resolveSocialAvailabilityCheck(condition: SourcedPrecondition & {type: 
       PersonaError.softFail(`Unexpected social check ${(condition as Record<string,string>)?.socialTypeCheck}`);
       Debug(condition);
       Debug(situation);
+      return undefined;
+  }
+}
+
+function specialComparison(condition: SourcedPrecondition & {type: "boolean", boolComparisonTarget: "special-boolean" }, situation: Situation): U<boolean> {
+  switch (condition.specialType) {
+    case "farming-can-harvest": {
+      if (!checkSituationProp(situation, "user")) {return undefined;}
+      const user = PersonaDB.findActor(situation.user);
+      if (!user.isPC()) {return undefined;}
+      return user.farming?.canHarvestCrops();
+    }
+    case "farming-can-plant": {
+      if (!checkSituationProp(situation, "user")) {return undefined;}
+      const user = PersonaDB.findActor(situation.user);
+      if (!user.isPC()) {return undefined;}
+      return user.farming?.canPlantCrops();
+    }
+    default:
+      condition.specialType satisfies never;
       return undefined;
   }
 }

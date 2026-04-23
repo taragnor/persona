@@ -29,6 +29,12 @@ export class UsableUsePanel extends UsableListPanel {
     return new Handlebars.SafeString(`<img class="item-icon" src='${filepath}' title='${item.displayedName.toString()}'>`);
   }
 
+  protected override async _useItemOrPower(actor: ValidAttackers, usable: Usable) {
+    await this.pop();
+    await super._useItemOrPower(actor, usable);
+    return;
+  }
+
   protected getButtonLabel(usable: Usable) {
     const icon = `
     <span class="item-icon">
@@ -57,6 +63,11 @@ Hooks.on("updateCombat", (_combat: PersonaCombat, changes : DeepPartial<PersonaC
 });
 
 Hooks.on("updateItem", (item: PersonaItem) => {
+  const activePanels = UsableUsePanel.getInstances<UsableUsePanel>(UsableUsePanel);
+  activePanels.forEach( panel => void panel.onUpdateItem(item));
+});
+
+Hooks.on("deleteItem", (item: PersonaItem) => {
   const activePanels = UsableUsePanel.getInstances<UsableUsePanel>(UsableUsePanel);
   activePanels.forEach( panel => void panel.onUpdateItem(item));
 });

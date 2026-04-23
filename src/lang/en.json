@@ -787,6 +787,9 @@
 	"persona.preconditions.disable-on-debug": "Disable on Debug Mode" ,
 	"persona.preconditions.diagnostic": "Diagnostic (debugger command)" ,
 
+  "persona.preconditions.booleanSpecial.farming-can-harvest": "Farming (can harvest)",
+  "persona.preconditions.booleanSpecial.farming-can-plant": "Farming (can plant crops)",
+
 	"persona.preconditions.is-a-consumable": "Using a consumable Item" ,
 	"persona.preconditions.target-is-same-arcana": "Target is the same arcana as attacker" ,
 	"persona.preconditions.flag-state": "Flag State" ,
@@ -898,6 +901,7 @@
 	"persona.preconditions.comparison.num-of-others-with": "Number of Others Meeting Condition",
 	"persona.preconditions.comparison.variable-value": "Value of Variable",
 	"persona.preconditions.comparison.advanced-number": "Advanced Number",
+	"persona.preconditions.comparison.special-boolean": "Other/Special" ,
 
 	"persona.preconditions.socialChecks.relationship-type-check": "Relationship Type is",
 	"persona.preconditions.socialChecks.is-social-disabled": "Is Socially Disabled",
@@ -1052,6 +1056,8 @@
 "persona.consequences.inventoryAction.add-treasure" : "Add Treasure",
 "persona.consequences.inventoryAction.remove-item" : "Remove Item",
 "persona.consequences.inventoryAction.add-card-item" : "Add Card Item",
+"persona.consequences.inventoryAction.plant-crops" : "Plant Crops",
+"persona.consequences.inventoryAction.harvest-crops" : "Harvest Crops",
 
 	"persona.modifier-variable.escalationDie": "Escalation Die",
 	"persona.modifier-variable.tensionPool": "Tension Pool",

@@ -400,6 +400,18 @@
 	</div>
 	{{/if}}
 
+  {{#if (eqAny cons.invAction "plant-crops")}}
+  <div>
+    <label>Days To Grow</label>
+    {{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'daysToGrow.') cons=cons.daysToGrow POWERSTUFF=POWERSTUFF owner=owner}}
+  </div>
+  <select name="{{strcat namePrefix 'cropId'}}">
+    {{selectOptions POWERSTUFF.ITEMS localize=true selected=cons.cropId}}
+  </select>
+
+  {{/if}}
+
+
 	{{/if}}
 
 	<div>

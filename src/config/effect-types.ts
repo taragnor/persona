@@ -259,6 +259,8 @@ const INVENTORY_ACTION_LIST = [
 	"add-card-item",
 	"add-treasure",
 	"remove-item",
+  "plant-crops",
+  "harvest-crops",
 ] as const;
 
 

@@ -400,7 +400,7 @@ export class ConsequenceApplier {
   }
 
   private static async resolveInventoryAction( actor: PersonaActor,  otherEffect: OtherEffect & {type: "inventory-action"}) : Promise<void> {
-    const amount = typeof otherEffect.amount == "number" ? otherEffect.amount ?? 1 : 1;
+    const amount = "amount" in otherEffect && typeof otherEffect.amount == "number" ? otherEffect.amount ?? 1 : 1;
     switch (otherEffect.invAction) {
       case "add-item": {
         const item = PersonaDB.getItemById(otherEffect.itemId);
@@ -413,6 +413,21 @@ export class ConsequenceApplier {
         }
       }
         break;
+      case "harvest-crops":
+        if (actor.isPC() && actor.farming) {
+          await actor.farming.harvestCrops();
+        } else {
+          ui.notifications.warn(`${actor.name} can't do farming`);
+        }
+        break;
+      case "plant-crops": {
+        if (actor.isPC() && actor.farming) {
+          await actor.farming.plantCrop(otherEffect.cropId, otherEffect.amount, otherEffect.daysToGrow);
+        } else {
+          ui.notifications.warn(`${actor.name} can't do farming`);
+        }
+        break;
+      }
       case "add-treasure": {
         const treasureLevel = typeof otherEffect.treasureLevel == "number" ? otherEffect.treasureLevel ?? 0 : 0;
         const treasures = TreasureSystem.generate(treasureLevel, otherEffect.treasureModifier ?? 0, otherEffect.minLevel ?? 0);

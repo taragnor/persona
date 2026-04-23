@@ -535,56 +535,76 @@ export class CombatResult  {
         this.globalOtherEffects.push(cons);
         break;
       case "inventory-action": {
-        if (!effect) {break;}
-        const amount = this.resolveConsequenceAmount(cons, situation);
-        if (cons.invAction == "add-card-item") {
-          const treasureItem = "cardEventItem" in situation ? situation.cardEventItem : undefined;
-          if (!treasureItem) {break;}
-          effect.otherEffects.push( {
-            ...cons,
-            amount,
-            treasureItem,
-          } satisfies OtherEffect);
+        if (!effect) {
+          PersonaError.softFail(`No Target to apply Effect to ${cons.invAction}`);
           break;
         }
-        if (cons.invAction != "add-treasure") {
-          const resolvedCons = {
-            ...cons,
-            amount,
-          };
-          effect.otherEffects.push( resolvedCons);
-        } else {
-          const sourced2=  ConsequenceAmountResolver.extractSourcedFromField(cons, "treasureLevel");
-          const treasureLevel = ConsequenceAmountResolver.resolveConsequenceAmount(sourced2, situation) ?? 0;
-          const resolvedCons = {
-            ...cons,
-            amount,
-            treasureLevel,
-          };
-          effect.otherEffects.push( resolvedCons);
-        }
+        this.addEffect_inventoryAction( cons, effect, situation);
+        break;
+      }
+      case "set-roll-result":
+        this.globalOtherEffects.push(cons);
+        break;
+      default: {
+        cons satisfies never;
+        throw new Error("Should be unreachable");
+      }
+    }
+    if (!effect) {return;}
+    if (atkResult == null) {
+      CombatResult.mergeChanges(this.costs, [effect]);
+      return;
+    }
+    if (!this.attacks.has(atkResult)) {
+      this.attacks.set(atkResult, []);
+    }
+    const effects = this.attacks.get(atkResult)!;
+    CombatResult.mergeChanges(effects, [effect]);
+  }
 
-				break;
-			}
-			case "set-roll-result":
-				this.globalOtherEffects.push(cons);
-				break;
-			default: {
-				cons satisfies never;
-				throw new Error("Should be unreachable");
-			}
-		}
-		if (!effect) {return;}
-		if (atkResult == null) {
-			CombatResult.mergeChanges(this.costs, [effect]);
-			return;
-		}
-		if (!this.attacks.has(atkResult)) {
-			this.attacks.set(atkResult, []);
-		}
-		const effects = this.attacks.get(atkResult)!;
-		CombatResult.mergeChanges(effects, [effect]);
-	}
+  addEffect_inventoryAction( cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "inventory-action"}, effect: ActorChange<ValidAttackers>, situation: Readonly<Situation>) {
+    switch (cons.invAction) {
+      case "harvest-crops":
+        effect.otherEffects.push(cons);
+        return;
+      case "plant-crops":{
+        const amount = this.resolveConsequenceAmount(cons, situation);
+        const sourced2=  ConsequenceAmountResolver.extractSourcedFromField(cons, "daysToGrow");
+        const daysToGrow = ConsequenceAmountResolver.resolveConsequenceAmount(sourced2, situation) ?? 0;
+        effect.otherEffects.push({
+          ...cons, amount, daysToGrow
+        });
+        return;
+      }
+    }
+    const amount = this.resolveConsequenceAmount(cons, situation);
+    if (cons.invAction == "add-card-item") {
+      const treasureItem = "cardEventItem" in situation ? situation.cardEventItem : undefined;
+      if (!treasureItem) {return;}
+      effect.otherEffects.push( {
+        ...cons,
+        amount,
+        treasureItem,
+      } satisfies OtherEffect);
+      return;
+    }
+    if (cons.invAction != "add-treasure") {
+      const resolvedCons = {
+        ...cons,
+        amount,
+      };
+      effect.otherEffects.push( resolvedCons);
+    } else {
+      const sourced2=  ConsequenceAmountResolver.extractSourcedFromField(cons, "treasureLevel");
+      const treasureLevel = ConsequenceAmountResolver.resolveConsequenceAmount(sourced2, situation) ?? 0;
+      const resolvedCons = {
+        ...cons,
+        amount,
+        treasureLevel,
+      };
+      effect.otherEffects.push( resolvedCons);
+    }
+  }
 
 	resolveConsequenceAmount<T extends Sourced<object> & {[K in S]: ConsequenceAmount}, S extends string = "amount">(cons: T, situation: Situation, field: S | "amount" = "amount") {
 		const sourced = ConsequenceAmountResolver.extractSourcedFromField(cons, field as S);

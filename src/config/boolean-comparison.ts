@@ -54,6 +54,7 @@ const ACTIVE_BOOLEAN_COMPARISON_TARGET_LIST = [
 	"knows-power",
 	"has-class",
 	"actor-exists",
+  "special-boolean",
 	...BASIC_BOOLEAN_COMPARISON_LIST,
 ] as const;
 
@@ -116,9 +117,16 @@ const COMBAT_COMPARISON_SUBLIST_LIST = [
   "combat-result-is",
 ] as const;
 
+const SPECIAL_BOOLEAN_SUBLIST_LIST = [
+  "farming-can-harvest",
+  "farming-can-plant",
+] as const;
+
 export const COMBAT_COMPARISON_SUBLIST = HTMLTools.createLocalizationObject(COMBAT_COMPARISON_SUBLIST_LIST, "persona.preconditions.comparison");
 
 export const ROLL_COMPARISON_SUBLIST = HTMLTools.createLocalizationObject(ROLL_COMPARISON_SUBLIST_LIST, "persona.preconditions.comparison");
+
+export const SPECIAL_BOOLEAN_SUBLIST = HTMLTools.createLocalizationObject(SPECIAL_BOOLEAN_SUBLIST_LIST, "persona.preconditions.booleanSpecial");
 
 export type BooleanComparisonTarget = typeof BOOLEAN_COMPARISON_TARGET_LIST[number];
 
@@ -147,7 +155,7 @@ type NonDeprecatedBoolComparisons = BasicBComparisonPC | NonBasicBoolComparison 
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | FlagComparisonPC | TargettedBComparisonPC |   WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SocialComparison | ArcanaComparison | GeneralActorComparison | BinaryLogicalComparison | SceneClockNameComparison | ActorExistsComparison | KnowsPowerComparison | HasClassComparison | StatusInflictComparisonPC | PowerComparison | RollPropertyComparison | CombatComparison;
+StatusComparisonPC | TagComparisonPC | FlagComparisonPC | TargettedBComparisonPC |   WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SocialComparison | ArcanaComparison | GeneralActorComparison | BinaryLogicalComparison | SceneClockNameComparison | ActorExistsComparison | KnowsPowerComparison | HasClassComparison | StatusInflictComparisonPC | PowerComparison | RollPropertyComparison | CombatComparison | SpecialComparion;
 ;
 
 type PowerComparison = {
@@ -467,3 +475,13 @@ type BinaryLogicalComparison = {
 	comparison2: Precondition,
 }
 
+
+type SpecialComparion = {
+  boolComparisonTarget: "special-boolean",
+} & (
+  FarmingAction
+);
+
+type FarmingAction = {
+  specialType: Extract<keyof typeof SPECIAL_BOOLEAN_SUBLIST, "farming-can-plant" | "farming-can-harvest" >
+}
