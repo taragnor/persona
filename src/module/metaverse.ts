@@ -395,20 +395,20 @@ export class Metaverse {
     }
     await StepsClock.instance.inc();
     const global_situation = {
-      trigger: "on-metaverse-turn",
-      triggeringUser:game.user,
+      trigger: "on-metaverse-turn-dual",
+      triggeringUser: game.user,
       global: true,
-    } as const satisfies TriggeredSituation.Select<"on-metaverse-turn">;
+    } as const satisfies TriggeredSituation.Select<"on-metaverse-turn-dual">;
     await TriggeredEffect.autoApplyTrigger(global_situation, undefined);
     for (const member of PersonaDB.activePCParty()) {
       const indiv_sit = {
-      trigger: "on-metaverse-turn",
+        trigger: "on-metaverse-turn-dual",
         triggeringUser:game.user,
         global: false,
         user: member.accessor,
         triggeringCharacter : member.accessor,
-    } as const satisfies TriggeredSituation.Select<"on-metaverse-turn">;
-    await TriggeredEffect.autoApplyTrigger(indiv_sit, undefined);
+      } as const satisfies TriggeredSituation.Select<"on-metaverse-turn-dual">;
+      await TriggeredEffect.autoApplyTrigger(indiv_sit, undefined);
     }
 
 		ui.notifications.notify("Passing Metaverse turn");

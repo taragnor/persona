@@ -3,7 +3,7 @@ import { NumericComparisonPC } from "./numeric-comparison.js";
 import { BooleanComparisonPC } from "./boolean-comparison.js";
 import { TarotCard } from "./tarot.js";
 import { StatusEffectId } from "../config/status-effects.js";
-import { Trigger } from "../config/triggers.js";
+import { DEPRECATED_TRIGGERS, Trigger } from "../config/triggers.js";
 
 export const PRECONDITIONLIST = [
 	"always",
@@ -59,28 +59,38 @@ type SaveVersus = {
 export type Triggered = { type: "on-trigger"} & TriggeredEvents;
 
 type  TriggeredEvents = SimpleTrigger
-| NonSimpleTrigger;
+| AdvancedTrigger
+| DeprecatedTriggers
 ;
 
 type SimpleTrigger = {
-	trigger : Exclude<Trigger, NonSimpleTrigger["trigger"]>,
+	trigger : Exclude<Trigger, AdvancedTrigger["trigger"]>,
 }
 
-type NonSimpleTrigger =
+type AdvancedTrigger =
   onInflictStatus
   | onTarotPerk
   | ClockTickTrigger
   | StatusTimeOut
   | EventTrigger
-  | OnMetaverseTurnTrigger
+  | GlobalToggleTriggers
 ;
 
-type OnMetaverseTurnTrigger = GlobalSeparated<"on-metaverse-turn">;
+type GlobalToggleTriggers = GlobalToggleTrigger<
+  "on-combat-end-dual"
+| "on-combat-start-dual"
+| "on-metaverse-turn-dual"
+>;
+
+type DeprecatedTriggers = DeprecatedPrecondition<
+  {
+    trigger: typeof DEPRECATED_TRIGGERS[number];
+  } >;
 
 
-type GlobalSeparated<T extends Trigger> = {
+type GlobalToggleTrigger<T extends Trigger> = {
   trigger: T,
-  global: boolean
+  global: boolean,
 }
 
 type EventTrigger = {

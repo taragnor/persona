@@ -8,10 +8,42 @@ export class PreconditionConverter {
 				return this.convertBoolean (cond);
 			case "numeric":
 				return cond;
+      case "on-trigger":
+        return this.convertTriggered(cond);
 			default:
 				return cond;
 		}
 	}
+
+  static convertTriggered( cond: Precondition & {type: "on-trigger"}) : NonDeprecatedPrecondition<Precondition> {
+    const head= {
+      type : "on-trigger",
+    } as const;
+    switch (cond.trigger) {
+      case "on-combat-start":
+      case "on-combat-start-global":
+        return {
+          ...head,
+          trigger: "on-combat-start-dual",
+          global: cond.trigger.includes("global"),
+        };
+      case "on-combat-end":
+      case "on-combat-end-global":
+        return {
+          ...head,
+          trigger: "on-combat-end-dual",
+          global: cond.trigger.includes("global"),
+        };
+      case "on-metaverse-turn":
+        return {
+          ...head,
+          trigger: "on-metaverse-turn-dual",
+          global: true,
+        };
+      default:
+        return cond;
+    }
+  }
 
 	static convertBoolean ( cond: Precondition & {type: "boolean"}) : NonDeprecatedPrecondition<Precondition> {
 		switch (cond.boolComparisonTarget) {

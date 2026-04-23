@@ -647,7 +647,7 @@ export class CombatResult  {
 
 	async autoApplyResult(): ReturnType<FinalizedCombatResult["autoApplyResult"]> {
 		const finalized = this.finalize();
-		return finalized.autoApplyResult();
+		return await finalized.emptyCheck()?.autoApplyResult() ?? true;
 	}
 
 	/** combines other's data into initial*/

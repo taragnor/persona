@@ -8,7 +8,7 @@ import {WEAPON_TAGS} from "../../config/equipment-tags.js";
 import {ITEM_PROPERTIES, MODIFIERS_TABLE} from "../../config/item-modifiers.js";
 import {CombatResultComparison} from "../../config/numeric-comparison.js";
 import {POWER_TAGS} from "../../config/power-tags.js";
-import {CONDITION_TARGETS, MultiCheck} from "../../config/precondition-types.js";
+import {CONDITION_TARGETS, MultiCheck, NonDeprecatedPrecondition} from "../../config/precondition-types.js";
 import {ROLL_TAGS_AND_CARD_TAGS} from "../../config/roll-tags.js";
 import {CREATURE_TYPE, SHADOW_ROLE} from "../../config/shadow-types.js";
 import {SLOTTYPES} from "../../config/slot-types.js";
@@ -41,7 +41,7 @@ export class ConditionalEffectPrinter {
 			.join (", ");
 	}
 
-	static printConditional(cond: Precondition) : string {
+	static printConditional(cond: NonDeprecatedPrecondition<Precondition>) : string {
 		switch (cond.type) {
 			case "boolean":
 				return this.#printBooleanCond(cond);
@@ -209,13 +209,13 @@ export class ConditionalEffectPrinter {
 			case "is-enemy":
 				return `${target1} is ${not} enemy of ${target2}`;
 			case "logical-and": {
-				const c1= this.printConditional(cond.comparison1);
-				const c2= this.printConditional(cond.comparison2);
+				const c1= this.printConditional(cond.comparison1 as NonDeprecatedPrecondition<Precondition>);
+				const c2= this.printConditional(cond.comparison2 as NonDeprecatedPrecondition<Precondition>);
 				return `(${c1} AND ${c2})`;
 			}
 			case "logical-or": {
-				const c1= this.printConditional(cond.comparison1);
-				const c2= this.printConditional(cond.comparison2);
+				const c1= this.printConditional(cond.comparison1 as NonDeprecatedPrecondition<Precondition>);
+				const c2= this.printConditional(cond.comparison2 as NonDeprecatedPrecondition<Precondition>);
 				return `(${c1} OR ${c2})`;
 			}
 			case "scene-clock-name-is":

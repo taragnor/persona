@@ -128,14 +128,15 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     await this.setCombatantRanStartCombatTrigger(comb);
     const token = comb.token as PToken;
     const situation = {
-      trigger: "on-combat-start",
+      trigger: "on-combat-start-dual",
+      global: false,
       user: comb.actor.accessor,
       triggeringCharacter: comb.actor.accessor,
       triggeringUser: game.user,
-    } as const satisfies TriggeredSituation.Select<"on-combat-start">;
+    } as const satisfies TriggeredSituation.Select<"on-combat-start-dual">;
     const CR = TriggeredEffect
-    .autoTriggerToCR(situation, token.actor);
-    return CR?.finalize();
+    .onTrigger(situation, token.actor);
+    return CR.emptyCheck()?.finalize();
   }
 
   get validEngagementCombatants(): PersonaCombatant[] {
@@ -201,19 +202,26 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     const unrolledInit = this.combatants
       .filter( x=> x.initiative == undefined)
       .map( c=> c.id);
-    if (!this.isSocial) {
-      const situation =  {
-        trigger: "on-combat-start-global",
-        triggeringUser: game.user,
-      } as const;
-      await TriggeredEffect.autoApplyTrigger(situation, undefined);
-    }
     if (unrolledInit.length > 0) {
       await this.rollInitiative(unrolledInit);
     }
     void this.navigatorOpen();
+    await this.runCombatStartTriggerGlobal();
     return await super.startCombat();
   }
+
+  async runCombatStartTriggerGlobal() {
+    if (!this.isSocial) {
+    const situationGlobal= {
+      trigger: "on-combat-start-dual",
+      global: true,
+    } as const;
+    const CRGlobal = TriggeredEffect
+      .onTrigger(situationGlobal, undefined);
+    await CRGlobal.autoApplyResult();
+    }
+  }
+
 
   async navigatorOpen() {
     await sleep(12000);
@@ -288,25 +296,30 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   async endCombatTriggers() : Promise<void> {
     if (this.isSocial) {return;}
     const PCsWin = this.didPCsWin();
+    const combatOutcome = PCsWin ? "win" : "draw";
     const promises = this.combatants
     .filter (x=> x.actor != undefined)
     .map( async (comb) => {
       const situation ={
-        trigger: 'on-combat-end',
+        trigger: 'on-combat-end-dual',
         triggeringUser: game.user,
+        global: false,
         result: PCsWin ? "hit" : "miss",
         triggeringCharacter: comb.actor!.accessor,
         user: comb.actor!.accessor,
-        combatOutcome: PCsWin ? "win" : "draw",
-      } satisfies TriggeredSituation.Select<"on-combat-end">;
+        combatOutcome,
+      } satisfies TriggeredSituation.TriggerSituation;
       const CR =  TriggeredEffect.autoTriggerToCR(situation, comb.actor);
       return await CR?.toMessage('End Combat Triggered Effect', comb.actor);
     });
     await Promise.allSettled(promises);
     const situation = {
-      trigger: "on-combat-end-global",
+      trigger: "on-combat-end-dual",
+      global: true,
       triggeringUser: game.user,
-    } satisfies Situation;
+      result: PCsWin ? "hit" : "miss",
+      combatOutcome,
+    } satisfies TriggeredSituation.Select<"on-combat-end-dual">;
     const CR = TriggeredEffect.autoTriggerToCR(situation, undefined);
     await CR?.toMessage('End Combat Global Trigger', undefined);
   }

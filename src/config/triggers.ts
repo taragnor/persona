@@ -4,13 +4,11 @@ export const COMBAT_TRIGGER_LIST = [
 	"on-damage",
 	"pre-take-damage",
 	"on-kill-target",
-	"on-combat-start",
-	"on-combat-start-global",
 	"on-event-start",
 	"on-event-end",
 	"on-use-power",
-	"on-combat-end",
-	"on-combat-end-global",
+	"on-combat-end-dual",
+	"on-combat-start-dual",
 	"on-inflict-status",
 	"pre-inflict-status",
 	"start-turn",
@@ -29,10 +27,18 @@ export const NONCOMBAT_TRIGGER_LIST = [
 	"on-open-door",
 	"enter-metaverse",
 	"exit-metaverse",
-	"on-metaverse-turn",
+	"on-metaverse-turn-dual",
 	"on-roll",
 	"on-active-scene-change",
   "on-social-turn-start",
+] as const;
+
+export const DEPRECATED_TRIGGERS = [
+  "on-metaverse-turn",
+	"on-combat-end",
+	"on-combat-end-global",
+	"on-combat-start",
+	"on-combat-start-global",
 ] as const;
 
 export const SHARED_TRIGGERS = [
@@ -53,3 +59,4 @@ export type Trigger = typeof TRIGGER_LIST[number];
 export type CombatTriggerTypes = typeof COMBAT_TRIGGER_LIST[number];
 
 export type NonCombatTriggerTypes = typeof NONCOMBAT_TRIGGER_LIST[number];
+

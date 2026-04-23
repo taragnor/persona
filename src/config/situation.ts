@@ -187,16 +187,19 @@ type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
     trigger: "on-open-door" | "on-search-end" | "exit-metaverse" | "on-active-scene-change";
   }
 
-  type OnMetaverseTurn = {
-    trigger: "on-metaverse-turn",
-  } & (
-    {
-    global: true
-    } | {
-      global : false,
-    } & SituationComponent.TriggeringCharacter
-  ) ;
+  type GlobalSplit <globalStuff extends object = object, userStuff extends object = object> = 
+    ( globalStuff &{
+      global: true;
+    })
+    | (
+      userStuff & {
+        global: false;
+      } & SituationComponent.TriggeringCharacter
+    );
 
+  type OnMetaverseTurn = {
+    trigger: "on-metaverse-turn-dual",
+} & GlobalSplit;
 
   type TarotPerkTrigger = SituationComponent.User &  {
     trigger: "on-attain-tarot-perk";
@@ -239,10 +242,10 @@ type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
 
   type NonGenericCombatTrigger =
     InflictStatusTrigger
-    | CombatGlobalTrigger
+    | CombatStartTrigger
     | UsePowerTrigger
     | KillTargetTrigger
-    | CombatEndIndividual
+    | CombatEndTrigger
     | PreDamageTrigger
     | DamageTrigger
     | StartEventTrigger
@@ -311,10 +314,7 @@ type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
     /** one recieving the status*/
     & SituationComponent.TriggeringCharacter
     & {
-      // trigger: "on-inflict-status" | "pre-inflict-status",
       statusEffect: StatusEffectId,
-      /**  The one recieving the status */
-      // target: UniversalActorAccessor<ValidAttackers>,
     };
 
   type OnInflictStatusTrigger = SituationComponent.User & InflictStatusTrigger_Generic & {
@@ -331,24 +331,15 @@ type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
     OnInflictStatusTrigger
     | OnPreInflictStatusTrigger;
 
+type CombatEndTrigger = {
+  trigger: "on-combat-end-dual";
+  result: AttackResult["result"],
+  combatOutcome: "win" | "draw" | "lose",
+} & GlobalSplit;
 
-  type CombatGlobalTrigger = CombatEndGlobal | CombatStartGlobal;
-
-  type CombatEndGlobal = {
-    trigger: "on-combat-end-global",
-  }
-
-  type CombatStartGlobal = {
-    trigger: "on-combat-start-global",
-  }
-
-  type CombatEndIndividual = SituationComponent.User
-    & SituationComponent.TriggeringCharacter
-    & {
-      trigger: "on-combat-end",
-      result : AttackResult["result"],
-      combatOutcome: "win" | "draw" | "lose",
-    }
+type CombatStartTrigger = {
+    trigger: "on-combat-start-dual",
+} & GlobalSplit;
 
   type TriggerSituation_base = {
     triggeringUser : FoundryUser,
@@ -367,78 +358,12 @@ type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
 
 }
 
-
-
-
-
-
-
-
 export type PowerOnlySituation =
   {
     usedPower : UniversalItemAccessor<UsableAndCard>;//this is special due to consstraints
     user?: undefined;
   };
 
-
-// export type BaseAttackRollSituation<T extends object = object> =  RollSituation<T>
-//   & TargettedSituation & {
-//     rollType: AttackRollType,
-//     DC ?: U<number>;
-//   }
-
-// type CombatTypeSituation = UserSituation &
-//   {type: "combat"} & (
-//     BaseAttackRollSituation
-//     | AttackRollSituation
-//     | PostAttackRollSituation
-//   );
-
-
-// export type AttackRollSituation = BaseAttackRollSituation & {
-//   withinAilmentRange ?: boolean;
-//   withinInstantKillRange ?: boolean;
-//   withinCritRange ?: boolean;
-//   ailmentRange ?: AttackResult["ailmentRange"],
-//   instantKillRange ?: AttackResult["instantKillRange"],
-//   critRange ?: AttackResult["critRange"],
-//   DC : number;
-//   result ?: AttackResult["result"],
-// }
-
-// export type PostAttackRollSituation = AttackRollSituation & {
-//   withinAilmentRange : boolean;
-//   withinInstantKillRange : boolean;
-//   withinCritRange : boolean;
-//   ailmentRange ?: AttackResult["ailmentRange"],
-//   instantKillRange ?: AttackResult["instantKillRange"],
-//   critRange ?: AttackResult["critRange"],
-//   result : AttackResult["result"],
-//   DC : number;
-//   resisted : boolean;
-//   struckWeakness : boolean;
-// }
-
-
-//type SituationUniversal = {
-//	//more things can be added here all should be optional
-//	user?: UniversalActorAccessor<ValidAttackers>;
-//	persona?: Persona;
-//	usedPower ?: UniversalItemAccessor<UsableAndCard>;
-//	usedSkill ?: SocialStat;
-//	activeCombat ?: boolean ;
-//	target ?: UniversalActorAccessor<ValidAttackers>;
-//	attacker ?:UniversalActorAccessor<ValidAttackers>;
-//	saveVersus ?: StatusEffectId;
-//	statusEffect ?: StatusEffectId;
-//	eventCard ?: UniversalItemAccessor<SocialCard>,
-//	isSocial?: boolean,
-//	result ?: AttackResult["result"],
-//	tarot ?: TarotCard,
-//	socialTarget ?: UniversalActorAccessor<ValidSocialTarget>;
-//	cameo ?: UniversalActorAccessor<ValidSocialTarget>;
-//	"triggering-character" ?: never;
-//} & (RollSituation | NonRollSituation);
 
   type Situation = SituationType;
 }
@@ -447,3 +372,10 @@ export type PowerOnlySituation =
 
 type X = TriggeredSituation.Select<"on-use-power">;
 
+type XXX = Prettify<
+  HasKey<Situation, "global"> & {trigger: "on-metavese-turn-dual"}
+>
+
+type R = Prettify<
+  {x: 5} & TriggeredSituation.GlobalSplit
+>

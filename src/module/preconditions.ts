@@ -493,10 +493,6 @@ export function combatResultBasedNumericTarget(condition: CombatResultComparison
 
 function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}, situation: Situation) : boolean {
   if (!("trigger" in situation)) {return false;}
-  //differentiate global situations from nonglobal
-  const globalSit = "global" in situation? situation.global : false;
-  const globalCond = "global" in condition ? condition.global : false;
-  if (globalSit != globalCond) {return false;}
   if (condition.trigger != situation.trigger) {return false;}
   switch (condition.trigger) {
     case "on-attain-tarot-perk":
@@ -510,23 +506,25 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
       return multiCheckContains(condition.status, [situation.statusEffect]);
     case "start-turn":
       return true;
-    case "on-combat-end":
+    case "on-combat-end-dual":
+    case "on-combat-start-dual":
+    case "on-metaverse-turn-dual": {
+      //differentiate global situations from nonglobal
+      const globalSit = "global" in situation? situation.global : false;
+      return (globalSit == condition.global);
+    }
     case "exit-metaverse":
     case "enter-metaverse":
     case "on-use-power":
-    case "on-combat-start":
     case "on-kill-target":
     case "on-damage":
     case "end-turn":
-    case "on-combat-end-global":
     case "on-search-end":
-    case "on-metaverse-turn":
     case "on-event-end":
     case "on-event-start":
     case "on-open-door":
     case "on-active-scene-change":
     case "pre-take-damage":
-    case "on-combat-start-global":
     case "on-power-usage-check":
     case "get-added-power-tags":
     case "on-social-turn-start":
