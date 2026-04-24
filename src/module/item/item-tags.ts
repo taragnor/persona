@@ -27,7 +27,23 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
   }
 
   private tagListRaw(user : N<ValidAttackers>, depth : number = 0) : readonly TagType[] {
-    if (depth >= 3) {return [];}
+    if (depth >= 3) {
+      PersonaError.softFail(`Over Depth in tag List ${this.item.name}`);
+      return [];
+    }
+    const baseTags = this._tagListRawBase(user, depth);
+    const realTags = baseTags
+      .map(tag=> TagManager.searchForPotentialTagMatch(tag))
+      .filter( tag=> tag != undefined);
+    const extraTags = realTags
+      .flatMap(tag => tag.tags.tagListRaw(user, depth+1));
+    if (extraTags.length == 0) {return baseTags;}
+    const combinedTags = baseTags.slice();
+    combinedTags.pushUnique(...extraTags);
+    return combinedTags;
+  }
+
+  private _tagListRawBase(user : N<ValidAttackers>, depth : number) : readonly TagType[] {
     const item = this.item;
     switch (true) {
       case item.isPower(): {
@@ -307,18 +323,20 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
 
   private getTags_tag(item : Tag, user: N<ValidAttackers>, depth: number) : readonly TagType[] {
     const tagList = (item.system.tags as TagType[])
-    .concat (item.system.itemTags);
-    return tagList
-      .reduce(  (acc, tag) => {
-        const subTag= TagManager.searchForPotentialTagMatch( tag);
-        if (!subTag) {
-          acc.pushUnique(tag);
-          return acc;
-        }
-        acc.pushUnique(subTag.id);
-        acc.pushUnique(...subTag.tags.tagListRaw(user, depth + 1));
-        return acc;
-      }, [] as TagType[]);
+    .concat (item.system.itemTags)
+    .concat (item.system.tags);
+    return tagList;
+    // return tagList
+    //   .reduce(  (acc, tag) => {
+    //     const subTag= TagManager.searchForPotentialTagMatch( tag);
+    //     if (!subTag) {
+    //       acc.pushUnique(tag);
+    //       return acc;
+    //     }
+    //     acc.pushUnique(subTag.id);
+    //     acc.pushUnique(...subTag.tags.tagListRaw(user, depth + 1));
+    //     return acc;
+    //   }, [] as TagType[]);
   }
 
 }

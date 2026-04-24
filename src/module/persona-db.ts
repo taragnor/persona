@@ -44,8 +44,9 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 			worldPassives: undefined,
 			worldDefensives: undefined,
 			tags: undefined,
-			tagNames: undefined,
+			tagInternalTag: undefined,
 			tagsArr: undefined,
+      tagNames: undefined,
 			enchantments: undefined,
 			classes: undefined,
 			possiblePersonas: undefined,
@@ -331,8 +332,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 	allTags() :  Map<Tag["id"],Tag> {
 		if (!PersonaDB.isLoaded) {throw new PersonaError("DB not loaded yet");}
 		if (this.#cache.tags) {return this.#cache.tags;}
-		const tags= this.allItems()
-		.filter (x=> x.isTag())
+		const tags= this.tagsArr()
 		.map( tag=> [tag.id, tag] as [Tag["id"], Tag]);
 		return this.#cache.tags = new Map(tags);
 	}
@@ -353,11 +353,17 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
   }
 
 	allTagLinks() : Map<Tag["system"]["linkedInternalTag"], Tag> {
-		if (this.#cache.tagNames) {return this.#cache.tagNames;}
-		const tags= this.allItems()
-		.filter( x=> x.isTag())
+		if (this.#cache.tagInternalTag) {return this.#cache.tagInternalTag;}
+		const tags= this.tagsArr()
 		.filter (x=> x.system.linkedInternalTag)
 		.map( tag => [tag.system.linkedInternalTag, tag] as [string, Tag]);
+		return this.#cache.tagInternalTag = new Map(tags);
+	}
+
+	allTagNames() : Map<Tag["system"]["linkedInternalTag"], Tag> {
+		if (this.#cache.tagNames) {return this.#cache.tagNames;}
+		const tags= this.tagsArr()
+		.map( tag => [tag.name, tag] as [string, Tag]);
 		return this.#cache.tagNames = new Map(tags);
 	}
 
@@ -606,6 +612,7 @@ type PersonaDBCache =	{
 	worldDefensives: U<UniversalModifier[]>;
 	allUniversalModifierTypes: U<UniversalModifier[]>;
 	tags: U<Map<Tag["id"], Tag>>;
+	tagInternalTag: U<Map<Tag["system"]["linkedInternalTag"], Tag>>;
 	tagNames: U<Map<Tag["name"], Tag>>;
 	tagsArr: U<Tag[]>;
 	classes: U<CClass[]>;

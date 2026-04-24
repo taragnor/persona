@@ -42,8 +42,10 @@ export abstract class TagManager<TagTypeRaw extends string = string> {
   static searchForPotentialTagMatch (idOrInternalTag: string) : U<Tag> {
     const IdCheck = PersonaDB.allTags().get(idOrInternalTag as Tag["id"]);
     if (IdCheck) {return IdCheck;}
-    const nameCheck = PersonaDB.allTagLinks().get(idOrInternalTag);
-    if (nameCheck) {return nameCheck;}
+    const linkedNameCheck = PersonaDB.allTagLinks().get(idOrInternalTag);
+    if (linkedNameCheck) {return linkedNameCheck;}
+    const realNameCheck = PersonaDB.allTagNames().get(idOrInternalTag);
+    if (realNameCheck) {return realNameCheck;}
     return undefined;
   }
 
