@@ -28,70 +28,74 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
 
   private unified_tagList(user : N<ValidAttackers>) : readonly TagType[] {
     const item = this.item;
-    const itype = item.system.type;
     switch (true) {
       case item.isPower(): {
-        const retTags : TagType[] = this._getUniformAutoTags().slice();
-        if ((item as Power).getCooldown(user ?? null)) {
-          retTags.pushUnique(`cooldown`);
-        }
-        const dmgTags = this.getWeaponDamageTypeTags(item, user ?? null);
-        retTags.pushUnique(...dmgTags);
-        return retTags;
+        return this.getTags_power(item, user);
+        // const retTags : TagType[] = this._getUniformAutoTags().slice();
+        // if ((item as Power).getCooldown(user ?? null)) {
+        //   retTags.pushUnique(`cooldown`);
+        // }
+        // const dmgTags = this.getWeaponDamageTypeTags(item, user ?? null);
+        // retTags.pushUnique(...dmgTags);
+        // return retTags;
       }
+
       case item.isConsumable(): {
-        const list : TagType[] =
-        ([] as TagType[])
-        .concat( item.system.tags)
-        .concat(item.system.itemTags)
-        .pushUnique(...this.baseItemExtraTags(user ?? null));
-        if (!list.includes(itype as TagType)) {
-          list.pushUnique(itype as TagType);
-        }
-        if (!list.includes( item.getBaseDamageType() as typeof list[number]) && POWER_TAGS_LIST.includes( (item).getBaseDamageType() as typeof POWER_TAGS_LIST[number])) {
-          if (item.getBaseDamageType() != "none") {
-            list.pushUnique(item.getBaseDamageType());
-          }
-        }
-        if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
-          list.pushUnique('ailment');
-        }
-        const subtype = item.system.subtype;
-        list.pushUnique(subtype);
-        return list;
+        return this.getTags_consumable(item, user);
+        // const list : TagType[] =
+        // ([] as TagType[])
+        // .concat( item.system.tags)
+        // .concat(item.system.itemTags)
+        // .pushUnique(...this.baseItemExtraTags(user ?? null));
+        // if (!list.includes(itype as TagType)) {
+        //   list.pushUnique(itype as TagType);
+        // }
+        // if (!list.includes( item.getBaseDamageType() as typeof list[number]) && POWER_TAGS_LIST.includes( (item).getBaseDamageType() as typeof POWER_TAGS_LIST[number])) {
+        //   if (item.getBaseDamageType() != "none") {
+        //     list.pushUnique(item.getBaseDamageType());
+        //   }
+        // }
+        // if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
+        //   list.pushUnique('ailment');
+        // }
+        // const subtype = item.system.subtype;
+        // list.pushUnique(subtype);
+        // return list;
       }
       case item.isInvItem(): {
-        const list= (item.system.itemTags.slice() as TagType[])
-        .pushUnique(...this.baseItemExtraTags(user ?? null));
-        const subtype = item.system.slot;
-        switch (subtype) {
-          case 'body':
-          case 'accessory':
-          case 'weapon_crystal':
-          case 'key-item':
-            if (!list.includes(subtype))
-            {list.pushUnique(subtype);}
-            break;
-          case 'none':
-            list.pushUnique('non-equippable');
-            break;
-          case 'crafting':
-            list.pushUnique('non-equippable');
-            list.pushUnique('crafting');
-            break;
-          default:
-            subtype satisfies never;
-        }
-        return list;
+        return this.getTags_InvItem(item, user);
+        // const list= (item.system.itemTags.slice() as TagType[])
+        // .pushUnique(...this.baseItemExtraTags(user ?? null));
+        // const subtype = item.system.slot;
+        // switch (subtype) {
+        //   case 'body':
+        //   case 'accessory':
+        //   case 'weapon_crystal':
+        //   case 'key-item':
+        //     if (!list.includes(subtype))
+        //     {list.pushUnique(subtype);}
+        //     break;
+        //   case 'none':
+        //     list.pushUnique('non-equippable');
+        //     break;
+        //   case 'crafting':
+        //     list.pushUnique('non-equippable');
+        //     list.pushUnique('crafting');
+        //     break;
+        //   default:
+        //     subtype satisfies never;
+        // }
+        // return list;
       }
       case item.isWeapon(): {
-        const list = (item.system.itemTags.slice() as TagType[])
-        .pushUnique(...this.baseItemExtraTags(user ?? null));
-        if (!list.includes(item.getBaseDamageType() as typeof list[number]) && POWER_TAGS_LIST.includes(item.getBaseDamageType() as typeof POWER_TAGS_LIST[number])) {
-          list.pushUnique( item.getBaseDamageType());
-        }
-        list.pushUnique(itype as TagType);
-        return list;
+        return this.getTags_weapon(item, user);
+        // const list = (item.system.itemTags.slice() as TagType[])
+        // .pushUnique(...this.baseItemExtraTags(user ?? null));
+        // if (!list.includes(item.getBaseDamageType() as typeof list[number]) && POWER_TAGS_LIST.includes(item.getBaseDamageType() as typeof POWER_TAGS_LIST[number])) {
+        //   list.pushUnique( item.getBaseDamageType());
+        // }
+        // list.pushUnique(itype as TagType);
+        // return list;
       }
       case item.isSkillCard(): {
         return [
@@ -100,13 +104,14 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
       }
       case item.isTalent():
       case item.isFocus() : {
-        const list : TagType[] = [];
-        if (item.system.defensive) {
-          list.pushUnique('defensive');
-        } else {
-          list.pushUnique('passive');
-        }
-        return list;
+        return this.getTags_talentOrFocus(item, user);
+        // const list : TagType[] = [];
+        // if (item.system.defensive) {
+        //   list.pushUnique('defensive');
+        // } else {
+        //   list.pushUnique('passive');
+        // }
+        // return list;
       }
       case item.isCharacterClass():
       case item.isUniversalModifier():
@@ -128,16 +133,16 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
   }
 
   private _getUniformAutoTags() : NonNullable<typeof this.cache.tags> {
-      if (!this.item.isPower()) {
-        throw new PersonaError("Non-Power trying to get autotags");
-      }
+    if (!this.item.isPower()) {
+      throw new PersonaError("Non-Power trying to get autotags");
+    }
     if (this.cache.tags == undefined) {
       this.cache.tags = this.#autoTags_power(this.item);
       return this.cache.tags;
     }
     //Safety check to see if there's cache corruption
     if (PersonaSettings.debugMode()) {
-        const checkTags =  this.#autoTags_power(this.item);
+      const checkTags =  this.#autoTags_power(this.item);
       if (checkTags.length != this.cache.tags.length) {
         PersonaError.softFail(`Tag Length mismatch, possible cache corruption on ${this.item.name}`, checkTags, this.cache.tags);
       }
@@ -220,8 +225,85 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
     // return resolved;
   }
 
-}
 
+  private getTags_power(item : Power, user: N<ValidAttackers>) : readonly TagType[] {
+    const retTags : TagType[] = this._getUniformAutoTags().slice();
+    if (item.getCooldown(user ?? null)) {
+      retTags.pushUnique(`cooldown`);
+    }
+    const dmgTags = this.getWeaponDamageTypeTags(item, user ?? null);
+    retTags.pushUnique(...dmgTags);
+    return retTags;
+  }
+
+  private getTags_consumable(item : Consumable, user: N<ValidAttackers>) : readonly TagType[] {
+    const list : TagType[] =
+      ([] as TagType[])
+      .concat( item.system.tags)
+      .concat(item.system.itemTags)
+      .pushUnique(...this.baseItemExtraTags(user ?? null));
+    if (!list.includes(item.system.type as TagType)) {
+      list.pushUnique(item.system.type as TagType);
+    }
+    if (!list.includes( item.getBaseDamageType() as typeof list[number]) && POWER_TAGS_LIST.includes( (item).getBaseDamageType() as typeof POWER_TAGS_LIST[number])) {
+      if (item.getBaseDamageType() != "none") {
+        list.pushUnique(item.getBaseDamageType());
+      }
+    }
+    if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
+      list.pushUnique('ailment');
+    }
+    const subtype = item.system.subtype;
+    list.pushUnique(subtype);
+    return list;
+  }
+
+  private getTags_InvItem(item : InvItem, user: N<ValidAttackers>) : readonly TagType[] {
+    const list= (item.system.itemTags.slice() as TagType[])
+      .pushUnique(...this.baseItemExtraTags(user ?? null));
+    const subtype = item.system.slot;
+    switch (subtype) {
+      case 'body':
+      case 'accessory':
+      case 'weapon_crystal':
+      case 'key-item':
+        if (!list.includes(subtype))
+        {list.pushUnique(subtype);}
+        break;
+      case 'none':
+        list.pushUnique('non-equippable');
+        break;
+      case 'crafting':
+        list.pushUnique('non-equippable');
+        list.pushUnique('crafting');
+        break;
+      default:
+        subtype satisfies never;
+    }
+    return list;
+  }
+
+  private getTags_weapon(item : Weapon, user: N<ValidAttackers>) : readonly TagType[] {
+    const list = (item.system.itemTags.slice() as TagType[])
+      .pushUnique(...this.baseItemExtraTags(user ?? null));
+    if (!list.includes(item.getBaseDamageType() as typeof list[number]) && POWER_TAGS_LIST.includes(item.getBaseDamageType() as typeof POWER_TAGS_LIST[number])) {
+      list.pushUnique( item.getBaseDamageType());
+    }
+    list.pushUnique(item.system.type as TagType);
+    return list;
+  }
+
+  private getTags_talentOrFocus(item : Talent | Focus, _user: N<ValidAttackers>) : readonly TagType[] {
+    const list : TagType[] = [];
+    if (item.system.defensive) {
+      list.pushUnique('defensive');
+    } else {
+      list.pushUnique('passive');
+    }
+    return list;
+  }
+
+}
 
 
 type TagType = Tag["id"] | PowerTagOrId | EquipmentTagOrId;
