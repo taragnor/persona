@@ -136,6 +136,7 @@ class TagSchema extends foundry.abstract.TypeDataModel {
       linkedInternalTag: new txt(),
       treasure: itemTreasureStats(),
       tags: new arr( new txt<typeof POWER_TAGS_LIST[number] | Item["id"]>()),
+      itemTags: new arr(new txt<typeof EQUIPMENT_TAGS_LIST[number] | Item["id"]>()),
       ...effects (false),
     };
     return ret;

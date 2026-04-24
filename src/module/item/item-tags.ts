@@ -306,11 +306,16 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
   }
 
   private getTags_tag(item : Tag, user: N<ValidAttackers>, depth: number) : readonly TagType[] {
-    const tagList = item.system.tags;
+    const tagList = (item.system.tags as TagType[])
+    .concat (item.system.itemTags);
     return tagList
       .reduce(  (acc, tag) => {
         const subTag= TagManager.searchForPotentialTagMatch( tag);
-        if (!subTag) {return acc;}
+        if (!subTag) {
+          acc.pushUnique(tag);
+          return acc;
+        }
+        acc.pushUnique(subTag.id);
         acc.pushUnique(...subTag.tags.tagListRaw(user, depth + 1));
         return acc;
       }, [] as TagType[]);
