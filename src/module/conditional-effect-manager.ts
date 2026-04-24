@@ -308,7 +308,7 @@ export class ConditionalEffectManager {
 	}
 
 	static getEffects<T extends PersonaActor, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null, realSource ?: ConditonalEffectHolderItem) : ConditionalEffectC[] {
-		const conditionalEffects = Array.isArray(CEObject) ? CEObject : (this.ArrayCorrector(CEObject) as ConditionalEffect[]);
+		const conditionalEffects = Array.isArray(CEObject) ? CEObject : (this.ArrayCorrector(CEObject, realSource ?? sourceItem) as ConditionalEffect[]);
 		return conditionalEffects
 		.map( ce=> new ConditionalEffectC(ce, sourceItem, sourceActor, realSource)) satisfies SourcedConditionalEffect[];
 	}
@@ -387,18 +387,6 @@ export class ConditionalEffectManager {
       .map( eff =>
         this.applySourceInformation(eff, sourceItem, sourceActor, realSource)
       );
-      // const conditionalEffects = this.ArrayCorrector(condObject);
-      // return conditionalEffects.map( maybeDeprecatedEff=> {
-      //   const eff = PreconditionConverter.convertDeprecated (maybeDeprecatedEff);
-      //   return this.applySourceInformation(eff, sourceItem, sourceActor, realSource);
-      // });
-        // return {
-        //   ...eff,
-        //   owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : undefined) as UniversalActorAccessor<ValidAttackers>,
-        //   source: sourceItem != null ? sourceItem : undefined,
-        //   realSource: realSource ? realSource : undefined,
-        // };
-      // });
     }
 
   static getUnsourcedConditionals
@@ -429,7 +417,7 @@ export class ConditionalEffectManager {
       ++this.cache.hits;
       return cached;
     }
-    const consequences = this.ArrayCorrector(consObject);
+    const consequences = this.ArrayCorrector(consObject, sourceItem);
     const data=  consequences.map( eff=> {
       const nondep = ConsequenceConverter.convertDeprecated(eff as DeprecatedConsequence, sourceItem instanceof Item ? sourceItem : null);
       return nondep;
@@ -443,17 +431,6 @@ export class ConditionalEffectManager {
 	static getConsequences<T extends PersonaActor, I extends (ModifierContainer & (PersonaItem | PersonaAE))>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null, realSource: null | U<ModifierContainer>): SourcedConditionalEffect["consequences"] {
     return this.getUnsourcedConsequences(consObject, sourceItem)
     .map(cons=> this.applySourceInformation(cons, sourceItem, sourceActor, realSource));
-		// const consequences = this.ArrayCorrector(consObject);
-		// return consequences.map( eff=> {
-		// 	const nondep = ConsequenceConverter.convertDeprecated(eff as DeprecatedConsequence, sourceItem instanceof Item ? sourceItem : null);
-        // return this.applySourceInformation(nondep, sourceItem, sourceActor, realSource);
-			// return {
-			// 	...nondep,
-			// 	owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : eff.actorOwner) as UniversalActorAccessor<ValidAttackers>,
-			// 	source: sourceItem != null ? sourceItem: undefined,
-			// 	realSource: realSource ? realSource : undefined,
-			// };
-		// });
 	}
 
 
@@ -466,12 +443,12 @@ export class ConditionalEffectManager {
     };
   }
 
-	static ArrayCorrector<T>(obj: T[] | DeepNoArray<T[]>) : T[] {
+	static ArrayCorrector<T>(obj: T[] | DeepNoArray<T[]>, owner ?: UN<{name: string}>) : T[] {
 		try {
 			if (obj == null) {return[];}
 			if (!Array.isArray(obj)) {
-				if (PersonaSettings.debugMode()) {
-					console.debug("Array Correction Required");
+				if (PersonaSettings.debugMode() && owner) {
+					console.debug(`${owner.name} : Array Correction Required`);
 				}
 				return Object.keys(obj).map(function(k) { return obj[Number(k)]; }) as T[];
 			}

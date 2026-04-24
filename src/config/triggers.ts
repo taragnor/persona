@@ -13,7 +13,6 @@ export const COMBAT_TRIGGER_LIST = [
 	"pre-inflict-status",
 	"start-turn",
 	"end-turn",
-	"on-power-usage-check",
   "get-added-power-tags",
 ] as const;
 
@@ -46,10 +45,16 @@ export const SHARED_TRIGGERS = [
 	"on-active-effect-end",
 ] as const;
 
+export const CANCEL_CHECK = [
+	"on-power-usage-check",
+  "on-equip-check",
+] as const;
+
 export const TRIGGER_LIST = [
 	...COMBAT_TRIGGER_LIST,
 	...NONCOMBAT_TRIGGER_LIST,
 	...SHARED_TRIGGERS,
+  ...CANCEL_CHECK,
 ] as const;
 
 export const TRIGGERS = HTMLTools.createLocalizationObject(TRIGGER_LIST, "persona.triggers");

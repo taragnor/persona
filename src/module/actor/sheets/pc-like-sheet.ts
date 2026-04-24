@@ -11,26 +11,33 @@ export class PCLikeSheet extends CombatantSheetBase {
 	override async getData() {
 		const data = await super.getData();
 		data.equips = {
-			weapons: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
-				if (x.system.type == "weapon")
-					{return [[ x.id, x.name]];}
-				else {return [];}
-			})),
-			body: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
-				if (x.system.type == "item" && x.system.slot =="body")
-					{return [[ x.id, x.name]];}
-				else {return [];}
-			})),
-			accessory: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
-				if (x.system.type == "item" && x.system.slot =="accessory")
-					{return [[ x.id, x.name]];}
-				else {return [];}
-			})),
-			attachment: Object.fromEntries(Array.from(this.actor.items).flatMap( x=> {
-				if (x.system.type == "item" && x.system.slot =="weapon_crystal")
-					{return [[ x.id, x.name]];}
-				else {return [];}
-			})),
+			weapons: Object.fromEntries(Array.from(this.actor.items)
+        .filter( x=> x.isWeapon())
+        .filter( x=> this.actor.canEquip(x))
+        .sort ( (a,b)=> a.name.localeCompare(b.name))
+        .map( x=>  [ x.id, x.name])
+      ),
+			body: Object.fromEntries(Array.from(this.actor.items)
+        .filter(x=> x.isInvItem())
+        .filter( item=> item.system.slot == "body")
+        .filter( item=> this.actor.canEquip(item))
+        .sort ( (a,b)=> a.name.localeCompare(b.name))
+        .map( x=> [ x.id, x.name])
+			),
+			accessory: Object.fromEntries(Array.from(this.actor.items)
+        .filter(x=> x.isInvItem())
+        .filter( item=> item.system.slot == "accessory")
+        .filter( item=> this.actor.canEquip(item))
+        .sort ( (a,b)=> a.name.localeCompare(b.name))
+        .map( x=> [ x.id, x.name])
+			),
+			attachment: Object.fromEntries(Array.from(this.actor.items)
+        .filter(x=> x.isInvItem())
+        .filter( item=> item.system.slot == "weapon_crystal")
+        .filter( item=> this.actor.canEquip(item))
+        .sort ( (a,b)=> a.name.localeCompare(b.name))
+        .map( x=> [ x.id, x.name])
+			),
 		};
 
 		data.jobs = PersonaDB.allActivities().filter( activity=> Object.values(activity.system.weeklyAvailability).some (val => val));

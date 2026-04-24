@@ -2475,6 +2475,23 @@ get hasPowerSideboard() : boolean  {
 	return this.class.system.canUsePowerSideboard ?? false;
 }
 
+canEquip(this: PC | NPCAlly, item: Weapon | InvItem) : boolean {
+  if (item.isInvItem()
+    && (item.system.slot == "key-item"
+      || item.system.slot == "crafting"
+      || item.system.slot == "none"
+    )) {return false;}
+  const situation = {
+    trigger: "on-equip-check",
+    item: item.accessor,
+    user: this.accessor,
+    triggeringCharacter: this.accessor,
+  } satisfies Situation;
+  const triggers = item.getTriggeredEffects(this, {triggerType: situation.trigger});
+  return triggers
+    .every( trig => !trig.checkForCancelEffect(situation));
+}
+
 
 isUsingMetaPod(this: ValidAttackers): boolean {
 	if (this.isShadow()) {return false;}

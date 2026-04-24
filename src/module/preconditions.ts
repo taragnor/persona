@@ -524,6 +524,7 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
     case "on-event-start":
     case "on-open-door":
     case "on-active-scene-change":
+    case "on-equip-check":
     case "pre-take-damage":
     case "on-power-usage-check":
     case "get-added-power-tags":

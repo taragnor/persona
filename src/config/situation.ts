@@ -70,6 +70,10 @@ namespace SituationComponent {
     target: UniversalActorAccessor<ValidAttackers>,
   };
 
+  export type Item =  {
+    item: UniversalItemAccessor<Carryable>,
+  };
+
   export type TriggeringCharacter = SituationComponent.User & {
     triggeringCharacter:  UniversalActorAccessor<ValidAttackers>;
   }
@@ -171,7 +175,8 @@ namespace TriggeredSituation {
     | ClockTrigger
     | StartSocialTurnTrigger
     | OnPowerUsageCheckTrigger
-    | CombatTrigger;
+    | CombatTrigger
+    | EquipCheck ;
 
 type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
 
@@ -182,6 +187,12 @@ type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
     | TarotPerkTrigger
     | OnMetaverseTurn
   ;
+
+  type EquipCheck = SituationComponent.Item &
+    SituationComponent.TriggeringCharacter &
+    {
+    trigger: "on-equip-check",
+  }
 
   type GenericExplorationTrigger = Partial<SituationComponent.TriggeringCharacter> & {
     trigger: "on-open-door" | "on-search-end" | "exit-metaverse" | "on-active-scene-change";
@@ -370,12 +381,12 @@ export type PowerOnlySituation =
 
 
 
-type X = TriggeredSituation.Select<"on-use-power">;
+type X = TriggeredSituation.Select<"on-equip-check">;
 
-type XXX = Prettify<
-  HasKey<Situation, "global"> & {trigger: "on-metavese-turn-dual"}
->
+// type XXX = Prettify<
+//   HasKey<Situation, "global"> & {trigger: "on-metavese-turn-dual"}
+// >
 
-type R = Prettify<
-  {x: 5} & TriggeredSituation.GlobalSplit
->
+// type R = Prettify<
+//   {x: 5} & TriggeredSituation.GlobalSplit
+// >

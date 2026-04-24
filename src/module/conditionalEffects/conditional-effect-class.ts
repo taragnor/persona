@@ -136,6 +136,11 @@ export class ConditionalEffectC {
 		}));
 	}
 
+  checkForCancelEffect(situation: Situation) : boolean {
+    const cons = this.getActiveConsequences(situation);
+    return cons.some(cons => cons.type =="cancel");
+  }
+
 	#determineConditionalType (ce: CondEffectObject, _conditions: SourcedConditionalEffect["conditions"], _consequences : SourcedConditionalEffect["consequences"], sourceItem: N<ConditonalEffectHolderItem> ) : this["_conditionalType"] {
 		let condType : this["_conditionalType"] = "unknown";
 		const forceDefensive = (sourceItem?.isDefensive)
