@@ -67,7 +67,7 @@
       <label> Hidden </label>
       <input type="checkbox" id="hidden-tag" name="system.hidden" {{checked item.system.hidden}}>
       <label> Price Mult</label>
-      {{numberInput item.system.priceMult class="short" name="system.priceMult" step=1 min=0 max=900}}
+      {{numberInput item.system.priceMult class="short" name="system.priceMult" step=0.01 min=0.01 max=10}}
     </div>
     <div class="item-level">
       <label>
