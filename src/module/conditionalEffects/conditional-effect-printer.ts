@@ -777,6 +777,8 @@ export class ConditionalEffectPrinter {
 				return `set social card item`;
 			case "event-chain":
 				return `Alter Event chain ${cons.chainAction}`;
+      case "expend-downtime-actions":
+        return `Expend all downtime actions`;
 			default:
 				cons satisfies never;
 				return "ERROR";

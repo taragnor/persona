@@ -164,6 +164,10 @@ export class SocialCardExecutor {
 
   async expendSocialAction(cardData: CardData) {
     const type = this.getTypeOfActivity(cardData.activity);
+    if (cardData.card.system.cardType == "recovery") {
+      await PersonaSocial.expendDowntimeAction(cardData.actor, "minor");
+      await PersonaSocial.expendDowntimeAction(cardData.actor, "standard");
+    }
     await PersonaSocial.expendDowntimeAction(cardData.actor, type);
   }
 

@@ -80,7 +80,7 @@ export class DowntimePanel extends PersonaPanel {
         visible: () => true,
         cssClasses : ["tall-button"]
       }, {
-        label: "Item",
+        label: "Item (Free Actions & Social FollowUp)",
         onPress: () => this._openInventoryPanel(),
         enabled: () => true,
         visible: () => true,
@@ -94,10 +94,9 @@ export class DowntimePanel extends PersonaPanel {
       }, {
         label: "End Turn",
         onPress: () => PersonaCombat.combat?.nextTurn(),
-        enabled: () => true,
+        enabled: () => this._outOfActions(),
         visible: () => (PersonaCombat.combat?.combatant?.actor == this.actor) && this.actor != undefined,
         cssClasses : ["tall-button"]
-
       }
     ];
   }
@@ -108,12 +107,17 @@ export class DowntimePanel extends PersonaPanel {
     };
   }
 
+  _outOfActions() : boolean {
+    if (!this.actor) {return true;}
+    return !PersonaSocial.hasMainSocialAction(this.actor) && !PersonaSocial.hasMinorSocialAction(this.actor) && !game.user.isGM;
+  }
+
   async _openInventoryPanel() {
-    if (this.actor) {
-      await this.push(
-        new ItemUsePanel(this.actor, item => this.usableDowntimeItem(item))
-      );
-    }
+    if (!this.actor) {return;}
+    const actor = this.actor;
+    await this.push(
+      new ItemUsePanel(this.actor, item => this.usableDowntimeItem(item) && item.hasTag("downtime", actor))
+    );
   }
 
   usableDowntimeItem(item: Usable) : boolean {
@@ -136,10 +140,11 @@ export class DowntimePanel extends PersonaPanel {
     if (!this.actor) {return [];}
     switch (type) {
       case "minor": {
+        const actor = this.actor;
         const activities = PersonaSocial.availableMinorActionActivities(this.actor)
-        .filter( act => act.system.cardType == type);
-        return activities;
-      }
+        .filter( act => act.system.cardType == type)
+          return activities;
+        }
       default: {
         const activities = PersonaSocial.availableStandardActionActivities(this.actor)
           .filter( act => act.system.cardType == type);
@@ -171,8 +176,14 @@ class SocialActivityPanel extends UsableUsePanel {
   }
 
   constructor (actor: PC, activityList: (SocialLink | Activity)[], powerFilter : (usable: Usable) => boolean) {
-    const baseListFn = () => this.actor.powers
-    .filter (pwr=> pwr.canBeUsedInDowntime());
+    const baseListFn = () =>
+      ([] as Usable[]).concat( this.actor.powers
+      .filter (pwr=> pwr.canBeUsedInDowntime())
+      )
+      .concat (actor.items.contents
+        .filter(item => item.isCarryableType())
+        .filter( x=> x.isUsableType())
+      );
     super(actor, baseListFn, powerFilter);
     // this.actor = actor;
     this.socialList = activityList;

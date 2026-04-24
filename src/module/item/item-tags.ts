@@ -21,12 +21,13 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
       //TODO: might want to change this to better get personas tags
       user = user.user;
     }
-    const tagListData = this.unified_tagList(user ?? null).slice()
+    const tagListData = this.tagListRaw(user ?? null).slice()
       .pushUnique(...this.baseItemExtraTags(user ?? null));
     return tagListData.map(tagData=> TagManager.resolveTag(tagData));
   }
 
-  private unified_tagList(user : N<ValidAttackers>) : readonly TagType[] {
+  private tagListRaw(user : N<ValidAttackers>, depth : number = 0) : readonly TagType[] {
+    if (depth >= 3) {return [];}
     const item = this.item;
     switch (true) {
       case item.isPower(): {
@@ -113,10 +114,11 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
         // }
         // return list;
       }
+      case item.isTag():
+        return this.getTags_tag(item, user, depth);
       case item.isCharacterClass():
       case item.isUniversalModifier():
       case item.isSocialCard():
-      case item.isTag():
         return [];
       default:
         PersonaError.softFail(`Unknown Item Type ${item.system.type} can't get tagList`);
@@ -129,7 +131,7 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
     if (this.item == itemBase) {
       return [];
     }
-    return itemBase.tags.unified_tagList(user);
+    return itemBase.tags.tagListRaw(user);
   }
 
   private _getUniformAutoTags() : NonNullable<typeof this.cache.tags> {
@@ -301,6 +303,17 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
       list.pushUnique('passive');
     }
     return list;
+  }
+
+  private getTags_tag(item : Tag, user: N<ValidAttackers>, depth: number) : readonly TagType[] {
+    const tagList = item.system.tags;
+    return tagList
+      .reduce(  (acc, tag) => {
+        const subTag= TagManager.searchForPotentialTagMatch( tag);
+        if (!subTag) {return acc;}
+        acc.pushUnique(...subTag.tags.tagListRaw(user, depth + 1));
+        return acc;
+      }, [] as TagType[]);
   }
 
 }

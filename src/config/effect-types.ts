@@ -160,6 +160,7 @@ export const SOCIAL_CARD_ACTION_LIST = [
 	"remove-cameo",
 	"set-social-card-item",
 	"event-chain",
+  "expend-downtime-actions",
 ] as const;
 
 export type SocialCardAction = typeof SOCIAL_CARD_ACTION_LIST[number];

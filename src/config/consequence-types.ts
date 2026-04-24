@@ -623,6 +623,8 @@ type CardActionTypes = [
 	}, {
 		cardAction: "set-social-card-item",
 		item: ItemSelector,
+	}, {
+		cardAction: "expend-downtime-actions",
 	},
 	EventChainModification,
 ];

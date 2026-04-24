@@ -112,6 +112,12 @@ export class SocialActionExecutor {
 			case "event-chain":
 				this.executeEventChainAction(eff);
 				break;
+      case "expend-downtime-actions": {
+        const actor = this.cardData.actor;
+        await PersonaSocial.expendDowntimeAction(actor, "minor");
+        await PersonaSocial.expendDowntimeAction(actor, "standard");
+        break;
+      }
 			default:
 				eff satisfies never;
 				break;

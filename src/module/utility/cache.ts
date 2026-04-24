@@ -66,11 +66,10 @@ export class PermanentCache<T> extends CacheBase<T> {
     return false;
   }
 
-
 }
 
 
-interface Cache<T> {
+export interface Cache<T> {
   value: T;
   clear(): void;
 }

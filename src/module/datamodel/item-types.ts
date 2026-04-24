@@ -27,6 +27,7 @@ import {CardEventSheet} from "../item/sheets/card-event-sheet.js";
 import {SocialCardEventHandler} from "../social/card-event-handler.js";
 import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {CardTag} from "../../config/card-tags.js";
+import {POWER_TAGS_LIST} from "../../config/power-tags.js";
 
 function itemBase() {
 	return {
@@ -123,21 +124,22 @@ class FocusDM extends foundry.abstract.TypeDataModel {
 }
 
 class TagSchema extends foundry.abstract.TypeDataModel {
-	get type() { return "tag" as const;}
-	static override defineSchema() {
-		const ret = {
-			hidden: new bool(),
-			priceMult: new num({ integer: false, initial: 1, min:0}),
-			description: new txt(),
-			defensive: new bool(),
-			tagType: new txt({choices: TAG_TYPES}),
-			tagLevel: new num( {initial: 0, integer: true}),
-			linkedInternalTag: new txt(),
-			treasure: itemTreasureStats(),
-			...effects (false),
-		};
-		return ret;
-	}
+  get type() { return "tag" as const;}
+  static override defineSchema() {
+    const ret = {
+      hidden: new bool(),
+      priceMult: new num({ integer: false, initial: 1, min:0}),
+      description: new txt(),
+      defensive: new bool(),
+      tagType: new txt({choices: TAG_TYPES}),
+      tagLevel: new num( {initial: 0, integer: true}),
+      linkedInternalTag: new txt(),
+      treasure: itemTreasureStats(),
+      tags: new arr( new txt<typeof POWER_TAGS_LIST[number] | Item["id"]>()),
+      ...effects (false),
+    };
+    return ret;
+  }
 }
 
 class UniversalModifierDM extends foundry.abstract.TypeDataModel {
