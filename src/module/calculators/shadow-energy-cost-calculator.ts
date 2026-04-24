@@ -12,10 +12,6 @@ export class EnergyClassCalculator extends CostCalculator {
      static MULTIATTACK_MULT = 17 as const;
 
 	 static calcEnergyCost(pwr: Power, shadow: Persona) : {energyRequired: number, energyCost: number, cooldown: number} {
-			// const emptyCost = { energyRequired:0, energyCost:0, cooldown: 0 };
-			// if (pwr.isPassive()) {return emptyCost;}
-			// if (pwr.isBasicPower()) {return emptyCost;}
-			// const baseCost = this.calcBaseEnergyCost(pwr);
 			const baseCost = this.calcBasePowerCost(pwr);
 			if (baseCost == null) {
 				 const emptyCost = { energyRequired:0, energyCost:0, cooldown: 0 };
@@ -215,9 +211,9 @@ export class EnergyClassCalculator extends CostCalculator {
 
 	static TAG_ENERGY_COST_MODS : Partial<Record<Exclude<PowerTag, Tag>, number>> = {
 		"half-on-miss": 10,
-		"high-crit": 15,
-		"accurate": 10,
-		"inaccurate": -20,
+		"high-crit": 14,
+		"accurate": 7,
+		"inaccurate": -22,
 	};
 
 	static BENEFICIAL_STATUS_VALUES : Partial<Record<StatusEffectId, number>> = {
