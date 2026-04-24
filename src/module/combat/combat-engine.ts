@@ -13,6 +13,7 @@ import {Persona} from "../persona-class.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaRoller, RollBundle} from "../persona-roll.js";
+import {TagManager} from "../tag-manager.js";
 import {TriggeredEffect} from "../triggered-effect.js";
 import {sleep} from "../utility/async-wait.js";
 import {Calculation} from "../utility/calculation.js";
@@ -534,7 +535,7 @@ export class CombatEngine {
 
   static hasAddedTag (situation: Situation, tag: PowerTag) : boolean {
     if ("addedTags" in situation) {
-      return PersonaItem.hasTag(situation.addedTags ?? [], tag);
+      return TagManager.hasTag(situation.addedTags ?? [], [tag]);
     }
     return false;
   }

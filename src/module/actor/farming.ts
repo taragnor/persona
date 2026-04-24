@@ -44,16 +44,16 @@ export class Farming {
     if (farming.daysLeft > 0) {
       farming.daysLeft = Math.max( 0 , farming.daysLeft - days);
       await this.update({"system.farming" :farming});
-      return [];
-    };
-    if (farming.daysLeft == 0) {
-      const item = PersonaDB.getItemById(farming.cropId);
-      if (!item) {
-        return ["error with advanceCrops Function"];
-      }
+    }
+    const item = PersonaDB.getItemById(farming.cropId);
+    if (!item) {
+      return ["error with advanceCrops Function"];
+    }
+    if (farming.daysLeft > 0) {
+      return [`${farming.amount} ${item.name} will be ready to be harvested in ${farming.daysLeft}`];
+    } else {
       return [`${farming.amount} ${item.name} are ready to be harvested`];
     }
-    return [];
   }
 
   canHarvestCrops() : boolean {

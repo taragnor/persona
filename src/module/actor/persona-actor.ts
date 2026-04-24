@@ -22,7 +22,7 @@ import { RealDamageType } from "../../config/damage-types.js";
 import { FlagData } from "../../config/actor-parts.js";
 import { TarotCard } from "../../config/tarot.js";
 import { removeDuplicates } from "../utility/array-tools.js";
-import { CreatureTag, InternalCreatureTag, PersonaTag } from "../../config/creature-tags.js";
+import { CreatureTag, InternalCreatureTag } from "../../config/creature-tags.js";
 import { PersonaSocial } from "../social/persona-social.js";
 import { TAROT_DECK } from "../../config/tarot.js";
 import { localize } from "../persona.js";
@@ -56,6 +56,7 @@ import {antiLoop} from "../utility/anti-loop.js";
 import {PersonaAE, StatusDuration} from "../persona-ae.js";
 import {PowerLearningSystem} from "../power-learning.js";
 import {Farming} from "./farming.js";
+import {ActorTagManager} from "./actor-tags.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -71,6 +72,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	static MPMap = new Map<number, number>;
   _farming : U<Farming>;
 
+  tags= new ActorTagManager(this);
+
 	cache: {
 		startingLevel: U<number>,
 		level: U<number>,
@@ -79,20 +82,22 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		// triggers: U<ModifierContainer[]>;
 		socialData: U<readonly SocialLinkData[]>;
 		isDMon: U<boolean>;
-    tagList: U<{data: (Tag | InternalCreatureTag)[], time: number}>;
-    tagListRaw: U<{data: (InternalCreatureTag | Tag["id"] | PersonaTag)[], time: number}>;
+    // tagList: U<{data: (Tag | InternalCreatureTag)[], time: number}>;
+    // tagListRaw: U<{data: (InternalCreatureTag | Tag["id"] | PersonaTag)[], time: number}>;
 	};
 
-	constructor(...arr: unknown[]) {
-		super(...arr);
-		this.clearCache();
-    if (this.isPC())
-    this._farming = new Farming(this);
-	}
+  constructor(...arr: unknown[]) {
+    super(...arr);
+    this.clearCache();
+    if (this.isPC()) {
+      this._farming = new Farming(this);
+    }
+  }
 
   get farming() { return this._farming;}
 
 	clearCache() {
+    this.tags.clearCache();
 		this.cache = {
 			startingLevel: undefined,
 			level: undefined,
@@ -101,8 +106,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 			socialData: undefined,
 			// triggers: undefined,
 			isDMon: undefined,
-      tagList : undefined,
-      tagListRaw: undefined,
+      // tagList : undefined,
+      // tagListRaw: undefined,
 		};
 	}
 
@@ -405,8 +410,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	hasTag(this: ValidAttackers ,tag : CreatureTag  ): boolean {
-		return this.tagListRaw.some( (t : string | Tag) => t instanceof PersonaItem ? t.system.linkedInternalTag == tag : tag == t);
-	}
+    return this.tags.hasTag(tag);
+  }
+
+	// hasTag(this: ValidAttackers ,tag : CreatureTag  ): boolean {
+	// 	return this.tagListRaw.some( (t : string | Tag) => t instanceof PersonaItem ? t.system.linkedInternalTag == tag : tag == t);
+	// }
 
 	get nonUsableInventory() : (SkillCard | InvItem | Weapon)[] {
 		const inventory = this.items.filter( i=> i.system.type == "item" || i.system.type == "weapon" || i.system.type == "skillCard") as (InvItem | Weapon)[];
@@ -2129,7 +2138,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 	}
 
 	actorMainModifiers(options ?: MainModifierOptions): readonly ModifierContainer[] {
-		const tags = (options && options.omitTags) ? [] : this.realTags();
+		const tags = (options && options.omitTags) ? [] : this.tags.realTags();
 		const ret : readonly ModifierContainer[] = [
 			...this.passiveItems(),
 			...this.getAllSocialFocii(),
@@ -4138,108 +4147,114 @@ onRevive() : Promise<void> {
 	return Promise.resolve();
 }
 
+// get tagListNames(): string[] {
+// 	return this.tagListRaw
+// 		.map( tag=> {
+// 			return PersonaDB.allTags().get(tag as Tag["id"])?.displayedName?.toString()
+// 				?? tag;
+// 		});
+// }
 
-get tagListNames(): string[] {
-	return this.tagListRaw
-		.map( tag=> {
-			return PersonaDB.allTags().get(tag as Tag["id"])?.displayedName?.toString()
-				?? tag;
-		});
-}
+// realTags() : Tag[] {
+// 	const ret =  this.tagListRaw.flatMap( tag => {
+// 		const x = PersonaItem.searchForPotentialTagMatch(tag);
+// 		if (x) {return [x];}
+// 		else {return [];}
+// 	});
+// 	return ret;
+// }
 
-realTags() : Tag[] {
-	const ret =  this.tagListRaw.flatMap( tag => {
-		const x = PersonaItem.searchForPotentialTagMatch(tag);
-		if (x) {return [x];}
-		else {return [];}
-	});
-	return ret;
-}
+// get tagListRaw() : (InternalCreatureTag | Tag["id"] | PersonaTag)[]
+// {
+//   const CACHE_EXPIRATION_THRESHOLD_TIME = 1000;
+//   const now = Date.now();
+//   if (!this.cache.tagListRaw || (now - this.cache.tagListRaw.time > CACHE_EXPIRATION_THRESHOLD_TIME)) {
+//     this.cache.tagListRaw = {
+//       data: this._tagListRawGen(),
+//       time: now,
+//     };
+//   }
+//   return this.cache.tagListRaw.data;
+// }
 
-get tagListRaw() : (InternalCreatureTag | Tag["id"] | PersonaTag)[]
-{
-  const CACHE_EXPIRATION_THRESHOLD_TIME = 1000;
-  const now = Date.now();
-  if (!this.cache.tagListRaw || (now - this.cache.tagListRaw.time > CACHE_EXPIRATION_THRESHOLD_TIME)) {
-    this.cache.tagListRaw = {
-      data: this._tagListRawGen(),
-      time: now,
-    };
-  }
-  return this.cache.tagListRaw.data;
-}
-
-private _tagListRawGen() : (InternalCreatureTag | Tag["id"] | PersonaTag)[] {
-  //NOTE: This is a candidate for caching
-  if (this.isTarot()) { return []; }
-  const list : (Tag["id"] | InternalCreatureTag | PersonaTag)[] = this.system.creatureTags.slice();
-  if (this.isValidCombatant()) {
-    const persona = this.persona();
-    list.pushUnique(...persona.tagListPartial()
-    );
-    // const extraTags = persona.mainModifiers({omitPowers:true, omitTalents: true, omitTags: true, omitAuras: true})
-    //   .flatMap( CE=> PersonaItem.getConferredTags(CE , this as ValidAttackers));
-    // for (const tag of extraTags) {
-    //   if (!list.includes(tag))
-    //   {list.pushUnique(tag);}
-    // }
-  }
-  switch (this.system.type) {
-    case "pc":
-      if (!list.includes("pc")) {
-        list.pushUnique("pc");
-      }
-      return list;
-    case "npcAlly":
-      if (!list.includes("npc-ally")) {
-        list.pushUnique("npc-ally");
-      }
-      return list;
-    case "npc": return list;
-    case "shadow": {
-      list.pushUnique(this.system.creatureType as InternalCreatureTag);
-      if (this.system.creatureType == "d-mon" && this.hasPlayerOwner) {
-        list.pushUnique("pc-d-mon");
-      }
-      return list;
-    }
-    case "tarot":
-      return [];
-    default:
-      this.system satisfies never;
-      return [];
-  }
-}
+//private _tagListRawGen() : (InternalCreatureTag | Tag["id"] | PersonaTag)[] {
+//  //NOTE: This is a candidate for caching
+//  if (this.isTarot()) { return []; }
+//  const list : (Tag["id"] | InternalCreatureTag | PersonaTag)[] = this.system.creatureTags.slice();
+//  if (this.isValidCombatant()) {
+//    const persona = this.persona();
+//    list.pushUnique(...persona.tagListPartial()
+//    );
+//    // const extraTags = persona.mainModifiers({omitPowers:true, omitTalents: true, omitTags: true, omitAuras: true})
+//    //   .flatMap( CE=> PersonaItem.getConferredTags(CE , this as ValidAttackers));
+//    // for (const tag of extraTags) {
+//    //   if (!list.includes(tag))
+//    //   {list.pushUnique(tag);}
+//    // }
+//  }
+//  switch (this.system.type) {
+//    case "pc":
+//      if (!list.includes("pc")) {
+//        list.pushUnique("pc");
+//      }
+//      return list;
+//    case "npcAlly":
+//      if (!list.includes("npc-ally")) {
+//        list.pushUnique("npc-ally");
+//      }
+//      return list;
+//    case "npc": return list;
+//    case "shadow": {
+//      list.pushUnique(this.system.creatureType as InternalCreatureTag);
+//      if (this.system.creatureType == "d-mon" && this.hasPlayerOwner) {
+//        list.pushUnique("pc-d-mon");
+//      }
+//      return list;
+//    }
+//    case "tarot":
+//      return [];
+//    default:
+//      this.system satisfies never;
+//      return [];
+//  }
+//}
 
 get tagList() : (Tag | InternalCreatureTag)[] {
-  const CACHE_EXPIRATION_THRESHOLD_TIME = 1000;
-  const now = Date.now();
-  if (!this.cache.tagList || (now - this.cache.tagList.time > CACHE_EXPIRATION_THRESHOLD_TIME)) {
-    this.cache.tagList = {
-      data: this._tagListGen(),
-      time: now,
-    };
-  }
-  return this.cache.tagList.data;
+  return this.tags.tagList();
 }
 
-_tagListGen() : (Tag | InternalCreatureTag)[] {
-  const tagList = this.tagListRaw
-		.map(tag => PersonaItem.searchForPotentialTagMatch(tag) ?? (tag as InternalCreatureTag));
-  return tagList;
+// get tagList() : (Tag | InternalCreatureTag)[] {
+//   const CACHE_EXPIRATION_THRESHOLD_TIME = 1000;
+//   const now = Date.now();
+//   if (!this.cache.tagList || (now - this.cache.tagList.time > CACHE_EXPIRATION_THRESHOLD_TIME)) {
+//     this.cache.tagList = {
+//       data: this._tagListGen(),
+//       time: now,
+//     };
+//   }
+//   return this.cache.tagList.data;
+// }
 
-}
+// _tagListGen() : (Tag | InternalCreatureTag)[] {
+//   const tagList = this.tagListRaw
+// 		.map(tag => PersonaItem.searchForPotentialTagMatch(tag) ?? (tag as InternalCreatureTag));
+//   return tagList;
+// }
 
 hasCreatureTag(tagOrTagName: CreatureTag | Tag["id"]) : boolean{
-	const tag = tagOrTagName instanceof PersonaItem ? tagOrTagName : PersonaDB.allTags().get(tagOrTagName as Tag["id"]);
-	const tagList : string[] = this.tagListRaw;
-	if (!tag) {
-		return tagList.includes(tagOrTagName as typeof tagList[number]);
-	}
-	return tagList.includes(tag.id)
-		|| tagList.includes(tag.system.linkedInternalTag)
-		|| tagList.includes(tag.name);
+  return this.tags.hasTag(tagOrTagName, undefined);
 }
+
+// hasCreatureTag(tagOrTagName: CreatureTag | Tag["id"]) : boolean{
+// 	const tag = tagOrTagName instanceof PersonaItem ? tagOrTagName : PersonaDB.allTags().get(tagOrTagName as Tag["id"]);
+// 	const tagList : string[] = this.tagListRaw;
+// 	if (!tag) {
+// 		return tagList.includes(tagOrTagName as typeof tagList[number]);
+// 	}
+// 	return tagList.includes(tag.id)
+// 		|| tagList.includes(tag.system.linkedInternalTag)
+// 		|| tagList.includes(tag.name);
+// }
 
 async deleteCreatureTag(index: number) : Promise<void> {
 	const tags = this.system.creatureTags;

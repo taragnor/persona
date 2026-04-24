@@ -684,12 +684,12 @@ export class PersonaSocial {
 
   static availableMinorActionActivities(pc: PC) : SocialCard[] {
     return PersonaDB.minorActionActivities()
-    .filter (activity => this.isAvailable(activity, pc));
+      .filter (activity => this.isAvailable(activity, pc));
   }
 
   static availableStandardActionActivities(pc: PC) : SocialCard[] {
     return PersonaDB.standardActionActivities()
-    .filter (activity => this.isAvailable(activity, pc));
+      .filter (activity => this.isAvailable(activity, pc));
   }
 
   static isAvailable(activity: Activity | SocialLink, pc : PC) : boolean {
