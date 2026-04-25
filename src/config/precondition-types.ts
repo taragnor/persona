@@ -2,7 +2,7 @@ import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { NumericComparisonPC } from "./numeric-comparison.js";
 import { BooleanComparisonPC } from "./boolean-comparison.js";
 import { TarotCard } from "./tarot.js";
-import { StatusEffectId } from "../config/status-effects.js";
+import { StatusEffectId, StatusEffectPlus } from "../config/status-effects.js";
 import { DEPRECATED_TRIGGERS, Trigger } from "../config/triggers.js";
 
 export const PRECONDITIONLIST = [
@@ -121,7 +121,7 @@ type FlagTimeout = {
 
 type onInflictStatus = {
 	trigger: "on-inflict-status" | "pre-inflict-status",
-	status : MultiCheckOrSingle<StatusEffectId>,
+	status : MultiCheckOrSingle<StatusEffectPlus>,
 }
 
 type onTarotPerk = {
@@ -200,7 +200,3 @@ export type SocialLinkIdOrTarot =
   // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
   | Tarot["id"]
   | TarotCard ;
-
-export type AnyStringObject = {__nonsensePhantomData: number}; // a placehodler to allow typescript to handle satisfies cases better, it represents any string without having the entire type turn to string
-
-

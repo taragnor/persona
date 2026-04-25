@@ -49,12 +49,16 @@ private static _powerStuffBase: Record<string, unknown>;
 			.map( actor=> [actor.id,actor.name])
 		);
 
-		const SOCIAL_LINK_OR_TAROT =
-		{
-			...SOCIAL_LINK_OR_TAROT_OTHER,
-			...TAROT_DECK,
-			...SocialLinks,
-		};
+    const STATUS_EFFECTS_PLUS = {
+      triggered: "Triggering Status",
+      ...STATUS_EFFECT_TRANSLATION_TABLE
+    };
+    const SOCIAL_LINK_OR_TAROT =
+    {
+      ...SOCIAL_LINK_OR_TAROT_OTHER,
+      ...TAROT_DECK,
+      ...SocialLinks,
+    };
 
 		const DAMAGETYPESPLUS = {
 			...DAMAGETYPES,
@@ -94,6 +98,7 @@ private static _powerStuffBase: Record<string, unknown>;
 			REALDAMAGETYPES: REALDAMAGETYPES,
 			DAMAGETYPESPLUS,
 			STATUSEFFECTS: STATUS_EFFECT_TRANSLATION_TABLE,
+			STATUS_EFFECTS_PLUS,
 			STATUSDURATIONS : STATUS_EFFECT_DURATION_TYPES,
 			TARGETING : TARGETING,
 			MODIFIER_TARGETS: MODIFIERS_TABLE,

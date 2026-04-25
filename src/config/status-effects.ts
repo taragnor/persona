@@ -360,4 +360,5 @@ export const STATUSES_BY_TAG : Record<StatusTag, Set<StatusEffectId>> = Object.f
 	)])
 ) as Record<StatusTag, Set<StatusEffectId>>;
 
-
+export type StatusEffectPlus = StatusEffectId
+  | "triggering";

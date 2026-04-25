@@ -35,15 +35,17 @@ export class PersonaError extends Error {
       this.notifyGM(errortxt, trace, debugArgs);
       console.error(`${errortxt} \n ${trace}`);
     } catch (e) {
-
+      if (debugArgs) {
+        debugArgs.forEach( arg=> Debug(arg));
+      }
       this.notifyGM(error instanceof Error ? error.message : error, undefined, debugArgs);
       PersonaError.softFail("Error with softFail error reporting");
       if (e instanceof Error)
       {throw e;}
     }
-    if (debugArgs) {
-      debugArgs.forEach( arg=> Debug(arg));
-    }
+    // if (debugArgs) {
+    //   debugArgs.forEach( arg=> Debug(arg));
+    // }
   }
 
   static async asyncErrorWrapper(fn: () => Promise<void | undefined>, ...args: unknown[]): Promise<void> {
@@ -87,20 +89,24 @@ export class PersonaError extends Error {
 	 }
 
 	 static notifyGM(errorMsg: string, stack ?: string, ...debugArgs : unknown[]) {
-			if (!game || !game.user || game.user.isGM) {return;}
-			const trace = stack ? stack : this.getTrace();
-			const userId = game.user.id;
-			const gmIds = game.users
-				 .filter ( user => user.isGM && user.active)
-				 .map( user => user.id);
-			const args = debugArgs.flatMap( x=> this.toText(x));
-			PersonaSockets.simpleSend("ERROR_REPORT", {
-				 errorMsg,
-				 trace,
-				 userId,
-				 args,
-			}, gmIds);
-	 }
+
+     if (!game || !game.user) {return;}
+     if (game.user.isGM) {
+       Debug(...debugArgs);
+     }
+     const trace = stack ? stack : this.getTrace();
+     const userId = game.user.id;
+     const gmIds = game.users
+       .filter ( user => user.isGM && user.active)
+       .map( user => user.id);
+     const args = debugArgs.flatMap( x=> this.toText(x));
+     PersonaSockets.simpleSend("ERROR_REPORT", {
+       errorMsg,
+       trace,
+       userId,
+       args,
+     }, gmIds);
+   }
 
 	 static onRecieveRemoveError( {errorMsg, trace, userId, args}: RemoteErrorInfo) {
 			const user = game.users.get(userId);

@@ -763,11 +763,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       const actualResist = this.elemResist(damageType);
       let modified : PrintableResistData["modified"];
       switch (true) {
-        case actualResist == originalResist : 
+        case actualResist == originalResist :
           modified= "normal";
           break;
         case resval(originalResist) > resval(actualResist):
-          modified = "downgraded"; 
+          modified = "downgraded";
           break;
         case resval(originalResist) < resval(actualResist):
           modified ="upgraded";
@@ -872,6 +872,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
           return "ERROR";
         }
         switch (actual) {
+          case "weakness": return `Weakness ${statusTrans}`;
           case "resist": return `Resist ${statusTrans}`;
           case "absorb":
           case "reflect":

@@ -15,7 +15,7 @@
 {{/if}}
 
 {{#if (eqAny cond.trigger "on-inflict-status" "pre-inflict-status")}}
-{{multicheck (strcat namePrefix 'status') POWERSTUFF.STATUSEFFECTS checked=cond.status localize=true}}
+{{multicheck (strcat namePrefix 'status') POWERSTUFF.STATUS_EFFECTS_PLUS checked=cond.status localize=true}}
 {{/if}}
 
 {{#if (eqAny cond.trigger "on-active-effect-time-out" "on-active-effect-end")}}

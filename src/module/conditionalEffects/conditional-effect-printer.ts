@@ -442,6 +442,14 @@ export class ConditionalEffectPrinter {
 				const damage = this.translate(cond.element, DAMAGETYPES);
 				return `${damage} resistance ${endString(cond, resist)}`;
 			}
+      case "status-resistance-level": {
+				const resist = this.translate(cond.resistLevel, RESIST_STRENGTHS);
+        if (cond.status == "triggering") {
+          return "Triggering Status";
+        }
+				const status = this.translate(cond.status, STATUS_EFFECT_TRANSLATION_TABLE);
+				return `${status} resistance ${endString(cond, resist)}`;
+      }
 			case "health-percentage":
 				return `Health Percentage ${endString(cond)}`;
 			case "clock-comparison":

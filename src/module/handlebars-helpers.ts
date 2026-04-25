@@ -401,42 +401,50 @@ export class PersonaHandleBarsHelpers {
     },
 
     "multicheck": function (name: string, list: Record<string, string>, options: {hash: {localize: boolean, checked: (Record<string, boolean> | string | undefined), selectorsOnly?: boolean}}) : SafeString {
-      let checkedTable = options?.hash?.checked;
-      if (typeof checkedTable == "string") {
-        const newobj= {} as Record<string, boolean>;
-        if (checkedTable.length >0) {
-          newobj[checkedTable] = true;
+      try {
+        if (list  == undefined) {
+          return new Handlebars.SafeString("MULTICHECK ERROR (UNDEF LIST)");
         }
-        checkedTable = newobj;
+        let checkedTable = options?.hash?.checked;
+        if (typeof checkedTable == "string") {
+          const newobj= {} as Record<string, boolean>;
+          if (checkedTable.length >0) {
+            newobj[checkedTable] = true;
+          }
+          checkedTable = newobj;
+        }
+        if (checkedTable == undefined) {
+          checkedTable = {};
+        }
+        let html = "";
+        html += `<div class="multi-check" data-name="${name}">`;
+        const hash = options?.hash ?? undefined;
+        const selected= Object.entries(checkedTable ?? {})
+          .filter (([_k,v]) => v == true)
+          .map( ([k, _v])=> list[k] ? list[k] : k)
+          .map( k => hash?.localize ? localize(k as LocalizationString) : k )
+          .join (", ");
+        if (!hash.selectorsOnly) {
+          html += `<span class="selected micro-text"> ${selected.length ? selected : "NONE SELECTED"} </span>`;
+        }
+        const hideSelectors = selected.length && ConditionalEffectManager.lastClick != name && !hash.selectorsOnly;
+        html+= `<div class="MC-selectors ${hideSelectors ? 'hidden': ''}">`;
+        for (const [key, val] of Object.entries(list)) {
+          const valName = hash?.localize ? localize(val as LocalizationString) : val;
+          html += `<span class="small-box">`;
+          html += `<label class="micro-text">  ${valName} </label>`;
+          let checked = false;
+          checked = checkedTable[key] ?? false;
+          html += `<input type="checkbox" name="${name}.${key}" ${ (checked) ? 'checked' : ""} >`;
+          html += `</span>`;
+        }
+        html+= `</div>`;
+        html += `</div>`;
+        return new Handlebars.SafeString(html);
+      } catch (e) {
+        PersonaError.softFail(e as Error, name, list, options);
+        return new Handlebars.SafeString("MULTICHECK ERROR");
       }
-      if (checkedTable == undefined) {
-        checkedTable = {};
-      }
-      let html = "";
-      html += `<div class="multi-check" data-name="${name}">`;
-      const hash = options?.hash ?? undefined;
-      const selected= Object.entries(checkedTable ?? {})
-        .filter (([_k,v]) => v == true)
-        .map( ([k, _v])=> list[k] ? list[k] : k)
-        .map( k => hash?.localize ? localize(k as LocalizationString) : k )
-        .join (", ");
-      if (!hash.selectorsOnly) {
-        html += `<span class="selected micro-text"> ${selected.length ? selected : "NONE SELECTED"} </span>`;
-      }
-      const hideSelectors = selected.length && ConditionalEffectManager.lastClick != name && !hash.selectorsOnly;
-      html+= `<div class="MC-selectors ${hideSelectors ? 'hidden': ''}">`;
-      for (const [key, val] of Object.entries(list)) {
-        const valName = hash?.localize ? localize(val as LocalizationString) : val;
-        html += `<span class="small-box">`;
-        html += `<label class="micro-text">  ${valName} </label>`;
-        let checked = false;
-        checked = checkedTable[key] ?? false;
-        html += `<input type="checkbox" name="${name}.${key}" ${ (checked) ? 'checked' : ""} >`;
-        html += `</span>`;
-      }
-      html+= `</div>`;
-      html += `</div>`;
-      return new Handlebars.SafeString(html);
     },
 
     "inCombat": function() : boolean {

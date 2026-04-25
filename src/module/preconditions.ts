@@ -198,7 +198,6 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
     case "resistance-level" : {
       if (!checkSituationProp(situation, "usedPower")) { return false; };
       if (!checkSituationProp(situation, "attacker")) { return false; };
-      if (!checkSituationProp(situation, "usedPower")) { return false; };
       const subject = getSubjectActors(condition, situation as Situation, "conditionTarget")[0];
       if (!subject) {return false;}
       testCase = RESIST_STRENGTH_LIST.indexOf(condition.resistLevel);
@@ -214,6 +213,22 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       if (subject.isNPC()) {return false;}
       const targetResist = subject.persona().resists[element]?? "normal";
       target = RESIST_STRENGTH_LIST.indexOf(targetResist);
+      testCase = RESIST_STRENGTH_LIST.indexOf(condition.resistLevel);
+      break;
+    }
+    case "status-resistance-level": {
+      const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
+      if (!subject || subject.isNPC()) {return false;}
+      let statusId : StatusEffectId ;
+      if (condition.status == "triggering") {
+      if (!checkSituationProp(situation, "statusEffect")) {return false;}
+        statusId = situation.statusEffect;
+      } else {
+        statusId = condition.status;
+      }
+      const targetResist = subject.persona().statusResist(statusId);
+      target = RESIST_STRENGTH_LIST.indexOf(targetResist);
+      testCase = RESIST_STRENGTH_LIST.indexOf(condition.resistLevel);
       break;
     }
     case "health-percentage": {
@@ -500,9 +515,13 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
       return condition.tarot == situation.tarot;
     case "on-inflict-status":
       if (!("statusEffect" in situation) || situation.statusEffect == undefined) {return false;}
+      if (condition.status == "triggering") {
+        return true;
+      }
       return multiCheckContains(condition.status, [situation.statusEffect]);
     case "pre-inflict-status":
       if (!("statusEffect" in situation) || situation.statusEffect == undefined) {return false;}
+      if (condition.status == "triggering") { return true; }
       return multiCheckContains(condition.status, [situation.statusEffect]);
     case "start-turn":
       return true;
