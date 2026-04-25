@@ -71,6 +71,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       nearbyAuras: undefined,
       mainModifiersList : undefined,
       tagListPartial: undefined,
+      passiveModifiers: undefined,
     };
   }
 
@@ -525,17 +526,19 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.getBonuses(modNames, this.defensiveModifiers());
   }
 
-  getBonusesIgnoreAuras (modNames : MaybeArray<NonDeprecatedModifierType>): ModifierList {
-    return this.getBonuses( modNames, this.mainModifiers({omitAuras: true}));
+  getPassiveBonusesIgnoreAuras (modNames : MaybeArray<NonDeprecatedModifierType>): ModifierList {
+    return this.getBonuses( modNames, this.mainModifiers({omitAuras: true})
+      .filter (x=> x.conditionalType == "passive")
+    );
   }
 
   getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, usedPower: Usable) : ModifierList;
   getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, sources?: readonly SourcedConditionalEffect[]): ModifierList;
-  getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, sources: (readonly SourcedConditionalEffect[] | Usable) = this.passiveCEs()): ModifierList {
+  getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, sources: (readonly SourcedConditionalEffect[] | Usable) = this.passiveModifiers()): ModifierList {
     if (sources instanceof PersonaItem) {
       const baseMods = this.getBonuses(modnames);
       const usable = sources;
-      const usableEffects = usable.getPassiveEffects(this.user);
+      const usableEffects = usable.getPassiveAndDefensiveEffects(this.user);
       const mods = PersonaItem.getModifier(usableEffects, modnames);
       const modList = new ModifierList(mods);
       return baseMods.concat(modList);
@@ -545,11 +548,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return new ModifierList(mods);
   }
 
-  passiveCEs() : SourcedConditionalEffect[] {
-    return this.mainModifiers().filter ( x=>x.conditionalType == "passive");
-  }
-
-  mainModifiers(options?: MainModifierOptions ): readonly ConditionalEffectC[] {
+  private mainModifiers(options?: MainModifierOptions ): readonly ConditionalEffectC[] {
     const personal = this.personalMainModifiers(options);
     const ret = personal.slice();
     if (!options?.omitAuras) {
@@ -585,7 +584,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     const user = this.user;
     const roomModifiers : UniversalModifier[] = [];
     roomModifiers.push(...Metaverse.activeRoomModifiers());
-    const passiveOrTriggeredPowers = (options && options.omitPowers) ? [] : this.passiveOrTriggeredPowers();
+    const passiveOrTriggeredPowers = (options && options.omitPowers) ? [] : this.nonActivePowers();
     const talents = (options && options?.omitTalents) ? [] : this.talents;
     const mainModsList : ModifierContainer[]= [
       ...this.focii,
@@ -627,12 +626,12 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return PersonaAura.activeAuras(this);
   }
 
-  passiveOrTriggeredPowers() : readonly Power[] {
+  nonActivePowers() : readonly Power[] {
     const PersonaCaching = this.canCache({});
     if (this.#cache.passivePowers == undefined || !PersonaCaching) {
       const val =  this.powers
-        .filter( power => power.isPassive() || power.isDefensive())
-        .filter( power=> power.hasPassiveEffects(this.user) || power.hasTriggeredEffects(this.user));
+        .filter( power => !power.isTrulyUsable())
+        .filter( power=> power.hasPassiveEffects(this.user) || power.hasTriggeredEffects(this.user) || power.hasDefensiveEffects(this.user));
       if (!PersonaCaching) {return val;}
       this.#cache.passivePowers = val;
     }
@@ -646,6 +645,23 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       this.#cache.defensiveModifiers = val;
     }
     return this.#cache.defensiveModifiers;
+  }
+
+  // passiveCEs() : SourcedConditionalEffect[] {
+  //   return this.mainModifiers().filter ( x=>x.conditionalType == "passive");
+  // }
+
+  allModifiers(...args: Parameters<Persona["mainModifiers"]>) : readonly ConditionalEffectC[] {
+    return this.mainModifiers(...args);
+  }
+
+  passiveModifiers() : readonly ConditionalEffectC[] {
+    if (!this.#cache.passiveModifiers || !this.canCache) {
+      const val =  this.mainModifiers().filter ( eff => eff.conditionalType == "passive");
+      if (!this.canCache) {return val;}
+      this.#cache.passiveModifiers = val;
+    }
+    return this.#cache.passiveModifiers;
   }
 
   async addTalent(talent: Talent) {
@@ -723,7 +739,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     const calc= new Calculation(CombatEngine.getBaseDefense(defense));
     if (defense == "none") {return calc;}
     const modifiers = [
-      ...this.passiveCEs(),
+      ...this.defensiveModifiers(),
     ];
     modifiers.pushUnique(...this.defensiveModifiers());
     const defenseMods = this.getBonuses([defense, "allDefenses"], modifiers);
@@ -745,15 +761,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       this.#combatStats = new PersonaCombatStats(this);
     }
     return this.#combatStats;
-  }
-
-
-  passiveFocii() : Focus[] {
-    return this.focii.filter( f=> f.hasPassiveEffects(this.user));
-  }
-
-  defensiveFocii(): Focus[] {
-    return this.focii.filter( f=> f.hasDefensiveEffects(this.user));
   }
 
   get resistancesPrintable() : PrintableResistData[] {
@@ -932,7 +939,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
         return 0;
       case "pc": {
         if (!this.source.class.system.canUsePowerSideboard) {return 0;}
-        const extraMaxPowers = this.getBonusesIgnoreAuras("extraMaxPowers");
+        const extraMaxPowers = this.getPassiveBonusesIgnoreAuras("extraMaxPowers");
         return extraMaxPowers
         .total ( {user: this.user.accessor});
       }
@@ -962,7 +969,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       user: this.user.accessor,
       target: this.user.accessor,
     };
-    const bonusBoosts =this.getBonusesIgnoreAuras("max-defense-boosts").total(situation);
+    const bonusBoosts =this.getPassiveBonusesIgnoreAuras("max-defense-boosts").total(situation);
     return baseBoosts + bonusBoosts;
   }
 
@@ -986,7 +993,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       user: this.user.accessor,
       target: this.user.accessor,
     };
-    const bonusBoosts = this.getBonusesIgnoreAuras("max-resist-boosts").total(situation);
+    const bonusBoosts = this.getPassiveBonusesIgnoreAuras("max-resist-boosts").total(situation);
     return baseResists + bonusBoosts;
   }
 
@@ -1495,7 +1502,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     const situation = {
       user: this.user.accessor,
     };
-    const maxEnergy = BASE_MAX_ENERGY + this.getBonusesIgnoreAuras("max-energy").total(situation);
+    const maxEnergy = BASE_MAX_ENERGY + this.getPassiveBonusesIgnoreAuras("max-energy").total(situation);
     return maxEnergy;
   }
 
@@ -1537,7 +1544,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     if (this.source.isNPCAlly()) {
       return 8;
     }
-    const extraMaxPowers = this.getBonusesIgnoreAuras("extraMaxPowers");
+    const extraMaxPowers = this.getPassiveBonusesIgnoreAuras("extraMaxPowers");
     return 8 + extraMaxPowers.total ( {user: this.user.accessor});
   }
 
@@ -1558,6 +1565,7 @@ interface PersonaClassCache {
   mainModifiers: U<ConditionalEffectC[]>;
   passivePowers: U<readonly Power[]>;
   defensiveModifiers: U<ConditionalEffectC[]>;
+  passiveModifiers: U<ConditionalEffectC[]>;
   nearbyAuras:  U<ConditionalEffectC[]>;
   mainModifiersList: U<readonly ModifierContainer[]>;
   tagListPartial: U<(PersonaTag | Tag["id"] | InternalCreatureTag)[]>;

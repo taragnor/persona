@@ -54,9 +54,6 @@ export class CombatEngine {
 				 if (combToken) { return combToken;}
 				 token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
 				 if (token) {return token;}
-				 // const tokens = actor._dependentTokens.get(game.scenes.current)!;
-				 //THIS IS PROBABLY A bad idea to iterate over weakset
-				 // token = Array.from(tokens)[0];
 				 token = actor.getDependentTokens()
 						.find( tok => tok.parent == game.scenes.current) as U<PToken>;
 			}
@@ -826,8 +823,8 @@ export class CombatEngine {
     }
 		// const attackBonus = this.getBaseAttackBonus(attacker, power);
 		attackBonus.add(1, this.customAtkBonus ?? 0, 'Custom modifier');
-		const defense = this.getDefenderAttackModifiers(target, power.system.defense, power);
-		attackBonus.add(1, defense, "Defense Mods");
+		// const defense = this.getDefenderAttackModifiers(target, power.system.defense, power);
+		// attackBonus.add(1, defense, "Defense Mods");
 		if (options.modifiers) {
 			attackBonus.add(1, options.modifiers, "Extra Mods");
 		}
@@ -882,7 +879,8 @@ export class CombatEngine {
     const atkAndDefenderMods = CombatEngine.getAttackerAndDefenderModifiers(mods, attacker, target, power);
     calc.add(1, atkAndDefenderMods, "Unified Mods");
     // Debug(atkAndDefenderMods);
-    // console.log(atkAndDefenderMods);
+    console.log("Attack Roll Modifiers mods");
+    console.log(atkAndDefenderMods);
     return calc;
   }
 
@@ -1015,6 +1013,13 @@ export class CombatEngine {
 	static getAttackerAndDefenderModifiers(modName: MaybeArray<NonDeprecatedModifierType>, attackerPersona: Persona, targetPersona: Persona, power: Usable) {
 		const attackerMods = attackerPersona.getBonuses(modName, power);
 		const targetDefense = targetPersona.getDefensiveBonuses(modName) ;
+    if (PersonaSettings.debugMode()) {
+      console.log(modName);
+      console.log(attackerMods);
+      console.log(targetDefense);
+      Debug(attackerMods);
+      Debug(targetDefense);
+    }
 		return attackerMods.concat(targetDefense);
 	}
 

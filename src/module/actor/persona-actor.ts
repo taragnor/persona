@@ -1632,14 +1632,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 		return [];
 	}
 
-	passiveFocii(this: ValidAttackers): Focus[] {
-		return this.persona().passiveFocii();
-	}
-
-	defensiveFocii(this: ValidAttackers): Focus[] {
-		return this.persona().defensiveFocii();
-	}
-
 	async modifyHP( this: ValidAttackers, delta: number) {
 		const startingHP = this.system.combat.hp;
 		if (delta == 0) {return;}
@@ -2379,7 +2371,7 @@ instantKillResistanceMultiplier(this: ValidAttackers, attacker: ValidAttackers) 
 
 mainModifiers(...args: Parameters<Persona["mainModifiers"]>): readonly ConditionalEffectC[] {
 	if (!this.isValidCombatant()) {return [];}
-	return this.persona().mainModifiers(...args);
+	return this.persona().allModifiers(...args);
 }
 
 userDefensiveEffects(this: ValidAttackers) : ModifierContainer [] {
@@ -2816,7 +2808,7 @@ getAllSocialFocii() : Focus[] {
 }
 
 getEffects(this: ValidAttackers, CETypes ?: TypedConditionalEffect['conditionalType'][] ) : readonly ConditionalEffectC [] {
-	const mods =  this.persona().mainModifiers();
+	const mods =  this.persona().allModifiers();
 	if (!CETypes || CETypes.length == 0) {
 		return mods;
 	}

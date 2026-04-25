@@ -1289,6 +1289,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     // const token = tokenOrActor instanceof TokenDocument ? tokenOrActor : tokenOrActor.actor;
     const attackerType = actor.getAllegiance();
     const combat= this.combat;
+    const combatant = combat?.getCombatantByActor(actor);
+    if (combat && !combat.isSocial && !combatant) {return [];}
     const tokens = combat
       ? ( combat.validCombatants(combat.getCombatantByActor(actor)!.token as PToken)
         .filter( x=> x.actor)

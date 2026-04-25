@@ -1368,9 +1368,6 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
     case "engaged": {
       if (!combat) {return undefined;}
       return subjects.some( subject => {
-        if (subject instanceof PersonaActor) {
-          if (subject.isNPC()) {return false;}
-        }
         const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken((subject.user).accessor);
         if (!subjectToken) {
           // PersonaError.softFail(`Can't find token for ${subject?.name}`);

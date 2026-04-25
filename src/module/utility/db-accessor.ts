@@ -388,31 +388,35 @@ private allItemsMap : Map<string, ItemType> = new Map();
 
 	getUniversalItemAccessor<T extends Item<any>>(item: T) : UniversalItemAccessor<T> {
 		return {
+      itemName: item.name,
 			actor: (item.parent) ? this.getUniversalActorAccessor(item.parent): undefined,
 			itemId: item.id,
 		};
 	}
 
-	getUniversalActorAccessor<T extends Actor<any>> (actor: T) : UniversalActorAccessor<T> {
-		if (actor.token && actor.token.object) {
-			return {
-				actorId: actor.id,
-				token: this.getUniversalTokenAccessor(actor.token.object),
-			};
-		}
-		for (const comb of game.combat?.combatants ?? [])
-		{
-			if (comb.actor == actor && comb?.token?.actorLink) {
-			return  {
-				actorId: actor.id,
-				token: this.getUniversalTokenAccessor(comb.token),
-			} as UniversalActorAccessor<T>;
-		}}
-		return {
-			actorId: actor.id,
-			token: undefined
-		};
-	}
+  getUniversalActorAccessor<T extends Actor<any>> (actor: T) : UniversalActorAccessor<T> {
+    if (actor.token && actor.token.object) {
+      return {
+        actorName: actor.name,
+        actorId: actor.id,
+        token: this.getUniversalTokenAccessor(actor.token.object),
+      };
+    }
+    for (const comb of game.combat?.combatants ?? [])
+    {
+      if (comb.actor == actor && comb?.token?.actorLink) {
+        return  {
+          actorName: actor.name,
+          actorId: actor.id,
+          token: this.getUniversalTokenAccessor(comb.token),
+        } as UniversalActorAccessor<T>;
+      }}
+    return {
+      actorName: actor.name,
+      actorId: actor.id,
+      token: undefined
+    };
+  }
 
 	getUniversalAEAccessor<T extends ActiveEffect<any, any> & {parent: Actor<any> | Item<any>}> (effect: T): UniversalAEAccessor<T> {
 		const parent = effect.parent as unknown;
@@ -479,13 +483,15 @@ type UniversalTokenAccessor<T extends TokenDocument<any> = TokenDocument<any>> =
 };
 
 type UniversalActorAccessor<T extends Actor<any, any, any> = Actor<any, any, any>> = {
+  actorName: string;
 	token ?: UniversalTokenAccessor<TokenDocument<T>>,
 	actorId : T["id"],
 }
 
 type UniversalItemAccessor<T extends Item<any>= Item<any>> = {
-	actor?: UniversalActorAccessor<Actor<any, any>>,
-	itemId: T["id"],
+  itemName: string;
+	actor?: UniversalActorAccessor<Actor<any, any>>;
+	itemId: T["id"];
 }
 
 type UniversalAccessorTypes = Actor | TokenDocument | Item | ActiveEffect;

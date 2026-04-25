@@ -598,8 +598,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     switch (this.system.type) {
       case 'power': {
         const sub = this.system.subtype;
-        if ( sub == 'passive'  || sub == 'defensive')
-        {return false;}
+        switch (sub) {
+          case "defensive":
+          case "passive":
+          case "none":
+            return false;
+        }
         return true; 
       }
       case 'skillCard':

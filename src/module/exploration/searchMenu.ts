@@ -369,10 +369,7 @@ export class SearchMenu {
 					if (!owner) {return [];}
 					const ret : SearchResult = {
 						searcher: {
-							actor: {
-								token: undefined,
-								actorId: actor.id,
-							},
+							actor: actor.accessor,
 							name: actor.displayedName,
 							ownerId: owner.id,
 							ownerName: owner.name,

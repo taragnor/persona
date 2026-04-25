@@ -90,7 +90,7 @@ export class PersonaTagManager<PType extends Persona> extends TagManager<TagType
   }
 
   private _getConferredTags() {
-    const extraTags = this.persona.mainModifiers({omitPowers:true, omitTalents: true, omitTags: true, omitAuras: true})
+    const extraTags = this.persona.allModifiers({omitPowers:true, omitTalents: true, omitTags: true, omitAuras: true})
       .flatMap( CE=> TagManager.getConferredTags(CE , this.user));
     return extraTags as TagType[];
   }

@@ -63,12 +63,12 @@ export class PersonaCombatStats {
       const lvlbase = user.baseClassHP;
       const calc = new Calculation(lvlbase);
       const persona = this.persona;
-      const nonMultbonuses = persona.getBonusesIgnoreAuras("maxhp");
-      const newForm = persona.getBonusesIgnoreAuras("maxhpMult-new");
+      const nonMultbonuses = persona.getPassiveBonusesIgnoreAuras("maxhp");
+      const newForm = persona.getPassiveBonusesIgnoreAuras("maxhpMult-new");
       const hpAdjustPercent = user.hpAdjustPercent();
       const hpAdjust = user.system.hp_adjust;
       calc.mult(0, hpAdjustPercent,`HP Adjust (${hpAdjust})`);
-      const multmods = persona.getBonusesIgnoreAuras("maxhpMult");
+      const multmods = persona.getPassiveBonusesIgnoreAuras("maxhpMult");
       if (user.isPC() || user.isNPCAlly()) {
         const ArmorHPBoost = user.equippedItems().find(x=> x.isOutfit())?.armorHPBoost ?? 0;
         if (ArmorHPBoost > 0)
@@ -100,8 +100,8 @@ export class PersonaCombatStats {
       const sit ={user: user.accessor};
       const mpAdjustPercent = user.mpAdjustPercent();
       const mpAdjust = user.system.mp_adjust;
-      const bonuses = persona.getBonusesIgnoreAuras("maxmp");
-      const maxMult = persona.getBonusesIgnoreAuras("maxmpMult");
+      const bonuses = persona.getPassiveBonusesIgnoreAuras("maxmp");
+      const maxMult = persona.getPassiveBonusesIgnoreAuras("maxmpMult");
       const nonMultMPBonus = user.system.combat.bonusMP ?? 0;
       x.mult(0, mpAdjustPercent, `MP adjust (${mpAdjust})`);
       x.add(0, bonuses, "additive bonuses");
@@ -121,7 +121,7 @@ export class PersonaCombatStats {
       user: this.persona.user.accessor,
     };
     const modBonuses = this.persona
-      .getBonusesIgnoreAuras(stat)
+      .getPassiveBonusesIgnoreAuras(stat)
       .total(situation);
     const statTotal = Math.round( permaBonus + this.getBaseStatValue(stat) + modBonuses);
     return Math.min(99, statTotal);
