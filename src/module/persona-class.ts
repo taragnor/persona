@@ -647,10 +647,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.#cache.defensiveModifiers;
   }
 
-  // passiveCEs() : SourcedConditionalEffect[] {
-  //   return this.mainModifiers().filter ( x=>x.conditionalType == "passive");
-  // }
-
   allModifiers(...args: Parameters<Persona["mainModifiers"]>) : readonly ConditionalEffectC[] {
     return this.mainModifiers(...args);
   }

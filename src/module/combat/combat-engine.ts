@@ -879,8 +879,6 @@ export class CombatEngine {
     const atkAndDefenderMods = CombatEngine.getAttackerAndDefenderModifiers(mods, attacker, target, power);
     calc.add(1, atkAndDefenderMods, "Unified Mods");
     // Debug(atkAndDefenderMods);
-    console.log("Attack Roll Modifiers mods");
-    console.log(atkAndDefenderMods);
     return calc;
   }
 
@@ -1013,13 +1011,6 @@ export class CombatEngine {
 	static getAttackerAndDefenderModifiers(modName: MaybeArray<NonDeprecatedModifierType>, attackerPersona: Persona, targetPersona: Persona, power: Usable) {
 		const attackerMods = attackerPersona.getBonuses(modName, power);
 		const targetDefense = targetPersona.getDefensiveBonuses(modName) ;
-    if (PersonaSettings.debugMode()) {
-      console.log(modName);
-      console.log(attackerMods);
-      console.log(targetDefense);
-      Debug(attackerMods);
-      Debug(targetDefense);
-    }
 		return attackerMods.concat(targetDefense);
 	}
 
