@@ -2192,9 +2192,26 @@ getFatigueStatus() : FatigueStatusId | undefined {
 }
 
 get fatigueLevel() : number {
-	if (this.system.type != "pc") {return 0;}
+	if (!this.isPCLike()) {return 0;}
 	const st = this.getFatigueStatus();
 	return statusToFatigueLevel(st);
+}
+
+/** Auto NPC recovery for fatigue to be run each calendar day*/
+async recoverFatigue(this: NPCAlly) : Promise<number>{
+  if (this.fatigueLevel == 0) {return -1;}
+  let recoveryDays = Number(this.getFlag<number>("persona", "fatigueRecovery") ?? 0);
+  if (Number.isNaN(recoveryDays)) {
+    PersonaError.softFail(`NaN recovery days for ${this.name}`);
+    recoveryDays = 0;
+  }
+  recoveryDays += 1;
+  if (recoveryDays == 3) {
+    recoveryDays = 0;
+    await this.alterFatigueLevel(1);
+  }
+  await this.setFlag("persona", "fatigueRecovery", recoveryDays);
+  return recoveryDays;
 }
 
 hasAlteredFatigueToday(this:PC): boolean {
@@ -2966,20 +2983,21 @@ async endEffectsOfDurationOrLess( duration: StatusDuration) : Promise<ActiveEffe
 }
 
 async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
-	try {
-		await this.resetTheurgy();
-		if (this.isPC() && !this.isRealPC()) {return;} //skip fake PCs like itempiles and the party token
-		if (this.isRealPC()) {
-			let fatigue = (this.tarot?.name == "Strength") ?
-				0 : -1;
-			if (this.hasStatus("full-fade")) {
-				await this.removeStatus("full-fade");
-				fatigue -= 2;
-			}
-			await this.alterFatigueLevel(fatigue);
-			await this.refreshSocialLink(this);
-		}
-		if (this.isNPCAlly()) {
+  try {
+    await this.resetTheurgy();
+    if (this.isPC() && !this.isRealPC()) {return;} //skip fake PCs like itempiles and the party token
+    if (this.isRealPC()) {
+      let fatigue = (this.tarot?.name == "Strength") ?
+        0 : -1;
+      if (this.hasStatus("full-fade")) {
+        await this.removeStatus("full-fade");
+        fatigue -= 2;
+      }
+      await this.alterFatigueLevel(fatigue);
+      await this.refreshSocialLink(this);
+    }
+    if (this.isNPCAlly()) {
+      await this.setFlag("persona", "fatigueRecovery", 0);
 			if (this.hasStatus("full-fade")) {
 				await this.alterFatigueLevel(-2);
 			}
@@ -3680,75 +3698,35 @@ async resetFatigueChecks(this: PC) {
 
 async onEndDay(this:  PC | NPCAlly): Promise<string[]> {
   const ret = await this.checkEffectExpire( eff => eff.onStartDay());
-  // const ret = [] as string[];
-  // for (const eff of this.effects) {
-  //   if (await eff.onEndDay())
-  //   {ret.push(`Removed Condition ${eff.displayedName} at end of day.`);}
-  // }
-  // ret.push(...await this.fatigueRecoveryRoll());
   if (this.isPC()) {
     await this.resetFatigueChecks();
-  }
-  if (this.isNPCAlly()) {
-    await this.recoverFatigue();
   }
   return ret;
 }
 
-async recoverFatigue(this: NPCAlly) : Promise<void>{
-  if (this.fatigueLevel == 0) {return;}
-  let recoveryDays = Number(this.getFlag<number>("persona", "fatigueRecovery")) ?? 0;
-  if (Number.isNaN(recoveryDays)) {
-    PersonaError.softFail(`NaN recovery days for ${this.name}`);
-    recoveryDays = 0;
-  }
-  recoveryDays += 1;
-  if (recoveryDays == 3) {
-    recoveryDays = 0;
-    await this.setFlag("persona", "fatigueRecovery", 0);
-    await this.alterFatigueLevel(1);
-  }
-  await this.setFlag("persona", "fatigueRecovery", recoveryDays);
-}
 
 async onStartDay(this: PC | NPCAlly) : Promise<string[]> {
   return this.checkEffectExpire( eff => eff.onStartDay());
-	// const ret = [] as string[];
-	// for (const eff of this.effects) {
-	// 	if (await eff.onStartDay())
-	// 	{ret.push(`Removed Condition ${eff.displayedName} at start of day.`);}
-	// }
-	// return ret;
 }
 
 async onEndSocialTurn(this: PC) : Promise<string[]> {
   return this.checkEffectExpire( eff => eff.onEndSocialTurn());
-
-	// const ret = [] as string[];
-	// for (const eff of this.effects) {
-	// 	if (await eff.onEndSocialTurn())
-	// 	{ret.push(`Removed Condition ${eff.displayedName} at end of social turn`);}
-	// }
-	// return ret;
 }
 
 async onEndCombat(this: ValidAttackers) : Promise<string[]> {
   return this.checkEffectExpire( eff => eff.onEndCombat());
-	// for (const eff of this.effects) {
-	// 	await eff.onEndCombat();
-	// }
 }
 
 encounterSizeValue() : number {
-	let val = 1;
-	if (!this.isValidCombatant()) {return 0;}
-	const sit : Situation = {
-		user: this.accessor,
-	};
-	const mult = this.persona().getBonuses("encounter-size-multiplier").total(sit, "percentage");
-	val *= mult;
-	if (this.isNewEnemy() && !this.hasRole("solo")) {val *= 1.2;}
-	return val;
+  let val = 1;
+  if (!this.isValidCombatant()) {return 0;}
+  const sit : Situation = {
+    user: this.accessor,
+  };
+  const mult = this.persona().getBonuses("encounter-size-multiplier").total(sit, "percentage");
+  val *= mult;
+  if (this.isNewEnemy() && !this.hasRole("solo")) {val *= 1.2;}
+  return val;
 }
 
 isNewEnemy(): boolean {
@@ -4116,12 +4094,6 @@ async onRoll(situation: SituationTypes.Roll) {
     user: this.accessor,
     triggeringCharacter: this.accessor,
     trigger: "on-roll",
-    // rollTags: situation.rollTags,
-    // naturalRoll: situation.naturalRoll,
-    // rollTotal: situation.rollTotal,
-    // addedTags: situation.rollTags,
-    // DC: undefined,
-    // triggeringUser: game.user,
   } as const;
   await TriggeredEffect.autoApplyTrigger(rollSituation, this);
 }
@@ -4138,6 +4110,10 @@ async onCalendarAdvance() : Promise<string[]> {
   );
   if (this.isPC() && this.farming) {
     arr.push(...await this.farming.advanceCrops(1));
+  }
+  if (this.isNPCAlly()) {
+    await this.recoverFatigue();
+
   }
   return arr;
 }
