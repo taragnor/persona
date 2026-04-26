@@ -369,7 +369,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
     if (PersonaSettings.debugMode()){
       console.log(roll);
     }
-    await roll.toModifiedMessage(false);
+    await roll.toModifiedMessage( PersonaSettings.debugMode() ? true : false);
   }
 
 	async levelUp(_event: Event) {

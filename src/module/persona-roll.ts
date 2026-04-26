@@ -100,35 +100,12 @@ export class PersonaRoller {
     const mods = await this.#compileModifiers(options, baseMods, socialMods);
     const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
     const rollName = skillName;
-    const resultFn = (DC: number, total:number) => {
-      if (total >= DC + 10) {
-        return "crit";
-      }
-      if (total >= DC) {
-        return "hit";
-      }
-      return "miss";
-    };
+    const resultFn = (DC: number, total:number) =>
+      total >= DC +10 ? "crit"
+      : total >= DC ? "hit"
+      : "miss"
+    ;
     const bundle = await this.#makeRoll(rollName, mods, situation, DC, resultFn);
-    // const resSit = bundle.resultSituation;
-    // let result : SituationTypes.Roll["result"] = "miss";
-    // if (DC != undefined) {
-    //   if (resSit.rollTotal >= DC) {
-    //     result = "hit";
-    //   }
-    //   if (resSit.rollTotal >= DC + 10) {
-    //     result = "crit";
-    //   }
-    // }
-    // resSit["result"] = result;
-    ////@ts-expect-error adding prop to situation
-    // resSit["usedSkill"] = socialStat;
-    // const sitFilledIn = {
-    //   ...resSit,
-    //   result,
-    //   usedSkill: socialStat,
-    // };
-    // await pc.onRoll(resSit);
     return bundle;
   }
 
@@ -151,24 +128,6 @@ export class PersonaRoller {
     const difficultyTxt = DC == 11 ? "normal" : DC == 16 ? "hard" : DC == 6 ? "easy" : "unknown difficulty";
     const labelTxt = `Saving Throw (${label ? label + " " + difficultyTxt : ""})`;
     const bundle = await this.#makeRoll(labelTxt, mods, situation, DC);
-    // const resSit = bundle.resultSituation;
-    // let result : "miss" | "hit" = "miss";
-    //if (DC != undefined) {
-    //  if (resSit.rollTotal >= DC) {
-    //    result = "hit";
-    //  }
-    //  // resSit.hit = resSit.rollTotal >= DC;
-    //  // resSit.criticalHit = false;
-    //}
-    //resSit["result"] = result;
-    ////@ts-expect-error adding prop to situation
-    //resSit["saveVersus"] = options.saveVersus ?? null;
-    //const filledInRes = {
-    //  ...resSit,
-    //  result,
-    //  saveVersus: options.saveVersus ?? null,
-    //};
-    // await actor.onRoll(filledInRes);
     return bundle;
   }
 

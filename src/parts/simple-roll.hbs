@@ -34,14 +34,13 @@
 		<div class="result">
 			{{#if (eq roll.result "critical")}}
 			CRITICAL
-			{{else}}
+      {{/if}}
 			{{#if (eq roll.result "hit")}}
 			SUCCESS
-			{{else}}
+      {{/if}}
+			{{#if (eq roll.result "miss")}}
 			FAIL
 			{{/if}}
-			{{/if}}
-
 		</div>
 		{{/if}}
 	</div>

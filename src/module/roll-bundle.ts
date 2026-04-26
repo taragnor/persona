@@ -54,7 +54,7 @@ export class RollBundle extends RollBundleBase {
   resolve() : ResolvedRollBundle {
     const name = typeof this.name == "function" ? this.name(this): this.name;
     const resolved = this.resolveMods();
-    const total = this.roll.total + resolved.modtotal;
+    const total = resolved.modtotal;
     const situation = this.generateResolvedSituation(this.modList.situation, total);
     return new ResolvedRollBundle(name, this.roll, this._playerRoll, resolved, situation);
   }
@@ -73,12 +73,12 @@ export class RollBundle extends RollBundleBase {
       } satisfies ResolvedRollBundle["modList"];
       return resolved;
     } else {
-      const resolved = mods.eval(situation);
+      const resCalc = mods.eval(situation);
       const resolvedMods = {
-        modtotal: resolved.total,
-        mods: resolved.steps,
+        modtotal: resCalc.total,
+        mods: resCalc.steps,
         actor: situation.user,
-        resolvedSituation: this.generateResolvedSituation(situation, resolved.total),
+        resolvedSituation: this.generateResolvedSituation(situation, resCalc.total),
       } satisfies ResolvedRollBundle["modList"];
       return resolvedMods;
     }
@@ -93,20 +93,21 @@ export class RollBundle extends RollBundleBase {
     return this.DC(this);
   }
 
-  private generateResolvedSituation(situation: SituationTypes.PreRoll, total: number) : SituationTypes.Roll {
+  private generateResolvedSituation(situation: SituationTypes.PreRoll, modTotal: number) : SituationTypes.Roll {
     if (situation.user) {
       const rollTags = checkSituationProp(situation, "rollTags") ? situation.rollTags : [];
       const addedTags = checkSituationProp(situation, "addedTags") ? situation.addedTags : [];
       const DC = this.resolveDC();
+      const trueTotal = this.roll.total + modTotal;
       const rollSituation = {
         ...situation,
         naturalRoll: this.roll.total,
         rollTags: rollTags,
         addedTags: addedTags,
-        rollTotal: this.roll.total + total,
+        rollTotal: trueTotal,
         user: situation.user,
         DC,
-        result: this.generateResult(DC, total),
+        result: this.generateResult(DC, trueTotal),
       } satisfies SituationTypes.Roll;
       return rollSituation;
     }
@@ -116,11 +117,10 @@ export class RollBundle extends RollBundleBase {
 
   generateResult(DC : number, total:number) : SituationTypes.Roll["result"] {
     if (this._resultFn) {return this._resultFn(DC, total, this );}
-    return DC < total ? "miss" : "hit";
+    return total >= DC ? "hit" : "miss";
   }
 
 }
-
 
 export class ResolvedRollBundle extends RollBundleBase {
   declare name: string;
@@ -146,9 +146,6 @@ export class ResolvedRollBundle extends RollBundleBase {
   }
 
   async getHTML(showSuccess :boolean): Promise<string> {
-    if ("situation" in this.modList) {
-      throw new PersonaError("Mod List not resolved");
-    }
     if (this.DC == 0) {
       PersonaError.softFail("DC of 0 in roll", this);
       // debugger;
@@ -190,6 +187,10 @@ export class ResolvedRollBundle extends RollBundleBase {
 
   get critical(): boolean | undefined {
     return CombatEngine.isCrit(this.resultSituation);
+  }
+
+  get result() {
+    return this._resultSituation.result;
   }
 
   get total() : number {
