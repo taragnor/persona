@@ -9,105 +9,105 @@ import { BASIC_SHADOW_POWER_NAMES } from "../config/basic-powers.js";
 import {SocialEncounterCard} from "./social/social-card-executor.js";
 
 declare global {
-	interface HOOKS {
-		"DBrefresh": (db: PersonaDatabase) => unknown,
+  interface HOOKS {
+    "DBrefresh": (db: PersonaDatabase) => unknown,
       "DBLoaded": (db: PersonaDatabase) => unknown,
-	}
+  }
 }
 
 class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
-	#cache: PersonaDBCache;
-	failLog: Map<string, string>;
+  #cache: PersonaDBCache;
+  failLog: Map<string, string>;
 
-	constructor() {
-		super();
-		this.#resetCache();
-		this.failLog = new Map();
-	}
+  constructor() {
+    super();
+    this.#resetCache();
+    this.failLog = new Map();
+  }
 
-	#resetCache() : PersonaDBCache {
-		const newCache =  this.#cache = {
-			powers: undefined,
+  #resetCache() : PersonaDBCache {
+    const newCache =  this.#cache = {
+      powers: undefined,
       NPCs: undefined,
-			shadows: undefined,
-			socialLinks: undefined,
-			treasureItems: undefined,
-			tarot: undefined,
-			navigator: undefined,
-			pcs: undefined,
-			teammateSocialLink: undefined,
-			personalSocialLink: undefined,
-			NPCAllies: undefined,
-			sceneModifiers: undefined,
-			worldModifiers: undefined,
-			worldPassives: undefined,
-			worldDefensives: undefined,
-			tags: undefined,
-			tagInternalTag: undefined,
-			tagsArr: undefined,
+      shadows: undefined,
+      socialLinks: undefined,
+      treasureItems: undefined,
+      tarot: undefined,
+      navigator: undefined,
+      pcs: undefined,
+      teammateSocialLink: undefined,
+      personalSocialLink: undefined,
+      NPCAllies: undefined,
+      sceneModifiers: undefined,
+      worldModifiers: undefined,
+      worldPassives: undefined,
+      worldDefensives: undefined,
+      tags: undefined,
+      tagInternalTag: undefined,
+      tagsArr: undefined,
       tagNames: undefined,
-			enchantments: undefined,
-			classes: undefined,
-			possiblePersonas: undefined,
-			personaCompendium: undefined,
-			allUniversalModifierTypes: undefined,
-			roomModifiers: undefined,
-		};
-		Hooks.callAll("DBrefresh", this);
-		return newCache;
-	}
+      enchantments: undefined,
+      classes: undefined,
+      possiblePersonas: undefined,
+      personaCompendium: undefined,
+      allUniversalModifierTypes: undefined,
+      roomModifiers: undefined,
+    };
+    Hooks.callAll("DBrefresh", this);
+    return newCache;
+  }
 
-	override postLoadActions() {
-		this.#resetCache();
+  override postLoadActions() {
+    this.#resetCache();
     Hooks.callAll("DBLoaded", this);
-	}
+  }
 
-	clearCache() {
-		this.#resetCache();
-	}
+  clearCache() {
+    this.#resetCache();
+  }
 
-	override async onLoadPacks() {
-		await super.onLoadPacks();
-		this.#resetCache();
-	}
+  override async onLoadPacks() {
+    await super.onLoadPacks();
+    this.#resetCache();
+  }
 
-	onCreateActor(_actor :PersonaActor) {
-		this.#resetCache();
-	}
+  onCreateActor(_actor :PersonaActor) {
+    this.#resetCache();
+  }
 
-	onCreateItem(_item: PersonaItem) {
-		this.#resetCache();
-	}
+  onCreateItem(_item: PersonaItem) {
+    this.#resetCache();
+  }
 
-	getClassById(id: CClass["id"]): Option<CClass> {
-		const item = this.getItemById(id);
-		if (!item) {return null;}
-		if (item.system.type == "characterClass") {
-			return item as ItemSub<"characterClass">;
-		}
-		throw new Error("Id ${id} points towards invalid type");
-	}
+  getClassById(id: CClass["id"]): Option<CClass> {
+    const item = this.getItemById(id);
+    if (!item) {return null;}
+    if (item.system.type == "characterClass") {
+      return item as ItemSub<"characterClass">;
+    }
+    throw new Error("Id ${id} points towards invalid type");
+  }
 
-	getClassByName(name: string) : U<CClass> {
-		const classes=  this.classes();
-		return classes.find (x=> x.name == name);
-	}
+  getClassByName(name: string) : U<CClass> {
+    const classes=  this.classes();
+    return classes.find (x=> x.name == name);
+  }
 
 
-	async refreshCombatStats() {
-		for (const actor of this.allActors()) {
-			if (!actor.isValidCombatant()) {continue;}
-			if (actor.tarot == undefined) {continue;}
-			if (actor.isPC()) {continue;}
-			try {
-			await actor.basePersona.resetCombatStats(true);
-			} catch (e) {
-				console.error(`Problem resetting stats for ${actor.name} (${actor.id})`);
-				Debug(e);
-			}
-		}
-	}
+  async refreshCombatStats() {
+    for (const actor of this.allActors()) {
+      if (!actor.isValidCombatant()) {continue;}
+      if (actor.tarot == undefined) {continue;}
+      if (actor.isPC()) {continue;}
+      try {
+        await actor.basePersona.resetCombatStats(true);
+      } catch (e) {
+        console.error(`Problem resetting stats for ${actor.name} (${actor.id})`);
+        Debug(e);
+      }
+    }
+  }
 
   async refreshItemBases() {
     const tokenActors = game.scenes.contents
@@ -136,141 +136,141 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     return nullItems;
   }
 
-	getGlobalDefensives(): readonly UniversalModifier [] {
-		if (this.#cache.worldDefensives == undefined) {
-		this.#cache.worldDefensives = this.getGlobalModifiers()
-				.filter(um=> um.hasDefensiveEffects(null));
-		}
-		return this.#cache.worldDefensives;
-	}
+  getGlobalDefensives(): readonly UniversalModifier [] {
+    if (this.#cache.worldDefensives == undefined) {
+      this.#cache.worldDefensives = this.getGlobalModifiers()
+        .filter(um=> um.hasDefensiveEffects(null));
+    }
+    return this.#cache.worldDefensives;
+  }
 
-	getGlobalPassives() : readonly UniversalModifier [] {
-		if (this.#cache.worldPassives == undefined) {
-		this.#cache.worldPassives = this.getGlobalModifiers()
-				.filter(um=> um.hasPassiveEffects(null));
-		}
-		return this.#cache.worldPassives;
-	}
+  getGlobalPassives() : readonly UniversalModifier [] {
+    if (this.#cache.worldPassives == undefined) {
+      this.#cache.worldPassives = this.getGlobalModifiers()
+        .filter(um=> um.hasPassiveEffects(null));
+    }
+    return this.#cache.worldPassives;
+  }
 
-	getGlobalModifiers() : readonly UniversalModifier [] {
-		if (this.#cache.worldModifiers == undefined) {
-		const UMs = this.allUniversalModifierTypes();
-		this.#cache.worldModifiers = UMs.filter(um=> um.system.scope == "global");
-		}
-		return this.#cache.worldModifiers;
-	}
+  getGlobalModifiers() : readonly UniversalModifier [] {
+    if (this.#cache.worldModifiers == undefined) {
+      const UMs = this.allUniversalModifierTypes();
+      this.#cache.worldModifiers = UMs.filter(um=> um.system.scope == "global");
+    }
+    return this.#cache.worldModifiers;
+  }
 
-	getRoomModifiers() : readonly UniversalModifier [] {
-		if (this.#cache.roomModifiers == undefined) {
-		const UMs = this.allUniversalModifierTypes();
-		this.#cache.roomModifiers = UMs
-			.filter(um=> um.system.scope == "room")
-			.sort ( (a,b) => a.name.localeCompare(b.name));
-		}
-		return this.#cache.roomModifiers;
-	}
+  getRoomModifiers() : readonly UniversalModifier [] {
+    if (this.#cache.roomModifiers == undefined) {
+      const UMs = this.allUniversalModifierTypes();
+      this.#cache.roomModifiers = UMs
+        .filter(um=> um.system.scope == "room")
+        .sort ( (a,b) => a.name.localeCompare(b.name));
+    }
+    return this.#cache.roomModifiers;
+  }
 
-	allUniversalModifierTypes() : readonly UniversalModifier[] {
-		if (!this.isLoaded) {
-			throw new PersonaError("Trying to access universl mods before PersonaDB is loaded");
-		}
-		if (this.#cache.allUniversalModifierTypes == undefined) {
-		const items = this.getAllByType("Item") as PersonaItem[];
-		const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
-			this.#cache.allUniversalModifierTypes = UMs;
-		}
-		return this.#cache.allUniversalModifierTypes;
-	}
+  allUniversalModifierTypes() : readonly UniversalModifier[] {
+    if (!this.isLoaded) {
+      throw new PersonaError("Trying to access universl mods before PersonaDB is loaded");
+    }
+    if (this.#cache.allUniversalModifierTypes == undefined) {
+      const items = this.getAllByType("Item") as PersonaItem[];
+      const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
+      this.#cache.allUniversalModifierTypes = UMs;
+    }
+    return this.#cache.allUniversalModifierTypes;
+  }
 
-	getSceneModifiers() : readonly UniversalModifier [] {
-		if (this.#cache.sceneModifiers == undefined) {
-		const UMs = this.allUniversalModifierTypes();
-			this.#cache.sceneModifiers = UMs
-			.filter(um=> um.system.scope == "scene")
-			.sort ( (a,b) => a.name.localeCompare(b.name));
-		}
-		return this.#cache.sceneModifiers;
-	}
+  getSceneModifiers() : readonly UniversalModifier [] {
+    if (this.#cache.sceneModifiers == undefined) {
+      const UMs = this.allUniversalModifierTypes();
+      this.#cache.sceneModifiers = UMs
+        .filter(um=> um.system.scope == "scene")
+        .sort ( (a,b) => a.name.localeCompare(b.name));
+    }
+    return this.#cache.sceneModifiers;
+  }
 
-	getSceneAndRoomModifiers() : readonly UniversalModifier[] {
-		return [
-			... this.getRoomModifiers(),
-			... this.getSceneModifiers()
-		] .sort ( (a,b) => a.name.localeCompare(b.name));
-		// const items = this.getAllByType("Item") as PersonaItem[];
-		// const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
-		// return UMs
-		// 	.filter(um=> um.system.scope == "scene" || um.system.scope == "room")
-		// 	.sort ( (a,b) => a.name.localeCompare(b.name));
-	}
+  getSceneAndRoomModifiers() : readonly UniversalModifier[] {
+    return [
+      ... this.getRoomModifiers(),
+      ... this.getSceneModifiers()
+    ] .sort ( (a,b) => a.name.localeCompare(b.name));
+    // const items = this.getAllByType("Item") as PersonaItem[];
+    // const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
+    // return UMs
+    // 	.filter(um=> um.system.scope == "scene" || um.system.scope == "room")
+    // 	.sort ( (a,b) => a.name.localeCompare(b.name));
+  }
 
 
-	allPowersArr(): readonly Power[] {
-		return Array.from(this.allPowers().values());
-	}
+  allPowersArr(): readonly Power[] {
+    return Array.from(this.allPowers().values());
+  }
 
-	allTalents(): readonly Talent[] {
-		return this.allItems().filter( x=> x.isTalent());
-	}
+  allTalents(): readonly Talent[] {
+    return this.allItems().filter( x=> x.isTalent());
+  }
 
-	allPowers() : Map<string, Power> {
-		if (this.#cache.powers) {return this.#cache.powers;}
-		// const items = this.allItems();
-		// return this.#cache.powers =
-		const items = this.allItems()
-			.filter( x=> x.system.type == "power")
-			.map( pwr => [pwr.id, pwr]) as [Power["id"], Power][];
-		return this.#cache.powers = new Map(items);
-	}
+  allPowers() : Map<string, Power> {
+    if (this.#cache.powers) {return this.#cache.powers;}
+    // const items = this.allItems();
+    // return this.#cache.powers =
+    const items = this.allItems()
+    .filter( x=> x.system.type == "power")
+    .map( pwr => [pwr.id, pwr]) as [Power["id"], Power][];
+    return this.#cache.powers = new Map(items);
+  }
 
-	getBasicPower( name: typeof BASIC_SHADOW_POWER_NAMES[number] | typeof BASIC_PC_POWER_NAMES[number]) : Power | undefined {
-		const power = PersonaDB.getItemByName(name) as Power | undefined;
-		if (!power && !this.failLog.has(name))  {
-			const msg =`Can't get basic power ${name}`;
-			this.failLog.set(name, msg);
-			PersonaError.softFail(msg);
-		}
-		return power;
-	}
+  getBasicPower( name: typeof BASIC_SHADOW_POWER_NAMES[number] | typeof BASIC_PC_POWER_NAMES[number]) : Power | undefined {
+    const power = PersonaDB.getItemByName(name) as Power | undefined;
+    if (!power && !this.failLog.has(name))  {
+      const msg =`Can't get basic power ${name}`;
+      this.failLog.set(name, msg);
+      PersonaError.softFail(msg);
+    }
+    return power;
+  }
 
-	shadows(): readonly Shadow[] {
-		if (this.#cache.shadows) {return this.#cache.shadows;}
-		const actors = this.allActors();
-		return this.#cache.shadows = actors
-			.filter( act=> act.isShadow());
-	}
+  shadows(): readonly Shadow[] {
+    if (this.#cache.shadows) {return this.#cache.shadows;}
+    const actors = this.allActors();
+    return this.#cache.shadows = actors
+      .filter( act=> act.isShadow());
+  }
 
-	tarotCards(): readonly Tarot[] {
-		if (this.#cache.tarot) {return this.#cache.tarot;}
-		const actors = this.allActors();
-		return this.#cache.tarot = actors
-			.filter( actor=> actor.isTarot())
-			.sort((a,b) => a.system.sortOrder - b.system.sortOrder);
+  tarotCards(): readonly Tarot[] {
+    if (this.#cache.tarot) {return this.#cache.tarot;}
+    const actors = this.allActors();
+    return this.#cache.tarot = actors
+      .filter( actor=> actor.isTarot())
+      .sort((a,b) => a.system.sortOrder - b.system.sortOrder);
 
-	}
+  }
 
-	getSocialLinkByTarot(tarotCardNameOrId: TarotCard | (Tarot["id"] & {})) : U<NPC | PC> {
-		return this.socialLinks()
-		.find( x=> x.tarot
-			&& (
-				x.tarot.name == tarotCardNameOrId
-				|| x.tarot.id == tarotCardNameOrId
-			)
-		);
-	}
+  getSocialLinkByTarot(tarotCardNameOrId: TarotCard | (Tarot["id"] & {})) : U<NPC | PC> {
+    return this.socialLinks()
+    .find( x=> x.tarot
+      && (
+        x.tarot.name == tarotCardNameOrId
+        || x.tarot.id == tarotCardNameOrId
+      )
+    );
+  }
 
-	treasureItems(): readonly TreasureItem[] {
-		if (this.#cache.treasureItems) {return this.#cache.treasureItems;}
-		const items = this.allItems();
-		this.#cache.treasureItems = items
-			.filter ( item =>
-				item.system.type == "weapon"
-				|| item.system.type == "consumable"
-				|| item.system.type == "item"
-			)
-			.filter( (x : TreasureItem)=> !x.hasTag("key-item", null) && !x.hasTag("mundane", null)) as TreasureItem[];
-		return this.#cache.treasureItems;
-	}
+  treasureItems(): readonly TreasureItem[] {
+    if (this.#cache.treasureItems) {return this.#cache.treasureItems;}
+    const items = this.allItems();
+    this.#cache.treasureItems = items
+      .filter ( item =>
+        item.system.type == "weapon"
+        || item.system.type == "consumable"
+        || item.system.type == "item"
+      )
+      .filter( (x : TreasureItem)=> !x.hasTag("key-item", null) && !x.hasTag("mundane", null)) as TreasureItem[];
+    return this.#cache.treasureItems;
+  }
 
   craftableItems() : readonly TreasureItem[] {
     return this.treasureItems()
@@ -284,66 +284,66 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     return actor?.isPC() ? actor : undefined;
   }
 
-	dungeonScenes(): readonly Scene[] {
-		return game.scenes.contents;
-	}
+  dungeonScenes(): readonly Scene[] {
+    return game.scenes.contents;
+  }
 
-	allSocialCards() :readonly SocialCard[] {
-		return this.allItems()
-			.filter( x=> x.system.type == "socialCard") as SocialCard[];
-	}
+  allSocialCards() :readonly SocialCard[] {
+    return this.allItems()
+      .filter( x=> x.system.type == "socialCard") as SocialCard[];
+  }
 
-	tagsOfCategory(cat: MaybeArray<Tag["system"]["tagType"]>) : Tag[] {
-		if (typeof cat == "string") {
-			cat  = [cat];
-		}
-		return this.tagsArr().filter( x=> cat.includes(x.system.tagType));
-	}
+  tagsOfCategory(cat: MaybeArray<Tag["system"]["tagType"]>) : Tag[] {
+    if (typeof cat == "string") {
+      cat  = [cat];
+    }
+    return this.tagsArr().filter( x=> cat.includes(x.system.tagType));
+  }
 
-	 tagsOfCategoryLoc(cat: MaybeArray<Tag["system"]["tagType"]>): Record<Tag["id"], Tag["name"]> {
-			const tags = this.tagsOfCategory(cat);
-			return Object.fromEntries(
-				 tags
-				 .sort( (a,b) => a.name.localeCompare(b.name))
-				 .map( tag => [tag.id, tag.name])
-			);
-	 }
+  tagsOfCategoryLoc(cat: MaybeArray<Tag["system"]["tagType"]>): Record<Tag["id"], Tag["name"]> {
+    const tags = this.tagsOfCategory(cat);
+    return Object.fromEntries(
+      tags
+      .sort( (a,b) => a.name.localeCompare(b.name))
+      .map( tag => [tag.id, tag.name])
+    );
+  }
 
-	createMergedTagLocList(cat: MaybeArray<Tag["system"]["tagType"]>, originalLocObject: Record<string, string>) : Record<string, string> {
-		const tags = this.tagsOfCategory(cat);
-		const locListEntries = Object.entries(originalLocObject)
-		.filter( ([tagName,_locString]) => {
-			return !tags.some( tag => tagName != "" && tag.system.linkedInternalTag == tagName);
-		});
-		const locObj = {
-			...Object.fromEntries(locListEntries),
-			...this.tagsOfCategoryLoc(cat),
-		};
-		return this.sortLocalizationObject(locObj);
-	}
+  createMergedTagLocList(cat: MaybeArray<Tag["system"]["tagType"]>, originalLocObject: Record<string, string>) : Record<string, string> {
+    const tags = this.tagsOfCategory(cat);
+    const locListEntries = Object.entries(originalLocObject)
+    .filter( ([tagName,_locString]) => {
+      return !tags.some( tag => tagName != "" && tag.system.linkedInternalTag == tagName);
+    });
+    const locObj = {
+      ...Object.fromEntries(locListEntries),
+      ...this.tagsOfCategoryLoc(cat),
+    };
+    return this.sortLocalizationObject(locObj);
+  }
 
-	tagsArr(): Tag[] {
-		if (this.#cache.tagsArr != undefined) {return this.#cache.tagsArr;}
-		const tags= this.allItems()
-		.filter (x=> x.isTag());
-		return this.#cache.tagsArr = tags;
-	}
+  tagsArr(): Tag[] {
+    if (this.#cache.tagsArr != undefined) {return this.#cache.tagsArr;}
+    const tags= this.allItems()
+      .filter (x=> x.isTag());
+    return this.#cache.tagsArr = tags;
+  }
 
-	allTags() :  Map<Tag["id"],Tag> {
-		if (!PersonaDB.isLoaded) {throw new PersonaError("DB not loaded yet");}
-		if (this.#cache.tags) {return this.#cache.tags;}
-		const tags= this.tagsArr()
-		.map( tag=> [tag.id, tag] as [Tag["id"], Tag]);
-		return this.#cache.tags = new Map(tags);
-	}
+  allTags() :  Map<Tag["id"],Tag> {
+    if (!PersonaDB.isLoaded) {throw new PersonaError("DB not loaded yet");}
+    if (this.#cache.tags) {return this.#cache.tags;}
+    const tags= this.tagsArr()
+    .map( tag=> [tag.id, tag] as [Tag["id"], Tag]);
+    return this.#cache.tags = new Map(tags);
+  }
 
-	enchantments() : Tag[] {
-		if (this.#cache.enchantments) {return this.#cache.enchantments;}
-		const tags= this.allItems()
-			.filter (x=> x.isTag())
-			.filter(tag=> tag.isEnchantmentTag());
-		return this.#cache.enchantments = tags;
-	}
+  enchantments() : Tag[] {
+    if (this.#cache.enchantments) {return this.#cache.enchantments;}
+    const tags= this.allItems()
+      .filter (x=> x.isTag())
+      .filter(tag=> tag.isEnchantmentTag());
+    return this.#cache.enchantments = tags;
+  }
 
   PCsAndAllies() : (PC | NPCAlly) [] {
     return [
@@ -352,30 +352,30 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     ];
   }
 
-	allTagLinks() : Map<Tag["system"]["linkedInternalTag"], Tag> {
-		if (this.#cache.tagInternalTag) {return this.#cache.tagInternalTag;}
-		const tags= this.tagsArr()
-		.filter (x=> x.system.linkedInternalTag)
-		.map( tag => [tag.system.linkedInternalTag, tag] as [string, Tag]);
-		return this.#cache.tagInternalTag = new Map(tags);
-	}
+  allTagLinks() : Map<Tag["system"]["linkedInternalTag"], Tag> {
+    if (this.#cache.tagInternalTag) {return this.#cache.tagInternalTag;}
+    const tags= this.tagsArr()
+    .filter (x=> x.system.linkedInternalTag)
+    .map( tag => [tag.system.linkedInternalTag, tag] as [string, Tag]);
+    return this.#cache.tagInternalTag = new Map(tags);
+  }
 
-	allTagNames() : Map<Tag["system"]["linkedInternalTag"], Tag> {
-		if (this.#cache.tagNames) {return this.#cache.tagNames;}
-		const tags= this.tagsArr()
-		.map( tag => [tag.name, tag] as [string, Tag]);
-		return this.#cache.tagNames = new Map(tags);
-	}
+  allTagNames() : Map<Tag["system"]["linkedInternalTag"], Tag> {
+    if (this.#cache.tagNames) {return this.#cache.tagNames;}
+    const tags= this.tagsArr()
+    .map( tag => [tag.name, tag] as [string, Tag]);
+    return this.#cache.tagNames = new Map(tags);
+  }
 
-	socialEncounterCards(): readonly SocialEncounterCard[] {
-		return this.allSocialCards()
-			.filter( x=> x.system.cardType == "social") as SocialEncounterCard[];
-	}
+  socialEncounterCards(): readonly SocialEncounterCard[] {
+    return this.allSocialCards()
+      .filter( x=> x.system.cardType == "social") as SocialEncounterCard[];
+  }
 
-	/** Actual PCs not counting things with just PC type like item piles and party token*/
-	realPCs(): readonly  PC[] {
-		return this.PCs().filter( x=> x.isRealPC());
-	}
+  /** Actual PCs not counting things with just PC type like item piles and party token*/
+  realPCs(): readonly  PC[] {
+    return this.PCs().filter( x=> x.isRealPC());
+  }
 
   activePCParty() : readonly (PC | NPCAlly) [] {
     return [
@@ -384,47 +384,47 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     ].filter ( x=> x.inActiveParty);
   }
 
-	PCs() : readonly PC[] {
-		if (this.#cache.pcs) {return this.#cache.pcs;}
-		this.#cache.pcs=  this.allActors().filter( actor => actor.isPC() && actor.isRealPC()) as PC[];
-		return this.#cache.pcs;
-	}
+  PCs() : readonly PC[] {
+    if (this.#cache.pcs) {return this.#cache.pcs;}
+    this.#cache.pcs=  this.allActors().filter( actor => actor.isPC() && actor.isRealPC()) as PC[];
+    return this.#cache.pcs;
+  }
 
   allNPCs(): readonly NPC[] {
-		if (this.#cache.NPCs) {return this.#cache.NPCs;}
-		this.#cache.NPCs=  this.allActors().filter( actor => actor.isNPC());
-		return this.#cache.NPCs;
+    if (this.#cache.NPCs) {return this.#cache.NPCs;}
+    this.#cache.NPCs=  this.allActors().filter( actor => actor.isNPC());
+    return this.#cache.NPCs;
 
   }
 
-	allActivities(): readonly Activity[] {
-		return this.allSocialCards()
-			.filter( x=> (x.system.cardType !="social"));
-	}
+  allActivities(): readonly Activity[] {
+    return this.allSocialCards()
+      .filter( x=> (x.system.cardType !="social"));
+  }
 
   standardActionActivities(): readonly Activity[] {
-		return this.allActivities()
-			.filter( x=> (x.system.cardType == "job" || x.system.cardType =="training" || x.system.cardType == "recovery" || x.system.cardType == "other") );
+    return this.allActivities()
+      .filter( x=> (x.system.cardType == "job" || x.system.cardType =="training" || x.system.cardType == "recovery" || x.system.cardType == "other") );
   }
 
-	minorActionActivities() : SocialCard[] {
-		return this.allSocialCards()
-			.filter( card=> card.isMinorActionItem());
-	}
+  minorActionActivities() : SocialCard[] {
+    return this.allSocialCards()
+      .filter( card=> card.isMinorActionItem());
+  }
 
-	personalSocialLink(): NPC {
-		if (!this.#cache.personalSocialLink) {
-			this.#cache.personalSocialLink = this.getActorByName("Personal Social Link") as NPC;
-		}
-		return this.#cache.personalSocialLink;
-	}
+  personalSocialLink(): NPC {
+    if (!this.#cache.personalSocialLink) {
+      this.#cache.personalSocialLink = this.getActorByName("Personal Social Link") as NPC;
+    }
+    return this.#cache.personalSocialLink;
+  }
 
-	teammateSocialLink(): NPC {
-		if (!this.#cache.teammateSocialLink) {
-			this.#cache.teammateSocialLink =  PersonaDB.getActorByName("Teammate Social Link") as NPC;
-		}
-		return this.#cache.teammateSocialLink;
-	}
+  teammateSocialLink(): NPC {
+    if (!this.#cache.teammateSocialLink) {
+      this.#cache.teammateSocialLink =  PersonaDB.getActorByName("Teammate Social Link") as NPC;
+    }
+    return this.#cache.teammateSocialLink;
+  }
 
   socialLinks(): readonly (PC | NPC)[] {
     if (this.#cache.socialLinks) {return this.#cache.socialLinks;}
@@ -435,147 +435,147 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
       )
       .filter( actor => actor.tarot != undefined)
       .sort((a, b) => (a.tarot?.system.sortOrder ?? 99) - (b.tarot?.system.sortOrder ?? 99));
-	}
+  }
 
-	skillCards(): readonly SkillCard[] {
-		return this.allItems().filter( item => item.system.type == "skillCard") as SkillCard[];
-	}
+  skillCards(): readonly SkillCard[] {
+    return this.allItems().filter( item => item.system.type == "skillCard") as SkillCard[];
+  }
 
-	getPower(id: Power["id"]) : Power | undefined {
-		return this.getItemById(id) as Power | undefined;
-	}
+  getPower(id: Power["id"]) : Power | undefined {
+    return this.getItemById(id) as Power | undefined;
+  }
 
-	NPCAllies() : readonly NPCAlly[] {
-		if (this.#cache.NPCAllies == undefined) {
-			this.#cache.NPCAllies = this.allActors().filter( x=>
-				x.system.type == "npcAlly") as NPCAlly[];
-		}
-		return this.#cache.NPCAllies;
-	}
+  NPCAllies() : readonly NPCAlly[] {
+    if (this.#cache.NPCAllies == undefined) {
+      this.#cache.NPCAllies = this.allActors().filter( x=>
+        x.system.type == "npcAlly") as NPCAlly[];
+    }
+    return this.#cache.NPCAllies;
+  }
 
-	getAllStores(): TokenDocument<PersonaActor>[] {
-		if (!game.itempiles) {return [];}
-		const IP = game.itempiles.API;
-		return game.scenes.contents.flatMap( sc =>
-			sc.tokens
-			.filter(  (tok) => IP.isItemPileMerchant(tok))
-		) as TokenDocument<PersonaActor>[];
-	}
+  getAllStores(): TokenDocument<PersonaActor>[] {
+    if (!game.itempiles) {return [];}
+    const IP = game.itempiles.API;
+    return game.scenes.contents.flatMap( sc =>
+      sc.tokens
+      .filter(  (tok) => IP.isItemPileMerchant(tok))
+    ) as TokenDocument<PersonaActor>[];
+  }
 
-	stockableItems() : Carryable[] {
-		return game.items.filter ( (x: PersonaItem)=>
-			x.isCarryableType()
-			&& (x.system?.storeId?.length ?? 0) > 0
-			&& (x.system?.storeMax ?? 0) > 0
-		) as Carryable[];
-	}
+  stockableItems() : Carryable[] {
+    return game.items.filter ( (x: PersonaItem)=>
+      x.isCarryableType()
+      && (x.system?.storeId?.length ?? 0) > 0
+      && (x.system?.storeMax ?? 0) > 0
+    ) as Carryable[];
+  }
 
-	getNavigator() : NPCAlly | undefined {
-		if (!this.#cache.navigator) {
-			const navigator = this.NPCAllies().find( ally => ally.system.combat.isNavigator);
-			this.#cache.navigator = navigator;
-		}
-		return this.#cache.navigator;
-	}
+  getNavigator() : NPCAlly | undefined {
+    if (!this.#cache.navigator) {
+      const navigator = this.NPCAllies().find( ally => ally.system.combat.isNavigator);
+      this.#cache.navigator = navigator;
+    }
+    return this.#cache.navigator;
+  }
 
-	personaCompendium() : Shadow[] {
-		if (!this.#cache.personaCompendium) {
-		this.#cache.personaCompendium = this.allActors()
-			.filter ( x=> x.isShadow())
-			.filter( x=> x.isCompendiumEntry )
-			.sort( (a,b)=> a.name.localeCompare(b.name) );
-		}
-		return this.#cache.personaCompendium;
-	}
+  personaCompendium() : Shadow[] {
+    if (!this.#cache.personaCompendium) {
+      this.#cache.personaCompendium = this.allActors()
+        .filter ( x=> x.isShadow())
+        .filter( x=> x.isCompendiumEntry )
+        .sort( (a,b)=> a.name.localeCompare(b.name) );
+    }
+    return this.#cache.personaCompendium;
+  }
 
-	navigatorModifiers(): ModifierContainer[] {
-		const navigator = this.getNavigator();
-		if (!navigator) {return [];}
-		const skills = navigator.navigatorSkills
-			.filter(sk => sk.isPassive());
-		return skills as ModifierContainer[];
-	}
+  navigatorModifiers(): ModifierContainer[] {
+    const navigator = this.getNavigator();
+    if (!navigator) {return [];}
+    const skills = navigator.navigatorSkills
+      .filter(sk => sk.isPassive());
+    return skills as ModifierContainer[];
+  }
 
-	classes(): CClass[] {
-		if (!this.#cache.classes) {
-		this.#cache.classes = this.allItems().filter(item=> item.isCharacterClass());
-		}
-		return this.#cache.classes;
-	}
+  classes(): CClass[] {
+    if (!this.#cache.classes) {
+      this.#cache.classes = this.allItems().filter(item=> item.isCharacterClass());
+    }
+    return this.#cache.classes;
+  }
 
-	possiblePersonas() : Shadow[] {
-		if (this.#cache.possiblePersonas) {
-			return this.#cache.possiblePersonas;
-		}
-		const shadows = this.allActors()
-		.filter ( x=> x.isShadow()
-			&& !x.isPersona()
-			&& !x.isDMon()
-			&& x.persona().isEligibleToBecomeWildPersona()
-		) as Shadow[];
-		return this.#cache.possiblePersonas = shadows;
-	}
+  possiblePersonas() : Shadow[] {
+    if (this.#cache.possiblePersonas) {
+      return this.#cache.possiblePersonas;
+    }
+    const shadows = this.allActors()
+      .filter ( x=> x.isShadow()
+        && !x.isPersona()
+        && !x.isDMon()
+        && x.persona().isEligibleToBecomeWildPersona()
+      ) as Shadow[];
+    return this.#cache.possiblePersonas = shadows;
+  }
 
-	possiblePersonasByStartingLevel(min: number, max: number, fusableOnly = false) : Shadow[] {
-		return this.possiblePersonas().filter (x=>
-			x.startingLevel >= min
-			&& x.startingLevel <= max
-			&& (!fusableOnly || x.basePersona.isFusable())
-		);
-	}
+  possiblePersonasByStartingLevel(min: number, max: number, fusableOnly = false) : Shadow[] {
+    return this.possiblePersonas().filter (x=>
+      x.startingLevel >= min
+      && x.startingLevel <= max
+      && (!fusableOnly || x.basePersona.isFusable())
+    );
+  }
 
-	PersonaableShadowsOfArcana(min: number, max: number, fuseableOnly= false) : Partial<Record<TarotCard, Shadow[]>> {
-		const shadows = this.possiblePersonasByStartingLevel(min, max, fuseableOnly)
-		.sort( (a,b) => (b.tarot?.displayedName ?? "").localeCompare(a.tarot?.displayedName ?? ""));
-		const tarotList = {} as Partial<Record<TarotCard, Shadow[]>>;
-		for (const tarot of Object.keys(TAROT_DECK)) {
-			tarotList[tarot as TarotCard] = shadows.filter(sh => sh.isShadow() && sh.tarot?.name == tarot);
-		}
-		return tarotList;
-	}
+  PersonaableShadowsOfArcana(min: number, max: number, fuseableOnly= false) : Partial<Record<TarotCard, Shadow[]>> {
+    const shadows = this.possiblePersonasByStartingLevel(min, max, fuseableOnly)
+    .sort( (a,b) => (b.tarot?.displayedName ?? "").localeCompare(a.tarot?.displayedName ?? ""));
+    const tarotList = {} as Partial<Record<TarotCard, Shadow[]>>;
+    for (const tarot of Object.keys(TAROT_DECK)) {
+      tarotList[tarot as TarotCard] = shadows.filter(sh => sh.isShadow() && sh.tarot?.name == tarot);
+    }
+    return tarotList;
+  }
 
 
-	averagePCLevel(): number {
-		const pcs = game.actors
-			.filter( (x: PersonaActor)=> x.isRealPC() && x.hasPlayerOwner);
-		const totalLevels = pcs.reduce ((acc, i : PC) => acc + i.system.personaleLevel, 0 );
-		const avgLevel = Math.round(totalLevels/ pcs.length);
-		return avgLevel;
-	}
+  averagePCLevel(): number {
+    const pcs = game.actors
+      .filter( (x: PersonaActor)=> x.isRealPC() && x.hasPlayerOwner);
+    const totalLevels = pcs.reduce ((acc, i : PC) => acc + i.system.personaleLevel, 0 );
+    const avgLevel = Math.round(totalLevels/ pcs.length);
+    return avgLevel;
+  }
 
-	shadowAmbush() : U<UniversalModifier> {
-		const name = "Ambush (Enemy Advantage)";
-		const item =  this.getItemByName(name);
-		if (item && item.isUniversalModifier()) {
-			return item;
-		}
-		PersonaError.softFail(`Can't find Universal Modifier named ${name}`);
-		return undefined;
-	}
+  shadowAmbush() : U<UniversalModifier> {
+    const name = "Ambush (Enemy Advantage)";
+    const item =  this.getItemByName(name);
+    if (item && item.isUniversalModifier()) {
+      return item;
+    }
+    PersonaError.softFail(`Can't find Universal Modifier named ${name}`);
+    return undefined;
+  }
 
-	PCAmbush() : U<UniversalModifier> {
-		const name  = "Ambush (PC Advantage)";
-		const item =  this.getItemByName(name);
-		if (item && item.isUniversalModifier()) {
-			return item;
-		}
-		PersonaError.softFail(`Can't find Universal Modifier named ${name}`);
-		return undefined;
-	}
+  PCAmbush() : U<UniversalModifier> {
+    const name  = "Ambush (PC Advantage)";
+    const item =  this.getItemByName(name);
+    if (item && item.isUniversalModifier()) {
+      return item;
+    }
+    PersonaError.softFail(`Can't find Universal Modifier named ${name}`);
+    return undefined;
+  }
 
-	async recalcShadowStatMods() {
-		const promises= [...this.shadows(), ...this.NPCAllies()]
-			.map (x=> x.basePersona)
-			.filter( p=> p.canAutoSpendStatPoints())
-			.map( p=> p.resetCombatStats(true));
-		return await Promise.allSettled(promises);
-	}
+  async recalcShadowStatMods() {
+    const promises= [...this.shadows(), ...this.NPCAllies()]
+      .map (x=> x.basePersona)
+      .filter( p=> p.canAutoSpendStatPoints())
+      .map( p=> p.resetCombatStats(true));
+    return await Promise.allSettled(promises);
+  }
 
-	// PCParty() : (PC | NPCAlly)[] {
-	// 	return game.scenes.active.tokens.contents
-	// 		.map( x=> x.actor as PersonaActor)
-	// 		.filter( actor=> actor && (actor.isPC() || actor.isNPCAlly()));
-	// }
+  // PCParty() : (PC | NPCAlly)[] {
+  // 	return game.scenes.active.tokens.contents
+  // 		.map( x=> x.actor as PersonaActor)
+  // 		.filter( actor=> actor && (actor.isPC() || actor.isNPCAlly()));
+  // }
 
 }
 
@@ -585,38 +585,38 @@ export const PersonaDB = new PersonaDatabase();
 window.PersonaDB = PersonaDB;
 
 Hooks.on("createItem", (item: PersonaItem) => {
-	PersonaDB.onCreateItem(item);
+  PersonaDB.onCreateItem(item);
 });
 
 Hooks.on("createActor", (actor : PersonaActor) => {
-	PersonaDB.onCreateActor(actor);
+  PersonaDB.onCreateActor(actor);
 });
 
 type PersonaDBCache =	{
-	powers: Map<Power["id"], Power> | undefined,
-	shadows: Shadow[] | undefined;
-	socialLinks: (PC | NPC)[] | undefined;
-	treasureItems: TreasureItem[] | undefined;
-	tarot: Tarot[] | undefined;
-	navigator: NPCAlly | undefined;
-	enchantments: U<Tag[]>;
-	pcs: PC[] | undefined;
+  powers: Map<Power["id"], Power> | undefined,
+  shadows: Shadow[] | undefined;
+  socialLinks: (PC | NPC)[] | undefined;
+  treasureItems: TreasureItem[] | undefined;
+  tarot: Tarot[] | undefined;
+  navigator: NPCAlly | undefined;
+  enchantments: U<Tag[]>;
+  pcs: PC[] | undefined;
   NPCs: NPC[] | undefined;
-	teammateSocialLink: NPC | undefined;
-	personalSocialLink: NPC | undefined;
-	NPCAllies: U<NPCAlly[]>;
-	sceneModifiers: U<UniversalModifier[]>;
-	roomModifiers: U<UniversalModifier[]>;
-	worldModifiers: U<UniversalModifier[]>;
-	worldPassives: U<UniversalModifier[]>;
-	worldDefensives: U<UniversalModifier[]>;
-	allUniversalModifierTypes: U<UniversalModifier[]>;
-	tags: U<Map<Tag["id"], Tag>>;
-	tagInternalTag: U<Map<Tag["system"]["linkedInternalTag"], Tag>>;
-	tagNames: U<Map<Tag["name"], Tag>>;
-	tagsArr: U<Tag[]>;
-	classes: U<CClass[]>;
-	possiblePersonas: U<Shadow[]>;
-	personaCompendium: U<Shadow[]>;
+  teammateSocialLink: NPC | undefined;
+  personalSocialLink: NPC | undefined;
+  NPCAllies: U<NPCAlly[]>;
+  sceneModifiers: U<UniversalModifier[]>;
+  roomModifiers: U<UniversalModifier[]>;
+  worldModifiers: U<UniversalModifier[]>;
+  worldPassives: U<UniversalModifier[]>;
+  worldDefensives: U<UniversalModifier[]>;
+  allUniversalModifierTypes: U<UniversalModifier[]>;
+  tags: U<Map<Tag["id"], Tag>>;
+  tagInternalTag: U<Map<Tag["system"]["linkedInternalTag"], Tag>>;
+  tagNames: U<Map<Tag["name"], Tag>>;
+  tagsArr: U<Tag[]>;
+  classes: U<CClass[]>;
+  possiblePersonas: U<Shadow[]>;
+  personaCompendium: U<Shadow[]>;
 };
 

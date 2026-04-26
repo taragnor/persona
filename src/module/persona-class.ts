@@ -1056,38 +1056,38 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   canUsePower_getIneligibilityReason (usable: UsableAndCard) : N<string> {
     const msg =
-      this._consumableCheck(usable)
-      || this._explorationCheck(usable)
-      || this._combatTypeCheck(usable)
-      || this._downtimeUsageCheck(usable)
-      || this._powerInhibitingStatusCheck(usable)
-      || this._powerTooStrong(usable)
-      || this._deadCheck(usable)
-      || this._isTrulyUsable(usable)
-      || this._canPayActivationCostCheck(usable)
-      || this._checkConditionals(usable)
-      || this._checkTeamworkMove(usable)
-      || this._checkCooldown(usable)
-      || this._pauseCheck()
+    this._consumableCheck(usable)
+    || this._explorationCheck(usable)
+    || this._combatTypeCheck(usable)
+    || this._downtimeUsageCheck(usable)
+    || this._powerInhibitingStatusCheck(usable)
+    || this._powerTooStrong(usable)
+    || this._deadCheck(usable)
+    || this._isTrulyUsable(usable)
+    || this._canPayActivationCostCheck(usable)
+    || this._checkConditionals(usable)
+    || this._checkTeamworkMove(usable)
+    || this._checkCooldown(usable)
+    || this._pauseCheck()
     ;
     return msg;
   }
 
   canUsePower (usable: UsableAndCard, outputReason: boolean) : boolean {
     const msg = this.canUsePower_getIneligibilityReason(usable);
-      // this._consumableCheck(usable)
-      // || this._explorationCheck(usable)
-      // || this._combatTypeCheck(usable)
-      // || this._downtimeUsageCheck(usable)
-      // || this._powerInhibitingStatusCheck(usable)
-      // || this._powerTooStrong(usable)
-      // || this._deadCheck(usable)
-      // || this._isTrulyUsable(usable)
-      // || this._canPayActivationCostCheck(usable)
-      // || this._checkConditionals(usable)
-      // || this._checkTeamworkMove(usable)
-      // || this._checkCooldown(usable)
-      // || this._pauseCheck()
+    // this._consumableCheck(usable)
+    // || this._explorationCheck(usable)
+    // || this._combatTypeCheck(usable)
+    // || this._downtimeUsageCheck(usable)
+    // || this._powerInhibitingStatusCheck(usable)
+    // || this._powerTooStrong(usable)
+    // || this._deadCheck(usable)
+    // || this._isTrulyUsable(usable)
+    // || this._canPayActivationCostCheck(usable)
+    // || this._checkConditionals(usable)
+    // || this._checkTeamworkMove(usable)
+    // || this._checkCooldown(usable)
+    // || this._pauseCheck()
     // ;
     if (msg === null) {return true;}
     if (outputReason) {
@@ -1097,7 +1097,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   private _pauseCheck() : N<FailReason> {
-		if (game.paused && !game.user.isGM) {
+    if (game.paused && !game.user.isGM) {
       return "Game is Paused";
     }
     return null;
@@ -1372,40 +1372,40 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   //   return extraTags;
   // }
 
-    // private _autoTags() : PersonaTag[] {
-    // const autoPTags :PersonaTag[]= [];
-    // if (this.source.isPC() || this.source.isNPCAlly()){
-    //   autoPTags.pushUnique("persona");
-    // }
-    // if (this.user.isUsingMetaPod()) {
-    //   autoPTags.pushUnique("simulated");
-    // }
-    // switch (this.source.system.creatureType) {
-    //   case "enemy-metaverse-user":
-    //   case "persona":
-    //     autoPTags.pushUnique("persona");
-    //     break;
-    //   case "d-mon":
-    //     autoPTags.pushUnique("d-mon");
-    //     break;
-    // }
-    // if (this.source.isShadow()) {
-    //   if ( this.source.system.creatureType == "daemon") {
-    //     autoPTags.pushUnique("simulated");
-    //   }
-    // }
-    // if (this.user.isShadow()) {
-    //   if (this.user.system.role != "base") {
-    //     autoPTags.pushUnique(this.user.system.role);
-    //   }
-    //   if (this.user.system.role2 != "base") {
-    //     autoPTags.pushUnique(this.user.system.role2);
-    //   }
-    // }
-    // if (autoPTags.includes("persona") && this.source.isPC() &&  this.source.hasSoloPersona) {
-    //   autoPTags.pushUnique("lone-persona");
-    // }
-    // return autoPTags;
+  // private _autoTags() : PersonaTag[] {
+  // const autoPTags :PersonaTag[]= [];
+  // if (this.source.isPC() || this.source.isNPCAlly()){
+  //   autoPTags.pushUnique("persona");
+  // }
+  // if (this.user.isUsingMetaPod()) {
+  //   autoPTags.pushUnique("simulated");
+  // }
+  // switch (this.source.system.creatureType) {
+  //   case "enemy-metaverse-user":
+  //   case "persona":
+  //     autoPTags.pushUnique("persona");
+  //     break;
+  //   case "d-mon":
+  //     autoPTags.pushUnique("d-mon");
+  //     break;
+  // }
+  // if (this.source.isShadow()) {
+  //   if ( this.source.system.creatureType == "daemon") {
+  //     autoPTags.pushUnique("simulated");
+  //   }
+  // }
+  // if (this.user.isShadow()) {
+  //   if (this.user.system.role != "base") {
+  //     autoPTags.pushUnique(this.user.system.role);
+  //   }
+  //   if (this.user.system.role2 != "base") {
+  //     autoPTags.pushUnique(this.user.system.role2);
+  //   }
+  // }
+  // if (autoPTags.includes("persona") && this.source.isPC() &&  this.source.hasSoloPersona) {
+  //   autoPTags.pushUnique("lone-persona");
+  // }
+  // return autoPTags;
   // }
 
   realTags() : Tag[] {
@@ -1552,7 +1552,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   get needsToDeleteMainPower() : boolean {
     return this.mainPowers.length > this.maxPowers
-  || this.source.topLearnedBuffer != undefined ;
+      || this.source.topLearnedBuffer != undefined ;
   }
 
 } // end of class

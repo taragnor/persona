@@ -11,7 +11,7 @@ import {ConsequenceProcessed, PersonaCombat} from "./persona-combat.js";
 
 export abstract class DamageSystemBase implements DamageInterface {
 
-	BURN_PERCENT = 0.15 as const; //percentage damage of burn damage
+  BURN_PERCENT = 0.15 as const; //percentage damage of burn damage
 
   getDamage(power: Usable, attackerPersona: Persona, targetPersona: Persona, situation ?: Situation & SituationComponent.User, options : GetDamageOptions = {}) : DamageCalculation {
     const damageType = power.getDamageType(attackerPersona);
@@ -27,73 +27,73 @@ export abstract class DamageSystemBase implements DamageInterface {
     return calc;
   }
 
-	defaultSituation(power : Usable, attackerPersona: Persona, targetPersona: Persona) : Situation {
-		return {
-				user: attackerPersona.user.accessor,
-				target: targetPersona.user.accessor,
-				usedPower: power.accessor,
-			};
-	}
+  defaultSituation(power : Usable, attackerPersona: Persona, targetPersona: Persona) : Situation {
+    return {
+      user: attackerPersona.user.accessor,
+      target: targetPersona.user.accessor,
+      usedPower: power.accessor,
+    };
+  }
 
-	protected setResistance(calc: DamageCalculation, power: Usable, attackerPersona: Persona, situation: U<Situation>, resist: ResistStrength) {
-		const piercePower = power && power.hasTag('pierce', attackerPersona) || power.hasTag("theurgy", attackerPersona);
-		const pierceTag = CombatEngine.hasPierce(attackerPersona, power, situation);
-		if (piercePower || pierceTag) {return;}
-		switch (resist) {
-			case "resist":
-				calc.setResisted();
-				break;
-			case "absorb" :
-				calc.setAbsorbed();
-				break;
-			case "block":
-				calc.setBlocked();
-				break;
-		}
-	}
+  protected setResistance(calc: DamageCalculation, power: Usable, attackerPersona: Persona, situation: U<Situation>, resist: ResistStrength) {
+    const piercePower = power && power.hasTag('pierce', attackerPersona) || power.hasTag("theurgy", attackerPersona);
+    const pierceTag = CombatEngine.hasPierce(attackerPersona, power, situation);
+    if (piercePower || pierceTag) {return;}
+    switch (resist) {
+      case "resist":
+        calc.setResisted();
+        break;
+      case "absorb" :
+        calc.setAbsorbed();
+        break;
+      case "block":
+        calc.setBlocked();
+        break;
+    }
+  }
 
-	getPowerDamage(power: Usable, attackerPersona: Persona, baseSituation ?: DamageSystemSituation, damageOptions : GetDamageOptions = {}) : DamageCalculation {
+  getPowerDamage(power: Usable, attackerPersona: Persona, baseSituation ?: DamageSystemSituation, damageOptions : GetDamageOptions = {}) : DamageCalculation {
     const situation = baseSituation ? baseSituation :
-			{
-				user: attackerPersona.user.accessor ,
-				usedPower: power.accessor,
-				result: "hit",
-				attacker: attackerPersona.user.accessor
-			} satisfies Situation;
-		const typeOverride = damageOptions.overrideDamageType;
-		if (!typeOverride) {
-			if (power.getBaseDamageType() == 'none') {
-				return new DamageCalculation('none');
-			}
-		}
-		if (power.isPower() && power.system.damageLevel == 'none') {
-			return new DamageCalculation('none');
-		}
-		let subtype : Power["system"]["subtype"] = "none";
-		if (power.isPower()) {
-			subtype = power.system.damageLevel == "fixed" ?
-				"standalone" : power.system.subtype;
-		} else {
-			subtype = 'standalone';
-		}
-		switch(subtype) {
-			case 'weapon' : {
-				return this.getWeaponSkillDamage(power as ItemSubtype<Power, 'weapon'>, attackerPersona, situation);
-			}
-			case 'magic': {
-				return this.getMagicSkillDamage(power  as ItemSubtype<Power, 'magic'>, attackerPersona, situation);
-			}
-			case 'standalone': {
-				return this.getStandaloneDamage(power, typeOverride);
-			}
-			default:
-				return new DamageCalculation('none');
-		}
-	}
+      {
+        user: attackerPersona.user.accessor ,
+        usedPower: power.accessor,
+        result: "hit",
+        attacker: attackerPersona.user.accessor
+      } satisfies Situation;
+    const typeOverride = damageOptions.overrideDamageType;
+    if (!typeOverride) {
+      if (power.getBaseDamageType() == 'none') {
+        return new DamageCalculation('none');
+      }
+    }
+    if (power.isPower() && power.system.damageLevel == 'none') {
+      return new DamageCalculation('none');
+    }
+    let subtype : Power["system"]["subtype"] = "none";
+    if (power.isPower()) {
+      subtype = power.system.damageLevel == "fixed" ?
+        "standalone" : power.system.subtype;
+    } else {
+      subtype = 'standalone';
+    }
+    switch(subtype) {
+      case 'weapon' : {
+        return this.getWeaponSkillDamage(power as ItemSubtype<Power, 'weapon'>, attackerPersona, situation);
+      }
+      case 'magic': {
+        return this.getMagicSkillDamage(power  as ItemSubtype<Power, 'magic'>, attackerPersona, situation);
+      }
+      case 'standalone': {
+        return this.getStandaloneDamage(power, typeOverride);
+      }
+      default:
+        return new DamageCalculation('none');
+    }
+  }
 
-	getBurnDamage(_power: Usable, _attackerPersona: Persona, targetPersona: Persona) : number {
-		return Math.round(targetPersona.source.mhp  * this.BURN_PERCENT);
-	}
+  getBurnDamage(_power: Usable, _attackerPersona: Persona, targetPersona: Persona) : number {
+    return Math.round(targetPersona.source.mhp  * this.BURN_PERCENT);
+  }
 
   protected calculateAllOutAttackDamage(attackLeader: ValidAttackers, allAttackers: readonly ValidAttackers[], target:ValidAttackers, situation: AttackResult['situation'] ) : AllOutReturn[] {
     return allAttackers
@@ -116,40 +116,40 @@ export abstract class DamageSystemBase implements DamageInterface {
       .filter (returnData => returnData != undefined);
   }
 
-	protected abstract individualContributionToAllOutAttackDamage(attacker: ValidAttackers, target: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation;
+  protected abstract individualContributionToAllOutAttackDamage(attacker: ValidAttackers, target: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation;
 
-	protected abstract applyDR(calc: DamageCalculation, damageType: RealDamageType, power: Usable, attackerPersona: U<Persona>, targetPersona: Persona) : DamageCalculation;
+  protected abstract applyDR(calc: DamageCalculation, damageType: RealDamageType, power: Usable, attackerPersona: U<Persona>, targetPersona: Persona) : DamageCalculation;
 
-	abstract getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation ;
+  abstract getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: Situation) : DamageCalculation ;
 
-abstract	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Persona, situation: Situation) : DamageCalculation ;
+  abstract	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Persona, situation: Situation) : DamageCalculation ;
 
-	getStandaloneDamage(power: Usable, damageTypeOverride?: DamageType) : DamageCalculation {
-		const dmg = power.system.damage;
-		const baseDtype = damageTypeOverride || power.getBaseDamageType();
-		const dtype = baseDtype == 'by-power' ? 'untyped' : baseDtype;
-		const calc = new DamageCalculation(dtype);
-		calc.add('base', dmg.low, `${power.displayedName.toString()} base damage`);
-		calc.add('evenBonus', dmg.high - dmg.low, `${power.displayedName.toString()} Even Bonus Damage`);
-		return calc;
-	}
+  getStandaloneDamage(power: Usable, damageTypeOverride?: DamageType) : DamageCalculation {
+    const dmg = power.system.damage;
+    const baseDtype = damageTypeOverride || power.getBaseDamageType();
+    const dtype = baseDtype == 'by-power' ? 'untyped' : baseDtype;
+    const calc = new DamageCalculation(dtype);
+    calc.add('base', dmg.low, `${power.displayedName.toString()} base damage`);
+    calc.add('evenBonus', dmg.high - dmg.low, `${power.displayedName.toString()} Even Bonus Damage`);
+    return calc;
+  }
 
-	convertFromOldLowDamageToNewBase(low: number) : number {
-		return this.getWeaponDamageByWpnLevel(low-1);
-	}
+  convertFromOldLowDamageToNewBase(low: number) : number {
+    return this.getWeaponDamageByWpnLevel(low-1);
+  }
 
-	processConsequence_damage( consequence: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: Persona, powerUsed: U<ModifierContainer>, situation: DamageSystemSituation) : ConsequenceProcessed['consequences'] {
-		return targets.flatMap( target => {
-			const cons = this.process_damageConsOnTarget(consequence, target, attacker, powerUsed, situation);
-			if (cons != null) {
-				return [{
-					applyTo: target,
-					cons,
-				}];
-			} return [];
-		});
+  processConsequence_damage( consequence: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: Persona, powerUsed: U<ModifierContainer>, situation: DamageSystemSituation) : ConsequenceProcessed['consequences'] {
+    return targets.flatMap( target => {
+      const cons = this.process_damageConsOnTarget(consequence, target, attacker, powerUsed, situation);
+      if (cons != null) {
+        return [{
+          applyTo: target,
+          cons,
+        }];
+      } return [];
+    });
 
-	}
+  }
 
   protected process_damageConsOnTarget( cons: SourcedConsequence<NewDamageConsequence>, target: ValidAttackers, attacker: Persona, powerUsed: U<ModifierContainer>, situation: SituationComponent.User & Situation) : N<ConsequenceProcessed['consequences'][number]["cons"]> {
     const damageOptions : GetDamageOptions= {};
@@ -244,40 +244,40 @@ abstract	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Pe
         return null;
     }
 
-	}
+  }
 
-	 abstract getWeaponDamageByWpnLevel(lvl: number) : number;
-	abstract getArmorDRByArmorLevel(lvl: number) : number;
+  abstract getWeaponDamageByWpnLevel(lvl: number) : number;
+  abstract getArmorDRByArmorLevel(lvl: number) : number;
 }
 
 
 export interface DamageInterface {
-	getBurnDamage(power: Usable, attackerPersona: Persona, targetPersona: Persona) : number;
-	getDamage(power: Usable,attackerPersona: Persona, targetPersona: Persona, situation ?: Situation, options?: GetDamageOptions) : DamageCalculation;
-	convertFromOldLowDamageToNewBase(lowDmg: number): number;
-	getWeaponDamageByWpnLevel(lvl: number) : number;
-	getArmorDRByArmorLevel(lvl: number) : number;
-	processConsequence_damage( cons: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: Persona, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'];
+  getBurnDamage(power: Usable, attackerPersona: Persona, targetPersona: Persona) : number;
+  getDamage(power: Usable,attackerPersona: Persona, targetPersona: Persona, situation ?: Situation, options?: GetDamageOptions) : DamageCalculation;
+  convertFromOldLowDamageToNewBase(lowDmg: number): number;
+  getWeaponDamageByWpnLevel(lvl: number) : number;
+  getArmorDRByArmorLevel(lvl: number) : number;
+  processConsequence_damage( cons: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: Persona, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'];
 
 }
 
 export type ConvertableDamageLevel = Exclude<DamageLevel, "-" | "fixed">;
 
 export type NewDamageParams = {
-	baseAmt: number,
-	extraVariance: number,
+  baseAmt: number,
+  extraVariance: number,
 };
 
 
 export type AllOutReturn  = {
-	contributor: ValidAttackers,
-	amt: number,
-	stack: EvaluatedDamage['str']
+  contributor: ValidAttackers,
+  amt: number,
+  stack: EvaluatedDamage['str']
 };
 
 interface GetDamageOptions {
-	overrideDamageType ?:  RealDamageType;
-	ignoreDefenses?: boolean;
+  overrideDamageType ?:  RealDamageType;
+  ignoreDefenses?: boolean;
   ignoreResistance ?: boolean;
 }
 

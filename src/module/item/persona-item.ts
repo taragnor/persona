@@ -19,7 +19,7 @@ import { Logger } from '../utility/logger.js';
 import { DamageType } from '../../config/damage-types.js';
 import { EQUIPMENT_TAGS, EquipmentTag, EquipmentTagOrId } from '../../config/equipment-tags.js';
 import { Consequence } from '../../config/consequence-types.js';
-import { CreatureTag, InternalCreatureTag } from '../../config/creature-tags.js';
+import { CreatureTag } from '../../config/creature-tags.js';
 import { removeDuplicates } from '../utility/array-tools.js';
 import { PowerTag } from '../../config/power-tags.js';
 import { ConditionalEffectManager } from '../conditional-effect-manager.js';
@@ -380,7 +380,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
     const baseId = this.system.itemBase ?? this._deriveItemBase()?.id;
     if (this.system.itemBase == undefined ||
-    (this.system.itemBase != this.id && this.parent == undefined)) {
+      (this.system.itemBase != this.id && this.parent == undefined)) {
       void this.refreshItemBase();
     }
     if (baseId && baseId != this.id) {
@@ -1638,7 +1638,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   generateSimulatedResult(this: Usable, user: ValidAttackers, target: N<PToken>, simulatedNat: number) : CombatResult | undefined;
   generateSimulatedResult (this: Usable, user: ValidAttackers, target: N<PToken>, simulatedSitOrNat: number | AttackResult['situation']) : CombatResult | undefined {
     const token = user.getActiveTokens(true)
-    .map(x=> x.document) as PToken[];
+      .map(x=> x.document) as PToken[];
     if (!token || token.length ==0) {return undefined;}
     if (typeof simulatedSitOrNat == 'number') {
       return PersonaCombat.getSimulatedResult(token[0], this,target ?? token[0], simulatedSitOrNat);
@@ -2062,12 +2062,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return false;
   }
 
-  get armorHPBoost() : number {
-    if (!this.isInvItem()
-      || this.system.slot != "body"
-    ) {return 0;}
-    return Math.round(this.system.armorHPBoost / 2);
-  }
+get armorHPBoost() : number {
+  if (!this.isInvItem()
+    || this.system.slot != "body"
+  ) {return 0;}
+  return Math.round(this.system.armorHPBoost / 2);
+}
 
 isInvItem(): this is InvItem {
   return this.system.type == "item";

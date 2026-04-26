@@ -61,30 +61,30 @@ import {ActorTagManager} from "./actor-tags.js";
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
-	declare statuses: Set<StatusEffectId>;
-	declare sheet: PersonaActorSheetBase;
+  declare statuses: Set<StatusEffectId>;
+  declare sheet: PersonaActorSheetBase;
 
-	DOWNED_OPACITY = 0.5 as const;
-	FULL_FADE_OPACITY = 0.2 as const;
+  DOWNED_OPACITY = 0.5 as const;
+  FULL_FADE_OPACITY = 0.2 as const;
 
-	// private _trackerAntiLoop : boolean = false;
+  // private _trackerAntiLoop : boolean = false;
 
-	static MPMap = new Map<number, number>;
+  static MPMap = new Map<number, number>;
   _farming : U<Farming>;
 
   tags= new ActorTagManager(this);
 
-	cache: {
-		startingLevel: U<number>,
-		level: U<number>,
-		tarot: Tarot | undefined;
-		complementRating: Map<Shadow["id"], number>;
-		// triggers: U<ModifierContainer[]>;
-		socialData: U<readonly SocialLinkData[]>;
-		isDMon: U<boolean>;
+  cache: {
+    startingLevel: U<number>,
+    level: U<number>,
+    tarot: Tarot | undefined;
+    complementRating: Map<Shadow["id"], number>;
+    // triggers: U<ModifierContainer[]>;
+    socialData: U<readonly SocialLinkData[]>;
+    isDMon: U<boolean>;
     // tagList: U<{data: (Tag | InternalCreatureTag)[], time: number}>;
     // tagListRaw: U<{data: (InternalCreatureTag | Tag["id"] | PersonaTag)[], time: number}>;
-	};
+  };
 
   constructor(...arr: unknown[]) {
     super(...arr);
@@ -96,220 +96,220 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   get farming() { return this._farming;}
 
-	clearCache() {
+  clearCache() {
     this.tags.clearCache();
-		this.cache = {
-			startingLevel: undefined,
-			level: undefined,
-			tarot: undefined,
-			complementRating: new Map(),
-			socialData: undefined,
-			// triggers: undefined,
-			isDMon: undefined,
+    this.cache = {
+      startingLevel: undefined,
+      level: undefined,
+      tarot: undefined,
+      complementRating: new Map(),
+      socialData: undefined,
+      // triggers: undefined,
+      isDMon: undefined,
       // tagList : undefined,
       // tagListRaw: undefined,
-		};
-	}
+    };
+  }
 
-	get mp() : number {
-		switch (this.system.type) {
-			case "npcAlly":
-			case "pc": break;
-			case "shadow":
-			case "npc":
-			case "tarot":
-				return 0;
-			default:
-				this.system satisfies never;
-				return 0;
-		}
-		return this.system.combat.mp.value;
-	}
+  get mp() : number {
+    switch (this.system.type) {
+      case "npcAlly":
+      case "pc": break;
+      case "shadow":
+      case "npc":
+      case "tarot":
+        return 0;
+      default:
+        this.system satisfies never;
+        return 0;
+    }
+    return this.system.combat.mp.value;
+  }
 
-	isNPC(): this is NPC {
-		return this.system.type == "npc";
-	}
+  isNPC(): this is NPC {
+    return this.system.type == "npc";
+  }
 
-	isSocialLink(): this is SocialLink {
-		if (!this.isNPC() && !this.isPC()) {
-			return false;
-		}
-		if (this.tarot == undefined) {return false;}
-		return true;
-	}
+  isSocialLink(): this is SocialLink {
+    if (!this.isNPC() && !this.isPC()) {
+      return false;
+    }
+    if (this.tarot == undefined) {return false;}
+    return true;
+  }
 
-	isPC(): this is PC {
-		return this.system.type == "pc";
-	}
+  isPC(): this is PC {
+    return this.system.type == "pc";
+  }
 
-	isNPCAlly(): this is NPCAlly {
-		return this.system.type == "npcAlly";
-	}
+  isNPCAlly(): this is NPCAlly {
+    return this.system.type == "npcAlly";
+  }
 
-	isShadow(): this is Shadow {
-		return this.system.type == "shadow";
-	}
+  isShadow(): this is Shadow {
+    return this.system.type == "shadow";
+  }
 
-	isTarot(): this is Tarot {
-		return this.system.type == "tarot";
-	}
+  isTarot(): this is Tarot {
+    return this.system.type == "tarot";
+  }
 
-	isRealPC(): this is RealPC {
-		return this.system.type == "pc" && this.hasPlayerOwner && this.tarot != undefined;
-	}
+  isRealPC(): this is RealPC {
+    return this.system.type == "pc" && this.hasPlayerOwner && this.tarot != undefined;
+  }
 
-	async setAsNavigator(this: NPCAlly) {
-		for (const ally of PersonaDB.NPCAllies()) {
-			if (ally == this) {continue;}
-			if (!ally.system.combat.isNavigator) {continue;}
-			if (!ally.isOwner) {
-				PersonaError.softFail(`Can't change navigator status on ${ally.name}, no ownership`);
-				continue;
-			}
-			await ally.update({ "system.combat.isNavigator": false});
-		}
-		PersonaDB.clearCache();
-		if (PersonaDB.getNavigator() != this) {
-			PersonaError.softFail("Navigator was set improperly");
-			return;
-		}
-		await Logger.sendToChat(`${this.name} set to party navigator`, this);
-	}
+  async setAsNavigator(this: NPCAlly) {
+    for (const ally of PersonaDB.NPCAllies()) {
+      if (ally == this) {continue;}
+      if (!ally.system.combat.isNavigator) {continue;}
+      if (!ally.isOwner) {
+        PersonaError.softFail(`Can't change navigator status on ${ally.name}, no ownership`);
+        continue;
+      }
+      await ally.update({ "system.combat.isNavigator": false});
+    }
+    PersonaDB.clearCache();
+    if (PersonaDB.getNavigator() != this) {
+      PersonaError.softFail("Navigator was set improperly");
+      return;
+    }
+    await Logger.sendToChat(`${this.name} set to party navigator`, this);
+  }
 
-	get level() : number {
-		if (this.cache.level != undefined) {
-			return this.cache.level;
-		}
-		if (!this.isValidCombatant()) {return this.cache.level = 0;}
-		if (this.isPC()) {
-			return this.cache.level = this.system.personaleLevel;
-		}
-		return this.cache.level = this.system.combat.personaStats.pLevel ?? 0;
-	}
+  get level() : number {
+    if (this.cache.level != undefined) {
+      return this.cache.level;
+    }
+    if (!this.isValidCombatant()) {return this.cache.level = 0;}
+    if (this.isPC()) {
+      return this.cache.level = this.system.personaleLevel;
+    }
+    return this.cache.level = this.system.combat.personaStats.pLevel ?? 0;
+  }
 
-	get batonPassLevel() : number {
-		if (this.isShadow()) {return 0;}
-		if (!this.hasStatus("baton-pass")) {return 0;}
-		const combat = PersonaCombat.combat;
-		if (!combat || !combat.isSocial) { return 0; }
-		return this.getFlag("persona", "batonPass") || 1;
-	}
+  get batonPassLevel() : number {
+    if (this.isShadow()) {return 0;}
+    if (!this.hasStatus("baton-pass")) {return 0;}
+    const combat = PersonaCombat.combat;
+    if (!combat || !combat.isSocial) { return 0; }
+    return this.getFlag("persona", "batonPass") || 1;
+  }
 
-	async setBatonLevel(num: number) : Promise<void> {
-		if (this.isShadow()) {return;}
-		await this.setFlag("persona", "batonPass", num);
-	}
+  async setBatonLevel(num: number) : Promise<void> {
+    if (this.isShadow()) {return;}
+    await this.setFlag("persona", "batonPass", num);
+  }
 
-	get personalLevel(): number {
-		if (!this.isPC()) {return 0;}
-		return this.system.personaleLevel;
-	}
-
-
-	get mmp() : number {
-		if (!this.isValidCombatant()) {return 0;}
-		switch (this.system.type) {
-			case "npcAlly": case "pc":
-				break;
-			case "shadow":
-				return 0;
-			default:
-				this.system satisfies never;
-				return 0;
-		}
-		return this.persona().mmp;
-	}
+  get personalLevel(): number {
+    if (!this.isPC()) {return 0;}
+    return this.system.personaleLevel;
+  }
 
 
-	static calcMP (level: number) : number {
-		const mapVal = this.MPMap.get(level);
-		if (mapVal != undefined) {
-			return mapVal;
-		}
-		if (level <= 1) {return 50;}
-		const prevMP = this.calcMP(level -1);
-		const MP = prevMP + (prevMP * (0.33 - ((level - 2) * .02)));
-		this.MPMap.set(level, MP);
-		return MP;
-	}
-
-	async refreshMaxMP(this: PC | NPCAlly, persona: Persona): Promise<void>;
-	async refreshMaxMP(this: PC | NPCAlly, amt: number): Promise<void>;
-	async refreshMaxMP(this: PC | NPCAlly, amtOrPersona: number | Persona): Promise<void> {
-		if (amtOrPersona instanceof Persona) {
-			amtOrPersona = amtOrPersona.combatStats.mmpCalculation().total;
-		}
-		const amt = amtOrPersona;
-		if (amt == this.system.combat.mp.max) {return;}
-		await this.update( { "system.combat.mp.max": amt});
-	}
+  get mmp() : number {
+    if (!this.isValidCombatant()) {return 0;}
+    switch (this.system.type) {
+      case "npcAlly": case "pc":
+        break;
+      case "shadow":
+        return 0;
+      default:
+        this.system satisfies never;
+        return 0;
+    }
+    return this.persona().mmp;
+  }
 
 
-	async refreshTrackers(this: ValidAttackers, persona : Persona) {
-		if (this.isNPCAlly() || this.isRealPC()) {
-			await this.#refreshMPTracker(persona);
-		}
-		await this.#refreshHpTracker(persona);
-	}
+  static calcMP (level: number) : number {
+    const mapVal = this.MPMap.get(level);
+    if (mapVal != undefined) {
+      return mapVal;
+    }
+    if (level <= 1) {return 50;}
+    const prevMP = this.calcMP(level -1);
+    const MP = prevMP + (prevMP * (0.33 - ((level - 2) * .02)));
+    this.MPMap.set(level, MP);
+    return MP;
+  }
 
-	async #refreshMPTracker(this:PC | NPCAlly, persona: Persona) : Promise<void> {
-		await this.refreshMaxMP(persona);
-	}
+  async refreshMaxMP(this: PC | NPCAlly, persona: Persona): Promise<void>;
+  async refreshMaxMP(this: PC | NPCAlly, amt: number): Promise<void>;
+  async refreshMaxMP(this: PC | NPCAlly, amtOrPersona: number | Persona): Promise<void> {
+    if (amtOrPersona instanceof Persona) {
+      amtOrPersona = amtOrPersona.combatStats.mmpCalculation().total;
+    }
+    const amt = amtOrPersona;
+    if (amt == this.system.combat.mp.max) {return;}
+    await this.update( { "system.combat.mp.max": amt});
+  }
 
-	async #refreshHpTracker(this:ValidAttackers, persona: Persona)  : Promise<void> {
-		if (!game.user.isGM) {return;}
-		//anti-loop
-		await antiLoop(this, async ()  => {
-			const mhp = persona.mhp;
-			if (this.hp > mhp) {
-				await this.update({"system.combat.hp": mhp});
-			}
-			if (this.system.combat.hpTracker.value != this.hp
-				|| this.system.combat.hpTracker.max != mhp) {
-				this.system.combat.hpTracker.max = mhp;
-				this.system.combat.hpTracker.value = this.hp;
-				await this.update(
-					{
-						"system.combat.hpTracker.value" : this.hp,
-						"system.combat.hpTracker.max": mhp
-					});
-			}
-		}, {inUseMsg: `trying to refresh HP but ${this.name} is locked`}) ;
-	}
 
-	async treasureRoll(this: Shadow) : Promise<TreasureItem[]> {
-		return await TreasureSystem.generateTreasureForShadow(this);
-	}
+  async refreshTrackers(this: ValidAttackers, persona : Persona) {
+    if (this.isNPCAlly() || this.isRealPC()) {
+      await this.#refreshMPTracker(persona);
+    }
+    await this.#refreshHpTracker(persona);
+  }
 
-	async createNewItem() {
-		return (await this.createEmbeddedDocuments("Item", [{"name": "Unnamed Item", type: "item"}]))[0];
-	}
+  async #refreshMPTracker(this:PC | NPCAlly, persona: Persona) : Promise<void> {
+    await this.refreshMaxMP(persona);
+  }
 
-	async addItem(newItem: Carryable, amount = 1) {
-		if (newItem.isStackable) {
-			const existing = this.items.find( item=> item.isStackableWith(newItem)) as Carryable;
-			if (existing) {
-				const newAmount = existing.system.amount + amount;
-				await existing.update( {
-					"system.amount": newAmount,
-				});
-				if (this.hasPlayerOwner) {
-					void Logger.sendToChat(`${this.name} gained ${amount} ${existing.name} (total: ${newAmount})`);
-				}
-				return existing;
-			}
-		}
-		const baseData = newItem.toJSON() as typeof newItem;
-		baseData.system.amount = amount;
-		const itemData = {
-			...baseData
-		};
-		const item = (await this.createEmbeddedDocuments("Item", [itemData]))[0];
-		if (this.hasPlayerOwner) {
-			void Logger.sendToChat(`${this.name} gained ${amount} ${item.name}`);
-		}
-		return item;
-	}
+  async #refreshHpTracker(this:ValidAttackers, persona: Persona)  : Promise<void> {
+    if (!game.user.isGM) {return;}
+    //anti-loop
+    await antiLoop(this, async ()  => {
+      const mhp = persona.mhp;
+      if (this.hp > mhp) {
+        await this.update({"system.combat.hp": mhp});
+      }
+      if (this.system.combat.hpTracker.value != this.hp
+        || this.system.combat.hpTracker.max != mhp) {
+        this.system.combat.hpTracker.max = mhp;
+        this.system.combat.hpTracker.value = this.hp;
+        await this.update(
+          {
+            "system.combat.hpTracker.value" : this.hp,
+            "system.combat.hpTracker.max": mhp
+          });
+      }
+    }, {inUseMsg: `trying to refresh HP but ${this.name} is locked`}) ;
+  }
+
+  async treasureRoll(this: Shadow) : Promise<TreasureItem[]> {
+    return await TreasureSystem.generateTreasureForShadow(this);
+  }
+
+  async createNewItem() {
+    return (await this.createEmbeddedDocuments("Item", [{"name": "Unnamed Item", type: "item"}]))[0];
+  }
+
+  async addItem(newItem: Carryable, amount = 1) {
+    if (newItem.isStackable) {
+      const existing = this.items.find( item=> item.isStackableWith(newItem)) as Carryable;
+      if (existing) {
+        const newAmount = existing.system.amount + amount;
+        await existing.update( {
+          "system.amount": newAmount,
+        });
+        if (this.hasPlayerOwner) {
+          void Logger.sendToChat(`${this.name} gained ${amount} ${existing.name} (total: ${newAmount})`);
+        }
+        return existing;
+      }
+    }
+    const baseData = newItem.toJSON() as typeof newItem;
+    baseData.system.amount = amount;
+    const itemData = {
+      ...baseData
+    };
+    const item = (await this.createEmbeddedDocuments("Item", [itemData]))[0];
+    if (this.hasPlayerOwner) {
+      void Logger.sendToChat(`${this.name} gained ${amount} ${item.name}`);
+    }
+    return item;
+  }
 
   async addTreasureItem( treasure: EnchantedTreasureFormat, quietLog = false) {
     let logMsg = "";
@@ -356,79 +356,79 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     }
   }
 
-	get inventory() : (Consumable | InvItem | Weapon | SkillCard)[] {
-		return this.items.filter( x=> x.system.type == "item" || x.system.type == "weapon" || x.system.type == "consumable" || x.system.type == "skillCard") as (Consumable | InvItem | Weapon)[];
-	}
+  get inventory() : (Consumable | InvItem | Weapon | SkillCard)[] {
+    return this.items.filter( x=> x.system.type == "item" || x.system.type == "weapon" || x.system.type == "consumable" || x.system.type == "skillCard") as (Consumable | InvItem | Weapon)[];
+  }
 
-	get consumables(): Consumable[] {
-		const consumables =  this.items.filter( x=> x.system.type == "consumable" || x.system.type == "skillCard") as Consumable[];
-		return consumables.sort(
-			(a,b) => {
-				if (!a.isCraftingItem && b.isCraftingItem ) {return -1;}
-				if (!b.isCraftingItem && a.isCraftingItem ) {return 1;}
-				return a.name.localeCompare(b.name);
-			}
-		);
-	}
+  get consumables(): Consumable[] {
+    const consumables =  this.items.filter( x=> x.system.type == "consumable" || x.system.type == "skillCard") as Consumable[];
+    return consumables.sort(
+      (a,b) => {
+        if (!a.isCraftingItem && b.isCraftingItem ) {return -1;}
+        if (!b.isCraftingItem && a.isCraftingItem ) {return 1;}
+        return a.name.localeCompare(b.name);
+      }
+    );
+  }
 
-	get trueConsumables(): Consumable[] {
-		const items = this.consumables.filter( x=> !x.isCraftingMaterial() && !x.isSkillCard());
-		return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
-	}
+  get trueConsumables(): Consumable[] {
+    const items = this.consumables.filter( x=> !x.isCraftingMaterial() && !x.isSkillCard());
+    return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
+  }
 
-	get usableConsumables() : Consumable[] {
-		if (!this.isValidCombatant()) {return [];}
-		const persona= this.persona();
-		return this.trueConsumables
-			.filter( item => persona.canUsePower(item, false));
-	}
+  get usableConsumables() : Consumable[] {
+    if (!this.isValidCombatant()) {return [];}
+    const persona= this.persona();
+    return this.trueConsumables
+      .filter( item => persona.canUsePower(item, false));
+  }
 
-	get equippables(): (InvItem | Weapon)[] {
-		const items=	this.items.filter( item => item.isEquippable() ) as (InvItem | Weapon)[];
-		return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
-	}
+  get equippables(): (InvItem | Weapon)[] {
+    const items=	this.items.filter( item => item.isEquippable() ) as (InvItem | Weapon)[];
+    return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
+  }
 
-	get skillCards(): SkillCard[] {
-		const items= this.items
-			.filter( item => item.isSkillCard()) as SkillCard[];
-		return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
-	}
+  get skillCards(): SkillCard[] {
+    const items= this.items
+      .filter( item => item.isSkillCard()) as SkillCard[];
+    return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
+  }
 
-	get keyItems(): Carryable[] {
-		const items= this.items
-			.filter( item => item.isKeyItem()
-				|| (item.system.type == "item"
-					&& item.system.slot == "none")
-			) as Carryable[];
-		return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
-	}
+  get keyItems(): Carryable[] {
+    const items= this.items
+      .filter( item => item.isKeyItem()
+        || (item.system.type == "item"
+          && item.system.slot == "none")
+      ) as Carryable[];
+    return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
+  }
 
-	get craftingMaterials() : CraftingMaterial[] {
-		const items= this.items
-			.filter( item => item.isCraftingMaterial()) as CraftingMaterial[];
-		return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
-	}
+  get craftingMaterials() : CraftingMaterial[] {
+    const items= this.items
+      .filter( item => item.isCraftingMaterial()) as CraftingMaterial[];
+    return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
+  }
 
-	hasTag(this: ValidAttackers ,tag : CreatureTag  ): boolean {
+  hasTag(this: ValidAttackers ,tag : CreatureTag  ): boolean {
     return this.tags.hasTag(tag);
   }
 
-	// hasTag(this: ValidAttackers ,tag : CreatureTag  ): boolean {
-	// 	return this.tagListRaw.some( (t : string | Tag) => t instanceof PersonaItem ? t.system.linkedInternalTag == tag : tag == t);
-	// }
+  // hasTag(this: ValidAttackers ,tag : CreatureTag  ): boolean {
+  // 	return this.tagListRaw.some( (t : string | Tag) => t instanceof PersonaItem ? t.system.linkedInternalTag == tag : tag == t);
+  // }
 
-	get nonUsableInventory() : (SkillCard | InvItem | Weapon)[] {
-		const inventory = this.items.filter( i=> i.system.type == "item" || i.system.type == "weapon" || i.system.type == "skillCard") as (InvItem | Weapon)[];
-		return inventory.sort( (a,b) =>  {
-			const typesort = a.system.type.localeCompare(b.system.type);
-			if (typesort != 0) {return typesort;}
-			if (a.system.type == "item" && b.system.type == "item") {
-				const slotSort = a.system.slot.localeCompare(b.system.slot);
-				if (slotSort != 0) {return slotSort;}
-			}
-			return a.name.localeCompare(b.name);
-		});
-	}
+  get nonUsableInventory() : (SkillCard | InvItem | Weapon)[] {
+    const inventory = this.items.filter( i=> i.system.type == "item" || i.system.type == "weapon" || i.system.type == "skillCard") as (InvItem | Weapon)[];
+    return inventory.sort( (a,b) =>  {
+      const typesort = a.system.type.localeCompare(b.system.type);
+      if (typesort != 0) {return typesort;}
+      if (a.system.type == "item" && b.system.type == "item") {
+        const slotSort = a.system.slot.localeCompare(b.system.slot);
+        if (slotSort != 0) {return slotSort;}
+      }
+      return a.name.localeCompare(b.name);
+    });
+  }
 
   get displayedName() : string {
     switch (this.system.type) {
@@ -439,7 +439,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
         const proxy = (this as NPCAlly).getNPCProxyActor();
         if (proxy) {return proxy.displayedName;}
       }
-      // eslint-disable-next-line no-fallthrough
+        // eslint-disable-next-line no-fallthrough
       case "shadow": {
         if (this.isShadow() && this.isCustomPersona()) {return this.name;}
         const combat = PersonaCombat.combat;
@@ -476,139 +476,139 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return basic;
   }
 
-	// private async _setLevelTo(this: NPCAlly, lvl: number) {
-	// 	if (!this.isNPCAlly()) {return;}
-	// 	await this.update( {"system.combat.personaStats.pLevel" : lvl});
-	// }
+  // private async _setLevelTo(this: NPCAlly, lvl: number) {
+  // 	if (!this.isNPCAlly()) {return;}
+  // 	await this.update( {"system.combat.personaStats.pLevel" : lvl});
+  // }
 
-	isPCLike(): this is NPCAlly | RealPC {
-		return this.isRealPC() || this.isNPCAlly();
-	}
+  isPCLike(): this is NPCAlly | RealPC {
+    return this.isRealPC() || this.isNPCAlly();
+  }
 
-	get theurgyVal() : number {
-		if (this.theurgyMax == 0) {return 0;}
-		if (!this.isPCLike()) {return 0;}
-		return this.system.combat.theurgy.value ?? 0;
-	}
+  get theurgyVal() : number {
+    if (this.theurgyMax == 0) {return 0;}
+    if (!this.isPCLike()) {return 0;}
+    return this.system.combat.theurgy.value ?? 0;
+  }
 
-	get theurgyMax() : number {
-		if (!this.isPCLike()) {return 0;}
-		return this.system.combat.theurgy.max ?? 0;
-	}
+  get theurgyMax() : number {
+    if (!this.isPCLike()) {return 0;}
+    return this.system.combat.theurgy.max ?? 0;
+  }
 
-	get directoryName() : string {
-		if (this.isPC() || this.isTarot()) {
-			return this.displayedName;
-		}
-		if (this.isNPCAlly()) {
-			return `${this.displayedName} (Ally)`;
-		}
-		if (this.isShadow()) {
-			const subtype = this.system.creatureType;
-			const subtypeloc  = localize(SHADOW_CREATURE_TYPE[subtype]);
-			if (this.basePersona.isPersona()) {
-				return `${this.name} (L ${this.level}, ${subtypeloc})`;
-			}
-			if (game.user.isGM || this.isOwner) {
-				const roles = this.roleString.toString();
-				return `${this.name} (${this.level}, ${roles})`;
-			}
-			if (this.basePersona.scanLevelRaw > 0) {
-				return `${this.displayedName} (L ${this.level})`;
-			}
-			return this.prototypeToken.name;
-		}
-		return this.name;
-	}
+  get directoryName() : string {
+    if (this.isPC() || this.isTarot()) {
+      return this.displayedName;
+    }
+    if (this.isNPCAlly()) {
+      return `${this.displayedName} (Ally)`;
+    }
+    if (this.isShadow()) {
+      const subtype = this.system.creatureType;
+      const subtypeloc  = localize(SHADOW_CREATURE_TYPE[subtype]);
+      if (this.basePersona.isPersona()) {
+        return `${this.name} (L ${this.level}, ${subtypeloc})`;
+      }
+      if (game.user.isGM || this.isOwner) {
+        const roles = this.roleString.toString();
+        return `${this.name} (${this.level}, ${roles})`;
+      }
+      if (this.basePersona.scanLevelRaw > 0) {
+        return `${this.displayedName} (L ${this.level})`;
+      }
+      return this.prototypeToken.name;
+    }
+    return this.name;
+  }
 
-	get displayedNameHTML() : SafeString {
-		return new Handlebars.SafeString(this.displayedName);
-	}
+  get displayedNameHTML() : SafeString {
+    return new Handlebars.SafeString(this.displayedName);
+  }
 
-	get publicName() : string {
-		if (this.isShadow() && this.isCustomPersona()) {return this.displayedName;}
-		return this.prototypeToken.name;
-	}
+  get publicName() : string {
+    if (this.isShadow() && this.isCustomPersona()) {return this.displayedName;}
+    return this.prototypeToken.name;
+  }
 
-	get init() : number {
-		const combat = game.combat as Combat<PersonaActor>;
-		if (!combat) {
-			throw new PersonaError("Can't get initiative when not in combat!");
-		}
-		if (combat.combatants.contents.some( x=> x.actor && x.actor.isShadow())) {
-			return this.combatInit;
-		}
-		return this.socialInit;
-	}
+  get init() : number {
+    const combat = game.combat as Combat<PersonaActor>;
+    if (!combat) {
+      throw new PersonaError("Can't get initiative when not in combat!");
+    }
+    if (combat.combatants.contents.some( x=> x.actor && x.actor.isShadow())) {
+      return this.combatInit;
+    }
+    return this.socialInit;
+  }
 
-	get socialInit(): number {
-		if (!this.isPC()) {return -999;}
-		const courage= this.getSocialStat("courage").total({user:this.accessor});
-		const diligence = this.getSocialStat("diligence").total({user:this.accessor});
-		return courage + diligence;
-	}
+  get socialInit(): number {
+    if (!this.isPC()) {return -999;}
+    const courage= this.getSocialStat("courage").total({user:this.accessor});
+    const diligence = this.getSocialStat("diligence").total({user:this.accessor});
+    return courage + diligence;
+  }
 
-	/** gets the real NPC of an NPC Ally*/
-	getNPCProxyActor(this: NPCAlly) : NPC | PC | undefined {
-		const proxyId = this.system.NPCSocialProxyId;
-		if (!proxyId)
-		{return undefined;}
-		const npc = PersonaDB.socialLinks()
-			.find( x=> x.id == proxyId);
-		if (!npc || npc.system.type != "npc" && npc.system.type != "pc") {
-			PersonaError.softFail(`Can't find Proxy actor for: ${this.name}`);
-		}
-		return npc as NPC | PC;
-	}
+  /** gets the real NPC of an NPC Ally*/
+  getNPCProxyActor(this: NPCAlly) : NPC | PC | undefined {
+    const proxyId = this.system.NPCSocialProxyId;
+    if (!proxyId)
+    {return undefined;}
+    const npc = PersonaDB.socialLinks()
+      .find( x=> x.id == proxyId);
+    if (!npc || npc.system.type != "npc" && npc.system.type != "pc") {
+      PersonaError.softFail(`Can't find Proxy actor for: ${this.name}`);
+    }
+    return npc as NPC | PC;
+  }
 
-	isUsingBasePersona(this: ValidAttackers) : boolean {
-		if ("activePersona" in this.system) {
-			const active = this.system.activePersona;
-			return !active  || active == this.id;
-		}
-		return true;
-	}
+  isUsingBasePersona(this: ValidAttackers) : boolean {
+    if ("activePersona" in this.system) {
+      const active = this.system.activePersona;
+      return !active  || active == this.id;
+    }
+    return true;
+  }
 
-	async switchPersona(this: ValidAttackers, sourceId: ValidAttackers["id"]) {
-		if (this.hasStatus("sealed")) {
-			ui.notifications.warn("Can't swap persona while sealed");
-			return;
-		}
-		const persona = this.personaList.find( x=> x.source.id == sourceId);
-		if (!persona || !persona.source.isOwner) {
-			PersonaError.softFail(`Couldn't find Persona ${sourceId} in your persona List or you aren't its owner`);
-			return;
-		}
-		await this.update({"system.activePersona": sourceId});
-		const combat = game.combat as PersonaCombat;
-		if (!combat || combat.isSocial) {
-			if (this.isPC()) {
-				await Logger.sendToChat(`${this.name} activates Persona ${persona.publicName}`);
-				return;
-			} else {
-				ui.notifications.notify(`${this.name} switches Persona to ${persona.publicName}`);
-				return;
-			}
-		} else {
-			let msg = "";
-			if (sourceId == this.id && !this.basePersona.img) {
-				msg = `<div class="persona-switch">
-					${this.publicName} Changes to base Persona </div>`;
-			} else {
-				msg = `<div class="persona-switch">
-					${this.publicName} changes Persona!
-					</div>
-					<img class="persona-img" src="${persona.img}" title="${persona.publicName}">
-					`;
-			}
-			const messageData: MessageData = {
-				speaker: {alias: `${this.publicName}`},
-				content: msg,
-				style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-			};
-			await ChatMessage.create(messageData, {});
-		}
-	}
+  async switchPersona(this: ValidAttackers, sourceId: ValidAttackers["id"]) {
+    if (this.hasStatus("sealed")) {
+      ui.notifications.warn("Can't swap persona while sealed");
+      return;
+    }
+    const persona = this.personaList.find( x=> x.source.id == sourceId);
+    if (!persona || !persona.source.isOwner) {
+      PersonaError.softFail(`Couldn't find Persona ${sourceId} in your persona List or you aren't its owner`);
+      return;
+    }
+    await this.update({"system.activePersona": sourceId});
+    const combat = game.combat as PersonaCombat;
+    if (!combat || combat.isSocial) {
+      if (this.isPC()) {
+        await Logger.sendToChat(`${this.name} activates Persona ${persona.publicName}`);
+        return;
+      } else {
+        ui.notifications.notify(`${this.name} switches Persona to ${persona.publicName}`);
+        return;
+      }
+    } else {
+      let msg = "";
+      if (sourceId == this.id && !this.basePersona.img) {
+        msg = `<div class="persona-switch">
+          ${this.publicName} Changes to base Persona </div>`;
+      } else {
+        msg = `<div class="persona-switch">
+          ${this.publicName} changes Persona!
+          </div>
+          <img class="persona-img" src="${persona.img}" title="${persona.publicName}">
+          `;
+      }
+      const messageData: MessageData = {
+        speaker: {alias: `${this.publicName}`},
+        content: msg,
+        style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+      };
+      await ChatMessage.create(messageData, {});
+    }
+  }
 
   get basePersona() : Persona {
     if (this.isNPC()) {
@@ -625,127 +625,127 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
 
-	persona<T extends ValidAttackers | NPC>(this: T): Persona<T extends NPC ? NPCAlly : T> {
+  persona<T extends ValidAttackers | NPC>(this: T): Persona<T extends NPC ? NPCAlly : T> {
     //TOOD: maybe try timed cache here
-		type returnType = Persona<T extends NPC ? NPCAlly : T>;
-		switch (this.system.type) {
-			case "npc": {
-				const proxy = (this as NPC).getNPCAllyProxy();
-				if (!proxy) {throw new Error("Can't get persona for noncombatant");}
-				return proxy.persona() as returnType;
-			}
-			case "npcAlly":
-				return this.basePersona as returnType;
-			case "pc": {
-				if ((this.isPC() && (this.system.activePersona == null || this.system.activePersona == this.id || this.hasSoloPersona))) {
-					return this.basePersona as returnType;
-				}
-				const activePersona = PersonaDB.getActorById((this as PC).system.activePersona) as ValidAttackers;
-				if (!activePersona) {
-					return this.basePersona as returnType;
-				};
-				return new Persona(activePersona, this as ValidAttackers) as returnType;
-				// return Persona.combinedPersona(this.basePersona, activePersona.basePersona) as Persona<T>;
-			}
-			case "shadow":
-				if (this.system.activePersona) {
-					const activePersona = PersonaDB.getActorById((this as PC).system.activePersona) as U<ValidAttackers>;
-					if(activePersona) {
-						return new Persona(activePersona, this as Shadow) as returnType;
-					}
-				}
-				return this.basePersona as returnType;
-			default:
-				this.system satisfies never;
-				throw new PersonaError(`Can't get persona for ${this.name}`);
-		}
-	}
+    type returnType = Persona<T extends NPC ? NPCAlly : T>;
+    switch (this.system.type) {
+      case "npc": {
+        const proxy = (this as NPC).getNPCAllyProxy();
+        if (!proxy) {throw new Error("Can't get persona for noncombatant");}
+        return proxy.persona() as returnType;
+      }
+      case "npcAlly":
+        return this.basePersona as returnType;
+      case "pc": {
+        if ((this.isPC() && (this.system.activePersona == null || this.system.activePersona == this.id || this.hasSoloPersona))) {
+          return this.basePersona as returnType;
+        }
+        const activePersona = PersonaDB.getActorById((this as PC).system.activePersona) as ValidAttackers;
+        if (!activePersona) {
+          return this.basePersona as returnType;
+        };
+        return new Persona(activePersona, this as ValidAttackers) as returnType;
+        // return Persona.combinedPersona(this.basePersona, activePersona.basePersona) as Persona<T>;
+      }
+      case "shadow":
+        if (this.system.activePersona) {
+          const activePersona = PersonaDB.getActorById((this as PC).system.activePersona) as U<ValidAttackers>;
+          if(activePersona) {
+            return new Persona(activePersona, this as Shadow) as returnType;
+          }
+        }
+        return this.basePersona as returnType;
+      default:
+        this.system satisfies never;
+        throw new PersonaError(`Can't get persona for ${this.name}`);
+    }
+  }
 
-	get maxPersonas() : number {
-		if (!this.isValidCombatant()) {return 0;}
-		const maxCustomPersonas = this.class.system.uniquePersonas;
-		const wildPersonas = this.class.system.maxPersonas;
-		return Math.max( 0, maxCustomPersonas -1) + wildPersonas;
-	}
+  get maxPersonas() : number {
+    if (!this.isValidCombatant()) {return 0;}
+    const maxCustomPersonas = this.class.system.uniquePersonas;
+    const wildPersonas = this.class.system.maxPersonas;
+    return Math.max( 0, maxCustomPersonas -1) + wildPersonas;
+  }
 
-	get personaList(): Persona[] {
-		if (!this.isValidCombatant()) {return [];}
-		const maxCustomPersonas = this.class.system.uniquePersonas;
-		const actorList : ValidAttackers[] = this.system.personaList
-			.map( personaId=> PersonaDB.getActorById(personaId))
-			.filter(x=> x && x?.isValidCombatant()) as ValidAttackers[];
-		if (this.hasSoloPersona || this.isShadow()) {
-			if (this.isPC()) { return [this.basePersona];};
-			actorList.pushUnique(this);
-		}
-		const customPersonas = actorList.reduce( (acc, actor) => acc + (actor.isShadow() && actor.isCustomPersona() == true ? 1 : 0) , 0);
-		if (maxCustomPersonas > customPersonas) {
-			actorList.pushUnique(this);
-		}
+  get personaList(): Persona[] {
+    if (!this.isValidCombatant()) {return [];}
+    const maxCustomPersonas = this.class.system.uniquePersonas;
+    const actorList : ValidAttackers[] = this.system.personaList
+      .map( personaId=> PersonaDB.getActorById(personaId))
+      .filter(x=> x && x?.isValidCombatant()) as ValidAttackers[];
+    if (this.hasSoloPersona || this.isShadow()) {
+      if (this.isPC()) { return [this.basePersona];};
+      actorList.pushUnique(this);
+    }
+    const customPersonas = actorList.reduce( (acc, actor) => acc + (actor.isShadow() && actor.isCustomPersona() == true ? 1 : 0) , 0);
+    if (maxCustomPersonas > customPersonas) {
+      actorList.pushUnique(this);
+    }
 
-		return actorList.map( source=> new Persona(source, this));
-	}
+    return actorList.map( source=> new Persona(source, this));
+  }
 
   equals(other: PersonaActor) : boolean {
     return this == other;
   }
 
-	async addPersona(this: PC | Shadow, shadow: Shadow) : Promise<boolean> {
-		if (this.isPC() && (!shadow.hasPlayerOwner || !shadow.isOwner)) {
-			PersonaError.softFail("Can't add this, doesn't have a player owner");
-			return false;
-		}
-		if (!this.hasSpaceForNewPersona()) {
-			if (this.maxPersonaSideboard > 0) {
-				if (await this.addSideboardPersona(shadow))
+  async addPersona(this: PC | Shadow, shadow: Shadow) : Promise<boolean> {
+    if (this.isPC() && (!shadow.hasPlayerOwner || !shadow.isOwner)) {
+      PersonaError.softFail("Can't add this, doesn't have a player owner");
+      return false;
+    }
+    if (!this.hasSpaceForNewPersona()) {
+      if (this.maxPersonaSideboard > 0) {
+        if (await this.addSideboardPersona(shadow))
         { return true; }
-			}
-			PersonaError.softFail("No Space for a new persona");
-			return false;
-		}
-		if (!shadow.isPersona()) {
-			PersonaError.softFail("Can't add this, it's not a persona");
-			return false;
-		}
+      }
+      PersonaError.softFail("No Space for a new persona");
+      return false;
+    }
+    if (!shadow.isPersona()) {
+      PersonaError.softFail("Can't add this, it's not a persona");
+      return false;
+    }
     if (await this.addPersonaToMainList(shadow)) {
       return true;
     }
     PersonaError.softFail(`Couldn't add Persona : ${shadow.name} to ${this.name}`);
     return false;
-		// const arr = this.system.personaList.slice();
-		// arr.push(shadow.id);
-		// await this.update( {"system.personaList": arr});
-		// if (this.isPC()) {
-		// 	await Logger.sendToChat(`${this.name} adds Persona ${shadow.displayedName}`);
-		// }
-	}
+    // const arr = this.system.personaList.slice();
+    // arr.push(shadow.id);
+    // await this.update( {"system.personaList": arr});
+    // if (this.isPC()) {
+    // 	await Logger.sendToChat(`${this.name} adds Persona ${shadow.displayedName}`);
+    // }
+  }
 
   async addPersonaToMainList(this: PC | Shadow, shadow: Shadow, logging = this.isPC()) : Promise<boolean> {
-		if (!shadow.isPersona()) {
-			PersonaError.softFail("Can't add this, it's not a persona");
-			return false;
-		}
+    if (!shadow.isPersona()) {
+      PersonaError.softFail("Can't add this, it's not a persona");
+      return false;
+    }
     if (!this.hasSpaceForNewPersona()) {
       return false;
     }
-		const arr = this.system.personaList.slice();
-		arr.push(shadow.id);
-		await this.update( {"system.personaList": arr});
-		if (logging) {
-			await Logger.sendToChat(`${this.name} adds Persona ${shadow.displayedName}`);
-		}
+    const arr = this.system.personaList.slice();
+    arr.push(shadow.id);
+    await this.update( {"system.personaList": arr});
+    if (logging) {
+      await Logger.sendToChat(`${this.name} adds Persona ${shadow.displayedName}`);
+    }
     return true;
   }
 
   canAddNewPersona(this: ValidAttackers) : boolean {
-		if (this.isShadow()) {return true;}
+    if (this.isShadow()) {return true;}
     return this.hasSpaceForNewPersona() || this.hasSpaceForNewSideboardPersona();
   }
 
-	hasSpaceForNewPersona(this:ValidAttackers) : boolean {
-		if (this.isShadow()) {return true;}
-		return this.personaList.length < this.maxPersonas;
-	}
+  hasSpaceForNewPersona(this:ValidAttackers) : boolean {
+    if (this.isShadow()) {return true;}
+    return this.personaList.length < this.maxPersonas;
+  }
 
   hasSpaceForNewSideboardPersona(this: ValidAttackers) : boolean {
     return this.sideboardPersonas.length < this.maxPersonaSideboard;
@@ -759,24 +759,24 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   // async deletePersona(this: PC | Shadow, personaId: ValidAttackers["id"]) {
-    // const persona =this.personaList.find( x=> x.source.id == personaId);
-    // if (!persona) {
-      // if (this.isPC()) {
-      //   if( await this.deletePersonaFromSideboard(personaId)) {return;}
-        // let sideboard = this.system.combat.persona_sideboard;
-        // if (sideboard.includes(personaId)) {
-        //   sideboard = sideboard.filter( x=> x != personaId);
-        //   await this.update( {"system.combat.persona_sideboard": sideboard});
-        //   return;
-        // }
-      // }
-      // PersonaError.softFail(`Couldn't find persona ${personaId}`); return;}
-    // const newList = this.system.personaList.filter( x=> x != personaId);
-    // await this.update( {"system.personaList": newList});
-    // await this.promoteSideboardPersonaToFillEmptySlots();
-    // if (this.isPC()) {
-      // await Logger.sendToChat(`${this.name} deletes Persona ${persona.displayedName}`);
-    // }
+  // const persona =this.personaList.find( x=> x.source.id == personaId);
+  // if (!persona) {
+  // if (this.isPC()) {
+  //   if( await this.deletePersonaFromSideboard(personaId)) {return;}
+  // let sideboard = this.system.combat.persona_sideboard;
+  // if (sideboard.includes(personaId)) {
+  //   sideboard = sideboard.filter( x=> x != personaId);
+  //   await this.update( {"system.combat.persona_sideboard": sideboard});
+  //   return;
+  // }
+  // }
+  // PersonaError.softFail(`Couldn't find persona ${personaId}`); return;}
+  // const newList = this.system.personaList.filter( x=> x != personaId);
+  // await this.update( {"system.personaList": newList});
+  // await this.promoteSideboardPersonaToFillEmptySlots();
+  // if (this.isPC()) {
+  // await Logger.sendToChat(`${this.name} deletes Persona ${persona.displayedName}`);
+  // }
   // }
 
   async _deletePersonaFromMainList(this: Shadow | PC, personaId: ValidAttackers["id"]) {
@@ -824,533 +824,533 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return false;
   }
 
-	get combatInit(): number {
-		if (!this.isValidCombatant()) {return -666;}
-		const situation = {user: this.accessor};
-		return this.persona().combatInit.eval(situation).total;
-	}
+  get combatInit(): number {
+    if (!this.isValidCombatant()) {return -666;}
+    const situation = {user: this.accessor};
+    return this.persona().combatInit.eval(situation).total;
+  }
 
-	get accessor() : UniversalActorAccessor<typeof this> {
-		return PersonaDB.getUniversalActorAccessor(this);
-	}
+  get accessor() : UniversalActorAccessor<typeof this> {
+    return PersonaDB.getUniversalActorAccessor(this);
+  }
 
-	async toPersona(this: Shadow, newOwner ?: PC) : Promise<Shadow> {
-		return ActorConverters.toPersona(this, newOwner);
-	}
+  async toPersona(this: Shadow, newOwner ?: PC) : Promise<Shadow> {
+    return ActorConverters.toPersona(this, newOwner);
+  }
 
-	get compendiumEntry() : U<Shadow> {
-		if (!this.isShadow() || !this.isPersona()) {
-			return undefined;
-		}
-		return PersonaCompendium.lookUpEntryFor(this);
-	}
+  get compendiumEntry() : U<Shadow> {
+    if (!this.isShadow() || !this.isPersona()) {
+      return undefined;
+    }
+    return PersonaCompendium.lookUpEntryFor(this);
+  }
 
-	async copyToCompendium(this: Shadow) : Promise<void> {
-		if (!this.isPersona()) {
-			throw new PersonaError(`Can't copy to compendium, ${this.name} isn't a valid Persona`);
-		}
-		const ret = await PersonaCompendium.copyPersonaToCompendium(this);
-		if (ret && !game.user.isGM) {
-			await Logger.sendToChat(`${this.name} saved to compendium`);
-		}
-	}
+  async copyToCompendium(this: Shadow) : Promise<void> {
+    if (!this.isPersona()) {
+      throw new PersonaError(`Can't copy to compendium, ${this.name} isn't a valid Persona`);
+    }
+    const ret = await PersonaCompendium.copyPersonaToCompendium(this);
+    if (ret && !game.user.isGM) {
+      await Logger.sendToChat(`${this.name} saved to compendium`);
+    }
+  }
 
-	async toDMon(this: Shadow): Promise<Shadow> {
-		return ActorConverters.toDMon(this);
-	}
+  async toDMon(this: Shadow): Promise<Shadow> {
+    return ActorConverters.toDMon(this);
+  }
 
-	async _stripShadowOnlyPowers(this: Shadow) {
-		//TODO: finish later
+  async _stripShadowOnlyPowers(this: Shadow) {
+    //TODO: finish later
 
-	}
+  }
 
-	async convertOldLevelToNew(this: ValidAttackers) : Promise<number> {
-		return await ActorConverters.convertOldLevelToNew(this);
-	}
+  async convertOldLevelToNew(this: ValidAttackers) : Promise<number> {
+    return await ActorConverters.convertOldLevelToNew(this);
+  }
 
-	get class() : Subtype<PersonaItem, "characterClass"> {
-		let classNameDefault;
-		switch (this.system.type) {
-			case "npcAlly":
-				classNameDefault = "Lone Persona User";
-				break;
-			case "pc":
-				classNameDefault = "Lone Persona User";
-				break;
-			case "shadow":
-				classNameDefault = "Shadow";
-				// classNameDefault = "Shadow";
-				break;
-			case "npc":
-				throw new Error("NPCs have no classes");
-			case "tarot":
-				throw new Error("Tarot cards have no classes");
-			default:
-				this.system satisfies never;
-				throw new Error("Undefined type");
-		}
-		const id = this.system.combat.classData.classId;
-		let cl = PersonaDB.getClassById(id);
-		if (!cl) {
-			const namesearch = PersonaDB.getClassByName(classNameDefault);
-			if (!namesearch)
-			{throw new Error(`Couldn't find class id: ${id} or name: ${classNameDefault}`);}
-			if (namesearch.system.type != "characterClass")
-			{
-				throw new Error(`Bad Item named: ${classNameDefault}, expecting a character class`);
-			}
-			cl = namesearch as ItemSub<"characterClass">;
-		}
-		return cl;
-	}
+  get class() : Subtype<PersonaItem, "characterClass"> {
+    let classNameDefault;
+    switch (this.system.type) {
+      case "npcAlly":
+        classNameDefault = "Lone Persona User";
+        break;
+      case "pc":
+        classNameDefault = "Lone Persona User";
+        break;
+      case "shadow":
+        classNameDefault = "Shadow";
+        // classNameDefault = "Shadow";
+        break;
+      case "npc":
+        throw new Error("NPCs have no classes");
+      case "tarot":
+        throw new Error("Tarot cards have no classes");
+      default:
+        this.system satisfies never;
+        throw new Error("Undefined type");
+    }
+    const id = this.system.combat.classData.classId;
+    let cl = PersonaDB.getClassById(id);
+    if (!cl) {
+      const namesearch = PersonaDB.getClassByName(classNameDefault);
+      if (!namesearch)
+      {throw new Error(`Couldn't find class id: ${id} or name: ${classNameDefault}`);}
+      if (namesearch.system.type != "characterClass")
+      {
+        throw new Error(`Bad Item named: ${classNameDefault}, expecting a character class`);
+      }
+      cl = namesearch as ItemSub<"characterClass">;
+    }
+    return cl;
+  }
 
-	async setHP(newval: number) {
-		if (!this.isValidCombatant()) {return;}
-		const startingHP = this.system.combat.hp;
-		if (this.system.combat.hp == newval) {return;}
-		newval = Math.clamp(newval, 0, this.mhp);
-		await this.update({"system.combat.hp": newval});
-		if (newval != undefined) {
-			if (startingHP > 0  && newval <= 0) {
-				await this.onKO();
-			}
-			if (startingHP <= 0 && newval > 0) {
-				await this.onRevive();
-			}
-		}
-		await (this as PC | Shadow).refreshHpStatus();
-	}
-
-
-	get hp(): number {
-		switch (this.system.type) {
-			case "npc": return 0;
-			case "tarot": return 0;
-			case "pc":
-			case "shadow":
-			case "npcAlly":
-				return this.system.combat.hp;
-			default:
-				this.system satisfies never;
-				throw new PersonaError(`Unknown Type, can't get hp`);
-		}
-	}
-
-	get mhpEstimate() : number {
-		if (!this.isValidCombatant()) {return 0;}
-		const mhp = this.system.combat.hpTracker.max;
-		if (mhp) {return mhp;}
-		return this.mhp;
-	}
-
-	get hasSoloPersona(): boolean {
-		if (!this.isValidCombatant()) {return false;}
-		if (this.isNPCAlly()) {return true;}
-		if (this.isPC()) {
-			const totalPersonas = this.class.system.uniquePersonas + this.class.system.maxPersonas;
-			return totalPersonas == 1;
-		}
-		if (this.isShadow()) {return this.system.personaList.length <= 1;}
-		this satisfies never;
-		return false;
-	}
-
-	calcBaseClassMMP(this: PC | NPCAlly): number {
-		//TODO: still using old level
-		const lvl = this.system.combat.classData.level;
-
-		const inc = this.system.combat.classData.incremental.mp;
-		const mpBase = Math.round(PersonaActor.calcMP(lvl));
-		const mpNext = Math.round(PersonaActor.calcMP(lvl + 1));
-		const diff = mpNext - mpBase;
-		return mpBase + Math.round((inc/3 * diff));
-	}
+  async setHP(newval: number) {
+    if (!this.isValidCombatant()) {return;}
+    const startingHP = this.system.combat.hp;
+    if (this.system.combat.hp == newval) {return;}
+    newval = Math.clamp(newval, 0, this.mhp);
+    await this.update({"system.combat.hp": newval});
+    if (newval != undefined) {
+      if (startingHP > 0  && newval <= 0) {
+        await this.onKO();
+      }
+      if (startingHP <= 0 && newval > 0) {
+        await this.onRevive();
+      }
+    }
+    await (this as PC | Shadow).refreshHpStatus();
+  }
 
 
-	get baseClassHP () : number {
-		if (!this.isValidCombatant()) {return 0;}
-		return this.class.getClassMHP(this.level);
-	}
+  get hp(): number {
+    switch (this.system.type) {
+      case "npc": return 0;
+      case "tarot": return 0;
+      case "pc":
+      case "shadow":
+      case "npcAlly":
+        return this.system.combat.hp;
+      default:
+        this.system satisfies never;
+        throw new PersonaError(`Unknown Type, can't get hp`);
+    }
+  }
 
-	hasBuiltInPersona() : boolean {
-		if (!this.isShadow()) {return false;}
-		return this.system.combat.builtInPersona;
-	}
+  get mhpEstimate() : number {
+    if (!this.isValidCombatant()) {return 0;}
+    const mhp = this.system.combat.hpTracker.max;
+    if (mhp) {return mhp;}
+    return this.mhp;
+  }
 
+  get hasSoloPersona(): boolean {
+    if (!this.isValidCombatant()) {return false;}
+    if (this.isNPCAlly()) {return true;}
+    if (this.isPC()) {
+      const totalPersonas = this.class.system.uniquePersonas + this.class.system.maxPersonas;
+      return totalPersonas == 1;
+    }
+    if (this.isShadow()) {return this.system.personaList.length <= 1;}
+    this satisfies never;
+    return false;
+  }
 
-	get mhp() : number {
-		if (!this.isValidCombatant()) {return 0;}
-		return Math.round(this.persona().combatStats.mhpCalculation().total);
-	}
+  calcBaseClassMMP(this: PC | NPCAlly): number {
+    //TODO: still using old level
+    const lvl = this.system.combat.classData.level;
 
-	hpAdjustPercent(this: ValidAttackers) : number {
-		switch (this.system.hp_adjust) {
-			case "pathetic":
-				return 0.70;
-			case "weak":
-				return 0.85;
-			case "normal":
-				return 1.0;
-			case "strong":
-				return 1.15;
-			case "ultimate":
-				return 1.30;
-		}
-	}
-
-	mpAdjustPercent(this: ValidAttackers) : number {
-		switch (this.system.mp_adjust) {
-			case "pathetic":
-				return 0.40;
-			case "weak":
-				return 0.70;
-			case "normal":
-				return 1.0;
-			case "strong":
-				return 1.30;
-			case "ultimate":
-				return 1.60;
-		}
-	}
-
-	hasIncremental(type: keyof Subtype<PersonaActor, "pc">["system"]["combat"]["classData"]["incremental"]) {
-		switch (this.system.type) {
-			case "pc": case "shadow":
-				return this.system.combat.classData.incremental[type];
-			default:
-				throw new Error("Doesn't have incremental");
-		}
-	}
-
-	getSocialSLWithTarot(this: PC, tarot: TarotCard | Tarot) : number {
-		tarot = tarot instanceof PersonaActor ? tarot.name as TarotCard : tarot;
-		const link= this.socialLinks.find(
-			link => link.actor.tarot?.name == tarot);
-		if (!link) {return 0;}
-		return link.linkLevel;
-	}
-
-	getSocialSLWith(sl : Tarot | SocialLink | UniversalActorAccessor<SocialLink>) : number {
-		if (!this.isPC()) {return 0;}
-		if (sl instanceof PersonaActor && sl.isTarot()) {
-			return this.getSocialSLWithTarot(sl);
-		}
-		if ("actorId" in sl) {
-			sl = PersonaDB.findActor(sl);
-
-		}
-		const linkData= this.system.social.find( x=> x.linkId == sl.id);
-		if (!linkData) {return 0;}
-		return linkData.linkLevel;
-	}
-
-	/** returns the total SLs that the PCs have with this character*/
-	get totalSLs() : number {
-		switch (this.system.type) {
-			case "shadow":
-			case "tarot": return 0;
-			case "pc":
-			case "npc":
-			case "npcAlly": {
-				let targetActor : NPC | PC | NPCAlly = this as PC;
-				if (this.isNPCAlly()) {
-					const proxy = this.getNPCProxyActor();
-					if (!proxy) {return 0;}
-					targetActor = proxy;
-				}
-				return PersonaDB.realPCs()
-				.reduce( (acc, pc) => acc + pc.getSocialSLWith(targetActor), 0);
-			}
-			default:
-				this.system satisfies never;
-				return -1;
-		}
-	}
-
-	focii(this:PersonaActor): Focus[] {
-		if (this.isPC()) {return [];}
-		return this.items.filter( x=> x.isFocus()) as Focus[];
-	}
-
-	get socialBenefits() : SocialBenefit[] {
-		let focuses : Focus[] = [];
-		switch (this.system.type) {
-			case "pc": return [];
-			case "shadow": return [];
-			case "tarot":
-				focuses = (this as Tarot).focii();
-				break;
-			case "npc": case "npcAlly":
-				focuses = (this as NPC | NPCAlly).focii()
-					.concat(this.tarot?.focii() ?? []);
-				break;
-			default:
-					this.system satisfies never;
-				throw new PersonaError("Unknwon type");
-		}
-		focuses.sort((a, b) => a.requiredLinkLevel() - b.requiredLinkLevel() );
-		return focuses.map( focus =>({
-			id: this.id,
-			focus,
-			lvl_requirement: focus.requiredLinkLevel(),
-		}))
-		;
-
-	}
-
-	getSocialStatToRaiseLink(this: ValidSocialTarget, classification: "primary" | "secondary") : SocialStat {
-		switch (classification) {
-			case "primary":
-				return this.system.keyskill.primary;
-			case "secondary":
-				return this.system.keyskill.secondary;
-			default:
-				classification satisfies never;
-				throw new PersonaError(`Unknown type ${classification as string}`);
-		}
-	}
-
-	highestLinker(this: SocialLink) : {pc: PC | null, linkLevel: number} {
-		const listOfLinkers = (game.actors.contents as PersonaActor[])
-			.filter( x=> x.isPC() && x != this)
-			.map( (pc : PC)=> ({
-				pc,
-				highest: pc.socialLinks
-				.find( link=> link.actor == this)
-				?.linkLevel ?? 0
-			}))
-			.sort ( (a,b) => b.highest - a.highest);
-		const highest = listOfLinkers[0];
-		if (!highest || highest.highest == 0) {
-			return {pc: null, linkLevel: 0};
-		}
-		return {pc : highest.pc, linkLevel: highest.highest};
-	}
-
-	async addNewActivity(this: PC, activity: Activity) {
-		const act= this.system.activities;
-		if (act.find(x=> x.linkId == activity.id))
-		{return;}
-		const item : typeof act[number] = {
-			linkId: activity.id,
-			strikes: 0,
-			currentProgress: 0,
-		};
-		act.push( item);
-		await this.update( {"system.activities": act});
-	}
-
-	get activityLinks() : ActivityLink[] {
-		if (!this.isPC()) {return [];}
-		return this.system.activities
-			.flatMap( aData => {
-				const activity = PersonaDB.allActivities().find(x=> x.id == aData.linkId);
-				if (!activity) {return [];}
-				const aLink : ActivityLink = {
-					strikes: aData.strikes ?? 0,
-					available: PersonaSocial.isAvailable(activity, this),
-					currentProgress: aData.currentProgress,
-					activity,
-				};
-				return aLink;
-			});
-	}
-
-	isDating(linkId: string) : boolean;
-	isDating( link: PersonaActor) : boolean;
-
-	isDating( sl: PersonaActor | string) : boolean {
-		switch (this.system.type) {
-			case "shadow":
-			case "tarot":
-				return false;
-			case "npcAlly":
-			case "npc": {
-				const id = sl instanceof PersonaActor ? sl.id: sl;
-				const target =PersonaDB.allActors().find( x=> x.id == id);
-				if (!target || target.system.type != "pc")  {
-					return false;
-				}
-				return target.isDating(this as NPC);
-			}
-			case "pc":
-				break;
-			default:
-				this.system satisfies never;
-				// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-				PersonaError.softFail(`Unexpected Date type: ${this.system["type"] as unknown}`);
-				return false;
-		}
-		if (this.system.type != "pc") {return false;}
-		const id = sl instanceof PersonaActor ? sl.id: sl;
-		const link =  this.system.social.find(x=> x.linkId == id);
-		if (!link) {return false;}
-		return link.isDating || link.relationshipType == "DATE";
-	}
+    const inc = this.system.combat.classData.incremental.mp;
+    const mpBase = Math.round(PersonaActor.calcMP(lvl));
+    const mpNext = Math.round(PersonaActor.calcMP(lvl + 1));
+    const diff = mpNext - mpBase;
+    return mpBase + Math.round((inc/3 * diff));
+  }
 
 
-	get socialLinks() : readonly SocialLinkData[] {
-		if (!this.isPC() || !PersonaDB.isLoaded) {return EMPTYARR as SocialLinkData[];}
-		function meetsSL(linkLevel: number, focus:Focus) {
-			return linkLevel >= focus.requiredLinkLevel();
-		};
-		const PersonaCaching = PersonaSettings.agressiveCaching();
-		if (!PersonaCaching || this.cache.socialData == undefined) {
-			this.cache.socialData = this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
-				const npc = PersonaDB.getActor(linkId);
-				if (!npc) {return [];}
-				const isDating = relationshipType == "DATE";
-				relationshipType = relationshipType ? relationshipType : npc.baseRelationship;
-				if (npc.isNPC()) {
-					const allFocii = (npc).getSocialFocii_NPC(npc as SocialLink);
-					const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
-					return [{
-						currentProgress,
-						linkLevel,
-						inspiration,
-						relationshipType,
-						actor:npc as SocialLink,
-						linkBenefits: npc as SocialLink,
-						allFocii,
-						available: PersonaSocial.isAvailable(npc, this),
-						focii: qualifiedFocii,
-						isDating,
-					}];
-				} else {
-					if (npc == this) {
-						const personalLink = PersonaDB.personalSocialLink();
-						if (!personalLink)  {
-							return [];
-						}
-						const allFocii = personalLink.getSocialFocii_PC(personalLink as SocialLink, npc as PC);
-						const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
-						return [{
-							currentProgress,
-							linkLevel,
-							inspiration,
-							relationshipType,
-							actor:npc as SocialLink,
-							linkBenefits: personalLink,
-							allFocii: allFocii,
-							focii: qualifiedFocii,
-							available: PersonaSocial.isAvailable(npc as PC, this),
-							isDating,
-						}];
-					} else {
-						const teammate = PersonaDB.teammateSocialLink();
-						if (!teammate)  {
-							return [];
-						}
-						const allFocii = teammate.getSocialFocii_PC(teammate as SocialLink, npc as PC);
-						const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
-						return [{
-							currentProgress,
-							linkLevel,
-							inspiration,
-							relationshipType,
-							actor:npc as SocialLink,
-							linkBenefits: teammate,
-							allFocii: allFocii,
-							focii: qualifiedFocii,
-							available: PersonaSocial.isAvailable(npc as PC, this),
-							isDating,
-						}];
-					}
-				}
-			})
-				.sort((a, b) => (a.actor.tarot?.system.sortOrder ?? 99) - (b.actor.tarot?.system.sortOrder ?? 99));
-		}
-		return this.cache.socialData;
-	}
+  get baseClassHP () : number {
+    if (!this.isValidCombatant()) {return 0;}
+    return this.class.getClassMHP(this.level);
+  }
 
-	get unrealizedSocialLinks() : (NPC | PC)[] {
-		switch (this.system.type) {
-			case "shadow":
-			case "npc":
-			case "tarot":
-			case "npcAlly":
-				return [];
-			case "pc":
-				break;
-			default:
-				this.system satisfies never;
-				throw new PersonaError("Something weird happened");
-		}
-		const currentLinks = this.system.social.map(x=> x.linkId);
-		const list = PersonaDB.socialLinks()
-			.filter( x=> !currentLinks.includes(x.id))
-			.filter( (x : PC | NPC)=> Object.values(x.system.weeklyAvailability).some(x=> x == true))
-			.filter( (x : PC | NPC)=> Boolean(x.system.tarot));
-		return list;
-	}
-
-	get recoveryAmt(): number {
-		if (!this.isValidCombatant()) {return 0;}
-		if (this.isShadow()) {return 0;}
-		if (this.isPC() && !this.isRealPC()) {return 0;}
-		const situation : Situation = {
-			user: (this as PC).accessor
-		};
-		const persona = this.persona();
-		const rec_bonuses = persona.getBonuses("recovery");
-		const rec_mult = persona.getBonuses("recovery-mult").total(situation, "percentage");
-		if (this.isNPCAlly()) {
-			return Math.floor(this.baseClassHP / 10 * rec_mult);
-		}
-		rec_bonuses.add("Base", 10);
-		const healing = rec_bonuses.total(situation);
-		return healing * rec_mult;
-	}
+  hasBuiltInPersona() : boolean {
+    if (!this.isShadow()) {return false;}
+    return this.system.combat.builtInPersona;
+  }
 
 
-	async spendRecovery(this: ValidAttackers, socialLinkId: null): Promise<void>;
-	async spendRecovery(this: PC, socialLinkId: PersonaActor["id"]): Promise<void>;
-	async spendRecovery(this: ValidAttackers, socialLinkId: PersonaActor["id"] | null) {
-		const healing = this.recoveryAmt;
-		if (this.isPC() && socialLinkId != null)  {
-			const linkActor = game.actors.get(socialLinkId);
-			const link = this.system.social.find( x=> x.linkId == socialLinkId);
-			if (!link) {
-				throw new PersonaError(`Can't find link ${socialLinkId}`);
-			}
-			if (link.inspiration <= 0) {
-				throw new PersonaError("Can't spend recovery!");
-			}
-			link.inspiration -= 1;
-			await this.update({"system.social": this.system.social});
-			await Logger.sendToChat(`${this.name} used inspiration from link ${linkActor?.name} to heal ${healing} hit points (original HP: ${this.hp})` , this);
-		} else {
-			await Logger.sendToChat(`${this.name} used a recovery to heal ${healing} hit points (original HP: ${this.hp})` , this);
-		}
-		await this.modifyHP(healing);
-	}
+  get mhp() : number {
+    if (!this.isValidCombatant()) {return 0;}
+    return Math.round(this.persona().combatStats.mhpCalculation().total);
+  }
 
-	_mainPowers() : Power[] {
-		switch (this.system.type) {
-			case "npc": case "tarot": return [];
-			case "npcAlly":
-			case "pc": {
-				const powerIds = this.system.combat.powers;
-				const pcPowers : Power[] = powerIds.flatMap( id=> {
-					const i = PersonaDB.getPower(id);
-					return (i ? [i] : []);
-				});
-				return pcPowers;
-			}
-			case "shadow": {
-				const powerIds = this.system.combat.powers;
-				const compPowers : Power[] = powerIds.flatMap( id=> {
-					const i = PersonaDB.getItemById(id);
-					return (i ? [i as Power] : []);
-				});
-				const shadowPowers = this.items.filter( x=> x.system.type == "power") as Power[];
-				return compPowers.concat(shadowPowers);
-			}
-			default:
-				this.system satisfies never;
-				return [];
-		}
-	}
+  hpAdjustPercent(this: ValidAttackers) : number {
+    switch (this.system.hp_adjust) {
+      case "pathetic":
+        return 0.70;
+      case "weak":
+        return 0.85;
+      case "normal":
+        return 1.0;
+      case "strong":
+        return 1.15;
+      case "ultimate":
+        return 1.30;
+    }
+  }
+
+  mpAdjustPercent(this: ValidAttackers) : number {
+    switch (this.system.mp_adjust) {
+      case "pathetic":
+        return 0.40;
+      case "weak":
+        return 0.70;
+      case "normal":
+        return 1.0;
+      case "strong":
+        return 1.30;
+      case "ultimate":
+        return 1.60;
+    }
+  }
+
+  hasIncremental(type: keyof Subtype<PersonaActor, "pc">["system"]["combat"]["classData"]["incremental"]) {
+    switch (this.system.type) {
+      case "pc": case "shadow":
+        return this.system.combat.classData.incremental[type];
+      default:
+        throw new Error("Doesn't have incremental");
+    }
+  }
+
+  getSocialSLWithTarot(this: PC, tarot: TarotCard | Tarot) : number {
+    tarot = tarot instanceof PersonaActor ? tarot.name as TarotCard : tarot;
+    const link= this.socialLinks.find(
+      link => link.actor.tarot?.name == tarot);
+    if (!link) {return 0;}
+    return link.linkLevel;
+  }
+
+  getSocialSLWith(sl : Tarot | SocialLink | UniversalActorAccessor<SocialLink>) : number {
+    if (!this.isPC()) {return 0;}
+    if (sl instanceof PersonaActor && sl.isTarot()) {
+      return this.getSocialSLWithTarot(sl);
+    }
+    if ("actorId" in sl) {
+      sl = PersonaDB.findActor(sl);
+
+    }
+    const linkData= this.system.social.find( x=> x.linkId == sl.id);
+    if (!linkData) {return 0;}
+    return linkData.linkLevel;
+  }
+
+  /** returns the total SLs that the PCs have with this character*/
+  get totalSLs() : number {
+    switch (this.system.type) {
+      case "shadow":
+      case "tarot": return 0;
+      case "pc":
+      case "npc":
+      case "npcAlly": {
+        let targetActor : NPC | PC | NPCAlly = this as PC;
+        if (this.isNPCAlly()) {
+          const proxy = this.getNPCProxyActor();
+          if (!proxy) {return 0;}
+          targetActor = proxy;
+        }
+        return PersonaDB.realPCs()
+        .reduce( (acc, pc) => acc + pc.getSocialSLWith(targetActor), 0);
+      }
+      default:
+        this.system satisfies never;
+        return -1;
+    }
+  }
+
+  focii(this:PersonaActor): Focus[] {
+    if (this.isPC()) {return [];}
+    return this.items.filter( x=> x.isFocus()) as Focus[];
+  }
+
+  get socialBenefits() : SocialBenefit[] {
+    let focuses : Focus[] = [];
+    switch (this.system.type) {
+      case "pc": return [];
+      case "shadow": return [];
+      case "tarot":
+        focuses = (this as Tarot).focii();
+        break;
+      case "npc": case "npcAlly":
+        focuses = (this as NPC | NPCAlly).focii()
+          .concat(this.tarot?.focii() ?? []);
+        break;
+      default:
+          this.system satisfies never;
+        throw new PersonaError("Unknwon type");
+    }
+    focuses.sort((a, b) => a.requiredLinkLevel() - b.requiredLinkLevel() );
+    return focuses.map( focus =>({
+      id: this.id,
+      focus,
+      lvl_requirement: focus.requiredLinkLevel(),
+    }))
+    ;
+
+  }
+
+  getSocialStatToRaiseLink(this: ValidSocialTarget, classification: "primary" | "secondary") : SocialStat {
+    switch (classification) {
+      case "primary":
+        return this.system.keyskill.primary;
+      case "secondary":
+        return this.system.keyskill.secondary;
+      default:
+        classification satisfies never;
+        throw new PersonaError(`Unknown type ${classification as string}`);
+    }
+  }
+
+  highestLinker(this: SocialLink) : {pc: PC | null, linkLevel: number} {
+    const listOfLinkers = (game.actors.contents as PersonaActor[])
+      .filter( x=> x.isPC() && x != this)
+      .map( (pc : PC)=> ({
+        pc,
+        highest: pc.socialLinks
+        .find( link=> link.actor == this)
+        ?.linkLevel ?? 0
+      }))
+      .sort ( (a,b) => b.highest - a.highest);
+    const highest = listOfLinkers[0];
+    if (!highest || highest.highest == 0) {
+      return {pc: null, linkLevel: 0};
+    }
+    return {pc : highest.pc, linkLevel: highest.highest};
+  }
+
+  async addNewActivity(this: PC, activity: Activity) {
+    const act= this.system.activities;
+    if (act.find(x=> x.linkId == activity.id))
+    {return;}
+    const item : typeof act[number] = {
+      linkId: activity.id,
+      strikes: 0,
+      currentProgress: 0,
+    };
+    act.push( item);
+    await this.update( {"system.activities": act});
+  }
+
+  get activityLinks() : ActivityLink[] {
+    if (!this.isPC()) {return [];}
+    return this.system.activities
+      .flatMap( aData => {
+        const activity = PersonaDB.allActivities().find(x=> x.id == aData.linkId);
+        if (!activity) {return [];}
+        const aLink : ActivityLink = {
+          strikes: aData.strikes ?? 0,
+          available: PersonaSocial.isAvailable(activity, this),
+          currentProgress: aData.currentProgress,
+          activity,
+        };
+        return aLink;
+      });
+  }
+
+  isDating(linkId: string) : boolean;
+  isDating( link: PersonaActor) : boolean;
+
+  isDating( sl: PersonaActor | string) : boolean {
+    switch (this.system.type) {
+      case "shadow":
+      case "tarot":
+        return false;
+      case "npcAlly":
+      case "npc": {
+        const id = sl instanceof PersonaActor ? sl.id: sl;
+        const target =PersonaDB.allActors().find( x=> x.id == id);
+        if (!target || target.system.type != "pc")  {
+          return false;
+        }
+        return target.isDating(this as NPC);
+      }
+      case "pc":
+        break;
+      default:
+        this.system satisfies never;
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        PersonaError.softFail(`Unexpected Date type: ${this.system["type"] as unknown}`);
+        return false;
+    }
+    if (this.system.type != "pc") {return false;}
+    const id = sl instanceof PersonaActor ? sl.id: sl;
+    const link =  this.system.social.find(x=> x.linkId == id);
+    if (!link) {return false;}
+    return link.isDating || link.relationshipType == "DATE";
+  }
+
+
+  get socialLinks() : readonly SocialLinkData[] {
+    if (!this.isPC() || !PersonaDB.isLoaded) {return EMPTYARR as SocialLinkData[];}
+    function meetsSL(linkLevel: number, focus:Focus) {
+      return linkLevel >= focus.requiredLinkLevel();
+    };
+    const PersonaCaching = PersonaSettings.agressiveCaching();
+    if (!PersonaCaching || this.cache.socialData == undefined) {
+      this.cache.socialData = this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
+        const npc = PersonaDB.getActor(linkId);
+        if (!npc) {return [];}
+        const isDating = relationshipType == "DATE";
+        relationshipType = relationshipType ? relationshipType : npc.baseRelationship;
+        if (npc.isNPC()) {
+          const allFocii = (npc).getSocialFocii_NPC(npc as SocialLink);
+          const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
+          return [{
+            currentProgress,
+            linkLevel,
+            inspiration,
+            relationshipType,
+            actor:npc as SocialLink,
+            linkBenefits: npc as SocialLink,
+            allFocii,
+            available: PersonaSocial.isAvailable(npc, this),
+            focii: qualifiedFocii,
+            isDating,
+          }];
+        } else {
+          if (npc == this) {
+            const personalLink = PersonaDB.personalSocialLink();
+            if (!personalLink)  {
+              return [];
+            }
+            const allFocii = personalLink.getSocialFocii_PC(personalLink as SocialLink, npc as PC);
+            const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
+            return [{
+              currentProgress,
+              linkLevel,
+              inspiration,
+              relationshipType,
+              actor:npc as SocialLink,
+              linkBenefits: personalLink,
+              allFocii: allFocii,
+              focii: qualifiedFocii,
+              available: PersonaSocial.isAvailable(npc as PC, this),
+              isDating,
+            }];
+          } else {
+            const teammate = PersonaDB.teammateSocialLink();
+            if (!teammate)  {
+              return [];
+            }
+            const allFocii = teammate.getSocialFocii_PC(teammate as SocialLink, npc as PC);
+            const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
+            return [{
+              currentProgress,
+              linkLevel,
+              inspiration,
+              relationshipType,
+              actor:npc as SocialLink,
+              linkBenefits: teammate,
+              allFocii: allFocii,
+              focii: qualifiedFocii,
+              available: PersonaSocial.isAvailable(npc as PC, this),
+              isDating,
+            }];
+          }
+        }
+      })
+        .sort((a, b) => (a.actor.tarot?.system.sortOrder ?? 99) - (b.actor.tarot?.system.sortOrder ?? 99));
+    }
+    return this.cache.socialData;
+  }
+
+  get unrealizedSocialLinks() : (NPC | PC)[] {
+    switch (this.system.type) {
+      case "shadow":
+      case "npc":
+      case "tarot":
+      case "npcAlly":
+        return [];
+      case "pc":
+        break;
+      default:
+        this.system satisfies never;
+        throw new PersonaError("Something weird happened");
+    }
+    const currentLinks = this.system.social.map(x=> x.linkId);
+    const list = PersonaDB.socialLinks()
+      .filter( x=> !currentLinks.includes(x.id))
+      .filter( (x : PC | NPC)=> Object.values(x.system.weeklyAvailability).some(x=> x == true))
+      .filter( (x : PC | NPC)=> Boolean(x.system.tarot));
+    return list;
+  }
+
+  get recoveryAmt(): number {
+    if (!this.isValidCombatant()) {return 0;}
+    if (this.isShadow()) {return 0;}
+    if (this.isPC() && !this.isRealPC()) {return 0;}
+    const situation : Situation = {
+      user: (this as PC).accessor
+    };
+    const persona = this.persona();
+    const rec_bonuses = persona.getBonuses("recovery");
+    const rec_mult = persona.getBonuses("recovery-mult").total(situation, "percentage");
+    if (this.isNPCAlly()) {
+      return Math.floor(this.baseClassHP / 10 * rec_mult);
+    }
+    rec_bonuses.add("Base", 10);
+    const healing = rec_bonuses.total(situation);
+    return healing * rec_mult;
+  }
+
+
+  async spendRecovery(this: ValidAttackers, socialLinkId: null): Promise<void>;
+  async spendRecovery(this: PC, socialLinkId: PersonaActor["id"]): Promise<void>;
+  async spendRecovery(this: ValidAttackers, socialLinkId: PersonaActor["id"] | null) {
+    const healing = this.recoveryAmt;
+    if (this.isPC() && socialLinkId != null)  {
+      const linkActor = game.actors.get(socialLinkId);
+      const link = this.system.social.find( x=> x.linkId == socialLinkId);
+      if (!link) {
+        throw new PersonaError(`Can't find link ${socialLinkId}`);
+      }
+      if (link.inspiration <= 0) {
+        throw new PersonaError("Can't spend recovery!");
+      }
+      link.inspiration -= 1;
+      await this.update({"system.social": this.system.social});
+      await Logger.sendToChat(`${this.name} used inspiration from link ${linkActor?.name} to heal ${healing} hit points (original HP: ${this.hp})` , this);
+    } else {
+      await Logger.sendToChat(`${this.name} used a recovery to heal ${healing} hit points (original HP: ${this.hp})` , this);
+    }
+    await this.modifyHP(healing);
+  }
+
+  _mainPowers() : Power[] {
+    switch (this.system.type) {
+      case "npc": case "tarot": return [];
+      case "npcAlly":
+      case "pc": {
+        const powerIds = this.system.combat.powers;
+        const pcPowers : Power[] = powerIds.flatMap( id=> {
+          const i = PersonaDB.getPower(id);
+          return (i ? [i] : []);
+        });
+        return pcPowers;
+      }
+      case "shadow": {
+        const powerIds = this.system.combat.powers;
+        const compPowers : Power[] = powerIds.flatMap( id=> {
+          const i = PersonaDB.getItemById(id);
+          return (i ? [i as Power] : []);
+        });
+        const shadowPowers = this.items.filter( x=> x.system.type == "power") as Power[];
+        return compPowers.concat(shadowPowers);
+      }
+      default:
+        this.system satisfies never;
+        return [];
+    }
+  }
 
   get hasNoTreasure() : boolean {
     if (!this.isShadow()) {return true;}
@@ -1361,412 +1361,412 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return false;
   }
 
-	get mainPowers() : Power[] {
-		switch (this.system.type) {
-			case "npc": case "tarot": return [];
-			case "pc":
-			case "shadow":
-			case "npcAlly":
-				return (this as ValidAttackers).persona().mainPowers;
-			default:
-				this.system satisfies never;
-				return [];
-		}
-	}
+  get mainPowers() : Power[] {
+    switch (this.system.type) {
+      case "npc": case "tarot": return [];
+      case "pc":
+      case "shadow":
+      case "npcAlly":
+        return (this as ValidAttackers).persona().mainPowers;
+      default:
+        this.system satisfies never;
+        return [];
+    }
+  }
 
-	get sideboardPowers() : Power [] {
-		switch (this.system.type) {
-			case "shadow":
-			case "npc":
-			case "tarot":
-				return [];
-			case "npcAlly":
-			case "pc":
-				break;
-			default:
-				this.system satisfies never;
-		}
-		if (!this.hasSoloPersona) {return [];}
-		if (!this.class.system.canUsePowerSideboard) {return [];}
-		const powerIds = this.system.combat.powers_sideboard;
-		const pcPowers : Power[] = powerIds.flatMap( id=> {
-			const i = PersonaDB.getItemById(id);
-			return (i ? [i as Power] : []);
-		});
-		return pcPowers;
-	}
+  get sideboardPowers() : Power [] {
+    switch (this.system.type) {
+      case "shadow":
+      case "npc":
+      case "tarot":
+        return [];
+      case "npcAlly":
+      case "pc":
+        break;
+      default:
+        this.system satisfies never;
+    }
+    if (!this.hasSoloPersona) {return [];}
+    if (!this.class.system.canUsePowerSideboard) {return [];}
+    const powerIds = this.system.combat.powers_sideboard;
+    const pcPowers : Power[] = powerIds.flatMap( id=> {
+      const i = PersonaDB.getItemById(id);
+      return (i ? [i as Power] : []);
+    });
+    return pcPowers;
+  }
 
-	get sideboardPersonas(): readonly Persona[] {
-		if (!this.isPC()) {return [];}
-		if (!this.class.system.canUsePersonaSideboard) {return [];}
-		const sideboardIds = this.system.combat.persona_sideboard;
-		const personas = sideboardIds
-			.flatMap( id =>  {
-				const shadow = PersonaDB.getActor(id);
-				return shadow != undefined && shadow.isShadow() ? [shadow] : [];
-			})
-			.map( shadow => new Persona(shadow, this)) ;
-		return personas;
-	}
+  get sideboardPersonas(): readonly Persona[] {
+    if (!this.isPC()) {return [];}
+    if (!this.class.system.canUsePersonaSideboard) {return [];}
+    const sideboardIds = this.system.combat.persona_sideboard;
+    const personas = sideboardIds
+      .flatMap( id =>  {
+        const shadow = PersonaDB.getActor(id);
+        return shadow != undefined && shadow.isShadow() ? [shadow] : [];
+      })
+      .map( shadow => new Persona(shadow, this)) ;
+    return personas;
+  }
 
-	get maxPersonaSideboard() : number {
-		if (!this.isPC()) {return 0;}
-		if (!this.class.system.canUsePersonaSideboard) {return 0;}
-		const base = BASE_PERSONA_SIDEBOARD;
-		const bonuses = this.getPersonalBonuses("persona-sideboard").total( {user: this.accessor});
-		return base + bonuses;
-	}
+  get maxPersonaSideboard() : number {
+    if (!this.isPC()) {return 0;}
+    if (!this.class.system.canUsePersonaSideboard) {return 0;}
+    const base = BASE_PERSONA_SIDEBOARD;
+    const bonuses = this.getPersonalBonuses("persona-sideboard").total( {user: this.accessor});
+    return base + bonuses;
+  }
 
-	async addSideboardPersona(shadow: Shadow) : Promise<boolean> {
-		if (!this.isPC() || this.maxPersonaSideboard <= 0) {
-			ui.notifications.warn(`${this.name} can't add sideboard Personas`);
-			return false;
-		}
-		if (!shadow.isPersona()) {
-			ui.notifications.warn(`Can't add ${shadow.name} as sideboard persona (not a persona)`);
-			return false;
-		}
-		const sideboardIds = this.system.combat.persona_sideboard;
-		if (sideboardIds.includes(shadow.id)) {
-			ui.notifications.warn(`${shadow.name} already in Persona sideboard`);
-			return false;
-		}
-		if (sideboardIds.length >= this.maxPersonaSideboard) {
-			ui.notifications.warn(` Can't add to ${this.name} Sideboard, Sideboard is full`);
-			return false;
-		}
-		sideboardIds.push(shadow.id);
-		await this.update( {"system.combat.persona_sideboard": sideboardIds});
-		await Logger.sendToChat(`${this.name} added ${shadow.name} as sideboard persona`);
-		return true;
-	}
+  async addSideboardPersona(shadow: Shadow) : Promise<boolean> {
+    if (!this.isPC() || this.maxPersonaSideboard <= 0) {
+      ui.notifications.warn(`${this.name} can't add sideboard Personas`);
+      return false;
+    }
+    if (!shadow.isPersona()) {
+      ui.notifications.warn(`Can't add ${shadow.name} as sideboard persona (not a persona)`);
+      return false;
+    }
+    const sideboardIds = this.system.combat.persona_sideboard;
+    if (sideboardIds.includes(shadow.id)) {
+      ui.notifications.warn(`${shadow.name} already in Persona sideboard`);
+      return false;
+    }
+    if (sideboardIds.length >= this.maxPersonaSideboard) {
+      ui.notifications.warn(` Can't add to ${this.name} Sideboard, Sideboard is full`);
+      return false;
+    }
+    sideboardIds.push(shadow.id);
+    await this.update( {"system.combat.persona_sideboard": sideboardIds});
+    await Logger.sendToChat(`${this.name} added ${shadow.name} as sideboard persona`);
+    return true;
+  }
 
-	get basicPowers() : readonly Power [] {
-		switch (this.system.type) {
-			case "npc": case "tarot":
-				return [];
-			case "shadow":
-				return PersonaItem.getBasicShadowPowers();
-			case "pc":
-			case "npcAlly": {
-				const arr = PersonaItem.getBasicPCPowers().slice();
-				const extraSkills = [
-					this.teamworkMove,
-					// ...this.navigatorSkills,
-				].flatMap( x=> x != undefined ? [x] : []);
-				arr.push (...extraSkills);
-				return arr; 
-			}
-			default:
-				this.system satisfies never;
-				return [];
-		}
-	}
+  get basicPowers() : readonly Power [] {
+    switch (this.system.type) {
+      case "npc": case "tarot":
+        return [];
+      case "shadow":
+        return PersonaItem.getBasicShadowPowers();
+      case "pc":
+      case "npcAlly": {
+        const arr = PersonaItem.getBasicPCPowers().slice();
+        const extraSkills = [
+          this.teamworkMove,
+          // ...this.navigatorSkills,
+        ].flatMap( x=> x != undefined ? [x] : []);
+        arr.push (...extraSkills);
+        return arr; 
+      }
+      default:
+        this.system satisfies never;
+        return [];
+    }
+  }
 
-	get navigatorSkills(): Power[] {
-		switch (this.system.type) {
-			case "shadow":
-			case "npc":
-			case "tarot":
-			case "pc":
-				return [];
-			case "npcAlly": {
-				const powers = this.system.combat.navigatorSkills
-				.map( id => PersonaDB.getPower(id))
-				.filter( x=> x != undefined);
-				return powers;
-			}
-			default:
-				this.system satisfies never;
-				return [];
-		}
-	}
+  get navigatorSkills(): Power[] {
+    switch (this.system.type) {
+      case "shadow":
+      case "npc":
+      case "tarot":
+      case "pc":
+        return [];
+      case "npcAlly": {
+        const powers = this.system.combat.navigatorSkills
+        .map( id => PersonaDB.getPower(id))
+        .filter( x=> x != undefined);
+        return powers;
+      }
+      default:
+        this.system satisfies never;
+        return [];
+    }
+  }
 
-	get navigatorVoiceLines() : NPCAlly["system"]["combat"]["navigatorVoice"] {
-		if (!this.isNPCAlly()) {return [];}
-		const lines= this.system.combat?.navigatorVoice ?? [];
-		return lines;
-	}
+  get navigatorVoiceLines() : NPCAlly["system"]["combat"]["navigatorVoice"] {
+    if (!this.isNPCAlly()) {return [];}
+    const lines= this.system.combat?.navigatorVoice ?? [];
+    return lines;
+  }
 
-	async addNavigatorPath (this: NPCAlly) : Promise<number> {
-		return new Promise ( (resolve, _reject) => {
-			const callback  = async (path: string, _fp: FilePicker) => {
-				let count = 0;
-				if (!path) {
-					ui.notifications.warn("No folder selected");
-					return -1;}
-				const files = (await foundry.applications.apps.FilePicker.implementation.browse("data", path)).files;
-				if (files && files.length > 0) {
-					const arr=  this.system.combat?.navigatorVoice;
-					for (const file of files) {
-						if (!arr.some(x=> x.fileName == file)) {
-							count++;
-							arr.push({
-								fileName: file,
-								trigger: "unused",
-								elementType: "none",
+  async addNavigatorPath (this: NPCAlly) : Promise<number> {
+    return new Promise ( (resolve, _reject) => {
+      const callback  = async (path: string, _fp: FilePicker) => {
+        let count = 0;
+        if (!path) {
+          ui.notifications.warn("No folder selected");
+          return -1;}
+        const files = (await foundry.applications.apps.FilePicker.implementation.browse("data", path)).files;
+        if (files && files.length > 0) {
+          const arr=  this.system.combat?.navigatorVoice;
+          for (const file of files) {
+            if (!arr.some(x=> x.fileName == file)) {
+              count++;
+              arr.push({
+                fileName: file,
+                trigger: "unused",
+                elementType: "none",
                 level: 0,
                 statusCondition: "",
                 strongEnemy: false,
                 text: "",
                 bool: false,
-							});
-						}
-					}
-					await this.update({
-						"system.combat.navigatorVoice": arr,
-					});
-				}
-				resolve(count);
-			};
-			const fp = new foundry.applications.apps.FilePicker.implementation({type: "folder", callback});
-			void fp.browse();
-		});
-	}
+              });
+            }
+          }
+          await this.update({
+            "system.combat.navigatorVoice": arr,
+          });
+        }
+        resolve(count);
+      };
+      const fp = new foundry.applications.apps.FilePicker.implementation({type: "folder", callback});
+      void fp.browse();
+    });
+  }
 
 
-	getUsableById(id: Usable["id"]) : Usable | undefined {
-		const usables: Usable[] = (this.powers as Usable[]).concat(this.openerActions);
-		const power = usables.find(pow => pow.id == id);
-		if (power) {return power;}
-		const usable = this.items.find( item=> item.id == id && item.isUsableType());
-		if (usable) {return usable as Usable;}
-		PersonaError.softFail(`Can't find Usable with Id ${id}`);
-	}
+  getUsableById(id: Usable["id"]) : Usable | undefined {
+    const usables: Usable[] = (this.powers as Usable[]).concat(this.openerActions);
+    const power = usables.find(pow => pow.id == id);
+    if (power) {return power;}
+    const usable = this.items.find( item=> item.id == id && item.isUsableType());
+    if (usable) {return usable as Usable;}
+    PersonaError.softFail(`Can't find Usable with Id ${id}`);
+  }
 
-	get powerLearningListFull() : readonly Readonly<{power: Power, level: number}>[] {
-		if (!this.isValidCombatant()) {return [];}
-		return this.basePersona.powerLearning.powerLearningListFull();
-	}
+  get powerLearningListFull() : readonly Readonly<{power: Power, level: number}>[] {
+    if (!this.isValidCombatant()) {return [];}
+    return this.basePersona.powerLearning.powerLearningListFull();
+  }
 
-	get powerLearningList() : readonly Readonly<{power: Power, level: number}>[] {
-		if (!this.isValidCombatant()) {return [];}
-		return this.basePersona.powerLearning.powerLearningList();
-	}
+  get powerLearningList() : readonly Readonly<{power: Power, level: number}>[] {
+    if (!this.isValidCombatant()) {return [];}
+    return this.basePersona.powerLearning.powerLearningList();
+  }
 
-	checkPowerLegality( pwr: Power)  :boolean {
+  checkPowerLegality( pwr: Power)  :boolean {
     if (!this.isValidCombatant()) {return false;}
-		if (pwr.hasTag("shadow-only", this) && (!this.isShadow() || this.isPersona())) {return false;}
-		return true;
-	}
+    if (pwr.hasTag("shadow-only", this) && (!this.isShadow() || this.isPersona())) {return false;}
+    return true;
+  }
 
-	get nextPowerToLearn() : Power | undefined {
-		return this.powerLearningList.at(0)?.power;
-	}
+  get nextPowerToLearn() : Power | undefined {
+    return this.powerLearningList.at(0)?.power;
+  }
 
-	get nextLevelLearnPower(): number | undefined {
-		return this.powerLearningList.at(0)?.level;
-	}
+  get nextLevelLearnPower(): number | undefined {
+    return this.powerLearningList.at(0)?.level;
+  }
 
-	get nextElectiveToLearn() { 
-		if (!this.isValidCombatant()
-			|| !this.isCustomPersona()
-		) {return undefined;}
-		const learn : PowerLearningSystem = this.basePersona.powerLearning;
-		const entry = learn.customPersonaLearningList().at(0);
-		if (!entry) {return undefined;}
-		return entry;
-	}
+  get nextElectiveToLearn() { 
+    if (!this.isValidCombatant()
+      || !this.isCustomPersona()
+    ) {return undefined;}
+    const learn : PowerLearningSystem = this.basePersona.powerLearning;
+    const entry = learn.customPersonaLearningList().at(0);
+    if (!entry) {return undefined;}
+    return entry;
+  }
 
-	get learnedSkillsRemaining(): number {
-		return this.powerLearningList.length;
-	}
+  get learnedSkillsRemaining(): number {
+    return this.powerLearningList.length;
+  }
 
-	get topLearnedBuffer(): Power | undefined {
-		return this.learnedPowersBuffer.at(0);
-	}
+  get topLearnedBuffer(): Power | undefined {
+    return this.learnedPowersBuffer.at(0);
+  }
 
-	get learnedPowersBuffer() : Power[] {
-		if (!this.isValidCombatant()) {return [];}
-		return this.system.combat.learnedPowersBuffer
-			.map( p => PersonaDB.getPower(p))
-			.filter( p=> p != undefined);
-	}
+  get learnedPowersBuffer() : Power[] {
+    if (!this.isValidCombatant()) {return [];}
+    return this.system.combat.learnedPowersBuffer
+      .map( p => PersonaDB.getPower(p))
+      .filter( p=> p != undefined);
+  }
 
-	get powers(): Power[] {
-		if (!this.isValidCombatant()) {return [];}
-		return [
-			...this.basicPowers,
-			...this.mainPowers,
-			...this.persona().bonusPowers,
-		].flat();
-	}
+  get powers(): Power[] {
+    if (!this.isValidCombatant()) {return [];}
+    return [
+      ...this.basicPowers,
+      ...this.mainPowers,
+      ...this.persona().bonusPowers,
+    ].flat();
+  }
 
 
 
-	get displayedBonusPowers() : Power[] {
-		if (!this.isValidCombatant()) {return [];}
-		return this.persona().bonusPowers.filter( power=>
-			!power.isOpener(this) && !power.isMinorActionItem()
-		);
-	}
+  get displayedBonusPowers() : Power[] {
+    if (!this.isValidCombatant()) {return [];}
+    return this.persona().bonusPowers.filter( power=>
+      !power.isOpener(this) && !power.isMinorActionItem()
+    );
+  }
 
-	randomItem(this:PC): InvItem | SkillCard | Weapon | Consumable  {
-		const items = this.items.filter(x=> x.isTrueItem() == true);
-		return randomSelect(items) as InvItem | SkillCard | Weapon | Consumable;
-	}
+  randomItem(this:PC): InvItem | SkillCard | Weapon | Consumable  {
+    const items = this.items.filter(x=> x.isTrueItem() == true);
+    return randomSelect(items) as InvItem | SkillCard | Weapon | Consumable;
+  }
 
-	get weapon() : Option<Weapon> {
-		switch (this.system.type) {
-			case "shadow":
-			case "npc":
-			case "tarot":
-				return null;
-			case "pc":
-			case "npcAlly":
-				break;
-			default:
-				this.system satisfies never;
-		}
-		const id = this.system.equipped.weapon;
-		const item = this.items.find( x=> x.id == id);
-		if (item) {return item as Weapon;}
-		const dbitem = PersonaDB.getItemById(id);
-		if (dbitem) {return dbitem as Weapon;}
-		return null;
-	}
+  get weapon() : Option<Weapon> {
+    switch (this.system.type) {
+      case "shadow":
+      case "npc":
+      case "tarot":
+        return null;
+      case "pc":
+      case "npcAlly":
+        break;
+      default:
+        this.system satisfies never;
+    }
+    const id = this.system.equipped.weapon;
+    const item = this.items.find( x=> x.id == id);
+    if (item) {return item as Weapon;}
+    const dbitem = PersonaDB.getItemById(id);
+    if (dbitem) {return dbitem as Weapon;}
+    return null;
+  }
 
-	unarmedTagList() : readonly PowerTag[] {
-		if (POWER_TAGS_LIST.includes (this.getUnarmedDamageType() as typeof POWER_TAGS_LIST[number])) {
-			return [this.getUnarmedDamageType()] as PowerTag[];
-		}
-		return [];
-	}
+  unarmedTagList() : readonly PowerTag[] {
+    if (POWER_TAGS_LIST.includes (this.getUnarmedDamageType() as typeof POWER_TAGS_LIST[number])) {
+      return [this.getUnarmedDamageType()] as PowerTag[];
+    }
+    return [];
+  }
 
-	async modifyHP( this: ValidAttackers, delta: number) {
-		const startingHP = this.system.combat.hp;
-		if (delta == 0) {return;}
-		const hp = Math.clamp(startingHP + delta, 0, this.mhp);
-		await this.update( {"system.combat.hp": hp});
-		const newval = hp;
-		if (hp != undefined) {
-			if (startingHP > 0  && newval <= 0) {
-				await this.onKO();
-			}
-			if (startingHP <= 0 && newval > 0) {
-				await this.onRevive();
-			}
-		}
-		await (this as PC | Shadow).refreshHpStatus();
-	}
+  async modifyHP( this: ValidAttackers, delta: number) {
+    const startingHP = this.system.combat.hp;
+    if (delta == 0) {return;}
+    const hp = Math.clamp(startingHP + delta, 0, this.mhp);
+    await this.update( {"system.combat.hp": hp});
+    const newval = hp;
+    if (hp != undefined) {
+      if (startingHP > 0  && newval <= 0) {
+        await this.onKO();
+      }
+      if (startingHP <= 0 && newval > 0) {
+        await this.onRevive();
+      }
+    }
+    await (this as PC | Shadow).refreshHpStatus();
+  }
 
-	async modifyMP( this: PC | NPCAlly, delta: number) {
-		let mp = this.system.combat.mp.value;
-		mp += delta;
-		mp = Math.clamp(Math.round(mp), 0, this.mmp);
-		await this.update( {"system.combat.mp.value": mp});
-	}
+  async modifyMP( this: PC | NPCAlly, delta: number) {
+    let mp = this.system.combat.mp.value;
+    mp += delta;
+    mp = Math.clamp(Math.round(mp), 0, this.mmp);
+    await this.update( {"system.combat.mp.value": mp});
+  }
 
-	async modifyTheurgy (this: PC | NPCAlly, delta: number) {
-		let t = this.system.combat.theurgy.value;
-		t += delta;
-		t = Math.clamp(Math.floor(t), 0, this.theurgyMax);
-		await this.update( {"system.combat.theurgy.value": t});
+  async modifyTheurgy (this: PC | NPCAlly, delta: number) {
+    let t = this.system.combat.theurgy.value;
+    t += delta;
+    t = Math.clamp(Math.floor(t), 0, this.theurgyMax);
+    await this.update( {"system.combat.theurgy.value": t});
 
-	}
+  }
 
-	 //** changed to use setHP instead of newval functionality */
-	 async refreshHpStatus(this: ValidAttackers, persona ?: Persona) : Promise<void> {
-			// if (this._antiloop) {return;}
-			await antiLoop( this, async() => {
-				 // this._antiloop = true;
-				 const hp = this.system.combat.hp;
-				 const mhp = persona ?.mhp ?? this.mhp;
-				 try {
-						// console.debug(`Refreshing HP status on ${this.name}`);
-						if (hp > 0) {
-							 await this.clearFadingState();
-						}
-						if (hp > mhp) {
-							 await this.update( {"system.combat.hp": mhp});
-						}
-						if (this.theurgyVal < 0 || this.theurgyVal > this.theurgyMax) {
-							 await this.update( {"system.combat.theurgy.value": Math.clamp (this.theurgyVal, 0, this.theurgyMax)});
-						}
-						this.refreshTheurgyBarStyle();
-						if (this.hasStatus("full-fade") && hp != 0) {
-							 await this.update( {"system.combat.hp": 0});
-						}
-						// void this.updateOpacity(hp);
-				 } catch (e) {
-						PersonaError.softFail(`Error on Refresh HP Status for ${this.name}, ${this.id}, hp: ${hp}, mhp: ${mhp}`, e);
-				 }
-			}, {inUseMsg : `Aboring Refreshing HP Status for ${this.name} (anti-loop)`, maxDepth : 3});
-			// this._antiloop = false;
-	 }
+  //** changed to use setHP instead of newval functionality */
+  async refreshHpStatus(this: ValidAttackers, persona ?: Persona) : Promise<void> {
+    // if (this._antiloop) {return;}
+    await antiLoop( this, async() => {
+      // this._antiloop = true;
+      const hp = this.system.combat.hp;
+      const mhp = persona ?.mhp ?? this.mhp;
+      try {
+        // console.debug(`Refreshing HP status on ${this.name}`);
+        if (hp > 0) {
+          await this.clearFadingState();
+        }
+        if (hp > mhp) {
+          await this.update( {"system.combat.hp": mhp});
+        }
+        if (this.theurgyVal < 0 || this.theurgyVal > this.theurgyMax) {
+          await this.update( {"system.combat.theurgy.value": Math.clamp (this.theurgyVal, 0, this.theurgyMax)});
+        }
+        this.refreshTheurgyBarStyle();
+        if (this.hasStatus("full-fade") && hp != 0) {
+          await this.update( {"system.combat.hp": 0});
+        }
+        // void this.updateOpacity(hp);
+      } catch (e) {
+        PersonaError.softFail(`Error on Refresh HP Status for ${this.name}, ${this.id}, hp: ${hp}, mhp: ${mhp}`, e);
+      }
+    }, {inUseMsg : `Aboring Refreshing HP Status for ${this.name} (anti-loop)`, maxDepth : 3});
+    // this._antiloop = false;
+  }
 
-	async resetTheurgy() {
-		if (this.theurgyVal == 0) {return;}
-		console.debug(`Theurgy for ${this.name} reset to 0 (was ${this.theurgyVal})`);
-		await this.update( {"system.combat.theurgy.value": 0});
-	}
+  async resetTheurgy() {
+    if (this.theurgyVal == 0) {return;}
+    console.debug(`Theurgy for ${this.name} reset to 0 (was ${this.theurgyVal})`);
+    await this.update( {"system.combat.theurgy.value": 0});
+  }
 
-	refreshTheurgyBarStyle() {
-		const curT = 20 + this.theurgyVal; //add padding so it's never 0;
-		const maxT = 20 + this.theurgyMax; //add padding so it's never 0;
-		const percent = Math.round(100 * curT / maxT);
-		const fill = document.querySelector('.theurgy-fill');
-		if (fill == null) {return;}
-		let hue;
-		if (percent < 35) {hue = 215;}      // blue
-		else if (percent < 70) {hue = 50;}  // yellow
-		else {hue = 0;}                     // red
+  refreshTheurgyBarStyle() {
+    const curT = 20 + this.theurgyVal; //add padding so it's never 0;
+    const maxT = 20 + this.theurgyMax; //add padding so it's never 0;
+    const percent = Math.round(100 * curT / maxT);
+    const fill = document.querySelector('.theurgy-fill');
+    if (fill == null) {return;}
+    let hue;
+    if (percent < 35) {hue = 215;}      // blue
+    else if (percent < 70) {hue = 50;}  // yellow
+    else {hue = 0;}                     // red
 
-		//@ts-expect-error stuff that annoys TS
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-		fill.style.setProperty('--fill', `${percent}%`);
-		//@ts-expect-error stuff that annoys TS
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-		fill.style.setProperty('--hue', hue);
-	}
+    //@ts-expect-error stuff that annoys TS
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    fill.style.setProperty('--fill', `${percent}%`);
+    //@ts-expect-error stuff that annoys TS
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    fill.style.setProperty('--hue', hue);
+  }
 
-	async isStatusResisted( id : StatusEffect["id"]) : Promise<boolean> {
-		if (!this.isValidCombatant()) {return false;}
-		const resist = this.persona().statusResist(id);
-		switch (resist) {
-			case "absorb":
-			case "reflect":
-			case "weakness":
-			case "normal":
-				break;
-			case "block":
-				return true;
-			case "resist": {
-				const save = await PersonaRoller.rollSave(this as Shadow, {
-					DC: 11,
-					label:`Resist status ${id}`,
-					askForModifier: false,
-					saveVersus: id,
-					modifier: 0,
-					rollTags: ["resist-status"],
-				});
-				await save.toModifiedMessage(true);
-				if (save.success) {return true;}
-				break;
-			}
-			default:
-				resist satisfies never;
-		}
-		return false;
-	}
+  async isStatusResisted( id : StatusEffect["id"]) : Promise<boolean> {
+    if (!this.isValidCombatant()) {return false;}
+    const resist = this.persona().statusResist(id);
+    switch (resist) {
+      case "absorb":
+      case "reflect":
+      case "weakness":
+      case "normal":
+        break;
+      case "block":
+        return true;
+      case "resist": {
+        const save = await PersonaRoller.rollSave(this as Shadow, {
+          DC: 11,
+          label:`Resist status ${id}`,
+          askForModifier: false,
+          saveVersus: id,
+          modifier: 0,
+          rollTags: ["resist-status"],
+        });
+        await save.toModifiedMessage(true);
+        if (save.success) {return true;}
+        break;
+      }
+      default:
+        resist satisfies never;
+    }
+    return false;
+  }
 
-	/**error catch wrapper for this funciton as Monks's statuses was throwing here and may have been breaking hooks when it failed.*/
-	override async toggleStatusEffect(statusId: StatusEffectId, options?: Foundry.ToggleStatusOptions) {
-		try {
-			const ret = super.toggleStatusEffect(statusId, options);
-			return ret;
-		} catch (error ) {
-			const e = error as Error;
-			console.warn(`${e.toString()} \n ${e.stack}`);
-			return undefined;
-		}
-	}
+  /**error catch wrapper for this funciton as Monks's statuses was throwing here and may have been breaking hooks when it failed.*/
+  override async toggleStatusEffect(statusId: StatusEffectId, options?: Foundry.ToggleStatusOptions) {
+    try {
+      const ret = super.toggleStatusEffect(statusId, options);
+      return ret;
+    } catch (error ) {
+      const e = error as Error;
+      console.warn(`${e.toString()} \n ${e.stack}`);
+      return undefined;
+    }
+  }
 
-	private downResistNewStatus(status: StatusEffect) :boolean {
-		if (this.hp > 0) {return false;}
-		if (status.id == "down") {return false;}
-		return PersonaAE.durationLessThanOrEqualTo(status.duration, {dtype: "combat"});
-	}
+  private downResistNewStatus(status: StatusEffect) :boolean {
+    if (this.hp > 0) {return false;}
+    if (status.id == "down") {return false;}
+    return PersonaAE.durationLessThanOrEqualTo(status.duration, {dtype: "combat"});
+  }
 
   /** returns true if status is added*/
   async addStatus(statusEffect: StatusEffect, ignoreFatigue= false): Promise<boolean> {
@@ -1797,41 +1797,41 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     }
   }
 
-    ////actually add the status
-    //if (await this.checkStatusNullificaton(statusEffect)) {return false;}
-    //if (this.isValidCombatant()) {
-    //  const situation: Situation ={
-    //    triggeringCharacter: this.accessor,
-    //    triggeringUser: game.user,
-    //    user: this.accessor,
-    //    statusEffect: id,
-    //    target: this.accessor,
-    //  };
-    //  const ret = (await TriggeredEffect.onTrigger("pre-inflict-status", this, situation)).finalize();
-    //  await ret
-    //    .emptyCheck()
-    //    ?.toMessage("Response to acquiring Status", this);
-    //  if (ret.hasCancelRequest()) {return false;}
-    //  const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
-    //  if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
-    //    await this.setHP(0);
-    //  }
-    //}
-    //const newState = {
-    //  ...stateData,
-    //  name: game.i18n.localize(stateData.name as LocalizationString),
-    //  statuses: [id]
-    //};
-    //const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
-    ////potency can change in checkStatusNullification so its important to wait to unpack it until here
-    //await newEffect.setPotency(statusEffect.potency || 1);
-    //const adjustedDuration = this.getAdjustedDuration(duration, id);
-    //await newEffect.setDuration(adjustedDuration);
-    //return true;
-    //} catch (e) {
-    //PersonaError.softFail(`Error adding status :${id}`, e);
-    //return false;
-    //}
+  ////actually add the status
+  //if (await this.checkStatusNullificaton(statusEffect)) {return false;}
+  //if (this.isValidCombatant()) {
+  //  const situation: Situation ={
+  //    triggeringCharacter: this.accessor,
+  //    triggeringUser: game.user,
+  //    user: this.accessor,
+  //    statusEffect: id,
+  //    target: this.accessor,
+  //  };
+  //  const ret = (await TriggeredEffect.onTrigger("pre-inflict-status", this, situation)).finalize();
+  //  await ret
+  //    .emptyCheck()
+  //    ?.toMessage("Response to acquiring Status", this);
+  //  if (ret.hasCancelRequest()) {return false;}
+  //  const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
+  //  if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
+  //    await this.setHP(0);
+  //  }
+  //}
+  //const newState = {
+  //  ...stateData,
+  //  name: game.i18n.localize(stateData.name as LocalizationString),
+  //  statuses: [id]
+  //};
+  //const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
+  ////potency can change in checkStatusNullification so its important to wait to unpack it until here
+  //await newEffect.setPotency(statusEffect.potency || 1);
+  //const adjustedDuration = this.getAdjustedDuration(duration, id);
+  //await newEffect.setDuration(adjustedDuration);
+  //return true;
+  //} catch (e) {
+  //PersonaError.softFail(`Error adding status :${id}`, e);
+  //return false;
+  //}
   // }
 
   /** actually adds a new status, use addStauts to also check for duplicates and merge if needed */
@@ -1875,135 +1875,135 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return true;
   }
 
-	getAdjustedDuration( duration: StatusDuration, id: StatusEffect["id"]) : StatusDuration {
-		if (!this.isValidCombatant()) {return duration;}
-		try {
-			switch (duration.dtype)  {
-				case "X-rounds":
-				case "3-rounds": {
-					const tags = CONFIG.statusEffects.find(x=> x.id == id)?.tags;
-					if (!tags) {
-						PersonaError.softFail(`Bad status Id: ${id}`);
-						return duration;
-					}
-					if (!tags.includes("baneful") || tags.includes("downtime"))  {
-						return duration;
-					}
-					const situation : Situation = {
-						user: (this as ValidAttackers).accessor,
-						target: (this as ValidAttackers).accessor,
-						statusEffect: id,
-					};
-					const modifier = this.persona().getBonuses("baleful-status-duration").total(situation);
-					const reducedAmt = Math.max(0, duration.amount + modifier);
-					return {
-						...duration,
-						amount: reducedAmt,
-					};
-				}
-				default:
-					return duration;
-			}
-		} catch (e) {
-			PersonaError.softFail("Problem with getAdjusted Duration");
-			Debug(e);
-			return duration;
-		}
-	}
+  getAdjustedDuration( duration: StatusDuration, id: StatusEffect["id"]) : StatusDuration {
+    if (!this.isValidCombatant()) {return duration;}
+    try {
+      switch (duration.dtype)  {
+        case "X-rounds":
+        case "3-rounds": {
+          const tags = CONFIG.statusEffects.find(x=> x.id == id)?.tags;
+          if (!tags) {
+            PersonaError.softFail(`Bad status Id: ${id}`);
+            return duration;
+          }
+          if (!tags.includes("baneful") || tags.includes("downtime"))  {
+            return duration;
+          }
+          const situation : Situation = {
+            user: (this as ValidAttackers).accessor,
+            target: (this as ValidAttackers).accessor,
+            statusEffect: id,
+          };
+          const modifier = this.persona().getBonuses("baleful-status-duration").total(situation);
+          const reducedAmt = Math.max(0, duration.amount + modifier);
+          return {
+            ...duration,
+            amount: reducedAmt,
+          };
+        }
+        default:
+          return duration;
+      }
+    } catch (e) {
+      PersonaError.softFail("Problem with getAdjusted Duration");
+      Debug(e);
+      return duration;
+    }
+  }
 
-	get openerActions() : Usable[] {
-		if (!this.isValidCombatant()) {return [];}
-		const powerBased = (this.isShadow() ? this.mainPowers : this.consumables)
-			.filter( power => power.isOpener(this));
-		const arr : Usable[] = (this as ValidAttackers).mainModifiers({omitPowers:true})
-			.filter(x=> PersonaItem.grantsPowers(x))
-			.flatMap(eff=> PersonaItem.getAllGrantedPowers(eff, this as ValidAttackers) as Usable[])
-			.filter( eff => eff.isOpener(this))
-		// .flatMap(x=> x.getOpenerPowers(this as PC ) as Usable[])
-			.concat(powerBased);
-		return removeDuplicates(arr);
-	}
+  get openerActions() : Usable[] {
+    if (!this.isValidCombatant()) {return [];}
+    const powerBased = (this.isShadow() ? this.mainPowers : this.consumables)
+      .filter( power => power.isOpener(this));
+    const arr : Usable[] = (this as ValidAttackers).mainModifiers({omitPowers:true})
+      .filter(x=> PersonaItem.grantsPowers(x))
+      .flatMap(eff=> PersonaItem.getAllGrantedPowers(eff, this as ValidAttackers) as Usable[])
+      .filter( eff => eff.isOpener(this))
+    // .flatMap(x=> x.getOpenerPowers(this as PC ) as Usable[])
+      .concat(powerBased);
+    return removeDuplicates(arr);
+  }
 
-	async setTeamworkMove(this: ValidAttackers, power: Power) {
-		const id = power.id;
-		const oldTW = this.teamworkMove;
-		await this.update( {"system.combat.teamworkMove": id});
-		if (oldTW) {
-			await Logger.sendToChat(`${this.name} replaced Teamwork ${oldTW.displayedName.toString()} with ${power.displayedName.toString()}` , this);
-		} else {
-			await Logger.sendToChat(`${this.name} set Teamwork Move to ${power.displayedName.toString()}` , this);
-		}
+  async setTeamworkMove(this: ValidAttackers, power: Power) {
+    const id = power.id;
+    const oldTW = this.teamworkMove;
+    await this.update( {"system.combat.teamworkMove": id});
+    if (oldTW) {
+      await Logger.sendToChat(`${this.name} replaced Teamwork ${oldTW.displayedName.toString()} with ${power.displayedName.toString()}` , this);
+    } else {
+      await Logger.sendToChat(`${this.name} set Teamwork Move to ${power.displayedName.toString()}` , this);
+    }
 
-	}
+  }
 
-	get teamworkMove() : Power | undefined {
-		switch (this.system.type) {
-			case "pc":
-			case "npcAlly":
-				break;
-			case "shadow":
-			case "tarot":
-			case "npc":
-				return undefined;
-			default:
-				this.system satisfies never;
-				return undefined;
-		}
-		const id = this.system.combat.teamworkMove;
-		if (!id)
-		{return undefined;}
-		return PersonaDB.allPowers().get(id);
-	}
+  get teamworkMove() : Power | undefined {
+    switch (this.system.type) {
+      case "pc":
+      case "npcAlly":
+        break;
+      case "shadow":
+      case "tarot":
+      case "npc":
+        return undefined;
+      default:
+        this.system satisfies never;
+        return undefined;
+    }
+    const id = this.system.combat.teamworkMove;
+    if (!id)
+    {return undefined;}
+    return PersonaDB.allPowers().get(id);
+  }
 
-	hasStatus (id: StatusEffectId) : boolean {
-		return this.effects.contents.some( eff => eff.statuses.has(id));
+  hasStatus (id: StatusEffectId) : boolean {
+    return this.effects.contents.some( eff => eff.statuses.has(id));
 
-	}
+  }
 
-	getStatus( id: StatusEffectId) : PersonaAE | undefined {
-		return this.effects.contents.find( eff => eff.statuses.has(id));
+  getStatus( id: StatusEffectId) : PersonaAE | undefined {
+    return this.effects.contents.find( eff => eff.statuses.has(id));
 
-	}
+  }
 
-	 get tokens() : TokenDocument<this>[] {
-			if (this.token) {
-				 return [this.token];
-			}
-			return this.getDependentTokens() as TokenDocument<this>[];
-	}
+  get tokens() : TokenDocument<this>[] {
+    if (this.token) {
+      return [this.token];
+    }
+    return this.getDependentTokens() as TokenDocument<this>[];
+  }
 
-	/** returns true if nullfied **/
-	private async checkStatusNullificaton(newStatus: StatusEffect) : Promise<boolean> {
-		let cont = false;
-		const remList : StatusEffectId[] = [];
+  /** returns true if nullfied **/
+  private async checkStatusNullificaton(newStatus: StatusEffect) : Promise<boolean> {
+    let cont = false;
+    const remList : StatusEffectId[] = [];
     const {id: statusId, potency} = newStatus;
-		switch (statusId) {
-			case "defense-boost":
-				remList.push("defense-nerf");
-				break;
-			case "defense-nerf":
-				remList.push("defense-boost");
-				break;
-			case "attack-boost":
-				remList.push("attack-nerf");
-				break;
-			case "attack-nerf":
-				remList.push("attack-boost");
-				break;
-			case "damage-boost":
-				remList.push("damage-nerf");
-				break;
-			case "damage-nerf":
-				remList.push("damage-boost");
-				break;
-		}
-		if (this.hp <= 0) {
-			const allNonDowntimeStatus = this.effects.filter( x=> x.isStatus && !x.isDowntimeStatus && !x.statuses.has("fading"));
-			const list = allNonDowntimeStatus.flatMap( x=> Array.from(x.statuses));
-			remList.push(...list);
-			cont = true;
-		}
-		let removed =0;
+    switch (statusId) {
+      case "defense-boost":
+        remList.push("defense-nerf");
+        break;
+      case "defense-nerf":
+        remList.push("defense-boost");
+        break;
+      case "attack-boost":
+        remList.push("attack-nerf");
+        break;
+      case "attack-nerf":
+        remList.push("attack-boost");
+        break;
+      case "damage-boost":
+        remList.push("damage-nerf");
+        break;
+      case "damage-nerf":
+        remList.push("damage-boost");
+        break;
+    }
+    if (this.hp <= 0) {
+      const allNonDowntimeStatus = this.effects.filter( x=> x.isStatus && !x.isDowntimeStatus && !x.statuses.has("fading"));
+      const list = allNonDowntimeStatus.flatMap( x=> Array.from(x.statuses));
+      remList.push(...list);
+      cont = true;
+    }
+    let removed =0;
 
     for (const id of remList) {
       if (this.hasStatus(id)) {
@@ -2018,184 +2018,184 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return removed > 0 && !cont;
   }
 
-	/** removes all statuses that have a given status tag*/
-	async removeStatusesOfType( statusPropertyTag: typeof STATUS_EFFECT_LIST[number]["tags"][number])  : Promise<void> {
-		for (const eff of this.effects) {
-			for (const status of eff.statuses) {
-				if (STATUSES_BY_TAG[statusPropertyTag].has(status)) {
-					await eff.delete();
-				}
-			}
-		}
-	}
+  /** removes all statuses that have a given status tag*/
+  async removeStatusesOfType( statusPropertyTag: typeof STATUS_EFFECT_LIST[number]["tags"][number])  : Promise<void> {
+    for (const eff of this.effects) {
+      for (const status of eff.statuses) {
+        if (STATUSES_BY_TAG[statusPropertyTag].has(status)) {
+          await eff.delete();
+        }
+      }
+    }
+  }
 
-	hasStatusOfType( statusPropertyTag: typeof STATUS_EFFECT_LIST[number]["tags"][number])  : boolean {
-		return this.effects.contents.some( eff =>
-			eff.statuses.intersection(STATUSES_BY_TAG[statusPropertyTag]).size > 0
-		);
-	}
+  hasStatusOfType( statusPropertyTag: typeof STATUS_EFFECT_LIST[number]["tags"][number])  : boolean {
+    return this.effects.contents.some( eff =>
+      eff.statuses.intersection(STATUSES_BY_TAG[statusPropertyTag]).size > 0
+    );
+  }
 
-	/** returns new status to escalate if needed  */
-	async checkStatusEscalation (statusId: StatusEffectId) : Promise <StatusEffectId>  {
-		const remList : StatusEffectId[] = [];
-		let returnStatus: StatusEffectId = statusId;
-		switch (statusId) {
-			case "fatigued":
-				if (!this.hasStatus("fatigued")) {break;}
-				remList.push("fatigued");
-				returnStatus = "tired";
-				break;
-			case "tired":
-				if (!this.hasStatus("tired")) {break;}
-				remList.push("tired");
-				returnStatus = "exhausted";
-				break;
-			case "exhausted":
-				remList.push("tired");
-				returnStatus = "exhausted";
-				break;
-			default:
-				returnStatus = statusId;
-				break;
-		}
-		for (const id of remList) {
-			await this.removeStatus(id);
-		}
-		return returnStatus;
-	}
+  /** returns new status to escalate if needed  */
+  async checkStatusEscalation (statusId: StatusEffectId) : Promise <StatusEffectId>  {
+    const remList : StatusEffectId[] = [];
+    let returnStatus: StatusEffectId = statusId;
+    switch (statusId) {
+      case "fatigued":
+        if (!this.hasStatus("fatigued")) {break;}
+        remList.push("fatigued");
+        returnStatus = "tired";
+        break;
+      case "tired":
+        if (!this.hasStatus("tired")) {break;}
+        remList.push("tired");
+        returnStatus = "exhausted";
+        break;
+      case "exhausted":
+        remList.push("tired");
+        returnStatus = "exhausted";
+        break;
+      default:
+        returnStatus = statusId;
+        break;
+    }
+    for (const id of remList) {
+      await this.removeStatus(id);
+    }
+    return returnStatus;
+  }
 
-	async removeStatus(status: Pick<StatusEffect, "id"> | StatusEffectId) : Promise<boolean>{
-		const id = typeof status == "object" ? status.id : status;
-		try {
-			const promises = this.effects
-				.filter( eff => eff.statuses.has(id))
-				.map( async (eff) => await eff.delete());
-			await Promise.all(promises);
-			return promises.length > 0;
-		} catch (e) {
-			PersonaError.softFail(`Error removing status ${id}`,e );
-			return false;
-		}
-	}
+async removeStatus(status: Pick<StatusEffect, "id"> | StatusEffectId) : Promise<boolean>{
+  const id = typeof status == "object" ? status.id : status;
+  try {
+    const promises = this.effects
+      .filter( eff => eff.statuses.has(id))
+      .map( async (eff) => await eff.delete());
+    await Promise.all(promises);
+    return promises.length > 0;
+  } catch (e) {
+    PersonaError.softFail(`Error removing status ${id}`,e );
+    return false;
+  }
+}
 
-	equippedItems() : (InvItem | Weapon)[]  {
-		switch (this.system.type) {
-			case "shadow":
-			case "npc":
-			case "tarot":
-				return [];
-			case "pc":
-			case "npcAlly":
-				break;
-			default:
-				this.system satisfies never;
-				return [];
-		}
-		const inv = this.inventory;
-		const slots : (keyof typeof this.system.equipped)[]=  ["weapon", "body", "accessory", "weapon_crystal"];
-		const ret = slots
-			.map( slot=> inv
-				.find(item => item.id == (this as PC).system.equipped[slot]))
-			.flatMap (x=> x? [x]: []);
-		return ret as (InvItem | Weapon)[];
-	}
+equippedItems() : (InvItem | Weapon)[]  {
+  switch (this.system.type) {
+    case "shadow":
+    case "npc":
+    case "tarot":
+      return [];
+    case "pc":
+    case "npcAlly":
+      break;
+    default:
+      this.system satisfies never;
+      return [];
+  }
+  const inv = this.inventory;
+  const slots : (keyof typeof this.system.equipped)[]=  ["weapon", "body", "accessory", "weapon_crystal"];
+  const ret = slots
+    .map( slot=> inv
+      .find(item => item.id == (this as PC).system.equipped[slot]))
+    .flatMap (x=> x? [x]: []);
+  return ret as (InvItem | Weapon)[];
+}
 
-	passiveItems(): InvItem[] {
-		switch (this.system.type) {
-			case "shadow":
-			case "npc":
-			case "tarot":
-				return [];
-			case "pc":
-			case "npcAlly":
-				break;
-			default:
-				this.system satisfies never;
-				return [];
-		}
-		const inv = this.inventory;
-		return inv.filter( item => item.system.type == "item" && (item.system.slot == "none" || item.system.slot =="key-item")) as InvItem[];
-	}
+passiveItems(): InvItem[] {
+  switch (this.system.type) {
+    case "shadow":
+    case "npc":
+    case "tarot":
+      return [];
+    case "pc":
+    case "npcAlly":
+      break;
+    default:
+      this.system satisfies never;
+      return [];
+  }
+  const inv = this.inventory;
+  return inv.filter( item => item.system.type == "item" && (item.system.slot == "none" || item.system.slot =="key-item")) as InvItem[];
+}
 
-	getPersonalBonuses(modnames : ModifierTarget | ModifierTarget[], sources: readonly ModifierContainer[] = this.actorMainModifiers()) : ModifierList  {
-		const modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this)
-			.filter( mod => mod.modifier != 0)
-		));
-		return modList;
-	}
+getPersonalBonuses(modnames : ModifierTarget | ModifierTarget[], sources: readonly ModifierContainer[] = this.actorMainModifiers()) : ModifierList  {
+  const modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this)
+    .filter( mod => mod.modifier != 0)
+  ));
+  return modList;
+}
 
-	activeAuras(options ?: MainModifierOptions) : ConditionalEffectC[] {
-		if (!this.isAlive()) {return [];}
-		if (!this.isValidCombatant()) {return [];}
-		return this.persona().myAuraEffects(options);
-	}
+activeAuras(options ?: MainModifierOptions) : ConditionalEffectC[] {
+  if (!this.isAlive()) {return [];}
+  if (!this.isValidCombatant()) {return [];}
+  return this.persona().myAuraEffects(options);
+}
 
-	actorMainModifiers(options ?: MainModifierOptions): readonly ModifierContainer[] {
-		const tags = (options && options.omitTags) ? [] : this.tags.realTags();
-		const ret : readonly ModifierContainer[] = [
-			...this.passiveItems(),
-			...this.getAllSocialFocii(),
-			...this.equippedItems(),
-			...tags,
-			...this.statusModifiers(),
-		];
-		return ret;
-	}
+actorMainModifiers(options ?: MainModifierOptions): readonly ModifierContainer[] {
+  const tags = (options && options.omitTags) ? [] : this.tags.realTags();
+  const ret : readonly ModifierContainer[] = [
+    ...this.passiveItems(),
+    ...this.getAllSocialFocii(),
+    ...this.equippedItems(),
+    ...tags,
+    ...this.statusModifiers(),
+  ];
+  return ret;
+}
 
-	statusModifiers() : ModifierContainer[]{
-		return this.effects.filter( eff => eff.hasEffects());
-	}
+statusModifiers() : ModifierContainer[]{
+  return this.effects.filter( eff => eff.hasEffects());
+}
 
 get downtimeMinorActions() : (Usable | SocialCard)[] {
-	const list = [
-		...this.powers,
-		...this.consumables,
-	];
-	const allUsable = list.filter ( pwr => pwr.hasTag("downtime-minor", this.isValidCombatant() ? this : null));
-	return [
-		...PersonaDB.minorActionActivities(),
-		...allUsable,
-	];
+  const list = [
+    ...this.powers,
+    ...this.consumables,
+  ];
+  const allUsable = list.filter ( pwr => pwr.hasTag("downtime-minor", this.isValidCombatant() ? this : null));
+  return [
+    ...PersonaDB.minorActionActivities(),
+    ...allUsable,
+  ];
 }
 
 get usableDowntimeMinorActions(): (Usable | SocialCard)[] {
-	if (!this.isPC()) {return [];};
-	return this.downtimeMinorActions.filter( action=>  {
-		if (action.isUsableType()) {
-			return this.persona().canUsePower(action, false);
-		}
-		if (action.isSocialCard()) {
-			return PersonaSocial.isActivitySelectable(action, this);
-		}
-	})
-		.sort( (a,b) => a.displayedName.localeCompare(b.displayedName));
+  if (!this.isPC()) {return [];};
+  return this.downtimeMinorActions.filter( action=>  {
+    if (action.isUsableType()) {
+      return this.persona().canUsePower(action, false);
+    }
+    if (action.isSocialCard()) {
+      return PersonaSocial.isActivitySelectable(action, this);
+    }
+  })
+    .sort( (a,b) => a.displayedName.localeCompare(b.displayedName));
 }
 
 /** treasure multiplier on PCs wealth gained */
 get treasureMultiplier () : number {
-	if (!this.isValidCombatant()) {return 1;}
-	switch (this.system.type) {
-		case "pc": case "npcAlly": {
-			const situation :Situation = {
-				user: (this as PC | NPCAlly).accessor
-			};
-			const bonus= this.persona().getBonuses("shadowMoneyBoostPercent").total(situation, "percentage");
-			return !Number.isNaN(bonus) ? bonus : 1;
-		}
-		default:
-			return 1;
-	}
+  if (!this.isValidCombatant()) {return 1;}
+  switch (this.system.type) {
+    case "pc": case "npcAlly": {
+      const situation :Situation = {
+        user: (this as PC | NPCAlly).accessor
+      };
+      const bonus= this.persona().getBonuses("shadowMoneyBoostPercent").total(situation, "percentage");
+      return !Number.isNaN(bonus) ? bonus : 1;
+    }
+    default:
+      return 1;
+  }
 }
 
 getFatigueStatus() : FatigueStatusId | undefined {
-	const eff = this.effects.contents.find( x=> x.getFatigueStatus() != undefined);
-	return eff?.getFatigueStatus();
+  const eff = this.effects.contents.find( x=> x.getFatigueStatus() != undefined);
+  return eff?.getFatigueStatus();
 }
 
 get fatigueLevel() : number {
-	if (!this.isPCLike()) {return 0;}
-	const st = this.getFatigueStatus();
-	return statusToFatigueLevel(st);
+  if (!this.isPCLike()) {return 0;}
+  const st = this.getFatigueStatus();
+  return statusToFatigueLevel(st);
 }
 
 /** Auto NPC recovery for fatigue to be run each calendar day*/
@@ -2216,273 +2216,273 @@ async recoverFatigue(this: NPCAlly) : Promise<number>{
 }
 
 hasAlteredFatigueToday(this:PC): boolean {
-	return this.system.fatigue.hasAlteredFatigueToday ?? false;
+  return this.system.fatigue.hasAlteredFatigueToday ?? false;
 }
 
 hasMadeFatigueRollToday(this:PC) : boolean {
-	return this.system.fatigue.hasMadeFatigueRollToday ?? false;
+  return this.system.fatigue.hasMadeFatigueRollToday ?? false;
 }
 
 async setAlteredFatigue(val = true) {
-	await this.update({"system.fatigue.hasAlteredFatigueToday": val});
+  await this.update({"system.fatigue.hasAlteredFatigueToday": val});
 }
 
 async setFatigueLevel(lvl: number,log = true) : Promise<FatigueStatusId | undefined> {
-	const oldLvl = this.fatigueLevel;
-	const oldId = fatigueLevelToStatus(oldLvl);
-	const newId = fatigueLevelToStatus(lvl);
-	for (const eff of this.effects.contents) {
-		if (eff.isFatigueStatus) {
-			if (!eff.statuses.has(newId!))
-			{await eff.delete();}
-		}
-	}
-	if (newId) {
-		await this.addStatus( {
-			id: newId,
-			duration: {
-				dtype:"permanent",
-			}
-		}, true);
-	}
-	if (lvl < statusToFatigueLevel("exhausted")) {
-		await this.addStatus( {
-			id: "crippled",
-			duration: {
-				dtype:"permanent",
-			}
-		}, true);
-	}
-	// const newId = await this.setFatigueLevel(st);
-	if (log && (oldId != newId || lvl < -1)) {
-		const oldName = oldId ? localize(statusMap.get(oldId)!.name as LocalizationString) : "Normal";
-		const newName = newId ? localize(statusMap.get(newId)!.name as LocalizationString): "Normal";
-		const hospital = lvl < statusToFatigueLevel("exhausted") ? `${this.displayedName} is over-fatigued and need to be hospitalized!`: "";
-		await Logger.sendToChat(`${this.displayedName}  fatigue changed from ${oldName} to ${newName}. ${hospital}`);
-	}
-	return newId;
+  const oldLvl = this.fatigueLevel;
+  const oldId = fatigueLevelToStatus(oldLvl);
+  const newId = fatigueLevelToStatus(lvl);
+  for (const eff of this.effects.contents) {
+    if (eff.isFatigueStatus) {
+      if (!eff.statuses.has(newId!))
+      {await eff.delete();}
+    }
+  }
+  if (newId) {
+    await this.addStatus( {
+      id: newId,
+      duration: {
+        dtype:"permanent",
+      }
+    }, true);
+  }
+  if (lvl < statusToFatigueLevel("exhausted")) {
+    await this.addStatus( {
+      id: "crippled",
+      duration: {
+        dtype:"permanent",
+      }
+    }, true);
+  }
+  // const newId = await this.setFatigueLevel(st);
+  if (log && (oldId != newId || lvl < -1)) {
+    const oldName = oldId ? localize(statusMap.get(oldId)!.name as LocalizationString) : "Normal";
+    const newName = newId ? localize(statusMap.get(newId)!.name as LocalizationString): "Normal";
+    const hospital = lvl < statusToFatigueLevel("exhausted") ? `${this.displayedName} is over-fatigued and need to be hospitalized!`: "";
+    await Logger.sendToChat(`${this.displayedName}  fatigue changed from ${oldName} to ${newName}. ${hospital}`);
+  }
+  return newId;
 }
 
 /** positive removes fatigue and negative adds it*/
 async alterFatigueLevel(amt: number, log=true) : Promise<FatigueStatusId | undefined> {
-	const oldLvl = this.fatigueLevel;
-	const newLvl = oldLvl + amt;
-	return await this.setFatigueLevel(newLvl, log);
+  const oldLvl = this.fatigueLevel;
+  const newLvl = oldLvl + amt;
+  return await this.setFatigueLevel(newLvl, log);
 }
 
 getUnarmedDamageType(): RealDamageType {
-	if (this.isShadow()) {return this.system.combat.baseDamageType ?? "physical";}
-	return "physical";
+  if (this.isShadow()) {return this.system.combat.baseDamageType ?? "physical";}
+  return "physical";
 }
 
 listComplementRatings(this: Shadow, list: Shadow[]) : string[] {
-	return list.map( shadow => {
-		const rating = Math.round(this.complementRating(shadow) * 10) / 10;
-		return {rating, name: shadow.name};
-	})
-		.sort( (a,b) => b.rating - a.rating)
-		.map(x => `${x.name}: ${x.rating}`);
+  return list.map( shadow => {
+    const rating = Math.round(this.complementRating(shadow) * 10) / 10;
+    return {rating, name: shadow.name};
+  })
+    .sort( (a,b) => b.rating - a.rating)
+    .map(x => `${x.name}: ${x.rating}`);
 
 }
 
 complementRating (this: Shadow, other: Shadow) : number {
-	const cachedRating = this.cache.complementRating.get(other.id);
-	if (cachedRating != undefined) {
-		return cachedRating;
-	}
-	const rating = this.#complementRating(other) + other.#complementRating(this);
-	this.cache.complementRating.set(other.id, rating);
-	return rating;
+  const cachedRating = this.cache.complementRating.get(other.id);
+  if (cachedRating != undefined) {
+    return cachedRating;
+  }
+  const rating = this.#complementRating(other) + other.#complementRating(this);
+  this.cache.complementRating.set(other.id, rating);
+  return rating;
 }
 
 #complementRating (this: Shadow, other: Shadow) : number {
-	let rating = 0;
-	if (this == other) {return 0;} //baseline
-	const scaledPairs : [Shadow["system"]["role"], Shadow["system"]["role"], number][] = [
-		["soldier", "lurker", 1],
-		["soldier", "support", 1],
-		["soldier", "artillery", 1],
-		["brute", "support", 1],
-		["brute", "controller", 1],
-		["assassin", "lurker", -1],
-		["lurker", "support", -1],
-		["lurker", "controller", 1],
-		["lurker", "lurker", -0.5],
-		["soldier", "soldier", -0.5],
-		["support", "support", -0.5],
-	] as const;
-	for (const [r1,r2, amt] of scaledPairs) {
-		if (this.hasRole(r1) && other.hasRole(r2)) {
-			rating += amt;
-		}
-	}
-	const thisP= this.persona();
-	const otherP = other.persona();
-	const weaknesses = DAMAGE_TYPES_LIST
-		.filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "weakness") as RealDamageType[];
-	rating -= 0.5 * weaknesses.length;
-	const normalR = DAMAGE_TYPES_LIST
-		.filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "normal") as RealDamageType[];
-	for (const w of weaknesses) {
-		const res = otherP.elemResist(w);
-		switch (res)  {
-			case "block":
-				rating += 2;
-				break;
-			case "absorb":
-			case "reflect":
-				rating += 3;
-				break;
-			case "resist":
-				rating += 0.5;
-				break;
-			case "normal":
-				rating -= 1;
-				break;
-			case "weakness":
-				rating -= 2;
-				break;
-			default:
-				break;
-		}
-	}
-	for (const n of normalR) {
-		const res = otherP.elemResist(n);
-		switch (res) {
-			case "resist":
-				rating += 0.1;
-				break;
-			case "absorb":
-			case "reflect":
-			case "block":
-				rating += 1;
-				break;
-			case "weakness":
-				rating -= 1;
-				break;
-		}
-	}
+  let rating = 0;
+  if (this == other) {return 0;} //baseline
+  const scaledPairs : [Shadow["system"]["role"], Shadow["system"]["role"], number][] = [
+    ["soldier", "lurker", 1],
+    ["soldier", "support", 1],
+    ["soldier", "artillery", 1],
+    ["brute", "support", 1],
+    ["brute", "controller", 1],
+    ["assassin", "lurker", -1],
+    ["lurker", "support", -1],
+    ["lurker", "controller", 1],
+    ["lurker", "lurker", -0.5],
+    ["soldier", "soldier", -0.5],
+    ["support", "support", -0.5],
+  ] as const;
+  for (const [r1,r2, amt] of scaledPairs) {
+    if (this.hasRole(r1) && other.hasRole(r2)) {
+      rating += amt;
+    }
+  }
+  const thisP= this.persona();
+  const otherP = other.persona();
+  const weaknesses = DAMAGE_TYPES_LIST
+    .filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "weakness") as RealDamageType[];
+  rating -= 0.5 * weaknesses.length;
+  const normalR = DAMAGE_TYPES_LIST
+    .filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "normal") as RealDamageType[];
+  for (const w of weaknesses) {
+    const res = otherP.elemResist(w);
+    switch (res)  {
+      case "block":
+        rating += 2;
+        break;
+      case "absorb":
+      case "reflect":
+        rating += 3;
+        break;
+      case "resist":
+        rating += 0.5;
+        break;
+      case "normal":
+        rating -= 1;
+        break;
+      case "weakness":
+        rating -= 2;
+        break;
+      default:
+        break;
+    }
+  }
+  for (const n of normalR) {
+    const res = otherP.elemResist(n);
+    switch (res) {
+      case "resist":
+        rating += 0.1;
+        break;
+      case "absorb":
+      case "reflect":
+      case "block":
+        rating += 1;
+        break;
+      case "weakness":
+        rating -= 1;
+        break;
+    }
+  }
 
-	const attacks = new Set(
-		this.powers
-		.map(x=> x.getBaseDamageType())
-		.filter (dmgType => dmgType != "untyped" && dmgType != "none")
-	);
-	const otherAttacks =
-		other.powers
-		.map(x=> x.getBaseDamageType())
-		.filter (dmgType => dmgType != "healing" && dmgType != "untyped" && dmgType != "none");
-	rating += otherAttacks.reduce( (acc, dmg) =>
-		acc + (!attacks.has(dmg) ? 1 : 0)
-		, 0 );
-	return rating;
+  const attacks = new Set(
+    this.powers
+    .map(x=> x.getBaseDamageType())
+    .filter (dmgType => dmgType != "untyped" && dmgType != "none")
+  );
+  const otherAttacks =
+    other.powers
+    .map(x=> x.getBaseDamageType())
+    .filter (dmgType => dmgType != "healing" && dmgType != "untyped" && dmgType != "none");
+  rating += otherAttacks.reduce( (acc, dmg) =>
+    acc + (!attacks.has(dmg) ? 1 : 0)
+    , 0 );
+  return rating;
 }
 
 instantKillResistanceMultiplier(this: ValidAttackers, attacker: ValidAttackers) : number {
-	const situation : Situation = {
-		attacker: attacker.accessor,
-		user: this.accessor,
-		target: this.accessor,
-	};
-	return this.persona().getBonuses("instantDeathResistanceMult").total(situation, "percentage");
+  const situation : Situation = {
+    attacker: attacker.accessor,
+    user: this.accessor,
+    target: this.accessor,
+  };
+  return this.persona().getBonuses("instantDeathResistanceMult").total(situation, "percentage");
 }
 
 mainModifiers(...args: Parameters<Persona["mainModifiers"]>): readonly ConditionalEffectC[] {
-	if (!this.isValidCombatant()) {return [];}
-	return this.persona().allModifiers(...args);
+  if (!this.isValidCombatant()) {return [];}
+  return this.persona().allModifiers(...args);
 }
 
 userDefensiveEffects(this: ValidAttackers) : ModifierContainer [] {
-	if (!this.isValidCombatant()) {return [];}
-	return this.actorMainModifiers()
-		.filter(x=> x.getEffects(this, {CETypes: ["defensive"]}));
+  if (!this.isValidCombatant()) {return [];}
+  return this.actorMainModifiers()
+    .filter(x=> x.getEffects(this, {CETypes: ["defensive"]}));
 }
 
 getDefense(this: ValidAttackers,  type : Defense) : Calculation {
-	return this.persona().getDefense(type);
+  return this.persona().getDefense(type);
 }
 
 get statusResists() : {id: string, img: string, local: string, val: string}[] {
-	if (!this.isValidCombatant()) { return [];}
-	const arr: {id: string, img: string, local: string, val: string}[]   = [];
-	for (const [k, v] of Object.entries(this.system.combat.statusResists)) {
-		arr.push( {
-			id: k,
-			val: v,
-			local: localize(STATUS_EFFECT_TRANSLATION_TABLE[k as StatusEffectId]),
-			img: STATUS_EFFECT_LIST.find(x=> x.id == k)?.img ?? "",
-		});
-	}
-	return arr;
+  if (!this.isValidCombatant()) { return [];}
+  const arr: {id: string, img: string, local: string, val: string}[]   = [];
+  for (const [k, v] of Object.entries(this.system.combat.statusResists)) {
+    arr.push( {
+      id: k,
+      val: v,
+      local: localize(STATUS_EFFECT_TRANSLATION_TABLE[k as StatusEffectId]),
+      img: STATUS_EFFECT_LIST.find(x=> x.id == k)?.img ?? "",
+    });
+  }
+  return arr;
 }
 
 get printableActiveStatuses(): {name: string, description: string, id: PersonaAE["id"]}[] {
-	const effects = this.effects.contents;
-	const statuses = effects
-		.filter( eff=> eff.isStatus)
-		.flatMap (eff => {
-			return eff.statusTags.map( stTag=> ({
-				name: stTag.name,
-				description: stTag.description.toString() + "\n" + eff.statusDurationString(),
-				id: eff.id,
-			}));
-		});
-	const flags = effects
-		.filter( eff=> eff.isFlag() && eff.statusDuration.dtype != "permanent")
-		.map (eff => ({
-			name: eff.name,
-			description: eff.statusDurationString(),
-			id: eff.id,
-		}));
-	return statuses.concat(flags);
+  const effects = this.effects.contents;
+  const statuses = effects
+    .filter( eff=> eff.isStatus)
+    .flatMap (eff => {
+      return eff.statusTags.map( stTag=> ({
+        name: stTag.name,
+        description: stTag.description.toString() + "\n" + eff.statusDurationString(),
+        id: eff.id,
+      }));
+    });
+  const flags = effects
+    .filter( eff=> eff.isFlag() && eff.statusDuration.dtype != "permanent")
+    .map (eff => ({
+      name: eff.name,
+      description: eff.statusDurationString(),
+      id: eff.id,
+    }));
+  return statuses.concat(flags);
 }
 
 isDMon() : boolean {
-	if (this.cache.isDMon) {return this.cache.isDMon;}
-	return this.cache.isDMon = this.isShadow() && (this.system.creatureType == "d-mon" ||  this.hasCreatureTag("d-mon"));
+  if (this.cache.isDMon) {return this.cache.isDMon;}
+  return this.cache.isDMon = this.isShadow() && (this.system.creatureType == "d-mon" ||  this.hasCreatureTag("d-mon"));
 }
 
 isPersona(this: Shadow): boolean {
-	return this.isShadow() && (this.system.creatureType == "persona");
+  return this.isShadow() && (this.system.creatureType == "persona");
 }
 
 get isCompendiumEntry() : boolean {
-	if (!this.isShadow()) {return false;}
-	return this.isPersona() &&
-		PersonaCompendium.isCompendiumEntry(this);
+  if (!this.isShadow()) {return false;}
+  return this.isPersona() &&
+    PersonaCompendium.isCompendiumEntry(this);
 }
 
 isCustomPersona(this: ValidAttackers): boolean {
-	const shadowPersona =
-		this.isShadow()
-		&& this.isPersona()
-		&& (	this.hasTag("custom-persona") || this.hasTag("lone-persona"));
-	const PC = this.isPC();
-	return shadowPersona || PC;
+  const shadowPersona =
+    this.isShadow()
+    && this.isPersona()
+    && (	this.hasTag("custom-persona") || this.hasTag("lone-persona"));
+  const PC = this.isPC();
+  return shadowPersona || PC;
 }
 
 knowsPowerInnately(this: ValidAttackers, power : Power)  : boolean{
-	const powers = this.system.combat.powers;
-	if (powers.includes(power.id)) {
-		return true;
-	}
-	if (!this.isShadow()) {
-		const sideboard =  this.system.combat.powers_sideboard;
-		if (sideboard.includes(power.id)) {
-			return true;
-		}
-	}
-	const buffer = this.system.combat.learnedPowersBuffer;
-	if (buffer.includes(power.id)) {
-		return true;
+  const powers = this.system.combat.powers;
+  if (powers.includes(power.id)) {
+    return true;
+  }
+  if (!this.isShadow()) {
+    const sideboard =  this.system.combat.powers_sideboard;
+    if (sideboard.includes(power.id)) {
+      return true;
+    }
+  }
+  const buffer = this.system.combat.learnedPowersBuffer;
+  if (buffer.includes(power.id)) {
+    return true;
 
-	}
-	return false;
+  }
+  return false;
 }
 
 get hasPowerSideboard() : boolean  {
-	if (!this.isPC()) {return false;}
-	return this.class.system.canUsePowerSideboard ?? false;
+  if (!this.isPC()) {return false;}
+  return this.class.system.canUsePowerSideboard ?? false;
 }
 
 canEquip(this: PC | NPCAlly, item: Weapon | InvItem) : boolean {
@@ -2504,395 +2504,395 @@ canEquip(this: PC | NPCAlly, item: Weapon | InvItem) : boolean {
 
 
 isUsingMetaPod(this: ValidAttackers): boolean {
-	if (this.isShadow()) {return false;}
-	return this.system.combat.usingMetaPod ?? true;
+  if (this.isShadow()) {return false;}
+  return this.system.combat.usingMetaPod ?? true;
 }
 
 async checkSideboardEmptySpace(this: ValidAttackers) {
-	if (this.isShadow()) {return;}
-	while (this.sideboardPowers.length < this.persona().maxSideboardPowers) {
-		const sideboard = this.system.combat.powers_sideboard;
-		const buffer = this.system.combat.learnedPowersBuffer;
-		if (buffer.length > 0) {
-			const bufferItem = buffer.shift()!;
-			sideboard.push(bufferItem);
-			await this.update( {"system.combat.powers_sideboard": sideboard});
-			await this.update( {"system.combat.learnedPowersBuffer" : buffer});
-			continue;
-		}
-		break;
-	}
+  if (this.isShadow()) {return;}
+  while (this.sideboardPowers.length < this.persona().maxSideboardPowers) {
+    const sideboard = this.system.combat.powers_sideboard;
+    const buffer = this.system.combat.learnedPowersBuffer;
+    if (buffer.length > 0) {
+      const bufferItem = buffer.shift()!;
+      sideboard.push(bufferItem);
+      await this.update( {"system.combat.powers_sideboard": sideboard});
+      await this.update( {"system.combat.learnedPowersBuffer" : buffer});
+      continue;
+    }
+    break;
+  }
 }
 
 async movePowerToSideboard(this: PC, powerId: Power["id"]) {
-	if (!this.class.system.canUsePowerSideboard) {
-		ui.notifications.error("You don't have a sideboard");
-		return;
-	}
-	const newPowers = this.system.combat.powers
-		.filter( id => id != powerId);
-	await this.update({"system.combat.powers": newPowers});
-	const sideboard = this.system.combat.powers_sideboard;
-	sideboard.push(powerId);
-	await this.update({"system.combat.powers_sideboard": sideboard});
-	const power = PersonaDB.getItemById(powerId) as Power;
-	await Logger.sendToChat(`${this.name} moved power ${power.name} to sideboard` , this);
+  if (!this.class.system.canUsePowerSideboard) {
+    ui.notifications.error("You don't have a sideboard");
+    return;
+  }
+  const newPowers = this.system.combat.powers
+    .filter( id => id != powerId);
+  await this.update({"system.combat.powers": newPowers});
+  const sideboard = this.system.combat.powers_sideboard;
+  sideboard.push(powerId);
+  await this.update({"system.combat.powers_sideboard": sideboard});
+  const power = PersonaDB.getItemById(powerId) as Power;
+  await Logger.sendToChat(`${this.name} moved power ${power.name} to sideboard` , this);
 }
 
 async retrievePowerFromSideboard(this: PC, powerId: Power["id"]) {
-	if (this.mainPowers.length >= this.basePersona.maxMainPowers) {
-		ui.notifications.warn(`Can't have more than ${this.basePersona.maxMainPowers} main powers.`);
-		return;
-	}
-	const newSideboard = this.system.combat.powers_sideboard
-		.filter( id => id != powerId);
-	await this.update({"system.combat.powers_sideboard": newSideboard});
-	const powers = this.system.combat.powers;
-	powers.push(powerId);
-	await this.update({"system.combat.powers": powers});
-	const power = PersonaDB.getItemById(powerId) as Power;
-	await Logger.sendToChat(`${this.name} moved power ${power.name} out of sideboard` , this);
+  if (this.mainPowers.length >= this.basePersona.maxMainPowers) {
+    ui.notifications.warn(`Can't have more than ${this.basePersona.maxMainPowers} main powers.`);
+    return;
+  }
+  const newSideboard = this.system.combat.powers_sideboard
+    .filter( id => id != powerId);
+  await this.update({"system.combat.powers_sideboard": newSideboard});
+  const powers = this.system.combat.powers;
+  powers.push(powerId);
+  await this.update({"system.combat.powers": powers});
+  const power = PersonaDB.getItemById(powerId) as Power;
+  await Logger.sendToChat(`${this.name} moved power ${power.name} out of sideboard` , this);
 }
 
 addFocus(this: PC, focus: Focus) {
-	PersonaError.softFail(`Can't drop ${focus.name}. Focii are no longer supported on PCs`);
-	return;
+  PersonaError.softFail(`Can't drop ${focus.name}. Focii are no longer supported on PCs`);
+  return;
 }
 
 async deleteFocus(focusId: Focus["id"]) {
-	const item = this.items.find(x => x.id == focusId);
-	if (item) {
-		await item.delete();
-		return;
-	}
-	const actorType = this.system.type;
-	switch (actorType) {
-		case "npc": return;
-		case "tarot": return;
-		case "pc": case "shadow": case "npcAlly": {
-			let foci = this.system.combat.focuses;
-			if (!foci.includes(focusId)) {return;}
-			foci = foci.filter( x=> x != focusId);
-			return await this.update( {"system.combat.focuses": foci});
-		}
-		default:
-			actorType satisfies never;
-	}
+  const item = this.items.find(x => x.id == focusId);
+  if (item) {
+    await item.delete();
+    return;
+  }
+  const actorType = this.system.type;
+  switch (actorType) {
+    case "npc": return;
+    case "tarot": return;
+    case "pc": case "shadow": case "npcAlly": {
+      let foci = this.system.combat.focuses;
+      if (!foci.includes(focusId)) {return;}
+      foci = foci.filter( x=> x != focusId);
+      return await this.update( {"system.combat.focuses": foci});
+    }
+    default:
+      actorType satisfies never;
+  }
 }
 
 async  setClass(this: ValidAttackers, cClass: CClass) {
-	await this.update( {"system.combat.classData.classId": cClass.id});
-	await Logger.sendToChat(`${this.displayedName} changes class to ${cClass.name}`);
+  await this.update( {"system.combat.classData.classId": cClass.id});
+  await Logger.sendToChat(`${this.displayedName} changes class to ${cClass.name}`);
 }
 
 getSocialStat(this: PC, socialStat: SocialStat) : ModifierList {
-	const stat = this.system.skills[socialStat];
-	const mods = new ModifierList();
-	const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
-	mods.add(skillName, stat);
-	return mods.concat(this.persona().getBonuses(socialStat));
+  const stat = this.system.skills[socialStat];
+  const mods = new ModifierList();
+  const skillName = game.i18n.localize(STUDENT_SKILLS[socialStat]);
+  mods.add(skillName, stat);
+  return mods.concat(this.persona().getBonuses(socialStat));
 }
 
 async createSocialLink(this: PC, npc: SocialLink) {
-	if (this.system.social.find( x=> x.linkId == npc.id)) {
-		return;
-	}
-	this.system.social.push(
-		{
-			linkId: npc.id,
-			linkLevel: 1,
-			inspiration: 1,
-			currentProgress: 0,
-			relationshipType: "PEER",
-			isDating: false,
-		}
-	);
-	void PersonaSounds.newSocialLink();
-	await this.update({"system.social": this.system.social});
-	await Logger.sendToChat(`${this.name} forged new social link with ${npc.displayedName} (${npc.tarot?.name}).` , this);
+  if (this.system.social.find( x=> x.linkId == npc.id)) {
+    return;
+  }
+  this.system.social.push(
+    {
+      linkId: npc.id,
+      linkLevel: 1,
+      inspiration: 1,
+      currentProgress: 0,
+      relationshipType: "PEER",
+      isDating: false,
+    }
+  );
+  void PersonaSounds.newSocialLink();
+  await this.update({"system.social": this.system.social});
+  await Logger.sendToChat(`${this.name} forged new social link with ${npc.displayedName} (${npc.tarot?.name}).` , this);
 }
 
 get baseRelationship(): string {
-	switch (this.system.type) {
-		case "pc":
-			return "PEER";
-		case "npc": case "npcAlly":
-			return "PEER";
-		case "shadow":
-		case "tarot":
-			break;
-		default:
-			this.system satisfies never;
-	}
-	return "NONE";
+  switch (this.system.type) {
+    case "pc":
+      return "PEER";
+    case "npc": case "npcAlly":
+      return "PEER";
+    case "shadow":
+    case "tarot":
+      break;
+    default:
+      this.system satisfies never;
+  }
+  return "NONE";
 }
 
 async increaseSocialLink(this: PC, linkId: string) {
-	const link = this.system.social.find( x=> x.linkId == linkId);
-	if (!link) {
-		throw new PersonaError("Trying to increase social link you don't have");
-	}
-	if (link.linkLevel >= 10) {
-		throw new PersonaError("Social Link is already maxed out");
-	}
-	link.linkLevel +=1 ;
-	link.inspiration = link.linkLevel;
-	if (link.linkLevel == 10) {
-		void PersonaSounds.socialLinkMax();
-	} else {
-		void PersonaSounds.socialLinkUp();
-	}
-	await this.update({"system.social": this.system.social});
-	const target = game.actors.get(link.linkId) as NPC | PC;
-	if (target) {
-		await Logger.sendToChat(`${this.name} increased Social Link with ${target.displayedName} (${target.tarot?.name}) to SL ${link.linkLevel}.` , this);
-	}
+  const link = this.system.social.find( x=> x.linkId == linkId);
+  if (!link) {
+    throw new PersonaError("Trying to increase social link you don't have");
+  }
+  if (link.linkLevel >= 10) {
+    throw new PersonaError("Social Link is already maxed out");
+  }
+  link.linkLevel +=1 ;
+  link.inspiration = link.linkLevel;
+  if (link.linkLevel == 10) {
+    void PersonaSounds.socialLinkMax();
+  } else {
+    void PersonaSounds.socialLinkUp();
+  }
+  await this.update({"system.social": this.system.social});
+  const target = game.actors.get(link.linkId) as NPC | PC;
+  if (target) {
+    await Logger.sendToChat(`${this.name} increased Social Link with ${target.displayedName} (${target.tarot?.name}) to SL ${link.linkLevel}.` , this);
+  }
 }
 
 async decreaseSocialLink(this: PC, linkId: string) {
-	const link = this.system.social.find( x=> x.linkId == linkId);
-	if (!link) {
-		throw new PersonaError("Trying to decrease social link you don't have");
-	}
-	if (link.linkLevel >= 10) {
-		throw new PersonaError("Social Link is already maxed out");
-	}
-	link.linkLevel -=1 ;
-	// link.currentProgress= 0;
-	link.inspiration = link.linkLevel;
-	void PersonaSounds.socialLinkReverse();
-	if (link.linkLevel == 0) {
-		const newSocial = this.system.social.filter( x=> x != link);
-		await this.update({"system.social": newSocial});
-		return;
-	}
-	await this.update({"system.social": this.system.social});
+  const link = this.system.social.find( x=> x.linkId == linkId);
+  if (!link) {
+    throw new PersonaError("Trying to decrease social link you don't have");
+  }
+  if (link.linkLevel >= 10) {
+    throw new PersonaError("Social Link is already maxed out");
+  }
+  link.linkLevel -=1 ;
+  // link.currentProgress= 0;
+  link.inspiration = link.linkLevel;
+  void PersonaSounds.socialLinkReverse();
+  if (link.linkLevel == 0) {
+    const newSocial = this.system.social.filter( x=> x != link);
+    await this.update({"system.social": newSocial});
+    return;
+  }
+  await this.update({"system.social": this.system.social});
 }
 
 getSocialLinkProgress(this: PC, linkId: SocialLink["id"] | Activity["id"]) : number {
-	const link = this.system.social.find( x=> x.linkId == linkId);
-	if (!link) {
-		return 0;
-	}
-	return link.currentProgress;
+  const link = this.system.social.find( x=> x.linkId == linkId);
+  if (!link) {
+    return 0;
+  }
+  return link.currentProgress;
 }
 
 async alterSocialLinkProgress(this: PC, linkId: string, progress: number) {
-	return await this.socialLinkProgress(linkId, progress);
+  return await this.socialLinkProgress(linkId, progress);
 }
 
 async socialLinkProgress(this: PC, linkId: string, progress: number) {
-	const link = this.system.social.find( x=> x.linkId == linkId);
-	if (!link) {
-		PersonaError.softFail("Trying to increase social link you don't have");
-		return;
-	}
-	const orig = link.currentProgress;
-	link.currentProgress = Math.max(0,progress + link.currentProgress);
-	if (progress > 0) {
-		link.inspiration = link.linkLevel;
-	}
-	const linkActor = game.actors.get(link.linkId);
-	switch (progress) {
-		case 1: void PersonaSounds.socialBoostJingle(1);
-			break;
-		case 2: void PersonaSounds.socialBoostJingle(2);
-			break;
-		case 3: void PersonaSounds.socialBoostJingle(3);
-			break;
-	}
-	await this.update({"system.social": this.system.social});
-	await Logger.sendToChat(`${this.name} added ${progress} progress tokens to link ${linkActor?.name} (original Value: ${orig})` , this);
+  const link = this.system.social.find( x=> x.linkId == linkId);
+  if (!link) {
+    PersonaError.softFail("Trying to increase social link you don't have");
+    return;
+  }
+  const orig = link.currentProgress;
+  link.currentProgress = Math.max(0,progress + link.currentProgress);
+  if (progress > 0) {
+    link.inspiration = link.linkLevel;
+  }
+  const linkActor = game.actors.get(link.linkId);
+  switch (progress) {
+    case 1: void PersonaSounds.socialBoostJingle(1);
+      break;
+    case 2: void PersonaSounds.socialBoostJingle(2);
+      break;
+    case 3: void PersonaSounds.socialBoostJingle(3);
+      break;
+  }
+  await this.update({"system.social": this.system.social});
+  await Logger.sendToChat(`${this.name} added ${progress} progress tokens to link ${linkActor?.name} (original Value: ${orig})` , this);
 }
 
 async activityProgress(this: PC, activityId :string, progress: number) {
-	const activityData = this.system.activities.find( x=> x.linkId == activityId);
-	if (!activityData) {
-		PersonaError.softFail("Trying to increase activty you don't have");
-		return;
-	}
-	const orig = activityData.currentProgress;
-	activityData.currentProgress = Math.max(0,progress + activityData.currentProgress);
-	await this.update({"system.activities": this.system.activities});
-	const activity = PersonaDB.allActivities().find( act=> act.id == activityId);
-	await Logger.sendToChat(`${this.name} added ${progress} progress tokens to ${activity?.name ?? "unknown activity"} (original Value: ${orig})` , this);
+  const activityData = this.system.activities.find( x=> x.linkId == activityId);
+  if (!activityData) {
+    PersonaError.softFail("Trying to increase activty you don't have");
+    return;
+  }
+  const orig = activityData.currentProgress;
+  activityData.currentProgress = Math.max(0,progress + activityData.currentProgress);
+  await this.update({"system.activities": this.system.activities});
+  const activity = PersonaDB.allActivities().find( act=> act.id == activityId);
+  await Logger.sendToChat(`${this.name} added ${progress} progress tokens to ${activity?.name ?? "unknown activity"} (original Value: ${orig})` , this);
 
 }
 
 async activityStrikes(this: PC, activityId: string, strikes: number) {
-	const activityData = this.system.activities.find( x=> x.linkId == activityId);
-	if (!activityData) {
-		throw new PersonaError("Trying to increase activty you don't have");
-	}
-	const orig = activityData.strikes;
-	activityData.strikes = Math.max(0,strikes + activityData.strikes);
-	await this.update({"system.activities": this.system.activities});
-	const activity = PersonaDB.allActivities().find( act=> act.id == activityId);
-	await Logger.sendToChat(`${this.name} added ${strikes} strikes to ${activity?.name ?? "unknown activity"} (original Value: ${orig})` , this);
+  const activityData = this.system.activities.find( x=> x.linkId == activityId);
+  if (!activityData) {
+    throw new PersonaError("Trying to increase activty you don't have");
+  }
+  const orig = activityData.strikes;
+  activityData.strikes = Math.max(0,strikes + activityData.strikes);
+  await this.update({"system.activities": this.system.activities});
+  const activity = PersonaDB.allActivities().find( act=> act.id == activityId);
+  await Logger.sendToChat(`${this.name} added ${strikes} strikes to ${activity?.name ?? "unknown activity"} (original Value: ${orig})` , this);
 }
 
 async refreshSocialLink(this: PC, npc: SocialLink) {
-	const link = this.system.social.find( x=> x.linkId == npc.id);
-	if (!link) {
-		throw new PersonaError(`Trying to refresh social link ${this.name} doesn't have: ${npc.name} `);
-	}
-	link.inspiration = link.linkLevel;
-	await this.update({"system.social": this.system.social});
+  const link = this.system.social.find( x=> x.linkId == npc.id);
+  if (!link) {
+    throw new PersonaError(`Trying to refresh social link ${this.name} doesn't have: ${npc.name} `);
+  }
+  link.inspiration = link.linkLevel;
+  await this.update({"system.social": this.system.social});
 }
 
 async spendInspiration(this: PC, linkId: SocialLink["id"], amt?: number) : Promise<void> ;
 async spendInspiration(this: PC, socialLink:SocialLink , amt?: number): Promise<void> ;
 
 async spendInspiration(this: PC, socialLinkOrId:SocialLink | SocialLink["id"], amt: number = 1): Promise<void> {
-	const id = typeof socialLinkOrId == "string" ? socialLinkOrId : socialLinkOrId.id;
-	const link = this.system.social.find( x=> x.linkId == id);
-	if (!link) {
-		throw new PersonaError("Trying to refresh social link you don't have");
-	}
-	if (link.inspiration <= 0) {
-		throw new PersonaError("You are trying to spend Inspiration you don't have");
-	}
-	link.inspiration -= amt;
-	link.inspiration = Math.max(0, link.inspiration);
-	link.inspiration = Math.min(link.linkLevel, link.inspiration);
-	await this.update({"system.social": this.system.social});
+  const id = typeof socialLinkOrId == "string" ? socialLinkOrId : socialLinkOrId.id;
+  const link = this.system.social.find( x=> x.linkId == id);
+  if (!link) {
+    throw new PersonaError("Trying to refresh social link you don't have");
+  }
+  if (link.inspiration <= 0) {
+    throw new PersonaError("You are trying to spend Inspiration you don't have");
+  }
+  link.inspiration -= amt;
+  link.inspiration = Math.max(0, link.inspiration);
+  link.inspiration = Math.min(link.linkLevel, link.inspiration);
+  await this.update({"system.social": this.system.social});
 }
 
 getInspirationWith(linkId: SocialLink["id"]): number {
-	if (this.system.type != "pc") {return 0;}
-	const link = this.system.social.find( x=> x.linkId == linkId);
-	if (!link) {return 0;}
-	return link.inspiration;
+  if (this.system.type != "pc") {return 0;}
+  const link = this.system.social.find( x=> x.linkId == linkId);
+  if (!link) {return 0;}
+  return link.inspiration;
 }
 
 async addInspiration(this:PC, linkId:SocialLink["id"] | SocialLink, amt: number) {
   if (linkId instanceof PersonaActor) {
     linkId = linkId.id;
   }
-	const link = this.system.social.find( x=> x.linkId == linkId);
-	if (!link) {
-		throw new PersonaError("Trying to refresh social link you don't have");
-	}
-	link.inspiration += amt;
-	link.inspiration = Math.min(link.linkLevel, link.inspiration);
-	await this.update({"system.social": this.system.social});
+  const link = this.system.social.find( x=> x.linkId == linkId);
+  if (!link) {
+    throw new PersonaError("Trying to refresh social link you don't have");
+  }
+  link.inspiration += amt;
+  link.inspiration = Math.min(link.linkLevel, link.inspiration);
+  await this.update({"system.social": this.system.social});
 }
 
 getSocialFocii_PC(this: NPC, linkHolder: SocialLink, targetPC: PC) : Focus[] {
-	const sortFn = function (a: Focus, b: Focus) {
-		return a.requiredLinkLevel() - b.requiredLinkLevel();
-	};
-	const focii = this.items.filter( x=> x.isFocus()) as Focus[];
-	const tarot = targetPC.tarot;
-	if (!tarot) {
-		console.debug(`No tarot found for ${this.name} or ${linkHolder.name}`);
-		return focii.sort( sortFn);
-	}
-	const tarotFocii = tarot.items.filter( x=> x.isFocus()) as Focus[];
-	return focii.concat(tarotFocii).sort(sortFn);
+  const sortFn = function (a: Focus, b: Focus) {
+    return a.requiredLinkLevel() - b.requiredLinkLevel();
+  };
+  const focii = this.items.filter( x=> x.isFocus()) as Focus[];
+  const tarot = targetPC.tarot;
+  if (!tarot) {
+    console.debug(`No tarot found for ${this.name} or ${linkHolder.name}`);
+    return focii.sort( sortFn);
+  }
+  const tarotFocii = tarot.items.filter( x=> x.isFocus()) as Focus[];
+  return focii.concat(tarotFocii).sort(sortFn);
 }
 
 getSocialFocii_NPC(this: NPC, linkHolder: SocialLink) : Focus[] {
-	const sortFn = function (a: Focus, b: Focus) {
-		return a.requiredLinkLevel() - b.requiredLinkLevel();
-	};
-	const focii = this.items.filter( x=> x.isFocus()) as Focus[];
-	const tarot = this.tarot ?? linkHolder.tarot;
-	if (!tarot) {
-		console.debug(`No tarot found for ${this.name} or ${linkHolder.name}`);
-		return focii.sort( sortFn);
-	}
-	const tarotFocii = tarot.items.filter( x=> x.isFocus()) as Focus[];
-	return focii.concat(tarotFocii).sort(sortFn);
+  const sortFn = function (a: Focus, b: Focus) {
+    return a.requiredLinkLevel() - b.requiredLinkLevel();
+  };
+  const focii = this.items.filter( x=> x.isFocus()) as Focus[];
+  const tarot = this.tarot ?? linkHolder.tarot;
+  if (!tarot) {
+    console.debug(`No tarot found for ${this.name} or ${linkHolder.name}`);
+    return focii.sort( sortFn);
+  }
+  const tarotFocii = tarot.items.filter( x=> x.isFocus()) as Focus[];
+  return focii.concat(tarotFocii).sort(sortFn);
 }
 
 getAllSocialFocii() : Focus[] {
-	switch (this.system.type) {
-		case "pc": {
-			const x = this.socialLinks
-			.flatMap( link => link.focii);
-			return x;
-		}
-		case "npcAlly":
-			return []; //coming soon
-		case "shadow":
-		case "npc":
-		case "tarot":
-			return [];
-		default:
-			this.system satisfies never;
-			return [];
-	}
+  switch (this.system.type) {
+    case "pc": {
+      const x = this.socialLinks
+      .flatMap( link => link.focii);
+      return x;
+    }
+    case "npcAlly":
+      return []; //coming soon
+    case "shadow":
+    case "npc":
+    case "tarot":
+      return [];
+    default:
+      this.system satisfies never;
+      return [];
+  }
 }
 
 getEffects(this: ValidAttackers, CETypes ?: TypedConditionalEffect['conditionalType'][] ) : readonly ConditionalEffectC [] {
-	const mods =  this.persona().allModifiers();
-	if (!CETypes || CETypes.length == 0) {
-		return mods;
-	}
-	return mods.filter ( mod => CETypes.includes(mod.conditionalType)) ;
+  const mods =  this.persona().allModifiers();
+  if (!CETypes || CETypes.length == 0) {
+    return mods;
+  }
+  return mods.filter ( mod => CETypes.includes(mod.conditionalType)) ;
 }
 
 canEngage() :boolean {
-	return !this.isDistracted() && this.isCapableOfAction();
+  return !this.isDistracted() && this.isCapableOfAction();
 }
 
 canAllOutAttack(): boolean {
-	if (this.hp < 0) {return false;}
-	if (this.isDistracted()) {return false;}
-	if (!this.isCapableOfAction()) {return false;}
-	if (this.hasBanefulStatus()) {return false;}
-	return true;
+  if (this.hp < 0) {return false;}
+  if (this.isDistracted()) {return false;}
+  if (!this.isCapableOfAction()) {return false;}
+  if (this.hasBanefulStatus()) {return false;}
+  return true;
 }
 
 hasBanefulStatus(): boolean {
-	return Boolean(this.effects.find( (st) => st.isBaneful));
+  return Boolean(this.effects.find( (st) => st.isBaneful));
 }
 
 getSaveBonus( this: ValidAttackers) : ModifierList {
-	const mods = this.mainModifiers()
-		.filter( x => x.conditionalType == "passive" || x.conditionalType == "defensive");
-	const modsProcessed = PersonaItem.getModifier(mods, "save");
-	return new ModifierList(modsProcessed);
+  const mods = this.mainModifiers()
+    .filter( x => x.conditionalType == "passive" || x.conditionalType == "defensive");
+  const modsProcessed = PersonaItem.getModifier(mods, "save");
+  return new ModifierList(modsProcessed);
 }
 
 getDisengageBonus( this: ValidAttackers) : ModifierList {
-	const mods = this.mainModifiers()
-		.filter( x => x.conditionalType == "passive" || x.conditionalType == "defensive");
-	const modsProcessed= PersonaItem.getModifier(mods, "disengage");
-	return new ModifierList(modsProcessed);
+  const mods = this.mainModifiers()
+    .filter( x => x.conditionalType == "passive" || x.conditionalType == "defensive");
+  const modsProcessed= PersonaItem.getModifier(mods, "disengage");
+  return new ModifierList(modsProcessed);
 }
 
 /** returns current team (taking into account charm)*/
 getAllegiance()  : Team {
-	if (!this.isValidCombatant()) {return "Neutral";}
-	switch (this.system.type) {
-		case "pc":
-			if (!this.hasPlayerOwner) {return "Neutral";}
-			return "PCs";
-		case "shadow":
-			if (this.hasPlayerOwner) {return "PCs";}
-			return "Shadows";
-		case "npcAlly":
-			return "PCs";
-		default:
-			this.system satisfies never;
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-			PersonaError.softFail(`Unknown type of actor, ${(this as any)?.system?.type}`);
-			return "Neutral";
-	}
+  if (!this.isValidCombatant()) {return "Neutral";}
+  switch (this.system.type) {
+    case "pc":
+      if (!this.hasPlayerOwner) {return "Neutral";}
+      return "PCs";
+    case "shadow":
+      if (this.hasPlayerOwner) {return "PCs";}
+      return "Shadows";
+    case "npcAlly":
+      return "PCs";
+    default:
+      this.system satisfies never;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+      PersonaError.softFail(`Unknown type of actor, ${(this as any)?.system?.type}`);
+      return "Neutral";
+  }
 }
 async removeItem(item: Carryable, amountUsed: number) {
-	const amount = item.system.amount;
-	if (amount <= amountUsed) {
-		await item.delete();
-		return;
-	}
-	if (amount > amountUsed) {
-		await item.update({"system.amount": amount-amountUsed});
+  const amount = item.system.amount;
+  if (amount <= amountUsed) {
+    await item.delete();
+    return;
+  }
+  if (amount > amountUsed) {
+    await item.update({"system.amount": amount-amountUsed});
     await Logger.sendToChat(`${this.name} removed ${amountUsed} of ${item.name} (original Amount : ${amount})`);
-		return;
-	}
+    return;
+  }
 }
 
 async expendItem(item: Carryable, amountUsed = 1) {
@@ -2900,87 +2900,87 @@ async expendItem(item: Carryable, amountUsed = 1) {
 }
 
 roomModifiers() : ModifierContainer[] {
-	return (game.combats.contents as PersonaCombat[])
-		.filter(combat => combat.combatants.contents
-			.some( comb => comb.actor == this)
-		).flatMap( combat=> combat.getRoomEffects());
+  return (game.combats.contents as PersonaCombat[])
+    .filter(combat => combat.combatants.contents
+      .some( comb => comb.actor == this)
+    ).flatMap( combat=> combat.getRoomEffects());
 }
 
 /** used for determining all out attack viability*/
 isStanding() : boolean {
-	return (this.hp > 0 && !this.statuses.has("down"));
+  return (this.hp > 0 && !this.statuses.has("down"));
 }
 
 isValidCombatant(): this is ValidAttackers {
-	switch (this.system.type) {
-		case "pc":
-			return this.isRealPC();
-		case "shadow":
-		case "npcAlly":
-			return true;
-		case "npc":
-		case "tarot":
-			return false;
-		default:
-			this.system satisfies never;
-			return false;
-	}
+  switch (this.system.type) {
+    case "pc":
+      return this.isRealPC();
+    case "shadow":
+    case "npcAlly":
+      return true;
+    case "npc":
+    case "tarot":
+      return false;
+    default:
+      this.system satisfies never;
+      return false;
+  }
 }
 
 isDistracted() : boolean {
-	return Boolean(this.effects.find( st => st.isDistracting));
+  return Boolean(this.effects.find( st => st.isDistracting));
 }
 
 isCapableOfAction() : boolean {
-	if (this.effects.find( st=> st.isIncapacitating)) {return false;}
-	return this.hp > 0;
+  if (this.effects.find( st=> st.isIncapacitating)) {return false;}
+  return this.hp > 0;
 }
 
 async fullHeal() {
-	if (this.isValidCombatant()) {
-		const persona = this.persona();
-		await this.setHP(persona.mhp);
-		if (this.system.type == "pc" || this.system.type == "npcAlly") {
-			const mmp = persona.mmp;
-			if (this.system.combat.mp.value != mmp) {
-				await this.update({"system.combat.mp.value" : mmp});
-			}
-		}
-		await this.refreshTrackers(persona);
-	}
+  if (this.isValidCombatant()) {
+    const persona = this.persona();
+    await this.setHP(persona.mhp);
+    if (this.system.type == "pc" || this.system.type == "npcAlly") {
+      const mmp = persona.mmp;
+      if (this.system.combat.mp.value != mmp) {
+        await this.update({"system.combat.mp.value" : mmp});
+      }
+    }
+    await this.refreshTrackers(persona);
+  }
 }
 
 async onEnterMetaverse()  : Promise<void> {
-	if (!this.isValidCombatant()) {return;}
-	if (this.system.type == "pc" && !this.hasPlayerOwner) {return;} //deal with removing item piles and such
-	try {
-		await this.resetTheurgy();
-		await this.fullHeal();
-		if (this.system.type == "pc") {
-			await (this as PC).refreshSocialLink(this as PC);
-		}
-		const situation = {
-			trigger: "enter-metaverse",
-			triggeringCharacter: this.accessor,
-			user: this.accessor,
-		} as const;
-		await TriggeredEffect
-			.autoApplyTrigger(situation, this);
-	} catch (e) {
-		console.log(e);
-		PersonaError.softFail(`problem with onEnterMetaverse for ${this.name}`, e);
-	}
+  if (!this.isValidCombatant()) {return;}
+  if (this.system.type == "pc" && !this.hasPlayerOwner) {return;} //deal with removing item piles and such
+  try {
+    await this.resetTheurgy();
+    await this.fullHeal();
+    if (this.system.type == "pc") {
+      await (this as PC).refreshSocialLink(this as PC);
+    }
+    const situation = {
+      trigger: "enter-metaverse",
+      triggeringCharacter: this.accessor,
+      user: this.accessor,
+    } as const;
+    await TriggeredEffect
+      .autoApplyTrigger(situation, this);
+  } catch (e) {
+    console.log(e);
+    PersonaError.softFail(`problem with onEnterMetaverse for ${this.name}`, e);
+  }
 }
 
 async endEffectsOfDurationOrLess( duration: StatusDuration) : Promise<ActiveEffect[]> {
-	const removed : ActiveEffect[] = [];
-	for (const eff of this.effects) {
-		if (eff.durationLessThanOrEqualTo(duration)) {
-			removed.push(eff);
-			await eff.delete();
-		}
-	}
-	return removed;
+  const removed : ActiveEffect[] = [];
+  for (const eff of this.effects) {
+    if (eff.durationLessThanOrEqualTo(duration)) {
+      removed.push(eff);
+      await eff.delete();
+    }
+  }
+  return removed;
 }
 
 async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
@@ -2999,147 +2999,147 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
     }
     if (this.isNPCAlly()) {
       await this.setFlag("persona", "fatigueRecovery", 0);
-			if (this.hasStatus("full-fade")) {
-				await this.alterFatigueLevel(-2);
-			}
-		}
-		await this.fullHeal();
-		await this.endEffectsOfDurationOrLess( {dtype :"expedition"});
+      if (this.hasStatus("full-fade")) {
+        await this.alterFatigueLevel(-2);
+      }
+    }
+    await this.fullHeal();
+    await this.endEffectsOfDurationOrLess( {dtype :"expedition"});
     const situation = {
       trigger : "exit-metaverse",
       triggeringUser: game.user,
       user: this.accessor,
       triggeringCharacter: this.accessor,
     } as const satisfies Situation;
-		await TriggeredEffect.autoApplyTrigger(situation, this);
-	} catch (e) {
-		Debug(e);
-		console.log(e);
-		ui.notifications.error(`problem with OnExitMetaverse for ${this.name}`);
-	}
+    await TriggeredEffect.autoApplyTrigger(situation, this);
+  } catch (e) {
+    Debug(e);
+    console.log(e);
+    ui.notifications.error(`problem with OnExitMetaverse for ${this.name}`);
+  }
 }
 
 async onLevelUp_BasePersona(this: ValidAttackers, newLevel: number) : Promise<void> {
-	if (this.isNPCAlly() || this.isShadow()) {
-		await this.basePersona.combatStats.autoSpendStatPoints();
-	}
-	await this.basePersona.powerLearning.onLevelUp_checkLearnedPowers(newLevel);
+  if (this.isNPCAlly() || this.isShadow()) {
+    await this.basePersona.combatStats.autoSpendStatPoints();
+  }
+  await this.basePersona.powerLearning.onLevelUp_checkLearnedPowers(newLevel);
 }
 
 async levelUp_manual(this: ValidAttackers) : Promise<void> {
-	if (this.isPC()) {
-		const currXP = this.system.personalXP;
-		const XPForNext = LevelUpCalculator.minXPForEffectiveLevel(this.system.personaleLevel + 1);
-		const XPNeeded = XPForNext - currXP;
-		console.log(`${this.name} XP needed: ${XPNeeded}`);
-		await this.awardPersonalXP(XPNeeded, false);
-	}
-	await this.basePersona.levelUp_manual();
+  if (this.isPC()) {
+    const currXP = this.system.personalXP;
+    const XPForNext = LevelUpCalculator.minXPForEffectiveLevel(this.system.personaleLevel + 1);
+    const XPNeeded = XPForNext - currXP;
+    console.log(`${this.name} XP needed: ${XPNeeded}`);
+    await this.awardPersonalXP(XPNeeded, false);
+  }
+  await this.basePersona.levelUp_manual();
 }
 
 async resetIncrementals(this: ValidAttackers) {
-	const incremental : PC["system"]["combat"]["classData"]["incremental"] = {
-		hp: 0,
-		mp: 0,
-		attack: 0,
-		defense: 0,
-		magicLow: false,
-		magicHigh: false,
-		talent: false,
-		wpnDamage: 0,
-		initiative: 0,
-	};
-	await this.update({
-		"system.combat.classData.incremental": incremental,
-	});
+  const incremental : PC["system"]["combat"]["classData"]["incremental"] = {
+    hp: 0,
+    mp: 0,
+    attack: 0,
+    defense: 0,
+    magicLow: false,
+    magicHigh: false,
+    talent: false,
+    wpnDamage: 0,
+    initiative: 0,
+  };
+  await this.update({
+    "system.combat.classData.incremental": incremental,
+  });
 }
 
 meetsSLRequirement (this: PC, focus: Focus) {
-	return this.system.social.some( link=>
-		link.linkId == focus.parent?.id
-		&& link.linkLevel >= focus.requiredLinkLevel()
-	);
+  return this.system.social.some( link=>
+    link.linkId == focus.parent?.id
+    && link.linkLevel >= focus.requiredLinkLevel()
+  );
 }
 
 isFullyFaded(this: ValidAttackers) : boolean {
-	switch (this.system.type) {
-		case "shadow":
-			return (this.hp) <= 0;
-		case "pc":
-		case "npcAlly":
-				return this.hasStatus("full-fade");
-			// return this.system.combat.fadingState >= 2;
-		default:
-			this.system satisfies never;
-			return true;
-	}
+  switch (this.system.type) {
+    case "shadow":
+      return (this.hp) <= 0;
+    case "pc":
+    case "npcAlly":
+      return this.hasStatus("full-fade");
+      // return this.system.combat.fadingState >= 2;
+    default:
+      this.system satisfies never;
+      return true;
+  }
 }
 
 isFading(this: ValidAttackers): boolean {
-	if (this.system.type == "shadow") {return false;}
-	return this.hp <= 0 && !this.hasStatus("full-fade");
+  if (this.system.type == "shadow") {return false;}
+  return this.hp <= 0 && !this.hasStatus("full-fade");
 }
 
 
 triggersOn( trigger : Trigger) : ConditionalEffectC[] {
-	const triggers= this.triggers;
-	return triggers.filter( CE => PersonaItem.triggersOn(CE, trigger));
+  const triggers= this.triggers;
+  return triggers.filter( CE => PersonaItem.triggersOn(CE, trigger));
 }
 
 get triggers() : ConditionalEffectC[] {
-	switch (this.system.type ) {
-		case "npc":
-		case "tarot":
-			return [];
-		case "pc":
-		case "shadow":
-		case "npcAlly":
-			return (this as ValidAttackers).mainModifiers().filter( x=> x.conditionalType == "triggered");
-		default:
-			this.system satisfies never;
-			return [];
-	}
+  switch (this.system.type ) {
+    case "npc":
+    case "tarot":
+      return [];
+    case "pc":
+    case "shadow":
+    case "npcAlly":
+      return (this as ValidAttackers).mainModifiers().filter( x=> x.conditionalType == "triggered");
+    default:
+      this.system satisfies never;
+      return [];
+  }
 }
 
 async increaseFadeState( this: ValidAttackers) {
-	switch (true) {
-		case this.hasStatus("full-fade"):
-			return "full-fade";
-		case this.hasStatus("fading"):
-			await this.removeStatus("fading");
-			await this.addStatus( {
-				id: "full-fade",
-				duration: {dtype: "permanent"}
-			});
-			return "full-fade";
-		default :
-			await this.addStatus( {
-				id: "fading",
-				duration: {dtype: "combat"}
-			});
-	}
+  switch (true) {
+    case this.hasStatus("full-fade"):
+      return "full-fade";
+    case this.hasStatus("fading"):
+      await this.removeStatus("fading");
+      await this.addStatus( {
+        id: "full-fade",
+        duration: {dtype: "permanent"}
+      });
+      return "full-fade";
+    default :
+      await this.addStatus( {
+        id: "fading",
+        duration: {dtype: "combat"}
+      });
+  }
 }
 
 async clearFadingState( this: ValidAttackers) {
-	await this.removeStatus("fading");
-	// await this.removeStatus("full-fade");
+  await this.removeStatus("fading");
+  // await this.removeStatus("full-fade");
 }
 
 async alterSocialSkill (this: PC, socialStat: SocialStat, amt: number, logger = true) {
-	const oldval = this.system.skills[socialStat];
-	const newval = oldval + amt;
-	const upgradeObj : Record<string, unknown> = {};
-	const skillLoc = `system.skills.${socialStat}`;
-	upgradeObj[skillLoc] = newval;
-	await this.update(upgradeObj);
-	if (logger) {
-		switch (amt) {
-			case 1: case 2: case 3:
-				await PersonaSounds.skillBoost(amt);
-		}
-		const verb = amt >= 0 ? "raised" : "lowered";
-		await Logger.sendToChat(`<b>${this.name}:</b> ${verb} ${socialStat} by ${amt} (previously ${oldval})`, this);
-	}
+  const oldval = this.system.skills[socialStat];
+  const newval = oldval + amt;
+  const upgradeObj : Record<string, unknown> = {};
+  const skillLoc = `system.skills.${socialStat}`;
+  upgradeObj[skillLoc] = newval;
+  await this.update(upgradeObj);
+  if (logger) {
+    switch (amt) {
+      case 1: case 2: case 3:
+        await PersonaSounds.skillBoost(amt);
+    }
+    const verb = amt >= 0 ? "raised" : "lowered";
+    await Logger.sendToChat(`<b>${this.name}:</b> ${verb} ${socialStat} by ${amt} (previously ${oldval})`, this);
+  }
 }
 
 get money() : number {
@@ -3150,57 +3150,57 @@ get money() : number {
 }
 
 async gainMoney(this: PC, amt: number, log :boolean, breakLimit = false) {
-	if (amt < 0) {
-		return this.spendMoney(amt);
-	}
-	if (amt > 200 && !breakLimit) {
-		throw new PersonaError("Can't get this much money at once!");
-	}
-	const resources = this.system.money + amt;
-	await this.update({ "system.money": resources});
-	if (log && amt > 0) {
-		await Logger.sendToChat(`${this.name} Gained ${amt} resource points`);
-		await PersonaSounds.ching();
-	}
+  if (amt < 0) {
+    return this.spendMoney(amt);
+  }
+  if (amt > 200 && !breakLimit) {
+    throw new PersonaError("Can't get this much money at once!");
+  }
+  const resources = this.system.money + amt;
+  await this.update({ "system.money": resources});
+  if (log && amt > 0) {
+    await Logger.sendToChat(`${this.name} Gained ${amt} resource points`);
+    await PersonaSounds.ching();
+  }
 }
 
 async spendMoney(this: PC, amt: number) {
-	if (amt > this.system.money) {
-		throw new PersonaError("You don't have that much money!");
-	}
-	const amount = Math.abs(amt);
-	const resources = this.system.money - amount;
-	await this.update({ "system.money": resources});
-	await Logger.sendToChat(`${this.name} spent ${amount} resource points`);
-	await PersonaSounds.ching();
+  if (amt > this.system.money) {
+    throw new PersonaError("You don't have that much money!");
+  }
+  const amount = Math.abs(amt);
+  const resources = this.system.money - amount;
+  await this.update({ "system.money": resources});
+  await Logger.sendToChat(`${this.name} spent ${amount} resource points`);
+  await PersonaSounds.ching();
 }
 
 isAlive(): boolean {
-	if (this.system.type == "npc") {return true;}
+  if (this.system.type == "npc") {return true;}
   if (this.isPC() && !this.isRealPC()) {return true;}
-	return this.hp > 0;
+  return this.hp > 0;
 }
 
 async resetAvailability( this: SocialLink, day: SimpleCalendar.WeekdayName) {
-	const avail = this.system.weeklyAvailability[day];
-	await this.setAvailability(avail);
+  const avail = this.system.weeklyAvailability[day];
+  await this.setAvailability(avail);
 }
 
 async setAvailability(this: SocialLink, bool: boolean) {
-	if (this.system.weeklyAvailability.available == bool) {return;}
-	if (game.user.isGM || this.isOwner) {
-		//possible fix for the update seemingly not taking effect in time despite the await
-		this.system.weeklyAvailability.available = bool;
-		await	this.update( {"system.weeklyAvailability.available": bool});
-	} else {
-		PersonaSocial.requestAvailabilitySet(this.id, bool);
-	}
+  if (this.system.weeklyAvailability.available == bool) {return;}
+  if (game.user.isGM || this.isOwner) {
+    //possible fix for the update seemingly not taking effect in time despite the await
+    this.system.weeklyAvailability.available = bool;
+    await	this.update( {"system.weeklyAvailability.available": bool});
+  } else {
+    PersonaSocial.requestAvailabilitySet(this.id, bool);
+  }
 }
 
 get tarotLoc() : string{
-	const tarot = this.tarot;
-	if (!tarot) {return "No Tarot";}
-	return localize(TAROT_DECK[tarot.name as TarotCard]);
+  const tarot = this.tarot;
+  if (!tarot) {return "No Tarot";}
+  return localize(TAROT_DECK[tarot.name as TarotCard]);
 }
 
 get tarot() : (Tarot | undefined) {
@@ -3250,270 +3250,270 @@ get tarot() : (Tarot | undefined) {
 }
 
 numOfIncAdvances(): number {
-	switch (this.system.type) {
-		case "npc":
-		case "tarot":
-			return 0;
-	}
-	const advances = this.system.combat.classData.incremental;
-	return Object.values(advances).reduce<number>( (a, x) => {
-		if (typeof x == "boolean" && x == true) {return a + 1;}
-		if (typeof x == "number") {return a + x;}
-		return a;
-	}, 0);
+  switch (this.system.type) {
+    case "npc":
+    case "tarot":
+      return 0;
+  }
+  const advances = this.system.combat.classData.incremental;
+  return Object.values(advances).reduce<number>( (a, x) => {
+    if (typeof x == "boolean" && x == true) {return a + 1;}
+    if (typeof x == "number") {return a + x;}
+    return a;
+  }, 0);
 }
 
 get XPForNextLevel() : number {
-	if (!this.isPC()) {return 999999;}
-	const lvl = this.system.personaleLevel;
-	return LevelUpCalculator.XPRequiredToAdvanceToLevel(lvl+1);
+  if (!this.isPC()) {return 999999;}
+  const lvl = this.system.personaleLevel;
+  return LevelUpCalculator.XPRequiredToAdvanceToLevel(lvl+1);
 }
 
 get personalXPTowardsNextLevel() : number {
-	if (!this.isPC()) {return -1;}
-	const lvl = this.system.personaleLevel;
-	return this.system.personalXP - LevelUpCalculator.minXPForEffectiveLevel(lvl);
+  if (!this.isPC()) {return -1;}
+  const lvl = this.system.personaleLevel;
+  return this.system.personalXP - LevelUpCalculator.minXPForEffectiveLevel(lvl);
 }
 
 issues() : string {
-	const issues : string[] = [];
-	if (this.basePersona.isUnderResistCap || this.basePersona.isOverResistCap)
-	{issues.push("Resists");}
-	return issues.join("/");
+  const issues : string[] = [];
+  if (this.basePersona.isUnderResistCap || this.basePersona.isOverResistCap)
+  {issues.push("Resists");}
+  return issues.join("/");
 }
 
 totalResists (this:ValidAttackers) : number {
-	const pcTranslator : Record<typeof resists["cold"], number> = {
-		weakness: -2,
-		normal: 0,
-		resist: 1,
-		block: 2,
-		absorb: 3,
-		reflect: 3
-	} as const;
+  const pcTranslator : Record<typeof resists["cold"], number> = {
+    weakness: -2,
+    normal: 0,
+    resist: 1,
+    block: 2,
+    absorb: 3,
+    reflect: 3
+  } as const;
 
-	const physicalTranslator : Record<typeof resists["cold"], number> = {
-		weakness: -3,
-		normal: 0,
-		resist: 2,
-		block: 3,
-		absorb: 4,
-		reflect:4,
-	};
-	const shadowTranslator : Record<typeof resists["cold"], number> = {
-		weakness: -2.5,
-		normal: 0,
-		resist: 1,
-		block: 2,
-		absorb: 2.5,
-		reflect:2.5,
-	} as const;
-	const shadow = this.isShadow() && !this.isCustomPersona();
-	const resistTranslator = shadow ? shadowTranslator : pcTranslator;
-	const resists = this.system.combat.resists;
-	const entries = Object.entries(resists) as [keyof typeof resists, typeof resists["cold"]][];
-	return Math.round(entries.reduce(
-		function (acc, [k,res]) {
-			return acc + (k != "physical"
-				? resistTranslator[res]
-				: physicalTranslator[res]
-			);
-		},0 )
-	);
+  const physicalTranslator : Record<typeof resists["cold"], number> = {
+    weakness: -3,
+    normal: 0,
+    resist: 2,
+    block: 3,
+    absorb: 4,
+    reflect:4,
+  };
+  const shadowTranslator : Record<typeof resists["cold"], number> = {
+    weakness: -2.5,
+    normal: 0,
+    resist: 1,
+    block: 2,
+    absorb: 2.5,
+    reflect:2.5,
+  } as const;
+  const shadow = this.isShadow() && !this.isCustomPersona();
+  const resistTranslator = shadow ? shadowTranslator : pcTranslator;
+  const resists = this.system.combat.resists;
+  const entries = Object.entries(resists) as [keyof typeof resists, typeof resists["cold"]][];
+  return Math.round(entries.reduce(
+    function (acc, [k,res]) {
+      return acc + (k != "physical"
+        ? resistTranslator[res]
+        : physicalTranslator[res]
+      );
+    },0 )
+  );
 }
 
 maxIncrementalAdvances(this: ValidAttackers): number {
-	const x= Object.keys(this.system.combat.classData.incremental) as (keyof ValidAttackers["system"]["combat"]["classData"]["incremental"])[] ;
-	return x.reduce ( (acc,k) => acc + this.maxIncrementalAdvancesInCategory(k)
-		, 0);
+  const x= Object.keys(this.system.combat.classData.incremental) as (keyof ValidAttackers["system"]["combat"]["classData"]["incremental"])[] ;
+  return x.reduce ( (acc,k) => acc + this.maxIncrementalAdvancesInCategory(k)
+    , 0);
 }
 
 maxIncrementalAdvancesInCategory(this: ValidAttackers, incrementalType: keyof ValidAttackers["system"]["combat"]["classData"]["incremental"]): number {
-	const v = this.system.combat.classData.incremental[incrementalType];
-	// const incremental = k;
-	if (typeof v == "boolean") {return 1;}
-	//@ts-expect-error doing complicated schema stuff not in foundrytypes
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-	const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incrementalType] as {max ?: number};
-	if (typeof x?.max == "number")
-	{return x.max;}
-	PersonaError.softFail("Trouble calculating max incremental advances");
-	return 0;
+  const v = this.system.combat.classData.incremental[incrementalType];
+  // const incremental = k;
+  if (typeof v == "boolean") {return 1;}
+  //@ts-expect-error doing complicated schema stuff not in foundrytypes
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const x = this.system.schema.fields.combat.fields.classData.fields.incremental.fields[incrementalType] as {max ?: number};
+  if (typeof x?.max == "number")
+  {return x.max;}
+  PersonaError.softFail("Trouble calculating max incremental advances");
+  return 0;
 }
 
 get personalELevel() : number {
-	if (!this.isPC()) {return 0;}
-	return this.system.personaleLevel;
+  if (!this.isPC()) {return 0;}
+  return this.system.personaleLevel;
 }
 
 get personalXP(): number {
-	if (!this.isPC() ) {return 0;}
-	return this.system.personalXP;
+  if (!this.isPC() ) {return 0;}
+  return this.system.personalXP;
 }
 
 get XPForNextPersonalLevel() : number {
-	if (this.isPC()) {
-		return LevelUpCalculator.XPRequiredToAdvanceToLevel(this.personalLevel + 1);
-	}
-	if (this.isNPCAlly()) {
-		return LevelUpCalculator.XPRequiredToAdvanceToLevel(this.basePersona.level + 1);
-	}
-	return 99999999;
+  if (this.isPC()) {
+    return LevelUpCalculator.XPRequiredToAdvanceToLevel(this.personalLevel + 1);
+  }
+  if (this.isNPCAlly()) {
+    return LevelUpCalculator.XPRequiredToAdvanceToLevel(this.basePersona.level + 1);
+  }
+  return 99999999;
 }
 
 async awardPersonalXP(this: ValidAttackers, amt: number, allowMult= true) : Promise<U<XPGainReport>> {
-	if (!this.isPC() ) {return undefined;}
-	if (!amt) {return;}
-	const situation =  {
-		user: this.accessor,
-	};
-	if (allowMult) {
-		amt = amt * this.getPersonalBonuses("xp-multiplier").total(situation, "percentage");
-	}
-	const currentXP = this.system.personalXP;
-	const newTotal = currentXP + amt;
-	if (!PersonaSettings.freezeXPGain()) {
-		await this.update({"system.personalXP": newTotal});
-	}
-	const levelsGained = LevelUpCalculator.levelsGained(this, newTotal);
-	if (levelsGained > 0) {
-		const currLvl = this.system.personaleLevel;
-		const newlvl = currLvl + levelsGained;
-		if (!PersonaSettings.freezeXPGain()) {
-			await this.update({"system.personaleLevel" : newlvl});
-		}
-	}
-	return {
-		name: this.name,
-		amount: amt,
-		leveled: levelsGained > 0,
-	};
+  if (!this.isPC() ) {return undefined;}
+  if (!amt) {return;}
+  const situation =  {
+    user: this.accessor,
+  };
+  if (allowMult) {
+    amt = amt * this.getPersonalBonuses("xp-multiplier").total(situation, "percentage");
+  }
+  const currentXP = this.system.personalXP;
+  const newTotal = currentXP + amt;
+  if (!PersonaSettings.freezeXPGain()) {
+    await this.update({"system.personalXP": newTotal});
+  }
+  const levelsGained = LevelUpCalculator.levelsGained(this, newTotal);
+  if (levelsGained > 0) {
+    const currLvl = this.system.personaleLevel;
+    const newlvl = currLvl + levelsGained;
+    if (!PersonaSettings.freezeXPGain()) {
+      await this.update({"system.personaleLevel" : newlvl});
+    }
+  }
+  return {
+    name: this.name,
+    amount: amt,
+    leveled: levelsGained > 0,
+  };
 }
 
 /**gains X amount of levels */
 async gainLevel(this: ValidAttackers, amt: number) : Promise<void> {
-	if (this.isNPC()) {
-		const proxy = this.getNPCAllyProxy();
-		if (!proxy) {return;}
-		return proxy.gainLevel(amt);
-	}
-	if (!this.isPC()) {return;}
-	const currLevel = this.system.personaleLevel;
-	const newLevel = amt + currLevel;
-	const neededXP = LevelUpCalculator.minXPForEffectiveLevel(newLevel);
-	if (!PersonaSettings.freezeXPGain()) {
-		await this.update( {
-			"system.personalXP" : neededXP,
-			"system.personaleLevel": newLevel
-		});
-		await Logger.sendToChat(`${this.displayedName} gained ${amt} levels`);
-	}
+  if (this.isNPC()) {
+    const proxy = this.getNPCAllyProxy();
+    if (!proxy) {return;}
+    return proxy.gainLevel(amt);
+  }
+  if (!this.isPC()) {return;}
+  const currLevel = this.system.personaleLevel;
+  const newLevel = amt + currLevel;
+  const neededXP = LevelUpCalculator.minXPForEffectiveLevel(newLevel);
+  if (!PersonaSettings.freezeXPGain()) {
+    await this.update( {
+      "system.personalXP" : neededXP,
+      "system.personaleLevel": newLevel
+    });
+    await Logger.sendToChat(`${this.displayedName} gained ${amt} levels`);
+  }
 }
 
 
 /** returns true on level up */
 async awardXP(this: ValidAttackers, amt: number) : Promise<XPGainReport[]> {
-	if (PersonaDB.getNavigator() == this) {
-		const navigatorXP = this.persona().getBonuses("navigator-xp-mult").total({user: this.accessor});
-		amt = Math.clamp(navigatorXP, 0.1, 1) * amt;
-	}
-	if (amt ==0) {return [];}
-	const personaXPAwards = this.personaList.map( persona=> persona.awardXP(amt));
-	const sideboardAwards = this.sideboardPersonas.map( persona=> persona.awardXP(amt));
-	const personaGains = (await Promise.allSettled(personaXPAwards.concat(sideboardAwards)))
-	.map( pr => pr.status == "fulfilled" ? pr.value : undefined);
-	const possibleLevelUps : U<XPGainReport>[] = [
-		await this.awardPersonalXP(amt),
-		...personaGains,
-	];
-	return possibleLevelUps.filter(x=> x != undefined);
+  if (PersonaDB.getNavigator() == this) {
+    const navigatorXP = this.persona().getBonuses("navigator-xp-mult").total({user: this.accessor});
+    amt = Math.clamp(navigatorXP, 0.1, 1) * amt;
+  }
+  if (amt ==0) {return [];}
+  const personaXPAwards = this.personaList.map( persona=> persona.awardXP(amt));
+  const sideboardAwards = this.sideboardPersonas.map( persona=> persona.awardXP(amt));
+  const personaGains = (await Promise.allSettled(personaXPAwards.concat(sideboardAwards)))
+  .map( pr => pr.status == "fulfilled" ? pr.value : undefined);
+  const possibleLevelUps : U<XPGainReport>[] = [
+    await this.awardPersonalXP(amt),
+    ...personaGains,
+  ];
+  return possibleLevelUps.filter(x=> x != undefined);
 }
 
 XPValue(this: ValidAttackers) : number {
-	if (!this.isShadow()) {return 0;}
-	if (this.hasCreatureTag("no-xp")) {return 0;}
-	const persona = this.basePersona;
-	const pLevel = persona.pLevel;
-	const xpValue = LevelUpCalculator.shadowXPValue(pLevel);
-	const xpMult = persona.getBonuses("shadow-xp-value").total ( {user: this.accessor}, "percentage");
-	return xpValue * xpMult;
+  if (!this.isShadow()) {return 0;}
+  if (this.hasCreatureTag("no-xp")) {return 0;}
+  const persona = this.basePersona;
+  const pLevel = persona.pLevel;
+  const xpValue = LevelUpCalculator.shadowXPValue(pLevel);
+  const xpMult = persona.getBonuses("shadow-xp-value").total ( {user: this.accessor}, "percentage");
+  return xpValue * xpMult;
 }
 
 maxActions(this: ValidAttackers): number  {
-	return Math.max(0, 1 + this.persona().getBonuses("actions-per-turn").total( {user: this.accessor}));
+  return Math.max(0, 1 + this.persona().getBonuses("actions-per-turn").total( {user: this.accessor}));
 }
 
 async refreshActions(): Promise<number> {
-	switch (this.system.type) {
-		case "tarot":
-		case "npc":
-			return 0;
-		case "pc":
-		case "shadow":
-		case "npcAlly":
-			break;
-		default:
-			this.system satisfies never;
-	}
-	const maxActions = (this as ValidAttackers).maxActions();
-	await this.update({"system.combat.actionsRemaining": maxActions});
-	return maxActions;
+  switch (this.system.type) {
+    case "tarot":
+    case "npc":
+      return 0;
+    case "pc":
+    case "shadow":
+    case "npcAlly":
+      break;
+    default:
+      this.system satisfies never;
+  }
+  const maxActions = (this as ValidAttackers).maxActions();
+  await this.update({"system.combat.actionsRemaining": maxActions});
+  return maxActions;
 }
 
 async expendAction(this: ValidAttackers): Promise<number> {
 
-	let actions = this.system.combat.actionsRemaining ?? 1;
-	if (this.hasStatus("bonus-action")) {
-		await this.removeStatus("bonus-action");
-		return actions;
-	}
-	actions = Math.max(0, actions-1);
-	await this.update({"system.combat.actionsRemaining": actions});
-	return actions;
+  let actions = this.system.combat.actionsRemaining ?? 1;
+  if (this.hasStatus("bonus-action")) {
+    await this.removeStatus("bonus-action");
+    return actions;
+  }
+  actions = Math.max(0, actions-1);
+  await this.update({"system.combat.actionsRemaining": actions});
+  return actions;
 }
 
 get actionsRemaining(): number {
-	return this.isValidCombatant()
-      ? this.system.combat.actionsRemaining
-		: 0;
+  return this.isValidCombatant()
+    ? this.system.combat.actionsRemaining
+    : 0;
 }
 
 get perk() : string {
-	switch (this.system.type) {
-		case "pc":
-			return this.tarot?.perk ?? "";
-		case "shadow":
-				return "";
-		case "npc":
-		case "npcAlly":
-			return this.tarot?.perk ?? "";
-		case "tarot":
-				return this.system.perk;
-		default: {
-			this.system satisfies never;
-			return "";
-		}
-	}
+  switch (this.system.type) {
+    case "pc":
+      return this.tarot?.perk ?? "";
+    case "shadow":
+        return "";
+    case "npc":
+    case "npcAlly":
+      return this.tarot?.perk ?? "";
+    case "tarot":
+        return this.system.perk;
+    default: {
+      this.system satisfies never;
+      return "";
+    }
+  }
 }
 
 getEffectFlag(flagId: string) : FlagData | undefined {
-	const flag= this.effects.find(eff=> eff.flagId?.toLowerCase() == flagId.toLowerCase());
-	if (flag) {return {
-		flagId,
-		duration: flag.statusDuration,
-		flagName: flag.name,
-		AEId: flag.id,
-	};}
+  const flag= this.effects.find(eff=> eff.flagId?.toLowerCase() == flagId.toLowerCase());
+  if (flag) {return {
+    flagId,
+    duration: flag.statusDuration,
+    flagName: flag.name,
+    AEId: flag.id,
+  };}
 }
 
 //** returns true if shadow has one of the roles in the array */
 hasRole( roles: Shadow["system"]["role"] | Shadow["system"]["role"][]): boolean {
-	if (this.system.type != "shadow") {return false;}
-	if (!Array.isArray(roles)) {
-		roles = [roles];
-	}
+  if (this.system.type != "shadow") {return false;}
+  if (!Array.isArray(roles)) {
+    roles = [roles];
+  }
   const myRoles = this.shadowRoles;
-	return roles.some( role => myRoles.includes(role));
+  return roles.some( role => myRoles.includes(role));
 }
 
 get shadowRoles()  : Shadow["system"]["role"][] {
@@ -3526,54 +3526,54 @@ get shadowRoles()  : Shadow["system"]["role"][] {
 }
 
 isSoloType() : boolean {
-	return this.hasRole("solo");
+  return this.hasRole("solo");
 }
 
 hasDefenderAura(): boolean {
-	return this.statuses.has("sticky");
+  return this.statuses.has("sticky");
 }
 
 canUseOpener(): boolean {
-	//TODO: placeholder
-	return true;
+  //TODO: placeholder
+  return true;
 }
 
 isBossOrMiniBossType() : boolean {
-	if (this.system.type != "shadow") {return false;}
-	const bossRoles : Shadow["system"]["role"][] = [
-		"miniboss", "boss", "solo",
-	];
-	return bossRoles.some( role => this.hasRole(role));
+  if (this.system.type != "shadow") {return false;}
+  const bossRoles : Shadow["system"]["role"][] = [
+    "miniboss", "boss", "solo",
+  ];
+  return bossRoles.some( role => this.hasRole(role));
 }
 
 
 
 async onStartCombatTurn(this: ValidAttackers): Promise<string[]> {
   return this.checkEffectExpire( eff => eff.onStartCombatTurn());
-	// console.log(`${this.name} on Start turn`);
-	// const ret = [] as string[];
-	// await this.setBatonLevel(0);
-	// const promises = this.effects.contents.map( async (eff) => {
-	// 	if ( await eff.onStartCombatTurn()
-	// 		&& eff.displayOnEnd()
-	// 	) {
-	// 		return eff.displayedName;
-	// 	}
-	// 	return "";
-	// });
-	// try {
-	// 	const strings = (await Promise.all(promises))
-	// 		.filter( x=> x && x.length > 0)
-	// 		.join(", ");
-	// 	if (strings.length > 0) {
-	// 		ret.push(`Conditions Removed: ${strings}`);
-	// 	}
-	// } catch (e) {
-	// 	const msg = `Error resolving conditions at start of turn`;
-	// 	ret.push(msg);
-	// 	PersonaError.softFail(msg, e);
-	// }
-	// return ret;
+  // console.log(`${this.name} on Start turn`);
+  // const ret = [] as string[];
+  // await this.setBatonLevel(0);
+  // const promises = this.effects.contents.map( async (eff) => {
+  // 	if ( await eff.onStartCombatTurn()
+  // 		&& eff.displayOnEnd()
+  // 	) {
+  // 		return eff.displayedName;
+  // 	}
+  // 	return "";
+  // });
+  // try {
+  // 	const strings = (await Promise.all(promises))
+  // 		.filter( x=> x && x.length > 0)
+  // 		.join(", ");
+  // 	if (strings.length > 0) {
+  // 		ret.push(`Conditions Removed: ${strings}`);
+  // 	}
+  // } catch (e) {
+  // 	const msg = `Error resolving conditions at start of turn`;
+  // 	ret.push(msg);
+  // 	PersonaError.softFail(msg, e);
+  // }
+  // return ret;
 }
 
 private async checkEffectExpire(fn : (eff: PersonaAE) => Promise<boolean> ): Promise<string[]> {
@@ -3607,34 +3607,34 @@ async onFinishAction() : Promise<string[]> {
 
 
 async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
-	const ret: string[]= [];
-	if (!this.isOwner) {
-		PersonaError.softFail(`Illegal access of onEndCombatTurn, you are not the owner of ${this.displayedName}`);
-		return ret;
-	}
-	const burnStatus = this.effects.find( eff=> eff.statuses.has("burn"));
-	if (burnStatus) {
-		const damage = burnStatus.potency;
-		await this.modifyHP(-damage);
-	}
-	if (this.isShadow()) {
-		const situation : Situation = {
-			user: this.accessor,
-		};
-		const bonusEnergy = 3 + this.persona().getBonuses("energy-per-turn").total(situation);
-		await this.alterEnergy(bonusEnergy);
-	}
-	ret.push(...await this.endTurnStatusEffects());
-	return ret;
+  const ret: string[]= [];
+  if (!this.isOwner) {
+    PersonaError.softFail(`Illegal access of onEndCombatTurn, you are not the owner of ${this.displayedName}`);
+    return ret;
+  }
+  const burnStatus = this.effects.find( eff=> eff.statuses.has("burn"));
+  if (burnStatus) {
+    const damage = burnStatus.potency;
+    await this.modifyHP(-damage);
+  }
+  if (this.isShadow()) {
+    const situation : Situation = {
+      user: this.accessor,
+    };
+    const bonusEnergy = 3 + this.persona().getBonuses("energy-per-turn").total(situation);
+    await this.alterEnergy(bonusEnergy);
+  }
+  ret.push(...await this.endTurnStatusEffects());
+  return ret;
 }
 
 despairMPDamage(this: PC | NPCAlly) : number {
-	return Math.floor(this.mmp * 0.15);
+  return Math.floor(this.mmp * 0.15);
 }
 
 get hasMultiplePersonas() : boolean {
-	if (!this.isValidCombatant()) {return false;}
-	return this.personaList.length > 1;
+  if (!this.isValidCombatant()) {return false;}
+  return this.personaList.length > 1;
 }
 
 /** says if character can take normal actions, requires alive and turn is in combat */
@@ -3660,41 +3660,41 @@ get canSwitchPersonas() : boolean {
   if (!this.isValidCombatant()) {return false;}
   if (!this.canTakeNormalActions) {return false;}
   if (this.hasStatus("sealed")) {return false;}
-	return this.hasMultiplePersonas
-		&& this.canTakeNormalActions;
+  return this.hasMultiplePersonas
+    && this.canTakeNormalActions;
 }
 
 /** should get called after a search action or after entering a new region*/
 async onMetaverseTimeAdvance(): Promise<string[]> {
-	const ret: string[] = [];
-	for (const eff of this.effects) {
-		if ( await eff.onMetaverseTimeAdvance()) {
-			ret.push(`Removed Condition ${eff.displayedName} at start of turn`);
-		}
-	}
-	return ret;
+  const ret: string[] = [];
+  for (const eff of this.effects) {
+    if ( await eff.onMetaverseTimeAdvance()) {
+      ret.push(`Removed Condition ${eff.displayedName} at start of turn`);
+    }
+  }
+  return ret;
 }
 
 socialEffects(this: SocialLink) : readonly SourcedConditionalEffect[] {
-	// weird bug where sometimes the this isn't set properly
-	const tags= this.tagList
-		.filter (tag => tag instanceof PersonaItem)
-		.flatMap (tag => {
+  // weird bug where sometimes the this isn't set properly
+  const tags= this.tagList
+    .filter (tag => tag instanceof PersonaItem)
+    .flatMap (tag => {
       return tag.getEffects(this);
     });
-	return [
-		...tags,
-		...ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this ),
-	];
+  return [
+    ...tags,
+    ...ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this ),
+  ];
 }
 
 async resetFatigueChecks(this: PC) {
-	if (this.hasAlteredFatigueToday() || this.hasMadeFatigueRollToday()) {
-		await this.update({
-			"system.fatigue.hasAlteredFatigueToday": false,
-			"system.fatigue.hasMadeFatigueRollToday" : false
-		});
-	}
+  if (this.hasAlteredFatigueToday() || this.hasMadeFatigueRollToday()) {
+    await this.update({
+      "system.fatigue.hasAlteredFatigueToday": false,
+      "system.fatigue.hasMadeFatigueRollToday" : false
+    });
+  }
 }
 
 async onEndDay(this:  PC | NPCAlly): Promise<string[]> {
@@ -3731,34 +3731,34 @@ encounterSizeValue() : number {
 }
 
 isNewEnemy(): boolean {
-	if (!this.isShadow()) {return false;}
-	return this.system.encounter.timesDefeated == 0 && this.persona().scanLevelRaw == 0;
+  if (!this.isShadow()) {return false;}
+  return this.system.encounter.timesDefeated == 0 && this.persona().scanLevelRaw == 0;
 }
 
 async onDefeat(this: ValidAttackers) {
-	if (this.isShadow()) {
-		const defeat = this.system.encounter.timesDefeated+ 1;
-		await this.update( {"system.encounter.timesDefeated": defeat});
-	}
+  if (this.isShadow()) {
+    const defeat = this.system.encounter.timesDefeated+ 1;
+    await this.update( {"system.encounter.timesDefeated": defeat});
+  }
 }
 
 async endTurnStatusEffects(this: ValidAttackers) : Promise<string[]> {
   return this.checkEffectExpire( eff => eff.onEndCombatTurn());
-	// const ret = [] as string[];
-	// for (const eff of this.effects) {
-	// 	if (await eff.onEndCombatTurn()) {
-	// 		ret.push(`Removed Condition ${eff.displayedName} at end of turn`);
-	// 	}
-	// }
-	// return ret;
+  // const ret = [] as string[];
+  // for (const eff of this.effects) {
+  // 	if (await eff.onEndCombatTurn()) {
+  // 		ret.push(`Removed Condition ${eff.displayedName} at end of turn`);
+  // 	}
+  // }
+  // return ret;
 }
 
 getFlagState(flagName: string) : boolean {
-	return Boolean(this.getEffectFlag(flagName));
+  return Boolean(this.getEffectFlag(flagName));
 }
 
 getFlagDuration(flagName: string) : StatusDuration | undefined {
-	return this.getEffectFlag(flagName)?.duration;
+  return this.getEffectFlag(flagName)?.duration;
 }
 
 async setEffectFlag(effect: Sourced<OtherEffect> & {type: "set-flag"}) {
@@ -3791,93 +3791,93 @@ async setEffectFlag(effect: Sourced<OtherEffect> & {type: "set-flag"}) {
 }
 
 async resetAllCooldowns() {
-	for (const eff of this.effects) {
-		if (eff.isCooldown()) {
-			await eff.delete();
-		}
-	}
+  for (const eff of this.effects) {
+    if (eff.isCooldown()) {
+      await eff.delete();
+    }
+  }
 }
 
 clearCooldown(power: Power) : void {
-	this.effects.contents
-		.filter(eff => eff.isCooldown(power))
-		.forEach( eff=> void eff.delete());
+  this.effects.contents
+  .filter(eff => eff.isCooldown(power))
+  .forEach( eff=> void eff.delete());
 }
 
 async addPowerCooldown(power : Power, duration: StatusDuration) {
-	const newAE = {
-		name: `${power.name} cooldown`,
-	};
-	const cooldownEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
-	await cooldownEffect.setCooldown(power, duration);
+  const newAE = {
+    name: `${power.name} cooldown`,
+  };
+  const cooldownEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
+  await cooldownEffect.setCooldown(power, duration);
 }
 
 isPowerOnCooldown(power: Power) : boolean {
-	return this.effects.contents.some( eff => eff.isCooldown(power));
+  return this.effects.contents.some( eff => eff.isCooldown(power));
 }
 
 async createEffectFlag(flagId: string,
-	flagName ?: string,
-	duration: StatusDuration = {dtype: "instant"},
-	clearOnDeath = false)
-	: Promise<PersonaAE> {
-		if (!flagName) {flagName = flagId;}
-		flagId = flagId.toLowerCase();
-		const eff = this.effects.find(x=> x.isFlag(flagId));
-		const newAE = {
-			name: flagName,
-		};
-		const durationOptions = {
-			clearOnDeath,
-		};
-		if (eff) {
-			await eff.setDuration(duration, durationOptions);
-			return eff;
-		} else {
-			const AE = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
-			await AE.setDuration(duration, durationOptions);
-			await AE.markAsFlag(flagId);
-			return AE;
-		}
-	}
+  flagName ?: string,
+  duration: StatusDuration = {dtype: "instant"},
+  clearOnDeath = false)
+  : Promise<PersonaAE> {
+    if (!flagName) {flagName = flagId;}
+    flagId = flagId.toLowerCase();
+    const eff = this.effects.find(x=> x.isFlag(flagId));
+    const newAE = {
+      name: flagName,
+    };
+    const durationOptions = {
+      clearOnDeath,
+    };
+    if (eff) {
+      await eff.setDuration(duration, durationOptions);
+      return eff;
+    } else {
+      const AE = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
+      await AE.setDuration(duration, durationOptions);
+      await AE.markAsFlag(flagId);
+      return AE;
+    }
+  }
 
 async clearEffectFlag(flagId: string) {
-	const eff = this.effects.find(x=> x.isFlag(flagId));
-	if (eff) {await eff.delete();}
+  const eff = this.effects.find(x=> x.isFlag(flagId));
+  if (eff) {await eff.delete();}
 }
 
 async setRelationshipType(this: PC, socialLinkId: string, newRelationshipType: string) {
-	const link = this.system.social.find(x=> x.linkId == socialLinkId);
+  const link = this.system.social.find(x=> x.linkId == socialLinkId);
 
-	if (!link) {
-		throw new PersonaError(`Can't find link for Id ${socialLinkId}`);
-	}
-	link.relationshipType = newRelationshipType;
-	await this.update({"system.social": this.system.social});
+  if (!link) {
+    throw new PersonaError(`Can't find link for Id ${socialLinkId}`);
+  }
+  link.relationshipType = newRelationshipType;
+  await this.update({"system.social": this.system.social});
 }
 
 isSpecialEvent(this:SocialLink, numberToCheck: number) : boolean {
-	if (this.system.type == "pc") {return false;}
-	const peices = (this.system.specialEvents ?? "").split(",", 20).map(x=> Number(x?.trim() ?? ""));
-	return peices.includes(numberToCheck);
+  if (this.system.type == "pc") {return false;}
+  const peices = (this.system.specialEvents ?? "").split(",", 20).map(x=> Number(x?.trim() ?? ""));
+  return peices.includes(numberToCheck);
 }
 
 async createNewTokenSpend(this: SocialLink) {
-	const list = this.system.tokenSpends;
-	const newItem : typeof list[number] = {
-		conditions: [],
-		amount: 1,
-		text: "",
-		consequences: []
-	};
-	list.push(newItem);
-	await this.update({"system.tokenSpends":list});
+  const list = this.system.tokenSpends;
+  const newItem : typeof list[number] = {
+    conditions: [],
+    amount: 1,
+    text: "",
+    consequences: []
+  };
+  list.push(newItem);
+  await this.update({"system.tokenSpends":list});
 }
 
 async deleteTokenSpend(this: SocialLink, deleteIndex:number) {
-	const list = this.system.tokenSpends;
-	list.splice(deleteIndex,1);
-	await this.update({"system.tokenSpends":list});
+  const list = this.system.tokenSpends;
+  list.splice(deleteIndex,1);
+  await this.update({"system.tokenSpends":list});
 }
 
 // isAvailable(pc: PC) : boolean {
@@ -3898,9 +3898,9 @@ async deleteTokenSpend(this: SocialLink, deleteIndex:number) {
 // }
 
 getAvailabilityConditions(this: SocialLink)  : readonly SourcedPrecondition[] {
-	if (this.isPC()){ return [];}
-	const conds = ConditionalEffectManager.getConditionals(this.system.availabilityConditions, null, null, null);
-	return conds;
+  if (this.isPC()){ return [];}
+  const conds = ConditionalEffectManager.getConditionals(this.system.availabilityConditions, null, null, null);
+  return conds;
 }
 
 // isSociallyDisabled(): boolean {
@@ -3923,156 +3923,156 @@ getAvailabilityConditions(this: SocialLink)  : readonly SourcedPrecondition[] {
 // }
 
 canTakeNormalDowntimeActions(): boolean {
-	return !this.hasStatus("jailed") && !this.hasStatus("crippled");
+  return !this.hasStatus("jailed") && !this.hasStatus("crippled");
 }
 
 isDowned(): boolean {
-	return this.hasStatus("down");
+  return this.hasStatus("down");
 }
 
 canTakeFollowUpAction(this: ValidAttackers) : boolean {
-	return !this.isDistracted() && !this.isDowned();
+  return !this.isDistracted() && !this.isDowned();
 }
 
 async moneyFix() {
-	//updates money to new x10 total
-	switch (this.system.type) {
-		case "pc": {
-			const money = this.system.money * 10;
-			await this.update({"system.money": money});
-			break;
-		}
-		default:
-			return;
-	}
+  //updates money to new x10 total
+  switch (this.system.type) {
+    case "pc": {
+      const money = this.system.money * 10;
+      await this.update({"system.money": money});
+      break;
+    }
+    default:
+      return;
+  }
 }
 
 /** return true if target is harder to disengage from (hard diff)
  */
 isSticky() : boolean {
-	return this.hasStatus("sticky");
+  return this.hasStatus("sticky");
 }
 
 async setDefaultShadowCosts(this: Shadow, power: Power) {
-	if (!this.items.get(power.id)) {
-		ui.notifications.warn("Shadow can't edit power it doesn't own");
-		return;
-	}
-	const {cost, required} = power.estimateShadowCosts(this.persona());
-	return await power.setPowerCost(cost, required);
+  if (!this.items.get(power.id)) {
+    ui.notifications.warn("Shadow can't edit power it doesn't own");
+    return;
+  }
+  const {cost, required} = power.estimateShadowCosts(this.persona());
+  return await power.setPowerCost(cost, required);
 }
 
 getPoisonDamage(this: ValidAttackers): number {
-	const base = Math.round(this.baseClassHP * 0.15);
-	switch (this.system.type) {
-		case "pc":
-		case "npcAlly":
-			return base;
-		case "shadow":
-			return base;
-		default:
-			this.system satisfies never;
-			return 0;
-	}
-	// return Math.round(base * poisonDamageMultiplier(this.system.role) * poisonDamageMultiplier(this.system.role2));
+  const base = Math.round(this.baseClassHP * 0.15);
+  switch (this.system.type) {
+    case "pc":
+    case "npcAlly":
+      return base;
+    case "shadow":
+      return base;
+    default:
+      this.system satisfies never;
+      return 0;
+  }
+  // return Math.round(base * poisonDamageMultiplier(this.system.role) * poisonDamageMultiplier(this.system.role2));
 }
 
 static calcPowerRequirement(role: Shadow["system"]["role"], power: Readonly<Power>,  diff: number) : number {
-	if (power.system.tags.includes("basicatk"))
-	{return 0;}
-	const tags = power.system.tags;
-	switch (role) {
-		case "support":
-			if (!tags.includes("debuff")) {
-				diff -= 2;
-			}
-			if (tags.includes("buff")
-				|| tags.includes("healing")) {
-				diff += 1;
-			}
-			break;
-		default:
-			break;
-	}
-	return Math.clamp(diff, 0, 4);
+  if (power.system.tags.includes("basicatk"))
+  {return 0;}
+  const tags = power.system.tags;
+  switch (role) {
+    case "support":
+      if (!tags.includes("debuff")) {
+        diff -= 2;
+      }
+      if (tags.includes("buff")
+        || tags.includes("healing")) {
+        diff += 1;
+      }
+      break;
+    default:
+      break;
+  }
+  return Math.clamp(diff, 0, 4);
 }
 
 static calcPowerCost(_role: Shadow["system"]["role"], power: Readonly<Power>, diff: number) : Power["system"]["reqEscalation"] {
-	if (power.system.tags.includes("basicatk"))
-	{return 0;}
-	if (diff <= 0) {return 0;}
-	const esc = Math.round(Math.abs(diff) / 2);
-	return Math.clamp(esc, 0, 6);
+  if (power.system.tags.includes("basicatk"))
+  {return 0;}
+  if (diff <= 0) {return 0;}
+  const esc = Math.round(Math.abs(diff) / 2);
+  return Math.clamp(esc, 0, 6);
 }
 
 async increaseScanLevel(this: Shadow, amt :number) {
-	const scanLevel = this.system.scanLevel ?? 0;
-	if (scanLevel >= amt) {return;}
-	if (this.token) {
-		await this.token.baseActor.increaseScanLevel(amt);
-	}
-	await this.update({"system.scanLevel": amt});
-	if (amt > 0) {
-		this.ownership.default = CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED;
-		await this.update({"ownership": this.ownership});
-	}
+  const scanLevel = this.system.scanLevel ?? 0;
+  if (scanLevel >= amt) {return;}
+  if (this.token) {
+    await this.token.baseActor.increaseScanLevel(amt);
+  }
+  await this.update({"system.scanLevel": amt});
+  if (amt > 0) {
+    this.ownership.default = CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED;
+    await this.update({"ownership": this.ownership});
+  }
 }
 
 async decreaseScanLevel(this: Shadow, lvl: number) {
-	const scanLevel = this.system.scanLevel ?? 0;
-	if (scanLevel <= lvl) {return;}
-	if (this.token) {
-		await this.token.baseActor.decreaseScanLevel(lvl);
-	}
-	await this.update({"system.scanLevel": lvl});
+  const scanLevel = this.system.scanLevel ?? 0;
+  if (scanLevel <= lvl) {return;}
+  if (this.token) {
+    await this.token.baseActor.decreaseScanLevel(lvl);
+  }
+  await this.update({"system.scanLevel": lvl});
 }
 
 async clearScanLevel(this:Shadow) {
-	const scanLevel = this.persona().scanLevelRaw ?? 0;
-	if (scanLevel == 0) {return;}
-	await this.update({"system.scanLevel": 0});
+  const scanLevel = this.persona().scanLevelRaw ?? 0;
+  if (scanLevel == 0) {return;}
+  await this.update({"system.scanLevel": 0});
 }
 
 get maxEnergy() : number {
-	if (!this.isShadow()) {return 0;}
-	return this.persona().maxEnergy;
-	// if (!this.isShadow()) {return 0;}
-	// const BASE_MAX_ENERGY = 10;
-	// const situation = {
-	// 	user: this.accessor,
-	// };
-	// const maxEnergy = BASE_MAX_ENERGY + this.basePersona.getBonuses("max-energy").total(situation);
-	// return maxEnergy;
+  if (!this.isShadow()) {return 0;}
+  return this.persona().maxEnergy;
+  // if (!this.isShadow()) {return 0;}
+  // const BASE_MAX_ENERGY = 10;
+  // const situation = {
+  // 	user: this.accessor,
+  // };
+  // const maxEnergy = BASE_MAX_ENERGY + this.basePersona.getBonuses("max-energy").total(situation);
+  // return maxEnergy;
 }
 
 get energy() : number {
-	if (!this.isShadow()) {return 0;}
-	return this.system.combat.energy.value;
+  if (!this.isShadow()) {return 0;}
+  return this.system.combat.energy.value;
 }
 
 async setVariable ( varName: string, value: number) : Promise<void> {
-	const vars : Record<string, number> = this.getFlag("persona", "variables") ?? {};
-	vars[varName] = value;
-	await this.setFlag("persona", "variables", vars);
+  const vars : Record<string, number> = this.getFlag("persona", "variables") ?? {};
+  vars[varName] = value;
+  await this.setFlag("persona", "variables", vars);
 }
 
 getVariable(varName: string) : number {
-	const vars : Record<string, number> = this.getFlag("persona", "variables") ?? {};
-	return vars[varName] ?? 0;
+  const vars : Record<string, number> = this.getFlag("persona", "variables") ?? {};
+  return vars[varName] ?? 0;
 }
 
 get variables(): Record<string, number>  {
-	const vars : Record<string, number> = this.getFlag("persona", "variables") ?? {};
-	return vars;
+  const vars : Record<string, number> = this.getFlag("persona", "variables") ?? {};
+  return vars;
 }
 
 async setEnergy(this: Shadow, amt: number) {
-	const maxEnergy = this.maxEnergy;
-	if (this.system.combat.energy.max != maxEnergy) {
-		await this.update( { "system.combat.energy.max": maxEnergy});
-	}
-	amt = Math.clamp(amt, -1, maxEnergy);
-	await this.update({"system.combat.energy.value": amt});
+  const maxEnergy = this.maxEnergy;
+  if (this.system.combat.energy.max != maxEnergy) {
+    await this.update( { "system.combat.energy.max": maxEnergy});
+  }
+  amt = Math.clamp(amt, -1, maxEnergy);
+  await this.update({"system.combat.energy.value": amt});
 }
 
 async alterEnergy(this: Shadow, amt: number) {
@@ -4120,17 +4120,17 @@ async onCalendarAdvance() : Promise<string[]> {
 }
 
 async onKO() : Promise<void> {
-	if (this.isPCLike() && this.theurgyVal > 0) {
-		await this.resetTheurgy();
-	}
-	await Promise.allSettled(
-		this.effects.contents.map( eff => eff.onKO())
-	);
+  if (this.isPCLike() && this.theurgyVal > 0) {
+    await this.resetTheurgy();
+  }
+  await Promise.allSettled(
+    this.effects.contents.map( eff => eff.onKO())
+  );
 }
 
 onRevive() : Promise<void> {
-	console.log("Calling onRevive");
-	return Promise.resolve();
+  console.log("Calling onRevive");
+  return Promise.resolve();
 }
 
 // get tagListNames(): string[] {
@@ -4243,286 +4243,286 @@ hasCreatureTag(tagOrTagName: CreatureTag | Tag["id"]) : boolean{
 // }
 
 async deleteCreatureTag(index: number) : Promise<void> {
-	const tags = this.system.creatureTags;
-	tags.splice(index, 1);
-	await this.update( {"system.creatureTags": tags});
+  const tags = this.system.creatureTags;
+  tags.splice(index, 1);
+  await this.update( {"system.creatureTags": tags});
 }
 
 async addCreatureTag(tag ?: Tag) : Promise<void> {
-	const tags = this.system.creatureTags;
-	if (tag && tag instanceof PersonaItem) {
-		tags.push(tag.id);
-	} else {
-		tags.push("neko");
-	}
-	await this.update( {"system.creatureTags": tags});
+  const tags = this.system.creatureTags;
+  if (tag && tag instanceof PersonaItem) {
+    tags.push(tag.id);
+  } else {
+    tags.push("neko");
+  }
+  await this.update( {"system.creatureTags": tags});
 }
 
 async onAddToCombat() {
-	if (!game.user.isGM) {return;}
-	switch (this.system.type) {
-		case "shadow": {
-			if (!this.isShadow()) {return;}// a double check purely for TS to recognize it;
-			const energy = this.startingEnergy();
-			await this.setEnergy(energy);
-			break;
-		}
-		case "pc":
-		case "npc":
-		case "tarot":
-			break;
-	}
+  if (!game.user.isGM) {return;}
+  switch (this.system.type) {
+    case "shadow": {
+      if (!this.isShadow()) {return;}// a double check purely for TS to recognize it;
+      const energy = this.startingEnergy();
+      await this.setEnergy(energy);
+      break;
+    }
+    case "pc":
+    case "npc":
+    case "tarot":
+      break;
+  }
 }
 
 startingEnergy(this: Shadow) : number {
-	const sit : Situation = {
-		user: this.accessor,
-	};
-	const bonusEnergy = this.persona().getBonuses("starting-energy").total(sit);
-	// const inc = this.system.combat.classData.incremental.mp;
-	const baseStartingEnergy = 3;
-	return baseStartingEnergy + bonusEnergy;
+  const sit : Situation = {
+    user: this.accessor,
+  };
+  const bonusEnergy = this.persona().getBonuses("starting-energy").total(sit);
+  // const inc = this.system.combat.classData.incremental.mp;
+  const baseStartingEnergy = 3;
+  return baseStartingEnergy + bonusEnergy;
 }
 
 /** rate that shadow is encountered in the a scene
  */
 getEncounterWeight(this: Shadow, scene: PersonaScene = game.scenes.current as PersonaScene) : number {
-	const rate = this.system.encounter.dungeonEncounters.find(x => x.dungeonId == scene.id);
-	if (!rate) {return scene.getEncounterRate(this);}
-	const baseProb = ENCOUNTER_RATE_PROBABILITY[rate.frequencyNew];
-	if (baseProb == undefined) {
-		console.warn (`Invalid value for frequencynew: ${rate.frequencyNew}`);
-		return 0;
-	}
-	return baseProb;
+  const rate = this.system.encounter.dungeonEncounters.find(x => x.dungeonId == scene.id);
+  if (!rate) {return scene.getEncounterRate(this);}
+  const baseProb = ENCOUNTER_RATE_PROBABILITY[rate.frequencyNew];
+  if (baseProb == undefined) {
+    console.warn (`Invalid value for frequencynew: ${rate.frequencyNew}`);
+    return 0;
+  }
+  return baseProb;
 }
 
 isEligibleForRandomEncounter(this: Shadow) : boolean {
-	if (this.hasPlayerOwner) {return false;}
-	if ( this.isPersona() || this.isDMon() || this.isCompendiumEntry) {return false;}
-	if (this.hasTag("no-rand")) {return false;}
-	if (this.system.personaConversion.fusionConditions.length > 0) {return false;}
-	return true;
+  if (this.hasPlayerOwner) {return false;}
+  if ( this.isPersona() || this.isDMon() || this.isCompendiumEntry) {return false;}
+  if (this.hasTag("no-rand")) {return false;}
+  if (this.system.personaConversion.fusionConditions.length > 0) {return false;}
+  return true;
 }
 
 get questions(): NPC["system"]["questions"] {
-	switch (this.system.type) {
-		case "shadow":
-		case "tarot":
-			return [];
-		case "npcAlly":
-			return (this as NPCAlly).getNPCProxyActor()?.questions ?? [];
-		case "pc":
-		case "npc":
-				return this.system.questions;
-	}
+  switch (this.system.type) {
+    case "shadow":
+    case "tarot":
+      return [];
+    case "npcAlly":
+      return (this as NPCAlly).getNPCProxyActor()?.questions ?? [];
+    case "pc":
+    case "npc":
+        return this.system.questions;
+  }
 }
 
 async restoreAllQuestions(this: NPC) {
-	const questions = this.system.questions.map (x=> x.toJSON ? x.toJSON() as NPC["system"]["questions"][number] : x );
-	for (const question of questions) {
-		question.expended = false;
-	}
-	await this.update({"system.questions": questions});
+  const questions = this.system.questions.map (x=> x.toJSON ? x.toJSON() as NPC["system"]["questions"][number] : x );
+  for (const question of questions) {
+    question.expended = false;
+  }
+  await this.update({"system.questions": questions});
 }
 
 async markQuestionUsed(this: NPC, index: number) {
-	this.system.questions[index].expended = true;
-	const questions = this.system.questions.map( x=> (x as unknown as JSONAble).toJSON());
-	await this.update({system: {questions}});
+  this.system.questions[index].expended = true;
+  const questions = this.system.questions.map( x=> (x as unknown as JSONAble).toJSON());
+  await this.update({system: {questions}});
 }
 
 async addQuestion(this: NPC | PC) {
-	const choices : NPC["system"]["questions"][number]["choices"] = [
-		{
-			name: "A",
-			response: "",
-			progressSuccess: 0,
-		}, {
-			name: "B",
-			response: "",
-			progressSuccess: 0,
-		}, {
-			name: "C",
-			response: "",
-			progressSuccess: 0,
-		}
-	];
-	const question : NPC["system"]["questions"][number] =
-		{
-			name: "Unnamed Question",
-			text: "",
-			label: "",
-			choices,
-			expended: false,
-			requiresDating: false,
-			SLmin: 1,
-			SLmax: 10,
-		};
-	this.system.questions.push(question);
-	await this.update( { "system.questions": this.system.questions});
+  const choices : NPC["system"]["questions"][number]["choices"] = [
+    {
+      name: "A",
+      response: "",
+      progressSuccess: 0,
+    }, {
+      name: "B",
+      response: "",
+      progressSuccess: 0,
+    }, {
+      name: "C",
+      response: "",
+      progressSuccess: 0,
+    }
+  ];
+  const question : NPC["system"]["questions"][number] =
+    {
+      name: "Unnamed Question",
+      text: "",
+      label: "",
+      choices,
+      expended: false,
+      requiresDating: false,
+      SLmin: 1,
+      SLmax: 10,
+    };
+  this.system.questions.push(question);
+  await this.update( { "system.questions": this.system.questions});
 }
 
 async deleteQuestion(this: NPC | PC, index: number) {
-	this.system.questions.splice(index, 1);
-	await this.update( { "system.questions": this.system.questions});
+  this.system.questions.splice(index, 1);
+  await this.update( { "system.questions": this.system.questions});
 }
 
 get roleString() : SafeString {
-	if (!this.isShadow()) {return new Handlebars.SafeString("");}
-	const roles: (typeof this.system.role)[] = [];
-	roles.push(this.system.role);
-	roles.push(this.system.role2);
-	const localized = roles
-		.filter( x=> x != undefined && x != "base")
-		.map( x=> localize(SHADOW_ROLE[x]))
-		.join(", ");
-	return new Handlebars.SafeString(localized); }
+  if (!this.isShadow()) {return new Handlebars.SafeString("");}
+  const roles: (typeof this.system.role)[] = [];
+  roles.push(this.system.role);
+  roles.push(this.system.role2);
+  const localized = roles
+    .filter( x=> x != undefined && x != "base")
+    .map( x=> localize(SHADOW_ROLE[x]))
+    .join(", ");
+  return new Handlebars.SafeString(localized); }
 
 async setWeaponDamageByLevel(this: Shadow, lvl: number) {
-	const low = 3 + Math.floor(lvl /2);
-	const high = 5 + Math.floor((lvl +1) /2);
-	await this.update( {
-		"system.combat.wpndmg.low" : low,
-		"system.combat.wpndmg.high": high
-	});
+  const low = 3 + Math.floor(lvl /2);
+  const high = 5 + Math.floor((lvl +1) /2);
+  await this.update( {
+    "system.combat.wpndmg.low" : low,
+    "system.combat.wpndmg.high": high
+  });
 }
 
 get treasureString() : SafeString {
-	if (this.system.type != "shadow") {return new Handlebars.SafeString("");}
-	const treasure = this.system.encounter.treasure;
-	const items = [treasure.item0, treasure.item1, treasure.item2]
-		.filter( id=> id)
-		.map( id => PersonaDB.treasureItems().find(x=> x.id == id))
-		.flatMap(item => item ? [item.name] : []);
-	const cardPower = treasure.cardPowerId ? PersonaDB.allPowersArr().filter( x=> treasure.cardPowerId == x.id): [];
-	const cardName = cardPower.map( pwr => `${pwr.name} Card`);
-	return new Handlebars.SafeString(items.concat(cardName).join(", "));
+  if (this.system.type != "shadow") {return new Handlebars.SafeString("");}
+  const treasure = this.system.encounter.treasure;
+  const items = [treasure.item0, treasure.item1, treasure.item2]
+    .filter( id=> id)
+    .map( id => PersonaDB.treasureItems().find(x=> x.id == id))
+    .flatMap(item => item ? [item.name] : []);
+  const cardPower = treasure.cardPowerId ? PersonaDB.allPowersArr().filter( x=> treasure.cardPowerId == x.id): [];
+  const cardName = cardPower.map( pwr => `${pwr.name} Card`);
+  return new Handlebars.SafeString(items.concat(cardName).join(", "));
 }
 
 get isTrueOwner() : boolean {
-	switch (this.system.type) {
-		case "tarot":
-		case "npcAlly":
-		case "shadow":
-		case "npc":
-			return game.user.isGM;
-		case "pc":
-			return game.user.isGM || game.user.id == this.system.trueOwner;
-	}
+  switch (this.system.type) {
+    case "tarot":
+    case "npcAlly":
+    case "shadow":
+    case "npc":
+      return game.user.isGM;
+    case "pc":
+      return game.user.isGM || game.user.id == this.system.trueOwner;
+  }
 }
 
 get fusionCombinations() : FusionCombination[] {
-	const arr = this.personaList
-		.concat(this.sideboardPersonas);
-	return FusionTable.fusionCombinationsOutOf(arr);
+  const arr = this.personaList
+    .concat(this.sideboardPersonas);
+  return FusionTable.fusionCombinationsOutOf(arr);
 }
 
 fusionCombinationsRaw() {
-	const arr = this.personaList
-		.concat(this.sideboardPersonas);
-	return FusionTable.fusionCombinationsOutOf(arr, true);
+  const arr = this.personaList
+    .concat(this.sideboardPersonas);
+  return FusionTable.fusionCombinationsOutOf(arr, true);
 }
 
 getPrimaryPlayerOwner() : typeof game.users.contents[number] | undefined {
-	if ("trueOwner" in this.system) {
-		return game.users.get(this.system.trueOwner);
-	}
-	const userIdPair = Object.entries(this.ownership)
-		.find( ([k,v]) => {
-			if (v < CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER) {return false;}
-			const user = game.users.get(k as User["id"]);
-			if (user && !user.isGM) {return true;}
-			return false;
-		});
-	if (!userIdPair) {return undefined;}
-	return game.users.get(userIdPair[0] as User["id"]);
+  if ("trueOwner" in this.system) {
+    return game.users.get(this.system.trueOwner);
+  }
+  const userIdPair = Object.entries(this.ownership)
+    .find( ([k,v]) => {
+      if (v < CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER) {return false;}
+      const user = game.users.get(k as User["id"]);
+      if (user && !user.isGM) {return true;}
+      return false;
+    });
+  if (!userIdPair) {return undefined;}
+  return game.users.get(userIdPair[0] as User["id"]);
 }
 
 get startingPowers() : Power[] {
-	if (!this.isShadow()) {return [];}
-	const startingLevel = this.system.personaConversion.startingLevel;
-	const learnedPowers = this.powerLearningListFull.filter( x=> x.level <= startingLevel);
-	return learnedPowers.map( x=> x.power);
+  if (!this.isShadow()) {return [];}
+  const startingLevel = this.system.personaConversion.startingLevel;
+  const learnedPowers = this.powerLearningListFull.filter( x=> x.level <= startingLevel);
+  return learnedPowers.map( x=> x.power);
 }
 
 getNPCAllyProxy(this: NPC) : U<NPCAlly> {
-	return PersonaDB.NPCAllies().find( x=> x.system.NPCSocialProxyId == this.id);
+  return PersonaDB.NPCAllies().find( x=> x.system.NPCSocialProxyId == this.id);
 }
 
 async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: number) : Promise<void> {
-	if (amt <= 0) {
-		PersonaError.softFail(`Negative amount for perma buff for ${this.name}`);
-		return;}
-	if (this.isNPC()) {
-		const proxyAlly = this.getNPCAllyProxy();
-		if (!proxyAlly) {return;}
-		return proxyAlly.addPermaBuff(buffType, amt);
-	}
-	if (typeof amt != "number" || amt == 0 || Number.isNaN(amt)) {return;}
-	switch (buffType) {
-		case "max-hp": {
-			const newHP = this.system.combat.bonusHP + amt;
-			await this.update( {"system.combat.bonusHP": newHP});
-			break;
-		}
-		case "max-mp": {
-			const newMP = this.system.combat.bonusMP + amt;
-			await this.update( {"system.combat.bonusMP": newMP});
-			break;
-		}
-		case "str":
-		case "mag":
-		case "end":
-		case "agi":
-		case "luk": {
-			const persona = this.persona();
-			if (persona.source != this) {
-				return await persona.source.addPermaBuff(buffType, amt);
-			}
-			const bonuses = this.system.combat.personaStats.permanentStatsBonuses ?? {
-				str: 0,
-				mag: 0,
-				end: 0,
-				agi: 0,
-				luk: 0,
-			};
-			const newObj = {...bonuses};
-			// if (this.hasSoloPersona) {amt = Math.max(1, Math.round(amt / 2));}
-			newObj[buffType] += amt;
-			await this.update({ "system.combat.personaStats.permanentStatsBonuses": newObj});
-		}
-			break;
-		default:
-			buffType satisfies never;
-			return;
-	}
-	const permaBuffLocalized = localize(PERMA_BUFFS[buffType]);
-	void PersonaSFX.onPermaBuff(this, buffType, amt);
-	await Logger.sendToChat(`+${amt} ${permaBuffLocalized} applied to ${this.name}`);
+  if (amt <= 0) {
+    PersonaError.softFail(`Negative amount for perma buff for ${this.name}`);
+    return;}
+  if (this.isNPC()) {
+    const proxyAlly = this.getNPCAllyProxy();
+    if (!proxyAlly) {return;}
+    return proxyAlly.addPermaBuff(buffType, amt);
+  }
+  if (typeof amt != "number" || amt == 0 || Number.isNaN(amt)) {return;}
+  switch (buffType) {
+    case "max-hp": {
+      const newHP = this.system.combat.bonusHP + amt;
+      await this.update( {"system.combat.bonusHP": newHP});
+      break;
+    }
+    case "max-mp": {
+      const newMP = this.system.combat.bonusMP + amt;
+      await this.update( {"system.combat.bonusMP": newMP});
+      break;
+    }
+    case "str":
+    case "mag":
+    case "end":
+    case "agi":
+    case "luk": {
+      const persona = this.persona();
+      if (persona.source != this) {
+        return await persona.source.addPermaBuff(buffType, amt);
+      }
+      const bonuses = this.system.combat.personaStats.permanentStatsBonuses ?? {
+        str: 0,
+        mag: 0,
+        end: 0,
+        agi: 0,
+        luk: 0,
+      };
+      const newObj = {...bonuses};
+      // if (this.hasSoloPersona) {amt = Math.max(1, Math.round(amt / 2));}
+      newObj[buffType] += amt;
+      await this.update({ "system.combat.personaStats.permanentStatsBonuses": newObj});
+    }
+      break;
+    default:
+      buffType satisfies never;
+      return;
+  }
+  const permaBuffLocalized = localize(PERMA_BUFFS[buffType]);
+  void PersonaSFX.onPermaBuff(this, buffType, amt);
+  await Logger.sendToChat(`+${amt} ${permaBuffLocalized} applied to ${this.name}`);
 }
 
 fusionsInto(this: Shadow, min= 2, max=999, limited = false) : [Shadow, Shadow][] {
-	const fusions =  FusionTable.fusionCombinationsInto(this, min, max);
-	if (!limited) {return fusions;}
-	return fusions
-		.filter ( x=> x.every( shadow => shadow.basePersona.isFusable()));
+  const fusions =  FusionTable.fusionCombinationsInto(this, min, max);
+  if (!limited) {return fusions;}
+  return fusions
+    .filter ( x=> x.every( shadow => shadow.basePersona.isFusable()));
 }
 
 moneyDropped(): number {
-	if (!this.isShadow() || this.isPersona()) {return 0;}
-	const moneyHigh = Math.floor(this.level / 5);
-	const moneyLow = Math.floor(this.level / 10);
-	const variability = moneyHigh - moneyLow;
-	const situation = {
-		user: this.accessor,
-	};
-	const mult = this.basePersona.getBonuses("shadowMoneyBoostPercent").total(situation, "percentage");
-	if (variability >= 0) {
-		const bonus = Math.floor(Math.random() * (variability +1));
-		return Math.floor(mult * (moneyLow + bonus));
-	}
-	return Math.floor(mult * moneyLow);
+  if (!this.isShadow() || this.isPersona()) {return 0;}
+  const moneyHigh = Math.floor(this.level / 5);
+  const moneyLow = Math.floor(this.level / 10);
+  const variability = moneyHigh - moneyLow;
+  const situation = {
+    user: this.accessor,
+  };
+  const mult = this.basePersona.getBonuses("shadowMoneyBoostPercent").total(situation, "percentage");
+  if (variability >= 0) {
+    const bonus = Math.floor(Math.random() * (variability +1));
+    return Math.floor(mult * (moneyLow + bonus));
+  }
+  return Math.floor(mult * moneyLow);
 }
 
 get inActiveParty() : boolean {
@@ -4548,54 +4548,54 @@ async setAsActivePartyMember(this : NPCAlly)  {
 }
 
 get startingLevel() : number {
-	const cVal = this.cache.startingLevel;
-	if (cVal != undefined) {
-		return cVal;
-	}
-	if (!this.isShadow()) {
-		return this.cache.startingLevel = 0;
-	}
-	const lvl = this.system.personaConversion.startingLevel;
-	if (lvl == 1) {return this.cache.startingLevel = this.level;}
-	return this.cache.startingLevel = lvl;
+  const cVal = this.cache.startingLevel;
+  if (cVal != undefined) {
+    return cVal;
+  }
+  if (!this.isShadow()) {
+    return this.cache.startingLevel = 0;
+  }
+  const lvl = this.system.personaConversion.startingLevel;
+  if (lvl == 1) {return this.cache.startingLevel = this.level;}
+  return this.cache.startingLevel = lvl;
 }
 
 async swapPersona( this: PC, p1: Persona, p2: Persona) {
-	if (this.maxPersonaSideboard == 0) {
-		return;
-	}
-	if (await this._trySwapPersona(p1, p2)) {
-		await Logger.sendToChat(`${p1.name} moved from sideboard to active, replacing ${p2.name}`);
-		return;
-	}
-	if (await this._trySwapPersona(p2, p1)) {
-		await Logger.sendToChat(`${p2.name} moved from sideboard to active, replacing ${p1.name}`);
-		return;
-	}
-	ui.notifications.notify("These two personas can't be swapped");
+  if (this.maxPersonaSideboard == 0) {
+    return;
+  }
+  if (await this._trySwapPersona(p1, p2)) {
+    await Logger.sendToChat(`${p1.name} moved from sideboard to active, replacing ${p2.name}`);
+    return;
+  }
+  if (await this._trySwapPersona(p2, p1)) {
+    await Logger.sendToChat(`${p2.name} moved from sideboard to active, replacing ${p1.name}`);
+    return;
+  }
+  ui.notifications.notify("These two personas can't be swapped");
 }
 
 private async _trySwapPersona(this: PC, p1: Persona, p2: Persona)  : Promise<boolean> {
-	const sideboardIds = this.system.combat.persona_sideboard;
-	const personaList = this.system.personaList;
-	if (sideboardIds.includes(p1.source.id)) {
-		if (personaList.includes(p2.source.id)) {
-			sideboardIds.splice(sideboardIds.indexOf(p1.source.id), 1, p2.source.id);
-			personaList.splice(personaList.indexOf(p2.source.id), 1, p1.source.id);
-			await this.update( {
-				"system.combat.persona_sideboard": sideboardIds,
-				"system.personaList": personaList,
-			});
-			return true;
-		}
-	}
-	return false;
+  const sideboardIds = this.system.combat.persona_sideboard;
+  const personaList = this.system.personaList;
+  if (sideboardIds.includes(p1.source.id)) {
+    if (personaList.includes(p2.source.id)) {
+      sideboardIds.splice(sideboardIds.indexOf(p1.source.id), 1, p2.source.id);
+      personaList.splice(personaList.indexOf(p2.source.id), 1, p1.source.id);
+      await this.update( {
+        "system.combat.persona_sideboard": sideboardIds,
+        "system.personaList": personaList,
+      });
+      return true;
+    }
+  }
+  return false;
 }
 
 /** number of R to summon from compendium*/
 get summoningCost() : number {
-	if (!this.isShadow() || !this.isCompendiumEntry) { return -1;}
-	return PersonaCompendium.costToSummon(this);
+  if (!this.isShadow() || !this.isCompendiumEntry) { return -1;}
+  return PersonaCompendium.costToSummon(this);
 }
 
 }//end of class
@@ -4603,9 +4603,9 @@ get summoningCost() : number {
 
 
 export type SocialBenefit = {
-	id: string,
-	focus: Focus,
-	lvl_requirement: number,
+  id: string,
+  focus: Focus,
+  lvl_requirement: number,
 };
 
 
@@ -4618,13 +4618,13 @@ Object.seal(EMPTYARR);
 ActorHooks.init();
 
 declare global {
-	type PC = Subtype<PersonaActor, "pc">;
-	type Shadow = Subtype<PersonaActor, "shadow">;
-	type NPC = Subtype<PersonaActor, "npc">;
-	type NPCAlly =Subtype<PersonaActor, "npcAlly">;
-	type Tarot = Subtype<PersonaActor, "tarot">;
+  type PC = Subtype<PersonaActor, "pc">;
+  type Shadow = Subtype<PersonaActor, "shadow">;
+  type NPC = Subtype<PersonaActor, "npc">;
+  type NPCAlly =Subtype<PersonaActor, "npcAlly">;
+  type Tarot = Subtype<PersonaActor, "tarot">;
 
-	type SocialLink = PC | NPC | NPCAlly;
+  type SocialLink = PC | NPC | NPCAlly;
 }
 
 type RealPC = PC & {tarot : Tarot};
