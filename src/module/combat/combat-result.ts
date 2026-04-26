@@ -10,13 +10,13 @@ import { StatusEffect } from "../../config/consequence-types.js";
 import { ValidSound } from "../persona-sounds.js";
 import { PersonaError } from "../persona-error.js";
 import { PToken } from "./persona-combat.js";
-import { RollBundle } from "../persona-roll.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { PersonaDB } from "../persona-db.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
 import {ATTACK_RESULT} from "../../config/attack-result-config.js";
 import {PersonaAE, StatusDuration} from "../persona-ae.js";
+import {ResolvedRollBundle} from "../roll-bundle.js";
 
 declare global {
 	interface SocketMessage {
@@ -780,7 +780,7 @@ export type AttackResult = {
 	attacker: N<UniversalTokenAccessor<PToken>>,
 	power: UniversalItemAccessor<UsableAndCard>,
 	situation: HasKey<SituationComponent.Roll, "resisted">,
-	roll: RollBundle | null ,
+	roll: ResolvedRollBundle | null ,
 	ailmentRange: U<{low: number, high: number}>
 	instantKillRange: U<{low: number, high:number}>;
 	critRange: U<{low: number, high:number}>;

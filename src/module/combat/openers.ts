@@ -53,13 +53,6 @@ export class OpenerManager {
   }
 
 
-  private async storeOpenerChoices (openingReturn: OpenerOptionsGroups[]) {
-    console.log("Openers choices stored");
-    Debug(openingReturn);
-    // const options = openingReturn.flatMap ( or => or.options);
-    await this.combat.setFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME, openingReturn);
-  }
-
   async onEndCombat() {
     await PersonaError.asyncErrorWrapper(
       async () => await this.clearOpenerChoices()
@@ -72,6 +65,12 @@ export class OpenerManager {
     if (game.user.isGM) {
       await this.clearOpenerChoices();
     }
+  }
+
+  private async storeOpenerChoices (openingReturn: OpenerOptionsGroups[]) {
+    console.log("Openers choices stored");
+    Debug(openingReturn);
+    await this.combat.setFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME, openingReturn);
   }
 
   private async clearOpenerChoices()  {
@@ -113,9 +112,6 @@ export class OpenerManager {
     if (this.combat.isSocial) {return null;}
     const actor = combatant.actor;
     if (!actor) {return null;}
-    // const openingRoll = await PersonaRoller.hiddenRoll();
-    // const openingRoll = new Roll('1d20');
-    // const rollValue = openingRoll.total;
     const situation = {
       rollType: "opener",
       user: actor.accessor,

@@ -23,7 +23,7 @@ import { CombatResult } from './combat-result.js';
 import { PersonaActor } from '../actor/persona-actor.js';
 import { AttackResult } from './combat-result.js';
 import { PersonaDB } from '../persona-db.js';
-import { PersonaRoller, RollBundle } from '../persona-roll.js';
+import { PersonaRoller } from '../persona-roll.js';
 import { EngagementList } from './engagementList.js';
 import {FinalizedCombatResult} from './finalized-combat-result.js';
 import {CombatScene} from './combat-scene.js';
@@ -38,6 +38,7 @@ import {FollowUpManager} from './follow-up-actions.js';
 import {ConditionalEffectPrinter} from '../conditionalEffects/conditional-effect-printer.js';
 import {PersonaSockets} from '../persona.js';
 import {checkSituationProp} from '../preconditions.js';
+import {ResolvedRollBundle, RollBundle} from '../roll-bundle.js';
 
 
 declare global {
@@ -497,7 +498,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       return;
     }
     const baseRolls : Roll[] = [];
-    const rolls : RollBundle[] = [];
+    const rolls : ResolvedRollBundle[] = [];
     await actor.refreshActions();
     if (!actor.hasPlayerOwner) {
       await this.ensureSheetOpen(combatant);
@@ -906,8 +907,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         withinCritRange: false,
         struckWeakness: false,
         resisted: false,
-        attackerPersona: attacker.actor.persona(),
-        targetPersona: target.actor.persona(),
+        // attackerPersona: attacker.actor.persona(),
+        // targetPersona: target.actor.persona(),
       } satisfies AttackResult["situation"];
     } else {
       situation = simSitOrNat;
@@ -1403,7 +1404,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   }
 
   /**@deprecated this is a test*/
-  static async disengageRoll( actor: ValidAttackers, DC = 11) : Promise<{total: number, rollBundle: RollBundle, success: boolean}> {
+  static async disengageRoll( actor: ValidAttackers, DC = 11) : Promise<{total: number, rollBundle: ResolvedRollBundle, success: boolean}> {
     const situation : SituationTypes.PreRoll = {
       user: PersonaDB.getUniversalActorAccessor(actor),
       rollTags: ["disengage"],
@@ -1414,11 +1415,12 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     const labelTxt = 'Disengage Check';
     const roll = new Roll('1d20');
     await roll.roll();
-    const rollBundle = new RollBundle(labelTxt, roll, actor.system.type == 'pc', mods, situation);
+    const rollBundle = new RollBundle(labelTxt, roll, actor.system.type == 'pc', mods, situation, DC);
+    const res = rollBundle.resolve();
     return {
-      total: rollBundle.total,
-      rollBundle,
-      success: rollBundle.total >= DC,
+      total: res.total,
+      rollBundle : res,
+      success: res.total >= DC,
     };
   }
 

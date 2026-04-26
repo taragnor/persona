@@ -1,6 +1,6 @@
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaError} from "../persona-error.js";
-import {RollBundle} from "../persona-roll.js";
+import {ResolvedRollBundle} from "../roll-bundle.js";
 import {FinalizedCombatResult} from "./finalized-combat-result.js";
 import {PersonaCombat, PToken} from "./persona-combat.js";
 
@@ -67,7 +67,7 @@ export class CombatOutput {
   async renderMessage( header: string) : Promise<ChatMessage>;
   async renderMessage( effectName: string, initiator: U<PersonaActor>, options ?: {error: boolean}) : Promise<ChatMessage>;
   async renderMessage( effectNameOrHeader: string, initiator?: U<PersonaActor>, options ?: {error: boolean}) : Promise<ChatMessage> {
-    const rolls : RollBundle[] = this.result.attacks
+    const rolls : ResolvedRollBundle[] = this.result.attacks
     .flatMap( (attack) => attack.atkResult.roll? [attack.atkResult.roll] : []);
     const html = await this.generateHTML(effectNameOrHeader, initiator);
     const errorMsg =     options?.error 

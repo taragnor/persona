@@ -95,47 +95,51 @@ export class SocketManager {
 		game.socket.emit(this.#socketName, sPayload );
 	}
 
-	/** as simple send but returns a boolean as a promise if the message was recieved*/
-	async verifiedSend<T extends keyof SocketMessage>(msgType: T, dataToSend: SocketMessage[T], recipient: User["id"]) : Promise<boolean> {
-		if (recipient == game.user.id) {return true;}
-		this.#checkSockets();
-		const sessionInfo = {};
-		const sPayload = {
-			code: msgType,
-			sender: game.user.id,
-			targetInfo: sessionInfo,
-			recipients: [recipient],
-			verificationId: this.newMessageId(),
-			data: dataToSend,
-		};
-		game.socket.emit(this.#socketName, sPayload );
-		// console.debug(`Initial: Verified Send out ${sPayload.verificationId}`);
-		let killTimeout = false;
-		const p = new Promise( (resolve, reject) => {
-			this.setPending( sPayload.verificationId, recipient, { resolve, reject});
-			let timeoutCount = 10;
-			const timeout  = () => {
-				if (killTimeout) {return;}
-				if (timeoutCount-- <= 0) {
-					reject(new TimeoutError(`Time out ${sPayload.verificationId}!`));
-					return;
-				}
-				game.socket.emit(this.#socketName, sPayload );
-				const user = game.users.get(recipient);
-				ui.notifications.notify(`Trouble sending data to remote client ${user?.name}, retrying....`);
-				setTimeout(timeout, 3000);
-			};
-			setTimeout(timeout, 3000);
-		});
-		try {
-			await p;
-		} catch {
-			return false;
-		}
-		killTimeout = true;
-		this.clearPending(sPayload.verificationId, recipient);
-		return true;
-	}
+  /** as simple send but returns a boolean as a promise if the message was recieved*/
+  async verifiedSend<T extends keyof SocketMessage>(msgType: T, dataToSend: SocketMessage[T], recipient: User["id"]) : Promise<boolean> {
+    if (recipient == game.user.id) {return true;}
+    this.#checkSockets();
+    const sessionInfo = {};
+    const sPayload = {
+      code: msgType,
+      sender: game.user.id,
+      targetInfo: sessionInfo,
+      recipients: [recipient],
+      verificationId: this.newMessageId(),
+      data: dataToSend,
+    };
+    game.socket.emit(this.#socketName, sPayload );
+    // console.debug(`Initial: Verified Send out ${sPayload.verificationId}`);
+    let killTimeout = false;
+    const p = new Promise( (resolve, reject) => {
+      this.setPending( sPayload.verificationId, recipient, { resolve, reject});
+      let timeoutCount = 10;
+      const timeout  = () => {
+        if (killTimeout) {return;}
+        if (timeoutCount-- <= 0) {
+          reject(new TimeoutError(`Time out ${sPayload.verificationId}!`));
+          return;
+        }
+        if (timeoutCount < 8) {
+          game.socket.emit(this.#socketName, sPayload );
+        }
+        if (timeoutCount < 6) {
+          const user = game.users.get(recipient);
+          ui.notifications.notify(`Trouble sending data to remote client ${user?.name}, retrying....`);
+        }
+        setTimeout(timeout, 3000);
+      };
+      setTimeout(timeout, 4000);
+    });
+    try {
+      await p;
+    } catch {
+      return false;
+    }
+    killTimeout = true;
+    this.clearPending(sPayload.verificationId, recipient);
+    return true;
+  }
 
 	setPending(verificationId: VerificationId, recipient: User["id"], promiseData: PromiseData)
 	{

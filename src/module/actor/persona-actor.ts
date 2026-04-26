@@ -626,6 +626,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
 
 	persona<T extends ValidAttackers | NPC>(this: T): Persona<T extends NPC ? NPCAlly : T> {
+    //TOOD: maybe try timed cache here
 		type returnType = Persona<T extends NPC ? NPCAlly : T>;
 		switch (this.system.type) {
 			case "npc": {

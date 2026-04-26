@@ -147,7 +147,7 @@ export class SocialCardEventHandler {
 				await roll.toModifiedMessage(true);
 				const hit = roll.success ?? false;
 				const critical = roll.critical ?? false;
-				const situation = roll.resolvedSituation();
+				const situation = roll.resultSituation;
 				await this.processAutoProgress(cardData, cardRoll, hit, critical );
 				await this.#onCardRoll(cardData, cardRoll, situation);
 				await PersonaSocial.applyEffects(effectList, situation, cardData.actor);
@@ -170,7 +170,7 @@ export class SocialCardEventHandler {
 					// situation: cardData.situation,
 				});
 				await saveResult.toModifiedMessage(true);
-				const situation = saveResult.resolvedSituation();
+				const situation = saveResult.resultSituation;
 				await this.processAutoProgress(cardData, cardRoll, saveResult.success ?? false, false);
 				await this.#onCardRoll(cardData, cardRoll, situation);
 				await PersonaSocial.applyEffects(effectList, situation, cardData.actor);

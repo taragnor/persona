@@ -18,6 +18,7 @@ import {sleep} from "../../utility/async-wait.js";
 import {PROBABILITIES_POWER_RARITY} from "../../../config/probability.js";
 import {localize} from "../../persona.js";
 import {PersonaTargetting, TargettingError} from "../../combat/persona-targetting.js";
+import {PersonaSettings} from "../../../config/persona-settings.js";
 
 export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	declare actor: ValidAttackers;
@@ -360,13 +361,16 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		item.sheet.render(true);
 	}
 
-	async rollSave(_event: Event) {
-		const roll = await PersonaRoller.rollSave(this.actor, {
-			DC:11, label:"Manual Save", askForModifier:true,
-			rollTags: []
-		});
-		await roll.toModifiedMessage(false);
-	}
+  async rollSave(_event: Event) {
+    const roll = await PersonaRoller.rollSave(this.actor, {
+      DC:11, label:"Manual Save", askForModifier:true,
+      rollTags: []
+    });
+    if (PersonaSettings.debugMode()){
+      console.log(roll);
+    }
+    await roll.toModifiedMessage(false);
+  }
 
 	async levelUp(_event: Event) {
 		if (!game.user.isGM) {return;}

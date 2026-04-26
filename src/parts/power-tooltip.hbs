@@ -1,3 +1,7 @@
+{{#if (not (canUsePower persona power))}}
+{{cantUseReason persona power}}
+{{/if}}
+
 {{power.name}} vs {{targetPersona.user.name}}
 Attack Bonus: +{{getAttackBonus persona power targetPersona}}
 Tags: {{getPowerTagsL actor power}}

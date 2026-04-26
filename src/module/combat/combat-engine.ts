@@ -12,7 +12,8 @@ import {PersonaItem} from "../item/persona-item.js";
 import {Persona} from "../persona-class.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
-import {PersonaRoller, RollBundle} from "../persona-roll.js";
+import {PersonaRoller} from "../persona-roll.js";
+import {RollBundle, ResolvedRollBundle} from "../roll-bundle.js";
 import {TagManager} from "../tag-manager.js";
 import {TriggeredEffect} from "../triggered-effect.js";
 import {sleep} from "../utility/async-wait.js";
@@ -288,8 +289,16 @@ export class CombatEngine {
 			...baseProtoSituation,
       addedTags: this.determineAddedPowerTags(attacker, target, usableOrCard, baseProtoSituation),
 			rollType: rollData.rollType,
-      DC: undefined,
+      DC: undefined as U<number>,
 		} satisfies SituationComponent.RollParts.PreRoll;
+    if (usableOrCard.isSkillCard()) {
+      return baseSituation;
+    }
+		const def = usableOrCard.system.defense;
+		const defenseCalc = target.getDefense(def).eval(baseSituation);
+		const defenseVal = def != 'none' ? defenseCalc.total: 0;
+    baseSituation.DC = defenseVal;
+    // const DC = defenseVal;
 		return baseSituation;
 	}
 
@@ -349,13 +358,13 @@ export class CombatEngine {
 	private getRollNameGenFn(attacker: Persona, power: Usable, target: Persona)  : (rollB: RollBundle) => string{
 		return (rollB : RollBundle) => {
 			const cssClass= (!target.user.isPC()) ? 'gm-only' : '';
-			const defenseStr =`<span class="${cssClass}">(${rollB?.DC ?? 0})</span>`;
+			const defenseStr =`<span class="${cssClass}">(${rollB.resolveDC()})</span>`;
 			const rollName =  `${attacker.combatName} (${power.name}) ->  ${target.combatName} vs. ${power.targettedDefenseLocalized()} ${defenseStr}`;
 			return rollName;
 		};
 	}
 
-	private getBaseAttackResult(roll: RollBundle, attacker: Persona, target:Persona, power: Usable ): Pick<AttackResult, 'attacker' | 'target'  | 'power' | 'roll'>  {
+	private getBaseAttackResult(roll: ResolvedRollBundle, attacker: Persona, target:Persona, power: Usable ): Pick<AttackResult, 'attacker' | 'target'  | 'power' | 'roll'>  {
 		const baseData = {
 			roll,
 			attacker: attacker.token ? PersonaDB.getUniversalTokenAccessor(attacker.token): null,
@@ -365,47 +374,57 @@ export class CombatEngine {
 		return baseData;
 	}
 
-	static withinRange(range: U<CalculatedRange>, roll: AttackRollData) : boolean {
+	static withinRange(range: U<CalculatedRange>,
+    roll: {rollTags: SituationTypes.Roll["rollTags"],
+  naturalRoll : number}) : boolean {
 		if (!range) {return false;}
 		return range.possible
 			&& !roll.rollTags.includes("secondary-attack")
-			&& roll.natural >= range.low
-			&& roll.natural <= range.high;
+			&& roll.naturalRoll >= range.low
+			&& roll.naturalRoll <= range.high;
 	}
 
-	generateAttackSituation (attacker: Persona, target: Persona, power: Usable, rollData: AttackRollData, rollTotal: number, _options: CombatOptions = {}): ProtoResultAttackSituation {
-		const baseSituation = this.getBaseSituation(attacker, target, power, rollData);
-		const def = power.system.defense;
-		const defenseCalc = target.getDefense(def).eval(baseSituation);
-		const defenseVal = def != 'none' ? defenseCalc.total: 0;
+
+	// generateAttackSituation (attacker: Persona, target: Persona, power: Usable, rollData: AttackRollData, rollTotal: number, _options: CombatOptions = {}): ProtoResultAttackSituation {
+	generateAttackSituation (attacker: Persona, target: Persona, power: Usable, roll: ResolvedRollBundle, baseSituation: ReturnType<CombatEngine["getBaseSituation"]>, _options: CombatOptions = {}): ProtoResultAttackSituation {
+		// const baseSituation = this.getBaseSituation(attacker, target, power, rollData);
+		// const def = power.system.defense;
+		// const defenseCalc = target.getDefense(def).eval(baseSituation);
+		// const defenseVal = def != 'none' ? defenseCalc.total: 0;
 		const partialSituation = {
 			...baseSituation,
-			naturalRoll: rollData.natural,
-			rollTotal: rollTotal,
-			DC: defenseVal,
-			rollType: rollData.rollType,
+			naturalRoll: roll.natural,
+			rollTotal: roll.total,
+			// DC: defenseVal,
+			// rollType: roll.rollType,
 		} ;
 		const {ailmentRange, instantKillRange, critRange} = CombatEngine.calculateRanges(attacker, target, power, partialSituation);
-		const withinAilmentRange = CombatEngine.withinRange(ailmentRange, rollData);
-		const withinCritRange = CombatEngine.withinRange(critRange, rollData);
-		const withinInstantKillRange = CombatEngine.withinRange(instantKillRange, rollData);
+		const withinAilmentRange = CombatEngine.withinRange(ailmentRange, partialSituation);
+		const withinCritRange = CombatEngine.withinRange(critRange, partialSituation);
+		const withinInstantKillRange = CombatEngine.withinRange(instantKillRange, partialSituation);
 		const protoSituation = {
       ...partialSituation,
       ailmentRange, instantKillRange, critRange,
       withinAilmentRange,
       withinInstantKillRange,
       withinCritRange,
-      attackerPersona: attacker,
-      targetPersona: target,
+      // attackerPersona: attacker,
+      // targetPersona: target,
     } satisfies ProtoResultAttackSituation;
 		return protoSituation;
 	}
 
-	makeRollBundle (rollData: AttackRollData, attacker: Persona, target: Persona, power: Usable, situation: SituationTypes.PreRoll, options: RollOptions ) : RollBundle {
+	makeRollBundle (rollData: AttackRollData, attacker: Persona, target: Persona, power: Usable, situation: SituationTypes.PreRoll, options: RollOptions ) : ResolvedRollBundle
+  {
+		// const baseSituation = this.getBaseSituation(attacker, target, power, rollData);
+		// const def = power.system.defense;
+		// const defenseCalc = target.getDefense(def).eval(situation);
+		// const defenseVal = def != 'none' ? defenseCalc.total: 0;
+    // const DC = defenseVal;
 		const attackBonus = this.getAttackBonus(attacker, power, target, options);
 		const rollName = this.getRollNameGenFn(attacker, power, target);
-		const bundle = new RollBundle(rollName, rollData.roll, attacker.user.isPC(), attackBonus, situation);
-		return bundle;
+		const bundle = new RollBundle(rollName, rollData.roll, attacker.user.isPC(), attackBonus, situation, situation.DC ?? -2);
+		return bundle.resolve();
 	}
 
   async makeAttackRoll( rollType: AttackRollData["rollType"], options : CombatOptions) : Promise<AttackRollData> {
@@ -434,12 +453,11 @@ export class CombatEngine {
 		}
 		const baseSituation = this.getBaseSituation(attacker, target, power, rollData);
 		const rollBundle = this.makeRollBundle(rollData, attacker, target, power, baseSituation, options );
-		const situation = this.generateAttackSituation(attacker, target, power, rollData, rollBundle.total, options);
-		rollBundle.DC = situation?.DC;
+		const situation = this.generateAttackSituation(attacker, target, power, rollBundle, baseSituation, options);
 		return this.generateAttackResult(attacker, target, power, rollBundle, situation);
 	}
 
-  private generateAttackResult(attacker: Persona, target: Persona, power: Usable, rollBundle: RollBundle, situation: ProtoResultAttackSituation): AttackResult {
+  private generateAttackResult(attacker: Persona, target: Persona, power: Usable, rollBundle: ResolvedRollBundle, situation: ProtoResultAttackSituation): AttackResult {
     const addonAttackResultData = {
       ailmentRange: situation.ailmentRange,
       instantKillRange: situation.instantKillRange,
@@ -471,7 +489,7 @@ export class CombatEngine {
     return attackResult;
   }
 
-	private determineAttackResult(attacker: Persona, target: Persona, power: Usable, _roll: RollBundle, situation: ProtoResultAttackSituation) : AttackResultData {
+	private determineAttackResult(attacker: Persona, target: Persona, power: Usable, _roll: ResolvedRollBundle, situation: ProtoResultAttackSituation) : AttackResultData {
 		const result = this.getBaseResult(attacker, target,power, situation);
 		const resultSituation = {
 			...situation,
@@ -744,11 +762,13 @@ export class CombatEngine {
 		return CombatRes;
 	}
 
-	async processSkillCard( attacker: Persona, usableOrCard: UsableAndCard, target: Persona, rollData: AttackRollData) : Promise<AttackResult> {
-		const situation = this.getBaseSituation(attacker, target, usableOrCard, rollData);
-		const r = await new Roll('1d20').roll();
-		const emptyList = new ModifierList();
-		const roll = new RollBundle('Activation Roll Skiill Card', r, attacker.user.isPC(), emptyList, situation);
+  async processSkillCard( attacker: Persona, usableOrCard: UsableAndCard, target: Persona, rollData: AttackRollData) : Promise<AttackResult> {
+    const situation = this.getBaseSituation(attacker, target, usableOrCard, rollData);
+    const r = await new Roll('1d20').roll();
+    const emptyList = new ModifierList();
+    const roll = (new RollBundle('Activation Roll Skiill Card', r, attacker.user.isPC(), emptyList, situation, 0))
+    .resolve();
+
 		const combatRollSituation = {
       ...situation,
       naturalRoll: r.total,
@@ -763,8 +783,8 @@ export class CombatEngine {
       DC: 0,
       result: "hit",
       addedTags: [],
-      attackerPersona: attacker,
-      targetPersona: attacker,
+      // attackerPersona: attacker,
+      // targetPersona: attacker,
     } satisfies AttackResult["situation"];
 		const res : AttackResult = {
 			result: 'hit',

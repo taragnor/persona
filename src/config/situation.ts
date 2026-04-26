@@ -122,22 +122,23 @@ namespace SituationComponent {
       rollType ?: U<AttackRollType | "opener">;
     } & AddedTags
 
-    export type PreRoll = SituationComponent.User & PreRollCore
+    export type PreRoll = SituationComponent.User
+      & PreRollCore
       &  Partial<MinorRollSubtypes | CombatPreRollPart>;
 
-    type MinorRollSubtypes = SkillRollPart | SavingThrowPart | PowerUsePart;
+    type MinorRollSubtypes = SkillRollPart | SavingThrowPart | PowerUsePart | object;
 
     type SavingThrowPart = {
       saveVersus : N<StatusEffectId>;
     }
 
     type SkillRollPart = {
-      usedSkill : SocialStat;
+      usedSkill : U<SocialStat>;
     };
 
     type PowerUsePart = SituationComponent.User & SituationComponent.Attacker & SituationComponent.Targetted & {
       usedPower : UniversalItemAccessor<UsableAndCard>;
-      rollType: AttackRollType,
+      // rollType: AttackRollType,
     }
 
 
@@ -145,8 +146,8 @@ namespace SituationComponent {
       ailmentRange : AttackResult["ailmentRange"],
       instantKillRange : AttackResult["instantKillRange"],
       critRange : AttackResult["critRange"],
-      attackerPersona: Persona,
-      targetPersona: Persona,
+      // attackerPersona: Persona,
+      // targetPersona: Persona,
     }
 
     type CombatReportPart = Partial<CombatPreRollPart> & PowerUsePart & CompletedRollPart & {
@@ -155,8 +156,8 @@ namespace SituationComponent {
       withinCritRange : boolean;
       resisted : boolean;
       struckWeakness : boolean;
-      attackerPersona: Persona,
-      targetPersona: Persona,
+      // attackerPersona: Persona,
+      // targetPersona: Persona,
     }
 
   }

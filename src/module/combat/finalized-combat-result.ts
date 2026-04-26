@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { RollBundle } from "../persona-roll.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { PToken } from "./persona-combat.js";
 import { PersonaSockets } from "../persona.js";
@@ -22,6 +21,7 @@ import {PersonaSFX} from "./persona-sfx.js";
 import {TriggeredEffect} from "../triggered-effect.js";
 import {sleep} from "../utility/async-wait.js";
 import {LocalEffectCombatResult} from "./local-effect-combat-result.js";
+import {ResolvedRollBundle} from "../roll-bundle.js";
 
 const SAFETY_SLEEP_DURATION = 750 as const;
 const DELAY_FOR_UPDATES_TO_GET_THERE_FIRST = 25 as const;
@@ -205,7 +205,7 @@ export class FinalizedCombatResult {
   private async _toMessage_error( effectNameOrHeader: string, initiator: U<PersonaActor>, initiatorToken: U<PToken>, e : Unknown<Error>) {
     const output = new CombatOutput(this, initiatorToken);
     const html = await output.generateHTML(effectNameOrHeader, initiator);
-    const rolls : RollBundle[] = this.attacks
+    const rolls : ResolvedRollBundle[] = this.attacks
       .flatMap( (attack) => attack.atkResult.roll? [attack.atkResult.roll] : []);
     PersonaError.softFail("Error with automatic result application", e, this, html);
     await ChatMessage.create( {

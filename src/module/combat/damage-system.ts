@@ -104,7 +104,7 @@ export abstract class DamageSystemBase implements DamageInterface {
 				PersonaError.softFail('Allout contribution for ${actor.name} was undefined');
 				continue;
 			}
-			const contribution= Math.round(Math.abs(result.hpChange));
+			const contribution= Math.max(1, Math.round(Math.abs(result.hpChange)));
 			list.push( {
 				contributor: actor,
 				amt: contribution,
@@ -252,12 +252,9 @@ abstract	getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Pe
 export interface DamageInterface {
 	getBurnDamage(power: Usable, attackerPersona: Persona, targetPersona: Persona) : number;
 	getDamage(power: Usable,attackerPersona: Persona, targetPersona: Persona, situation ?: Situation, options?: GetDamageOptions) : DamageCalculation;
-	// applyDR(calc: DamageCalculation, damageType: RealDamageType, power: Usable, attackerPersona: U<Persona>, targetPersona: Persona) : DamageCalculation;
 	convertFromOldLowDamageToNewBase(lowDmg: number): number;
 	getWeaponDamageByWpnLevel(lvl: number) : number;
 	getArmorDRByArmorLevel(lvl: number) : number;
-	// calculateAllOutAttackDamage(attackLeader: ValidAttackers, allAttackers: ValidAttackers[], situation: AttackResult['situation'] ) : AllOutReturn[];
-	// individualContributionToAllOutAttackDamage(actor: ValidAttackers, situation: AttackResult["situation"], isAttackLeader: boolean) : DamageCalculation;
 	processConsequence_damage( cons: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: Persona, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'];
 
 }

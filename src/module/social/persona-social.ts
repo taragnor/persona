@@ -633,6 +633,7 @@ export class PersonaSocial {
     }
     if (PC.getSocialLinkProgress(linkId) < tokenCost) {
       ui.notifications.warn("Not enough tokesn to improve this link");
+      return;
     }
     const target = PersonaDB.getActorById(linkId);
     const RPScene = target && target.isSocialLink() ? this.isHighestLinkerWith(PC, target) : false;

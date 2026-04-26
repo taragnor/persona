@@ -25,21 +25,20 @@ export class AltDamageSystem extends DamageSystemBase {
 	// private STAT_DIFF_DAMAGE_BOOST_PERCENT = 0.02;
 	private _weaponDmgGrowth = new GrowthCalculator(1.20, 11, 4.5);
 
-	individualContributionToAllOutAttackDamage(actor: ValidAttackers, target: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation {
-		if (!actor.canAllOutAttack()) {
-			return new DamageCalculation("physical");
-		}
-		const basicAttack = PersonaDB.getBasicPower('Basic Attack');
-		if (!basicAttack) {
-			PersonaError.softFail("Can't find Basic attack power");
-			return new DamageCalculation("physical");
-		}
-		const damage = this.getDamage(basicAttack, actor.persona(), target.persona(), situation);
-		if (!isAttackLeader) {
-			damage.add("multiplier", this.ALL_OUT_ATTACK_HELPER_DIVISOR, "All out attack helper multiplier");
-		}
-		return damage;
-	}
+  individualContributionToAllOutAttackDamage(actor: ValidAttackers, target: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation {
+    if (!actor.canAllOutAttack()) {
+      return new DamageCalculation("physical");
+    }
+    const basicAttack = PersonaDB.getBasicPower('Basic Attack');
+    if (!basicAttack) {
+      PersonaError.softFail("Can't find Basic attack power");
+      return new DamageCalculation("physical");
+    }
+    const damage = this.getDamage(basicAttack, actor.persona(), target.persona(), situation);
+    const mult = isAttackLeader ? 1 : this.ALL_OUT_ATTACK_HELPER_DIVISOR;
+    damage.add("multiplier", mult, "All out attack helper multiplier");
+    return damage;
+  }
 
 	protected override applyDR(calc: DamageCalculation, damageType: RealDamageType, power: Usable, attackerPersona: U<Persona>, targetPersona: Persona): DamageCalculation {
 		let DR = new DamageCalculation(damageType);

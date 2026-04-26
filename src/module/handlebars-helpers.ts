@@ -265,9 +265,9 @@ export class PersonaHandleBarsHelpers {
       }
     },
 
-    'cantUseReason': (persona:Persona, power: Power) : string => {
+    'cantUseReason': (persona:Persona, power: Power) : SafeString => {
       const reason =  persona.canUsePower_getIneligibilityReason(power);
-      return reason ? reason : "Power is Usable";
+      return new Handlebars.SafeString( reason ? reason : "Power is Usable");
     },
 
     'canModifySearchChoice': (ownerId : User["id"]) => {

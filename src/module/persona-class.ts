@@ -1156,6 +1156,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   private _combatTypeCheck(usable: UsableAndCard) : N<FailReason> {
+    if (game.user.isGM) {return null;}
     const phase= Metaverse.getPhase();
     switch (phase) {
       case "downtime":
