@@ -1334,14 +1334,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return null;
   }
 
-
   hasTag(tag: PersonaTag) : boolean {
     return this.tags.hasTag(tag);
   }
-
-  // hasTag(tag: PersonaTag) : boolean {
-  //   return this.tagListPartial().includes(tag);
-  // }
 
   private getCacheValue<T extends keyof PersonaClassCache> (key: T, refreshFn: ( ()=> NonNullable<PersonaClassCache[T]>)): NonNullable<PersonaClassCache[T]> {
     if (!PersonaSettings.agressiveCaching()) {
@@ -1355,69 +1350,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.#cache[key]!;
   }
 
-  // tagListPartial() : (PersonaTag | Tag["id"] | InternalCreatureTag)[] {
-  //   return this.getCacheValue("tagListPartial", () => {
-  //     type ret = (PersonaTag | Tag["id"] | InternalCreatureTag)[];
-  //     const base = this.source.system.combat.personaTags.slice() as ret;
-  //     base.pushUnique (...this.source.system.creatureTags);
-  //     base.pushUnique(...this._autoTags());
-  //     base.pushUnique(...this._getConferredTags());
-  //     return base;
-  //   });
-  // }
-
-  // private _getConferredTags() {
-  //   const extraTags = this.mainModifiers({omitPowers:true, omitTalents: true, omitTags: true, omitAuras: true})
-  //     .flatMap( CE=> TagManager.getConferredTags(CE , this.user));
-  //   return extraTags;
-  // }
-
-  // private _autoTags() : PersonaTag[] {
-  // const autoPTags :PersonaTag[]= [];
-  // if (this.source.isPC() || this.source.isNPCAlly()){
-  //   autoPTags.pushUnique("persona");
-  // }
-  // if (this.user.isUsingMetaPod()) {
-  //   autoPTags.pushUnique("simulated");
-  // }
-  // switch (this.source.system.creatureType) {
-  //   case "enemy-metaverse-user":
-  //   case "persona":
-  //     autoPTags.pushUnique("persona");
-  //     break;
-  //   case "d-mon":
-  //     autoPTags.pushUnique("d-mon");
-  //     break;
-  // }
-  // if (this.source.isShadow()) {
-  //   if ( this.source.system.creatureType == "daemon") {
-  //     autoPTags.pushUnique("simulated");
-  //   }
-  // }
-  // if (this.user.isShadow()) {
-  //   if (this.user.system.role != "base") {
-  //     autoPTags.pushUnique(this.user.system.role);
-  //   }
-  //   if (this.user.system.role2 != "base") {
-  //     autoPTags.pushUnique(this.user.system.role2);
-  //   }
-  // }
-  // if (autoPTags.includes("persona") && this.source.isPC() &&  this.source.hasSoloPersona) {
-  //   autoPTags.pushUnique("lone-persona");
-  // }
-  // return autoPTags;
-  // }
-
   realTags() : Tag[] {
     return this.tags.realTags();
-    // const ret =  this.tagListPartial().flatMap( tag => {
-    //   const IdCheck = PersonaDB.allTags().get(tag as Tag["id"]);
-    //   if (IdCheck) {return [IdCheck];}
-    //   const nameCheck = PersonaDB.allTagLinks().get(tag);
-    //   if (nameCheck) {return [nameCheck];}
-    //   return [];
-    // });
-    // return ret;
   }
 
   highestPowerSlotUsable() : 0 | 1 | 2 | 3 {
@@ -1438,7 +1372,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     }
 
   }
-
 
   getBonusWpnDamage() : ModifierList {
     return this.getBonuses("wpnDmg");
