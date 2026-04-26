@@ -19,7 +19,7 @@ export class AltDamageSystem extends DamageSystemBase {
 	// private END_DIFF_PERCENTAGE_MULT = 0.8 as const;
 	private BASE_VARIANCE = 2 as const;
 	private ARMOR_TO_DAMAGE_DIVISOR = 1.0 as const;
-	private ALL_OUT_ATTACK_HELPER_DIVISOR = 1/3;
+	private ALL_OUT_ATTACK_HELPER_DIVISOR = 0.5 as const;
 	private BASIC_ATTACK_LEVEL_DIVISOR = 0.85 as const;
 	private BASE_DAMAGE_LEVEL_DIVISOR = 0.666 as const;
 	// private STAT_DIFF_DAMAGE_BOOST_PERCENT = 0.02;
@@ -27,6 +27,7 @@ export class AltDamageSystem extends DamageSystemBase {
 
   individualContributionToAllOutAttackDamage(actor: ValidAttackers, target: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation {
     if (!actor.canAllOutAttack()) {
+      PersonaError.softFail(`$actor.name} Incaplbe of All out Attack`);
       return new DamageCalculation("physical");
     }
     const basicAttack = PersonaDB.getBasicPower('Basic Attack');
@@ -34,7 +35,7 @@ export class AltDamageSystem extends DamageSystemBase {
       PersonaError.softFail("Can't find Basic attack power");
       return new DamageCalculation("physical");
     }
-    const damage = this.getDamage(basicAttack, actor.persona(), target.persona(), situation);
+    const damage = this.getDamage(basicAttack, actor.persona(), target.persona(), situation, { "ignoreResistance": true});
     const mult = isAttackLeader ? 1 : this.ALL_OUT_ATTACK_HELPER_DIVISOR;
     damage.add("multiplier", mult, "All out attack helper multiplier");
     return damage;

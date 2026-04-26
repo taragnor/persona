@@ -1511,10 +1511,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   getAllies(comb: Combatant<ValidAttackers>, includeSelf = false) : PersonaCombatant[] {
     const allegiance = comb.actor?.getAllegiance();
     if (!allegiance) {return [];}
-    return this.validCombatants().filter( c => c.actor != null
-      && (c.actor.getAllegiance() == allegiance)
-      && (includeSelf || c != comb)
-    );
+    return this.validCombatants()
+      .filter( c => c.actor != null
+        && (c.actor.getAllegiance() == allegiance)
+        && (includeSelf || c != comb)
+      );
   }
 
   getFoes(comb: Combatant<ValidAttackers>) : PersonaCombatant[] {

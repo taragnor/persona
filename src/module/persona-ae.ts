@@ -459,7 +459,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
   }
 
   async onAEDelete() : Promise<void> {
-    if (!game.user.isGM) {
+    if (!game.user.isGM && PersonaSettings.debugMode()) {
       PersonaError.softFail("Player side AE delete, may be problematic");
       return;
     }

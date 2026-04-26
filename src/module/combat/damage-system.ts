@@ -13,17 +13,19 @@ export abstract class DamageSystemBase implements DamageInterface {
 
 	BURN_PERCENT = 0.15 as const; //percentage damage of burn damage
 
-	getDamage(power: Usable, attackerPersona: Persona, targetPersona: Persona, situation ?: Situation & SituationComponent.User, options : GetDamageOptions = {}) : DamageCalculation {
-		const damageType = power.getDamageType(attackerPersona);
-		const calc = this.getPowerDamage(power, attackerPersona, situation, options);
-		calc.setDamageType(damageType);
-		if (!options.ignoreDefenses) {
-			this.applyDR(calc, damageType, power, attackerPersona, targetPersona);
-			const resist = targetPersona.elemResist(damageType);
-			this.setResistance(calc, power, attackerPersona, situation, resist);
-		}
-		return calc;
-	}
+  getDamage(power: Usable, attackerPersona: Persona, targetPersona: Persona, situation ?: Situation & SituationComponent.User, options : GetDamageOptions = {}) : DamageCalculation {
+    const damageType = power.getDamageType(attackerPersona);
+    const calc = this.getPowerDamage(power, attackerPersona, situation, options);
+    calc.setDamageType(damageType);
+    if (!options.ignoreDefenses) {
+      this.applyDR(calc, damageType, power, attackerPersona, targetPersona);
+      if (!options.ignoreResistance) {
+        const resist = targetPersona.elemResist(damageType);
+        this.setResistance(calc, power, attackerPersona, situation, resist);
+      }
+    }
+    return calc;
+  }
 
 	defaultSituation(power : Usable, attackerPersona: Persona, targetPersona: Persona) : Situation {
 		return {
@@ -93,26 +95,33 @@ export abstract class DamageSystemBase implements DamageInterface {
 		return Math.round(targetPersona.source.mhp  * this.BURN_PERCENT);
 	}
 
-	protected calculateAllOutAttackDamage(attackLeader: ValidAttackers, allAttackers: ValidAttackers[], target:ValidAttackers, situation: AttackResult['situation'] ) : AllOutReturn[] {
-		const list : AllOutReturn[] = [];
-		for (const actor of allAttackers) {
-			if (!actor.canAllOutAttack()) {continue;}
-			const isAttackLeader = actor == attackLeader;
-			const damageCalc = this.individualContributionToAllOutAttackDamage(actor, target, situation, isAttackLeader);
-			const result = damageCalc.eval();
-			if (result == undefined) {
-				PersonaError.softFail('Allout contribution for ${actor.name} was undefined');
-				continue;
-			}
-			const contribution= Math.max(1, Math.round(Math.abs(result.hpChange)));
-			list.push( {
-				contributor: actor,
-				amt: contribution,
-				stack: result.str,
-			});
-		}
-		return list;
-	}
+  protected calculateAllOutAttackDamage(attackLeader: ValidAttackers, allAttackers: readonly ValidAttackers[], target:ValidAttackers, situation: AttackResult['situation'] ) : AllOutReturn[] {
+    // const list : AllOutReturn[] = [];
+    return allAttackers
+      .filter( actor=> actor.canAllOutAttack())
+      .map( actor => {
+        // for (const actor of allAttackers) {
+        // if (!actor.canAllOutAttack()) {return undefined;}
+        const isAttackLeader = actor == attackLeader;
+        const damageCalc = this.individualContributionToAllOutAttackDamage(actor, target, situation, isAttackLeader);
+        const result = damageCalc.eval();
+        if (result == undefined) {
+          PersonaError.softFail('Allout contribution for ${actor.name} was undefined');
+          return undefined;
+        }
+        const contribution= Math.max(1, Math.round(Math.abs(result.hpChange)));
+        // list.push( {
+        return {
+          contributor: actor,
+          amt: contribution,
+          stack: result.str,
+        } satisfies AllOutReturn;
+        // });
+        // }
+      })
+      .filter (returnData => returnData != undefined);
+    // return list;
+  }
 
 	protected abstract individualContributionToAllOutAttackDamage(attacker: ValidAttackers, target: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation;
 
@@ -276,6 +285,7 @@ export type AllOutReturn  = {
 interface GetDamageOptions {
 	overrideDamageType ?:  RealDamageType;
 	ignoreDefenses?: boolean;
+  ignoreResistance ?: boolean;
 }
 
 type DamageSystemSituation = Situation & SituationComponent.User;
