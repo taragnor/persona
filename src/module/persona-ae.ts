@@ -12,6 +12,7 @@ import {ModifierListItem} from "./combat/modifier-list.js";
 import {TriggeredEffect} from "./triggered-effect.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {StatusEffect} from "../config/consequence-types.js";
+import {PersonaSettings} from "../config/persona-settings.js";
 
 const POWER_COOLDOWN_FLAG_NAME =   "cooldownPowerId" as const;
 
@@ -420,6 +421,10 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 
   /** when the statuses natural duration ends*/
   async endStatusTimeout() : Promise<void> {
+    if (PersonaSettings.debugMode()) {
+      console.log("effect timeout");
+      console.log(this);
+    }
     if (this.parent instanceof PersonaActor && this.parent.isValidCombatant()) {
       const activeDuration = game.combat && "amount" in this.statusDuration ? game.combat.round - this.duration.startRound : undefined ;
       const situation : Situation = {
@@ -454,9 +459,12 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
   }
 
   async onAEDelete() : Promise<void> {
-    if (!game.user.isGM) {return;}
+    if (!game.user.isGM) {
+      PersonaError.softFail("Player side AE delete, may be problematic");
+      return;
+    }
     if (this.parent instanceof PersonaActor && this.parent.isValidCombatant()) {
-      const activeDuration = game.combat && "amount" in this.statusDuration ? game.combat.round - this.duration.startRound : undefined ;
+      const activeDuration = game.combat ? game.combat.round - this.duration.startRound : undefined ;
       const situation : Situation = {
         trigger: "on-active-effect-end",
         triggeringUser: game.user,
@@ -465,6 +473,9 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
         triggeringCharacter: this.parent.accessor,
         activeDuration
       };
+      if (PersonaSettings.debugMode()) {
+        console.log("running end status effects for effect");
+      }
       await TriggeredEffect.autoApplyTrigger(situation, this.parent);
     }
     const duration = this.statusDuration;
@@ -599,7 +610,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     const duration = this.statusDuration;
     switch (duration.dtype) {
       case "instant":
-        await this.delete();
+        await this.endStatusTimeout();
         return true;
       default:
         return false;

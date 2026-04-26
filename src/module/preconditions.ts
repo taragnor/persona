@@ -141,7 +141,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
         return false; };
       if (!situation.user) {return false;}
       const user = PersonaDB.findActor(situation.user);
-      const sourceItem = condition.source;
+      const sourceItem = condition.source ? PersonaDB.find(condition.source) : undefined;
       const id = sourceItem && sourceItem instanceof PersonaItem ? sourceItem.id : undefined;
       if (!id || !user) {
         return false;
@@ -571,9 +571,11 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
       switch (condition.timeoutTarget) {
         case "status":
           return effect.statusId == condition.statusId;
-        case "self":
-          if (! (condition.realSource instanceof PersonaAE)) { return false;}
-          return effect == condition.realSource;
+        case "self": {
+          const source = condition.realSource ? PersonaDB.find(condition.realSource) : undefined;
+          if (! (source instanceof PersonaAE)) { return false;}
+          return effect == source;
+        }
         case "flag":
           return effect.flagId == condition.flagId;
         default:
@@ -1165,6 +1167,7 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
 export function multiCheckToArray<
   const T extends string,
   > (multiCheck: MultiCheckOrSingle<T>) : T[] {
+    if (multiCheck == undefined) {return [];}
     if (typeof multiCheck == "string") {return [multiCheck];}
     return Object.entries(multiCheck)
       .filter( ([_, val]) => val == true)
@@ -1370,7 +1373,6 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
       return subjects.some( subject => {
         const subjectToken = subject instanceof TokenDocument ? PersonaDB.getUniversalTokenAccessor(subject) : combat.getToken((subject.user).accessor);
         if (!subjectToken) {
-          // PersonaError.softFail(`Can't find token for ${subject?.name}`);
           return false;
         }
         return combat.isEngagedByAnyFoe(subjectToken);
@@ -1379,8 +1381,6 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
     case "is-dead": {
       return subjects.some( target => {
         return target.hp <= 0;
-        // const targetActor = target instanceof PersonaActor ? target : target.actor;
-        // return targetActor.hp <= 0;
       });
     }
     case "struck-weakness": {
@@ -1422,7 +1422,6 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
     }
     case "is-resistant-to": {
       return subjects.some( target => {
-        // const targetActor = target instanceof PersonaActor ? target : target.actor;
         const arr = typeof condition.powerDamageType == "string" ? [condition.powerDamageType] : multiCheckToArray(condition.powerDamageType);
         return arr.some( dtype => {
           if (dtype == "by-power") {
