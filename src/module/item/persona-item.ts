@@ -14,10 +14,9 @@ import { CombatResult, AttackResult } from '../combat/combat-result.js';
 import { ROLL_TAGS_AND_CARD_TAGS, RollTag } from '../../config/roll-tags.js';
 import { CardTag } from '../../config/card-tags.js';
 import { PersonaSettings } from '../../config/persona-settings.js';
-import { PowerTagOrId} from '../../config/power-tags.js';
 import { Logger } from '../utility/logger.js';
 import { DamageType } from '../../config/damage-types.js';
-import { EQUIPMENT_TAGS, EquipmentTag, EquipmentTagOrId } from '../../config/equipment-tags.js';
+import { EQUIPMENT_TAGS, EquipmentTag } from '../../config/equipment-tags.js';
 import { Consequence } from '../../config/consequence-types.js';
 import { CreatureTag } from '../../config/creature-tags.js';
 import { removeDuplicates } from '../utility/array-tools.js';
@@ -79,7 +78,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     mpCost: U<number>,
     mpGrowthTable: U<GrowthCalculator>,
     hpGrowthTable: U<GrowthCalculator>,
-    tags: U<readonly UnifiedTagData[]>,
+    // tags: U<readonly UnifiedTagData[]>,
   };
 
 
@@ -127,8 +126,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       mpCost: undefined,
       mpGrowthTable: undefined,
       hpGrowthTable: undefined,
-      tags: undefined,
+      // tags: undefined,
     };
+    this.tags.clearCache();
   }
 
   static #newEffectsCache() : AdvancedEffectsCache {
@@ -3102,7 +3102,5 @@ export interface GetEffectsOptions {
   triggerType ?: Trigger
 }
 
-
-type UnifiedTagData = Tag["id"] | PowerTagOrId | EquipmentTagOrId;
 
 type TagBearingItem = Talent | Focus | UsableAndCard | InvItem | Weapon;

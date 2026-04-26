@@ -1,10 +1,15 @@
-export abstract class CacheBase<T> implements Cache<T> {
+export abstract class CacheBase<T> implements CacheI<T> {
   private genFn : () => T;
   private _value : U<T> = undefined;
+  private _testModeEqualityTest: U<((oldVal: T, newVal: T) => boolean)>;
 
   clear() : void {
     this._value = undefined;
     this.onClear();
+  }
+
+  setTestMode(equalityTest : CacheBase<T>["_testModeEqualityTest"]) {
+    this._testModeEqualityTest = equalityTest;
   }
 
   abstract onClear():void;
@@ -13,13 +18,22 @@ export abstract class CacheBase<T> implements Cache<T> {
     this.genFn = genFn;
   }
 
-  regenerateCache() : T {
+  protected regenerateCache() : T {
     return this._value = this.genFn();
   }
 
-  abstract cacheInvalid(val: T) : boolean;
+  protected abstract cacheInvalid(val: T) : boolean;
 
   get value() : T {
+    if (this._testModeEqualityTest != undefined && this._value != undefined) {
+      const oldValue = this._value;
+      const newValue = this.regenerateCache();
+      if (!this._testModeEqualityTest(oldValue, newValue)) {
+        console.warn("Cache Equality Test: Cache Doesn't match");
+        console.log(oldValue);
+        console.log(newValue);
+      }
+    }
     if (!this._value || this.cacheInvalid(this._value)) {
       return this.regenerateCache();
     }
@@ -69,7 +83,7 @@ export class PermanentCache<T> extends CacheBase<T> {
 }
 
 
-export interface Cache<T> {
+export interface CacheI<T> {
   value: T;
   clear(): void;
 }

@@ -59,7 +59,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   get tags() {
     return this._tags;
-
   }
 
   resetCache() {
@@ -70,7 +69,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       defensiveModifiers : undefined,
       nearbyAuras: undefined,
       mainModifiersList : undefined,
-      tagListPartial: undefined,
+      // tagListPartial: undefined,
       passiveModifiers: undefined,
     };
   }
@@ -1338,17 +1337,17 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.tags.hasTag(tag);
   }
 
-  private getCacheValue<T extends keyof PersonaClassCache> (key: T, refreshFn: ( ()=> NonNullable<PersonaClassCache[T]>)): NonNullable<PersonaClassCache[T]> {
-    if (!PersonaSettings.agressiveCaching()) {
-      return refreshFn();
-    }
-    const data = this.#cache[key];
-    if (data != undefined) {
-      return data;
-    }
-    this.#cache[key] = refreshFn();
-    return this.#cache[key]!;
-  }
+  // private getCacheValue<T extends keyof PersonaClassCache> (key: T, refreshFn: ( ()=> NonNullable<PersonaClassCache[T]>)): NonNullable<PersonaClassCache[T]> {
+  //   if (!PersonaSettings.agressiveCaching()) {
+  //     return refreshFn();
+  //   }
+  //   const data = this.#cache[key];
+  //   if (data != undefined) {
+  //     return data;
+  //   }
+  //   this.#cache[key] = refreshFn();
+  //   return this.#cache[key]!;
+  // }
 
   realTags() : Tag[] {
     return this.tags.realTags();
@@ -1498,7 +1497,7 @@ interface PersonaClassCache {
   passiveModifiers: U<ConditionalEffectC[]>;
   nearbyAuras:  U<ConditionalEffectC[]>;
   mainModifiersList: U<readonly ModifierContainer[]>;
-  tagListPartial: U<(PersonaTag | Tag["id"] | InternalCreatureTag)[]>;
+  // tagListPartial: U<(PersonaTag | Tag["id"] | InternalCreatureTag)[]>;
 }
 
 export interface MainModifierOptions {
