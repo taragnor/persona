@@ -1,5 +1,5 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
-import {DAMAGE_TYPES_LIST, REALDAMAGETYPES, REALDAMAGETYPESLIST} from "./damage-types.js";
+import {DAMAGE_TYPES_LIST, REALDAMAGETYPESLIST} from "./damage-types.js";
 
 export const STATUS_AILMENT_POWER_TAGS  = [
 	"dizzy",

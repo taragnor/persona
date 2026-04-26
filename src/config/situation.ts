@@ -1,6 +1,5 @@
 import { PowerTag } from "./power-tags.js";
 import { CardTag } from "./card-tags.js";
-import { Persona } from "../module/persona-class.js";
 import { RollTag } from "./roll-tags.js";
 import { SocialStat } from "../config/student-skills.js";
 import { TarotCard } from "../config/tarot.js";
@@ -381,8 +380,8 @@ export type PowerOnlySituation =
 }
 
 
-
-type X = TriggeredSituation.Select<"on-equip-check">;
+//Type testing code
+// type X = TriggeredSituation.Select<"on-equip-check">;
 
 // type XXX = Prettify<
 //   HasKey<Situation, "global"> & {trigger: "on-metavese-turn-dual"}

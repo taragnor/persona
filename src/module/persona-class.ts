@@ -18,7 +18,7 @@ import { multiCheckContains, multiCheckToArray } from "./preconditions.js";
 import { PersonaI } from "../config/persona-interface.js";
 import { DamageType } from "../config/damage-types.js";
 import { ResistStrength } from "../config/damage-types.js";
-import {InternalCreatureTag, PersonaTag} from "../config/creature-tags.js";
+import {PersonaTag} from "../config/creature-tags.js";
 import {Defense} from "../config/defense-types.js";
 import {PersonaStat} from "../config/persona-stats.js";
 import {Calculation, EvaluatedCalculation} from "./utility/calculation.js";

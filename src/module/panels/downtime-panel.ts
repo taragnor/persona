@@ -140,9 +140,8 @@ export class DowntimePanel extends PersonaPanel {
     if (!this.actor) {return [];}
     switch (type) {
       case "minor": {
-        const actor = this.actor;
         const activities = PersonaSocial.availableMinorActionActivities(this.actor)
-        .filter( act => act.system.cardType == type)
+        .filter( act => act.system.cardType == type);
           return activities;
         }
       default: {

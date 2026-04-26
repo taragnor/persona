@@ -1,4 +1,3 @@
-import {EnchantedTreasureFormat} from "../exploration/treasure-system";
 import { PersonaDB } from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 

@@ -21,14 +21,6 @@ export class PersonaTagManager<PType extends Persona> extends TagManager<TagType
     const ret =  this.tagListPartial()
       .flatMap( tag => TagManager.resolveTag(tag));
     return ret;
-    // const ret =  this.tagListPartial().flatMap( tag => {
-    //   const IdCheck = PersonaDB.allTags().get(tag as Tag["id"]);
-    //   if (IdCheck) {return [IdCheck];}
-    //   const nameCheck = PersonaDB.allTagLinks().get(tag);
-    //   if (nameCheck) {return [nameCheck];}
-    //   return [];
-    // });
-    // return ret;
   }
 
   get source() { return this.persona.source; }

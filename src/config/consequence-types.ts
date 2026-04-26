@@ -44,14 +44,14 @@ export type LocalEffect =
 type LocalEffectConsequenceTypes =
   SocialCardActionConsequence;
 
-type NonDepTypes = Prettify<NonDeprecatedConsequence & {type: "damage-new"}>;
+// type NonDepTypes = Prettify<NonDeprecatedConsequence & {type: "damage-new"}>;
 
-type OE = Prettify<
-  LocalEffect &  {
-    type: "social-card-action",
-    cardAction: "modify-progress-tokens",
-    // subtype: never,
-  }>;
+// type OE = Prettify<
+//   LocalEffect &  {
+//     type: "social-card-action",
+//     cardAction: "modify-progress-tokens",
+//     // subtype: never,
+//   }>;
 
 export type StatusEffect = StatusEffect_Basic | StatusEffect_NonBasic;
 
@@ -897,7 +897,7 @@ type RemoveConsequenceAmount<T> = {
 
 type modifyCardItem<T extends object> = T extends {invAction: "add-card-item"} ? T & {treasureItem: EnchantedTreasureFormat} : T;
 
-type removeApplyTo<T extends object> = T extends {applyTo: ConsequenceTarget} ? Omit<T, "applyTo">: T;
+// type removeApplyTo<T extends object> = T extends {applyTo: ConsequenceTarget} ? Omit<T, "applyTo">: T;
 
 type StatusDurationReplace<T extends object> = T extends {statusDuration: StatusDurationType} ? Omit<T, "statusDuration"> & {duration :StatusDuration}: T;
 

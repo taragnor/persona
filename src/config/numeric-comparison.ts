@@ -7,7 +7,7 @@ import { ResistType } from "../config/damage-types.js";
 import { ResistStrength } from "../config/damage-types.js";
 import { SocialStat } from "../config/student-skills.js";
 import {PersonaItem} from "../module/item/persona-item.js";
-import {StatusEffectId, StatusEffectPlus} from "./status-effects.js";
+import {StatusEffectPlus} from "./status-effects.js";
 
 const DEPRECATED_OPERANDS = [
 	"escalation",
@@ -402,7 +402,7 @@ type NumericOperand =
 
 
 
-// // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ROLL_TYPE = [
 	"natural-roll",
 	"activation-roll",

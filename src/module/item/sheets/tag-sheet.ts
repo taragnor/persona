@@ -6,7 +6,6 @@ import {ROLL_TAGS_AND_CARD_TAGS} from "../../../config/roll-tags.js";
 import {SHADOW_ROLE} from "../../../config/shadow-types.js";
 import {STATUS_EFFECT_TRANSLATION_TABLE} from "../../../config/status-effects.js";
 import {TAG_TYPES} from "../../../config/tags-general.js";
-import {HTMLTools} from "../../utility/HTMLTools.js";
 import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 import {PersonaPowerLikeBaseSheet} from "./powerlike-base-sheet.js";
 
