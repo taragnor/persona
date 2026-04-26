@@ -96,12 +96,9 @@ export abstract class DamageSystemBase implements DamageInterface {
 	}
 
   protected calculateAllOutAttackDamage(attackLeader: ValidAttackers, allAttackers: readonly ValidAttackers[], target:ValidAttackers, situation: AttackResult['situation'] ) : AllOutReturn[] {
-    // const list : AllOutReturn[] = [];
     return allAttackers
       .filter( actor=> actor.canAllOutAttack())
       .map( actor => {
-        // for (const actor of allAttackers) {
-        // if (!actor.canAllOutAttack()) {return undefined;}
         const isAttackLeader = actor == attackLeader;
         const damageCalc = this.individualContributionToAllOutAttackDamage(actor, target, situation, isAttackLeader);
         const result = damageCalc.eval();
@@ -116,11 +113,8 @@ export abstract class DamageSystemBase implements DamageInterface {
           amt: contribution,
           stack: result.str,
         } satisfies AllOutReturn;
-        // });
-        // }
       })
       .filter (returnData => returnData != undefined);
-    // return list;
   }
 
 	protected abstract individualContributionToAllOutAttackDamage(attacker: ValidAttackers, target: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation;
