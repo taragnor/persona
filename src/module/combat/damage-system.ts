@@ -107,7 +107,6 @@ export abstract class DamageSystemBase implements DamageInterface {
           return undefined;
         }
         const contribution= Math.max(1, Math.round(Math.abs(result.hpChange)));
-        // list.push( {
         return {
           contributor: actor,
           amt: contribution,
