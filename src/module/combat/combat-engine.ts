@@ -206,8 +206,6 @@ export class CombatEngine {
 		}
 
 		if (!power.isSkillCard()) {
-			// const extraAttacks= await this.execExtraAttacks(CR, power, rollType, attacker, target, options);
-			// result.merge(...extraAttacks);
 			const extraPowerEffects= await this.execSubPowers(CR, atkResult, options);
 			result.merge(...extraPowerEffects);
 		}
@@ -221,30 +219,6 @@ export class CombatEngine {
 		const num_of_attacks = Math.floor(min + (Math.random() * (max - min+1)));
 		return num_of_attacks;
 	}
-
-	// async execExtraAttacks(CR: CombatResult, power: Usable, rollType: AttackRollType,attacker: PToken, target: PToken, options: CombatOptions ) {
-	// 	const ret : CombatResult[] = [];
-    //note extra attacks were removed as a mechanic
-		//const extraAttacks = CR.findEffects('extraAttack');
-		//for (const extraAttack of extraAttacks)
-		//{
-		//	const bonusRollType = typeof rollType != 'number' ? 0: rollType+1;
-		//	const mods = new ModifierList();
-		//	//TODO BUG: Extra attacks keep the main inputted modifier
-		//	if (extraAttack.iterativePenalty) {
-		//		mods.add('Iterative Penalty', (bonusRollType + 1) * extraAttack.iterativePenalty);
-		//	}
-		//	const newOptions = {
-		//		...options,
-		//		modifiers: mods,
-		//	};
-		//	if (bonusRollType < extraAttack.maxChain) {
-		//		const extra = await this.usePowerOn(attacker, power, [target], bonusRollType, newOptions);
-		//		ret.push(extra);
-		//	}
-		//}
-		// return ret;
-	// }
 
 	/** executes powers which trigger off other powers via consequence */
 	async execSubPowers(CR : CombatResult, atkResult: AttackResult, options: CombatOptions) : Promise<CombatResult[]> {
@@ -298,7 +272,6 @@ export class CombatEngine {
 		const defenseCalc = target.getDefense(def).eval(baseSituation);
 		const defenseVal = def != 'none' ? defenseCalc.total: 0;
     baseSituation.DC = defenseVal;
-    // const DC = defenseVal;
 		return baseSituation;
 	}
 
@@ -385,18 +358,11 @@ export class CombatEngine {
 	}
 
 
-	// generateAttackSituation (attacker: Persona, target: Persona, power: Usable, rollData: AttackRollData, rollTotal: number, _options: CombatOptions = {}): ProtoResultAttackSituation {
 	generateAttackSituation (attacker: Persona, target: Persona, power: Usable, roll: ResolvedRollBundle, baseSituation: ReturnType<CombatEngine["getBaseSituation"]>, _options: CombatOptions = {}): ProtoResultAttackSituation {
-		// const baseSituation = this.getBaseSituation(attacker, target, power, rollData);
-		// const def = power.system.defense;
-		// const defenseCalc = target.getDefense(def).eval(baseSituation);
-		// const defenseVal = def != 'none' ? defenseCalc.total: 0;
 		const partialSituation = {
 			...baseSituation,
 			naturalRoll: roll.natural,
 			rollTotal: roll.total,
-			// DC: defenseVal,
-			// rollType: roll.rollType,
 		} ;
 		const {ailmentRange, instantKillRange, critRange} = CombatEngine.calculateRanges(attacker, target, power, partialSituation);
 		const withinAilmentRange = CombatEngine.withinRange(ailmentRange, partialSituation);
@@ -408,19 +374,12 @@ export class CombatEngine {
       withinAilmentRange,
       withinInstantKillRange,
       withinCritRange,
-      // attackerPersona: attacker,
-      // targetPersona: target,
     } satisfies ProtoResultAttackSituation;
 		return protoSituation;
 	}
 
 	makeRollBundle (rollData: AttackRollData, attacker: Persona, target: Persona, power: Usable, situation: SituationTypes.PreRoll, options: RollOptions ) : ResolvedRollBundle
   {
-		// const baseSituation = this.getBaseSituation(attacker, target, power, rollData);
-		// const def = power.system.defense;
-		// const defenseCalc = target.getDefense(def).eval(situation);
-		// const defenseVal = def != 'none' ? defenseCalc.total: 0;
-    // const DC = defenseVal;
 		const attackBonus = this.getAttackBonus(attacker, power, target, options);
 		const rollName = this.getRollNameGenFn(attacker, power, target);
 		const bundle = new RollBundle(rollName, rollData.roll, attacker.user.isPC(), attackBonus, situation, situation.DC ?? -2);
