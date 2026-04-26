@@ -282,10 +282,6 @@ export class PersonaTargetting {
     default:
       targets satisfies never;
   }
-  if (power.isOpener(user)) {
-    const sourced = ConditionalEffectManager.getConditionals(power.system.openerConditions, power, user, power );
-    if (!testPreconditions(sourced, situation)) {return false;}
-  }
   const sourcedTC = ConditionalEffectManager.getConditionals(power.system.validTargetConditions, power, user, power );
   return testPreconditions(sourcedTC, situation);
 }
