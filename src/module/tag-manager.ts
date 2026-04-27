@@ -6,6 +6,7 @@ import {PersonaDB} from "./persona-db.js";
 export abstract class TagManager<TagTypeRaw extends string = string> {
 
   abstract tagList(context: N<unknown>): readonly FullTag<TagTypeRaw>[];
+  abstract clearCache(): void;
 
   hasTag<T extends Tag | TagTypeRaw> (tagOrArr: T | T[], ...args: Parameters<this["tagList"]>):  boolean {
     //@ts-expect-error TS hates this but it should work

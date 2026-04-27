@@ -49,7 +49,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     this.source = source;
     this._powers = powers == undefined ? this.loadPowers(): powers;
     this._tags = new PersonaTagManager(this);
-    this.resetCache();
+    this.clearCache();
   }
 
   loadPowers() {
@@ -61,8 +61,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this._tags;
   }
 
-  resetCache() {
-    this.tags.resetCache();
+  clearCache() {
+    this.tags.clearCache();
     this.#cache = {
       mainModifiers: undefined,
       passivePowers: undefined,

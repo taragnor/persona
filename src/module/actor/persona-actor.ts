@@ -79,11 +79,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     level: U<number>,
     tarot: Tarot | undefined;
     complementRating: Map<Shadow["id"], number>;
-    // triggers: U<ModifierContainer[]>;
     socialData: U<readonly SocialLinkData[]>;
     isDMon: U<boolean>;
-    // tagList: U<{data: (Tag | InternalCreatureTag)[], time: number}>;
-    // tagListRaw: U<{data: (InternalCreatureTag | Tag["id"] | PersonaTag)[], time: number}>;
   };
 
   constructor(...arr: unknown[]) {
@@ -104,10 +101,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       tarot: undefined,
       complementRating: new Map(),
       socialData: undefined,
-      // triggers: undefined,
       isDMon: undefined,
-      // tagList : undefined,
-      // tagListRaw: undefined,
     };
   }
 

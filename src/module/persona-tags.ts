@@ -13,7 +13,7 @@ export class PersonaTagManager<PType extends Persona> extends TagManager<TagType
     this.cache = new TimedCache( () => this._tagListPartial());
   }
 
-  resetCache() {
+  clearCache() {
     this.cache.clear();
   }
 
