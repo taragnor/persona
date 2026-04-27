@@ -158,7 +158,8 @@ type DropLast<T extends unknown[]> =
 
 //@ts-expect-error adding to global
 window.testCache= function () {
-  const x = new MultiTierCache( (name: {x:number}, val: number) => new TimedCache( () => name.x + val  )
-  );
+  const x = new MultiTierCache(
+    (name: {x:number}, val: number, n2: number) => new TimedCache( () => name.x + val + n2  ));
+  const l = x.get({x:3}, 2, 3);
   return x;
 };
