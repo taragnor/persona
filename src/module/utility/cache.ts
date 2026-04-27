@@ -90,7 +90,6 @@ export class MultiTierCache<
   val extends FirstArg<ValueList> = FirstArg<ValueList>,
   restArgs extends RestArgs<ValueList> = RestArgs<ValueList>
   > {
-
     CacheConstructor: CacheType;
     map: Map<val, CacheOr<FullArgs, CacheType, restArgs>> = new Map();
 
@@ -98,8 +97,12 @@ export class MultiTierCache<
       this.CacheConstructor = cacheConstructor;
     }
 
+    public clear() {
+      this.map.clear();
+    }
+
     private _get(fullArgs: FullArgs, args: restArgs): LastArg<ValueList> {
-      const key = args.pop() as val;
+      const key = args.shift() as val;
       let v= this.map.get(key);
       if (!v) {
         const dataElement = ((args.length > 0)
@@ -160,6 +163,5 @@ type DropLast<T extends unknown[]> =
 window.testCache= function () {
   const x = new MultiTierCache(
     (name: {x:number}, val: number, n2: number) => new TimedCache( () => name.x + val + n2  ));
-  const l = x.get({x:3}, 2, 3);
   return x;
 };
