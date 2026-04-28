@@ -230,10 +230,10 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
       .concat( item.system.tags)
       .concat(item.system.itemTags)
       .pushUnique(...this.baseItemExtraTags(user ?? null));
-    if (!list.includes(item.system.type as TagType)) {
-      list.pushUnique(item.system.type as TagType);
+    if (!list.includes(item.system.type)) {
+      list.pushUnique(item.system.type);
     }
-    if (!list.includes( item.getBaseDamageType() as typeof list[number]) && POWER_TAGS_LIST.includes( (item).getBaseDamageType() as typeof POWER_TAGS_LIST[number])) {
+    if (!list.includes( item.getBaseDamageType()) && POWER_TAGS_LIST.includes( item.getBaseDamageType())) {
       if (item.getBaseDamageType() != "none") {
         list.pushUnique(item.getBaseDamageType());
       }
@@ -274,10 +274,10 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
   private getTags_weapon(item : Weapon, user: N<ValidAttackers>) : readonly TagType[] {
     const list = (item.system.itemTags.slice() as TagType[])
       .pushUnique(...this.baseItemExtraTags(user ?? null));
-    if (!list.includes(item.getBaseDamageType() as typeof list[number]) && POWER_TAGS_LIST.includes(item.getBaseDamageType() as typeof POWER_TAGS_LIST[number])) {
+    if (!list.includes(item.getBaseDamageType()) && POWER_TAGS_LIST.includes(item.getBaseDamageType())) {
       list.pushUnique( item.getBaseDamageType());
     }
-    list.pushUnique(item.system.type as TagType);
+    list.pushUnique(item.system.type);
     return list;
   }
 

@@ -386,7 +386,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
   PCs() : readonly PC[] {
     if (this.#cache.pcs) {return this.#cache.pcs;}
-    this.#cache.pcs=  this.allActors().filter( actor => actor.isPC() && actor.isRealPC()) as PC[];
+    this.#cache.pcs=  this.allActors().filter( actor => actor.isPC() && actor.isRealPC());
     return this.#cache.pcs;
   }
 
@@ -430,8 +430,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     if (this.#cache.socialLinks) {return this.#cache.socialLinks;}
     return this.#cache.socialLinks = (game.actors.contents  as PersonaActor[])
       .filter( (actor :PersonaActor) =>
-        (actor.isNPC()
-          || actor.isPC())
+        (actor.isNPC() || actor.isPC())
       )
       .filter( actor => actor.tarot != undefined)
       .sort((a, b) => (a.tarot?.system.sortOrder ?? 99) - (b.tarot?.system.sortOrder ?? 99));
@@ -493,7 +492,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     if (!navigator) {return [];}
     const skills = navigator.navigatorSkills
       .filter(sk => sk.isPassive());
-    return skills as ModifierContainer[];
+    return skills;
   }
 
   classes(): CClass[] {

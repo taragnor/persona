@@ -243,7 +243,7 @@ export class CombatPanel extends PersonaPanel {
   private async _onInventoryButton() {
     if (this._target && this._target.actor && this._target.actor.canUseConsumables) {
       if (this._target.actor.isPCLike()) {
-        await this.push(new ItemUsePanel(this._target.actor as PC | NPCAlly, (x: Usable) => x.canBeUsedInCombat()));
+        await this.push(new ItemUsePanel(this._target.actor, (x: Usable) => x.canBeUsedInCombat()));
       }
     }
   }

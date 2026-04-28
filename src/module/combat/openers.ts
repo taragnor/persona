@@ -444,7 +444,7 @@ export class OpenerManager {
     ) {
       return {msg, options};
     }
-    const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token as PToken);
+    const accessor = PersonaDB.getUniversalTokenAccessor(combatant.token);
     if (!this.combat.isEngagedByAnyFoe(accessor)) {
       const ret : OpenerOptionsGroups = {
         msg, options

@@ -9,7 +9,7 @@ import { PersonaSettings } from "../config/persona-settings.js";
 import { NonDeprecatedModifierTarget } from "../config/item-modifiers.js";
 import { ModifierContainer, PersonaItem} from "./item/persona-item.js";
 import { Helpers } from "./utility/helpers.js";
-import { Consequence, DeprecatedConsequence, NonDeprecatedConsequence } from "../config/consequence-types.js";
+import { Consequence, NonDeprecatedConsequence } from "../config/consequence-types.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { NonDeprecatedPrecondition } from "../config/precondition-types.js";
 import { HTMLTools } from "./utility/HTMLTools.js";
@@ -419,7 +419,7 @@ export class ConditionalEffectManager {
     }
     const consequences = this.ArrayCorrector(consObject, sourceItem);
     const data=  consequences.map( eff=> {
-      const nondep = ConsequenceConverter.convertDeprecated(eff as DeprecatedConsequence, sourceItem instanceof Item ? sourceItem : null);
+      const nondep = ConsequenceConverter.convertDeprecated(eff, sourceItem instanceof Item ? sourceItem : null);
       return nondep;
     });
     ++this.cache.misses;
@@ -437,7 +437,7 @@ export class ConditionalEffectManager {
   static applySourceInformation <T extends object, ActorType extends PersonaActor, ItemType extends ModifierContainer & (Item | ActiveEffect)>( obj: T, sourceItem: N<ItemType>, sourceActor: N<ActorType>, realSource: UN<ModifierContainer>) : Sourced<T> {
     return {
       ...obj,
-      owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : undefined) as UniversalActorAccessor<ValidAttackers>,
+      owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : undefined),
       source: sourceItem != null ? sourceItem.accessor : undefined,
       realSource: realSource ? realSource.accessor : undefined,
     };
@@ -495,7 +495,7 @@ export class EMAccessor<T> {
 	}
 
 	static create<const O extends FoundryDocument, const P extends string, T extends NoArray<GetProperty<O, P>>> ( owner: O, path: P, master?: EMAccessor<unknown>): EMAccessor<T> {
-		return new EMAccessor(owner, path, master) as unknown as EMAccessor<T>;
+		return new EMAccessor(owner, path, master);
 
 	}
 

@@ -38,8 +38,8 @@ export class EngagementChecker {
 			const checkedToken = checkList.pop()!;
 			for (const comb of combat.validEngagementCombatants) {
 				if (!comb.token.actor?.isAlive()) {continue;}
-				const token  = comb.token as PToken;
-				if ( this.isWithinEngagedRange(checkedToken.token as PToken, token)
+				const token  = comb.token;
+				if ( this.isWithinEngagedRange(checkedToken.token, token)
 					&& !engagedList.has(comb)
 				) {
 					if (comb != subject)  {

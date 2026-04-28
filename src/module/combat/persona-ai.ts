@@ -18,7 +18,7 @@ export abstract class PersonaAI {
       }
       this.combatant = combatant;
       this.persona = combatant.actor.persona();
-      this.token = combatant.token as PToken;
+      this.token = combatant.token;
       this.combat= combat;
    }
 

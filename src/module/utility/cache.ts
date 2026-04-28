@@ -121,10 +121,9 @@ export class MultiTierCache<
       }
     }
 
-    get(...args: FullArgs) : LastArg<ValueList> {
+    public get(...args: FullArgs) : LastArg<ValueList> {
       return this._get(args, args.slice() as restArgs);
     }
-
 
   }
 
@@ -155,8 +154,7 @@ type CacheFactory<ConsArgs extends unknown[], T extends CacheBase<unknown>>= (..
 type LastArg<T extends unknown[]> =
   T extends [...unknown[], infer Last] ? Last : never;
 
-type DropLast<T extends unknown[]> =
-  T extends [...infer Rest, unknown] ? Rest : [];
+// type DropLast<T extends unknown[]> = T extends [...infer Rest, unknown] ? Rest : [];
 
 
 //@ts-expect-error adding to global

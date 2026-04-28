@@ -166,7 +166,7 @@ export class RandomDungeonOutput <TreasureType> {
     for (const grp of this.squareList.map( sq=> sq.group)) {
       const rdata = this.regionData.get(grp);
       if (!rdata) {continue;}
-      const region = (await this.scene.createEmbeddedDocuments<PersonaRegion>("Region", [rdata as Record<string, unknown>]))[0];
+      const region = (await this.scene.createEmbeddedDocuments<PersonaRegion>("Region", [rdata]))[0];
       const regionData = this.prepPersonaRegionData(grp);
       await region.setRegionData(regionData);
     }

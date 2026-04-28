@@ -15,7 +15,6 @@ interface Item<T extends SchemaDict = SchemaDict, in ActorType extends Actor<any
 	img: string;
 	id: Branded<Document["id"], "ItemId">;
 
-	/** @deprecated use system.type instead, as this will not promote TS narrowing */
 	type: keyof T;
 	system: TotalConvert<T>;
 	sheet: ItemSheet<this>;

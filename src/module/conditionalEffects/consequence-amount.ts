@@ -81,7 +81,7 @@ export class ConsequenceAmountResolver {
   }
 
   private static resolveActorProperty(amt: Sourced<ConsequenceAmountV2> & {type: "actor-property"}, situation: Partial<Situation>): U<number> {
-    const list= PersonaCombat.createTargettingContextList(situation, null);
+    const list = PersonaCombat.createTargettingContextList(situation, null);
     const targets = list[amt.target];
     if (!targets) {return undefined;}
     const returns = targets
@@ -109,7 +109,7 @@ export class ConsequenceAmountResolver {
         default:
           amt satisfies never;
           PersonaError.softFail(`Unknown actor porperty resolve`);
-          console.log(amt as unknown);
+          console.log(amt);
           return undefined;
       }
     });

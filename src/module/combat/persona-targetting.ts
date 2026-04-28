@@ -95,9 +95,9 @@ export class PersonaTargetting {
           if (!actor) {return false;}
           if ((actor).isAlive()) {return false;}
           if ((actor).isFullyFaded()) {return false;}
-          return ((x.actor as ValidAttackers).getAllegiance() == attackerType);
+          return ((x.actor).getAllegiance() == attackerType);
         });
-        return targets.map( x=> x.token as PToken);
+        return targets.map( x=> x.token);
       }
       case 'all-allies': {
         if (PersonaCombat.combat) {
@@ -120,7 +120,7 @@ export class PersonaTargetting {
 				return combat.validCombatants(attackerToken as PToken)
 				.filter( x=> x.actor != attacker
 					&& x?.actor?.isAlive())
-				.map( x=> x.token as PToken)
+				.map( x=> x.token)
 				.filter(target => power.targetMeetsConditions(attacker, target.actor));
 				;
 			}
@@ -129,7 +129,7 @@ export class PersonaTargetting {
         const attackerToken = combat.getCombatantByActor(attacker)?.token;
 				return combat.validCombatants(attackerToken as PToken)
 				.filter( x=> x?.actor?.isAlive())
-				.map( x=> x.token as PToken)
+				.map( x=> x.token)
 				.filter(target => power.targetMeetsConditions(attacker, target.actor));
 			}
 			case 'everyone-even-dead': {
@@ -137,7 +137,7 @@ export class PersonaTargetting {
         const attackerToken = combat.getCombatantByActor(attacker)?.token;
 				return combat.validCombatants(attackerToken as PToken)
 				.filter( x=> x.actor && !x.actor.isFullyFaded())
-				.map( x=> x.token as PToken)
+				.map( x=> x.token)
 				.filter(target => power.targetMeetsConditions(attacker, target.actor));
 			}
 			default:

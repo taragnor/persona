@@ -1559,7 +1559,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       user: actor.accessor,
     };
     const cons : (Consequence & {type : 'add-creature-tag'})[] = ConditionalEffectManager.getAllActiveConsequences(effects, situation)
-      .filter( c=> c.type == 'add-creature-tag') as (Consequence & {type : 'add-creature-tag'})[] ;
+      .filter( c=> c.type == 'add-creature-tag') ;
     return cons
       .map( c => c.creatureTag)
       .map( t => PersonaItem.resolveTag(t));

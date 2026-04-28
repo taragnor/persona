@@ -552,7 +552,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     if (!npc || npc.system.type != "npc" && npc.system.type != "pc") {
       PersonaError.softFail(`Can't find Proxy actor for: ${this.name}`);
     }
-    return npc as NPC | PC;
+    return npc;
   }
 
   isUsingBasePersona(this: ValidAttackers) : boolean {
@@ -893,7 +893,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       {
         throw new Error(`Bad Item named: ${classNameDefault}, expecting a character class`);
       }
-      cl = namesearch as ItemSub<"characterClass">;
+      cl = namesearch;
     }
     return cl;
   }
@@ -1196,15 +1196,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
         const isDating = relationshipType == "DATE";
         relationshipType = relationshipType ? relationshipType : npc.baseRelationship;
         if (npc.isNPC()) {
-          const allFocii = (npc).getSocialFocii_NPC(npc as SocialLink);
+          const allFocii = (npc).getSocialFocii_NPC(npc);
           const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
           return [{
             currentProgress,
             linkLevel,
             inspiration,
             relationshipType,
-            actor:npc as SocialLink,
-            linkBenefits: npc as SocialLink,
+            actor:npc,
+            linkBenefits: npc,
             allFocii,
             available: PersonaSocial.isAvailable(npc, this),
             focii: qualifiedFocii,
@@ -1216,7 +1216,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
             if (!personalLink)  {
               return [];
             }
-            const allFocii = personalLink.getSocialFocii_PC(personalLink as SocialLink, npc as PC);
+            const allFocii = personalLink.getSocialFocii_PC(personalLink, npc as PC);
             const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
             return [{
               currentProgress,
@@ -1235,7 +1235,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
             if (!teammate)  {
               return [];
             }
-            const allFocii = teammate.getSocialFocii_PC(teammate as SocialLink, npc as PC);
+            const allFocii = teammate.getSocialFocii_PC(teammate, npc as PC);
             const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
             return [{
               currentProgress,
@@ -1621,7 +1621,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   unarmedTagList() : readonly PowerTag[] {
-    if (POWER_TAGS_LIST.includes (this.getUnarmedDamageType() as typeof POWER_TAGS_LIST[number])) {
+    if (POWER_TAGS_LIST.includes (this.getUnarmedDamageType())) {
       return [this.getUnarmedDamageType()] as PowerTag[];
     }
     return [];
@@ -1726,7 +1726,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       case "block":
         return true;
       case "resist": {
-        const save = await PersonaRoller.rollSave(this as Shadow, {
+        const save = await PersonaRoller.rollSave(this, {
           DC: 11,
           label:`Resist status ${id}`,
           askForModifier: false,

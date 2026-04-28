@@ -456,7 +456,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       if (comb != combatant && comb.actor && comb.actor.sheet._state >= 0)
       {comb.actor.sheet.close();}
     }
-    void CombatPanel.instance.setTarget(combatant.token as PToken);
+    void CombatPanel.instance.setTarget(combatant.token);
   }
 
   playerAlert( combatant: Combatant<PersonaActor>) : boolean {
@@ -822,7 +822,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 
   async displayActionsRemaining(combatant: PersonaCombatant) : Promise<ChatMessage> {
-    const token = combatant?.token as PToken;
+    const token = combatant?.token;
     const boldName = `<b>${token.name}</b>`;
     const actor = combatant.actor;
     const actionsRemaining = actor.actionsRemaining + ( actor.hasStatus('bonus-action') ? 1 : 0);
@@ -1008,7 +1008,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     const context : TargettingContextList = {
       target: target ? [target as ValidAttackers["accessor"]] : [],
       owner,
-      attacker: attacker ? [attacker as ValidAttackers["accessor"]] : [],
+      attacker: attacker ? [attacker] : [],
       user: user ? [user] : [],
       'triggering-character': triggeringCharacter ? [triggeringCharacter] : [],
       cameo: cameo ? [cameo] : [],
@@ -1228,7 +1228,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       case 'all-combatants': {
         const combat = game.combat as PersonaCombat;
         if (!combat) {return [];}
-        return combat.validCombatants(attacker).flatMap( c=> c.actor ? [c.token as PToken] : []);
+        return combat.validCombatants(attacker).flatMap( c=> c.actor ? [c.token] : []);
       }
       case 'user': {
         if (!checkSituationProp(situation, "user")) { return []; }
@@ -1267,7 +1267,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       if (!actor || !actor.isAlive())  {return false;}
       return (x.actor && x.actor.getAllegiance() != attackerType);
     });
-    return targets.map( x=> x.token as PToken);
+    return targets.map( x=> x.token);
 
   }
 

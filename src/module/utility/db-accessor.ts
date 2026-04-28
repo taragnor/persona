@@ -253,9 +253,9 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		}
 		switch (DBtype) {
 			case "Actor":
-				return compendium_content as ActorType[];
+				return compendium_content;
 			case "Item":
-				return compendium_content as ItemType[];
+				return compendium_content;
 			default:
 				DBtype satisfies never;
 				throw new Error(`Bad Type ${DBtype as string}`);
@@ -301,7 +301,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 			if (!item) {
 				throw new Error(`Item Id ${itemId} not found on Actor Id ${foundActor.id}` );
 			}
-			return item as unknown as T;
+			return item;
 		}
 		return this.getItemById(itemId) as unknown as T;
 	}

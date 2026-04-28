@@ -1,4 +1,3 @@
-import { PersonaCombatant } from "./persona-combat.js";
 import { PersonaCombat } from "./persona-combat.js";
 import { PersonaSocial } from "../social/persona-social.js";
 import { PToken } from "./persona-combat.js";
@@ -60,9 +59,6 @@ export class CombatHooks {
     });
 
 		Hooks.on("updateCombat", async (combat: PersonaCombat, diff) => {
-			// const changes = diff as FlagChangeDiffObject;
-			// if (!changes.flags) {return;}
-			// if (!combat.combatant) {return;}
 			await combat.openers.onUpdateCombat(diff as FlagChangeDiffObject );
 		});
 
@@ -73,7 +69,7 @@ export class CombatHooks {
 					await PersonaSocial.startSocialTurn(x.actor as PC);
 				} else {
 					await combat.runAllCombatantStartCombatTriggers();
-					await combat.startCombatantTurn(x as PersonaCombatant);
+					await combat.startCombatantTurn(x);
 				}
 			}
 		});

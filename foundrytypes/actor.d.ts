@@ -21,7 +21,6 @@ namespace Foundry {
 
 		interface Actor<const T extends SchemaDict = any, in ItemType extends Item<any, this, any> = Item<any, this>, in AEType extends ActiveEffect<this, ItemType> = ActiveEffect<this, ItemType>> extends Document<ItemType | AEType>{
 
-			/** @deprecated use system.type instead, as this will not promote TS narrowing */
 			type: keyof T;
 			id: Branded<Document["id"], "ActorId">;
 			system: TotalConvert<T>;

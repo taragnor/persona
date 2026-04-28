@@ -29,7 +29,7 @@ import {ConsequenceAmountResolver} from "./conditionalEffects/consequence-amount
 import {PreconditionConverter} from "./migration/convertPrecondition.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {ResolvedActorChange} from "./combat/finalized-combat-result.js";
-import {ContainerTypes, PersonaItem} from "./item/persona-item.js";
+import {PersonaItem} from "./item/persona-item.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaAE} from "./persona-ae.js";
 import {Persona} from "./persona-class.js";
@@ -70,9 +70,6 @@ export function testPrecondition (condition: SourcedPrecondition, situation: Sit
     case "numeric": {
       return numericComparison(condition, situation);
     }
-      // case "numeric-v2":
-      // 	return false;
-      // 	// return NumericV2.eval(condition, situation, source);
     case "boolean": {
       return booleanComparison(condition, situation);
     }
@@ -105,7 +102,6 @@ export function checkSituationProp<T extends keyof MergeUnion<S>, S extends Situ
 }
 
 function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, situation: Situation) : boolean {
-  // if (condition.type != "numeric") {throw new PersonaError("Not a numeric comparison");}
   let target: number;
   let testCase = ("num" in condition) ? condition.num : 0;
   switch (condition.comparisonTarget) {
@@ -205,7 +201,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       if (element == "by-power") {
         const power = PersonaDB.findItem(situation.usedPower);
         if (power.isSkillCard()) {return false;}
-        const attacker = PersonaDB.findActor(situation.attacker as UniversalActorAccessor<PersonaActor>);
+        const attacker = PersonaDB.findActor(situation.attacker);
         if (!attacker.isValidCombatant()){ return false;}
         element = power.getDamageType(attacker);
         if (element == "healing" || element == "untyped" || element == "all-out" || element =="none" ) {return false;}
@@ -825,7 +821,6 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
         }
         return undefined;
       }
-      // const tagIds = powerTags.flatMap( x=> typeof x == "string" ? [x] : [x.id, x.system.linkedInternalTag]);
       return multiCheckContains(condition.powerTag, tagList);
     }
     case "actor": {
@@ -836,8 +831,6 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
     case "roll": {
       if (!checkSituationProp(situation, "rollTags")) { return undefined; };
       const rollTags = unifiedTagList(situation.rollTags);
-      // const rollTags = (situation.rollTags ?? [])
-      // .flatMap (tag => typeof tag == "string"? [tag] : [tag.id, tag.system.linkedInternalTag]);
       return multiCheckContains(condition.rollTag, rollTags);
     }
     case "weapon":{
@@ -845,8 +838,6 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
       if (!target || !target.weapon || target.isNPC()) {return undefined;}
       const tagCheck = condition.rollTag;
       const tagIds = unifiedTagList(target.weapon.tagList(target));
-      // const tagIds = unifiedTagList(baseTL);
-      // const tagIds = target.weapon.tagList(target).flatMap( x=> typeof x == "string" ? [x] : [x.id, x.system.linkedInternalTag]);
       return multiCheckContains(tagCheck, tagIds);
     }
     default:  {
@@ -981,7 +972,7 @@ function resolveSocialNonIDTarget (
   situation: Situation,
   source: N<Sourced<object>["source"]>)
   : U<Exclude<SocialLinkIdOrTarot, keyof typeof SOCIAL_LINK_OR_TAROT_OTHER>> {
-    type ret =U<Exclude<SocialLinkIdOrTarot, keyof typeof SOCIAL_LINK_OR_TAROT_OTHER>>;
+    type ret = U<Exclude<SocialLinkIdOrTarot, keyof typeof SOCIAL_LINK_OR_TAROT_OTHER>>;
     type testFilter = keyof typeof SOCIAL_LINK_OR_TAROT_OTHER;
     const test: testFilter = targetIdOrTarot as testFilter;
     switch (test) {
@@ -1006,7 +997,7 @@ function resolveSocialNonIDTarget (
       }
       case "SLSource": {
         let x : U<typeof targetIdOrTarot>= targetIdOrTarot;
-        const SLSource = source ? PersonaDB.find(source as UniversalAccessor<ContainerTypes>) : undefined;
+        const SLSource = source ? PersonaDB.find(source as UniversalItemAccessor<PersonaItem>) : undefined;
         x = SLSource?.parent instanceof PersonaActor ? SLSource.parent.id : undefined;
         if (x == PersonaDB.personalSocialLink().id) {
           PersonaError.softFail("Using Personal Link");
@@ -1020,7 +1011,7 @@ function resolveSocialNonIDTarget (
       default:
         test satisfies never;
     }
-    const ret=  targetIdOrTarot as Exclude<typeof targetIdOrTarot , testFilter>;
+    const ret =  targetIdOrTarot as Exclude<typeof targetIdOrTarot , testFilter>;
     return ret;
 
 
@@ -1527,9 +1518,7 @@ function specialComparison(condition: SourcedPrecondition & {type: "boolean", bo
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const PersonaCache : WeakMap<Situation, PersonaData>= new WeakMap();
-
-type PersonaData = Record<string, U<Persona[]>>;
+// const PersonaCache : WeakMap<Situation, PersonaData>= new WeakMap();
+// type PersonaData = Record<string, U<Persona[]>>;
 
 

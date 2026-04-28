@@ -59,7 +59,7 @@ export class Helpers {
 							case "function":
 								return [];
 							case "object":
-								if (v == null) {return [k,v as unknown];}
+								if (v == null) {return [k,v];}
 								if ("schema" in v && "toObject" in v && typeof v.toObject == "function") {
 									// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 									const obj = v.toObject() as object;

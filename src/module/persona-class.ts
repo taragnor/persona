@@ -69,7 +69,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       defensiveModifiers : undefined,
       nearbyAuras: undefined,
       mainModifiersList : undefined,
-      // tagListPartial: undefined,
       passiveModifiers: undefined,
     };
   }

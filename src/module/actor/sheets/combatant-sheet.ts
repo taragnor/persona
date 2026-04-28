@@ -406,10 +406,10 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
     const targetPersona  : Persona = target ? target.actor.persona() : persona;
 		const damage = await CombatantSheetBase.getDamage(persona, power);
     await sleep(10);//allow Async break to allow rendering (smooth behavior)
-		const balanceReport = await this.getBalanceTest(power as Usable);
-		const ailmentRange = CombatEngine.calculateAilmentRange(persona, targetPersona, power as Usable, null);
-		const instantDeathRange = CombatEngine.calculateInstantDeathRange(persona, targetPersona, power as Usable, null);
-		const critRange = CombatEngine.calculateCriticalRange(persona, targetPersona, power as Usable, null);
+		const balanceReport = await this.getBalanceTest(power);
+		const ailmentRange = CombatEngine.calculateAilmentRange(persona, targetPersona, power, null);
+		const instantDeathRange = CombatEngine.calculateInstantDeathRange(persona, targetPersona, power, null);
+		const critRange = CombatEngine.calculateCriticalRange(persona, targetPersona, power, null);
 		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/parts/power-tooltip.hbs", {actor :this.actor, power, CONST, persona: this.actor.persona(), damage, balanceReport, ailmentRange, instantDeathRange, critRange, targetPersona});
 		$(ev.currentTarget).prop('title', html);
 	}

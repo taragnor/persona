@@ -3,7 +3,7 @@ import { BUFF_MAX_POTENCY, FatigueStatusId } from "../config/status-effects.js";
 import { statusMap } from "../config/status-effects.js";
 import { PersonaDB } from "./persona-db.js";
 import { StatusDurationType } from "../config/status-effects.js";
-import { ContainerTypes, GetEffectsOptions, ModifierContainer, PersonaItem} from "./item/persona-item.js";
+import { GetEffectsOptions, ModifierContainer, PersonaItem} from "./item/persona-item.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaError } from "./persona-error.js";
 import { StatusEffectId } from "../config/status-effects.js";
@@ -355,8 +355,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
           conditions,
           consequences,
           owner: sourceActorAcc,
-          source: this.accessor as UniversalAccessor<ContainerTypes>,
-          realSource: this.accessor as UniversalAccessor<ContainerTypes>,
+          source: this.accessor,
+          realSource: this.accessor,
         };
       });
     if (CETypes == undefined || CETypes.length == 0){
