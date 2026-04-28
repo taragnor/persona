@@ -37,36 +37,38 @@ export class CombatResult  {
   activationRoll: U<number>;
 
 
-	constructor(atkResult ?: AttackResult | null) {
-		this.id = ++CombatResult.lastId;
-		if (atkResult) {
-			this.attacks.set(atkResult, []);
-		}
-	}
+  constructor(atkResult ?: AttackResult | null) {
+    this.id = ++CombatResult.lastId;
+    if (atkResult) {
+      this.attacks.set(atkResult, []);
+    }
+  }
 
 	finalize(): FinalizedCombatResult {
 		return new FinalizedCombatResult(this);
 	}
 
-	findEffects<T extends Sourced<OtherEffect | LocalEffect>["type"]>(effectType: T): (Sourced<OtherEffect | LocalEffect> & {type:T})[] {
-		const arr = [] as (Sourced<OtherEffect | LocalEffect> & {type:T})[];
-		for (const v of this.attacks.values()) {
-			for (const eff of v.flatMap(chg => chg.otherEffects) ) {
-				if (eff.type == effectType)
-					{arr.push( eff as Sourced<OtherEffect> & {type:T});}
-			}
-		}
-		for (const eff of this.costs.flatMap(chg => chg.otherEffects) ) {
-			if (eff.type == effectType)
-				{arr.push( eff as Sourced<OtherEffect> & {type:T});}
-		}
-    for (const eff of this.globalLocalEffects) {
-			if (eff.type == effectType)
-				{arr.push( eff as Sourced<LocalEffect> & {type:T});}
+  findEffects<T extends Sourced<OtherEffect | LocalEffect>["type"]>(effectType: T): (Sourced<OtherEffect | LocalEffect> & {type:T})[] {
+    const arr = [] as (Sourced<OtherEffect | LocalEffect> & {type:T})[];
+    for (const v of this.attacks.values()) {
+      for (const eff of v.flatMap(chg => chg.otherEffects) ) {
+        if (eff.type == effectType) {
+          arr.push(eff as Sourced<OtherEffect> & {type:T});
+        }
+      }
     }
-
-		return arr;
-	}
+    for (const eff of this.costs.flatMap(chg => chg.otherEffects) ) {
+      if (eff.type == effectType) {
+        arr.push( eff as Sourced<OtherEffect> & {type:T});
+      }
+    }
+    for (const eff of this.globalLocalEffects) {
+      if (eff.type == effectType) {
+        arr.push( eff as Sourced<LocalEffect> & {type:T});
+      }
+    }
+    return arr;
+  }
 
 
 	addSound(sound: ValidSound, timing: this["sounds"][number]["timing"]) {
@@ -94,7 +96,6 @@ export class CombatResult  {
 			if (!attacker) {
 				PersonaError.softFail("Can't get attacker");
 				return undefined;
-
 			}
 			damageType = power.getDamageType(attacker);
 		}

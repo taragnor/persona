@@ -42,7 +42,6 @@ export abstract class CacheBase<T> implements CacheI<T> {
 
 }
 
-
 export class TimedCache<T> extends CacheBase<T> {
   private expirationTime: number;
   private lastAccessTime: number;
@@ -52,8 +51,7 @@ export class TimedCache<T> extends CacheBase<T> {
   constructor (genFn: () => T, expTime =TimedCache.CACHE_EXPIRATION_THRESHOLD_TIME ) {
     super(genFn);
     this.lastAccessTime = 0;
-    this.expirationTime= expTime;
-
+    this.expirationTime = expTime;
   }
 
   override cacheInvalid(_val: T): boolean {
@@ -127,8 +125,6 @@ export class MultiTierCache<
 
   }
 
-
-
 export interface CacheI<T> {
   value: T;
   clear(): void;
@@ -139,7 +135,6 @@ type FirstArg<T extends unknown[]> =
 
 type RestArgs<T extends unknown[]> =
   T extends [unknown, ...infer Rest] ? Rest : [];
-
 
 type CacheOr<fullArgs extends unknown[],
   SingleCacheType extends CacheFactory<fullArgs, CacheBase<unknown>>,
@@ -155,7 +150,6 @@ type LastArg<T extends unknown[]> =
   T extends [...unknown[], infer Last] ? Last : never;
 
 // type DropLast<T extends unknown[]> = T extends [...infer Rest, unknown] ? Rest : [];
-
 
 //@ts-expect-error adding to global
 window.testCache= function () {

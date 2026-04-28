@@ -797,7 +797,6 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
       if (!power) {return undefined;}
       let user: ValidAttackers | null;
       switch (true) {
-        // case situation.attacker != undefined:
         case checkSituationProp(situation, "attacker"):
           user = PersonaDB.findActor(situation.attacker);
           break;
@@ -809,7 +808,7 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
           break;
       }
       const extraTags = "addedTags" in situation ? situation.addedTags ?? [] : [];
-      const powerTags = power.tagList(user).concat(extraTags as PowerTag[] );//TODO: Fix Later. this is ahack to avoid a typeerror
+      const powerTags = power.tagList(user).concat(extraTags as PowerTag[] );//TODO: Fix Later. this is a hack to avoid a typeerror
       const tagList = unifiedTagList(powerTags);
       if (condition.powerTag == undefined) {
         //weird Sachi Error
