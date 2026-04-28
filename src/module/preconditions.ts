@@ -54,24 +54,18 @@ export function testPreconditions(conditionArr: readonly SourcedPrecondition[], 
 
 export function testPrecondition (condition: SourcedPrecondition, situation: Situation) : boolean {
   switch (condition.type) {
-    case "always":
-      return true;
-    case "miss-all-targets":
-      return false; //placeholder
-    case "save-versus":
-      if (!("saveVersus" in situation) || !situation.saveVersus) {return false;}
-      return situation.saveVersus == condition.status;
+    case "numeric":
+      return numericComparison(condition, situation);
+    case "boolean":
+      return booleanComparison(condition, situation);
     case "on-trigger":
       return triggerComparison(condition, situation);
+    case "save-versus":
+      if (!("saveVersus" in situation) || !situation.saveVersus) { return false; }
+      return situation.saveVersus == condition.status;
     case "is-hit": {
       //deliberate duplication
       return CombatEngine.isAnyHit(situation) == condition.booleanState;
-    }
-    case "numeric": {
-      return numericComparison(condition, situation);
-    }
-    case "boolean": {
-      return booleanComparison(condition, situation);
     }
     case "never":
       return false;
@@ -84,6 +78,10 @@ export function testPrecondition (condition: SourcedPrecondition, situation: Sit
       debugger;
       return true;
     }
+    case "always":
+      return true;
+    case "miss-all-targets":
+      return false; //placeholder
     default:
       condition satisfies never;
       PersonaError.softFail(`Unexpected Condition: ${(condition as Precondition)?.type}`);
