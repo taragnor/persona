@@ -74,8 +74,10 @@ export function testPrecondition (condition: SourcedPrecondition, situation: Sit
         return false;
       } else {return true;}
     case "diagnostic": {
-      // eslint-disable-next-line no-debugger
-      debugger;
+      if (PersonaSettings.debugMode()) {
+        // eslint-disable-next-line no-debugger
+        debugger;
+      }
       return true;
     }
     case "always":

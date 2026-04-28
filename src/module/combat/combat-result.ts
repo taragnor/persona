@@ -70,7 +70,6 @@ export class CombatResult  {
     return arr;
   }
 
-
 	addSound(sound: ValidSound, timing: this["sounds"][number]["timing"]) {
 		this.sounds.push({sound, timing});
 	}
@@ -149,10 +148,6 @@ export class CombatResult  {
 				effect.otherEffects.push( {
           ...cons,
           amount,
-          //fix to other effects
-					// type: "set-hp",
-					// subtype: cons.damageSubtype,
-					// value: amount,
 				});
 				break;
 			}
@@ -197,7 +192,6 @@ export class CombatResult  {
       }
       case "removeStatus": {
         if (!effect) {break;}
-        // const id = cons.statusName;
         const actor = PersonaDB.findActor(effect.actor);
         for (const id of multiCheckToArray(cons.statusName)) {
           if (actor.hasStatus(id)) {
@@ -244,7 +238,6 @@ export class CombatResult  {
         if (!effect) {break;}
         effect.otherEffects.push( {
           ...cons,
-          // type: cons.combatEffect,
           amount: cons.amount ?? 1,
           downgrade: cons.downgrade ?? false,
         });
@@ -259,9 +252,6 @@ export class CombatResult  {
         effect.otherEffects.push( {
           ...cons,
           amount,
-          // type: cons.combatEffect,
-          // subtype: cons.subtype,
-          // amount,
         });
         break;
       }
@@ -285,7 +275,6 @@ export class CombatResult  {
       case "apply-recovery":
         effect.otherEffects.push( {
           ...cons,
-          // type: cons.combatEffect,
         });
         break;
       case "set-cooldown":
@@ -323,11 +312,8 @@ export class CombatResult  {
           PersonaError.softFail(msg, item, cons);
           break;
         }
-        // const itemAcc =  item.accessor;
         effect.otherEffects.push( {
           ...cons,
-          // type: "expend-item",
-          // itemAcc,
         });
         break;
       }
@@ -368,8 +354,6 @@ export class CombatResult  {
         effect.otherEffects.push( {
           ...cons,
           linkId: socialTarget.id,
-          // type: "inspiration-cost",
-          // amount: cons.amount ?? 1,
         });
         break;
       }
@@ -377,16 +361,12 @@ export class CombatResult  {
         if (effect && !cons.newChatMsg) {
           effect.otherEffects.push( {
             ...cons,
-            // type: "display-message",
             newChatMsg: false,
-            // msg: cons.msg ?? "",
           });
         } else {
           this.globalOtherEffects.push({
             ...cons,
-            // type: "display-message",
             newChatMsg: true,
-            // msg: cons.msg ?? "",
           });
         }
         break;
@@ -403,8 +383,6 @@ export class CombatResult  {
       }
       case "social-card-action": {
         //must be executed playerside as event execution is a player thing
-        // await SocialActionExecutor.execSocialCardAction(cons);
-        // if (!effect) {break;}
         if ("amount" in cons) {
           const sourced=  ConsequenceAmountResolver.extractSourcedFromField(cons, "amount");
           const amount = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situation) ?? 1;
@@ -444,9 +422,6 @@ export class CombatResult  {
         if (!effect) {break;}
         effect.otherEffects.push( {
           ...cons,
-          // type: cons.type,
-          // amount: cons.amount ?? 0,
-          // subtype: cons.subtype
         });
         break;
       case "teach-power":
@@ -460,7 +435,6 @@ export class CombatResult  {
       case "combat-effect":
         if (!effect || !target || !target.isValidCombatant()) {break;}
         this.addEffect_combatEffect(cons, effect, target, situation);
-        // effect.otherEffects.push(cons);
         break;
       case "alter-fatigue-lvl":
         if (!effect) {break;}
@@ -481,7 +455,6 @@ export class CombatResult  {
               cardAction: "set-temporary-variable",
             };
             this.globalLocalEffects.push( localEffect);
-            // await SocialActionExecutor.execSocialCardAction(otherEffect, situation);
           } else {
             const amount = this.resolveConsequenceAmount(cons, situation, "value");
             const localEffect : Sourced<LocalEffect> & {cardAction: "set-temporary-variable"} = {
@@ -494,7 +467,6 @@ export class CombatResult  {
               value: amount,
             };
             this.globalLocalEffects.push(localEffect);
-            // await SocialActionExecutor.execSocialCardAction(otherEffect, situation);
           }
           break;
         }
@@ -787,64 +759,6 @@ export type AttackResult = {
 	critRange: U<{low: number, high:number}>;
   activationRoll?: number;
 };
-
-// function resolveStatusDurationAnchor (anchor: ConsequenceTarget, atkResult: AttackResult) : UniversalActorAccessor<ValidAttackers> | null {
-// 	if (!anchor) {
-// 		anchor = "target";
-// 	}
-// 	let accessor : UN<UniversalTokenAccessor<PToken>>;
-// 	const situation = atkResult.situation;
-// 	switch (anchor) {
-// 		case "target":
-// 			accessor = atkResult.target;
-// 			break;
-// 		case "owner":
-// 			console.warn("Using owner in status duration anchors is unsupported and just resolves to 'user'");
-// 		// eslint-disable-next-line no-fallthrough
-// 		case "user": {
-// 			const userAcc = atkResult.situation.user;
-// 			if (userAcc)
-// 				{return userAcc;}
-// 			PersonaError.softFail("Can't resolve user for status Duration anchor");
-// 			return null;
-// 		}
-// 		case "attacker":
-// 			accessor = atkResult.attacker;
-// 			break;
-// 		case "triggering-character":
-// 			if ("triggeringCharacter" in situation && situation.triggeringCharacter) {
-// 				return situation.triggeringCharacter;
-// 			}
-// 			PersonaError.softFail("Can't resolve triggering Character for status Duration anchor");
-// 			return null;
-// 		case "cameo":
-// 			if ("cameo" in situation && situation.cameo) {
-// 				const actor = PersonaDB.findActor(situation.cameo);
-// 				if (actor && actor.isValidCombatant()) {return actor.accessor;}
-// 				return null;
-// 			}
-// 			break;
-// 		case "all-allies":
-// 		case "all-foes":
-// 		case "all-in-region":
-//     case "pc-party":
-// 			PersonaError.softFail(`${anchor} not supported as a status anchor`);
-// 			return null;
-// 		case "navigator": {
-// 			const nav = PersonaDB.getNavigator();
-// 			return nav ? nav.accessor : null;
-// 		}
-// 		default:
-// 			anchor satisfies never;
-// 			return null;
-// 	}
-// 	if (accessor) {
-// 		const token = PersonaDB.findToken(accessor);
-// 		return token?.actor?.accessor;
-// 	}
-// 	PersonaError.softFail("Odd error in resolving Status Anchor");
-// 	return null;
-// }
 
 function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-flag", flagState: true} | {type: "combat-effect", combatEffect:"addStatus"}) , atkResultOrActor: AttackResult | ValidAttackers, situation : Situation) : StatusDuration {
   const dur = cons.statusDuration;

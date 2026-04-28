@@ -846,17 +846,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.elemResist(dtype) == "weakness";
   }
 
-  static combinedPersona<T extends ValidAttackers>(basePersona: Persona<T>, attachedPersona: Persona) : Persona<T> {
-    const fusedPowers = attachedPersona.powers.concat(
-      basePersona.powers);
-    fusedPowers.length = Math.min(6, fusedPowers.length);
-    const fusedPersona = new Persona(attachedPersona.source, attachedPersona.user, fusedPowers);
-    fusedPersona.user = basePersona.user;
-    fusedPersona.source = attachedPersona.source;
-    //I am not sure if this really persona<T> as there were errors but not sure if this ufnction is even used
-    return fusedPersona as Persona<T>;
-  }
-
   get isBasePersona(): boolean {
     //TS seemed to have an issue with this for some reason
     return this.source as unknown == this.user;
@@ -907,7 +896,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     type ResistableStatus = keyof typeof resists;
     const baseStatusResist = resists[status as ResistableStatus] ? resists[status as ResistableStatus] : "normal" ;
     const resval = (x: ResistStrength): number => RESIST_STRENGTH_LIST.indexOf(x);
-    let resist= baseStatusResist;
+    let resist = baseStatusResist;
     for (const cons of consequences) {
       if (cons.type == "raise-status-resistance") {
         const statusList = multiCheckToArray(cons.statusName);
@@ -924,9 +913,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return resist;
   }
 
-
   get maxSideboardPowers() : number {
-    if (!this.source.isValidCombatant()) {return 0;}
     switch (this.source.system.type) {
       case "npcAlly":
       case "shadow":
@@ -963,7 +950,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       user: this.user.accessor,
       target: this.user.accessor,
     };
-    const bonusBoosts =this.getPassiveBonusesIgnoreAuras("max-defense-boosts").total(situation);
+    const bonusBoosts = this.getPassiveBonusesIgnoreAuras("max-defense-boosts").total(situation);
     return baseBoosts + bonusBoosts;
   }
 
@@ -1011,30 +998,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.source.totalResists() > this.maxResists();
   }
 
-  // wpnAtkBonus() : Calculation {
-  //   const mods = this.getBonuses(["allAtk", "wpnAtk"]);
-  //   const wpnAtk = this.combatStats.baseWpnAttackBonus();
-  //   return wpnAtk.add(1, mods, "Mods");
-  // }
-
-  // magAtkBonus() : Calculation {
-  //   const mods = this.getBonuses(["allAtk", "magAtk"]);
-  //   const magAtk = this.combatStats.baseMagAttackBonus();
-  //   return magAtk.add(1, mods, "Mods");
-  // }
-
-  // instantDeathAtkBonus() : Calculation {
-  //   const mods = this.getBonuses(["instantDeathRange"]);
-  //   const deathAtk = this.combatStats.baseDeathAtkBonus();
-  //   return deathAtk.add(1, mods, "Mods");
-  // }
-
-  // ailmentAtkBonus() : Calculation {
-  //   const mods = this.getBonuses("afflictionRange");
-  //   const ailAtk = this.combatStats.baseAilmentAtkBonus();
-  //   return ailAtk.add(1, mods, "Mods");
-  // }
-
   itemAtkBonus(item : Consumable) : Calculation {
     const calc=new Calculation();
     const mods = this.getBonuses(["itemAtk", "allAtk"]);
@@ -1073,24 +1036,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   canUsePower (usable: UsableAndCard, outputReason: boolean) : boolean {
     const msg = this.canUsePower_getIneligibilityReason(usable);
-    // this._consumableCheck(usable)
-    // || this._explorationCheck(usable)
-    // || this._combatTypeCheck(usable)
-    // || this._downtimeUsageCheck(usable)
-    // || this._powerInhibitingStatusCheck(usable)
-    // || this._powerTooStrong(usable)
-    // || this._deadCheck(usable)
-    // || this._isTrulyUsable(usable)
-    // || this._canPayActivationCostCheck(usable)
-    // || this._checkConditionals(usable)
-    // || this._checkTeamworkMove(usable)
-    // || this._checkCooldown(usable)
-    // || this._pauseCheck()
-    // ;
     if (msg === null) {return true;}
-    if (outputReason) {
-      ui.notifications.warn(msg);
-    }
+    if (outputReason) { ui.notifications.warn(msg); }
     return false;
   }
 
@@ -1336,18 +1283,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.tags.hasTag(tag);
   }
 
-  // private getCacheValue<T extends keyof PersonaClassCache> (key: T, refreshFn: ( ()=> NonNullable<PersonaClassCache[T]>)): NonNullable<PersonaClassCache[T]> {
-  //   if (!PersonaSettings.agressiveCaching()) {
-  //     return refreshFn();
-  //   }
-  //   const data = this.#cache[key];
-  //   if (data != undefined) {
-  //     return data;
-  //   }
-  //   this.#cache[key] = refreshFn();
-  //   return this.#cache[key]!;
-  // }
-
   realTags() : Tag[] {
     return this.tags.realTags();
   }
@@ -1496,7 +1431,6 @@ interface PersonaClassCache {
   passiveModifiers: U<ConditionalEffectC[]>;
   nearbyAuras:  U<ConditionalEffectC[]>;
   mainModifiersList: U<readonly ModifierContainer[]>;
-  // tagListPartial: U<(PersonaTag | Tag["id"] | InternalCreatureTag)[]>;
 }
 
 export interface MainModifierOptions {
