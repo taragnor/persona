@@ -2041,3 +2041,24 @@ span.sl-level {
 	font-size: 1.0em;
 }
 
+
+.easy-poll label.results {
+  display: block;
+  height: 2em;
+}
+
+.easy-poll .message-content.answers .results {
+  list-style-position: inside;
+}
+
+.easy-poll .message-content.answers input {
+  /* Fix for Easy Polls */
+  width: 20px;
+  height:20px;
+  position: static;
+  list-style-position: inside;
+}
+
+.easy-poll button.toggle {
+  margin-top: 20px;
+}
