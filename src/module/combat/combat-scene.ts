@@ -12,16 +12,25 @@ import {PersonaCombat, StartCombatOptions} from "./persona-combat.js";
 
 export class CombatScene {
 	static instance : U<CombatScene>;
-	_previous : Scene["id"];
+	private _previous : Scene["id"];
 	encounter: Pick<Encounter, "enemies">;
 	promiseData: U<{resolve: (value: unknown) => unknown, reject: (reason ?: unknown) => unknown}>;
-	combatOver : boolean = false;
+	private combatOver : boolean = false;
+  private voteToReturn : boolean = false;
 	region: U<PersonaRegion>;
 
 	constructor (previous: Scene, encounter: Pick<Encounter, "enemies">) {
 		this._previous = previous.id;
 		this.encounter = encounter;
 	}
+
+  onReturnToExploringVote() : void {
+    this.voteToReturn = true;
+  }
+
+  onCombatDelete() : void {
+    this.combatOver = true;
+  }
 
 	get previous()  : PersonaScene {
 		return game.scenes.get(this._previous) as PersonaScene;
@@ -74,9 +83,11 @@ export class CombatScene {
 	}
 
 	async setupCombat() {
-		const scene= this.scene;
+		const scene = this.scene;
 		await scene.activate();
 		await scene.view();
+    this.combatOver = false;
+    this.voteToReturn = false;
 		await waitUntilTrue( () => game.scenes.current == scene && game.canvas.scene == scene && game.canvas.ready);
 		const tokens : Token<PersonaActor>[] = await this.setupShadows();
     const playerTokens = await this.setupPCs();
@@ -126,7 +137,6 @@ export class CombatScene {
     }
     const playerTokens = PCParty
     .map( actor => this.scene.tokens.find( tok => tok.actor == actor))
-    // .filter( (x: TokenDocument<PersonaActor>)=> x.actor != undefined && (x.actor.isRealPC() || x.actor.isNPCAlly()))
     .filter ( t=> t != undefined)
     .map( t=> t._object);
     return playerTokens;
@@ -160,14 +170,13 @@ export class CombatScene {
 
 	shouldEndEncounter() : boolean {
 		if (!this.combatOver) {return false;}
-		if (this.scene.tokens.contents.some( tok => {
-			if (!tok.actor) {return false;}
-			if ( tok.actor.isRealPC()) { return false;}
-			if ( tok.actor.isShadow()) { return false;}
-			if ( tok.actor.isNPC()) { return false;}
-			return true;
+    if (!this.voteToReturn) {return false;}
+		if (this.scene.tokens.contents.some( tok =>
+      tok.actor
+      && tok.actor.isPC()
+      && !tok.actor.isRealPC()
 			//check for itemPiles
-		})) {
+	)) {
 			return false;
 		}
 		return true;
@@ -193,7 +202,13 @@ export class CombatScene {
 		await this.instance.resolve(options);
 		ui.notifications.notify("Combat Encounter Resolved");
 		this.instance = undefined;
+    await this.returnToPreviousScene(previous);
 	}
+
+  static async returnToPreviousScene(scene: Scene) {
+		await scene.activate();
+		await scene.view();
+  }
 
 	async addTokensToCombat(tokens: Token<PersonaActor>[], allowDuplicates = false) {
 		const combat = await this.getOrCreateCombat();
@@ -274,7 +289,7 @@ type EncounterResult = boolean;
 
 Hooks.on("deleteCombat", (_combat) => {
 	if (CombatScene.instance) {
-		CombatScene.instance.combatOver = true;
+		CombatScene.instance.onCombatDelete();
 	}
 });
 

@@ -1114,6 +1114,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
           return "This can't be used during Combat";
         }
         break;
+      case "postcombat":
       case "exploration":
         if (!usable.canBeUsedInExploration()) {
           return "This can't be used during Exploration";

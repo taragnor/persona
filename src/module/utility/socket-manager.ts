@@ -82,7 +82,7 @@ export class SocketManager {
 	}
 
 	/** A simple send with no confirmation that it was recieved */
-	simpleSend<T extends keyof SocketMessage>(msgType: T, dataToSend: SocketMessage[T], recipientIds: string[]) : void {
+	simpleSend<T extends keyof SocketMessage>(msgType: T, dataToSend: SocketMessage[T], recipientIds: FoundryUser["id"][]) : void {
 		this.#checkSockets();
 		const sessionInfo = {};
 		const sPayload = {

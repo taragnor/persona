@@ -95,8 +95,8 @@ export class SharedDialog<const T extends SharedDataDefinition = SharedDataDefin
 	}
 
 	onRemoteDataUpdate(remoteData: SharedDataType<T>) {
-		console.log("Remote Data updated");
-		console.log(remoteData);
+		// console.log("Remote Data updated");
+		// console.log(remoteData);
 		if (remoteData == undefined) {return;}
 		this.setData(remoteData, false);
 		const html = this.generateHTML();

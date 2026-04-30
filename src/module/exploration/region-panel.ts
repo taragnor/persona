@@ -73,7 +73,7 @@ export class RegionPanel {
 			const actor = token.actor as PersonaActor;
 			if (!actor) {return;}
 			if (token.hidden) {return;}
-			if (actor.system.type != "pc" || !actor.hasPlayerOwner) {
+			if (!actor.isPC() || !actor.hasPlayerOwner) {
 				return;
 			}
 			if ((changes.x ?? changes.y) == undefined)

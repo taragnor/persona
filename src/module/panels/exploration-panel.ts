@@ -56,7 +56,7 @@ export class ExplorationPanel extends PersonaPanel {
   override buttonConfig() : SidePanel.ButtonConfig[] {
     const myPC = PersonaDB.activePCParty().find (
       member => member.isRealPC() && member.isTrueOwner);
-    const buttons =  [ {
+    const buttons : SidePanel.ButtonConfig[] =  [ {
       label: "Search Room",
       onPress : () => this.searchButton(),
       enabled : () => this.region != undefined && this.region.isSearchable && !PersonaCombat.combat,
@@ -68,6 +68,34 @@ export class ExplorationPanel extends PersonaPanel {
         cssClasses : ["tall-button"]
     },
     ];
+    buttons.push(...this.PowersAndItemsButtons());
+    // const ownedMembers = PersonaDB.activePCParty()
+    // .filter (actor => actor.isPCLike() && actor.isOwner);
+    // for (const member of ownedMembers) {
+    //   if (member.persona().explorationPowers.length == 0) {continue;}
+    //   buttons.push( {
+    //     label: `${ownedMembers.length > 1 ? member.name : ""} Item`,
+    //     onPress: () => void this._openInventoryPanel(member),
+    //     enabled: () => true,
+
+    //   });
+    //   buttons.push( {
+    //     label: `${ownedMembers.length > 1 ? member.name : ""} Powers`,
+    //     onPress: () => void this._openUsePowerPanel(member),
+    //     enabled: () => true,
+    //   });
+    // }
+    // const NPCAlly = PersonaDB.activePCParty().find( x=> x.isNPCAlly());
+    // buttons.push( {
+    //   label: `Swap ${NPCAlly?.displayedName ?? "Teammate"}`,
+    //   onPress: () => void Metaverse.chooseAlly(),
+    //   enabled: () => !PersonaCombat.combat,
+    // });
+    return buttons;
+  }
+
+  PowersAndItemsButtons(): SidePanel.ButtonConfig[] {
+    const buttons : SidePanel.ButtonConfig[] = [];
     const ownedMembers = PersonaDB.activePCParty()
     .filter (actor => actor.isPCLike() && actor.isOwner);
     for (const member of ownedMembers) {

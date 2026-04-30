@@ -28,6 +28,7 @@ import {PersonaCombat} from "./combat/persona-combat.js";
 import {PersonaQuests} from "./exploration/persona-quests.js";
 import {NavigatorVoiceLines} from "./navigator/nav-voice-lines.js";
 import {VotingDialog} from "./utility/shared-dialog.js";
+import {CombatScene} from "./combat/combat-scene.js";
 
 export class Metaverse {
 	static lastCrunch : number = 0;
@@ -123,14 +124,21 @@ export class Metaverse {
     }
   }
 
-  static getPhase() : "exploration" | "combat" | "downtime" {
+  static getPhase() : GamePhase {
     const combat = PersonaCombat.combat;
     switch (true) {
-      case !combat: return "exploration";
       case combat?.isSocial : return "downtime";
-      default: return "combat";
+      case combat != undefined:
+        return "combat";
+      default: {
+        if (game.scenes.active == CombatScene.scene) {
+          return "postcombat";
+        }
+        return "exploration";
+      }
     }
   }
+
   static async exitMetaverse() {
     (game.actors as Collection<PersonaActor>)
       .filter( (x: PersonaActor)=> x.isRealPC() || x.isNPCAlly())
@@ -637,4 +645,4 @@ const MEMENTOS_SCENE_MODS : GeneratorSceneModifier<UniversalModifier["name"]>[] 
   }
 ];
 
-
+type GamePhase = "exploration" | "combat" | "downtime" | "postcombat"
