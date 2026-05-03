@@ -49,7 +49,7 @@ export class Farming {
       return ["error with advanceCrops Function"];
     }
     if (farming.daysLeft > 0) {
-      return [`${farming.amount} ${item.name} will be ready to be harvested in ${farming.daysLeft}`];
+      return [`${farming.amount} ${item.name} will be ready to be harvested in ${farming.daysLeft} days.`];
     } else {
       return [`${farming.amount} ${item.name} are ready to be harvested`];
     }

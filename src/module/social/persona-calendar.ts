@@ -185,6 +185,7 @@ export class PersonaCalendar {
     <div class="weather">
     Weather: ${weather}
     </div>
+      <hr>
       ${extraMsgs.join("")}
     ${doomsdayMsg}
     </div>

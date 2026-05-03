@@ -97,7 +97,7 @@ Hooks.on("controlToken", async (token : Token<PersonaActor>) => {
   const actor = token?.document?.actor;
   if (!actor) {return;}
   if (actor.isOwner && actor.isPCLike()) {
-    await PostCombatPanel.instance.activate()
+    await PostCombatPanel.instance.activate();
   }
 });
 

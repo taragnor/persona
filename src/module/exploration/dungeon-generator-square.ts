@@ -490,17 +490,21 @@ class SquareGroup extends Array<DungeonSquare> {
 		}
 	}
 
-	public shadowPresence() : number {
-		switch (true) {
-			case this.isStartPoint():  return 0;
-			case this.isDeadEnd(): {return 1;}
-			case this.isStairsDown(): {return 3;}
-			case this.isCorridor(): {
-				const presence =  Math.max(1, Math.ceil(this.length / 2));
-				return presence;
-			}
-			default: return 2;
-		}
-	}
+  public shadowPresence() : number {
+    switch (true) {
+      case this.isStartPoint():  return 0;
+      case this.isDeadEnd(): {return 1;}
+      case this.isStairsDown(): {return 2;}
+      case this.isCorridor(): {
+        const presence =  Math.max(1, Math.round(this.length / 3));
+        return presence;
+      }
+      case this.isEmptyRoom(): {
+        if (this.maxTreasures() >= 3) {return 2;}
+        return 1;
+      }
+      default: return 2;
+    }
+  }
 
 }

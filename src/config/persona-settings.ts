@@ -334,3 +334,10 @@ function printGlobals() {
 
 //@ts-expect-error adding to global scope
 window.printGlobals = printGlobals;
+
+//@ts-expect-error adding to global scope
+window.setGlobal = async function setGlobal(varName: string, value: number) {
+  if (!game.user.isGM){return;}
+  await PersonaSettings.setGlobalVariable(varName, value);
+};
+
