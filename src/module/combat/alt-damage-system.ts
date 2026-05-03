@@ -19,7 +19,7 @@ export class AltDamageSystem extends DamageSystemBase {
   // private END_DIFF_PERCENTAGE_MULT = 0.8 as const;
   private BASE_VARIANCE = 2 as const;
   private ARMOR_TO_DAMAGE_DIVISOR = 1.0 as const;
-  private ALL_OUT_ATTACK_HELPER_DIVISOR = 0.5 as const;
+  private ALL_OUT_ATTACK_HELPER_DIVISOR = 0.333 as const;
   private BASIC_ATTACK_LEVEL_DIVISOR = 0.85 as const;
   private BASE_DAMAGE_LEVEL_DIVISOR = 0.666 as const;
   // private STAT_DIFF_DAMAGE_BOOST_PERCENT = 0.02;

@@ -2194,7 +2194,7 @@ get fatigueLevel() : number {
 
 /** Auto NPC recovery for fatigue to be run each calendar day*/
 async recoverFatigue(this: NPCAlly) : Promise<number>{
-  if (this.fatigueLevel == 0) {return -1;}
+  if (this.fatigueLevel == 0) {return 0;}
   let recoveryDays = Number(this.getFlag<number>("persona", "fatigueRecovery") ?? 0);
   if (Number.isNaN(recoveryDays)) {
     PersonaError.softFail(`NaN recovery days for ${this.name}`);
@@ -4127,114 +4127,13 @@ onRevive() : Promise<void> {
   return Promise.resolve();
 }
 
-// get tagListNames(): string[] {
-// 	return this.tagListRaw
-// 		.map( tag=> {
-// 			return PersonaDB.allTags().get(tag as Tag["id"])?.displayedName?.toString()
-// 				?? tag;
-// 		});
-// }
-
-// realTags() : Tag[] {
-// 	const ret =  this.tagListRaw.flatMap( tag => {
-// 		const x = PersonaItem.searchForPotentialTagMatch(tag);
-// 		if (x) {return [x];}
-// 		else {return [];}
-// 	});
-// 	return ret;
-// }
-
-// get tagListRaw() : (InternalCreatureTag | Tag["id"] | PersonaTag)[]
-// {
-//   const CACHE_EXPIRATION_THRESHOLD_TIME = 1000;
-//   const now = Date.now();
-//   if (!this.cache.tagListRaw || (now - this.cache.tagListRaw.time > CACHE_EXPIRATION_THRESHOLD_TIME)) {
-//     this.cache.tagListRaw = {
-//       data: this._tagListRawGen(),
-//       time: now,
-//     };
-//   }
-//   return this.cache.tagListRaw.data;
-// }
-
-//private _tagListRawGen() : (InternalCreatureTag | Tag["id"] | PersonaTag)[] {
-//  //NOTE: This is a candidate for caching
-//  if (this.isTarot()) { return []; }
-//  const list : (Tag["id"] | InternalCreatureTag | PersonaTag)[] = this.system.creatureTags.slice();
-//  if (this.isValidCombatant()) {
-//    const persona = this.persona();
-//    list.pushUnique(...persona.tagListPartial()
-//    );
-//    // const extraTags = persona.mainModifiers({omitPowers:true, omitTalents: true, omitTags: true, omitAuras: true})
-//    //   .flatMap( CE=> PersonaItem.getConferredTags(CE , this as ValidAttackers));
-//    // for (const tag of extraTags) {
-//    //   if (!list.includes(tag))
-//    //   {list.pushUnique(tag);}
-//    // }
-//  }
-//  switch (this.system.type) {
-//    case "pc":
-//      if (!list.includes("pc")) {
-//        list.pushUnique("pc");
-//      }
-//      return list;
-//    case "npcAlly":
-//      if (!list.includes("npc-ally")) {
-//        list.pushUnique("npc-ally");
-//      }
-//      return list;
-//    case "npc": return list;
-//    case "shadow": {
-//      list.pushUnique(this.system.creatureType as InternalCreatureTag);
-//      if (this.system.creatureType == "d-mon" && this.hasPlayerOwner) {
-//        list.pushUnique("pc-d-mon");
-//      }
-//      return list;
-//    }
-//    case "tarot":
-//      return [];
-//    default:
-//      this.system satisfies never;
-//      return [];
-//  }
-//}
-
 get tagList() : (Tag | InternalCreatureTag)[] {
   return this.tags.tagList();
 }
 
-// get tagList() : (Tag | InternalCreatureTag)[] {
-//   const CACHE_EXPIRATION_THRESHOLD_TIME = 1000;
-//   const now = Date.now();
-//   if (!this.cache.tagList || (now - this.cache.tagList.time > CACHE_EXPIRATION_THRESHOLD_TIME)) {
-//     this.cache.tagList = {
-//       data: this._tagListGen(),
-//       time: now,
-//     };
-//   }
-//   return this.cache.tagList.data;
-// }
-
-// _tagListGen() : (Tag | InternalCreatureTag)[] {
-//   const tagList = this.tagListRaw
-// 		.map(tag => PersonaItem.searchForPotentialTagMatch(tag) ?? (tag as InternalCreatureTag));
-//   return tagList;
-// }
-
 hasCreatureTag(tagOrTagName: CreatureTag | Tag["id"]) : boolean{
   return this.tags.hasTag(tagOrTagName, undefined);
 }
-
-// hasCreatureTag(tagOrTagName: CreatureTag | Tag["id"]) : boolean{
-// 	const tag = tagOrTagName instanceof PersonaItem ? tagOrTagName : PersonaDB.allTags().get(tagOrTagName as Tag["id"]);
-// 	const tagList : string[] = this.tagListRaw;
-// 	if (!tag) {
-// 		return tagList.includes(tagOrTagName as typeof tagList[number]);
-// 	}
-// 	return tagList.includes(tag.id)
-// 		|| tagList.includes(tag.system.linkedInternalTag)
-// 		|| tagList.includes(tag.name);
-// }
 
 async deleteCreatureTag(index: number) : Promise<void> {
   const tags = this.system.creatureTags;

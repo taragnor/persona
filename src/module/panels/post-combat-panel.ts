@@ -1,14 +1,14 @@
-import {PersonaActor} from "../actor/persona-actor";
-import {CombatScene} from "../combat/combat-scene";
-import {PersonaCombat} from "../combat/persona-combat";
-import {Metaverse} from "../metaverse";
-import {PersonaSockets} from "../persona";
-import {PersonaDB} from "../persona-db";
-import {PersonaError} from "../persona-error";
-import {VotingDialog} from "../utility/shared-dialog";
-import {ExplorationPowerPanel} from "./explorationPowerPanel";
-import {ItemUsePanel} from "./item-use-panel";
-import {PersonaPanel} from "./sub-panel";
+import {PersonaActor} from "../actor/persona-actor.js";
+import {CombatScene} from "../combat/combat-scene.js";
+import {PersonaCombat} from "../combat/persona-combat.js";
+import {Metaverse} from "../metaverse.js";
+import {PersonaSockets} from "../persona.js";
+import {PersonaDB} from "../persona-db.js";
+import {PersonaError} from "../persona-error.js";
+import {VotingDialog} from "../utility/shared-dialog.js";
+import {ExplorationPowerPanel} from "./explorationPowerPanel.js";
+import {ItemUsePanel} from "./item-use-panel.js";
+import {PersonaPanel} from "./sub-panel.js";
 
 export class PostCombatPanel extends PersonaPanel {
   static instance = new PostCombatPanel();
@@ -29,6 +29,9 @@ export class PostCombatPanel extends PersonaPanel {
       },
       ...this.PowersAndItemsButtons(),
     ];
+  }
+
+  static init() {
   }
 
   private PowersAndItemsButtons(): SidePanel.ButtonConfig[] {

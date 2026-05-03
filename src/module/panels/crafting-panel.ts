@@ -6,6 +6,7 @@ import {SubPanel} from "./sub-panel.js";
 import { SidePanel } from "../side-panel/side-panel.js";
 import {EnchantedTreasureFormat} from "../exploration/treasure-system.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
+import {PersonaCompendium} from "../persona-compendium.js";
 
 export class CraftingPanel extends SubPanel {
 
@@ -155,7 +156,12 @@ export class CraftingPanel extends SubPanel {
 
 
   static allowCrafting() {
-    return Metaverse.getPhase() == "downtime";
+    const phase = Metaverse.getPhase();
+    switch (phase) {
+      case "downtime":  return true;
+      case "exploration": return PersonaCompendium.canUseCompendium();
+    }
+    return false;
   }
 
   static async open(actor: PC, openingPanel : N<SidePanel>) {

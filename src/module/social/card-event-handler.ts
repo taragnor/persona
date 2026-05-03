@@ -14,6 +14,7 @@ import {PersonaRoller} from "../persona-roll.js";
 import {PersonaSounds} from "../persona-sounds.js";
 import {testPreconditions, unifiedTagList} from "../preconditions.js";
 import {shuffle, weightedChoice} from "../utility/array-tools.js";
+import {sleep} from "../utility/async-wait.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {PersonaSocial} from "./persona-social.js";
 import {CardData, SocialCardExecutor} from "./social-card-executor.js";
@@ -53,43 +54,47 @@ export class SocialCardEventHandler {
 
 	}
 
-	async #execEvent(event: CardEvent, cardData: CardData) {
-		const eventNumber = cardData.eventsChosen.length;
-		const eventIndex = cardData.eventList.indexOf(event);
-		if (event.eventTags.includes("one-shot")) {
-			await this.markEventUsed(event);
-		}
-		event.choices.forEach( ch => {
-			const roll : CardRoll = ch.roll;
-			const rollTags = this.getRollTags(cardData, ch);
-			const DC = this.getCardRollDC(cardData, ch.roll, rollTags);
-			//@ts-expect-error forcing this on there
-			roll.DCVal = DC;
-		});
-		const html = await foundry.applications.handlebars.renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event, eventNumber, cardData, situation : cardData.situation, eventIndex});
-
-		const speaker = ChatMessage.getSpeaker();
-		const msgData : MessageData = {
-			speaker,
-			content: html,
-			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-		};
-		const msg = await ChatMessage.create(msgData,{} );
-		if (event.sound && event.sound.length > 0) {
+  private async startCardSound(event :CardEvent, cardData: CardData) {
 			if (cardData.sound) {cardData.sound.stop();}
 			cardData.sound = await PersonaSounds.playFree(event.sound, event.volume ?? 0.5);
-		}
-		if (ConditionalEffectManager.ArrayCorrector(event.choices).length > 0) {
-			const cardChoice = await new Promise( (conf, _rej) => {
-				this.owner.setContinuation(conf);
-			});
-			if (cardChoice != undefined) {
-				const choice = cardChoice as CardData["eventList"][number]["choices"][number];
-				await this.handleCardChoice(this.cardData, choice);
-			}
-		}
-		return msg;
-	}
+  }
+
+  async #execEvent(event: CardEvent, cardData: CardData) {
+    const eventNumber = cardData.eventsChosen.length;
+    const eventIndex = cardData.eventList.indexOf(event);
+    if (event.eventTags.includes("one-shot")) {
+      await this.markEventUsed(event);
+    }
+    event.choices.forEach( ch => {
+      const roll : CardRoll = ch.roll;
+      const rollTags = this.getRollTags(cardData, ch);
+      const DC = this.getCardRollDC(cardData, ch.roll, rollTags);
+      //@ts-expect-error forcing this on there
+      roll.DCVal = DC;
+    });
+    if (event.sound && event.sound.length > 0) {
+      void this.startCardSound(event, cardData);
+    }
+    await sleep(2000);
+    const html = await foundry.applications.handlebars.renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event, eventNumber, cardData, situation : cardData.situation, eventIndex});
+    const speaker = ChatMessage.getSpeaker();
+    const msgData : MessageData = {
+      speaker,
+      content: html,
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+    };
+    const msg = await ChatMessage.create(msgData,{} );
+    if (ConditionalEffectManager.ArrayCorrector(event.choices).length > 0) {
+      const cardChoice = await new Promise( (conf, _rej) => {
+        this.owner.setContinuation(conf);
+      });
+      if (cardChoice != undefined) {
+        const choice = cardChoice as CardData["eventList"][number]["choices"][number];
+        await this.handleCardChoice(this.cardData, choice);
+      }
+    }
+    return msg;
+  }
 
 	async handleCardChoice(cardData: CardData, cardChoice: DeepNoArray<CardChoice>) {
 		const cardRoll = cardChoice.roll;
@@ -588,6 +593,16 @@ export class SocialCardEventHandler {
     rollTags.pushUnique(...cardData.card.cardTags);
     if (cardData.currentEvent) {
       rollTags.pushUnique(	...cardData.currentEvent.eventTags);
+    }
+    switch (cardChoice.roll.rollType) {
+      case "save" :
+        rollTags.pushUnique("save");
+        break;
+      case "studentSkillCheck": {
+        const skill = cardChoice.roll.studentSkill;
+        rollTags.push(skill as StudentSkill );
+        break;
+      }
     }
     const filtered= rollTags.filter ( x=> x != undefined);
     if (filtered.some( tag=> typeof tag != "string" && typeof tag.id == "undefined")) {

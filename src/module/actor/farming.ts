@@ -61,7 +61,6 @@ export class Farming {
       return false;
     }
     return true;
-
   }
 
   canPlantCrops() : boolean {

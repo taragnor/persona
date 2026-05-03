@@ -382,7 +382,7 @@ export class CombatEngine {
   {
     const attackBonus = this.getAttackBonus(attacker, power, target, options);
     const rollName = this.getRollNameGenFn(attacker, power, target);
-    const bundle = new RollBundle(rollName, rollData.roll, attacker.user.isPC(), attackBonus, situation, situation.DC ?? -2);
+    const bundle = new RollBundle(rollName, rollData.roll, attacker.user.isPCLike(), attackBonus, situation, situation.DC ?? -2);
     return bundle.resolve();
   }
 

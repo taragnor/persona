@@ -601,7 +601,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         switch (sub) {
           case "defensive":
           case "passive":
-          case "none":
             return false;
         }
         return true; 

@@ -353,33 +353,36 @@ export class SearchMenu {
 			});
 		}
 
-		private static generateOriginalSearchResults() : SearchResult[] {
-			return (game.scenes.current.tokens.contents as TokenDocument<PersonaActor>[])
-				.filter( x=> x.actor instanceof PersonaActor
-					&& (x.actor.isRealPC() || x.actor.isNPCAlly())
-				)
-				.flatMap( tok=> {
-					const actor = tok.actor! as PC;
-					const activePlayers = game.users.contents
-						.filter( user => user.active && !user.isGM);
-					const owner = activePlayers
-						.find( user => user.character == actor)
-						?? activePlayers.find( user=> actor.testUserPermission(user, "OWNER"))
-						?? game.users.find(x=> x.isGM && x.active);
-					if (!owner) {return [];}
-					const ret : SearchResult = {
-						searcher: {
-							actor: actor.accessor,
-							name: actor.displayedName,
-							ownerId: owner.id,
-							ownerName: owner.name,
-						},
-						declaration: "undecided",
-						results: [],
-					};
-					return [ret];
-				});
-		}
+  private static generateOriginalSearchResults() : SearchResult[] {
+    // return (game.scenes.current.tokens.contents as TokenDocument<PersonaActor>[])
+    // 	.filter( x=> x.actor instanceof PersonaActor
+    // 		&& (x.actor.isRealPC() || x.actor.isNPCAlly())
+    // 	)
+    return PersonaDB.activePCParty()
+      .flatMap( actor=> {
+        // .flatMap( tok=> {
+        // const actor = tok.actor! as PC;
+        // const actor = tok.actor! as PC;
+        const activePlayers = game.users.contents
+          .filter( user => user.active && !user.isGM);
+        const owner = activePlayers
+          .find( user => user.character == actor)
+          ?? activePlayers.find( user=> actor.testUserPermission(user, "OWNER"))
+          ?? game.users.find(x=> x.isGM && x.active);
+        if (!owner) {return [];}
+        const ret : SearchResult = {
+          searcher: {
+            actor: actor.accessor,
+            name: actor.displayedName,
+            ownerId: owner.id,
+            ownerName: owner.name,
+          },
+          declaration: "undecided",
+          results: [],
+        };
+        return [ret];
+      });
+  }
 
 		private static sendUpdate() {
 			if (this.data) {
