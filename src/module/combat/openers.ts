@@ -414,7 +414,7 @@ export class OpenerManager {
       case (saveTotal < 6) : {
         msg.push('Failure (Buff, Heal or attack)');
         options.push({
-          optionName: 'Charmed',
+          optionName: 'Charmed (buff, heal or basic attack)',
           toolTip: 'The enemy chooses your action , causing you to cast a single target healing or buffing effect on an enemy or making a basic attack against an ally',
           mandatory: true,
         combatant: combatant.id,

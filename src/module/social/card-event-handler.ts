@@ -98,12 +98,10 @@ export class SocialCardEventHandler {
 
 	async handleCardChoice(cardData: CardData, cardChoice: DeepNoArray<CardChoice>) {
 		const cardRoll = cardChoice.roll;
-		// const rollTagsBase = this.getCardRollTags(cardRoll);
     const rollTagsBase = cardData.extraCardTags.slice();
 		if (cardData.currentEvent) {
 			rollTagsBase.push(...cardData.currentEvent.eventTags);
 		}
-		// rollTagsBase.push(...cardData.extraCardTags);
 		if (!cardData.currentEvent) {
 			PersonaError.softFail(`No current event for Card ${cardData.card.name}`);
 		}

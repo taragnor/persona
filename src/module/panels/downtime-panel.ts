@@ -108,7 +108,7 @@ export class DowntimePanel extends PersonaPanel {
   }
 
   _outOfActions() : boolean {
-    if (!this.actor) {return true;}
+    if (!this.actor) {return false;}
     return !PersonaSocial.hasMainSocialAction(this.actor) && !PersonaSocial.hasMinorSocialAction(this.actor) && !game.user.isGM;
   }
 

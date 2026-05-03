@@ -391,9 +391,6 @@ export class ConsequenceApplier {
       case "raise-status-resistance":
       case "display-msg":
         break;
-      // case "apply-recovery" :
-      //   await actor.spendRecovery(null);
-      //   break;
       default:
         otherEffect satisfies never;
     }
@@ -546,9 +543,10 @@ export class ConsequenceApplier {
       case "addStatus":
       case "removeStatus":
       case "extraAttack":
-      case "apply-recovery":
-        //handled elsewhere by other code
+      case "apply-recovery" :
+        await actor.spendRecovery(null);
         break;
+        //handled elsewhere by other code
       case "set-cooldown": {
         const power = actor.powers.find( pwr=> pwr.id == effect.powerId);
         if (!power) {

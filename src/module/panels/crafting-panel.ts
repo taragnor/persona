@@ -159,7 +159,7 @@ export class CraftingPanel extends SubPanel {
     const phase = Metaverse.getPhase();
     switch (phase) {
       case "downtime":  return true;
-      case "exploration": return PersonaCompendium.canUseCompendium();
+        case "exploration": return PersonaCompendium.canUseCompendium();
     }
     return false;
   }

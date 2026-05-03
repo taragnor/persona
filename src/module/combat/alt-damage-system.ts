@@ -195,7 +195,7 @@ export class AltDamageSystem extends DamageSystemBase {
   }
 
   getShadowEffectiveEquipmentLevel(shadow: Shadow) {
-    const base =  Math.floor((shadow.level -10) / 10);
+    const base =  Math.floor((shadow.level -5) / 10);
     return Math.max(0, base);
   }
 

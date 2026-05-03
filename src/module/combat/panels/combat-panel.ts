@@ -8,6 +8,7 @@ import {PersonaPanel} from "../../panels/sub-panel.js";
 import {UsableListPanel} from "../../panels/usable-list-panel.js";
 import {PersonaDB} from "../../persona-db.js";
 import {PersonaError} from "../../persona-error.js";
+import {lockObject} from "../../utility/anti-loop.js";
 import {sleep} from "../../utility/async-wait.js";
 import {HTMLTools} from "../../utility/HTMLTools.js";
 import {OpenerOption} from "../openers.js";
@@ -56,6 +57,7 @@ export class CombatPanel extends PersonaPanel {
       }, {
         label: "End Turn",
         onPress: () => this._onSelectEndTurn(),
+        cssClasses : ["tall-button"],
         visible: () => this._target != undefined
         && this._target?.isOwner
         && PersonaCombat.combat != undefined
@@ -65,7 +67,6 @@ export class CombatPanel extends PersonaPanel {
         && turnCheck,
       },
     ];
-
   }
 
   get combat() : U<PersonaCombat> {
@@ -284,7 +285,10 @@ export class CombatPanel extends PersonaPanel {
 
   private async _onSelectEndTurn( _ev ?: JQuery.ClickEvent) {
     if (this._target != this.combat?.combatant?.token) {return;}
+    await lockObject(this, async () => {
     await this.combat?.nextTurn();
+    await sleep (5000);
+    }, {"timeoutMs": 5000});
   }
 
   private async _onSelectFollowUp(ev: JQuery.ClickEvent) {
