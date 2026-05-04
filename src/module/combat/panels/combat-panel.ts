@@ -286,8 +286,8 @@ export class CombatPanel extends PersonaPanel {
   private async _onSelectEndTurn( _ev ?: JQuery.ClickEvent) {
     if (this._target != this.combat?.combatant?.token) {return;}
     await lockObject(this, async () => {
-    await this.combat?.nextTurn();
-    await sleep (5000);
+      await this.combat?.nextTurn();
+      await sleep (5000);
     }, {"timeoutMs": 5000});
   }
 

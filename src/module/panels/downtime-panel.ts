@@ -132,7 +132,7 @@ export class DowntimePanel extends PersonaPanel {
   async _onSocialLinkButton() {
     if (!this.actor) {return null;}
     const list = PersonaDB.socialLinks()
-    .filter ( sl=> sl != this.actor);
+      .filter ( sl=> sl != this.actor);
     await this.push(new SocialActivityPanel(this.actor, list, () => false));
   }
 
@@ -142,8 +142,8 @@ export class DowntimePanel extends PersonaPanel {
       case "minor": {
         const activities = PersonaSocial.availableMinorActionActivities(this.actor)
         .filter( act => act.system.cardType == type);
-          return activities;
-        }
+        return activities;
+      }
       default: {
         const activities = PersonaSocial.availableStandardActionActivities(this.actor)
           .filter( act => act.system.cardType == type);
@@ -177,12 +177,12 @@ class SocialActivityPanel extends UsableUsePanel {
   constructor (actor: PC, activityList: (SocialLink | Activity)[], powerFilter : (usable: Usable) => boolean) {
     const baseListFn = () =>
       ([] as Usable[]).concat( this.actor.powers
-      .filter (pwr=> pwr.canBeUsedInDowntime())
+        .filter (pwr=> pwr.canBeUsedInDowntime())
       )
-      .concat (actor.items.contents
-        .filter(item => item.isCarryableType())
-        .filter( x=> x.isUsableType())
-      );
+        .concat (actor.items.contents
+          .filter(item => item.isCarryableType())
+          .filter( x=> x.isUsableType())
+        );
     super(actor, baseListFn, powerFilter);
     // this.actor = actor;
     this.socialList = activityList;
@@ -217,8 +217,8 @@ class SocialActivityPanel extends UsableUsePanel {
     const name = `<span class="activity-name" title="${tooltip}">${activity.name}</span>`;
     const img = activity.img ? `<img src="${activity.img}">` : "";
     const SL  = activity instanceof PersonaActor
-    ? this.actor.getSocialSLWith(activity)
-    : 0;
+      ? this.actor.getSocialSLWith(activity)
+      : 0;
     const star = PersonaSocial.isHighestLinkerWith(this.actor, activity) && SL < 10
       ? `<i title="Highest Link Level" class="fa-solid fa-star gold"></i>`
       : "";
@@ -232,7 +232,7 @@ class SocialActivityPanel extends UsableUsePanel {
     const isNewLink = activity instanceof PersonaActor && this.actor.getSocialSLWith(activity) == 0;
     const meetsLinkConditions : boolean = isNewLink ?
       PersonaSocial.meetsConditionsToStartLink(this.actor, activity)
-    : PersonaSocial.isAvailable(activity, this.actor);
+      : PersonaSocial.isAvailable(activity, this.actor);
 
     return {
       label: this.activityLabel(activity),

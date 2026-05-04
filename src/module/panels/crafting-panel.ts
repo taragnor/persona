@@ -116,7 +116,7 @@ export class CraftingPanel extends SubPanel {
           amount: comp.amount || 1,
         };
       })
-      .filter (x=> x != undefined);
+        .filter (x=> x != undefined);
       return {
         products,
         components
@@ -140,8 +140,8 @@ export class CraftingPanel extends SubPanel {
 
   unifiedCraftingInventory ()  : UniversalCraftingInventory {
     if (!this.cachedData._inventory) {
-    this.cachedData._inventory =  new UniversalCraftingInventory();
-      }
+      this.cachedData._inventory =  new UniversalCraftingInventory();
+    }
     return this.cachedData._inventory;
   }
 
@@ -159,7 +159,7 @@ export class CraftingPanel extends SubPanel {
     const phase = Metaverse.getPhase();
     switch (phase) {
       case "downtime":  return true;
-        case "exploration": return PersonaCompendium.canUseCompendium();
+      case "exploration": return PersonaCompendium.canUseCompendium();
     }
     return false;
   }

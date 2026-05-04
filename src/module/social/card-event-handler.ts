@@ -51,7 +51,6 @@ export class SocialCardEventHandler {
 			chatMessages.push(msg as ChatMessage);
 		}
 		return chatMessages;
-
 	}
 
   private async startCardSound(event :CardEvent, cardData: CardData) {
