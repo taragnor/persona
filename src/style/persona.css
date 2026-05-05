@@ -818,6 +818,15 @@ form h5 {
 	padding: 10px;
 	opacity: 0.8;
 }
+.side-panel-main .panel-data {
+  display: flex;
+  height: 100%;
+}
+
+.panel-data > * {
+  flex-grow: 1;
+  flex-shrink: 1;
+}
 
 .side-panel-main .side-panel-button:disabled {
 	background-color: #111; /* default is #333 dark grey*/
@@ -1418,6 +1427,41 @@ img.inline {
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
 }
 
+.chat-notifications-container {
+	margin-left: auto;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	justify-content: flex-end;
+	min-height: 15%;
+	flex: 1;
+	min-width: 75%;
+	max-width: 100%;
+	/* max-height: 50%; */
+}
+
+.side-panel-main {
+  flex-grow: 3;
+  max-height: 80vh;
+  overflow-y: auto;
+  scrollbar-width: thin;    /* auto | thin | none */
+  scrollbar-color: #888 #222; /* thumb track */
+  scrollbar-gutter: stable;
+}
+
+.side-panel-main::-webkit-scrollbar {
+  width: 8px;
+}
+
+.side-panel-main::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.side-panel-main::-webkit-scrollbar-track {
+  background: #222;
+}
+
 .side-panel-buttons > .inventory-item {
   height: 4em;
   font-size: 0.7em;
@@ -1426,6 +1470,7 @@ img.inline {
 .side-panel-buttons {
 overflow-y: auto;
 }
+
 
 img.item-icon {
 	height: 21px;
@@ -1491,23 +1536,11 @@ section.power-sideboard {
 	flex-direction: column;
 	flex-wrap: nowrap;
 	justify-content: flex-start;
-	max-height: 90%;
+	max-height: 95%;
 	max-width: 300px;
 	flex: 1;
 }
 
-.chat-notifications-container {
-	margin-left: auto;
-	display: flex;
-	flex-direction: column;
-	flex-wrap: nowrap;
-	justify-content: flex-end;
-	min-height: 33%;
-	flex: 1;
-	min-width: 75%;
-	max-width: 100%;
-	/* max-height: 50%; */
-}
 
 button.search-room.button {
 	cursor: pointer;

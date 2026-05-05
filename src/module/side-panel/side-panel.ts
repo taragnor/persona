@@ -106,7 +106,7 @@ export abstract class SidePanel {
     }
     this.iterations++;
     return `
-    <div class="${this.panelName}">
+    <div class="side-panel-body ${this.panelName}">
     ${html}
     </div>
     `;
@@ -141,7 +141,7 @@ export abstract class SidePanel {
     html.find(".side-panel-button").on("click", ev => this._onPressButton(ev));
   }
 
-  _activateListeners(html: JQuery<HTMLElement>) {
+   _activateListeners(html: JQuery<HTMLElement>) {
     this._activateButtonListeners(html);
     this.activateListeners(html);
   }
