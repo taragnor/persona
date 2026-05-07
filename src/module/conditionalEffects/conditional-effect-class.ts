@@ -119,8 +119,8 @@ export class ConditionalEffectC {
 
 	equals( other: ConditionalEffectC) : boolean {
 		return this._original == other._original &&
-      this._realSource == other._realSource
-    && this._source == other._source;
+      PersonaDB.accessorEq(this._realSource,other._realSource)
+    && PersonaDB.accessorEq(this._source, other._source);
     ;
 	}
 

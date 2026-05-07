@@ -64,7 +64,7 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
   }
 
     private _tagListRaw(user : N<ValidAttackers>, depth: number): readonly TagType[] {
-    const baseTags = this._tagListRawBase(user);
+    const baseTags = this.idCheck(this._tagListRawBase(user));
     const realTags = baseTags
       .map(tag=> TagManager.searchForPotentialTagMatch(tag))
       .filter( tag=> tag != undefined);
@@ -255,15 +255,14 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
       case 'accessory':
       case 'weapon_crystal':
       case 'key-item':
-        if (!list.includes(subtype))
-        {list.pushUnique(subtype);}
+        list.pushUnique(this.idCheck(subtype));
         break;
       case 'none':
-        list.pushUnique('non-equippable');
+        list.pushUnique(this.idCheck('non-equippable'));
         break;
       case 'crafting':
-        list.pushUnique('non-equippable');
-        list.pushUnique('crafting');
+        list.pushUnique(this.idCheck('non-equippable'));
+        list.pushUnique(this.idCheck('crafting'));
         break;
       default:
         subtype satisfies never;
@@ -274,9 +273,10 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
   private getTags_weapon(item : Weapon, user: N<ValidAttackers>) : readonly TagType[] {
     const list = (item.system.itemTags.slice() as TagType[])
       .pushUnique(...this.baseItemExtraTags(user ?? null));
-    if (!list.includes(item.getBaseDamageType()) && POWER_TAGS_LIST.includes(item.getBaseDamageType())) {
-      list.pushUnique( item.getBaseDamageType());
-    }
+    // const baseDamageType = item.getBaseDamageType();
+    // if (!list.includes(item.getBaseDamageType()) && POWER_TAGS_LIST.includes(item.getBaseDamageType())) {
+      list.pushUnique( this.idCheck(item.getBaseDamageType()));
+    // }
     list.pushUnique(item.system.type);
     return list;
   }
@@ -284,9 +284,9 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
   private getTags_talentOrFocus(item : Talent | Focus) : readonly TagType[] {
     const list : TagType[] = [];
     if (item.system.defensive) {
-      list.pushUnique('defensive');
+      list.pushUnique(this.idCheck('defensive'));
     } else {
-      list.pushUnique('passive');
+      list.pushUnique(this.idCheck('passive'));
     }
     return list;
   }

@@ -4127,7 +4127,7 @@ async onCalendarAdvance() : Promise<string[]> {
 }
 
 async onKO() : Promise<void> {
-  if (this.isPCLike() && this.theurgyVal > 0) {
+  if (this.isPCLike() && this.theurgyVal > 0 && !PersonaSettings.debugMode()) {
     await this.resetTheurgy();
   }
   await Promise.allSettled(

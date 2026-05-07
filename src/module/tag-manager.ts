@@ -62,6 +62,20 @@ export abstract class TagManager<TagTypeRaw extends string = string> {
     return tagGivingCons.map( x=> x.creatureTag);
   }
 
+  //** replaces formal Tag name with Id if Tag exists for ID name*/
+  static replaceWithId< T extends string>(this: void, tagname: T) : (T | Tag["id"])  {
+    const linked= PersonaDB.allTagLinks().get(tagname);
+    return linked? linked.id : tagname;
+  }
+
+  idCheck< const T extends string>(this: void, tagName: T) : (T | Tag["id"]);
+  idCheck< const T extends string>(this: void, tagName: readonly T[]) : (T | Tag["id"])[];
+  idCheck< const T extends string>(this: void, tagName: T | T[]) : (T | Tag["id"]) | (T | Tag["id"])[] {
+    if (Array.isArray(tagName)) {
+      return tagName.map (x=> TagManager.replaceWithId(x));
+    }
+    return TagManager.replaceWithId(tagName);
+  }
 }
 
 
