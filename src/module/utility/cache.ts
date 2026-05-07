@@ -3,10 +3,14 @@ export abstract class CacheBase<T> implements CacheI<T> {
   private _value : U<T> = undefined;
   private _testModeEqualityTest: U<((oldVal: T, newVal: T) => boolean)>;
 
+  private _errors : unknown[] = [];
+
   clear() : void {
     this._value = undefined;
     this.onClear();
   }
+
+  get errors() {return this._errors;}
 
   setTestMode(equalityTest : CacheBase<T>["_testModeEqualityTest"]) {
     this._testModeEqualityTest = equalityTest;
@@ -29,7 +33,9 @@ export abstract class CacheBase<T> implements CacheI<T> {
       const oldValue = this._value;
       const newValue = this.regenerateCache();
       if (!this._testModeEqualityTest(oldValue, newValue)) {
-        console.warn("Cache Equality Test: Cache Doesn't match");
+        const msg  ="Cache Equality Test: Cache Doesn't match";
+        this._errors.push(msg, oldValue, newValue);
+        console.warn(msg);
         console.log(oldValue);
         console.log(newValue);
       }

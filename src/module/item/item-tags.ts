@@ -34,7 +34,7 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
     };
 
     if (PersonaSettings.debugMode()) {
-      this._cache.autoTags_power.setTestMode( (a: TagType[], b: TagType[]) => a.length != b.length);
+      this._cache.autoTags_power.setTestMode( (a: TagType[], b: TagType[]) => a.length == b.length);
     }
   }
 
@@ -125,7 +125,12 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
     if (!this.item.isPower()) {
       throw new PersonaError("Non-Power trying to get autotags");
     }
-    return this._cache.autoTags_power.value;
+    const val = this._cache.autoTags_power.value;
+    if (this._cache.autoTags_power.errors.length > 0) {
+      console.log(`Cache Problem with ${this.item.name} cache, errors in autoTagsPower`);
+      Debug(this.item, ...this._cache.autoTags_power.errors);
+    }
+    return val;
     //if (this.cache.tags == undefined) {
     //  this.cache.tags = this.#autoTags_power(this.item);
     //  return this.cache.tags;
