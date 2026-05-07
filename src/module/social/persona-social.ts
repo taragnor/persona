@@ -338,17 +338,17 @@ export class PersonaSocial {
 		PersonaSockets.simpleSend("EXPEND_QUESTION", {npcId: npc.id, eventIndex: index}, gms.map( x=> x.id));
 	}
 
-	static async chooseActivity(actor: PC, activity: SocialLink | Activity, _options: ActivityOptions = {}) {
+  static async chooseActivity(actor: PC, activity: SocialLink | Activity, _options: ActivityOptions = {}) {
     if (!this.isAvailable(activity, actor)) {
-			ui.notifications.warn("This action isn't enabled in your current condition");
-			return;
+      ui.notifications.warn("This action isn't enabled in your current condition");
+      return;
     }
     if (!this.turnCheck(actor, true)) {
       return;
     }
     Helpers.pauseCheck();
-		await this.#socialEncounter(actor, activity);
-	}
+    await this.#socialEncounter(actor, activity);
+  }
 
 	static drawnCards() : string[] {
 		//NOTE: Only a debug function

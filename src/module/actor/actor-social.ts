@@ -47,7 +47,7 @@ export class ActorSocial <T extends PersonaActor> {
   get socialInit(): number {
     const actor = this.actor;
     if (!actor.isPC()) {return -999;}
-    const courage= actor.getSocialStat("courage").total({user:actor.accessor});
+    const courage = actor.getSocialStat("courage").total({user:actor.accessor});
     const diligence = actor.getSocialStat("diligence").total({user:actor.accessor});
     return courage + diligence;
   }
@@ -406,8 +406,12 @@ export class ActorSocial <T extends PersonaActor> {
 
   async alterDowntimeAction(this: ActorSocial<PC>, type: keyof DowntimeActionData, amt = -1 )  {
     const data = this.actor.getFlag<DowntimeActionData>("persona", "socialActions") ?? {minor: 0, standard:0};
+    const old = data[type];
     data[type]= Math.max( 0, data[type]+amt);
     await this.actor.setFlag("persona", "socialActions", data);
+    if (amt > 0) {
+      void Logger.sendToChat( ` ${this.actor.name} gained ${amt} extra ${type} Downtime action (previous: ${old})`);
+    }
   }
 
   getSocialLinkActor(socialLinkId: N<SocialLink["id"] | SocialLink>) : U<SocialLink> {

@@ -37,7 +37,6 @@ export class SocialCardExecutor {
       PersonaError.softFail("No handler found for SocialCardExecutor", this);
     }
     return this._handler;
-
   }
 
   _nullContinuation(this: void) {
