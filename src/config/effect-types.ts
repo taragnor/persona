@@ -161,6 +161,8 @@ export const SOCIAL_CARD_ACTION_LIST = [
 	"set-social-card-item",
 	"event-chain",
   "expend-downtime-actions",
+  "alter-minor",
+  "alter-major",
 ] as const;
 
 export type SocialCardAction = typeof SOCIAL_CARD_ACTION_LIST[number];

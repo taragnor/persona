@@ -316,7 +316,7 @@ export class FollowUpManager {
     void PersonaSocial.characterDialog(initiator.actor, txt) ;
     if (!PersonaSettings.debugMode() && initiator.actor.isPCLike() && teammate.actor.isPCLike()) {
       if (initiator.actor.isPC()) {
-        await initiator.actor.addInspiration(teammate.actor, -1);
+        await initiator.actor.social.addInspiration(teammate.actor, -1);
       }
     }
   }
@@ -332,7 +332,7 @@ export class FollowUpManager {
       PersonaError.softFail("No leader specified for teamwork request");
     }
     if (!PersonaSettings.debugMode() && leader && actor.isPC() && leader.isPCLike()) {
-        await actor.addInspiration(leader, -1);
+        await actor.social.addInspiration(leader, -1);
     }
     await actor.addStatus( status);
     const msg = `${actor.name} seizes the opportunity for a Teamwork move!`;

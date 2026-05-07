@@ -461,7 +461,7 @@ export class PersonaSocial {
 			return;
 		}
 		await target.setAvailability(false);
-		await initiator.createSocialLink(target);
+		await initiator.social.createSocialLink(target);
 	}
 
 	static requestAvailabilitySet(targetId: string, newValue: boolean) {
@@ -631,14 +631,14 @@ export class PersonaSocial {
     if (!PC || !PC.isPC()) {
       throw new PersonaError(`Cant' find PC : ${PCId}`);
     }
-    if (PC.getSocialLinkProgress(linkId) < tokenCost) {
+    if (PC.social.getSocialLinkProgress(linkId) < tokenCost) {
       ui.notifications.warn("Not enough tokesn to improve this link");
       return;
     }
     const target = PersonaDB.getActorById(linkId);
     const RPScene = target && target.isSocialLink() ? this.isHighestLinkerWith(PC, target) : false;
-    await PC.socialLinkProgress(linkId, -tokenCost);
-    await PC.increaseSocialLink(linkId);
+    await PC.social.socialLinkProgress(linkId, -tokenCost);
+    await PC.social.increaseSocialLink(linkId);
     if (RPScene && target?.isSocialLink()) {
       await this.printRPSceneMsg(PC, target);
     }

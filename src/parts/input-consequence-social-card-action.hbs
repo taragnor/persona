@@ -11,7 +11,7 @@
 </select>
 {{/if}}
 
-{{#if (eqAny cons.cardAction "gain-money" "modify-progress-tokens" "modify-progress-tokens-cameo" "alter-student-skill" "inc-events")}}
+{{#if (eqAny cons.cardAction "gain-money" "modify-progress-tokens" "modify-progress-tokens-cameo" "alter-student-skill" "inc-events" "alter-major" "alter-minor")}}
 {{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'amount.') cons=cons.amount POWERSTUFF=POWERSTUFF owner=owner}}
 {{/if}}
 

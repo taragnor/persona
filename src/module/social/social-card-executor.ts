@@ -128,13 +128,23 @@ export class SocialCardExecutor {
 		return cardData;
 	}
 
-	async exec() : Promise<ChatMessage[]> {
+  private async _preExec() {
 		const continuation = this._nullContinuation;
 		const cardData= await this.generateCardData();
 		this.rollState = {
 			cardData,
 			continuation,
 		};
+  }
+
+	async exec() : Promise<ChatMessage[]> {
+    await this._preExec();
+		// const continuation = this._nullContinuation;
+		// const cardData= await this.generateCardData();
+		// this.rollState = {
+		// 	cardData,
+		// 	continuation,
+		// };
 		return await this.#execCardSequence();
 	}
 
@@ -402,14 +412,13 @@ export class SocialCardExecutor {
 
 
 	private lookupLink(): ActivityLink | SocialLinkData {
-		const cardData =this.cardData;
+		const cardData = this.cardData;
 		switch (cardData.card.system.cardType) {
 			case "social":
 				return PersonaSocial.lookupSocialLink(cardData.actor, cardData.linkId);
 			default:
 				return PersonaSocial.lookupActivity(cardData.actor, cardData.linkId);
 		}
-
 	}
 
 	#getPerk(card: SocialCard,actor: PC, link: Activity | SocialLink, cameos: SocialLink[]) {

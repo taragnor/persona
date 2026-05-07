@@ -54,7 +54,7 @@ export class PCSheet extends PCLikeSheet {
 		const actor : PersonaActor = await Actor.implementation.fromDropData(actorD) as PersonaActor;
 		switch (actor.system.type) {
 			case "pc" :{
-				await this.actor.createSocialLink(actor as PC);
+				await this.actor.social.createSocialLink(actor as PC);
 				return undefined;
 			}
 			case "shadow":
@@ -65,7 +65,7 @@ export class PCSheet extends PCLikeSheet {
 			case "npcAlly":
 			case "npc":
 				//create a social link
-				await this.actor.createSocialLink(actor as NPC);
+				await this.actor.social.createSocialLink(actor as NPC);
 				return undefined;
 			default:
 				actor.system satisfies never;
@@ -151,7 +151,7 @@ export class PCSheet extends PCLikeSheet {
 
 		if (!amount) {return;}
 		await Logger.sendToChat(`Added ${Number(amount)} inpiration for ${npc.name} (was ${link.inspiration})`, this.actor);
-		await this.actor.addInspiration(npc.id, Number(amount));
+		await this.actor.social.addInspiration(npc.id, Number(amount));
 	}
 
 	async useInspiration(event: Event) {
@@ -177,7 +177,7 @@ export class PCSheet extends PCLikeSheet {
 			throw new PersonaError(`Can't find Actor for SL ${linkId}`);
 		}
 		if (await HTMLTools.confirmBox("Riase SL", `Raise SL for link ${link.actor.name}`)) {
-			await this.actor.increaseSocialLink(linkId);
+			await this.actor.social.increaseSocialLink(linkId);
 		}
 	}
 
@@ -188,7 +188,7 @@ export class PCSheet extends PCLikeSheet {
 			throw new PersonaError(`Can't find Actor for SL ${linkId}`);
 		}
 		if (await HTMLTools.confirmBox("Lower SL", `Lower SL for link ${link.actor.name}`)) {
-			await this.actor.decreaseSocialLink(linkId);
+			await this.actor.social.decreaseSocialLink(linkId);
 		}
 	}
 
@@ -202,12 +202,12 @@ export class PCSheet extends PCLikeSheet {
 		if (choice == null) {return;}
 		if ($(event.currentTarget).closest(".social-link").length > 0) {
 			const linkId= String(HTMLTools.getClosestData(event, "linkId"));
-			await this.actor.socialLinkProgress(linkId, Number(choice));
+			await this.actor.social.socialLinkProgress(linkId, Number(choice));
 			return;
 		}
 		if ($(event.currentTarget).closest(".job").length > 0) {
 			const activityId= String(HTMLTools.getClosestData(event, "activityId"));
-			await this.actor.activityProgress(activityId, Number(choice));
+			await this.actor.social.activityProgress(activityId, Number(choice));
 		}
 	}
 
@@ -223,22 +223,22 @@ export class PCSheet extends PCLikeSheet {
 		if (choice == null) {return;}
 		if ($(event.currentTarget).closest(".social-link").length > 0) {
 			const linkId= String(HTMLTools.getClosestData(event, "linkId"));
-			await this.actor.socialLinkProgress(linkId, -Number(choice));
+			await this.actor.social.socialLinkProgress(linkId, -Number(choice));
 		}
 		if ($(event.currentTarget).closest(".job").length > 0) {
 			const activityId= String(HTMLTools.getClosestData(event, "activityId"));
-			await this.actor.activityProgress(activityId, -Number(choice));
+			await this.actor.social.activityProgress(activityId, -Number(choice));
 		}
 	}
 
 	async #modStrike(event: JQuery.ClickEvent, amt: number) {
 		if ($(event.currentTarget).closest(".social-link").length > 0) {
 			const linkId= String(HTMLTools.getClosestData(event, "linkId"));
-			await this.actor.activityStrikes(linkId, amt);
+			await this.actor.social.activityStrikes(linkId, amt);
 		}
 		if ($(event.currentTarget).closest(".job").length > 0) {
 			const activityId= String(HTMLTools.getClosestData(event, "activityId"));
-			await this.actor.activityStrikes(activityId, amt);
+			await this.actor.social.activityStrikes(activityId, amt);
 		}
 
 	}

@@ -214,7 +214,7 @@ class SocialActivityPanel extends UsableUsePanel {
 
   private activityLabel(activity : SocialLink | Activity) : string {
     const isNewLink = activity instanceof PersonaActor && this.actor.getSocialSLWith(activity) == 0;
-    const progress = this.actor.getSocialLinkProgress(activity.id);
+    const progress = this.actor.social.getSocialLinkProgress(activity.id);
     const tooltip = `Progress Tokens: ${progress}`;
     const name = `<span class="activity-name" title="${tooltip}">${activity.name}</span>`;
     const img = activity.img ? `<img src="${activity.img}">` : "";

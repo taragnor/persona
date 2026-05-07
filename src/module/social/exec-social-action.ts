@@ -118,6 +118,16 @@ export class SocialActionExecutor {
         await actor.social.expendDowntimeAction("standard");
         break;
       }
+      case "alter-minor": {
+        const actor = this.cardData.actor;
+        await actor.social.alterDowntimeAction("minor", eff.amount);
+        break;
+      }
+      case "alter-major": {
+        const actor = this.cardData.actor;
+        await actor.social.alterDowntimeAction("standard", eff.amount);
+        break;
+      }
 			default:
 				eff satisfies never;
 				break;
@@ -203,7 +213,7 @@ export class SocialActionExecutor {
 		// const amount = this.resolveConsAmount(eff, situation);
 		const amount = eff.amount;
 		if (!amount) {return;}
-		await actor.socialLinkProgress(target.id, amount);
+		await actor.social.socialLinkProgress(target.id, amount);
 	}
 
 	static async modifyTargetProgress(amt: number) {
@@ -211,10 +221,10 @@ export class SocialActionExecutor {
 		const actor = cardData.actor;
 		if (cardData.situation.target) {
 			const linkId = cardData.linkId;
-			await actor.socialLinkProgress(linkId, amt);
+			await actor.social.socialLinkProgress(linkId, amt);
 		} else {
 			const id = cardData.card.id;
-			await actor.activityProgress(id, amt);
+			await actor.social.activityProgress(id, amt);
 		}
 	}
 
@@ -224,7 +234,7 @@ export class SocialActionExecutor {
 		const actor  = cardData.actor;
 		if (!cameos || cameos.length < 1) { return; }
 		for (const cameo of cameos) {
-			await actor.socialLinkProgress(cameo.id, amt ?? 0);
+			await actor.social.socialLinkProgress(cameo.id, amt ?? 0);
 		}
 	}
 

@@ -546,12 +546,12 @@ export class SocialCardEventHandler {
 		const actor = cardData.actor;
 		switch (cardData.card.system.cardType) {
 			case "social":
-				return await actor.alterSocialLinkProgress(cardData.linkId, amount);
+				return await actor.social.alterSocialLinkProgress(cardData.linkId, amount);
 			case "job":
 			case "training":
 			case "recovery":
 			case "other":
-				return await actor.activityProgress(cardData.card.id, amount);
+				return await actor.social.activityProgress(cardData.card.id, amount);
 			case "minor":
 				ui.notifications.warn("Can't assign cardProgress for Minor Action Cards");
 				return;

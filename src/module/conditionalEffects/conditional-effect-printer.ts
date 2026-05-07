@@ -650,7 +650,7 @@ export class ConditionalEffectPrinter {
 		if (typeof consAmt =="number") {return String(consAmt);}
 		switch (consAmt.type) {
 			case "constant":
-				return String(consAmt.val);
+				return String(this.signedAmount(consAmt.val));
 			case "random-range":
 				return `Random (${consAmt.min} - ${consAmt.max})`;
 			case "operation":
@@ -787,6 +787,10 @@ export class ConditionalEffectPrinter {
 				return `Alter Event chain ${cons.chainAction}`;
       case "expend-downtime-actions":
         return `Expend all downtime actions`;
+      case "alter-minor":
+        return `Minor Actions change: ${signedAmount}`;
+      case "alter-major":
+        return `Standard Downtime Actions change: ${signedAmount}`;
 			default:
 				cons satisfies never;
 				return "ERROR";

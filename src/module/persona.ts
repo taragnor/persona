@@ -12,6 +12,7 @@ declare global {
 
 }
 
+import { Tests } from "./tests/tests.js";
 import { Tooltip } from "./tooltip.js";
 import { TarotPrinter } from "./printers/tarot-list.js";
 import { PowerPrinter } from "./printers/power-list.js";
@@ -130,6 +131,7 @@ Hooks.once("init", function() {
 	RandomDungeonGenerator.init();
   CraftingPrinter.init();
   PostCombatPanel.init();
+  Tests.init();
 });
 
 function registerHandlebarsHelpers() {

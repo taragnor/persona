@@ -1315,16 +1315,25 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   async spendRecovery(this: ValidAttackers, socialLinkId: PersonaActor["id"] | null) {
     const healing = this.recoveryAmt;
     if (this.isPC() && socialLinkId != null)  {
-      const linkActor = game.actors.get(socialLinkId);
-      const link = this.system.social.find( x=> x.linkId == socialLinkId);
-      if (!link) {
-        throw new PersonaError(`Can't find link ${socialLinkId}`);
+      try {
+        await this.social.spendInspiration(socialLinkId);
+      } catch (e) {
+        PersonaError.softFail(e as Error);
+        return;
       }
-      if (link.inspiration <= 0) {
-        throw new PersonaError("Can't spend recovery!");
-      }
-      link.inspiration -= 1;
-      await this.update({"system.social": this.system.social});
+    }
+    // const linkActor = game.actors.get(socialLinkId);
+    // const link = this.system.social.find( x=> x.linkId == socialLinkId);
+    // if (!link) {
+    //   throw new PersonaError(`Can't find link ${socialLinkId}`);
+    // }
+    // if (link.inspiration <= 0) {
+    //   throw new PersonaError("Can't spend recovery!");
+    // }
+    // link.inspiration -= 1;
+    // await this.update({"system.social": this.system.social});
+    const linkActor = this.social.getSocialLinkActor(socialLinkId);
+    if (linkActor) {
       await Logger.sendToChat(`${this.name} used inspiration from link ${linkActor?.name} to heal ${healing} hit points (original HP: ${this.hp})` , this);
     } else {
       await Logger.sendToChat(`${this.name} used a recovery to heal ${healing} hit points (original HP: ${this.hp})` , this);
@@ -2141,7 +2150,7 @@ actorMainModifiers(options ?: MainModifierOptions): readonly ModifierContainer[]
   const tags = (options && options.omitTags) ? [] : this.tags.realTags();
   const ret : readonly ModifierContainer[] = [
     ...this.passiveItems(),
-    ...this.getAllSocialFocii(),
+    ...this.social.getAllSocialFocii(),
     ...this.equippedItems(),
     ...tags,
     ...this.statusModifiers(),
@@ -2600,237 +2609,240 @@ getSocialStat(this: PC, socialStat: SocialStat) : ModifierList {
   return mods.concat(this.persona().getBonuses(socialStat));
 }
 
-async createSocialLink(this: PC, npc: SocialLink) {
-  if (this.system.social.find( x=> x.linkId == npc.id)) {
-    return;
-  }
-  this.system.social.push(
-    {
-      linkId: npc.id,
-      linkLevel: 1,
-      inspiration: 1,
-      currentProgress: 0,
-      relationshipType: "PEER",
-      isDating: false,
-    }
-  );
-  void PersonaSounds.newSocialLink();
-  await this.update({"system.social": this.system.social});
-  await Logger.sendToChat(`${this.name} forged new social link with ${npc.displayedName} (${npc.tarot?.name}).` , this);
-}
+// async createSocialLink(this: PC, npc: SocialLink) {
+//   if (this.system.social.find( x=> x.linkId == npc.id)) {
+//     return;
+//   }
+//   this.system.social.push(
+//     {
+//       linkId: npc.id,
+//       linkLevel: 1,
+//       inspiration: 1,
+//       currentProgress: 0,
+//       relationshipType: "PEER",
+//       isDating: false,
+//     }
+//   );
+//   void PersonaSounds.newSocialLink();
+//   await this.update({"system.social": this.system.social});
+//   await Logger.sendToChat(`${this.name} forged new social link with ${npc.displayedName} (${npc.tarot?.name}).` , this);
+// }
 
-get baseRelationship(): string {
-  switch (this.system.type) {
-    case "pc":
-      return "PEER";
-    case "npc": case "npcAlly":
-      return "PEER";
-    case "shadow":
-    case "tarot":
-      break;
-    default:
-      this.system satisfies never;
-  }
-  return "NONE";
-}
+// get baseRelationship(): string {
+//   switch (this.system.type) {
+//     case "pc":
+//       return "PEER";
+//     case "npc": case "npcAlly":
+//       return "PEER";
+//     case "shadow":
+//     case "tarot":
+//       break;
+//     default:
+//       this.system satisfies never;
+//   }
+//   return "NONE";
+// }
 
-async increaseSocialLink(this: PC, linkId: string) {
-  const link = this.system.social.find( x=> x.linkId == linkId);
-  if (!link) {
-    throw new PersonaError("Trying to increase social link you don't have");
-  }
-  if (link.linkLevel >= 10) {
-    throw new PersonaError("Social Link is already maxed out");
-  }
-  link.linkLevel +=1 ;
-  link.inspiration = link.linkLevel;
-  if (link.linkLevel == 10) {
-    void PersonaSounds.socialLinkMax();
-  } else {
-    void PersonaSounds.socialLinkUp();
-  }
-  await this.update({"system.social": this.system.social});
-  const target = game.actors.get(link.linkId) as NPC | PC;
-  if (target) {
-    await Logger.sendToChat(`${this.name} increased Social Link with ${target.displayedName} (${target.tarot?.name}) to SL ${link.linkLevel}.` , this);
-  }
-}
+// async increaseSocialLink(this: PC, linkId: string) {
+//   const link = this.system.social.find( x=> x.linkId == linkId);
+//   if (!link) {
+//     throw new PersonaError("Trying to increase social link you don't have");
+//   }
+//   if (link.linkLevel >= 10) {
+//     throw new PersonaError("Social Link is already maxed out");
+//   }
+//   link.linkLevel +=1 ;
+//   link.inspiration = link.linkLevel;
+//   if (link.linkLevel == 10) {
+//     void PersonaSounds.socialLinkMax();
+//   } else {
+//     void PersonaSounds.socialLinkUp();
+//   }
+//   await this.update({"system.social": this.system.social});
+//   const target = game.actors.get(link.linkId) as NPC | PC;
+//   if (target) {
+//     await Logger.sendToChat(`${this.name} increased Social Link with ${target.displayedName} (${target.tarot?.name}) to SL ${link.linkLevel}.` , this);
+//   }
+// }
 
-async decreaseSocialLink(this: PC, linkId: string) {
-  const link = this.system.social.find( x=> x.linkId == linkId);
-  if (!link) {
-    throw new PersonaError("Trying to decrease social link you don't have");
-  }
-  if (link.linkLevel >= 10) {
-    throw new PersonaError("Social Link is already maxed out");
-  }
-  link.linkLevel -=1 ;
-  // link.currentProgress= 0;
-  link.inspiration = link.linkLevel;
-  void PersonaSounds.socialLinkReverse();
-  if (link.linkLevel == 0) {
-    const newSocial = this.system.social.filter( x=> x != link);
-    await this.update({"system.social": newSocial});
-    return;
-  }
-  await this.update({"system.social": this.system.social});
-}
+// async decreaseSocialLink(this: PC, linkId: string) {
+//   const link = this.system.social.find( x=> x.linkId == linkId);
+//   if (!link) {
+//     throw new PersonaError("Trying to decrease social link you don't have");
+//   }
+//   if (link.linkLevel >= 10) {
+//     throw new PersonaError("Social Link is already maxed out");
+//   }
+//   link.linkLevel -=1 ;
+//   // link.currentProgress= 0;
+//   link.inspiration = link.linkLevel;
+//   void PersonaSounds.socialLinkReverse();
+//   if (link.linkLevel == 0) {
+//     const newSocial = this.system.social.filter( x=> x != link);
+//     await this.update({"system.social": newSocial});
+//     return;
+//   }
+//   await this.update({"system.social": this.system.social});
+// }
 
-getSocialLinkProgress(this: PC, linkId: SocialLink["id"] | Activity["id"]) : number {
-  const link = this.system.social.find( x=> x.linkId == linkId);
-  if (!link) {
-    return 0;
-  }
-  return link.currentProgress;
-}
+// getSocialLinkProgress(this: PC, linkId: SocialLink["id"] | Activity["id"]) : number {
+//   const link = this.system.social.find( x=> x.linkId == linkId);
+//   if (!link) {
+//     return 0;
+//   }
+//   return link.currentProgress;
+// }
 
-async alterSocialLinkProgress(this: PC, linkId: string, progress: number) {
-  return await this.socialLinkProgress(linkId, progress);
-}
+// async alterSocialLinkProgress(this: PC, linkId: string, progress: number) {
+//   return await this.socialLinkProgress(linkId, progress);
+// }
 
-async socialLinkProgress(this: PC, linkId: string, progress: number) {
-  const link = this.system.social.find( x=> x.linkId == linkId);
-  if (!link) {
-    PersonaError.softFail("Trying to increase social link you don't have");
-    return;
-  }
-  const orig = link.currentProgress;
-  link.currentProgress = Math.max(0,progress + link.currentProgress);
-  if (progress > 0) {
-    link.inspiration = link.linkLevel;
-  }
-  const linkActor = game.actors.get(link.linkId);
-  switch (progress) {
-    case 1: void PersonaSounds.socialBoostJingle(1);
-      break;
-    case 2: void PersonaSounds.socialBoostJingle(2);
-      break;
-    case 3: void PersonaSounds.socialBoostJingle(3);
-      break;
-  }
-  await this.update({"system.social": this.system.social});
-  await Logger.sendToChat(`${this.name} added ${progress} progress tokens to link ${linkActor?.name} (original Value: ${orig})` , this);
-}
+// async socialLinkProgress(this: PC, linkId: string, progress: number) {
+//   const link = this.system.social.find( x=> x.linkId == linkId);
+//   if (!link) {
+//     PersonaError.softFail("Trying to increase social link you don't have");
+//     return;
+//   }
+//   const orig = link.currentProgress;
+//   link.currentProgress = Math.max(0,progress + link.currentProgress);
+//   if (progress > 0) {
+//     link.inspiration = link.linkLevel;
+//   }
+//   const linkActor = game.actors.get(link.linkId);
+//   switch (progress) {
+//     case 1: void PersonaSounds.socialBoostJingle(1);
+//       break;
+//     case 2: void PersonaSounds.socialBoostJingle(2);
+//       break;
+//     case 3: void PersonaSounds.socialBoostJingle(3);
+//       break;
+//   }
+//   await this.update({"system.social": this.system.social});
+//   await Logger.sendToChat(`${this.name} added ${progress} progress tokens to link ${linkActor?.name} (original Value: ${orig})` , this);
+// }
 
-async activityProgress(this: PC, activityId :string, progress: number) {
-  const activityData = this.system.activities.find( x=> x.linkId == activityId);
-  if (!activityData) {
-    PersonaError.softFail("Trying to increase activty you don't have");
-    return;
-  }
-  const orig = activityData.currentProgress;
-  activityData.currentProgress = Math.max(0,progress + activityData.currentProgress);
-  await this.update({"system.activities": this.system.activities});
-  const activity = PersonaDB.allActivities().find( act=> act.id == activityId);
-  await Logger.sendToChat(`${this.name} added ${progress} progress tokens to ${activity?.name ?? "unknown activity"} (original Value: ${orig})` , this);
+// async activityProgress(this: PC, activityId :string, progress: number) {
+//   const activityData = this.system.activities.find( x=> x.linkId == activityId);
+//   if (!activityData) {
+//     PersonaError.softFail("Trying to increase activty you don't have");
+//     return;
+//   }
+//   const orig = activityData.currentProgress;
+//   activityData.currentProgress = Math.max(0,progress + activityData.currentProgress);
+//   await this.update({"system.activities": this.system.activities});
+//   const activity = PersonaDB.allActivities().find( act=> act.id == activityId);
+//   await Logger.sendToChat(`${this.name} added ${progress} progress tokens to ${activity?.name ?? "unknown activity"} (original Value: ${orig})` , this);
 
-}
+// }
 
-async activityStrikes(this: PC, activityId: string, strikes: number) {
-  const activityData = this.system.activities.find( x=> x.linkId == activityId);
-  if (!activityData) {
-    throw new PersonaError("Trying to increase activty you don't have");
-  }
-  const orig = activityData.strikes;
-  activityData.strikes = Math.max(0,strikes + activityData.strikes);
-  await this.update({"system.activities": this.system.activities});
-  const activity = PersonaDB.allActivities().find( act=> act.id == activityId);
-  await Logger.sendToChat(`${this.name} added ${strikes} strikes to ${activity?.name ?? "unknown activity"} (original Value: ${orig})` , this);
-}
+// async activityStrikes(this: PC, activityId: string, strikes: number) {
+//   const activityData = this.system.activities.find( x=> x.linkId == activityId);
+//   if (!activityData) {
+//     throw new PersonaError("Trying to increase activty you don't have");
+//   }
+//   const orig = activityData.strikes;
+//   activityData.strikes = Math.max(0,strikes + activityData.strikes);
+//   await this.update({"system.activities": this.system.activities});
+//   const activity = PersonaDB.allActivities().find( act=> act.id == activityId);
+//   await Logger.sendToChat(`${this.name} added ${strikes} strikes to ${activity?.name ?? "unknown activity"} (original Value: ${orig})` , this);
+// }
 
-async refreshSocialLink(this: PC, npc: SocialLink) {
-  const link = this.system.social.find( x=> x.linkId == npc.id);
-  if (!link) {
-    throw new PersonaError(`Trying to refresh social link ${this.name} doesn't have: ${npc.name} `);
-  }
-  link.inspiration = link.linkLevel;
-  await this.update({"system.social": this.system.social});
-}
+// async refreshSocialLink(this: PC, npc: SocialLink) {
+//   const link = this.system.social.find( x=> x.linkId == npc.id);
+//   if (!link) {
+//     throw new PersonaError(`Trying to refresh social link ${this.name} doesn't have: ${npc.name} `);
+//   }
+//   link.inspiration = link.linkLevel;
+//   await this.update({"system.social": this.system.social});
+// }
 
 async spendInspiration(this: PC, linkId: SocialLink["id"], amt?: number) : Promise<void> ;
 async spendInspiration(this: PC, socialLink:SocialLink , amt?: number): Promise<void> ;
-
 async spendInspiration(this: PC, socialLinkOrId:SocialLink | SocialLink["id"], amt: number = 1): Promise<void> {
-  const id = typeof socialLinkOrId == "string" ? socialLinkOrId : socialLinkOrId.id;
-  const link = this.system.social.find( x=> x.linkId == id);
-  if (!link) {
-    throw new PersonaError("Trying to refresh social link you don't have");
-  }
-  if (link.inspiration <= 0) {
-    throw new PersonaError("You are trying to spend Inspiration you don't have");
-  }
-  link.inspiration -= amt;
-  link.inspiration = Math.max(0, link.inspiration);
-  link.inspiration = Math.min(link.linkLevel, link.inspiration);
-  await this.update({"system.social": this.system.social});
+  await this.social.spendInspiration(socialLinkOrId, amt);
 }
 
-getInspirationWith(linkId: SocialLink["id"]): number {
-  if (this.system.type != "pc") {return 0;}
-  const link = this.system.social.find( x=> x.linkId == linkId);
-  if (!link) {return 0;}
-  return link.inspiration;
-}
+// async spendInspiration(this: PC, socialLinkOrId:SocialLink | SocialLink["id"], amt: number = 1): Promise<void> {
+//   const id = typeof socialLinkOrId == "string" ? socialLinkOrId : socialLinkOrId.id;
+//   const link = this.system.social.find( x=> x.linkId == id);
+//   if (!link) {
+//     throw new PersonaError("Trying to refresh social link you don't have");
+//   }
+//   if (link.inspiration <= 0) {
+//     throw new PersonaError("You are trying to spend Inspiration you don't have");
+//   }
+//   link.inspiration -= amt;
+//   link.inspiration = Math.max(0, link.inspiration);
+//   link.inspiration = Math.min(link.linkLevel, link.inspiration);
+//   await this.update({"system.social": this.system.social});
+// }
 
-async addInspiration(this:PC, linkId:SocialLink["id"] | SocialLink, amt: number) {
-  if (linkId instanceof PersonaActor) {
-    linkId = linkId.id;
-  }
-  const link = this.system.social.find( x=> x.linkId == linkId);
-  if (!link) {
-    throw new PersonaError("Trying to refresh social link you don't have");
-  }
-  link.inspiration += amt;
-  link.inspiration = Math.min(link.linkLevel, link.inspiration);
-  await this.update({"system.social": this.system.social});
-}
+// getInspirationWith(linkId: SocialLink["id"]): number {
+//   if (this.system.type != "pc") {return 0;}
+//   const link = this.system.social.find( x=> x.linkId == linkId);
+//   if (!link) {return 0;}
+//   return link.inspiration;
+// }
 
-getSocialFocii_PC(this: NPC, linkHolder: SocialLink, targetPC: PC) : Focus[] {
-  const sortFn = function (a: Focus, b: Focus) {
-    return a.requiredLinkLevel() - b.requiredLinkLevel();
-  };
-  const focii = this.items.filter( x=> x.isFocus()) as Focus[];
-  const tarot = targetPC.tarot;
-  if (!tarot) {
-    console.debug(`No tarot found for ${this.name} or ${linkHolder.name}`);
-    return focii.sort( sortFn);
-  }
-  const tarotFocii = tarot.items.filter( x=> x.isFocus()) as Focus[];
-  return focii.concat(tarotFocii).sort(sortFn);
-}
+// async addInspiration(this:PC, linkId:SocialLink["id"] | SocialLink, amt: number) {
+//   if (linkId instanceof PersonaActor) {
+//     linkId = linkId.id;
+//   }
+//   const link = this.system.social.find( x=> x.linkId == linkId);
+//   if (!link) {
+//     throw new PersonaError("Trying to refresh social link you don't have");
+//   }
+//   link.inspiration += amt;
+//   link.inspiration = Math.min(link.linkLevel, link.inspiration);
+//   await this.update({"system.social": this.system.social});
+// }
 
-getSocialFocii_NPC(this: NPC, linkHolder: SocialLink) : Focus[] {
-  const sortFn = function (a: Focus, b: Focus) {
-    return a.requiredLinkLevel() - b.requiredLinkLevel();
-  };
-  const focii = this.items.filter( x=> x.isFocus()) as Focus[];
-  const tarot = this.tarot ?? linkHolder.tarot;
-  if (!tarot) {
-    console.debug(`No tarot found for ${this.name} or ${linkHolder.name}`);
-    return focii.sort( sortFn);
-  }
-  const tarotFocii = tarot.items.filter( x=> x.isFocus()) as Focus[];
-  return focii.concat(tarotFocii).sort(sortFn);
-}
+// getSocialFocii_PC(this: NPC, linkHolder: SocialLink, targetPC: PC) : Focus[] {
+//   const sortFn = function (a: Focus, b: Focus) {
+//     return a.requiredLinkLevel() - b.requiredLinkLevel();
+//   };
+//   const focii = this.items.filter( x=> x.isFocus()) as Focus[];
+//   const tarot = targetPC.tarot;
+//   if (!tarot) {
+//     console.debug(`No tarot found for ${this.name} or ${linkHolder.name}`);
+//     return focii.sort( sortFn);
+//   }
+//   const tarotFocii = tarot.items.filter( x=> x.isFocus()) as Focus[];
+//   return focii.concat(tarotFocii).sort(sortFn);
+// }
 
-getAllSocialFocii() : Focus[] {
-  switch (this.system.type) {
-    case "pc": {
-      const x = this.socialLinks
-      .flatMap( link => link.focii);
-      return x;
-    }
-    case "npcAlly":
-      return []; //coming soon
-    case "shadow":
-    case "npc":
-    case "tarot":
-      return [];
-    default:
-      this.system satisfies never;
-      return [];
-  }
-}
+// getSocialFocii_NPC(this: NPC, linkHolder: SocialLink) : Focus[] {
+//   const sortFn = function (a: Focus, b: Focus) {
+//     return a.requiredLinkLevel() - b.requiredLinkLevel();
+//   };
+//   const focii = this.items.filter( x=> x.isFocus()) as Focus[];
+//   const tarot = this.tarot ?? linkHolder.tarot;
+//   if (!tarot) {
+//     console.debug(`No tarot found for ${this.name} or ${linkHolder.name}`);
+//     return focii.sort( sortFn);
+//   }
+//   const tarotFocii = tarot.items.filter( x=> x.isFocus()) as Focus[];
+//   return focii.concat(tarotFocii).sort(sortFn);
+// }
+
+// getAllSocialFocii() : Focus[] {
+//   switch (this.system.type) {
+//     case "pc": {
+//       const x = this.socialLinks
+//       .flatMap( link => link.focii);
+//       return x;
+//     }
+//     case "npcAlly":
+//       return []; //coming soon
+//     case "shadow":
+//     case "npc":
+//     case "tarot":
+//       return [];
+//     default:
+//       this.system satisfies never;
+//       return [];
+//   }
+// }
 
 getEffects(this: ValidAttackers, CETypes ?: TypedConditionalEffect['conditionalType'][] ) : readonly ConditionalEffectC [] {
   const mods =  this.persona().allModifiers();
@@ -2964,7 +2976,7 @@ async onEnterMetaverse()  : Promise<void> {
     await this.resetTheurgy();
     await this.fullHeal();
     if (this.system.type == "pc") {
-      await (this as PC).refreshSocialLink(this as PC);
+      await (this as PC).social.refreshSocialLink(this as PC);
     }
     const situation = {
       trigger: "enter-metaverse",
@@ -3002,7 +3014,7 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
         fatigue -= 2;
       }
       await this.alterFatigueLevel(fatigue);
-      await this.refreshSocialLink(this);
+      await this.social.refreshSocialLink(this);
     }
     if (this.isNPCAlly()) {
       await this.setFlag("persona", "fatigueRecovery", 0);
@@ -4136,7 +4148,7 @@ async onKO() : Promise<void> {
 }
 
 onRevive() : Promise<void> {
-  console.log("Calling onRevive");
+  // console.debug("Calling onRevive");
   return Promise.resolve();
 }
 

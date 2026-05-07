@@ -627,6 +627,16 @@ type CardActionTypes = [
 		cardAction: "expend-downtime-actions",
 	},
 	EventChainModification,
+  {
+    cardAction: "alter-minor",
+    amount: ConsequenceAmount,
+  },
+  {
+    cardAction: "alter-major",
+    amount: ConsequenceAmount,
+  },
+
+
 ];
 
 type EventChainModification = {

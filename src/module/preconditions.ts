@@ -287,7 +287,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       if (!subject) {return false;}
       const link = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, condition.source);
       if (!link) {return false;}
-      target = subject.getInspirationWith(link.id);
+      target = subject.social.getInspirationWith(link.id);
       break;
     }
     case "opening-roll": {
@@ -358,7 +358,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       if (!subjectAcc) {return false;}
       const subject = PersonaDB.findActor(subjectAcc);
       if (!subject.isPC()) {return false;}
-      target = subject.getSocialLinkProgress(targetActor.id);
+      target = subject.social.getSocialLinkProgress(targetActor.id);
       break;
     }
 
