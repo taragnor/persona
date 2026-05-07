@@ -97,7 +97,8 @@ export class DowntimePanel extends PersonaPanel {
         enabled: () => this._outOfActions(),
         visible: () => (PersonaCombat.combat?.combatant?.actor == this.actor) && this.actor != undefined,
         cssClasses : ["tall-button"]
-      }
+      },
+      ...this.GMButtons(),
     ];
   }
   override async getData() {
@@ -105,6 +106,26 @@ export class DowntimePanel extends PersonaPanel {
       ...await super.getData(),
       actor: this.actor,
     };
+  }
+
+  private GMButtons() : SidePanel.ButtonConfig[] {
+    if (!game.user.isGM) {return [];}
+    return [
+      {
+        label: "+1 Minor Action",
+        onPress: () => this.actor!.social.alterDowntimeAction("minor", 1),
+        enabled: () => true,
+        visible: () => this.actor != undefined,
+        cssClasses : ["tall-button"]
+      }, {
+        label: "+1 Std Action",
+        onPress: () => this.actor!.social.alterDowntimeAction("standard", 1),
+        enabled: () => true,
+        visible: () => this.actor != undefined,
+        cssClasses : ["tall-button"]
+      }
+    ];
+
   }
 
   _outOfActions() : boolean {

@@ -1,4 +1,3 @@
-import {PersonaSettings} from "../../config/persona-settings.js";
 import {TarotCard} from "../../config/tarot.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
@@ -522,126 +521,126 @@ export class ActorSocial <T extends PersonaActor> {
     return "NONE";
   }
 
-async increaseSocialLink(this: ActorSocial<PC>, linkId: string) {
-  const link = this.actor.system.social.find( x=> x.linkId == linkId);
-  if (!link) {
-    throw new PersonaError("Trying to increase social link you don't have");
-  }
-  if (link.linkLevel >= 10) {
-    throw new PersonaError("Social Link is already maxed out");
-  }
-  link.linkLevel +=1 ;
-  link.inspiration = link.linkLevel;
-  if (link.linkLevel == 10) {
-    void PersonaSounds.socialLinkMax();
-  } else {
-    void PersonaSounds.socialLinkUp();
-  }
-  await this.update({"system.social": this.actor.system.social});
-  const target = game.actors.get(link.linkId) as NPC | PC;
-  if (target) {
-    await Logger.sendToChat(`${this.actor.name} increased Social Link with ${target.displayedName} (${target.tarot?.name}) to SL ${link.linkLevel}.` , this.actor);
-  }
-}
-
-async decreaseSocialLink(this: ActorSocial<PC>, linkId: string) {
-  const link = this.actor.system.social.find( x=> x.linkId == linkId);
-  if (!link) {
-    throw new PersonaError("Trying to decrease social link you don't have");
-  }
-  if (link.linkLevel >= 10) {
-    throw new PersonaError("Social Link is already maxed out");
-  }
-  link.linkLevel -=1 ;
-  link.inspiration = link.linkLevel;
-  void PersonaSounds.socialLinkReverse();
-  if (link.linkLevel == 0) {
-    const newSocial = this.actor.system.social.filter( x=> x != link);
-    await this.update({"system.social": newSocial});
-    return;
-  }
-  await this.update({"system.social": this.actor.system.social});
-}
-
-getSocialLinkProgress(this: ActorSocial<PC>, linkId: SocialLink["id"] | Activity["id"]) : number {
-  const link = this.actor.system.social.find( x=> x.linkId == linkId);
-  if (!link) {
-    return 0;
-  }
-  return link.currentProgress;
-}
-
-async alterSocialLinkProgress(this: ActorSocial<PC>, linkId: string, progress: number) {
-  return await this.socialLinkProgress(linkId, progress);
-}
-
-async socialLinkProgress(this: ActorSocial<PC>, linkId: string, progress: number) {
-  const link = this.actor.system.social.find( x=> x.linkId == linkId);
-  if (!link) {
-    PersonaError.softFail("Trying to increase social link you don't have");
-    return;
-  }
-  const orig = link.currentProgress;
-  link.currentProgress = Math.max(0,progress + link.currentProgress);
-  if (progress > 0) {
+  async increaseSocialLink(this: ActorSocial<PC>, linkId: string) {
+    const link = this.actor.system.social.find( x=> x.linkId == linkId);
+    if (!link) {
+      throw new PersonaError("Trying to increase social link you don't have");
+    }
+    if (link.linkLevel >= 10) {
+      throw new PersonaError("Social Link is already maxed out");
+    }
+    link.linkLevel +=1 ;
     link.inspiration = link.linkLevel;
+    if (link.linkLevel == 10) {
+      void PersonaSounds.socialLinkMax();
+    } else {
+      void PersonaSounds.socialLinkUp();
+    }
+    await this.update({"system.social": this.actor.system.social});
+    const target = game.actors.get(link.linkId) as NPC | PC;
+    if (target) {
+      await Logger.sendToChat(`${this.actor.name} increased Social Link with ${target.displayedName} (${target.tarot?.name}) to SL ${link.linkLevel}.` , this.actor);
+    }
   }
-  const linkActor = game.actors.get(link.linkId);
-  switch (progress) {
-    case 1: void PersonaSounds.socialBoostJingle(1);
-      break;
-    case 2: void PersonaSounds.socialBoostJingle(2);
-      break;
-    case 3: void PersonaSounds.socialBoostJingle(3);
-      break;
-  }
-  await this.update({"system.social": this.actor.system.social});
-  await Logger.sendToChat(`${this.actor.name} added ${progress} progress tokens to link ${linkActor?.name} (original Value: ${orig})` , this.actor);
-}
 
-async activityProgress(this: ActorSocial<PC>, activityId :string, progress: number) {
-  const activityData = this.actor.system.activities.find( x=> x.linkId == activityId);
-  if (!activityData) {
-    PersonaError.softFail("Trying to increase activty you don't have");
-    return;
+  async decreaseSocialLink(this: ActorSocial<PC>, linkId: string) {
+    const link = this.actor.system.social.find( x=> x.linkId == linkId);
+    if (!link) {
+      throw new PersonaError("Trying to decrease social link you don't have");
+    }
+    if (link.linkLevel >= 10) {
+      throw new PersonaError("Social Link is already maxed out");
+    }
+    link.linkLevel -=1 ;
+    link.inspiration = link.linkLevel;
+    void PersonaSounds.socialLinkReverse();
+    if (link.linkLevel == 0) {
+      const newSocial = this.actor.system.social.filter( x=> x != link);
+      await this.update({"system.social": newSocial});
+      return;
+    }
+    await this.update({"system.social": this.actor.system.social});
   }
-  const orig = activityData.currentProgress;
-  activityData.currentProgress = Math.max(0,progress + activityData.currentProgress);
-  await this.update({"system.activities": this.actor.system.activities});
-  const activity = PersonaDB.allActivities().find( act=> act.id == activityId);
-  await Logger.sendToChat(`${this.actor.name} added ${progress} progress tokens to ${activity?.name ?? "unknown activity"} (original Value: ${orig})` , this.actor);
-}
 
-async activityStrikes(this: ActorSocial<PC>, activityId: string, strikes: number) {
-  const activityData = this.actor.system.activities.find( x=> x.linkId == activityId);
-  if (!activityData) {
-    throw new PersonaError("Trying to increase activty you don't have");
+  getSocialLinkProgress(this: ActorSocial<PC>, linkId: SocialLink["id"] | Activity["id"]) : number {
+    const link = this.actor.system.social.find( x=> x.linkId == linkId);
+    if (!link) {
+      return 0;
+    }
+    return link.currentProgress;
   }
-  const orig = activityData.strikes;
-  activityData.strikes = Math.max(0,strikes + activityData.strikes);
-  await this.update({"system.activities": this.actor.system.activities});
-  const activity = PersonaDB.allActivities().find( act=> act.id == activityId);
-  await Logger.sendToChat(`${this.actor.name} added ${strikes} strikes to ${activity?.name ?? "unknown activity"} (original Value: ${orig})` , this.actor);
-}
 
-async refreshSocialLink(this: ActorSocial<PC>, npc: SocialLink) {
-  const link = this.actor.system.social.find( x=> x.linkId == npc.id);
-  if (!link) {
-    throw new PersonaError(`Trying to refresh social link ${this.actor.name} doesn't have: ${npc.name} `);
+  async alterSocialLinkProgress(this: ActorSocial<PC>, linkId: string, progress: number) {
+    return await this.socialLinkProgress(linkId, progress);
   }
-  link.inspiration = link.linkLevel;
-  await this.update({"system.social": this.actor.system.social});
-}
 
-get minorActions() : number {
-  if (!this.actor.isPC()) {return 0;}
+  async socialLinkProgress(this: ActorSocial<PC>, linkId: string, progress: number) {
+    const link = this.actor.system.social.find( x=> x.linkId == linkId);
+    if (!link) {
+      PersonaError.softFail("Trying to increase social link you don't have");
+      return;
+    }
+    const orig = link.currentProgress;
+    link.currentProgress = Math.max(0,progress + link.currentProgress);
+    if (progress > 0) {
+      link.inspiration = link.linkLevel;
+    }
+    const linkActor = game.actors.get(link.linkId);
+    switch (progress) {
+      case 1: void PersonaSounds.socialBoostJingle(1);
+        break;
+      case 2: void PersonaSounds.socialBoostJingle(2);
+        break;
+      case 3: void PersonaSounds.socialBoostJingle(3);
+        break;
+    }
+    await this.update({"system.social": this.actor.system.social});
+    await Logger.sendToChat(`${this.actor.name} added ${progress} progress tokens to link ${linkActor?.name} (original Value: ${orig})` , this.actor);
+  }
+
+  async activityProgress(this: ActorSocial<PC>, activityId :string, progress: number) {
+    const activityData = this.actor.system.activities.find( x=> x.linkId == activityId);
+    if (!activityData) {
+      PersonaError.softFail("Trying to increase activty you don't have");
+      return;
+    }
+    const orig = activityData.currentProgress;
+    activityData.currentProgress = Math.max(0,progress + activityData.currentProgress);
+    await this.update({"system.activities": this.actor.system.activities});
+    const activity = PersonaDB.allActivities().find( act=> act.id == activityId);
+    await Logger.sendToChat(`${this.actor.name} added ${progress} progress tokens to ${activity?.name ?? "unknown activity"} (original Value: ${orig})` , this.actor);
+  }
+
+  async activityStrikes(this: ActorSocial<PC>, activityId: string, strikes: number) {
+    const activityData = this.actor.system.activities.find( x=> x.linkId == activityId);
+    if (!activityData) {
+      throw new PersonaError("Trying to increase activty you don't have");
+    }
+    const orig = activityData.strikes;
+    activityData.strikes = Math.max(0,strikes + activityData.strikes);
+    await this.update({"system.activities": this.actor.system.activities});
+    const activity = PersonaDB.allActivities().find( act=> act.id == activityId);
+    await Logger.sendToChat(`${this.actor.name} added ${strikes} strikes to ${activity?.name ?? "unknown activity"} (original Value: ${orig})` , this.actor);
+  }
+
+  async refreshSocialLink(this: ActorSocial<PC>, npc: SocialLink) {
+    const link = this.actor.system.social.find( x=> x.linkId == npc.id);
+    if (!link) {
+      throw new PersonaError(`Trying to refresh social link ${this.actor.name} doesn't have: ${npc.name} `);
+    }
+    link.inspiration = link.linkLevel;
+    await this.update({"system.social": this.actor.system.social});
+  }
+
+  get minorActions() : number {
+    if (!this.actor.isPC()) {return 0;}
     return (this as ActorSocial<PC>).getDowntimeActionsRemaining("minor");
-}
+  }
 
-get majorActions() : number {
-  if (!this.actor.isPC()) {return 0;}
-  return (this as ActorSocial<PC>).getDowntimeActionsRemaining("standard");
-}
+  get majorActions() : number {
+    if (!this.actor.isPC()) {return 0;}
+    return (this as ActorSocial<PC>).getDowntimeActionsRemaining("standard");
+  }
 
 }
 
