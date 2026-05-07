@@ -2,12 +2,18 @@ export abstract class CacheBase<T> implements CacheI<T> {
   private genFn : () => T;
   private _value : U<T> = undefined;
   private _testModeEqualityTest: U<((oldVal: T, newVal: T) => boolean)>;
+  private _stats = {hits: 0, misses:0};
 
   private _errors : unknown[] = [];
 
   clear() : void {
     this._value = undefined;
     this.onClear();
+  }
+
+  get usage() : number {
+    const total = this._stats.hits + this._stats.misses;
+    return Math.round(this._stats.hits / total * 100) / 100;
   }
 
   get errors() {return this._errors;}
@@ -41,8 +47,10 @@ export abstract class CacheBase<T> implements CacheI<T> {
       }
     }
     if (!this._value || this.cacheInvalid(this._value)) {
+      this._stats.misses+=1;
       return this.regenerateCache();
     }
+    this._stats.hits+=1;
     return this._value;
   }
 

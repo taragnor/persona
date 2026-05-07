@@ -7,6 +7,7 @@ import { PersonaActor } from "./actor/persona-actor.js";
 import { BASIC_PC_POWER_NAMES } from "../config/basic-powers.js";
 import { BASIC_SHADOW_POWER_NAMES } from "../config/basic-powers.js";
 import {SocialEncounterCard} from "./social/social-card-executor.js";
+import {TimedCache} from "./utility/cache.js";
 
 declare global {
   interface HOOKS {
@@ -19,14 +20,17 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
   #cache: PersonaDBCache;
   failLog: Map<string, string>;
+  storesCache: TimedCache<TokenDocument<PersonaActor>[]>;
 
   constructor() {
     super();
-    this.#resetCache();
+    this.storesCache = new TimedCache(() => this._getAllStores(), 3000);
     this.failLog = new Map();
+    this.#resetCache();
   }
 
   #resetCache() : PersonaDBCache {
+    this.storesCache.clear();
     const newCache =  this.#cache = {
       powers: undefined,
       NPCs: undefined,
@@ -452,7 +456,12 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     return this.#cache.NPCAllies;
   }
 
+
   getAllStores(): TokenDocument<PersonaActor>[] {
+    return this.storesCache.value;
+  }
+
+  _getAllStores(): TokenDocument<PersonaActor>[] {
     if (!game.itempiles) {return [];}
     const IP = game.itempiles.API;
     return game.scenes.contents.flatMap( sc =>

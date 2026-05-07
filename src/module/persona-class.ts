@@ -28,6 +28,7 @@ import {PersonaAura} from "./persona-auras.js";
 import {PowerLearningSystem} from "./power-learning.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaTagManager} from "./persona-tags.js";
+import {TimedCache} from "./utility/cache.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidAttackers = ValidAttackers> implements PersonaI {
   #combatStats: U<PersonaCombatStats>;
@@ -36,6 +37,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   _powers: Power[];
   #cache: PersonaClassCache;
   private _tags: PersonaTagManager<this>;
+  private _talentCache: TimedCache<readonly Talent[]>;
 
   static leveling = {
     SHADOWS_TO_LEVEL: 10,
@@ -48,6 +50,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     this.source = source;
     this._powers = powers == undefined ? this.loadPowers(): powers;
     this._tags = new PersonaTagManager(this);
+    this._talentCache = new TimedCache(() => this._talents(), 3000);
     this.clearCache();
   }
 
@@ -62,6 +65,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   clearCache() {
     this.tags.clearCache();
+    this._talentCache.clear();
     this.#cache = {
       mainModifiers: undefined,
       passivePowers: undefined,
@@ -184,6 +188,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   get talents() : readonly Talent[] {
+    return this._talentCache.value;
+  }
+
+  private _talents() : readonly Talent[] {
     const extraTalents = this.mainModifiers({omitTalents: true, omitPowers: true, omitAuras: true})
       .filter( CE=> PersonaItem.grantsTalents(CE))
       .flatMap(CE => PersonaItem.getGrantedTalents(CE, this.user));

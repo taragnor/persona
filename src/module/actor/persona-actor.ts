@@ -58,6 +58,7 @@ import {PowerLearningSystem} from "../power-learning.js";
 import {Farming} from "./farming.js";
 import {ActorTagManager} from "./actor-tags.js";
 import {ActorSocial} from "./actor-social.js";
+import {TimedCache} from "../utility/cache.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -73,6 +74,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   static MPMap = new Map<number, number>;
   _farming : U<Farming>;
 
+  private _personaCache :  TimedCache<Persona>;
+  private _basePersonaCache:  TimedCache<Persona>;
+
   tags= new ActorTagManager(this);
 
   cache: {
@@ -86,10 +90,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   constructor(...arr: unknown[]) {
     super(...arr);
-    this.clearCache();
+    this._personaCache = new TimedCache( () => (this as ValidAttackers)._persona(), 3000);
+    this._basePersonaCache = new TimedCache( () => (this as ValidAttackers)._basePersona(), 3000);
     if (this.isPC()) {
       this._farming = new Farming(this);
     }
+    this.clearCache();
   }
 
   get farming() { return this._farming;}
@@ -97,6 +103,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   clearCache() {
     this.tags.clearCache();
     this.social.clearCache();
+    this._personaCache.clear();
+    this._basePersonaCache.clear();
     this.cache = {
       startingLevel: undefined,
       level: undefined,
@@ -562,6 +570,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   async switchPersona(this: ValidAttackers, sourceId: ValidAttackers["id"]) {
+    this._personaCache.clear();
     if (this.hasStatus("sealed")) {
       ui.notifications.warn("Can't swap persona while sealed");
       return;
@@ -603,6 +612,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   get basePersona() : Persona {
+    return this._basePersonaCache.value;
+  }
+
+  _basePersona() : Persona {
     if (this.isNPC()) {
       const proxy : U<NPCAlly> = this.getNPCAllyProxy();
       if (!proxy) {
@@ -616,8 +629,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return new Persona(this, this, this._mainPowers());
   }
 
-
   persona<T extends ValidAttackers | NPC>(this: T): Persona<T extends NPC ? NPCAlly : T> {
+    return this._personaCache.value as unknown as Persona<T extends NPC ? NPCAlly : T>;
+  }
+
+
+  private _persona<T extends ValidAttackers | NPC>(this: T): Persona<T extends NPC ? NPCAlly : T> {
     //TOOD: maybe try timed cache here
     type returnType = Persona<T extends NPC ? NPCAlly : T>;
     switch (this.system.type) {

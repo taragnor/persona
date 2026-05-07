@@ -43,8 +43,6 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
       .forEach( cache => cache.clear());
   }
 
-  // private get cache() { return this.item.cache; }
-
   tagList(user: UN<ValidAttackers> | Persona) : readonly FullTag<TagType>[] {
     if (user instanceof Persona) {
       //TODO: might want to change this to better get personas tags
