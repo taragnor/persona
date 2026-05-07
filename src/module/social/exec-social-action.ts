@@ -114,8 +114,8 @@ export class SocialActionExecutor {
 				break;
       case "expend-downtime-actions": {
         const actor = this.cardData.actor;
-        await PersonaSocial.expendDowntimeAction(actor, "minor");
-        await PersonaSocial.expendDowntimeAction(actor, "standard");
+        await actor.social.expendDowntimeAction("minor");
+        await actor.social.expendDowntimeAction("standard");
         break;
       }
 			default:

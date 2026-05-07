@@ -1486,7 +1486,7 @@ function resolveSocialAvailabilityCheck(condition: SourcedPrecondition & {type: 
     case "is-dating": {
       const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, condition.source);
       if (!target2) {return undefined;}
-      return target1.isDating(target2);
+      return target1.social.isDating(target2);
     }
     default:
       condition satisfies never;

@@ -27,7 +27,6 @@ import {ConditionalEffectPrinter} from "./conditionalEffects/conditional-effect-
 import {PersonaAura} from "./persona-auras.js";
 import {PowerLearningSystem} from "./power-learning.js";
 import {CombatEngine} from "./combat/combat-engine.js";
-import {PersonaSocial} from "./social/persona-social.js";
 import {PersonaTagManager} from "./persona-tags.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidAttackers = ValidAttackers> implements PersonaI {
@@ -1130,7 +1129,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     if (Metaverse.getPhase() != "downtime") {return null;}
     if (usable.hasTag("downtime-minor", this)) {
       if (!this.user.isPC()) {return "Only PCs can take downtime minor actions";}
-      if (!PersonaSocial.hasMinorSocialAction(this.user) && !PersonaSettings.debugMode()) {
+      if (!this.user.social.hasMinorSocialAction() && !PersonaSettings.debugMode()) {
         return "You don't have a social minor action";
       }
     }

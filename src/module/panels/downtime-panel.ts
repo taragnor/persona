@@ -46,37 +46,37 @@ export class DowntimePanel extends PersonaPanel {
       {
         label: "Social Links",
         onPress: () => this._onSocialLinkButton(),
-        enabled: () => PersonaSocial.hasMainSocialAction(actor),
+        enabled: () => actor.social.hasMainSocialAction(),
         visible: () => true,
         cssClasses : ["tall-button"]
       }, {
         label: "Jobs",
         onPress: () => this._onActivities("job"),
-        enabled: () => PersonaSocial.hasMainSocialAction(actor),
+        enabled: () => actor.social.hasMainSocialAction(),
         visible: () => true,
         cssClasses : ["tall-button"]
       }, {
         label: "Training",
         onPress: () => this._onActivities("training"),
-        enabled: () => PersonaSocial.hasMainSocialAction(actor),
+        enabled: () => actor.social.hasMainSocialAction(),
         visible: () => true,
         cssClasses : ["tall-button"]
       }, {
         label: "Recovery",
         onPress: () => this._onActivities("recovery"),
-        enabled: () => PersonaSocial.hasMainSocialAction(actor),
+        enabled: () => actor.social.hasMainSocialAction(),
         visible: () => true,
         cssClasses : ["tall-button"]
       }, {
         label: "Other",
         onPress: () => this._onActivities("other"),
-        enabled: () => PersonaSocial.hasMainSocialAction(actor),
+        enabled: () => actor.social.hasMainSocialAction(),
         visible: () => true,
         cssClasses : ["tall-button"]
       }, {
         label: "Minor Action",
         onPress: () => this._onActivities("minor"),
-        enabled: () => PersonaSocial.hasMinorSocialAction(actor),
+        enabled: () => actor.social.hasMinorSocialAction(),
         visible: () => true,
         cssClasses : ["tall-button"]
       }, {
@@ -109,7 +109,9 @@ export class DowntimePanel extends PersonaPanel {
 
   _outOfActions() : boolean {
     if (!this.actor) {return false;}
-    return !PersonaSocial.hasMainSocialAction(this.actor) && !PersonaSocial.hasMinorSocialAction(this.actor) && !game.user.isGM;
+    return !this.actor.social.hasMainSocialAction()
+      && !this.actor.social.hasMinorSocialAction()
+      && !game.user.isGM;
   }
 
   async _openInventoryPanel() {

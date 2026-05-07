@@ -288,7 +288,7 @@ export class PersonaHandleBarsHelpers {
 
     'isHighestLinker': (_pc: PC, linkData:SocialLinkData ) => {
       if (!linkData) {return false;}
-      const highest = linkData.actor.highestLinker();
+      const highest = linkData.actor.social.highestLinker();
       return highest.linkLevel == linkData.linkLevel;
     },
 

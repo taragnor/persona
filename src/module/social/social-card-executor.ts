@@ -11,8 +11,9 @@ import {PersonaError} from "../persona-error.js";
 import {testPreconditions} from "../preconditions.js";
 import {randomSelect} from "../utility/array-tools.js";
 import { SocialCardEventHandler} from "./card-event-handler.js";
-import {DowntimeActionData, PersonaSocial} from "./persona-social.js";
+import { PersonaSocial} from "./persona-social.js";
 import {ItemSelector} from "../../config/consequence-types.js";
+import {DowntimeActionData} from "../actor/actor-social.js";
 
 export class SocialCardExecutor {
 	_handler : U<SocialCardEventHandler>;
@@ -165,10 +166,10 @@ export class SocialCardExecutor {
   async expendSocialAction(cardData: CardData) {
     const type = this.getTypeOfActivity(cardData.activity);
     if (cardData.card.system.cardType == "recovery") {
-      await PersonaSocial.expendDowntimeAction(cardData.actor, "minor");
-      await PersonaSocial.expendDowntimeAction(cardData.actor, "standard");
+      await cardData.actor.social.expendDowntimeAction( "minor");
+      await cardData.actor.social.expendDowntimeAction( "standard");
     }
-    await PersonaSocial.expendDowntimeAction(cardData.actor, type);
+    await cardData.actor.social.expendDowntimeAction( type);
   }
 
   getTypeOfActivity(activity : CardData["activity"]) : keyof DowntimeActionData {
@@ -387,7 +388,7 @@ export class SocialCardExecutor {
 				return [];
 			case "cockblocker": {
 				const otherDates = allCameos
-				.filter( x =>  actor.isDating(x));
+				.filter( x =>  actor.social.isDating(x));
 				if (otherDates.length ==0) {return [];}
 				return [randomSelect(otherDates)];
 			}
@@ -433,7 +434,7 @@ export class SocialCardExecutor {
 					.join("<br>");
 			case "standard-or-date": {
 				let datePerk : string | undefined = undefined;
-				if (actor.isDating(link.id)) {
+				if (actor.social.isDating(link.id)) {
 					switch (link.system.type) {
 						case "pc":
 							datePerk = this.defaultDatePerk();

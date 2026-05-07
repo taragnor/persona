@@ -32,6 +32,7 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 
 	override async getData() {
 		await PersonaDB.waitUntilLoaded();
+    this.actor.clearCache();
 		const data= await super.getData();
 		data.RELATIONSHIP_TYPES_LIST = PersonaDB.allSocialCards()
 			.flatMap(card => card.system.qualifiers)

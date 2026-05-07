@@ -90,7 +90,7 @@ export class PersonaSocial {
     }
     if (!game.user.isGM) {return;}
     //only GM access beyond this point
-    await this.refreshSocialActions(pc);
+    await pc.social.refreshSocialActions();
     const startTurnMsg = [ `<u><h2> ${pc.name}'s Social Turn</h2></u><hr>`];
     startTurnMsg.push(...this.statusBasedStartTurnMsg(pc));
     for (const activity of PersonaDB.allActivities()) {
@@ -277,7 +277,7 @@ export class PersonaSocial {
 	}
 
 	static lookupActivity(actor: PC, activityId: string): ActivityLink {
-		const link = actor.activityLinks.find( x=> x.activity.id == activityId); 
+		const link = actor.social.activityLinks.find( x=> x.activity.id == activityId);
 		if (!link) {
 			const minorLink=  actor.downtimeMinorActions.find(x=> x.isSocialCard() && x.id == activityId) as SocialCard;
 			if (!minorLink) {
@@ -655,33 +655,33 @@ export class PersonaSocial {
     await ChatMessage.create(messageData, {});
   }
 
-  static async refreshSocialActions( actor: PC) {
-    const socialActions = {
-      minor: 1,
-      standard: 1,
-    };
-    await actor.setFlag("persona", "socialActions", socialActions);
-  }
+  // static async refreshSocialActions( actor: PC) {
+  //   const socialActions = {
+  //     minor: 1,
+  //     standard: 1,
+  //   };
+  //   await actor.setFlag("persona", "socialActions", socialActions);
+  // }
 
-  private static getDowntimeActionsRemaining(actor: PC, type: keyof DowntimeActionData) : number {
-    if (PersonaSettings.debugMode()) {return 1;}
-    const data = actor.getFlag<DowntimeActionData>("persona", "socialActions");
-    return data ? data[type] ?? 0 : 0;
-  }
+  // private static getDowntimeActionsRemaining(actor: PC, type: keyof DowntimeActionData) : number {
+  //   if (PersonaSettings.debugMode()) {return 1;}
+  //   const data = actor.getFlag<DowntimeActionData>("persona", "socialActions");
+  //   return data ? data[type] ?? 0 : 0;
+  // }
 
-  static async expendDowntimeAction(actor: PC, type: keyof DowntimeActionData)  {
-    const data = actor.getFlag<DowntimeActionData>("persona", "socialActions") ?? {minor: 0, standard:0};
-    data[type]= Math.max( 0, data[type]-1);
-    await actor.setFlag("persona", "socialActions", data);
-  }
+  // static async expendDowntimeAction(actor: PC, type: keyof DowntimeActionData)  {
+  //   const data = actor.getFlag<DowntimeActionData>("persona", "socialActions") ?? {minor: 0, standard:0};
+  //   data[type]= Math.max( 0, data[type]-1);
+  //   await actor.setFlag("persona", "socialActions", data);
+  // }
 
-  static hasMainSocialAction(actor: PC) : boolean {
-    return this.getDowntimeActionsRemaining(actor, "standard") > 0;
-  }
+  // static hasMainSocialAction(actor: PC) : boolean {
+  //   return this.getDowntimeActionsRemaining(actor, "standard") > 0;
+  // }
 
-  static hasMinorSocialAction(actor: PC) : boolean {
-    return this.getDowntimeActionsRemaining(actor, "minor") > 0;
-  }
+  // static hasMinorSocialAction(actor: PC) : boolean {
+  //   return this.getDowntimeActionsRemaining(actor, "minor") > 0;
+  // }
 
   static availableMinorActionActivities(pc: PC) : SocialCard[] {
     return PersonaDB.minorActionActivities()
@@ -699,29 +699,30 @@ export class PersonaSocial {
       return this._isAvailable_Activity(activity, pc);
     }
     if (activity instanceof PersonaActor) {
-      return this._isAvailable_SL(activity, pc);
+      return activity.social.isAvailable(pc);
+      // return this._isAvailable_SL(activity, pc);
     }
     activity satisfies never;
     PersonaError.softFail("Can't identify type of Activity", activity);
     return false;
   }
 
-private static _isAvailable_SL(sl : SocialLink, pc: PC): boolean {
-  const sit: Situation = {
-    user: pc.accessor,
-    target: sl.accessor,
-  };
-  if(!testPreconditions(sl.getAvailabilityConditions(), sit)) {
-    return false;
-  }
-  if (PersonaSocial.availabilityDisqualifierStatuses.some (st=> sl.hasStatus(st))) {return false;}
-  const availability = sl.system.weeklyAvailability;
-  if (!pc.canTakeNormalDowntimeActions()) {
-    // 		ui.notifications.warn("You're currently unable to take this action, you must recover first");
-    return false;
-  }
-  return availability?.available ?? false;
-}
+// private static _isAvailable_SL(sl : SocialLink, pc: PC): boolean {
+//   const sit: Situation = {
+//     user: pc.accessor,
+//     target: sl.accessor,
+//   };
+//   if(!testPreconditions(sl.getAvailabilityConditions(), sit)) {
+//     return false;
+//   }
+//   if (PersonaSocial.availabilityDisqualifierStatuses.some (st=> sl.hasStatus(st))) {return false;}
+//   const availability = sl.system.weeklyAvailability;
+//   if (!pc.canTakeNormalDowntimeActions()) {
+//     // 		ui.notifications.warn("You're currently unable to take this action, you must recover first");
+//     return false;
+//   }
+//   return availability?.available ?? false;
+// }
 
   private static _isAvailable_Activity(activity: Activity, pc: PC) : boolean {
     const sit: Situation = {
@@ -767,7 +768,7 @@ private static _isAvailable_SL(sl : SocialLink, pc: PC): boolean {
 
 static isHighestLinkerWith(pc: PC, sl: Activity | SocialLink) : boolean {
   if (sl instanceof PersonaItem) {return false;}
-  const highest = sl.highestLinker();
+  const highest = sl.social.highestLinker();
   return highest.linkLevel == pc.getSocialSLWith(sl);
 }
 
@@ -886,10 +887,5 @@ Hooks.on("renderChatMessageHTML", (message: ChatMessage, htm: HTMLElement ) => {
 	}
 });
 
-
-export interface DowntimeActionData {
-  minor: number;
-  standard: number;
-};
 
 
