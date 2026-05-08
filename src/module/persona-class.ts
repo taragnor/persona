@@ -50,7 +50,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     this.source = source;
     this._powers = powers == undefined ? this.loadPowers(): powers;
     this._tags = new PersonaTagManager(this);
-    this._talentCache = new TimedCache(() => this._talents(), 3000);
+    this._talentCache = new TimedCache(() => this._talents(), 5000);
     this.clearCache();
   }
 

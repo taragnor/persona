@@ -633,9 +633,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return this._personaCache.value as unknown as Persona<T extends NPC ? NPCAlly : T>;
   }
 
-
   private _persona<T extends ValidAttackers | NPC>(this: T): Persona<T extends NPC ? NPCAlly : T> {
-    //TOOD: maybe try timed cache here
     type returnType = Persona<T extends NPC ? NPCAlly : T>;
     switch (this.system.type) {
       case "npc": {
@@ -654,7 +652,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
           return this.basePersona as returnType;
         };
         return new Persona(activePersona, this as ValidAttackers) as returnType;
-        // return Persona.combinedPersona(this.basePersona, activePersona.basePersona) as Persona<T>;
       }
       case "shadow":
         if (this.system.activePersona) {

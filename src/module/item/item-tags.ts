@@ -12,8 +12,7 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
 
   private _cache : {
     autoTags_power: CacheBase<TagType[]>;
-    tagListRaw: CacheBase<readonly TagType[]>;
-
+    // tagListRaw: CacheBase<readonly TagType[]>;
   };
 
   protected CACHE_TIME = 15000 as const;
@@ -29,8 +28,7 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
       autoTags_power: this.item.isPower()
       ? new TimedCache( () => this.#autoTags_power(this.item as Power), this.CACHE_TIME)
       : new PermanentCache( () => []),
-
-      tagListRaw: new TimedCache( () => this._tagListRaw(null, 0), this.CACHE_TIME),
+      // tagListRaw: new TimedCache( () => this._tagListRaw(null, 0), this.CACHE_TIME),
     };
 
     if (PersonaSettings.debugMode()) {

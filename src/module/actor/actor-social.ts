@@ -12,10 +12,12 @@ export class ActorSocial <T extends PersonaActor> {
   private actor: T;
 
   cache : TimedCache<readonly SocialLinkData[]>;
+  _fociiCache:  TimedCache<readonly Focus[]>;
 
   constructor (parent: T) {
     this.actor = parent;
     this.cache = new TimedCache( () => this._refreshSocialLinkData(), 3000);
+    this._fociiCache = new TimedCache ( () => this._getAllSocialFocii(), 3000);
   }
 
   get parent() {
@@ -484,7 +486,11 @@ export class ActorSocial <T extends PersonaActor> {
     return focii.concat(tarotFocii).sort(sortFn);
   }
 
-  getAllSocialFocii() : Focus[] {
+  getAllSocialFocii() : readonly Focus[] {
+    return this._fociiCache.value;
+  }
+
+  private _getAllSocialFocii() : readonly Focus[] {
     if (!this.actor.isPC()) {return [];}
     const x = this.socialLinks()
       .flatMap( link => link.focii);
