@@ -51,10 +51,10 @@ export class PersonaTagManager<PType extends Persona> extends TagManager<TagType
       .filter (x=> x != undefined)
     //this maybe should be user instead of source
       .flatMap( tag=> tag.tags["tagListRaw"](this.source)) ;
-    if (extraTags.length == 0) {return base;}
+    if (extraTags.length == 0) {return this.idCheck(base);}
     const combinedTags = base.slice();
     combinedTags.pushUnique(...this.idCheck(extraTags) as TagType[]);
-    return combinedTags;
+    return this.idCheck(combinedTags);
   }
 
   userTypeTags() : TagType[]{

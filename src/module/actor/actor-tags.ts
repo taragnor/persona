@@ -24,15 +24,11 @@ export class ActorTagManager<AType extends PersonaActor> extends TagManager<TagT
     };
   }
 
-
   get system() {return this.actor.system;}
 
   clearCache() {
-    for (const cache of Object.values(this.cache)) {
-      cache.clear();
-    }
+    Object.values(this.cache).forEach( cache=> cache.clear());
   }
-
 
   tagList(_context?: null ) : (Tag | InternalCreatureTag)[] {
     return this.cache.tagList.value;
@@ -59,7 +55,7 @@ export class ActorTagManager<AType extends PersonaActor> extends TagManager<TagT
       const personaTags = p.tags.tagListPartial();
       list.pushUnique(...personaTags as TagType[]);
     }
-    return list;
+    return this.idCheck(list);
     // switch (this.system.type) {
     //   case "pc":
     //     if (!list.includes("pc")) {
