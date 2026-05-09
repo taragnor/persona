@@ -56,31 +56,6 @@ export class ActorTagManager<AType extends PersonaActor> extends TagManager<TagT
       list.pushUnique(...personaTags as TagType[]);
     }
     return this.idCheck(list);
-    // switch (this.system.type) {
-    //   case "pc":
-    //     if (!list.includes("pc")) {
-    //       list.pushUnique("pc");
-    //     }
-    //     return list;
-    //   case "npcAlly":
-    //     if (!list.includes("npc-ally")) {
-    //       list.pushUnique("npc-ally");
-    //     }
-    //     return list;
-    //   case "npc": return list;
-    //   case "shadow": {
-    //     list.pushUnique(this.system.creatureType as InternalCreatureTag);
-    //     if (this.system.creatureType == "d-mon" && this.actor.hasPlayerOwner) {
-    //       list.pushUnique("pc-d-mon");
-    //     }
-    //     return list;
-    //   }
-    //   case "tarot":
-    //     return [];
-    //   default:
-    //     this.system satisfies never;
-    //     return [];
-    // }
   }
 
   realTags() : Tag[] {

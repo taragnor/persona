@@ -54,7 +54,7 @@ export abstract class TagManager<TagTypeRaw extends string = string> {
     const situation = {
       user: actor.accessor,
     };
-    //need this double check to prevent infinite loops
+    //may need to double check to prevent infinite loops
     const hasTagGivingCons =  eff.consequences.filter( c=> c.type == 'add-creature-tag') as (Consequence & {type : 'add-creature-tag'})[] ;
     if (hasTagGivingCons.length == 0) {return [];}
     const activeCons = eff.getActiveConsequences(situation);

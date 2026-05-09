@@ -32,7 +32,6 @@ export class PersonaTagManager<PType extends Persona> extends TagManager<TagType
 
   _tagListPartial() : (PersonaTag | Tag["id"] | InternalCreatureTag)[] {
     type ret = (PersonaTag | Tag["id"] | InternalCreatureTag)[];
-    // const base = this.source.system.combat.personaTags.slice() as ret;
     const sources = [
       ...this.source.system.combat.personaTags.slice() as ret,
       ...this.source.system.creatureTags,
@@ -42,11 +41,6 @@ export class PersonaTagManager<PType extends Persona> extends TagManager<TagType
     ];
     const base = ([] as ret)
       .pushUnique(...this.idCheck(sources));
-
-    // base.pushUnique (...this.source.system.creatureTags);
-    // base.pushUnique(...this._autoTags());
-    // base.pushUnique(...this._getConferredTags());
-    // base.pushUnique(...this.userTypeTags());
     const extraTags = base.map(tag => TagManager.searchForPotentialTagMatch(tag))
       .filter (x=> x != undefined)
     //this maybe should be user instead of source
