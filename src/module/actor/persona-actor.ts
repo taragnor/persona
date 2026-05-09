@@ -413,10 +413,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return this.tags.hasTag(tag);
   }
 
-  // hasTag(this: ValidAttackers ,tag : CreatureTag  ): boolean {
-  // 	return this.tagListRaw.some( (t : string | Tag) => t instanceof PersonaItem ? t.system.linkedInternalTag == tag : tag == t);
-  // }
-
   get nonUsableInventory() : (SkillCard | InvItem | Weapon)[] {
     const inventory = this.items.filter( i=> i.system.type == "item" || i.system.type == "weapon" || i.system.type == "skillCard") as (InvItem | Weapon)[];
     return inventory.sort( (a,b) =>  {
@@ -475,11 +471,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     if (!basic) {throw new PersonaError("Cant' find basic attack");}
     return basic;
   }
-
-  // private async _setLevelTo(this: NPCAlly, lvl: number) {
-  // 	if (!this.isNPCAlly()) {return;}
-  // 	await this.update( {"system.combat.personaStats.pLevel" : lvl});
-  // }
 
   isPCLike(): this is NPCAlly | RealPC {
     return this.isRealPC() || this.isNPCAlly();
@@ -540,13 +531,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     }
     return this.social.socialInit;
   }
-
-  // get socialInit(): number {
-  //   if (!this.isPC()) {return -999;}
-  //   const courage= this.getSocialStat("courage").total({user:this.accessor});
-  //   const diligence = this.getSocialStat("diligence").total({user:this.accessor});
-  //   return courage + diligence;
-  // }
 
   /** gets the real NPC of an NPC Ally*/
   getNPCProxyActor(this: NPCAlly) : NPC | PC | undefined {
@@ -718,12 +702,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     }
     PersonaError.softFail(`Couldn't add Persona : ${shadow.name} to ${this.name}`);
     return false;
-    // const arr = this.system.personaList.slice();
-    // arr.push(shadow.id);
-    // await this.update( {"system.personaList": arr});
-    // if (this.isPC()) {
-    // 	await Logger.sendToChat(`${this.name} adds Persona ${shadow.displayedName}`);
-    // }
   }
 
   async addPersonaToMainList(this: PC | Shadow, shadow: Shadow, logging = this.isPC()) : Promise<boolean> {
@@ -763,27 +741,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     if (this.isPC() && await this.deletePersonaFromSideboard(personaId)) { return; }
     PersonaError.softFail(`Couldn't find persona ${personaId}`);
   }
-
-  // async deletePersona(this: PC | Shadow, personaId: ValidAttackers["id"]) {
-  // const persona =this.personaList.find( x=> x.source.id == personaId);
-  // if (!persona) {
-  // if (this.isPC()) {
-  //   if( await this.deletePersonaFromSideboard(personaId)) {return;}
-  // let sideboard = this.system.combat.persona_sideboard;
-  // if (sideboard.includes(personaId)) {
-  //   sideboard = sideboard.filter( x=> x != personaId);
-  //   await this.update( {"system.combat.persona_sideboard": sideboard});
-  //   return;
-  // }
-  // }
-  // PersonaError.softFail(`Couldn't find persona ${personaId}`); return;}
-  // const newList = this.system.personaList.filter( x=> x != personaId);
-  // await this.update( {"system.personaList": newList});
-  // await this.promoteSideboardPersonaToFillEmptySlots();
-  // if (this.isPC()) {
-  // await Logger.sendToChat(`${this.name} deletes Persona ${persona.displayedName}`);
-  // }
-  // }
 
   async _deletePersonaFromMainList(this: Shadow | PC, personaId: ValidAttackers["id"]) {
     const persona = this.personaList.find( x=> x.source.id == personaId);
@@ -1036,50 +993,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return this.social.getSocialSLWith(sl);
   }
 
-  // getSocialSLWithTarot(this: PC, tarot: TarotCard | Tarot) : number {
-  //   tarot = tarot instanceof PersonaActor ? tarot.name as TarotCard : tarot;
-  //   const link= this.socialLinks.find(
-  //     link => link.actor.tarot?.name == tarot);
-  //   if (!link) {return 0;}
-  //   return link.linkLevel;
-  // }
-
-  // getSocialSLWith(sl : Tarot | SocialLink | UniversalActorAccessor<SocialLink>) : number {
-  //   if (!this.isPC()) {return 0;}
-  //   if (sl instanceof PersonaActor && sl.isTarot()) {
-  //     return this.getSocialSLWithTarot(sl);
-  //   }
-  //   if ("actorId" in sl) {
-  //     sl = PersonaDB.findActor(sl);
-  //   }
-  //   const linkData= this.system.social.find( x=> x.linkId == sl.id);
-  //   if (!linkData) {return 0;}
-  //   return linkData.linkLevel;
-  // }
-
-  /** returns the total SLs that the PCs have with this character*/
-  // get totalSLs() : number {
-  //   switch (this.system.type) {
-  //     case "shadow":
-  //     case "tarot": return 0;
-  //     case "pc":
-  //     case "npc":
-  //     case "npcAlly": {
-  //       let targetActor : NPC | PC | NPCAlly = this as PC;
-  //       if (this.isNPCAlly()) {
-  //         const proxy = this.getNPCProxyActor();
-  //         if (!proxy) {return 0;}
-  //         targetActor = proxy;
-  //       }
-  //       return PersonaDB.realPCs()
-  //       .reduce( (acc, pc) => acc + pc.getSocialSLWith(targetActor), 0);
-  //     }
-  //     default:
-  //       this.system satisfies never;
-  //       return -1;
-  //   }
-  // }
-
   focii(this:PersonaActor): Focus[] {
     if (this.isPC()) {return [];}
     return this.items.filter( x=> x.isFocus()) as Focus[];
@@ -1092,218 +1005,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   get socialLinks() : readonly SocialLinkData[] {
     return this.social.socialLinks();
   }
-
-  // get socialBenefits() : SocialBenefit[] {
-  //   let focuses : Focus[] = [];
-  //   switch (this.system.type) {
-  //     case "pc": return [];
-  //     case "shadow": return [];
-  //     case "tarot":
-  //       focuses = (this as Tarot).focii();
-  //       break;
-  //     case "npc": case "npcAlly":
-  //       focuses = (this as NPC | NPCAlly).focii()
-  //         .concat(this.tarot?.focii() ?? []);
-  //       break;
-  //     default:
-  //         this.system satisfies never;
-  //       throw new PersonaError("Unknwon type");
-  //   }
-  //   focuses.sort((a, b) => a.requiredLinkLevel() - b.requiredLinkLevel() );
-  //   return focuses.map( focus =>({
-  //     id: this.id,
-  //     focus,
-  //     lvl_requirement: focus.requiredLinkLevel(),
-  //   }))
-  //   ;
-
-  // }
-
-  // getSocialStatToRaiseLink(this: ValidSocialTarget, classification: "primary" | "secondary") : SocialStat {
-  //   switch (classification) {
-  //     case "primary":
-  //       return this.system.keyskill.primary;
-  //     case "secondary":
-  //       return this.system.keyskill.secondary;
-  //     default:
-  //       classification satisfies never;
-  //       throw new PersonaError(`Unknown type ${classification as string}`);
-  //   }
-  // }
-
-  // highestLinker(this: SocialLink) : {pc: PC | null, linkLevel: number} {
-  //   const listOfLinkers = (game.actors.contents as PersonaActor[])
-  //     .filter( x=> x.isPC() && x != this)
-  //     .map( (pc : PC)=> ({
-  //       pc,
-  //       highest: pc.socialLinks
-  //       .find( link=> link.actor == this)
-  //       ?.linkLevel ?? 0
-  //     }))
-  //     .sort ( (a,b) => b.highest - a.highest);
-  //   const highest = listOfLinkers[0];
-  //   if (!highest || highest.highest == 0) {
-  //     return {pc: null, linkLevel: 0};
-  //   }
-  //   return {pc : highest.pc, linkLevel: highest.highest};
-  // }
-
-  // async addNewActivity(this: PC, activity: Activity) {
-  //   const act= this.system.activities;
-  //   if (act.find(x=> x.linkId == activity.id))
-  //   {return;}
-  //   const item : typeof act[number] = {
-  //     linkId: activity.id,
-  //     strikes: 0,
-  //     currentProgress: 0,
-  //   };
-  //   act.push( item);
-  //   await this.update( {"system.activities": act});
-  // }
-
-  // get activityLinks() : ActivityLink[] {
-  //   if (!this.isPC()) {return [];}
-  //   return this.system.activities
-  //     .flatMap( aData => {
-  //       const activity = PersonaDB.allActivities().find(x=> x.id == aData.linkId);
-  //       if (!activity) {return [];}
-  //       const aLink : ActivityLink = {
-  //         strikes: aData.strikes ?? 0,
-  //         available: PersonaSocial.isAvailable(activity, this),
-  //         currentProgress: aData.currentProgress,
-  //         activity,
-  //       };
-  //       return aLink;
-  //     });
-  // }
-
-  // isDating(linkId: string) : boolean;
-  // isDating( link: PersonaActor) : boolean;
-
-  // isDating( sl: PersonaActor | string) : boolean {
-  //   switch (this.system.type) {
-  //     case "shadow":
-  //     case "tarot":
-  //       return false;
-  //     case "npcAlly":
-  //     case "npc": {
-  //       const id = sl instanceof PersonaActor ? sl.id: sl;
-  //       const target =PersonaDB.allActors().find( x=> x.id == id);
-  //       if (!target || target.system.type != "pc")  {
-  //         return false;
-  //       }
-  //       return target.isDating(this as NPC);
-  //     }
-  //     case "pc":
-  //       break;
-  //     default:
-  //       this.system satisfies never;
-  //       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  //       PersonaError.softFail(`Unexpected Date type: ${this.system["type"] as unknown}`);
-  //       return false;
-  //   }
-  //   if (this.system.type != "pc") {return false;}
-  //   const id = sl instanceof PersonaActor ? sl.id: sl;
-  //   const link =  this.system.social.find(x=> x.linkId == id);
-  //   if (!link) {return false;}
-  //   return link.isDating || link.relationshipType == "DATE";
-  // }
-
-
-  // get socialLinks() : readonly SocialLinkData[] {
-  //   if (!this.isPC() || !PersonaDB.isLoaded) {return EMPTYARR as SocialLinkData[];}
-  //   function meetsSL(linkLevel: number, focus:Focus) {
-  //     return linkLevel >= focus.requiredLinkLevel();
-  //   };
-  //   const PersonaCaching = PersonaSettings.agressiveCaching();
-  //   if (!PersonaCaching || this.cache.socialData == undefined) {
-  //     this.cache.socialData = this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
-  //       const npc = PersonaDB.getActor(linkId);
-  //       if (!npc) {return [];}
-  //       const isDating = relationshipType == "DATE";
-  //       relationshipType = relationshipType ? relationshipType : npc.baseRelationship;
-  //       if (npc.isNPC()) {
-  //         const allFocii = (npc).getSocialFocii_NPC(npc);
-  //         const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
-  //         return [{
-  //           currentProgress,
-  //           linkLevel,
-  //           inspiration,
-  //           relationshipType,
-  //           actor:npc,
-  //           linkBenefits: npc,
-  //           allFocii,
-  //           available: PersonaSocial.isAvailable(npc, this),
-  //           focii: qualifiedFocii,
-  //           isDating,
-  //         }];
-  //       } else {
-  //         if (npc == this) {
-  //           const personalLink = PersonaDB.personalSocialLink();
-  //           if (!personalLink)  {
-  //             return [];
-  //           }
-  //           const allFocii = personalLink.getSocialFocii_PC(personalLink, npc as PC);
-  //           const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
-  //           return [{
-  //             currentProgress,
-  //             linkLevel,
-  //             inspiration,
-  //             relationshipType,
-  //             actor:npc as SocialLink,
-  //             linkBenefits: personalLink,
-  //             allFocii: allFocii,
-  //             focii: qualifiedFocii,
-  //             available: PersonaSocial.isAvailable(npc as PC, this),
-  //             isDating,
-  //           }];
-  //         } else {
-  //           const teammate = PersonaDB.teammateSocialLink();
-  //           if (!teammate)  {
-  //             return [];
-  //           }
-  //           const allFocii = teammate.getSocialFocii_PC(teammate, npc as PC);
-  //           const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
-  //           return [{
-  //             currentProgress,
-  //             linkLevel,
-  //             inspiration,
-  //             relationshipType,
-  //             actor:npc as SocialLink,
-  //             linkBenefits: teammate,
-  //             allFocii: allFocii,
-  //             focii: qualifiedFocii,
-  //             available: PersonaSocial.isAvailable(npc as PC, this),
-  //             isDating,
-  //           }];
-  //         }
-  //       }
-  //     })
-  //       .sort((a, b) => (a.actor.tarot?.system.sortOrder ?? 99) - (b.actor.tarot?.system.sortOrder ?? 99));
-  //   }
-  //   return this.cache.socialData;
-  // }
-
-  // get unrealizedSocialLinks() : (NPC | PC)[] {
-  //   switch (this.system.type) {
-  //     case "shadow":
-  //     case "npc":
-  //     case "tarot":
-  //     case "npcAlly":
-  //       return [];
-  //     case "pc":
-  //       break;
-  //     default:
-  //       this.system satisfies never;
-  //       throw new PersonaError("Something weird happened");
-  //   }
-  //   const currentLinks = this.system.social.map(x=> x.linkId);
-  //   const list = PersonaDB.socialLinks()
-  //     .filter( x=> !currentLinks.includes(x.id))
-  //     .filter( (x : PC | NPC)=> Object.values(x.system.weeklyAvailability).some(x=> x == true))
-  //     .filter( (x : PC | NPC)=> Boolean(x.system.tarot));
-  //   return list;
-  // }
 
   get recoveryAmt(): number {
     if (!this.isValidCombatant()) {return 0;}
@@ -1327,7 +1028,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   async spendRecovery(this: ValidAttackers, socialLinkId: null): Promise<void>;
   async spendRecovery(this: PC, socialLinkId: PersonaActor["id"]): Promise<void>;
   async spendRecovery(this: ValidAttackers, socialLinkId: PersonaActor["id"] | null) {
-    const healing = this.recoveryAmt;
     if (this.isPC() && socialLinkId != null)  {
       try {
         await this.social.spendInspiration(socialLinkId);
@@ -1336,17 +1036,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
         return;
       }
     }
-    // const linkActor = game.actors.get(socialLinkId);
-    // const link = this.system.social.find( x=> x.linkId == socialLinkId);
-    // if (!link) {
-    //   throw new PersonaError(`Can't find link ${socialLinkId}`);
-    // }
-    // if (link.inspiration <= 0) {
-    //   throw new PersonaError("Can't spend recovery!");
-    // }
-    // link.inspiration -= 1;
-    // await this.update({"system.social": this.system.social});
     const linkActor = this.social.getSocialLinkActor(socialLinkId);
+    const healing = this.recoveryAmt;
     if (linkActor) {
       await Logger.sendToChat(`${this.name} used inspiration from link ${linkActor?.name} to heal ${healing} hit points (original HP: ${this.hp})` , this);
     } else {
@@ -1826,43 +1517,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       return false;
     }
   }
-
-  ////actually add the status
-  //if (await this.checkStatusNullificaton(statusEffect)) {return false;}
-  //if (this.isValidCombatant()) {
-  //  const situation: Situation ={
-  //    triggeringCharacter: this.accessor,
-  //    triggeringUser: game.user,
-  //    user: this.accessor,
-  //    statusEffect: id,
-  //    target: this.accessor,
-  //  };
-  //  const ret = (await TriggeredEffect.onTrigger("pre-inflict-status", this, situation)).finalize();
-  //  await ret
-  //    .emptyCheck()
-  //    ?.toMessage("Response to acquiring Status", this);
-  //  if (ret.hasCancelRequest()) {return false;}
-  //  const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
-  //  if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
-  //    await this.setHP(0);
-  //  }
-  //}
-  //const newState = {
-  //  ...stateData,
-  //  name: game.i18n.localize(stateData.name as LocalizationString),
-  //  statuses: [id]
-  //};
-  //const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
-  ////potency can change in checkStatusNullification so its important to wait to unpack it until here
-  //await newEffect.setPotency(statusEffect.potency || 1);
-  //const adjustedDuration = this.getAdjustedDuration(duration, id);
-  //await newEffect.setDuration(adjustedDuration);
-  //return true;
-  //} catch (e) {
-  //PersonaError.softFail(`Error adding status :${id}`, e);
-  //return false;
-  //}
-  // }
 
   /** actually adds a new status, use addStauts to also check for duplicates and merge if needed */
   private async _addStatus(statusEffect: StatusEffect): Promise<boolean> {
@@ -2623,240 +2277,11 @@ getSocialStat(this: PC, socialStat: SocialStat) : ModifierList {
   return mods.concat(this.persona().getBonuses(socialStat));
 }
 
-// async createSocialLink(this: PC, npc: SocialLink) {
-//   if (this.system.social.find( x=> x.linkId == npc.id)) {
-//     return;
-//   }
-//   this.system.social.push(
-//     {
-//       linkId: npc.id,
-//       linkLevel: 1,
-//       inspiration: 1,
-//       currentProgress: 0,
-//       relationshipType: "PEER",
-//       isDating: false,
-//     }
-//   );
-//   void PersonaSounds.newSocialLink();
-//   await this.update({"system.social": this.system.social});
-//   await Logger.sendToChat(`${this.name} forged new social link with ${npc.displayedName} (${npc.tarot?.name}).` , this);
-// }
-
-// get baseRelationship(): string {
-//   switch (this.system.type) {
-//     case "pc":
-//       return "PEER";
-//     case "npc": case "npcAlly":
-//       return "PEER";
-//     case "shadow":
-//     case "tarot":
-//       break;
-//     default:
-//       this.system satisfies never;
-//   }
-//   return "NONE";
-// }
-
-// async increaseSocialLink(this: PC, linkId: string) {
-//   const link = this.system.social.find( x=> x.linkId == linkId);
-//   if (!link) {
-//     throw new PersonaError("Trying to increase social link you don't have");
-//   }
-//   if (link.linkLevel >= 10) {
-//     throw new PersonaError("Social Link is already maxed out");
-//   }
-//   link.linkLevel +=1 ;
-//   link.inspiration = link.linkLevel;
-//   if (link.linkLevel == 10) {
-//     void PersonaSounds.socialLinkMax();
-//   } else {
-//     void PersonaSounds.socialLinkUp();
-//   }
-//   await this.update({"system.social": this.system.social});
-//   const target = game.actors.get(link.linkId) as NPC | PC;
-//   if (target) {
-//     await Logger.sendToChat(`${this.name} increased Social Link with ${target.displayedName} (${target.tarot?.name}) to SL ${link.linkLevel}.` , this);
-//   }
-// }
-
-// async decreaseSocialLink(this: PC, linkId: string) {
-//   const link = this.system.social.find( x=> x.linkId == linkId);
-//   if (!link) {
-//     throw new PersonaError("Trying to decrease social link you don't have");
-//   }
-//   if (link.linkLevel >= 10) {
-//     throw new PersonaError("Social Link is already maxed out");
-//   }
-//   link.linkLevel -=1 ;
-//   // link.currentProgress= 0;
-//   link.inspiration = link.linkLevel;
-//   void PersonaSounds.socialLinkReverse();
-//   if (link.linkLevel == 0) {
-//     const newSocial = this.system.social.filter( x=> x != link);
-//     await this.update({"system.social": newSocial});
-//     return;
-//   }
-//   await this.update({"system.social": this.system.social});
-// }
-
-// getSocialLinkProgress(this: PC, linkId: SocialLink["id"] | Activity["id"]) : number {
-//   const link = this.system.social.find( x=> x.linkId == linkId);
-//   if (!link) {
-//     return 0;
-//   }
-//   return link.currentProgress;
-// }
-
-// async alterSocialLinkProgress(this: PC, linkId: string, progress: number) {
-//   return await this.socialLinkProgress(linkId, progress);
-// }
-
-// async socialLinkProgress(this: PC, linkId: string, progress: number) {
-//   const link = this.system.social.find( x=> x.linkId == linkId);
-//   if (!link) {
-//     PersonaError.softFail("Trying to increase social link you don't have");
-//     return;
-//   }
-//   const orig = link.currentProgress;
-//   link.currentProgress = Math.max(0,progress + link.currentProgress);
-//   if (progress > 0) {
-//     link.inspiration = link.linkLevel;
-//   }
-//   const linkActor = game.actors.get(link.linkId);
-//   switch (progress) {
-//     case 1: void PersonaSounds.socialBoostJingle(1);
-//       break;
-//     case 2: void PersonaSounds.socialBoostJingle(2);
-//       break;
-//     case 3: void PersonaSounds.socialBoostJingle(3);
-//       break;
-//   }
-//   await this.update({"system.social": this.system.social});
-//   await Logger.sendToChat(`${this.name} added ${progress} progress tokens to link ${linkActor?.name} (original Value: ${orig})` , this);
-// }
-
-// async activityProgress(this: PC, activityId :string, progress: number) {
-//   const activityData = this.system.activities.find( x=> x.linkId == activityId);
-//   if (!activityData) {
-//     PersonaError.softFail("Trying to increase activty you don't have");
-//     return;
-//   }
-//   const orig = activityData.currentProgress;
-//   activityData.currentProgress = Math.max(0,progress + activityData.currentProgress);
-//   await this.update({"system.activities": this.system.activities});
-//   const activity = PersonaDB.allActivities().find( act=> act.id == activityId);
-//   await Logger.sendToChat(`${this.name} added ${progress} progress tokens to ${activity?.name ?? "unknown activity"} (original Value: ${orig})` , this);
-
-// }
-
-// async activityStrikes(this: PC, activityId: string, strikes: number) {
-//   const activityData = this.system.activities.find( x=> x.linkId == activityId);
-//   if (!activityData) {
-//     throw new PersonaError("Trying to increase activty you don't have");
-//   }
-//   const orig = activityData.strikes;
-//   activityData.strikes = Math.max(0,strikes + activityData.strikes);
-//   await this.update({"system.activities": this.system.activities});
-//   const activity = PersonaDB.allActivities().find( act=> act.id == activityId);
-//   await Logger.sendToChat(`${this.name} added ${strikes} strikes to ${activity?.name ?? "unknown activity"} (original Value: ${orig})` , this);
-// }
-
-// async refreshSocialLink(this: PC, npc: SocialLink) {
-//   const link = this.system.social.find( x=> x.linkId == npc.id);
-//   if (!link) {
-//     throw new PersonaError(`Trying to refresh social link ${this.name} doesn't have: ${npc.name} `);
-//   }
-//   link.inspiration = link.linkLevel;
-//   await this.update({"system.social": this.system.social});
-// }
-
 async spendInspiration(this: PC, linkId: SocialLink["id"], amt?: number) : Promise<void> ;
 async spendInspiration(this: PC, socialLink:SocialLink , amt?: number): Promise<void> ;
 async spendInspiration(this: PC, socialLinkOrId:SocialLink | SocialLink["id"], amt: number = 1): Promise<void> {
   await this.social.spendInspiration(socialLinkOrId, amt);
 }
-
-// async spendInspiration(this: PC, socialLinkOrId:SocialLink | SocialLink["id"], amt: number = 1): Promise<void> {
-//   const id = typeof socialLinkOrId == "string" ? socialLinkOrId : socialLinkOrId.id;
-//   const link = this.system.social.find( x=> x.linkId == id);
-//   if (!link) {
-//     throw new PersonaError("Trying to refresh social link you don't have");
-//   }
-//   if (link.inspiration <= 0) {
-//     throw new PersonaError("You are trying to spend Inspiration you don't have");
-//   }
-//   link.inspiration -= amt;
-//   link.inspiration = Math.max(0, link.inspiration);
-//   link.inspiration = Math.min(link.linkLevel, link.inspiration);
-//   await this.update({"system.social": this.system.social});
-// }
-
-// getInspirationWith(linkId: SocialLink["id"]): number {
-//   if (this.system.type != "pc") {return 0;}
-//   const link = this.system.social.find( x=> x.linkId == linkId);
-//   if (!link) {return 0;}
-//   return link.inspiration;
-// }
-
-// async addInspiration(this:PC, linkId:SocialLink["id"] | SocialLink, amt: number) {
-//   if (linkId instanceof PersonaActor) {
-//     linkId = linkId.id;
-//   }
-//   const link = this.system.social.find( x=> x.linkId == linkId);
-//   if (!link) {
-//     throw new PersonaError("Trying to refresh social link you don't have");
-//   }
-//   link.inspiration += amt;
-//   link.inspiration = Math.min(link.linkLevel, link.inspiration);
-//   await this.update({"system.social": this.system.social});
-// }
-
-// getSocialFocii_PC(this: NPC, linkHolder: SocialLink, targetPC: PC) : Focus[] {
-//   const sortFn = function (a: Focus, b: Focus) {
-//     return a.requiredLinkLevel() - b.requiredLinkLevel();
-//   };
-//   const focii = this.items.filter( x=> x.isFocus()) as Focus[];
-//   const tarot = targetPC.tarot;
-//   if (!tarot) {
-//     console.debug(`No tarot found for ${this.name} or ${linkHolder.name}`);
-//     return focii.sort( sortFn);
-//   }
-//   const tarotFocii = tarot.items.filter( x=> x.isFocus()) as Focus[];
-//   return focii.concat(tarotFocii).sort(sortFn);
-// }
-
-// getSocialFocii_NPC(this: NPC, linkHolder: SocialLink) : Focus[] {
-//   const sortFn = function (a: Focus, b: Focus) {
-//     return a.requiredLinkLevel() - b.requiredLinkLevel();
-//   };
-//   const focii = this.items.filter( x=> x.isFocus()) as Focus[];
-//   const tarot = this.tarot ?? linkHolder.tarot;
-//   if (!tarot) {
-//     console.debug(`No tarot found for ${this.name} or ${linkHolder.name}`);
-//     return focii.sort( sortFn);
-//   }
-//   const tarotFocii = tarot.items.filter( x=> x.isFocus()) as Focus[];
-//   return focii.concat(tarotFocii).sort(sortFn);
-// }
-
-// getAllSocialFocii() : Focus[] {
-//   switch (this.system.type) {
-//     case "pc": {
-//       const x = this.socialLinks
-//       .flatMap( link => link.focii);
-//       return x;
-//     }
-//     case "npcAlly":
-//       return []; //coming soon
-//     case "shadow":
-//     case "npc":
-//     case "tarot":
-//       return [];
-//     default:
-//       this.system satisfies never;
-//       return [];
-//   }
-// }
 
 getEffects(this: ValidAttackers, CETypes ?: TypedConditionalEffect['conditionalType'][] ) : readonly ConditionalEffectC [] {
   const mods =  this.persona().allModifiers();
@@ -3583,30 +3008,6 @@ isBossOrMiniBossType() : boolean {
 
 async onStartCombatTurn(this: ValidAttackers): Promise<string[]> {
   return this.checkEffectExpire( eff => eff.onStartCombatTurn());
-  // console.log(`${this.name} on Start turn`);
-  // const ret = [] as string[];
-  // await this.setBatonLevel(0);
-  // const promises = this.effects.contents.map( async (eff) => {
-  // 	if ( await eff.onStartCombatTurn()
-  // 		&& eff.displayOnEnd()
-  // 	) {
-  // 		return eff.displayedName;
-  // 	}
-  // 	return "";
-  // });
-  // try {
-  // 	const strings = (await Promise.all(promises))
-  // 		.filter( x=> x && x.length > 0)
-  // 		.join(", ");
-  // 	if (strings.length > 0) {
-  // 		ret.push(`Conditions Removed: ${strings}`);
-  // 	}
-  // } catch (e) {
-  // 	const msg = `Error resolving conditions at start of turn`;
-  // 	ret.push(msg);
-  // 	PersonaError.softFail(msg, e);
-  // }
-  // return ret;
 }
 
 private async checkEffectExpire(fn : (eff: PersonaAE) => Promise<boolean> ): Promise<string[]> {
@@ -3777,13 +3178,6 @@ async onDefeat(this: ValidAttackers) {
 
 async endTurnStatusEffects(this: ValidAttackers) : Promise<string[]> {
   return this.checkEffectExpire( eff => eff.onEndCombatTurn());
-  // const ret = [] as string[];
-  // for (const eff of this.effects) {
-  // 	if (await eff.onEndCombatTurn()) {
-  // 		ret.push(`Removed Condition ${eff.displayedName} at end of turn`);
-  // 	}
-  // }
-  // return ret;
 }
 
 getFlagState(flagName: string) : boolean {
@@ -3913,47 +3307,11 @@ async deleteTokenSpend(this: SocialLink, deleteIndex:number) {
   await this.update({"system.tokenSpends":list});
 }
 
-// isAvailable(pc: PC) : boolean {
-// 	if (!this.isSocialLink() && !this.isNPCAlly()) {return false;}
-// 	const sit: Situation = {
-// 		user: pc.accessor,
-// 		socialTarget: this.accessor,
-// 	};
-// 	if(!testPreconditions(this.getAvailabilityConditions(), sit)) {
-// 		return false;
-// 	}
-// 	if (PersonaSocial.availabilityDisqualifierStatuses.some (st=> this.hasStatus(st))) {return false;}
-// 	const availability = this.system.weeklyAvailability;
-// 	if (this.isSociallyDisabled())  {
-// 		return false;
-// 	}
-// 	return availability?.available ?? false;
-// }
-
 getAvailabilityConditions(this: SocialLink)  : readonly SourcedPrecondition[] {
   if (this.isPC()){ return [];}
   const conds = ConditionalEffectManager.getConditionals(this.system.availabilityConditions, null, null, null);
   return conds;
 }
-
-// isSociallyDisabled(): boolean {
-// 	switch (this.system.type) {
-// 		case "shadow":
-// 		case "tarot":
-// 			return true;
-// 		case "pc": {
-// 			const statuses : StatusEffectId[] = ["jailed", "exhausted", "crippled", "injured"];
-// 			return statuses.some( x=> this.hasStatus(x));
-// 		}
-
-// 		case "npcAlly":
-// 		case "npc":
-// 			return this.system.weeklyAvailability.disabled || this.tarot == undefined;
-// 		default:
-// 			this.system satisfies never;
-// 			throw new PersonaError("Unknown type");
-// 	}
-// }
 
 canTakeNormalDowntimeActions(): boolean {
   return !this.hasStatus("jailed") && !this.hasStatus("crippled");
@@ -4069,13 +3427,6 @@ async clearScanLevel(this:Shadow) {
 get maxEnergy() : number {
   if (!this.isShadow()) {return 0;}
   return this.persona().maxEnergy;
-  // if (!this.isShadow()) {return 0;}
-  // const BASE_MAX_ENERGY = 10;
-  // const situation = {
-  // 	user: this.accessor,
-  // };
-  // const maxEnergy = BASE_MAX_ENERGY + this.basePersona.getBonuses("max-energy").total(situation);
-  // return maxEnergy;
 }
 
 get energy() : number {
