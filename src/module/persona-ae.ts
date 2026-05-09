@@ -1008,8 +1008,9 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
   }
 
   getLinkedTags() : Tag[] {
-    const statusEffects = this.statuses.values().map( status =>  PersonaDB.allTagLinks().get(status))
+    const statusEffects = this.statuses.values().map( status =>  PersonaDB.allTagLinks().get(status) ?? PersonaDB.allTags().get(status as Tag["id"]))
       .filter( x=> x != undefined);
+
     return Array.from(statusEffects);
   }
 

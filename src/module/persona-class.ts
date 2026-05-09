@@ -859,10 +859,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   get printableResistanceString() : string {
-    const resists = this.statusResists;
-    const retdata = Object.entries(resists)
-      .filter ( ([statusId, _y]) => CONFIG.statusEffects.some(st=> st.id == statusId))
-      .map(([statusRaw, _level]) => {
+    // const resists = this.statusResists;
+    const retdata = CONFIG.statusEffects
+    // const retdata = Object.entries(resists)
+    // .filter ( ({id}) => CONFIG.statusEffects.some(st=> st.id == statusId))
+    // .filter ( ([statusId, _y]) => CONFIG.statusEffects.some(st=> st.id == statusId))
+      .map ( st => st.id)
+      .map(statusRaw => {
+        // .map(([statusRaw, _level]) => {
         const actual = this.statusResist(statusRaw as StatusEffectId);
         const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[statusRaw as StatusEffectId]);
         if (statusTrans == undefined) {

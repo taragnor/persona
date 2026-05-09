@@ -599,7 +599,7 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
     case "is-pc": {
       const targets = getSubjectActors(condition, situation,  "conditionTarget");
       if (!targets) {return undefined;}
-      return targets.some( target => target.isPC());
+      return targets.some( target => target.isRealPC());
     }
     case "has-tag": {
       return hasTagConditional(condition, situation);
