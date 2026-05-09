@@ -1,40 +1,40 @@
 <div>
-	<table class="printable-power-table">
-		<thead>
-			<tr>
+  <table class="printable-power-table">
+    <thead>
+      <tr>
         {{#if targetPersona}}
         <th>Learn</th>
         {{/if}}
-				<th> Name</th>
-				<th> Level </th>
-				<th> Rarity </th>
-				<th>Targets</th>
-				<th> Tags</th>
-				<th> Cost</th>
+        <th> Name</th>
+        <th> Level </th>
+        <th> Rarity </th>
+        <th>Targets</th>
+        <th> Tags</th>
+        <th> Cost</th>
         {{#if (isGM)}}
-				<th>En</th>
+        <th>En</th>
         <th> Known By</th>
         {{/if}}
-				<th> Damage </th>
-				<th> Defense </th>
-				<th> Kill</th>
-				<th> Ailment</th>
-			</tr>
-		</thead>
-		<tbody>
-			{{#each powers as |power i|}}
-			<tr data-power-id="{{power.id}}">
+        <th> Damage </th>
+        <th> Defense </th>
+        <th> Kill</th>
+        <th> Ailment</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each powers as |power i|}}
+      <tr data-power-id="{{power.id}}">
         {{#if ../targetPersona}}
         <td class="actions">
           {{#if ../swapPower}}
           <a class="swap-power" title="Swap {{../swapPower.name}} with this power">
             <i class="fa-solid fa-retweet"></i>
           </a>
-        {{else}}
+          {{else}}
           <a class="learn-power" title="Add to {{../targetPersona.name}} Power List">
             <i class="fa-solid fa-circle-plus"></i>
           </a>
-        {{/if}}
+          {{/if}}
         </td>
         {{/if}}
         <td class="power-name">

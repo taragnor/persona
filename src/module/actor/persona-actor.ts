@@ -1245,7 +1245,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     });
   }
 
-
   getUsableById(id: Usable["id"]) : Usable | undefined {
     const usables: Usable[] = (this.powers as Usable[]).concat(this.openerActions);
     const power = usables.find(pow => pow.id == id);
@@ -1267,7 +1266,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   checkPowerLegality( pwr: Power)  :boolean {
     if (!this.isValidCombatant()) {return false;}
-    if (pwr.hasTag("shadow-only", this) && (!this.isShadow() || this.isPersona())) {return false;}
+    if (
+      pwr.hasTag("shadow-only", this)
+      && (!this.isShadow() || this.isPersona())
+    ) {return false;}
     return true;
   }
 

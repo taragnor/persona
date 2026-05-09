@@ -29,6 +29,7 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
   _swapPower ?: Power;
   filterString : string = "";
   generalFilters : U<PowerFilter>;
+  _rendered: boolean;
   _cache : {
     powerListCache : U<readonly Power[]>;
   } = {
@@ -145,7 +146,8 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
 
   static async open(): Promise<PowerPrinter> {
     await PersonaDB.waitUntilLoaded();
-    return this.createGeneralizedInstance();
+    const printer= this.createGeneralizedInstance();
+    return printer;
   }
 
   static openSwap(power: Power, persona: Persona) : PowerPrinter {
@@ -161,7 +163,6 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
     this._instance.render(true);
     return this._instance;
   }
-
 
   setTargetPersona(persona : Persona) {
     this.targetPersona = persona;
@@ -232,7 +233,7 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
   override async getData(options: Record<string, unknown>) {
     await PersonaDB.waitUntilLoaded();
     const data = await super.getData(options);
-    const targetPersona = this.targetPersona && this.targetPersona.user.sheet._state > 0 && this.targetPersona.isCustomPersona ? this.targetPersona : undefined;
+    const targetPersona = this.targetPersona && this.targetPersona.user.sheet._state > 0 && (this.targetPersona.isCustomPersona || game.user.isGM) ? this.targetPersona : undefined;
     const powers = (await this.mainPowerList())
       .filter( x=> x!= undefined && x.length > 0)
       .map( list => list.sort(PowerPrinter.sortPowerFn));

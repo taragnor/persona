@@ -45,15 +45,6 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
     if (baseShadow) {
       powerList = baseShadow.system.combat.powersToLearn;
     }
-    // if (actor.isShadow()) {
-    // const baseId= (actor.system.personaConversion.baseShadowId);
-    // if (baseId) {
-    // 	const baseShadow = PersonaDB.getActorById(baseId);
-    // 	if (baseShadow && baseShadow.isShadow()) {
-    // 		powerList = baseShadow.system.combat.powersToLearn;
-    // 	}
-    // }
-    // }
     return powerList
       .sort( (a,b) => a.level - b.level)
       .map( data => {
@@ -73,7 +64,6 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 		const learned =	this.customPersonaLearningList()
 			.filter( x=> x.level > lastLearn && x.level <= newLevel);
 		if (learned.length == 0) {return;}
-			// .map ( x=> ` ${localize(PROBABILITIES_POWER_RARITY[x.rarity])} ${localize( SLOTTYPES[x.slot])} Power (Custom Persona Elective Choice)`);
 		for (const power of learned) {
 			await Logger.sendToChat( `${actor.name} learned ${power.txt} (Custom Persona Elective Choice)`);
 		}

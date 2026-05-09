@@ -339,6 +339,7 @@ export class PersonaSocial {
 	}
 
   static async chooseActivity(actor: PC, activity: SocialLink | Activity, _options: ActivityOptions = {}) {
+    await PersonaDB.waitUntilLoaded();
     if (!this.isAvailable(activity, actor)) {
       ui.notifications.warn("This action isn't enabled in your current condition");
       return;
