@@ -145,6 +145,19 @@ export class ResolvedRollBundle extends RollBundleBase {
     return this._resultSituation;
   }
 
+  toJSON() {
+    return {
+      ...this,
+      roll: this.roll.toJSON(),
+      natural: this.natural,
+      gmRoll: !this._playerRoll,
+      success: this.success,
+      critical: this.critical,
+      total: this.total,
+      printableMods: this.printableMods,
+    };
+  }
+
   async getHTML(showSuccess :boolean): Promise<string> {
     if (this.DC == 0) {
       PersonaError.softFail("DC of 0 in roll", this);

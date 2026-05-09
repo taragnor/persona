@@ -28,7 +28,6 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
       autoTags_power: this.item.isPower()
       ? new TimedCache( () => this.#autoTags_power(this.item as Power), this.CACHE_TIME)
       : new PermanentCache( () => []),
-      // tagListRaw: new TimedCache( () => this._tagListRaw(null, 0), this.CACHE_TIME),
     };
 
     if (PersonaSettings.debugMode()) {
