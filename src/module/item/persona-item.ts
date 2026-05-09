@@ -2207,7 +2207,9 @@ async deleteCreatureTag(this: Tag, index: number) : Promise<void> {
 
 getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options : GetEffectsOptions = {}): ConditionalEffectC[] {
   //proxy item is used for tags to redirect their source to their parent item (for purposes of reading item level)
-  if (!PersonaDB.isLoaded) {throw new PersonaError("DB not loaded yet");}
+  if (!PersonaDB.isLoaded) {
+    throw new PersonaError("DB not loaded yet");
+  }
   const {CETypes} = options;
   if (this.isSkillCard()) {
     return [new ConditionalEffectC(this)];
