@@ -218,7 +218,8 @@ export const STATUS_EFFECT_LIST = [
 		img: "icons/skills/social/diplomacy-unity-alliance.webp",
 		tags: [],
 	},
-] as const satisfies Omit<StatusEffectObject, "name">[];
+] as const satisfies Omit<StatusEffectObject, "name" | "label">[];
+
 
 
 
@@ -249,7 +250,8 @@ const STATUS_PROPERTY_TAGS = [
 
 CONFIG.statusEffects = STATUS_EFFECT_LIST
 	.map( ({id, img, tags})=> {
-	return {id, img, tags, name:`persona.status.${id}`};
+    const locString = `persona.status.${id}` as LocalizationString;
+	return {id, img, tags, name: locString, label:locString};
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -263,6 +265,7 @@ export type DeprecatedStatusEffects = typeof DEPRECATED_STATUS_EFFECTS[number];
 export type StatusEffectId = Exclude<typeof STATUS_EFFECT_LIST[number]["id"], DeprecatedStatusEffects>;
 
 export type FatigueStatusId = Extract<StatusEffectId, "tired" | "exhausted" | "rested" | "fatigued">
+
 
 export const STATUS_EFFECT_TRANSLATION_TABLE = Object.fromEntries(
 	CONFIG.statusEffects.map( ({id, name}) => [id, name])
@@ -297,13 +300,29 @@ export type StatusDurationType = typeof STATUS_EFFECT_DURATIONS_TYPE_LIST[number
 export const STATUS_EFFECT_DURATION_TYPES = HTMLTools.createLocalizationObject(STATUS_EFFECT_DURATIONS_TYPE_LIST, "persona.status.duration");
 
 Hooks.on("ready", () => {
-	console.log("Sorting status effects");
-	CONFIG.statusEffects.sort( (a,b) =>  {
-		const la = game.i18n.localize(a.name as LocalizationString);
-		const lb = game.i18n.localize(b.name as LocalizationString);
-		return la.localeCompare(lb);
-	});
+  console.log("Sorting status effects");
+  CONFIG.statusEffects =
+    CONFIG.statusEffects.map (st => ({
+      ...st,
+      name: st.label ? game.i18n.localize(st.label as LocalizationString) : st.name,
+    })
+    );
+  CONFIG.statusEffects.sort( (a,b) =>  {
+    const la = game.i18n.localize(a.label as LocalizationString);
+    const lb = game.i18n.localize(b.label as LocalizationString);
+    return la.localeCompare(lb);
+  });
 });
+
+//const oldSort = Array.prototype.sort;
+
+////@ts-expect-error hacking for debug purposes
+//Array.prototype.sort = function<T>(this: Array<T>, compareFn : (a: T, b:T) => Array<T>) {
+//  if (this == CONFIG.statusEffects) {
+//    debugger;
+//  }
+//  return oldSort.call(this, compareFn) as number;
+//};
 
 export function statusToFatigueLevel(id: FatigueStatusId | undefined) :number {
 	switch (id) {

@@ -58,11 +58,13 @@ declare interface CONFIG {
 
 interface StatusEffectObject {
   id: string;
-  name: string;
+  name?: string;
   img: string;
   /** @deprecated*/
-  icon?: string,
-  changes ?: readonly AEChange[],
+  icon?: string;
+  //this exists only for lib-wrapper sorting?
+  label?: string;
+  changes ?: readonly AEChange[];
 }
 
 interface WeatherEffectData {}
