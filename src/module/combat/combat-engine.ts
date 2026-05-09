@@ -896,6 +896,10 @@ export class CombatEngine {
     sourcedEffects.pushUniqueS(eqTest, ...defenderEffects);
     sourcedEffects.pushUniqueS(eqTest, ...powerEffects);
     sourcedEffects.pushUniqueS(eqTest, ...extraTagEffects);
+    if (PersonaSettings.debugMode()) {
+      console.log(sourcedEffects);
+      Debug(sourcedEffects);
+    }
     const CombatRes = new CombatResult(atkResult);
     const consequences = sourcedEffects.flatMap( eff => eff.getActiveConsequences(situation));
     const res = ConsequenceProcessor.consequencesToResult(consequences, power,  situation, atkResult);

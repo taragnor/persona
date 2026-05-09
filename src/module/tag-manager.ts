@@ -68,6 +68,7 @@ export abstract class TagManager<TagTypeRaw extends string = string> {
     return linked? linked.id : tagname;
   }
 
+  //** replaces formal Tag name with Id if Tag exists for ID name*/
   idCheck< const T extends string>(this: void, tagName: T) : (T | Tag["id"]);
   idCheck< const T extends string>(this: void, tagName: readonly T[]) : (T | Tag["id"])[];
   idCheck< const T extends string>(this: void, tagName: T | T[]) : (T | Tag["id"]) | (T | Tag["id"])[] {

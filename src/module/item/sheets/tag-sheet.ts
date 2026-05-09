@@ -6,6 +6,7 @@ import {ROLL_TAGS_AND_CARD_TAGS} from "../../../config/roll-tags.js";
 import {SHADOW_ROLE} from "../../../config/shadow-types.js";
 import {STATUS_EFFECT_TRANSLATION_TABLE} from "../../../config/status-effects.js";
 import {TAG_TYPES} from "../../../config/tags-general.js";
+import {HTMLTools} from "../../utility/HTMLTools.js";
 import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 import {PersonaPowerLikeBaseSheet} from "./powerlike-base-sheet.js";
 
@@ -62,6 +63,17 @@ export class PersonaTagSheet extends PersonaEffectContainerBaseSheet {
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
     PersonaPowerLikeBaseSheet.powerTagListeners(html, this.item);
+		html.find(".creatureTags .delTag").on("click", ev => void this.deleteCreatureTag(ev));
+		html.find('.addCreatureTag').on("click", ev => void this.onAddCreatureTag(ev));
+	}
+
+	async onAddCreatureTag( _ev: JQuery.ClickEvent) {
+		await this.item.addCreatureTag();
+	}
+
+	async deleteCreatureTag(ev: JQuery.ClickEvent) {
+		const index = HTMLTools.getClosestData(ev, "tagIndex");
+		await this.item.deleteCreatureTag(Number(index));
 	}
 
 }

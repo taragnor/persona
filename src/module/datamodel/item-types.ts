@@ -28,6 +28,7 @@ import {SocialCardEventHandler} from "../social/card-event-handler.js";
 import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {CardTag} from "../../config/card-tags.js";
 import {POWER_TAGS_LIST} from "../../config/power-tags.js";
+import {InternalCreatureTag} from "../../config/creature-tags.js";
 
 function itemBase() {
 	return {
@@ -137,6 +138,7 @@ class TagSchema extends foundry.abstract.TypeDataModel {
       treasure: itemTreasureStats(),
       tags: new arr( new txt<typeof POWER_TAGS_LIST[number] | Item["id"]>()),
       itemTags: new arr(new txt<typeof EQUIPMENT_TAGS_LIST[number] | Item["id"]>()),
+			creatureTags: new arr(new txt<InternalCreatureTag | Item["id"]>()),
       ...effects (false),
     };
     return ret;

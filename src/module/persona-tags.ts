@@ -32,11 +32,49 @@ export class PersonaTagManager<PType extends Persona> extends TagManager<TagType
 
   _tagListPartial() : (PersonaTag | Tag["id"] | InternalCreatureTag)[] {
     type ret = (PersonaTag | Tag["id"] | InternalCreatureTag)[];
-    const base = this.source.system.combat.personaTags.slice() as ret;
-    base.pushUnique (...this.source.system.creatureTags);
-    base.pushUnique(...this._autoTags());
-    base.pushUnique(...this._getConferredTags());
-    return base;
+    // const base = this.source.system.combat.personaTags.slice() as ret;
+    const sources = [
+      ...this.source.system.combat.personaTags.slice() as ret,
+      ...this.source.system.creatureTags,
+      ...this._autoTags(),
+      ...this._getConferredTags(),
+      ...this.userTypeTags(),
+    ];
+    const base = ([] as ret)
+      .pushUnique(...this.idCheck(sources));
+
+    // base.pushUnique (...this.source.system.creatureTags);
+    // base.pushUnique(...this._autoTags());
+    // base.pushUnique(...this._getConferredTags());
+    // base.pushUnique(...this.userTypeTags());
+    const extraTags = base.map(tag => TagManager.searchForPotentialTagMatch(tag))
+      .filter (x=> x != undefined)
+    //this maybe should be user instead of source
+      .flatMap( tag=> tag.tags["tagListRaw"](this.source)) ;
+    if (extraTags.length == 0) {return base;}
+    const combinedTags = base.slice();
+    combinedTags.pushUnique(...this.idCheck(extraTags) as TagType[]);
+    return combinedTags;
+  }
+
+  userTypeTags() : TagType[]{
+    switch (this.user.system.type) {
+      case "pc":
+        return ["pc"];
+      case "npcAlly":
+        return ["npc-ally"];
+      case "shadow": {
+        const list : TagType[] = [];
+        list.pushUnique(this.user.system.creatureType as InternalCreatureTag);
+        if (this.user.system.creatureType == "d-mon" && this.user.hasPlayerOwner) {
+          list.pushUnique("pc-d-mon");
+        }
+        return list;
+      }
+      default:
+        this.user.system satisfies never;
+        return [];
+    }
   }
 
   realTags() : Tag[] {

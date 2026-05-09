@@ -118,9 +118,10 @@ export class ConditionalEffectC {
 	get owner() { return this._owner; }
 
 	equals( other: ConditionalEffectC) : boolean {
-		return this._original == other._original &&
-      PersonaDB.accessorEq(this._realSource,other._realSource)
-    && PersonaDB.accessorEq(this._source, other._source);
+		return this._original == other._original;
+      // &&
+      // PersonaDB.accessorEq(this._realSource,other._realSource);
+    // && PersonaDB.accessorEq(this._source, other._source);
 	}
 
 	getActiveConsequences(situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {

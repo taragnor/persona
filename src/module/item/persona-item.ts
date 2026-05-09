@@ -2189,6 +2189,22 @@ private _getLinkedEffects (this: ItemModifierContainer, sourceActor: PersonaActo
   return tagEffects;
 }
 
+async addCreatureTag(this: Tag, tag ?: Tag) : Promise<void> {
+  const tags = this.system.creatureTags;
+  if (tag && tag instanceof PersonaItem) {
+    tags.push(tag.id);
+  } else {
+    tags.push("neko");
+  }
+  await this.update( {"system.creatureTags": tags});
+}
+
+async deleteCreatureTag(this: Tag, index: number) : Promise<void> {
+  const tags = this.system.creatureTags;
+  tags.splice(index, 1);
+  await this.update( {"system.creatureTags": tags});
+}
+
 getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options : GetEffectsOptions = {}): ConditionalEffectC[] {
   //proxy item is used for tags to redirect their source to their parent item (for purposes of reading item level)
   if (!PersonaDB.isLoaded) {throw new PersonaError("DB not loaded yet");}

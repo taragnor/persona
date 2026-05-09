@@ -293,8 +293,9 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
 
   private getTags_tag(item : Tag) : readonly TagType[] {
     const tagList = (item.system.tags as TagType[])
-    .concat (item.system.itemTags)
-    .concat (item.system.tags);
+    .concat (item.system.itemTags ?? [])
+    .concat (item.system.tags ?? [])
+    .concat ((item.system.creatureTags ?? []) as TagType[]);
     return tagList;
   }
 

@@ -96,8 +96,9 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
 		ConditionalEffectManager.applyHandlers(html, this.actor);
-		html.find(".creatureTags .delTag").on("click", this.deleteCreatureTag.bind(this));
-		html.find('.addCreatureTag').on("click", this.onAddCreatureTag.bind(this));
+    this.activateCreatureTagListeners(html);
+		// html.find(".creatureTags .delTag").on("click", this.deleteCreatureTag.bind(this));
+		// html.find('.addCreatureTag').on("click", this.onAddCreatureTag.bind(this));
 		html.find(".delFocus").on("click", this.deleteFocus.bind(this));
 		html.find(".addFocus").on("click", this.onAddFocus.bind(this));
 		html.find(".focusName").on("click", this.openFocus.bind(this));
@@ -110,6 +111,11 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 		html.find(".showTalentsTable").on("click", (ev) => this.showTalentTable(ev));
 		this.refreshQuestionFocus();
 	}
+
+	activateCreatureTagListeners(html: JQuery<HTMLElement>) {
+		html.find(".creatureTags .delTag").on("click", this.deleteCreatureTag.bind(this));
+		html.find('.addCreatureTag').on("click", this.onAddCreatureTag.bind(this));
+  }
 
 	refreshQuestionFocus() {
 		const index = this.#activeQuestion;

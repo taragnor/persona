@@ -17,9 +17,9 @@ export class ActorTagManager<AType extends PersonaActor> extends TagManager<TagT
     super();
     this.actor = actor;
     this.cache = {
-      tagList: new TimedCache( () => this._tagListGen(),
+      tagList: new TimedCache( () => this._tagList(),
         ActorTagManager.CACHE_EXPIRATION_TIME),
-      tagListRaw: new TimedCache( () => this._tagListRawGen(),
+      tagListRaw: new TimedCache( () => this._tagListRaw(),
         ActorTagManager.CACHE_EXPIRATION_TIME),
     };
   }
@@ -38,7 +38,7 @@ export class ActorTagManager<AType extends PersonaActor> extends TagManager<TagT
     return this.cache.tagList.value;
   }
 
-  _tagListGen() : (Tag | InternalCreatureTag)[] {
+  _tagList() : (Tag | InternalCreatureTag)[] {
     const tagList = this.tagListRaw
       .map(tag => TagManager.searchForPotentialTagMatch(tag) ?? (tag as InternalCreatureTag));
     return tagList;
@@ -50,40 +50,41 @@ export class ActorTagManager<AType extends PersonaActor> extends TagManager<TagT
     return this.cache.tagListRaw.value;
   }
 
-  private _tagListRawGen() : (InternalCreatureTag | Tag["id"])[] {
+  private _tagListRaw() : (InternalCreatureTag | Tag["id"])[] {
     const actor = this.actor;
     if (actor.isTarot()) { return []; }
-    const list : (Tag["id"] | InternalCreatureTag)[] = this.system.creatureTags.slice();
+    const list : (Tag["id"] | InternalCreatureTag)[] = this.idCheck(this.system.creatureTags.slice());
     if (this.actor.isValidCombatant()) {
       const p = this.actor.persona();
       const personaTags = p.tags.tagListPartial();
       list.pushUnique(...personaTags as TagType[]);
     }
-    switch (this.system.type) {
-      case "pc":
-        if (!list.includes("pc")) {
-          list.pushUnique("pc");
-        }
-        return list;
-      case "npcAlly":
-        if (!list.includes("npc-ally")) {
-          list.pushUnique("npc-ally");
-        }
-        return list;
-      case "npc": return list;
-      case "shadow": {
-        list.pushUnique(this.system.creatureType as InternalCreatureTag);
-        if (this.system.creatureType == "d-mon" && this.actor.hasPlayerOwner) {
-          list.pushUnique("pc-d-mon");
-        }
-        return list;
-      }
-      case "tarot":
-        return [];
-      default:
-        this.system satisfies never;
-        return [];
-    }
+    return list;
+    // switch (this.system.type) {
+    //   case "pc":
+    //     if (!list.includes("pc")) {
+    //       list.pushUnique("pc");
+    //     }
+    //     return list;
+    //   case "npcAlly":
+    //     if (!list.includes("npc-ally")) {
+    //       list.pushUnique("npc-ally");
+    //     }
+    //     return list;
+    //   case "npc": return list;
+    //   case "shadow": {
+    //     list.pushUnique(this.system.creatureType as InternalCreatureTag);
+    //     if (this.system.creatureType == "d-mon" && this.actor.hasPlayerOwner) {
+    //       list.pushUnique("pc-d-mon");
+    //     }
+    //     return list;
+    //   }
+    //   case "tarot":
+    //     return [];
+    //   default:
+    //     this.system satisfies never;
+    //     return [];
+    // }
   }
 
   realTags() : Tag[] {

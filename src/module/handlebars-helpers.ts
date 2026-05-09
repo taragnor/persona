@@ -534,12 +534,29 @@ export class PersonaHandleBarsHelpers {
       return tag.descriptionHTML;
     },
 
-    "getCreatureTagList": function (actor: PersonaActor) : SafeString[] {
-      const ret =  actor.tagList.map(tag=> {
-        if (tag instanceof PersonaItem) {return tag.displayedNameHTML;}
-        return new Handlebars.SafeString(localize(CREATURE_TAGS[tag]));
-      });
-      return ret;
+    "getCreatureTagList": function (actorOrItem: PersonaActor | PersonaItem) : SafeString[] {
+      if (actorOrItem instanceof PersonaActor) {
+        const actor= actorOrItem;
+        const ret =  actor.tagList.map(tag=> {
+          if (tag instanceof PersonaItem) {return tag.displayedNameHTML;}
+          return new Handlebars.SafeString(localize(CREATURE_TAGS[tag]));
+        });
+        return ret;
+      }
+      if (actorOrItem instanceof PersonaItem) {
+        const item= actorOrItem;
+        const ret =  item.tagList(null).map(tag=>
+          {
+            if (tag instanceof PersonaItem) {
+              return tag.displayedNameHTML;
+            }
+            return null;
+          })
+            .filter (x=> x != null);
+        return ret;
+      }
+      PersonaError.softFail("Invalid object passsed to getCreatureTagList handlebars helper");
+      return [];
     },
     "hasTag": function (source: PersonaActor | PersonaItem, tagName: string) : boolean {
       switch (true) {
