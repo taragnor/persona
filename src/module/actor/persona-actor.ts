@@ -1884,16 +1884,20 @@ get fatigueLevel() : number {
   return statusToFatigueLevel(st);
 }
 
+async resetFatigueRecovery() {
+  await this.setFlag("persona", "fatigueRecovery", 0);
+}
+
 /** Auto NPC recovery for fatigue to be run each calendar day*/
 async recoverFatigue(this: NPCAlly) : Promise<number>{
-  if (this.fatigueLevel == 0) {return 0;}
+  if (this.fatigueLevel >= 0) {return -1;}
   let recoveryDays = Number(this.getFlag<number>("persona", "fatigueRecovery") ?? 0);
   if (Number.isNaN(recoveryDays)) {
     PersonaError.softFail(`NaN recovery days for ${this.name}`);
     recoveryDays = 0;
   }
   recoveryDays += 1;
-  if (recoveryDays == 3) {
+  if (recoveryDays >= 3) {
     recoveryDays = 0;
     await this.alterFatigueLevel(1);
   }
@@ -2445,6 +2449,9 @@ async endEffectsOfDurationOrLess( duration: StatusDuration) : Promise<ActiveEffe
 
 async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
   try {
+    if (this.isNPCAlly()) {
+      await this.resetFatigueRecovery();
+    }
     await this.resetTheurgy();
     if (this.isPC() && !this.isRealPC()) {return;} //skip fake PCs like itempiles and the party token
     if (this.isRealPC()) {
@@ -3500,7 +3507,6 @@ async onCalendarAdvance() : Promise<string[]> {
   }
   if (this.isNPCAlly()) {
     await this.recoverFatigue();
-
   }
   return arr;
 }

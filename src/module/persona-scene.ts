@@ -321,12 +321,12 @@ export class PersonaScene extends Scene {
 			name: "MyFog",
 			type: "fog",
 			options :{
-				scale: 2.0,
+				scale: 1.0,
 				speed: 0.333,
 				lifetime: 0.666,
 				density: 0.15,
 				direction: 35,
-				alpha: 0.4, //opacity value named this for some reason
+				alpha: 0.3, //opacity value named this for some reason
 			}
 		} as const;
 		const rainStorm = {

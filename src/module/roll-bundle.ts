@@ -150,6 +150,7 @@ export class ResolvedRollBundle extends RollBundleBase {
       ...this,
       roll: this.roll.toJSON(),
       natural: this.natural,
+      dice: this.dice,
       gmRoll: !this._playerRoll,
       success: this.success,
       critical: this.critical,

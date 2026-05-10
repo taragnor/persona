@@ -96,101 +96,102 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		return super._onDropActor(_event, actorD);
 	}
 
-	override async _onDropItem(_event: JQuery.Event, itemD: unknown, ..._rest:unknown[]) {
-		Helpers.ownerCheck(this.actor);
-		//@ts-expect-error using unsupported foundrytype
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-		const item: PersonaItem = await Item.implementation.fromDropData(itemD);
-		console.debug(`${item.system.type} dropped on sheet of ${this.actor.displayedName.toString()}`);
-		switch (item.system.type) {
-			case "talent":
-				await this.actor.persona().addTalent(item as Talent);
-				return undefined;
-			case "power": {
-				const actorType = this.actor.system.type;
-				const power = item as Power;
-				switch (actorType) {
-					case "shadow":
-						if (this.isOnLearningTab())
-						{await this.actor.basePersona.powerLearning.addLearnedPower(power);}
-						else {await this.actor.basePersona.powerLearning.learnPower(power);}
-						return power;
-					case "pc":
-					case "npcAlly": {
-						const actor = this.actor as PC | NPCAlly;
-						if (power.isTeamwork()) {
-							await actor.setTeamworkMove(power);
-							return power;
-						}
-						if (power.hasTag("shadow-only", this.actor)) {
-							ui.notifications.warn(`Can't take Shadow only power ${item.name}`);
-							return;
-						}
-						if (this.isOnLearningTab()) {
-							await this.actor.basePersona.powerLearning.addLearnedPower(power);
-							return power;
-						}
-						if (this.isOnPersonaListTab()) {
-							ui.notifications.warn("Can't add powers from this tab");
-							return undefined;
-						}
+  override async _onDropItem(_event: JQuery.Event, itemD: unknown, ..._rest:unknown[]) {
+    Helpers.ownerCheck(this.actor);
+    //@ts-expect-error using unsupported foundrytype
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    const item: PersonaItem = await Item.implementation.fromDropData(itemD);
+    console.debug(`${item.system.type} dropped on sheet of ${this.actor.displayedName.toString()}`);
+    switch (item.system.type) {
+      case "talent":
+        await this.actor.persona().addTalent(item as Talent);
+        return undefined;
+      case "power": {
+        const actorType = this.actor.system.type;
+        const power = item as Power;
+        switch (actorType) {
+          case "shadow":
+            if (this.isOnLearningTab())
+            {await this.actor.basePersona.powerLearning.addLearnedPower(power);}
+            else {await this.actor.basePersona.powerLearning.learnPower(power);}
+            return power;
+          case "pc":
+          case "npcAlly": {
+            const actor = this.actor as PC | NPCAlly;
+            if (power.isTeamwork()) {
+              await actor.setTeamworkMove(power);
+              return power;
+            }
+            if (power.hasTag("shadow-only", this.actor)) {
+              ui.notifications.warn(`Can't take Shadow only power ${item.name}`);
+              return;
+            }
+            if (this.isOnLearningTab()) {
+              await this.actor.basePersona.powerLearning.addLearnedPower(power);
+              return power;
+            }
+            if (this.isOnPersonaListTab()) {
+              ui.notifications.warn("Can't add powers from this tab");
+              return undefined;
+            }
             const localizedRarity = localize(PROBABILITIES_POWER_RARITY[power.system.rarity]);
-						if (!game.user.isGM && (power.system.rarity != "normal" && power.system.rarity != "normal-minus")) {
-							ui.notifications.warn(`Can't directly take a ${localizedRarity} power: ${item.name}`);
-							return;
-						}
-						await actor.persona().learnPower(item as Power);
-						return item ;
-					}
-					default:
-						actorType satisfies never;
-						throw new PersonaError(`Unsupported Type ${actorType as string}`);
-				}
-			}
-			case "focus":
-				if (this.actor.system.type != "pc") {
-					return super._onDropItem(_event, itemD);
-				} else {
-					(this.actor as PC).addFocus(item as Focus);
-					return item;
-				}
-			case "skillCard":
-			case "consumable": {
-				if (!game.user.isGM) {
-					ui.notifications.warn("Use Item Piles functionality to move items.");
-					return undefined;
-				}
-				const existing = this.actor.items.find( x=> x.system.type == item.system.type && ("amount" in x.system) && x.name == item.name);
-				if (existing != undefined && existing.system.type == 'consumable') {
-					console.log("Adding to existing amount");
-					await (existing as Consumable).addItem(item.system.amount ?? 1);
-					return existing;
-				}
-				return super._onDropItem(_event, itemD);
-			}
-			case "item":
-			case "weapon":
-				if (!game.user.isGM) {
-					ui.notifications.warn("Use Item Piles functionality to move items.");
-					return undefined;
-				}
-				return super._onDropItem(_event, itemD);
-			case "characterClass":
-				await this.actor.setClass(item as CClass);
-				return item;
-			case "universalModifier":
-				throw new PersonaError("Universal Modifiers can't be added to sheets");
-			case "socialCard":
-				return undefined;
-			case "tag":
-				await this.actor.addCreatureTag(item as Tag);
-				return undefined;
-			default:
-				item.system satisfies never;
-				// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-				throw new Error(`Unknown supported type ${item["system"]["type"]}`);
-		}
-	}
+            if (!game.user.isGM && (power.system.rarity != "normal" && power.system.rarity != "normal-minus")) {
+              ui.notifications.warn(`Can't directly take a ${localizedRarity} power: ${item.name}`);
+              return;
+            }
+            await actor.persona().learnPower(item as Power);
+            return item ;
+          }
+          default:
+            actorType satisfies never;
+            throw new PersonaError(`Unsupported Type ${actorType as string}`);
+        }
+      }
+      case "focus":
+        return super._onDropItem(_event, itemD);
+        // if (this.actor.system.type != "pc") {
+        // 	return super._onDropItem(_event, itemD);
+        // } else {
+        // 	(this.actor as PC).addFocus(item as Focus);
+        // 	return item;
+        // }
+      case "skillCard":
+      case "consumable": {
+        if (!game.user.isGM) {
+          ui.notifications.warn("Use Item Piles functionality to move items.");
+          return undefined;
+        }
+        const existing = this.actor.items.find( x=> x.system.type == item.system.type && ("amount" in x.system) && x.name == item.name);
+        if (existing != undefined && existing.system.type == 'consumable') {
+          console.log("Adding to existing amount");
+          await (existing as Consumable).addItem(item.system.amount ?? 1);
+          return existing;
+        }
+        return super._onDropItem(_event, itemD);
+      }
+      case "item":
+      case "weapon":
+        if (!game.user.isGM) {
+          ui.notifications.warn("Use Item Piles functionality to move items.");
+          return undefined;
+        }
+        return super._onDropItem(_event, itemD);
+      case "characterClass":
+        await this.actor.setClass(item as CClass);
+        return item;
+      case "universalModifier":
+        throw new PersonaError("Universal Modifiers can't be added to sheets");
+      case "socialCard":
+        return undefined;
+      case "tag":
+        await this.actor.addCreatureTag(item as Tag);
+        return undefined;
+      default:
+        item.system satisfies never;
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        throw new Error(`Unknown supported type ${item["system"]["type"]}`);
+    }
+  }
 
 	getPower(event: JQuery.ClickEvent | JQuery.ContextMenuEvent) : Power {
 		const powerId = HTMLTools.getClosestData(event, "powerId");

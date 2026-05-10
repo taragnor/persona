@@ -1,7 +1,7 @@
 <section class="items f-col">
   <div class="item-list">
     {{#each itemlist as |item|}}
-    <div class="{{#if (ne item.system.noTrade true)}} item item-entry {{/if}} inventory-item" data-item-id="{{item.id}}">
+    <div class="{{#if (ne item.system.noTrade true)}} item item-entry {{/if}} inventory-item" data-item-id="{{item.id}}" title="{{item.name}}">
       {{#if (isItemUsable item)}}
       <span>
         <a class="rollItem">
