@@ -420,7 +420,9 @@ export class ActorSocial <T extends PersonaActor> {
     if (!socialLinkId) {return undefined;}
     if (!this.actor.isPC()) {return undefined;}
     if (socialLinkId instanceof PersonaActor) {return socialLinkId;}
-    return this.actor.system.social.find( x=> x.linkId == socialLinkId) as U<SocialLink>;
+    const link= this.actor.system.social.find( x=> x.linkId == socialLinkId);
+    if (!link) {return undefined;}
+    return PersonaDB.socialLinks().find(x=> x.id == socialLinkId);
   }
 
   async spendInspiration(this: ActorSocial<PC>, socialLinkOrId:SocialLink | SocialLink["id"], amt: number = 1): Promise<void> {

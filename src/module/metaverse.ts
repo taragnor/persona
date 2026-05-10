@@ -629,7 +629,7 @@ const MEMENTOS_SCENE_MODS : GeneratorSceneModifier<UniversalModifier["name"]>[] 
   {
     localName: "none",
     item: null,
-    probability: 70,
+    probability: 50,
   }, {
     localName: "hardShadowsFloor",
     item: "Difficult Enemies",
