@@ -1,6 +1,10 @@
 import {PersonaSettings} from "../../config/persona-settings.js";
 
 export class Logger {
+  static bufferStorage: string[] = [];
+  static lastMsgTime: number = Date.now();
+  static MS_DELAY_FOR_BUFFER = 2000;
+  static useBuffering = false;
 
   static log(txt: string) {
     console.log(txt);
@@ -23,6 +27,44 @@ export class Logger {
   }
 
   static async sendToChat<T extends Actor>(text: string, actor?: T) {
+    try {
+    if (this.useBuffering == false) {
+      await this._sendToChat(text);
+      return;
+    } else {
+      this.bufferStorage.push(text);
+      this.lastMsgTime = Date.now();
+      this.testPrintBuffer();
+    }
+    } catch (e) {
+      Debug(e);
+      throw new Error("Error with logging sendToChat");
+    }
+  }
+
+
+  private static testPrintBuffer() {
+    const timeOutFn = () => {
+      if (this.bufferStorage.length == 0) {return false;}
+      if ((Date.now() - this.lastMsgTime) > this.MS_DELAY_FOR_BUFFER) {
+        void this.printBuffer();
+        return true;
+      } else {
+        setTimeout( () => timeOutFn(), 250);
+        return false;
+      }
+    };
+    setTimeout( () => timeOutFn(), 250);
+  }
+
+  private static async printBuffer() {
+    const msg = this.bufferStorage
+      .join("<br>");
+    await this._sendToChat(msg);
+    this.bufferStorage = [];
+  }
+
+  private static async _sendToChat<T extends Actor>(text: string, actor?: T) {
     // const speaker = ChatMessage.getSpeaker(sender);
     const speaker = ChatMessage.getSpeaker({alias: actor?.name ?? "System"});
     const messageData = {

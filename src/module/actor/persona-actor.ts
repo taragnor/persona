@@ -1890,7 +1890,7 @@ async resetFatigueRecovery() {
 
 /** Auto NPC recovery for fatigue to be run each calendar day*/
 async recoverFatigue(this: NPCAlly) : Promise<number>{
-  if (this.fatigueLevel >= 0) {return -1;}
+  if (this.fatigueLevel >= 1) {return -1;}
   let recoveryDays = Number(this.getFlag<number>("persona", "fatigueRecovery") ?? 0);
   if (Number.isNaN(recoveryDays)) {
     PersonaError.softFail(`NaN recovery days for ${this.name}`);
