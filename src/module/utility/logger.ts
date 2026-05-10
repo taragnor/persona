@@ -34,7 +34,7 @@ export class Logger {
     } else {
       this.bufferStorage.push(text);
       this.lastMsgTime = Date.now();
-      this.testPrintBuffer();
+      this.testPrintBuffer(actor);
     }
     } catch (e) {
       Debug(e);
@@ -43,11 +43,11 @@ export class Logger {
   }
 
 
-  private static testPrintBuffer() {
+  private static testPrintBuffer(actor ?: Actor) {
     const timeOutFn = () => {
       if (this.bufferStorage.length == 0) {return false;}
       if ((Date.now() - this.lastMsgTime) > this.MS_DELAY_FOR_BUFFER) {
-        void this.printBuffer();
+        void this.printBuffer(actor);
         return true;
       } else {
         setTimeout( () => timeOutFn(), 250);
@@ -57,10 +57,10 @@ export class Logger {
     setTimeout( () => timeOutFn(), 250);
   }
 
-  private static async printBuffer() {
+  private static async printBuffer(actor ?: Actor) {
     const msg = this.bufferStorage
       .join("<br>");
-    await this._sendToChat(msg);
+    await this._sendToChat(msg, actor);
     this.bufferStorage = [];
   }
 

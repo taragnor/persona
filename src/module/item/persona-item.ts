@@ -2334,8 +2334,10 @@ getPassiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null,
 }
 
 getPassiveAndDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor  | null) : readonly ConditionalEffectC[] {
-  return this.getPassiveEffects(sourceActor)
-    .concat(this.getDefensiveEffects(sourceActor));
+  const ret = [] as ConditionalEffectC[];
+  ret.pushUnique(...this.getPassiveEffects(sourceActor));
+  ret.pushUnique(...this.getDefensiveEffects(sourceActor));
+  return ret;
 }
 
 hasPassiveEffects(this: ItemModifierContainer, actor: PersonaActor | null) : boolean {

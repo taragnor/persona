@@ -296,7 +296,7 @@ export class CombatResult  {
       case "none":
         break;
       case "expend-item": {
-        const item = cons.source ? PersonaDB.find(cons.source) : undefined;
+        const item = cons.source ? PersonaDB.find(cons.source ?? cons.realSource) : undefined;
         if (!effect) {
           const msg=`Can't expend item ${item?.name ?? "Unknown Item"} due to no effect present in combat result`;
           PersonaError.softFail(msg, item, cons);

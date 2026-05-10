@@ -206,9 +206,9 @@ export class PersonaCalendar {
   static async onCalendarAdvance() : Promise<string> {
     Hooks.callAll("personaCalendarAdvance");
     const actorPool : PersonaActor[] = ([]  as PersonaActor[])
-    .concat(PersonaDB.PCs())
-    .concat( PersonaDB.NPCAllies())
-    .concat (PersonaDB.allNPCs())
+    .concat( PersonaDB.PCs() )
+    .concat( PersonaDB.NPCAllies() )
+    .concat( PersonaDB.allNPCs() )
     ;
     const promises = actorPool.map ( async (actor) => ([actor, await actor.onCalendarAdvance()]) );
     const settled = await Promise.allSettled(promises);
