@@ -77,8 +77,8 @@ function registerDocumentClasses() {
 }
 
 function registerSheetApplications() {
-	Actors.unregisterSheet("core", ActorSheet);
-	Items.unregisterSheet("core", ItemSheet);
+	Actors.unregisterSheet("core", foundry.appv1.sheets.ActorSheet);
+	Items.unregisterSheet("core", foundry.appv1.sheets.ItemSheet);
 	//custom sheets
 	Actors.registerSheet("persona", PCSheet, {types: ["pc"], makeDefault: true});
 	Actors.registerSheet("persona", NPCSheet, {types: ["npc"], makeDefault: true});

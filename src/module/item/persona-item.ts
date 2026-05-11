@@ -2224,25 +2224,25 @@ getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, optio
         .filter (ce => ce.isMainModifier);
     };
     return this.#accessEffectsCache('allMainEffects', sourceActor, options, effectsGetterFn)
-      .concat(tagEffects);
+      .pushUnique(...tagEffects);
   } else {
     const effects: ConditionalEffectC[] = [];
     for (const cType of CETypes) {
       switch (cType) {
         case 'defensive':
-          effects.push(...this.getDefensiveEffects(sourceActor, options));
+          effects.pushUnique(...this.getDefensiveEffects(sourceActor, options));
           break;
         case 'triggered':
-          effects.push(...this.getTriggeredEffects(sourceActor, options));
+          effects.pushUnique(...this.getTriggeredEffects(sourceActor, options));
           break;
         case 'passive':
-          effects.push(...this.getPassiveEffects(sourceActor, options));
+          effects.pushUnique(...this.getPassiveEffects(sourceActor, options));
           break;
         case 'on-use':
-          effects.push(...this.getOnUseEffects(sourceActor, options));
+          effects.pushUnique(...this.getOnUseEffects(sourceActor, options));
           break;
         case 'unknown':
-          effects.push(...this.getEffects(sourceActor, options).filter( x=> x.conditionalType == cType));
+          effects.pushUnique(...this.getEffects(sourceActor, options).filter( x=> x.conditionalType == cType));
           break;
         default:
           cType satisfies never;

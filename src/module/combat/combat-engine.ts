@@ -1190,16 +1190,16 @@ export class CombatEngine {
         break;
       }
       case 'skillCard':
-      case 'consumable' :{
+      case 'consumable' : {
         const consumable = usableOrCard as Consumable;
         if (consumable.isSkillCard()
-          || consumable.system.subtype == 'consumable') {
+          || consumable.isConsumable()) {
           res.addEffect(null, attacker.actor, {
             type: 'expend-item',
             source: usableOrCard.accessor,
             owner: attacker.actor.accessor,
             realSource: undefined,
-            applyTo: "attacker",
+            applyTo: "user",
           }, situation);
         }
         break;

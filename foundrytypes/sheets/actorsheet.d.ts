@@ -1,3 +1,4 @@
+namespace Foundry {
 class ActorSheet <T extends Actor> extends DocumentSheet<T> {
 	actor: T;
 	async _onDropActor<T extends Actor>(_event: JQuery.Event, actorObj: unknown ): Promise<Actor| undefined>;
@@ -21,7 +22,12 @@ interface TabTypeData {
 }
 
 interface SubmitOptions {
-	preventClose:boolean;
-	preventRender: boolean;
-	updateData: null | object;
+  preventClose:boolean;
+  preventRender: boolean;
+  updateData: null | object;
 }
+
+}
+
+/**@deprecated Use the new foundry.appv1.sheets.ActorSheet */
+const ActorSheet = Foundry.ActorSheet;

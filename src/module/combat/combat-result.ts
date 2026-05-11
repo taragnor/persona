@@ -287,9 +287,24 @@ export class CombatResult  {
     }
   }
 
+   addCost<T extends ValidAttackers>(actor: T, cons: ActorChange<T>["otherEffects"][number]) {
+    const change = {
+      actor: actor.accessor,
+      otherEffects: [cons],
+      damage: {},
+      addStatus: [],
+      removeStatus: [],
+      localEffects: []
+    } satisfies ActorChange<PersonaActor>;
+    this.costs.push(change);
+  }
+
   addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | SocialLink | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
     if (target == undefined && checkSituationProp(situation, "target")) {
       target = PersonaDB.findActor<ValidAttackers | SocialLink>(situation.target);
+    }
+    if (target == undefined && checkSituationProp(situation, "user")) {
+      target = PersonaDB.findActor<ValidAttackers | SocialLink>(situation.user);
     }
     const effect = target && target.isValidCombatant() ? this.#getEffect(target): undefined;
     switch (cons.type) {
@@ -297,11 +312,6 @@ export class CombatResult  {
         break;
       case "expend-item": {
         const item = cons.source ? PersonaDB.find(cons.source ?? cons.realSource) : undefined;
-        if (!effect) {
-          const msg=`Can't expend item ${item?.name ?? "Unknown Item"} due to no effect present in combat result`;
-          PersonaError.softFail(msg, item, cons);
-          break;
-        }
         if (! (item instanceof PersonaItem)) {
           const msg = "Illegal target for expend item";
           PersonaError.softFail(msg, item, cons);
@@ -312,9 +322,12 @@ export class CombatResult  {
           PersonaError.softFail(msg, item, cons);
           break;
         }
-        effect.otherEffects.push( {
-          ...cons,
-        });
+        if (!item.parent) {
+          const msg =`Item to expend: ${item.name} has no parent`;
+          PersonaError.softFail(msg, item, cons);
+          break;
+        }
+        this.addCost(item.parent as ValidAttackers, cons);
         break;
       }
       case "modifier":

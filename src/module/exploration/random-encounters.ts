@@ -104,7 +104,6 @@ export class RandomEncounter {
     }
     html+= `</ul>`;
     return html;
-
   }
 
   static async printRandomEncounterList(encounter: Omit<Encounter, "encounterType">) {
@@ -125,7 +124,8 @@ export class RandomEncounter {
       whisper: game.users.filter(usr => usr.isGM),
       style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
     };
-    await ChatMessage.create(messageData, {});
+    const msg = await ChatMessage.create(messageData, {});
+    await msg.setFlag("persona", "randomEncData", encounter.enemies.map(shadow=> shadow.accessor));
   }
 
   static getEncounterList(sceneOrRegion: PersonaScene | PersonaRegion, shadowType ?: Shadow["system"]["creatureType"]): Shadow[] {

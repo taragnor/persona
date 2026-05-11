@@ -251,7 +251,7 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 		void TalentPrinter.open();
 	}
 
-  override render(...args: Parameters<ActorSheet<Actor>["render"]>) {
+  override render(...args: Parameters<Foundry.ActorSheet<Actor>["render"]>) {
     PersonaActorSheetBase.openSheets.add(this);
     return super.render(...args);
   }
