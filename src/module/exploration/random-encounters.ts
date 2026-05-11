@@ -117,6 +117,7 @@ export class RandomEncounter {
     <ul class="enc-list">
     ${enchtml}
     </ul>
+    <button class="run-combat"> Run Encounter </button>
     `;
     const messageData = {
       speaker: speaker,
@@ -126,6 +127,22 @@ export class RandomEncounter {
     };
     const msg = await ChatMessage.create(messageData, {});
     await msg.setFlag("persona", "randomEncData", encounter.enemies.map(shadow=> shadow.accessor));
+  }
+
+  static async onChatButtonCombat(msg: ChatMessage) {
+    if (!game.user.isGM) {return;}
+    const data = msg.getFlag<Shadow["accessor"][]>("persona", "randomEncData");
+    if (!data) {
+      ui.notifications.warn("No chat message data present");
+      return;
+    }
+    const monsterList = data.map (acc => PersonaDB.findActor(acc));
+    const encounter : Encounter = {
+      enemies: monsterList,
+      encounterDifficulty: "standard",
+      encounterType: "wandering"
+    };
+    await CombatScene.create(encounter, {});
   }
 
   static getEncounterList(sceneOrRegion: PersonaScene | PersonaRegion, shadowType ?: Shadow["system"]["creatureType"]): Shadow[] {
@@ -605,3 +622,9 @@ type PresenceCheckResult = null
 //@ts-expect-error adding to global scope
 window.encounterList = (lvl: number) => RandomEncounter.getRandomEncounterListFromDiffLevel(lvl)
 .map( x=> x.directoryName);
+
+Hooks.on("renderChatMessageHTML", (chat, html) => {
+  $(html).find("button.run-combat").on ("click",  () => {
+    void RandomEncounter.onChatButtonCombat(chat);
+  });
+});
