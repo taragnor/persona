@@ -5,6 +5,7 @@ import { CARD_DROP_RATE, ITEM_DROP_RATE, ProbabilityRate, RANDOM_POWER_RATE } fr
 import { TreasureTable } from "../../config/treasure-tables.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaItem} from "../item/persona-item.js";
+import {Metaverse} from "../metaverse.js";
 
 export class TreasureSystem {
 	static generate(treasureLevel: number, modifier : number = 0, treasureMin = 1) : EnchantedTreasureFormat[] {
@@ -203,14 +204,21 @@ export class TreasureSystem {
     await this.printTreasureFound(treasures);
   }
 
-  static async awardFoundRoomTreasure(target: NPCAlly | PC, treasures: EnchantedTreasureFormat[]) {
+  static async awardFoundRoomTreasure(actor: NPCAlly | PC, searchRoll = 4) : Promise<EnchantedTreasureFormat[]> {
+    const region = Metaverse.getRegion();
+    if (!region) {
+      PersonaError.softFail("Can't award treasure, no dungeon region");
+      return [];
+    }
+    const treasures = await region.treasureFound(actor, searchRoll);
     for (const treasure of treasures) {
       try {
-        await target.addTreasureItem(treasure);
+        await actor.addTreasureItem(treasure);
       } catch (e) {
-        PersonaError.softFail("Can't award treasure to target", e, target, treasure);
+        PersonaError.softFail("Can't award treasure to target", e, actor, treasure);
       }
     }
+    return treasures;
   }
 
 	static async printTreasureFound (treasures: EnchantedTreasureFormat[]) {
@@ -220,10 +228,6 @@ export class TreasureSystem {
       const treasureStr = TreasureSystem.printEnchantedTreasureString(tr);
       return acc + `<div> ${treasureStr} </div>`;
     }, htmlHeader);
-		// for (const treasure of treasures) {
-		// 	const treasureString = TreasureSystem.printEnchantedTreasureString(treasure);
-		// 	html +=`<div> ${treasureString} </div>`;
-		// }
 		return await ChatMessage.create({
 			speaker: {
 				alias: "Treasure Rolls"

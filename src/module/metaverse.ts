@@ -427,58 +427,58 @@ export class Metaverse {
 		PersonaSockets.simpleSend("PASS_MV_TURN", {}, gms);
 	}
 
-	static async searchRegion(region: PersonaRegion) {
-		const data = region.regionData;
-		const searchOptions :typeof SearchMenu["options"] = {
-			treasureRemaining: region.treasuresRemaining,
-			stopOnHazard: data.specialMods.includes("stop-on-hazard"),
-			isHazard: data.hazard != "none" && data.hazard != "found",
-			isSecret: data.secret != "none" && data.secret != "found",
-			incTension: data.specialMods.includes("no-tension-increase") ? 0 : 0, // set to always 0 due to new rules change
-			hazardOnTwo: data.specialMods.includes("hazard-on-2"),
-			cycle: false,
-			treasureFindBonus: 0,
-		};
-		const results = await SearchMenu.start(searchOptions, region);
+  static async searchRegion(region: PersonaRegion) {
+    const data = region.regionData;
+    const searchOptions :typeof SearchMenu["options"] = {
+      treasureRemaining: region.treasuresRemaining,
+      stopOnHazard: data.specialMods.includes("stop-on-hazard"),
+      isHazard: data.hazard != "none" && data.hazard != "found",
+      isSecret: data.secret != "none" && data.secret != "found",
+      incTension: data.specialMods.includes("no-tension-increase") ? 0 : 0, // set to always 0 due to new rules change
+      hazardOnTwo: data.specialMods.includes("hazard-on-2"),
+      cycle: false,
+      treasureFindBonus: 0,
+    };
+    const results = await SearchMenu.start(searchOptions, region);
     if (results.every( x=> x.declaration == "leave")) {
       return;
     }
-		const treasureRolls : EnchantedTreasureFormat[] = [];
-		for (const resultSet of results) {
-			const searcher = PersonaDB.findActor(resultSet.searcher.actor);
-			for (const result of resultSet.results) {
-				switch (result.result) {
-					case "nothing":
-						break;
-					case "treasure": {
-						if (!result.roll) {
-							PersonaError.softFail("Treasure Found but no roll given");
-							break;
-						}
-						const treasureRoll = await region.treasureFound(result.roll, searcher);
-						if (treasureRoll) {
-							treasureRolls.push(...treasureRoll);
-              await TreasureSystem.awardFoundRoomTreasure(searcher, treasureRoll);
-						}
-						break;
-					}
-					case "hazard":
-						await region.hazardFound();
-						break;
-					case "secret":
-						await region.secretFound();
-						break;
-					case "other":
-					case "disconnected":
-						break;
-					default:
-						result.result satisfies undefined;
-				}
-			}
-		}
-		await TreasureSystem.handleTreasureRolls(treasureRolls);
-		await this.passMetaverseTurn();
-	}
+    const treasureRolls : EnchantedTreasureFormat[] = [];
+    for (const resultSet of results) {
+      const searcher = PersonaDB.findActor(resultSet.searcher.actor);
+      for (const result of resultSet.results) {
+        switch (result.result) {
+          case "nothing":
+            break;
+          case "treasure": {
+            if (!result.roll) {
+              PersonaError.softFail("Treasure Found but no roll given");
+              break;
+            }
+            // const treasureRoll = await region.treasureFound(result.roll, searcher);
+            // if (treasureRoll) {
+            // 	treasureRolls.push(...treasureRoll);
+            treasureRolls.push(...await TreasureSystem.awardFoundRoomTreasure(searcher, result.roll));
+            // }
+            break;
+          }
+          case "hazard":
+            await region.hazardFound();
+            break;
+          case "secret":
+            await region.secretFound();
+            break;
+          case "other":
+          case "disconnected":
+            break;
+          default:
+            result.result satisfies undefined;
+        }
+      }
+    }
+    await TreasureSystem.printTreasureFound(treasureRolls);
+    await this.passMetaverseTurn();
+  }
 
 	static getRegion(regionId ?: string) : PersonaRegion | undefined {
 		let scene = game.scenes.active;

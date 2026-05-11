@@ -205,8 +205,7 @@ export class PersonaRegion extends RegionDocument {
 		await this.setRegionData(regionData);
 	}
 
-	// async treasureFound(searchRoll: number): Promise<Roll | undefined> {
-	async treasureFound(searchRoll: number, searcher: ValidAttackers): Promise<EnchantedTreasureFormat[]> {
+	async treasureFound( searcher: ValidAttackers, searchRoll: number, ): Promise<EnchantedTreasureFormat[]> {
 		const regionData = this.regionData;
 		const searchBonus = searcher.getPersonalBonuses("treasure-roll-bonus").total( {user: searcher.accessor});
 		if (this.treasuresRemaining <= 0) {
