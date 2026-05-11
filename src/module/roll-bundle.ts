@@ -23,8 +23,8 @@ abstract class RollBundleBase {
     this.name = newName;
   }
 
-  get natural(): number { return this.dice[0].total; }
-  get dice() { return this.roll.dice; }
+  get natural(): number { return this.roll.dice[0].total; }
+  get dice() { return this.roll.terms; }
   get gmRoll() : boolean { return !this._playerRoll; }
 }
 
@@ -150,8 +150,8 @@ export class ResolvedRollBundle extends RollBundleBase {
       ...this,
       roll: this.roll.toJSON(),
       natural: this.natural,
-      dice: this.dice,
-      gmRoll: !this._playerRoll,
+      dice: JSON.stringify(this.dice),
+      gmRoll: this.gmRoll,
       success: this.success,
       critical: this.critical,
       total: this.total,

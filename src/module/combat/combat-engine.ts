@@ -382,8 +382,8 @@ export class CombatEngine {
   {
     const attackBonus = this.getAttackBonus(attacker, power, target, options);
     const rollName = this.getRollNameGenFn(attacker, power, target);
-    const secretRollMaybe = attacker.user.isPCLike();
-    const bundle = new RollBundle(rollName, rollData.roll, false, attackBonus, situation, situation.DC ?? -2);
+    const isPlayerRoll = attacker.user.isPCLike();
+    const bundle = new RollBundle(rollName, rollData.roll, isPlayerRoll, attackBonus, situation, situation.DC ?? -2);
     return bundle.resolve();
   }
 
@@ -890,7 +890,7 @@ export class CombatEngine {
     const powerEffects= power.getEffects(attacker, {CETypes: ['on-use', 'passive']});
     const extraTagEffects = (situation.addedTags ?? [])
       .flatMap ( tag => tag instanceof PersonaItem ? tag.getEffects(null ) : []);
-    const sourcedEffects : ConditionalEffectC[] = []
+    const sourcedEffects : ConditionalEffectC[] = [];
     const eqTest = (a: ConditionalEffectC, b: ConditionalEffectC) => a.equals(b);
     sourcedEffects.pushUniqueS(eqTest, ...attackerEffects);
     sourcedEffects.pushUniqueS(eqTest, ...defenderEffects);

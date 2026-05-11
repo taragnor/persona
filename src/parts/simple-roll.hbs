@@ -1,48 +1,47 @@
 <section class="simple-roll">
-	<h2>
-		{{{roll.name}}}
-		{{#if roll.DC}}
-		<span class="dc-string">
-			vs DC {{roll.DC}}
-		</span>
-		{{/if}}
-	</h2>
-	<div class="roll-body tooltip">
-		{{#each roll.dice as |die|}}
-		<div class="dice">
-			<span>{{die.number}}d{{die.faces}} </span>
-			<i class="fa-solid fa-arrow-right"></i>
-			<span class="die-total">
-				{{die.total}}
-			</span>
-		</div>
-		{{/each}}
-		<div class="mods-section tooltiptext {{#if roll.gmRoll}} gm-only {{/if}}">
-			{{#each roll.printableMods as |mod|}}
-			<div class="mod-item">
-				<span class="mod-name">
-					{{mod}}
-				</span>
-			</div>
-			{{/each}}
-		</div>
-		<div class="final-total">
-			Total:
-			{{roll.total}}
-		</div>
-		{{#if showSuccess}}
-		<div class="result">
-			{{#if (eq roll.result "critical")}}
-			CRITICAL
+  <h2>
+    {{{roll.name}}}
+    {{#if roll.DC}}
+    <span class="dc-string">
+      vs DC {{roll.DC}}
+    </span>
+    {{/if}}
+  </h2>
+  <div class="roll-body tooltip">
+    <div class="dice">
+      <span>
+        Natural:
+      </span>
+      <span>
+      {{roll.natural}}
+      </span>
+    </div>
+    <div class="mods-section tooltiptext {{#if roll.gmRoll}} gm-only {{/if}}">
+      {{#each roll.printableMods as |mod|}}
+      <div class="mod-item">
+        <span class="mod-name">
+          {{mod}}
+        </span>
+      </div>
+      {{/each}}
+    </div>
+    <div class="final-total">
+      Total:
+      {{roll.total}}
+    </div>
+    {{#if showSuccess}}
+    <div class="result">
+      {{#if (eq roll.result "critical")}}
+      CRITICAL
       {{/if}}
-			{{#if (eq roll.result "hit")}}
-			SUCCESS
+      {{#if (eq roll.result "hit")}}
+      SUCCESS
       {{/if}}
-			{{#if (eq roll.result "miss")}}
-			FAIL
-			{{/if}}
-		</div>
-		{{/if}}
-	</div>
+      {{#if (eq roll.result "miss")}}
+      FAIL
+      {{/if}}
+    </div>
+    {{/if}}
+  </div>
 </section>
 
