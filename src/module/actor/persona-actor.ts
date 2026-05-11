@@ -311,12 +311,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return item;
   }
 
-  async addTreasureItem( treasure: EnchantedTreasureFormat, quietLog = false) {
+  async addTreasureItem( treasure: EnchantedTreasureFormat, quietLog = false) : Promise<void> {
     let logMsg = "";
     const baseItem = PersonaDB.findItem(treasure.item);
     const tags = baseItem.system.itemTags;
     if (treasure.enchantments.length == 0) {
-      return await this.addItem(baseItem, treasure.amount ?? 1);
+      const item =await this.addItem(baseItem, treasure.amount ?? 1);
+      return;
     }
     const tagIds =
       [
@@ -344,7 +345,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       if (baseItem.id) {
         await item.update({"system.itemBase" : baseItem.id});
       }
-      return item;
     } else {
       //add to existing amt
       const newAmt = stackableItem.system.amount + amount ;

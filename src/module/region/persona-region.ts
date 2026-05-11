@@ -48,10 +48,6 @@ const SPECIAL_MOD_LIST = [
 
 type SpecialMod = typeof SPECIAL_MOD_LIST[number];
 
-// const SPECIAL_MODS = Object.fromEntries(
-// 	SPECIAL_MOD_LIST.map( x=> [x, `persona.specialRoomMods.${x}`])
-// );
-
 const SPECIAL_MODS = HTMLTools.createLocalizationObject(SPECIAL_MOD_LIST, "persona.specialRoomMods");
 
 const SECRET_CHOICES_LIST = [
@@ -118,11 +114,6 @@ export class PersonaRegion extends RegionDocument {
 	}
 
 	get disabled() : boolean {
-		// return this.allRoomEffects.some( eff=>
-		// 	eff.getPassiveEffects(null).some( CE=>
-		// 		CE.consequences.some( cons => cons.type == "dungeon-action" && cons.dungeonAction == "disable-region")
-		// 	)
-		// );
 		const situation : Situation = {
 			trigger: "on-enter-region",
 			triggeringRegionId: this.id,
