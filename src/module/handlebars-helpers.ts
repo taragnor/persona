@@ -265,7 +265,10 @@ export class PersonaHandleBarsHelpers {
       }
     },
 
-    'cantUseReason': (persona:Persona, power: Power) : SafeString => {
+    'cantUseReason': (persona:Persona | PersonaActor, power: Power) : SafeString => {
+      if (persona instanceof PersonaActor) {
+        persona= (persona as ValidAttackers).persona();
+      }
       const reason =  persona.canUsePower_getIneligibilityReason(power);
       return new Handlebars.SafeString( reason ? reason : "Power is Usable");
     },

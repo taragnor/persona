@@ -114,6 +114,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return PersonaSettings.getDamageSystem();
   }
 
+  usesOptimizedDamage(this: Power, user: Persona) :boolean {
+    return this.hasTag(["theurgy", "teamwork"], user);
+  }
+
   clearCache() {
     this.cache = {
       effects: PersonaItem.#newEffectsCache(),

@@ -20,31 +20,34 @@
 
 {{#if (and (canUseSideboard actor) showSideboard)}}
 <section class="power-sideboard">
-<h3> Sideboarded Powers (max {{persona.maxSideboardPowers}}) </h3>
-<div class="power-sideboard">
-	{{#each actor.sideboardPowers as |power i|}}
-	<div class="sideboard-power" data-power-id="{{power.id}}">
-		<div class="power-name-block {{#if (lte ../persona.maxSideboardPowers i)}} over-max-power {{/if}} {{#if (isPowerIllegal ../persona power)}} illegal-level {{/if}} {{#if (isPowerOnCooldown ../persona power)}} on-cooldown{{/if}}">
-			<a class="powerName" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power persona=../persona}}'>
-				{{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../actor}}
-				<span class="cost-string">
-					{{powerCostString power ../persona}}
-				</span>
-			</a>
-		</div>
-		<div class="power-operations">
-			{{#if (eq ../actor.system.type "pc")}}
-			<a class="move-to-main" title="Move to Main powers">
-				<i class="fa-solid fa-truck-ramp-box"></i>
-			</a>
-			{{/if}}
-			<a class="delPower" title="Delete Power">
-				<i class="fa-solid fa-trash-can"></i>
-			</a>
-		</div>
-	</div>
-	{{/each}}
-</div>
+  <h3> Sideboarded Powers (max {{persona.maxSideboardPowers}}) </h3>
+  <div class="power-sideboard">
+    {{#each actor.sideboardPowers as |power i|}}
+    <div class="sideboard-power" data-power-id="{{power.id}}">
+      <div class="power-name-block {{#if (lte ../persona.maxSideboardPowers i)}} over-max-power {{/if}} {{#if (isPowerIllegal ../persona power)}} illegal-level {{/if}} {{#if (isPowerOnCooldown ../persona power)}} on-cooldown{{/if}}">
+        <a class="powerName tooltip" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power persona=../persona}}'>
+          {{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../actor}}
+          <span class="cost-string">
+            {{powerCostString power ../persona}}
+          </span>
+          <div class="tooltip">
+            {{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power persona=../persona}}
+          </div>
+        </a>
+      </div>
+      <div class="power-operations">
+        {{#if (eq ../actor.system.type "pc")}}
+        <a class="move-to-main" title="Move to Main powers">
+          <i class="fa-solid fa-truck-ramp-box"></i>
+        </a>
+        {{/if}}
+        <a class="delPower" title="Delete Power">
+          <i class="fa-solid fa-trash-can"></i>
+        </a>
+      </div>
+    </div>
+    {{/each}}
+  </div>
 </section>
 {{/if}}
 

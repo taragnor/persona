@@ -427,7 +427,6 @@ type AlterMPConsequence = {
 	amount: ConsequenceAmount,
 }
 
-
 type ExpendItemConsequence = {
 	type : "expend-item",
 	applyTo : ConsequenceTarget,

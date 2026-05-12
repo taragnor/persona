@@ -66,6 +66,10 @@ export class AltDamageSystem extends DamageSystemBase {
   }
 
   public getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: SituationTypes.BonusQuerySituation) : DamageCalculation {
+    if (power.usesOptimizedDamage(userPersona) &&
+      userPersona.combatStats.strength < userPersona.combatStats.magic) {
+      return this.getMagicSkillDamage(power as unknown as  ItemSubtype<Power, "magic">, userPersona, situation);
+    }
     const dtype = power.getDamageType(userPersona);
     const calc = new DamageCalculation(dtype);
     const skillDamage = this.weaponSkillDamage(power);
@@ -88,6 +92,10 @@ export class AltDamageSystem extends DamageSystemBase {
   }
 
   public getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Persona, situation: SituationTypes.BonusQuerySituation) : DamageCalculation {
+    if (power.usesOptimizedDamage(userPersona) &&
+      userPersona.combatStats.strength > userPersona.combatStats.magic) {
+      return this.getWeaponSkillDamage(power as unknown as  ItemSubtype<Power, "weapon">, userPersona, situation);
+    }
     const dtype = power.getDamageType(userPersona);
     const isHealing = dtype == "healing";
     const persona = userPersona;

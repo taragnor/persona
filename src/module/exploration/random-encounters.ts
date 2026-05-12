@@ -132,7 +132,7 @@ export class RandomEncounter {
   static async onChatButtonCombat(msg: ChatMessage) {
     if (!game.user.isGM) {return;}
     const data = msg.getFlag<Shadow["accessor"][]>("persona", "randomEncData");
-    if (!data) {
+    if (!data || data.length == 0) {
       ui.notifications.warn("No chat message data present");
       return;
     }

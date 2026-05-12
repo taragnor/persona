@@ -1,12 +1,26 @@
 {{#if (not (canUsePower persona power))}}
-{{cantUseReason persona power}}
+<div>
+  {{cantUseReason persona power}}
+</div>
 {{/if}}
-{{power.name}}
-Tags: {{getPowerTagsL persona.user power}}
+<div>
+  {{power.name}}
+</div>
+<div>
+  Tags: {{getPowerTagsL persona.user power}}
+</div>
 {{#if (ne power.system.damageLevel "none")}}
-Targets: {{getPowerTargetsL power}}
-Damage Level: {{power.system.damageLevel}}
+<div>
+  Targets: {{getPowerTargetsL power}}
+</div>
+<div>
+  Damage Level: {{power.system.damageLevel}}
+</div>
 {{/if}}
-{{power.description}}
-Cost: {{powerCostString power persona}}
+<div>
+  {{power.description}}
+</div>
+<div>
+  Cost: {{powerCostString power persona}}
+</div>
 
