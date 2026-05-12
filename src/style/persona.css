@@ -754,7 +754,7 @@ div.weather-icon{
 
 }
 
-.day-weather.flexrow div {
+.day-weather.f-row div {
 	flex: 10 10 auto;
 	min-width: 5%;
 	max-width: 95%;

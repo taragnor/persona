@@ -2,6 +2,8 @@ import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaCombat} from "../combat/persona-combat.js";
 import {Metaverse} from "../metaverse.js";
 import {PersonaDB} from "../persona-db.js";
+import {SidePanelManager} from "../side-panel/side-panel-manager.js";
+import {PersonaCalendar} from "../social/persona-calendar.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {CraftingPanel} from "./crafting-panel.js";
 import {ItemUsePanel} from "./item-use-panel.js";
@@ -104,6 +106,9 @@ export class DowntimePanel extends PersonaPanel {
   override async getData() {
     return {
       ...await super.getData(),
+      doom: PersonaCalendar.DoomsdayClock,
+      day: PersonaCalendar.getDateString(),
+      weatherIcon : PersonaCalendar.getWeatherIcon()[0].outerHTML,
       actor: this.actor,
     };
   }
@@ -301,5 +306,9 @@ Hooks.on("DBLoaded", async () => {
   if (Metaverse.getPhase() == "downtime") {
     await PersonaSocial.panel.activate();
   }
+});
+
+Hooks.on("personaCalendarAdvance", () => {
+  SidePanelManager.refreshAllInstancesOf(DowntimePanel);
 });
 

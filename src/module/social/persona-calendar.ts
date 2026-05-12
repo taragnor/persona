@@ -204,7 +204,6 @@ export class PersonaCalendar {
   }
 
   static async onCalendarAdvance() : Promise<string> {
-    Hooks.callAll("personaCalendarAdvance");
     const actorPool : PersonaActor[] = ([]  as PersonaActor[])
     .concat( PersonaDB.PCs() )
     .concat( PersonaDB.NPCAllies() )
@@ -212,6 +211,7 @@ export class PersonaCalendar {
     ;
     const promises = actorPool.map ( async (actor) => ([actor, await actor.onCalendarAdvance()]) );
     const settled = await Promise.allSettled(promises);
+    Hooks.callAll("personaCalendarAdvance");
     const report = settled
     .filter ( x=> x.status == "fulfilled")
     .map ( x=> x.value as [PersonaActor, string[]])

@@ -39,6 +39,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   private _tags: PersonaTagManager<this>;
   private _talentCache: TimedCache<readonly Talent[]>;
 
+  private basicCaches = {
+    mhp: new TimedCache(() => this._mhp(), 3000),
+  };
+
+
   static leveling = {
     SHADOWS_TO_LEVEL: 10,
     BASE_XP: 600, // XP FOR FIRST LEVEL UP
@@ -64,6 +69,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   clearCache() {
+    Object.values(this.basicCaches)
+      .forEach(cache=> cache.clear());
     this.tags.clearCache();
     this._talentCache.clear();
     this.#cache = {
@@ -1386,6 +1393,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   get mhp() : number {
+    return this.basicCaches.mhp.value;
+  }
+
+  private _mhp(): number {
     return Math.round(this.combatStats.mhpCalculation().total);
   }
 

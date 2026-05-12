@@ -56,7 +56,6 @@ export class PersonaTagSheet extends PersonaEffectContainerBaseSheet {
 				...STATUS_EFFECT_TRANSLATION_TABLE,
 			},
 		};
-
 		return data;
 	}
 

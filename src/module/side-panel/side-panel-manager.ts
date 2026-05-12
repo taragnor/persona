@@ -177,8 +177,22 @@ export class SidePanelManager {
     const panelData = panel.find(".panel-data");
     this._activePanel?._activateListeners(panel.find(".panel-data"));
     Hooks.callAll("renderSidePanel", sidePanel, panelData);
-
   }
+
+  static refreshAllInstancesOf<T extends SidePanel>(panelClass: ConstructorOf<T>) {
+    this.allPanels()
+      .filter (panel=> panel instanceof panelClass)
+      .forEach( panel => void panel.updatePanel());
+  }
+
+  static allPanels() : SidePanel[] {
+    if (!this._activePanel) {return [];}
+    return [
+      this._activePanel,
+      ...this.panelStack,
+    ];
+  }
+
 
   private static createContainer() : typeof SidePanelManager["HTMLPanel"] {
     const infoPanel = $("<section>").addClass(this.CSSClassName);

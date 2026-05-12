@@ -3,8 +3,8 @@ import {PersonaSettings} from "../../config/persona-settings.js";
 export class Logger {
   static bufferStorage: string[] = [];
   static lastMsgTime: number = Date.now();
-  static MS_DELAY_FOR_BUFFER = 2000;
-  static useBuffering = false;
+  static MS_DELAY_FOR_BUFFER = 1500;
+  static useBuffering = true;
 
   static log(txt: string) {
     console.log(txt);
@@ -32,7 +32,8 @@ export class Logger {
       await this._sendToChat(text);
       return;
     } else {
-      this.bufferStorage.push(text);
+      const mergeTxt = `<div class="log-record">(${actor?.name ?? "System"}) ${text}</div>`;
+      this.bufferStorage.push(mergeTxt);
       this.lastMsgTime = Date.now();
       this.testPrintBuffer(actor);
     }
@@ -44,17 +45,17 @@ export class Logger {
 
 
   private static testPrintBuffer(actor ?: Actor) {
-    const timeOutFn = () => {
+    const timeOutFn = (actor ?: Actor) => {
       if (this.bufferStorage.length == 0) {return false;}
       if ((Date.now() - this.lastMsgTime) > this.MS_DELAY_FOR_BUFFER) {
         void this.printBuffer(actor);
         return true;
       } else {
-        setTimeout( () => timeOutFn(), 250);
+        setTimeout( () => timeOutFn(actor), 250);
         return false;
       }
     };
-    setTimeout( () => timeOutFn(), 250);
+    setTimeout( () => timeOutFn(actor), 250);
   }
 
   private static async printBuffer(actor ?: Actor) {

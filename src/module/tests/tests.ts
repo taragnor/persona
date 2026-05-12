@@ -1,6 +1,7 @@
 import {LocalEffect, OtherEffect} from "../../config/consequence-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import { ConsequenceApplier } from "../combat/consequence-applier.js";
+import {DowntimePanel} from "../panels/downtime-panel.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {SocialCardExecutor} from "../social/social-card-executor.js";
@@ -16,6 +17,11 @@ export class Tests {
       throw new PersonaError("Can't find Kim Actor");
     }
     return kim;
+  }
+
+  static async panelTest_downtime() {
+    await PersonaSocial.panel.setActor(this.kim);
+    await PersonaSocial.panel.activate();
   }
 
   private static get dummyShell() {
