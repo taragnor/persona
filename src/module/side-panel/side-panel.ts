@@ -124,9 +124,14 @@ export abstract class SidePanel {
     const buttonData = await this.resolveButtonData();
     const buttonHTML = buttonData
     .map( (button) => {
-      const tooltip = button.tooltip ? ` title="${button.tooltip}"` : "";
-      return `<button class='side-panel-button ${button.cssClasses.join(" ")}' data-button-index='${button.index}' ${button.enabled ? "" : "disabled"} ${tooltip}>
+      const tooltip = button.tooltip
+      ? ` <div class="tooltiptext">
+      ${button.tooltip}
+        </div>`
+        : "";
+      return `<button class='side-panel-button tooltip ${button.cssClasses.join(" ")}' data-button-index='${button.index}' ${button.enabled ? "" : "disabled"} >
       ${button.label}
+      ${tooltip}
       </button>
       `;
     });

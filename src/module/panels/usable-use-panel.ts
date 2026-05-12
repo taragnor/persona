@@ -41,7 +41,7 @@ export class UsableUsePanel extends UsableListPanel {
     ${this.getItemIconHTML(usable).toString()}
     </span>`;
     const nameBlock= `<span class="itemName">${usable.name}</span>`;
-    const amountTxt = usable.amount > 1 ? `${usable.amount}` : "";
+    const amountTxt = usable.amount > 1 ? ` (${usable.amount})` : "";
     const amountBlock = `<span class="item-amount">${amountTxt}</span>`;
 
     return `${icon}${nameBlock}${amountBlock}`;
