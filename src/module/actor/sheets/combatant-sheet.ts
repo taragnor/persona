@@ -58,11 +58,11 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".delTalent").on("click", this.deleteTalent.bind(this));
 		html.find(".rollPower").on("click", this.usePower.bind(this));
 		html.find(".rollPower").rightclick(this.displayDamageStack.bind(this));
-		html.find(".rollItem").on("click", this.useItem.bind(this));
+		html.find(".inventory-item").on("click", this.useItem.bind(this));
 		html.find(".powerName").on("click", this.openPower.bind(this));
 		html.find(".talentName").on("click", this.openTalent.bind(this));
 		html.find(".focusName").on("click", this.openFocus.bind(this));
-		html.find(".itemName").on("click", this.openItem.bind(this));
+		html.find(".itemName").rightclick(this.openItem.bind(this));
 		html.find(".rollSave").on("click", this.rollSave.bind(this));
 		html.find(".powerName").on("mouseover", this.createDamageEstimate.bind(this));
 		html.find(".power-img").on("mouseover", this.createDamageEstimate.bind(this));
@@ -266,7 +266,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		 }, lockOptions);
 	}
 
-	async useItem(event: Event) {
+	async useItem(event: JQuery.Event) {
+    event.preventDefault();
 		const itemId = HTMLTools.getClosestData(event, "itemId");
 		const item = this.actor.inventory.find(item => item.id ==itemId);
 		if (!item) {
@@ -275,6 +276,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		if (!item.isSkillCard() && (!item.isUsableType() || !item.isTrulyUsable())) {
 			throw new PersonaError(`item ${item.name} isn't usable`);
 		}
+    if (!await HTMLTools.confirmBox(`Use ${item.name}?`, `Use ${item.name}`)) {return;}
 		await this._useItemOrPower(item);
 	}
 

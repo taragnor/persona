@@ -105,3 +105,14 @@ export class TimeLog {
     // await Logger.sendToChat(msg);
   }
 }
+
+
+Hooks.on("renderChatMessageHTML", (msg: ChatMessage, html) => {
+  if (!msg.speaker.actor || msg.speaker.alias == msg.author.name) {return;}
+  const sender = $(html).find("h4.message-sender");
+  const authorName = msg?.author?.name ?? "Unknown Author";
+  const authorBlock = `<span class="author-name"> (${authorName}) </span>`;
+
+  sender.append($(authorBlock));
+  // sender.text(sender.text() + authorBlock);
+});

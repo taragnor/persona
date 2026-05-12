@@ -15,6 +15,7 @@ namespace Foundry {
 		/**deprecated as of V12, use author instead*/
 		user?: FoundryUser;
 		author: FoundryUser;
+    speaker: ChatSpeakerObject;
 		content: string;
 		whisper: unknown[];
 		rolls: R[];

@@ -2354,7 +2354,7 @@ async removeItem(item: Carryable, amountUsed: number) {
   }
   if (amount > amountUsed) {
     await item.update({"system.amount": amount-amountUsed});
-    await Logger.sendToChat(`${this.name} removed ${amountUsed} of ${item.name} (original Amount : ${amount})`);
+    // await Logger.sendToChat(`${this.name} removed ${amountUsed} of ${item.name} (original Amount : ${amount})`);
     return;
   }
 }

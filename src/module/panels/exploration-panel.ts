@@ -69,28 +69,6 @@ export class ExplorationPanel extends PersonaPanel {
     },
     ];
     buttons.push(...this.PowersAndItemsButtons());
-    // const ownedMembers = PersonaDB.activePCParty()
-    // .filter (actor => actor.isPCLike() && actor.isOwner);
-    // for (const member of ownedMembers) {
-    //   if (member.persona().explorationPowers.length == 0) {continue;}
-    //   buttons.push( {
-    //     label: `${ownedMembers.length > 1 ? member.name : ""} Item`,
-    //     onPress: () => void this._openInventoryPanel(member),
-    //     enabled: () => true,
-
-    //   });
-    //   buttons.push( {
-    //     label: `${ownedMembers.length > 1 ? member.name : ""} Powers`,
-    //     onPress: () => void this._openUsePowerPanel(member),
-    //     enabled: () => true,
-    //   });
-    // }
-    // const NPCAlly = PersonaDB.activePCParty().find( x=> x.isNPCAlly());
-    // buttons.push( {
-    //   label: `Swap ${NPCAlly?.displayedName ?? "Teammate"}`,
-    //   onPress: () => void Metaverse.chooseAlly(),
-    //   enabled: () => !PersonaCombat.combat,
-    // });
     return buttons;
   }
 
@@ -98,8 +76,10 @@ export class ExplorationPanel extends PersonaPanel {
     const buttons : SidePanel.ButtonConfig[] = [];
     const ownedMembers = PersonaDB.activePCParty()
     .filter (actor => actor.isPCLike() && actor.isOwner);
+    if (PersonaDB.partyTokenActor()) {
+      ownedMembers.unshift(PersonaDB.partyTokenActor()!);
+    }
     for (const member of ownedMembers) {
-      if (member.persona().explorationPowers.length == 0) {continue;}
       buttons.push( {
         label: `${ownedMembers.length > 1 ? member.name : ""} Item`,
         onPress: () => void this._openInventoryPanel(member),
@@ -110,6 +90,7 @@ export class ExplorationPanel extends PersonaPanel {
         label: `${ownedMembers.length > 1 ? member.name : ""} Powers`,
         onPress: () => void this._openUsePowerPanel(member),
         enabled: () => true,
+        visible: () => member.persona().explorationPowers.length > 0
       });
     }
     const NPCAlly = PersonaDB.activePCParty().find( x=> x.isNPCAlly());

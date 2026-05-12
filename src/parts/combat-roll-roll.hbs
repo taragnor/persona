@@ -1,63 +1,66 @@
 <section class="outer-roll-block">
-	<div class="simple-target">
-		{{resolveTokenNameWithAccessor atk.attackResult.target}}
-	</div>
-	<div class="roll-block">
-		{{> "systems/persona/parts/simple-roll.hbs" roll=atk.attackResult.roll }}
-		{{#if (and atk.attackResult.critRange atk.attackResult.critRange.possible)}}
-		<div class="crit-boost gm-only">
-			<div class="tooltip">
-				<span>
-					Critical Range:
-				</span>
-				<span >
-					{{atk.attackResult.critRange.low}}
-					-
-					{{atk.attackResult.critRange.high}}
-				</span>
-					<div class="tooltiptext">
-						{{joinStepsHTML atk.attackResult.critRange.steps}}
-					</div>
-			</div>
-		</div>
-		{{/if}}
-		{{#if atk.attackResult.instantKillRange}}
-		<div class="instant-kill">
-			<div class="tooltip">
-				<span>
-					Instant Kill Range:
-				</span>
-				<span >
-					{{atk.attackResult.instantKillRange.low}}
-					-
-					{{atk.attackResult.instantKillRange.high}}
-				</span>
-					<div class="tooltiptext">
-						{{joinStepsHTML atk.attackResult.instantKillRange.steps}}
-					</div>
-			</div>
-		</div>
-		{{/if}}
-		{{#if atk.attackResult.ailmentRange}}
-		<div class="ailment-range">
-			<div class="tooltip">
-				<span>
-					Ailment Range:
-				</span>
-				<span>
-					{{atk.attackResult.ailmentRange.low}}
-					-
-					{{atk.attackResult.ailmentRange.high}}
-				</span>
-				<div class="tooltiptext">
-					{{joinStepsHTML atk.attackResult.ailmentRange.steps}}
-				</div>
-			</div>
-		</div>
-		{{/if}}
-	</div>
-	<hr>
-	<div class="attack-result">
-		{{prettyAtkResult atk.attackResult}}
-	</div>
+  <div class="roll-block">
+    {{resolveTokenNameWithAccessor atk.attackResult.target}}
+    {{> "systems/persona/parts/simple-roll.hbs" roll=atk.attackResult.roll }}
+    {{#if (and atk.attackResult.critRange atk.attackResult.critRange.possible)}}
+    <div class="crit-boost gm-only">
+      <div class="tooltip">
+        <span>
+          Critical Range:
+        </span>
+        <span >
+          {{atk.attackResult.critRange.low}}
+          -
+          {{atk.attackResult.critRange.high}}
+        </span>
+          <div class="tooltiptext">
+            {{joinStepsHTML atk.attackResult.critRange.steps}}
+          </div>
+      </div>
+    </div>
+    {{/if}}
+    {{#if atk.attackResult.instantKillRange}}
+    <div class="instant-kill">
+      <div class="tooltip">
+        <span>
+          Instant Kill Range:
+        </span>
+        <span >
+          {{atk.attackResult.instantKillRange.low}}
+          -
+          {{atk.attackResult.instantKillRange.high}}
+        </span>
+          <div class="tooltiptext">
+            {{joinStepsHTML atk.attackResult.instantKillRange.steps}}
+          </div>
+      </div>
+    </div>
+    {{/if}}
+    {{#if atk.attackResult.ailmentRange}}
+    <div class="ailment-range">
+      <div class="tooltip">
+        <span>
+          Ailment Range:
+        </span>
+        <span>
+          {{atk.attackResult.ailmentRange.low}}
+          -
+          {{atk.attackResult.ailmentRange.high}}
+        </span>
+        <div class="tooltiptext">
+          {{joinStepsHTML atk.attackResult.ailmentRange.steps}}
+        </div>
+      </div>
+    </div>
+    {{/if}}
+  </div>
+  <div class="attack-result">
+    <span class="simple-target">
+      {{resolveTokenNameWithAccessor atk.attackResult.target}}
+    </span>
+    :
+    <span>
+      {{prettyAtkResult atk.attackResult}}
+    </span>
+  </div>
 </section>

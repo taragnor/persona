@@ -1,17 +1,12 @@
 <section class="items f-col">
   <div class="item-list">
     {{#each itemlist as |item|}}
-    <div class="{{#if (ne item.system.noTrade true)}} item item-entry {{/if}} inventory-item" data-item-id="{{item.id}}" title="{{item.name}}">
-      {{#if (isItemUsable item)}}
-      <span>
-        <a class="rollItem">
-          <img class="inline" src="icons/dice/d20black.svg">
-        </a>
-        {{/if}}
+    <div class="{{#if (ne item.system.noTrade true)}} item item-entry {{/if}} inventory-item" data-item-id="{{item.id}}" title="{{item.tooltip}}">
+      <span class="f-row height-100">
         <span class="item-icon">
           {{displayIcon item}}
         </span>
-        <span class="itemName" title="{{item.tooltip}}">
+        <span class="itemName">
           {{item.displayedNameHTML}}
           {{#if (gt item.amount 1)}}
           <span class="amount">
