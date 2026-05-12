@@ -738,6 +738,7 @@
 "persona.combat-effects-subtypes.alter-theurgy": "Alter Current Theurgy Score",
 "persona.combat-effects-subtypes.set-cooldown": "Set Cooldown to effect",
 "persona.combat-effects-subtypes.add-power-tag-to-attack": "Add Power Tag to Attack",
+"persona.combat-effects-subtypes.escape-combat": "Escape Combat",
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",
@@ -793,6 +794,8 @@
 
   "persona.preconditions.booleanSpecial.farming-can-harvest": "Farming (can harvest)",
   "persona.preconditions.booleanSpecial.farming-can-plant": "Farming (can plant crops)",
+  "persona.preconditions.booleanSpecial.room-has-secret": "Room Has Secret",
+  "persona.preconditions.booleanSpecial.room-has-hazard": "Room Has Hazard",
 
 	"persona.preconditions.is-a-consumable": "Using a consumable Item" ,
 	"persona.preconditions.target-is-same-arcana": "Target is the same arcana as attacker" ,

@@ -302,7 +302,7 @@
 	<select name="{{strcat namePrefix 'subtype'}}">
 		{{selectOptions POWERSTUFF.ALTER_MP_SUBTYPES localize=true selected=cons.subtype}}
 	</select>
-	<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
+	{{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'amount.') cons=cons.amount POWERSTUFF=POWERSTUFF owner=owner}}
 
 	{{/if}}
 

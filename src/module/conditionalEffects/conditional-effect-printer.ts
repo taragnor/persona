@@ -359,8 +359,12 @@ export class ConditionalEffectPrinter {
           return "Can harvest crops";
         case "farming-can-plant":
           return "Can Plant crops";
+        case "room-has-secret":
+          return "Room has secret";
+        case "room-has-hazard":
+          return "Room has Hazard";
         default:
-          cond.specialType satisfies never;
+          cond satisfies never;
           return "ERROR";
       }
     }
@@ -723,6 +727,8 @@ export class ConditionalEffectPrinter {
           const tag = PersonaItem.resolveTag(cons.powerTag);
           return `Add Power Tag To Attack : ${tag instanceof PersonaItem ? tag.name : tag}`;
         }
+        case "escape-combat":
+          return `Escape Combat`;
         default:
           cons satisfies never;
           return "ERROR";
@@ -829,7 +835,8 @@ export class ConditionalEffectPrinter {
     }
 
     static #printMPAlter(cons: Consequence & {type: "alter-mp"}): string {
-      const signedAmount = this.signedAmount(cons.amount);
+      const signedAmount = this.printConsequenceAmount(cons.amount);
+      // const signedAmount = this.signedAmount(cons.amount);
       switch (cons.subtype) {
         case "direct":
           return `MP ${signedAmount}`;

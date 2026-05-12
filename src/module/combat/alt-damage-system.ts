@@ -68,16 +68,12 @@ export class AltDamageSystem extends DamageSystemBase {
   public getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: SituationTypes.BonusQuerySituation) : DamageCalculation {
     const dtype = power.getDamageType(userPersona);
     const calc = new DamageCalculation(dtype);
-    // calc.add("base", this.BASE_WEAPON_DMG, "Base Weapon Damage");
     const skillDamage = this.weaponSkillDamage(power);
     calc.add('base', skillDamage.baseAmt, `${power.displayedName.toString()} Base`);
     const levelDivisor = power.isBasicPower() ? this.BASIC_ATTACK_LEVEL_DIVISOR : this.BASE_DAMAGE_LEVEL_DIVISOR;
     const weaponDmg = this.weaponDamage(userPersona);
     const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
     const bonusVariance = userPersona.getBonusVariance().total(situation);
-    // const str = this.strDamageBonus(userPersona);
-    // const strRes = str.eval(situation);
-    // calc.add('base', strRes.total, `${userPersona.publicName} Strength (${strRes.steps.join(" ,")})`);
     calc.add('base', userPersona.user.level * levelDivisor, `Character Level * ${levelDivisor} `);
     const weaponName = userPersona.user.isShadow() ? 'Unarmed Shadow Damage' : (userPersona.user.weapon?.displayedName ?? 'Unarmed');
     calc.add('base', weaponDmg.baseAmt, weaponName.toString());
@@ -107,12 +103,9 @@ export class AltDamageSystem extends DamageSystemBase {
       calc.add('base', resMag.total, `${userPersona.publicName} Magic (${resMag.steps.join(" ,")})`, );
     }
 
-    // calc.add("base", this.BASE_MAGIC_DMG, "Base Magic Damage");
     if (!isHealing) {
       calc.add('base', userPersona.user.level * this.BASE_DAMAGE_LEVEL_DIVISOR, `Character Level * ${this.BASE_DAMAGE_LEVEL_DIVISOR} `);
     }
-    // const resMag = magicDmg.eval(situation);
-    // calc.add('base', resMag.total, `${userPersona.publicName} Magic (${resMag.steps.join(" ,")})`, );
     calc.add('base', damageBonus, 'Bonus Damage');
     const variance  = (this.BASE_VARIANCE + skillDamage.extraVariance + bonusVariance );
     const varianceMult = userPersona.combatStats.getMagicalVariance();

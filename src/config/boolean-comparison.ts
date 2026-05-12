@@ -120,6 +120,8 @@ const COMBAT_COMPARISON_SUBLIST_LIST = [
 const SPECIAL_BOOLEAN_SUBLIST_LIST = [
   "farming-can-harvest",
   "farming-can-plant",
+  "room-has-secret",
+  "room-has-hazard",
 ] as const;
 
 export const COMBAT_COMPARISON_SUBLIST = HTMLTools.createLocalizationObject(COMBAT_COMPARISON_SUBLIST_LIST, "persona.preconditions.comparison");
@@ -480,7 +482,12 @@ type SpecialComparion = {
   boolComparisonTarget: "special-boolean",
 } & (
   FarmingAction
+  | RoomQuery
 );
+
+type RoomQuery = {
+  specialType:"room-has-secret" | "room-has-hazard",
+}
 
 type FarmingAction = {
   specialType: Extract<keyof typeof SPECIAL_BOOLEAN_SUBLIST, "farming-can-plant" | "farming-can-harvest" >

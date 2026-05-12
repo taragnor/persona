@@ -71,17 +71,5 @@
 			{{selectOptions POWERSTUFF.INSTANT_KILL_LEVELS localize=true selected=item.system.ailmentChance}}
 		</select>
 	</div>
-	<div class="atk-boost">
-		<label>
-			Attack Bonus
-		</label>
-		{{numberInput item.system.atk_bonus class="short" name="system.atk_bonus" step=1 min=0 max=900}}
-	</div>
-	<div class="crit-boost">
-		<label>
-			Crit Boost
-		</label>
-		{{numberInput item.system.crit_boost class="short" name="system.crit_boost" step=1 min=-20 max=900}}
-	</div>
 	{{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
 </section>

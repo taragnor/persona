@@ -3361,35 +3361,6 @@ getPoisonDamage(this: ValidAttackers): number {
       this.system satisfies never;
       return 0;
   }
-  // return Math.round(base * poisonDamageMultiplier(this.system.role) * poisonDamageMultiplier(this.system.role2));
-}
-
-static calcPowerRequirement(role: Shadow["system"]["role"], power: Readonly<Power>,  diff: number) : number {
-  if (power.system.tags.includes("basicatk"))
-  {return 0;}
-  const tags = power.system.tags;
-  switch (role) {
-    case "support":
-      if (!tags.includes("debuff")) {
-        diff -= 2;
-      }
-      if (tags.includes("buff")
-        || tags.includes("healing")) {
-        diff += 1;
-      }
-      break;
-    default:
-      break;
-  }
-  return Math.clamp(diff, 0, 4);
-}
-
-static calcPowerCost(_role: Shadow["system"]["role"], power: Readonly<Power>, diff: number) : Power["system"]["reqEscalation"] {
-  if (power.system.tags.includes("basicatk"))
-  {return 0;}
-  if (diff <= 0) {return 0;}
-  const esc = Math.round(Math.abs(diff) / 2);
-  return Math.clamp(esc, 0, 6);
 }
 
 async increaseScanLevel(this: Shadow, amt :number) {

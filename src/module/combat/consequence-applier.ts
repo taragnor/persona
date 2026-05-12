@@ -515,6 +515,18 @@ export class ConsequenceApplier {
         await actor.addPowerCooldown(power, duration);
         break;
       }
+      case "add-power-tag-to-attack":
+        //this is handled elsewhere
+        break;
+      case "escape-combat": {
+        const combat = PersonaCombat.combat;
+        if (!combat) {break;}
+        await combat.removeFromCombat(actor);
+        break;
+      }
+      default:
+        effect satisfies never;
+        break;
     }
   }
 

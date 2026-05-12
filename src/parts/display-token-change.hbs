@@ -25,39 +25,42 @@
 	</span>
 	{{/each}}
 
-	{{#each change.addStatus as |status|}}
-	+{{displayStatusIcon status.id}}
-	{{/each}}
-	{{#each change.removeStatus as |status|}}
-	-{{displayStatusIcon status.id}}
-	{{/each}}
-	{{#each change.otherEffects as |effect|}}
-	<span class="other-effect">
-		{{#if (eq effect.type "set-flag")}}
-		{{#if effect.flagState}}Set {{else}} Clear{{/if}}
-		Flag ---  {{getEffectFlagName ../change.actor effect}}
-		{{/if}}
-		{{#if (eq effect.type "expend-item")}}
-		Expend Item
-		{{/if}}
-		{{#if (and false (eq effect.type "extraTurn"))}}
-		Take an Extra turn
-		{{/if}}
-		{{#if (eq effect.combatEffect "auto-end-turn")}}
-		Automatically End Turn
-		{{/if}}
-		{{#if (eq effect.type "inspiration-cost")}}
-		Inspiration Paid: {{effect.amount}}
-		{{/if}}
-		{{#if (eq effect.type "display-msg")}}
-		{{effect.msg}}
-		{{/if}}
-		{{#if (eq effect.combatEffect "alter-energy")}}
-		Energy {{effect.amount}}
-		{{/if}}
-		{{#if (eq effect.combatEffect "alter-theurgy")}}
-		Theurgy {{effect.amount}}
-		{{/if}}
+  {{#each change.addStatus as |status|}}
+  +{{displayStatusIcon status.id}}
+  {{/each}}
+  {{#each change.removeStatus as |status|}}
+  -{{displayStatusIcon status.id}}
+  {{/each}}
+  {{#each change.otherEffects as |effect|}}
+  <span class="other-effect">
+    {{#if (eq effect.type "set-flag")}}
+    {{#if effect.flagState}}Set {{else}} Clear{{/if}}
+    Flag ---  {{getEffectFlagName ../change.actor effect}}
+    {{/if}}
+    {{#if (eq effect.type "expend-item")}}
+    Expend Item
+    {{/if}}
+    {{#if (and false (eq effect.type "extraTurn"))}}
+    Take an Extra turn
+    {{/if}}
+    {{#if (eq effect.combatEffect "auto-end-turn")}}
+    Automatically End Turn
+    {{/if}}
+    {{#if (eq effect.type "inspiration-cost")}}
+    Inspiration Paid: {{effect.amount}}
+    {{/if}}
+    {{#if (eq effect.type "display-msg")}}
+    {{effect.msg}}
+    {{/if}}
+    {{#if (eq effect.combatEffect "alter-energy")}}
+    Energy {{effect.amount}}
+    {{/if}}
+    {{#if (eq effect.combatEffect "alter-theurgy")}}
+    Theurgy {{effect.amount}}
+    {{/if}}
+    {{#if (eq effect.combatEffect "escape-combat")}}
+    {{localize "persona.combat-effects-subtypes.escape-combat"}}
+    {{/if}}
 
 		{{#if (eq effect.type "alter-mp")}}
 

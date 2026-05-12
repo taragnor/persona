@@ -181,6 +181,14 @@ export class PersonaRegion extends RegionDocument {
 		return await this.secretHazardFound("hazard");
 	}
 
+  hasSecret() : boolean {
+    return this.regionData.secret != "none";
+  }
+
+  hasHazard(): boolean {
+    return this.regionData.hazard != "none";
+  }
+
 	async secretHazardFound(field: "secret" | "hazard") {
 		const regionData = this.regionData;
 		const fieldValue = regionData[field];
@@ -277,7 +285,6 @@ export class PersonaRegion extends RegionDocument {
 
 	encounterList(): Shadow[] {
 		const baseList = this.parent.encounterList();
-		// const regionRange = this.EnemyDifficultyRange;
 		return baseList;
 	}
 

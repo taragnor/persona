@@ -1016,13 +1016,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.source.totalResists() > this.maxResists();
   }
 
-  itemAtkBonus(item : Consumable) : Calculation {
-    const calc=new Calculation();
-    const mods = this.getBonuses(["itemAtk", "allAtk"]);
-    return calc
-      .add(1, item?.system?.atk_bonus ?? 0, "Item Modifier")
-      .add(1, mods, "Modifiers");
-  }
+  // itemAtkBonus(item : Consumable) : Calculation {
+  //   const calc=new Calculation();
+  //   const mods = this.getBonuses(["itemAtk", "allAtk"]);
+  //   return calc
+  //     .add(1, item?.system?.atk_bonus ?? 0, "Item Modifier")
+  //     .add(1, mods, "Modifiers");
+  // }
 
   get isUnderResistCap(): boolean {
     const leeway  = 0;  //allow leeway for double weakness

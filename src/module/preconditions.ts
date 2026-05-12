@@ -1511,8 +1511,18 @@ function specialComparison(condition: SourcedPrecondition & {type: "boolean", bo
       if (!user.isPC()) {return undefined;}
       return user.farming?.canPlantCrops();
     }
+    case "room-has-secret": {
+      const region = Metaverse.getRegion();
+      if (!region) {return undefined;}
+      return region.hasSecret();
+    }
+    case "room-has-hazard": {
+      const region = Metaverse.getRegion();
+      if (!region) {return undefined;}
+      return region.hasHazard();
+    }
     default:
-      condition.specialType satisfies never;
+      condition satisfies never;
       return undefined;
   }
 }

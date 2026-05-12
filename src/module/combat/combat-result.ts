@@ -282,6 +282,9 @@ export class CombatResult  {
         break;
       case "add-power-tag-to-attack":
         break;
+      case "escape-combat":
+        effect.otherEffects.push(cons);
+        break;
       default:
         cons satisfies never;
     }
@@ -431,12 +434,15 @@ export class CombatResult  {
           ...cons
         });
         break;
-      case "alter-mp":
+      case "alter-mp": {
         if (!effect) {break;}
+        const amount = this.resolveConsequenceAmount(cons, situation, "amount");
         effect.otherEffects.push( {
           ...cons,
+          amount,
         });
         break;
+      }
       case "teach-power":
         if (!effect) {break;}
         effect.otherEffects.push( {

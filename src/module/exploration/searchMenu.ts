@@ -12,6 +12,7 @@ import { PersonaSockets } from "../persona.js";
 import { TensionPool } from "./tension-pool.js";
 import { sleep } from "../utility/async-wait.js";
 import {TriggeredEffect} from "../triggered-effect.js";
+import {shuffle} from "../utility/array-tools.js";
 
 
 
@@ -353,15 +354,8 @@ export class SearchMenu {
 		}
 
   private static generateOriginalSearchResults() : SearchResult[] {
-    // return (game.scenes.current.tokens.contents as TokenDocument<PersonaActor>[])
-    // 	.filter( x=> x.actor instanceof PersonaActor
-    // 		&& (x.actor.isRealPC() || x.actor.isNPCAlly())
-    // 	)
-    return PersonaDB.activePCParty()
+    return shuffle( PersonaDB.activePCParty().slice())
       .flatMap( actor=> {
-        // .flatMap( tok=> {
-        // const actor = tok.actor! as PC;
-        // const actor = tok.actor! as PC;
         const activePlayers = game.users.contents
           .filter( user => user.active && !user.isGM);
         const owner = activePlayers

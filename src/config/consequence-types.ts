@@ -320,6 +320,9 @@ type CombatEffectConsequencesList =
 	} | {
     combatEffect: "add-power-tag-to-attack",
     powerTag: PowerTagOrId
+  } | {
+		applyTo: ConsequenceTarget,
+    combatEffect: "escape-combat",
   }
 ;
 
@@ -421,7 +424,7 @@ type AlterMPConsequence = {
 	type: "alter-mp",
 	applyTo : ConsequenceTarget,
 	subtype: AlterMPSubtype,
-	amount: number,
+	amount: ConsequenceAmount,
 }
 
 

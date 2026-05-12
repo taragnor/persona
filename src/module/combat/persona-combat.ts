@@ -1854,6 +1854,24 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     return PCResult;
   }
 
+  async removeFromCombat(comb: U<PersonaCombatant | ValidAttackers>) : Promise<void> {
+    if (comb instanceof PersonaActor) {
+      comb = this.getCombatantByActor(comb) as U<PersonaCombatant>;
+    }
+    if (!comb) {return;}
+    if (this.combatant == comb) {
+      await this.nextTurn();
+    }
+    if (this.combatant == comb) {
+      PersonaError.softFail("Can't escpae combat with only one combatanat");
+    }
+    setTimeout( async () => {
+      const token = comb.token;
+      await comb.delete();
+      if (token) {await token.delete();}
+    }, 10);
+  }
+
 } // end of class
 
 

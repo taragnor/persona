@@ -249,6 +249,7 @@ export const COMBAT_EFFECTS_LIST = [
 	"alter-theurgy",
 	"set-cooldown",
   "add-power-tag-to-attack",
+  "escape-combat"
 ] as const;
 
 export type CombatEffect = typeof COMBAT_EFFECTS_LIST[number];
