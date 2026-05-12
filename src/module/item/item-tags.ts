@@ -274,12 +274,8 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
     const list = [] as TagType[];
     list.pushUnique(...idCheck);
 
-    // const list = (item.system.itemTags.slice() as TagType[])
     list.pushUnique(...this.baseItemExtraTags(user ?? null));
-    // const baseDamageType = item.getBaseDamageType();
-    // if (!list.includes(item.getBaseDamageType()) && POWER_TAGS_LIST.includes(item.getBaseDamageType())) {
     list.pushUnique( this.idCheck(item.getBaseDamageType()));
-    // }
     list.pushUnique( this.idCheck(item.system.type));
     return list;
   }

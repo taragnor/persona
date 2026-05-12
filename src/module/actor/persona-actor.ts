@@ -74,12 +74,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   static MPMap = new Map<number, number>;
   _farming : U<Farming>;
 
-  private _personaCache :  TimedCache<Persona>;
-  private _basePersonaCache:  TimedCache<Persona>;
-
   tags = new ActorTagManager(this);
 
-  cache: {
+  private cache: {
     startingLevel: U<number>,
     level: U<number>,
     tarot: Tarot | undefined;
@@ -88,23 +85,32 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     isDMon: U<boolean>;
   };
 
+  private cache2: {
+    actorMainModifiers: TimedCache<readonly ModifierContainer[]>,
+    persona: TimedCache<Persona>,
+    basePersona: TimedCache<Persona>,
+  };
+
   constructor(...arr: unknown[]) {
     super(...arr);
-    this._personaCache = new TimedCache( () => (this as ValidAttackers)._persona(), 3000);
-    this._basePersonaCache = new TimedCache( () => (this as ValidAttackers)._basePersona(), 3000);
     if (this.isPC()) {
       this._farming = new Farming(this);
     }
+    this.cache2 = {
+      persona : new TimedCache( () => (this as ValidAttackers)._persona(), 3000),
+      basePersona : new TimedCache( () => (this as ValidAttackers)._basePersona(), 3000),
+      actorMainModifiers: new TimedCache( () => this._actorMainModifiers(), 1000),
+    };
     this.clearCache();
   }
 
   get farming() { return this._farming;}
 
   clearCache() {
+    Object.values(this.cache2)
+      .forEach( cache => cache.clear());
     this.tags.clearCache();
     this.social.clearCache();
-    this._personaCache.clear();
-    this._basePersonaCache.clear();
     this.cache = {
       startingLevel: undefined,
       level: undefined,
@@ -316,7 +322,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     const baseItem = PersonaDB.findItem(treasure.item);
     const tags = baseItem.system.itemTags;
     if (treasure.enchantments.length == 0) {
-      const item =await this.addItem(baseItem, treasure.amount ?? 1);
+      await this.addItem(baseItem, treasure.amount ?? 1);
       return;
     }
     const tagIds =
@@ -554,7 +560,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   async switchPersona(this: ValidAttackers, sourceId: ValidAttackers["id"]) {
-    this._personaCache.clear();
+    this.cache2.persona.clear();
     if (this.hasStatus("sealed")) {
       ui.notifications.warn("Can't swap persona while sealed");
       return;
@@ -596,7 +602,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   get basePersona() : Persona {
-    return this._basePersonaCache.value;
+    return this.cache2.basePersona.value;
   }
 
   _basePersona() : Persona {
@@ -614,7 +620,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   persona<T extends ValidAttackers | NPC>(this: T): Persona<T extends NPC ? NPCAlly : T> {
-    return this._personaCache.value as unknown as Persona<T extends NPC ? NPCAlly : T>;
+    return this.cache2.persona.value as unknown as Persona<T extends NPC ? NPCAlly : T>;
   }
 
   private _persona<T extends ValidAttackers | NPC>(this: T): Persona<T extends NPC ? NPCAlly : T> {
@@ -1806,6 +1812,13 @@ activeAuras(options ?: MainModifierOptions) : ConditionalEffectC[] {
 }
 
 actorMainModifiers(options ?: MainModifierOptions): readonly ModifierContainer[] {
+  if (!options) {
+    return this.cache2.actorMainModifiers.value;
+  }
+  return this._actorMainModifiers(options);
+}
+
+_actorMainModifiers(options ?: MainModifierOptions): readonly ModifierContainer[] {
   const tags = (options && options.omitTags) ? [] : this.tags.realTags();
   const ret : readonly ModifierContainer[] = [
     ...this.passiveItems(),
