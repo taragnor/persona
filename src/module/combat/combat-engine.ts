@@ -605,13 +605,6 @@ export class CombatEngine {
 
   private checkFumble( _attacker: Persona, _target: Persona,  _power: Usable, _situation: ProtoResultAttackSituation) : boolean {
     return false;
-    //testing program based solution
-    // if (
-    // 	power.isWeaponSkill()
-    // 	&& power.getDamageType(attacker) == "physical"
-    // 	&& situation.naturalRoll == 1
-    // ) {return true;}
-    // return false;
   }
 
   checkAttackNullifiers(attacker : Persona , power :Usable, target: Persona, situation: ProtoResultAttackSituation ): N<AttackResult["result"]> {

@@ -106,7 +106,6 @@ export class TimeLog {
   }
 }
 
-
 Hooks.on("renderChatMessageHTML", (msg: ChatMessage, html) => {
   if (!msg.speaker.actor || msg.speaker.alias == msg.author.name) {return;}
   const sender = $(html).find("h4.message-sender");
@@ -114,5 +113,4 @@ Hooks.on("renderChatMessageHTML", (msg: ChatMessage, html) => {
   const authorBlock = `<span class="author-name"> (${authorName}) </span>`;
 
   sender.append($(authorBlock));
-  // sender.text(sender.text() + authorBlock);
 });
