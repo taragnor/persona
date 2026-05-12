@@ -1,49 +1,57 @@
-<div class="social-card-roll" data-roll-type="{{roll.type}}"> {{#if (ne roll.rollType "none")}}
-	<div>
-		{{#if (eqAny roll.rollType "studentSkillCheck" "save" "question")}}
-		<button class="make-roll" {{#if (not enabled)}} disabled {{/if}}>
-			{{#if (getRollTags roll)}}
-			<span class="card-tags">
-				({{getRollTags roll}})
-			</span>
-			{{/if}}
-			{{#if resourceCost}}
-			( {{resourceCost}} R )
-			{{/if}}
-			{{replace label cardData.replaceSet}}
-			{{#if (eq roll.rollType "save")}}
-			. Roll {{roll.saveType}} Save
-			<span class="dc">
-				{{#if roll.DCVal}}
-				(DC {{roll.DCVal}})
-				{{/if}}
-			</span>
-			{{/if}}
-			{{#if (eq roll.rollType "studentSkillCheck")}}
-			. Roll {{roll.studentSkill}}
-			<span class="dc">
-				{{#if roll.DCVal}}
-				(DC {{roll.DCVal}})
-				{{/if}}
-			</span>
-			{{/if}}
-		</button>
-		{{else}}
-		<button class="next" {{#if (not enabled)}} disabled {{/if}}>
-			{{#if resourceCost}}
-			( {{resourceCost}} R )
-			{{/if}}
-			{{replace label cardData.replaceSet}} (Custom Roll)
-		</button>
-		{{/if}}
-	</div>
-	{{else}}
-	<button class="next" {{#if (not enabled)}} disabled {{/if}}>
-			{{#if resourceCost}}
-			( {{resourceCost}} R )
-			{{/if}}
-		{{replace label cardData.replaceSet}}
-	</button>
-	{{/if}}
+<div class="social-card-roll tooltip" data-roll-type="{{roll.type}}"> {{#if (ne roll.rollType "none")}}
+  <div>
+    {{#if (eqAny roll.rollType "studentSkillCheck" "save" "question")}}
+    <button class="make-roll" {{#if (not enabled)}} disabled {{/if}}>
+      {{#if (getRollTags roll)}}
+      <span class="card-tags">
+        ({{getRollTags roll}})
+      </span>
+      {{/if}}
+      {{#if resourceCost}}
+      ( {{resourceCost}} R )
+      {{/if}}
+      {{replace label cardData.replaceSet}}
+      {{#if (eq roll.rollType "save")}}
+      . Roll {{roll.saveType}} Save
+      <span class="dc">
+        {{#if roll.DCVal}}
+        (DC {{roll.DCVal}})
+        {{/if}}
+      </span>
+      {{/if}}
+      {{#if (eq roll.rollType "studentSkillCheck")}}
+      . Roll {{roll.studentSkill}}
+      <span class="dc">
+        {{#if roll.DCVal}}
+        (DC {{roll.DCVal}})
+        {{/if}}
+      </span>
+      {{/if}}
+    </button>
+    {{else}}
+    <button class="next" {{#if (not enabled)}} disabled {{/if}}>
+      {{#if resourceCost}}
+      ( {{resourceCost}} R )
+      {{/if}}
+      {{replace label cardData.replaceSet}} (Custom Roll)
+    </button>
+    {{/if}}
+  </div>
+  {{else}}
+  <button class="next" {{#if (not enabled)}} disabled {{/if}}>
+    {{#if resourceCost}}
+    ( {{resourceCost}} R )
+    {{/if}}
+    {{replace label cardData.replaceSet}}
+  </button>
+  {{/if}}
+  <div class="mods-section tooltiptext gm-only">
+    {{#each roll.printableMods as |mod|}}
+    <div class="mod-item">
+      <span class="mod-name">
+        {{mod}}
+      </span>
+    </div>
+    {{/each}}
+  </div>
 </div>
-

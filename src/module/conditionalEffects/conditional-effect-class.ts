@@ -45,6 +45,10 @@ export class ConditionalEffectC {
 		return this._conditionalType;
 	}
 
+  get displayedName() : string {
+    return this.name;
+  }
+
 	get name() : string {
 		let ret = "";
 		if (this._realSource && !PersonaDB.accessorEq(this._realSource, this._source)) {
@@ -52,8 +56,12 @@ export class ConditionalEffectC {
 		}
 		if (this._source) {
       const sourceName = PersonaDB.find(this._source)?.name;
-			ret += ret.length > 0 ? ` (${sourceName})` : sourceName;
+			ret += ` (${sourceName})`;
 		}
+    if (this._owner) {
+      const ownerName = PersonaDB.find(this._owner)?.name;
+			ret += ` (${ownerName})`;
+    }
 		if (ret.length == 0) {
 			return "unknown";
 		}

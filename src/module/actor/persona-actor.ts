@@ -3118,17 +3118,21 @@ async onMetaverseTimeAdvance(): Promise<string[]> {
   return ret;
 }
 
-socialEffects(this: SocialLink) : readonly SourcedConditionalEffect[] {
+socialEffects(this: SocialLink) : readonly ConditionalEffectC[] {
   // weird bug where sometimes the this isn't set properly
-  const tags= this.tagList
+  const list : ConditionalEffectC[] = [];
+  const tags = this.tagList
     .filter (tag => tag instanceof PersonaItem)
     .flatMap (tag => {
       return tag.getEffects(this);
     });
-  return [
-    ...tags,
-    ...ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this ),
-  ];
+  list.pushUnique(...tags);
+  list.pushUnique(...ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this ))
+  return list;
+  // return [
+  //   ...tags,
+  //   ...ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this ),
+  // ];
 }
 
 async resetFatigueChecks(this: PC) {

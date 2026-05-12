@@ -110,11 +110,11 @@ export class ModifierList {
 			}, 0);
 	}
 
-	addConditionalEffects( effects: SourcedConditionalEffect[], source: PowerContainer  | string, bonusTypes: NonDeprecatedModifierTarget[]) : this {
-		const sourceName = typeof source =="string" ? source : source.name;
+	addConditionalEffects( effects: ConditionalEffectC[], bonusTypes: NonDeprecatedModifierTarget[]) : this {
+		// const sourceName = typeof source =="string" ? source : source.name;
 		const stuff : ModifierListItem[] = (ConditionalEffectManager.ArrayCorrector(effects) ?? []).map( eff=>{
 			return {
-				name: sourceName,
+				name: eff.displayedName,
 				source: eff.source,
 				owner: eff.owner,
 				conditions: ConditionalEffectManager.ArrayCorrector(eff.conditions),

@@ -6,6 +6,7 @@ import {StudentSkill, StudentSkillExt} from "../../config/student-skills.js";
 import { PersonaActor} from "../actor/persona-actor.js";
 import {ModifierList} from "../combat/modifier-list.js";
 import {ConditionalEffectManager} from "../conditional-effect-manager.js";
+import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 import { PersonaItem} from "../item/persona-item.js";
 import {PreconditionConverter} from "../migration/convertPrecondition.js";
 import {PersonaDB} from "../persona-db.js";
@@ -67,14 +68,15 @@ export class SocialCardEventHandler {
     event.choices.forEach( ch => {
       const roll : CardRoll = ch.roll;
       const rollTags = this.getRollTags(cardData, ch);
-      const DC = this.getCardRollDC(cardData, ch.roll, rollTags);
+      const {DC, modifiers}  = this.getCardRollDC(cardData, ch.roll, rollTags);
+      DC satisfies number; //check to enforce some typesafety after guardrails taken off below.
       //@ts-expect-error forcing this on there
-      roll.DCVal = DC;
+      roll.DCVal = DC; roll.printableMods = modifiers;
     });
     if (event.sound && event.sound.length > 0) {
       void this.startCardSound(event, cardData);
     }
-    await sleep(2000);
+    await sleep(1000);
     const html = await foundry.applications.handlebars.renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event, eventNumber, cardData, situation : cardData.situation, eventIndex});
     const speaker = ChatMessage.getSpeaker();
     const msgData : MessageData = {
@@ -361,7 +363,7 @@ export class SocialCardEventHandler {
 		}
 	}
 
-	private getCardRollDC(cardData: CardData, cardRoll: CardRoll, rollTags: (RollTag | CardTag | Tag)[]) : number {
+	private getCardRollDC(cardData: CardData, cardRoll: CardRoll, rollTags: (RollTag | CardTag | Tag)[]) : {DC: number, modifiers: string[]} {
 		const modifiers = this.getCardRollDCModifiers(cardData, cardRoll, rollTags);
 		const situation = {
 			... cardData.situation,
@@ -374,7 +376,10 @@ export class SocialCardEventHandler {
       .map( t=> t instanceof PersonaItem ? `${t.name} (Tag)` : t);
       console.log(`RollTags: ${rollTagsPrintable.join(" ,")}`);
     }
-		return total;
+		return {
+      DC: total,
+      modifiers: modifiers.printable(situation),
+    };
 	}
 
 	private getCardRollDCModifiers(cardData: CardData, cardRoll: CardRoll, rollTags : (RollTag | CardTag | Tag)[]) : ModifierList {
@@ -393,10 +398,10 @@ export class SocialCardEventHandler {
 
 	private getCardModifiers(cardData: CardData, baseRollTags: (RollTag | CardTag | Tag)[] ) : ModifierList {
 		const card = cardData.card;
-		const effects : SourcedConditionalEffect[] = [];
+		const effects : ConditionalEffectC[] = [];
 		const globalMods = ConditionalEffectManager.getEffects(card.system.globalModifiers, null, null);
 		effects.push(...globalMods);
-    const rollTags = unifiedTagList(baseRollTags); 
+    const rollTags = unifiedTagList(baseRollTags);
 		const universal = PersonaDB.getGlobalModifiers().flatMap(x => x.getEffects(null));
 		effects.push(...universal);
 		if (cardData.activity instanceof PersonaActor) {
@@ -410,7 +415,7 @@ export class SocialCardEventHandler {
 			effects.push(...cameoEffects);
 		}
 		const retList = new ModifierList();
-		retList.addConditionalEffects(effects, "Card Modifier",["DCIncrease"]);
+		retList.addConditionalEffects(effects, ["DCIncrease"]);
 		return retList;
 	}
 
@@ -601,8 +606,11 @@ export class SocialCardEventHandler {
         break;
       }
     }
-    const filtered= rollTags.filter ( x=> x != undefined);
-    if (filtered.some( tag=> typeof tag != "string" && typeof tag.id == "undefined")) {
+    const filtered = rollTags.filter (x=> x != undefined);
+    if (filtered
+      .some( tag=> typeof tag != "string"
+        && typeof tag.id == "undefined")
+    ) {
       PersonaError.softFail(`Bad Tag:`, filtered);
       return filtered
         .filter(tag=> !(typeof tag != "string" && typeof tag.id == "undefined" ));

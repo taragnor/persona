@@ -112,7 +112,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   get damage() : DamageInterface {
     return PersonaSettings.getDamageSystem();
-    // return PersonaSettings.get("alternateDamageSystem") ? ALT_DAMAGE_SYSTEM : DAMAGE_SYSTEM;
   }
 
   clearCache() {
@@ -1294,18 +1293,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       );
   }
 
-  //static getConferredTags (eff: ConditionalEffectC, actor: ValidAttackers) : (InternalCreatureTag | Tag["id"])[] {
-  //  const situation = {
-  //    user: actor.accessor,
-  //  };
-  //  //need this double check to prevent infinite loops
-  //  const hasTagGivingCons =  eff.consequences.filter( c=> c.type == 'add-creature-tag') as (Consequence & {type : 'add-creature-tag'})[] ;
-  //  if (hasTagGivingCons.length == 0) {return [];}
-  //  const activeCons = eff.getActiveConsequences(situation);
-  //  const tagGivingCons =  activeCons.filter( c=> c.type == 'add-creature-tag') as (Consequence & {type : 'add-creature-tag'})[] ;
-  //  return tagGivingCons.map( x=> x.creatureTag);
-  //}
-
   getConferredTags(this: ItemModifierContainer, actor: ValidAttackers) : CreatureTag[] {
     if (this.cache.containsTagAdd === false) {
       return [];
@@ -2160,16 +2147,6 @@ cardEvents(this: SocialCard) : CardEvent[] {
   return this.system.events;
 }
 
-// isAvailable(this: Activity, pc: PC): boolean {
-//   const sit: Situation = {
-//     user: pc.accessor
-//   };
-//   if (PersonaSocial.isDisabled(this)) {return false;}
-//   const sourcedConditions = ConditionalEffectManager.getConditionals(this.system.conditions, null, null, null );
-//   if(!testPreconditions(sourcedConditions, sit)) {return false;}
-//   return this.system.weeklyAvailability.available;
-// }
-
 announce(this: SocialCard, pc: PC): boolean {
   if (!this.system.announceWhenAvailable) {
     return false;
@@ -2291,20 +2268,6 @@ async deleteTokenSpend(this: Activity  , deleteIndex:number) {
   list.splice(deleteIndex,1);
   await this.update({'system.tokenSpends':list});
 }
-
-//async priceFix() {
-//	//updates money to new x10 total
-//	switch (this.system.type) {
-//		case 'item':
-//		case 'consumable': {
-//			const price = this.system.price * 10;
-//			await this.update({'system.price': price});
-//			break;
-//		}
-//		default:
-//			return;
-//	}
-//}
 
 get moneyValue(): number {
   if (!this.isCarryableType()) {return 0;}
@@ -2751,9 +2714,6 @@ async addCraftingRecipeComponent ( this: Carryable, index: number) {
       itemId: "" as Item["id"],
       amount: 1
     });
-  // if (convert.components.length < recipe.components.length) {
-  //   PersonaError.softFail("Data Loss");
-  // }
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   recipes[index] = recipeJSON;
   const recipesJSON = recipes.map( x=> "toJSON" in x ? x.toJSON!() : x);

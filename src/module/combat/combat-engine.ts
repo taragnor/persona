@@ -635,7 +635,6 @@ export class CombatEngine {
     return null;
   }
 
-
   canBeReflectedByPhysicalShield(power: UsableAndCard, attacker: Persona): boolean {
     if (power.isSkillCard()) {return false;}
     const dtype = power.getDamageType(attacker);
@@ -920,7 +919,6 @@ export class CombatEngine {
     const instantKillRangeRaw = CombatEngine.calculateInstantDeathRange(attackerPersona, targetPersona, power, situation);
     const critRangeRaw = CombatEngine.calculateCriticalRange(attackerPersona, targetPersona, power, situation);
     if (PersonaSettings.debugMode()) {
-      // this.rangesDebugStats([ailmentRangeRaw, instantKillRangeRaw, critRangeRaw]);
     }
     const ailmentRange = this.constrainRange(ailmentRangeRaw);
     const instantKillRange = this.constrainRange(instantKillRangeRaw);
@@ -1050,7 +1048,6 @@ export class CombatEngine {
     const mods = this.getAttackerAndDefenderModifiers("instantDeathRange", attackerPersona, targetPersona, power);
     const calc= new Calculation(0, 3);
     calc.add(1, mods, "Attacker and Defender mods");
-    // calc.add(1, killDefense,  "Defense Mods");
     calc.add(1, luckDiff, "Luck Difference Mod");
     calc.add(0, modifier, `Instant Kill Chance ${locType} modifier`);
 

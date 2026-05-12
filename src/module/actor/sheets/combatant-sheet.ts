@@ -208,14 +208,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async usePower(event: JQuery.ClickEvent) {
 		Helpers.ownerCheck(this.actor);
 		const power = this.getPower(event);
-		// const powerId = HTMLTools.getClosestData(event, "powerId");
-		// const power = this.actor.powers.find(power => power.id == powerId);
-		// if (!power) {
-		// 	throw new PersonaError(`Can't find Power Id:${powerId}`);
-		// }
-		// const ptype = power.system.type;
-		// if (ptype != "power" && ptype != "consumable")
-		// {throw new PersonaError(`powerId pointed to unsualbe power ${powerId}`);}
 		await this._useItemOrPower(power);
 	}
 
@@ -511,7 +503,6 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async getBalanceTest(power: Usable) : Promise<U<string>> {
 		const actor = this.actor;
 		if (!actor.isValidCombatant()) {return undefined;}
-		// if (actor.isShadow() && !actor.hasPlayerOwner && !actor.isPersona() && !actor.isDMon()) {
 		const token = game.scenes.current.tokens.find( x=> x.actor == actor);
 		if (!token) {return "No token to test balance";}
 		const dtype = power.getDamageType(this.actor.persona());
