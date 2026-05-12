@@ -23,6 +23,8 @@ import {CardData, SocialCardExecutor} from "./social-card-executor.js";
 export class SocialCardEventHandler {
 	owner: SocialCardExecutor;
 
+  CARD_EVENT_DELAY = 500 as const;
+
 	constructor (exec: SocialCardExecutor) {
 		this.owner = exec;
 	}
@@ -76,7 +78,7 @@ export class SocialCardEventHandler {
     if (event.sound && event.sound.length > 0) {
       void this.startCardSound(event, cardData);
     }
-    await sleep(1000);
+    await sleep(this.CARD_EVENT_DELAY);
     const html = await foundry.applications.handlebars.renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-event.hbs`,{event, eventNumber, cardData, situation : cardData.situation, eventIndex});
     const speaker = ChatMessage.getSpeaker();
     const msgData : MessageData = {
@@ -407,11 +409,13 @@ export class SocialCardEventHandler {
 		if (cardData.activity instanceof PersonaActor) {
 			const link = cardData.activity;
 			if (!rollTags.includes("on-cameo") && !rollTags.includes("on-other") && link instanceof PersonaActor) {
-				effects.push(...link.socialEffects());
+				effects.push(...link.social.socialEffects());
 			}
 		}
 		if (rollTags.includes("on-cameo") && cardData.cameos) {
-			const cameoEffects = cardData.cameos.flatMap( x=> x.socialEffects() );
+			const cameoEffects = cardData.cameos.flatMap(
+        x=> x.social.socialEffects()
+      );
 			effects.push(...cameoEffects);
 		}
 		const retList = new ModifierList();

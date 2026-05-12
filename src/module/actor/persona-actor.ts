@@ -77,7 +77,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   private _personaCache :  TimedCache<Persona>;
   private _basePersonaCache:  TimedCache<Persona>;
 
-  tags= new ActorTagManager(this);
+  tags = new ActorTagManager(this);
 
   cache: {
     startingLevel: U<number>,
@@ -3116,23 +3116,6 @@ async onMetaverseTimeAdvance(): Promise<string[]> {
     }
   }
   return ret;
-}
-
-socialEffects(this: SocialLink) : readonly ConditionalEffectC[] {
-  // weird bug where sometimes the this isn't set properly
-  const list : ConditionalEffectC[] = [];
-  const tags = this.tagList
-    .filter (tag => tag instanceof PersonaItem)
-    .flatMap (tag => {
-      return tag.getEffects(this);
-    });
-  list.pushUnique(...tags);
-  list.pushUnique(...ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this ))
-  return list;
-  // return [
-  //   ...tags,
-  //   ...ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this ),
-  // ];
 }
 
 async resetFatigueChecks(this: PC) {

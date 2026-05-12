@@ -1,4 +1,7 @@
 import {TarotCard} from "../../config/tarot.js";
+import {ConditionalEffectManager} from "../conditional-effect-manager.js";
+import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
+import {PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaSounds} from "../persona-sounds.js";
@@ -11,13 +14,22 @@ import {PersonaActor, SocialBenefit} from "./persona-actor.js";
 export class ActorSocial <T extends PersonaActor> {
   private actor: T;
 
-  cache : TimedCache<readonly SocialLinkData[]>;
-  _fociiCache:  TimedCache<readonly Focus[]>;
+  SOCIAL_EFFECTS_CACHE_LIFESPAN = 30000 as const;
+  GENERAL_CACHE_LIFESPAN = 3000 as const;
+
+  private caches : {
+    slinkData : TimedCache<readonly SocialLinkData[]>,
+    fociiCache:  TimedCache<readonly Focus[]>,
+    socialEffects: TimedCache<readonly ConditionalEffectC[]>,
+  };
 
   constructor (parent: T) {
     this.actor = parent;
-    this.cache = new TimedCache( () => this._refreshSocialLinkData(), 3000);
-    this._fociiCache = new TimedCache ( () => this._getAllSocialFocii(), 3000);
+    this.caches = {
+      slinkData: new TimedCache( () => this._refreshSocialLinkData(), this.SOCIAL_EFFECTS_CACHE_LIFESPAN),
+    fociiCache: new TimedCache ( () => this._getAllSocialFocii(), this.SOCIAL_EFFECTS_CACHE_LIFESPAN),
+      socialEffects: new TimedCache( () => this._socialEffects(), this.SOCIAL_EFFECTS_CACHE_LIFESPAN),
+    };
   }
 
   get parent() {
@@ -25,7 +37,7 @@ export class ActorSocial <T extends PersonaActor> {
   }
 
   clearCache() : void {
-    this.cache.clear();
+    Object.values(this.caches).forEach(cache=>cache.clear());
   }
 
   async update(...args: Parameters<PersonaActor["update"]>) {
@@ -205,7 +217,7 @@ export class ActorSocial <T extends PersonaActor> {
 
   socialLinks() : readonly SocialLinkData[] {
     if (!this.actor.isPC() || !PersonaDB.isLoaded) {return [] as SocialLinkData[];}
-    return this.cache.value;
+    return this.caches.slinkData.value;
   }
 
   private _refreshSocialLinkData() : readonly SocialLinkData[] {
@@ -489,7 +501,7 @@ export class ActorSocial <T extends PersonaActor> {
   }
 
   getAllSocialFocii() : readonly Focus[] {
-    return this._fociiCache.value;
+    return this.caches.fociiCache.value;
   }
 
   private _getAllSocialFocii() : readonly Focus[] {
@@ -652,6 +664,28 @@ export class ActorSocial <T extends PersonaActor> {
   get majorActions() : number {
     if (!this.actor.isPC()) {return 0;}
     return (this as ActorSocial<PC>).getDowntimeActionsRemaining("standard");
+  }
+
+  socialEffects(this: ActorSocial<SocialLink>) : readonly ConditionalEffectC[] {
+    return this.caches.socialEffects.value;
+  }
+
+  private _socialEffects() : readonly ConditionalEffectC[] {
+    const actor = this.actor;
+    if (!actor.isSocialLink()) {return [];}
+    const list : ConditionalEffectC[] = [];
+    const tags = actor.tagList
+      .filter (tag => tag instanceof PersonaItem)
+      .flatMap (tag => {
+        return tag.getEffects(actor);
+      });
+    list.pushUnique(...tags);
+    list.pushUnique(...ConditionalEffectManager.getEffects(actor?.system?.socialEffects ?? [],null, actor ));
+    return list;
+    // return [
+    //   ...tags,
+    //   ...ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this ),
+    // ];
   }
 
 }

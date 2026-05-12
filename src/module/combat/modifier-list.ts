@@ -111,7 +111,6 @@ export class ModifierList {
 	}
 
 	addConditionalEffects( effects: ConditionalEffectC[], bonusTypes: NonDeprecatedModifierTarget[]) : this {
-		// const sourceName = typeof source =="string" ? source : source.name;
 		const stuff : ModifierListItem[] = (ConditionalEffectManager.ArrayCorrector(effects) ?? []).map( eff=>{
 			return {
 				name: eff.displayedName,
