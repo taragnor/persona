@@ -10,12 +10,12 @@ export class Logger {
     console.log(txt);
   }
 
+  /** message whispered to GMs only*/
   static async gmMessage(text: string) : Promise<ChatMessage>;
   static async gmMessage(text: string, alias: string) : Promise<ChatMessage>;
   static async gmMessage(text: string, actor: Actor) : Promise<ChatMessage>;
   static async gmMessage(text: string, actorOrAlias: string | Actor = "System") : Promise<ChatMessage> {
     const gmIds = game.users.filter( x=> x.role == CONST.USER_ROLES.GAMEMASTER);
-    // const speaker = ChatMessage.getSpeaker({actor});
     const speaker = typeof actorOrAlias == "string" ? {alias: actorOrAlias} :  ChatMessage.getSpeaker({alias: actorOrAlias.name});
     const messageData = {
       speaker: speaker,
@@ -28,21 +28,20 @@ export class Logger {
 
   static async sendToChat<T extends Actor>(text: string, actor?: T) {
     try {
-    if (this.useBuffering == false) {
-      await this._sendToChat(text);
-      return;
-    } else {
-      const mergeTxt = `<div class="log-record">(${actor?.name ?? "System"}) ${text}</div>`;
-      this.bufferStorage.push(mergeTxt);
-      this.lastMsgTime = Date.now();
-      this.testPrintBuffer(actor);
-    }
+      if (this.useBuffering == false) {
+        await this._sendToChat(text);
+        return;
+      } else {
+        const mergeTxt = `<div class="log-record">(${actor?.name ?? "System"}) ${text}</div>`;
+        this.bufferStorage.push(mergeTxt);
+        this.lastMsgTime = Date.now();
+        this.testPrintBuffer(actor);
+      }
     } catch (e) {
       Debug(e);
       throw new Error("Error with logging sendToChat");
     }
   }
-
 
   private static testPrintBuffer(actor ?: Actor) {
     const timeOutFn = (actor ?: Actor) => {

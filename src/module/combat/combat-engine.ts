@@ -50,10 +50,11 @@ export class CombatEngine {
     if (actor.token) {
       token = actor.token as PToken;
     } else {
-      const combat= game.combat as U<PersonaCombat>;
+      const combat = game.combat as U<PersonaCombat>;
       const combToken = combat?.getPToken(actor);
       if (combToken) { return combToken;}
-      token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
+      token = game.scenes.current.tokens
+        .find(tok => tok.actorId == actor.id) as PToken;
       if (token) {return token;}
       token = actor.getDependentTokens()
         .find( tok => tok.parent == game.scenes.current) as U<PToken>;
