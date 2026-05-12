@@ -176,9 +176,9 @@ static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Sit
       && x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == trigger)
     )
   );
-  if (game.user.isGM && PersonaSettings.debugMode()) {
-    console.debug( `${actor?.name ?? "void actor"} triggerList (${trigger}) : \n${triggers.map( trig=> trig.toString()).join("\n")}`);
-  }
+  // if (game.user.isGM && PersonaSettings.debugMode()) {
+  //   console.debug( `${actor?.name ?? "void actor"} triggerList (${trigger}) : \n${triggers.map( trig=> trig.toString()).join("\n")}`);
+  // }
 	return filteredEffects;
 }
 

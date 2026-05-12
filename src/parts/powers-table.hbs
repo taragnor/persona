@@ -26,7 +26,7 @@
     <div class="sideboard-power" data-power-id="{{power.id}}">
       <div class="power-name-block {{#if (lte ../persona.maxSideboardPowers i)}} over-max-power {{/if}} {{#if (isPowerIllegal ../persona power)}} illegal-level {{/if}} {{#if (isPowerOnCooldown ../persona power)}} on-cooldown{{/if}}">
         <a class="powerName">
-          {{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../actor}}
+          {{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../persona}}
           <span class="cost-string">
             {{powerCostString power ../persona}}
           </span>

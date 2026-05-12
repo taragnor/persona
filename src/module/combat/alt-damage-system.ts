@@ -53,23 +53,19 @@ export class AltDamageSystem extends DamageSystemBase {
         if (!attackerPersona) {
           return calc;
         }
-        DR = this.physDR(attackerPersona, targetPersona);
+        DR = this.physDR(power, attackerPersona, targetPersona);
         break;
       case power.isMagicSkill():
         if (!attackerPersona) {
           return calc;
         }
-        DR = this.magDR(attackerPersona, targetPersona);
+        DR = this.magDR(power, attackerPersona, targetPersona);
         break;
     }
     return calc.merge(DR);
   }
 
   public getWeaponSkillDamage(power: ItemSubtype<Power, 'weapon'>, userPersona: Persona, situation: SituationTypes.BonusQuerySituation) : DamageCalculation {
-    if (power.usesOptimizedDamage(userPersona) &&
-      userPersona.combatStats.strength < userPersona.combatStats.magic) {
-      return this.getMagicSkillDamage(power as unknown as  ItemSubtype<Power, "magic">, userPersona, situation);
-    }
     const dtype = power.getDamageType(userPersona);
     const calc = new DamageCalculation(dtype);
     const skillDamage = this.weaponSkillDamage(power);
@@ -92,10 +88,6 @@ export class AltDamageSystem extends DamageSystemBase {
   }
 
   public getMagicSkillDamage(power: ItemSubtype<Power, 'magic'>, userPersona: Persona, situation: SituationTypes.BonusQuerySituation) : DamageCalculation {
-    if (power.usesOptimizedDamage(userPersona) &&
-      userPersona.combatStats.strength > userPersona.combatStats.magic) {
-      return this.getWeaponSkillDamage(power as unknown as  ItemSubtype<Power, "weapon">, userPersona, situation);
-    }
     const dtype = power.getDamageType(userPersona);
     const isHealing = dtype == "healing";
     const persona = userPersona;
@@ -156,9 +148,11 @@ export class AltDamageSystem extends DamageSystemBase {
   // 	return percent;
   // }
 
-  protected physDR(attackerPersona : Persona, targetPersona: Persona): DamageCalculation {
+  protected physDR(power: Power, attackerPersona : Persona, targetPersona: Persona): DamageCalculation {
     const calc = new DamageCalculation(null);
-    const attackStat = attackerPersona.combatStats.strength;
+    const attackStat = power.usesOptimizedDamage(attackerPersona) && attackerPersona.combatStats.strength < attackerPersona.combatStats.magic
+      ? attackerPersona.combatStats.magic
+      : attackerPersona.combatStats.strength;
     const endurance = targetPersona.combatStats.endurance;
     const percent = this.getPercentModifier(attackStat, endurance);
     const armorDR = this.armorDR(targetPersona);
@@ -167,9 +161,12 @@ export class AltDamageSystem extends DamageSystemBase {
     return calc;
   }
 
-  protected magDR(attackerPersona: Persona, targetPersona: Persona) : DamageCalculation {
+  protected magDR(power: Power, attackerPersona: Persona, targetPersona: Persona) : DamageCalculation {
     const calc = new DamageCalculation(null);
-    const attackStat = attackerPersona.combatStats.magic;
+    const attackStat = power.usesOptimizedDamage(attackerPersona) && attackerPersona.combatStats.strength > attackerPersona.combatStats.magic
+      ? attackerPersona.combatStats.strength
+      : attackerPersona.combatStats.magic;
+    // const attackStat = attackerPersona.combatStats.magic;
     const endurance = targetPersona.combatStats.endurance;
     const percent= this.getPercentModifier(attackStat, endurance);
     calc.add("stackMult", percent, "Magic vs Endurance Difference");

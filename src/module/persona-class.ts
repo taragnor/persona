@@ -1059,6 +1059,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   private _checkTeamworkMove(power: UsableAndCard) :N<FailReason> {
+    if (PersonaSettings.debugMode() && game.user.isGM) { return null;}
     if (!power.isTeamwork() ) {return null;}
     const combat= PersonaCombat.combat;
     if (!combat || !combat.combatant) {return "No Combat, can't use teamwork move";}

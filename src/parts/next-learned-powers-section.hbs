@@ -6,7 +6,7 @@
 		<div class="powers-table-item" data-power-id="{{actor.topLearnedBuffer.id}}">
 			<div class="power-name-block">
 				<a class="powerName">
-					{{> "systems/persona/parts/pretty-power-name.hbs" CONST=CONST power=persona.source.topLearnedBuffer user=actor}}
+					{{> "systems/persona/parts/pretty-power-name.hbs" CONST=CONST power=persona.source.topLearnedBuffer user=persona}}
 				</a>
 			</div>
 			<div class="power-operations">
@@ -27,7 +27,7 @@
 		<div class="next-power-to-learn powers-table-item" data-power-id="{{persona.source.nextPowerToLearn.id}}">
 			<div class="power-name-block">
 				<a class="powerName">
-					{{> "systems/persona/parts/pretty-power-name.hbs" CONST=CONST power=persona.source.nextPowerToLearn user=actor}}
+					{{> "systems/persona/parts/pretty-power-name.hbs" CONST=CONST power=persona.source.nextPowerToLearn user=persona}}
 				</a>
 				<span class="level-to-learn">
 					at L {{persona.source.nextLevelLearnPower}}

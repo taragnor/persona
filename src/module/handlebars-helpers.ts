@@ -224,17 +224,6 @@ export class PersonaHandleBarsHelpers {
       return DR.eval().str.join("\n");
     },
 
-    // "getCriticalBoostEstimate" : function (actor: PC | Shadow, power: Usable) : number {
-    // 	const situation : Situation = {
-    // 		usedPower: power.accessor,
-    // 		attacker: actor.accessor,
-    // 		user: actor.accessor,
-    // 	};
-    // 	const engine = new CombatEngine(undefined);
-    // 	const critBonus = engine.calcCritModifier(actor.persona(), actor.persona(), power, situation);
-    // 	return critBonus.eval(situation).total;
-    // },
-
     "getTokenAccName" : (tokenAcc: UniversalTokenAccessor<PToken> | UniversalActorAccessor<PC | Shadow>) =>  {
       if ("actorId" in tokenAcc) {
         const token = PersonaDB.findToken(tokenAcc.token);
@@ -254,8 +243,11 @@ export class PersonaHandleBarsHelpers {
       return power.isPassive() || power.isDefensive() || power.isSupport();
     },
 
-    'canUsePower': (persona:Persona, power: Power) : boolean => {
+    'canUsePower': (persona:Persona | ValidAttackers, power: Power) : boolean => {
       try {
+        if (persona instanceof PersonaActor) {
+          persona=persona.persona();
+        }
         return persona.canUsePower(power, false);
         // return persona.canUsePower(power, false) && power.system?.subtype != "passive" && power.system?.subtype != "defensive" ;
       } catch (e) {
@@ -562,13 +554,15 @@ export class PersonaHandleBarsHelpers {
       return [];
     },
     "hasTag": function (source: PersonaActor | PersonaItem, tagName: string) : boolean {
+      if (typeof tagName != "string") {return false;}
       switch (true) {
         case source instanceof PersonaActor :{
-          return source.tagList.includes(tagName as typeof source.tagList[number]);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return source.tags.hasTag(tagName as any);
         }
         case source instanceof PersonaItem: {
-          const list = (source as Usable).tagList(null);
-          return list.includes (tagName as typeof list[number]);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+          return (source as Usable).hasTag(tagName as any, null);
         }
         default:
           return false;
