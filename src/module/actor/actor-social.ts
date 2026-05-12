@@ -27,7 +27,7 @@ export class ActorSocial <T extends PersonaActor> {
     this.actor = parent;
     this.caches = {
       slinkData: new TimedCache( () => this._refreshSocialLinkData(), this.SOCIAL_EFFECTS_CACHE_LIFESPAN),
-    fociiCache: new TimedCache ( () => this._getAllSocialFocii(), this.SOCIAL_EFFECTS_CACHE_LIFESPAN),
+      fociiCache: new TimedCache ( () => this._getAllSocialFocii(), this.SOCIAL_EFFECTS_CACHE_LIFESPAN),
       socialEffects: new TimedCache( () => this._socialEffects(), this.SOCIAL_EFFECTS_CACHE_LIFESPAN),
     };
   }
