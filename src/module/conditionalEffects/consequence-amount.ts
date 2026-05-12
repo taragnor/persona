@@ -120,7 +120,10 @@ export class ConsequenceAmountResolver {
     let item : U<PersonaItem>;
     switch (amt.itemTarget) {
       case "source": {
-        const source = amt.source;
+        try {
+          if (!amt.source) {return undefined;}
+          const source = PersonaDB.find(amt.source as UniversalItemAccessor);
+
         if (source instanceof PersonaItem && !source.isTag()) {
           item = source;
           break;
@@ -132,10 +135,14 @@ export class ConsequenceAmountResolver {
           item = source.parent;
           break;
         }
-        const realSource=  amt.realSource;
+        const realSource = amt.realSource ?  PersonaDB.find(amt.realSource) : undefined;
         if (realSource instanceof PersonaItem && !realSource.isTag()) {
           item = realSource;
           break;
+        }
+        } catch (e) {
+          PersonaError.softFail(e as Error);
+          return undefined;
         }
         break;
       }

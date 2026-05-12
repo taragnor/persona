@@ -1765,18 +1765,7 @@ async removeStatus(status: Pick<StatusEffect, "id"> | StatusEffectId) : Promise<
 }
 
 equippedItems() : (InvItem | Weapon)[]  {
-  switch (this.system.type) {
-    case "shadow":
-    case "npc":
-    case "tarot":
-      return [];
-    case "pc":
-    case "npcAlly":
-      break;
-    default:
-      this.system satisfies never;
-      return [];
-  }
+  if (!this.isPCLike()) {return [];}
   const inv = this.inventory;
   const slots : (keyof typeof this.system.equipped)[]=  ["weapon", "body", "accessory", "weapon_crystal"];
   const ret = slots

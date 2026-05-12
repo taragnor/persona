@@ -124,7 +124,7 @@ export class PersonaCombatStats {
       .getPassiveBonusesIgnoreAuras(stat)
       .total(situation);
     const statTotal = Math.round( permaBonus + this.getBaseStatValue(stat) + modBonuses);
-    return Math.min(99, statTotal);
+    return Math.max(0, statTotal);
   }
 
   getBaseStatValue(stat: PersonaStat) : number {

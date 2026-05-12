@@ -68,7 +68,7 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
     if (extraTags.length == 0) {return baseTags;}
     const combinedTags = baseTags.slice();
     combinedTags.pushUnique(...extraTags);
-    return combinedTags;
+    return this.idCheck(combinedTags);
   }
 
   private _tagListRawBase(user : N<ValidAttackers>) : readonly TagType[] {
@@ -77,7 +77,6 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
       case item.isPower(): {
         return this.getTags_power(item, user);
       }
-
       case item.isConsumable(): {
         return this.getTags_consumable(item, user);
       }
@@ -271,13 +270,17 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
   }
 
   private getTags_weapon(item : Weapon, user: N<ValidAttackers>) : readonly TagType[] {
-    const list = (item.system.itemTags.slice() as TagType[])
-      .pushUnique(...this.baseItemExtraTags(user ?? null));
+    const idCheck = this.idCheck(item.system.itemTags);
+    const list = [] as TagType[];
+    list.pushUnique(...idCheck);
+
+    // const list = (item.system.itemTags.slice() as TagType[])
+    list.pushUnique(...this.baseItemExtraTags(user ?? null));
     // const baseDamageType = item.getBaseDamageType();
     // if (!list.includes(item.getBaseDamageType()) && POWER_TAGS_LIST.includes(item.getBaseDamageType())) {
-      list.pushUnique( this.idCheck(item.getBaseDamageType()));
+    list.pushUnique( this.idCheck(item.getBaseDamageType()));
     // }
-    list.pushUnique(item.system.type);
+    list.pushUnique( this.idCheck(item.system.type));
     return list;
   }
 
