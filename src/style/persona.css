@@ -1399,6 +1399,12 @@ img.inline {
   font-size: 0.9em;
 }
 
+.side-panel-main .side-panel-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
 .social-list,
 .item-use-panel .button-list,
 .item-list {
@@ -1411,6 +1417,16 @@ img.inline {
 .item-use-panel div.button-list {
   gap: 0.5em;
 }
+
+.side-panel-main .side-panel-buttons {
+  flex-grow: 1;
+  flex-shrink: 1;
+  justify-content: flex-start;
+  align-items: flex-start;
+  align-content: flex-start;
+}
+
+
 
 .social-list > .social-item,
 .item-list > .inventory-item,
