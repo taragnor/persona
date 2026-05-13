@@ -8,7 +8,7 @@
 </select>
 {{/if}}
 
-{{#if (eqAny cond.trigger "on-clock-tick" "on-clock-change")}}
+{{#if (eqAny cond.trigger "on-clock-tick" "on-clock-change" "on-clock-overflow")}}
 <select name="{{strcat namePrefix 'triggeringClockId'}}">
   {{selectOptions POWERSTUFF.CLOCKS localize=true selected=cond.triggeringClockId}}
 </select>

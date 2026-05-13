@@ -38,8 +38,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     allSocialCards: new PermanentCache( () => this._allSocialCards()),
     tagsArr: new PermanentCache( () => this._tagsArr()),
     enchantments: new PermanentCache( () => this._enchantments()),
-
-
+    personalSocialLink: new PermanentCache( () => this._personalSocialLink()),
   };
 
   constructor() {
@@ -486,7 +485,11 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
   standardActionActivities(): readonly Activity[] {
     return this.allActivities()
-      .filter( x=> (x.system.cardType == "job" || x.system.cardType =="training" || x.system.cardType == "recovery" || x.system.cardType == "other") );
+      .filter( x=> (x.system.cardType == "job"
+        || x.system.cardType =="training"
+        || x.system.cardType == "recovery"
+        || x.system.cardType == "other")
+      );
   }
 
   minorActionActivities() : readonly SocialCard[] {
@@ -495,10 +498,15 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
   }
 
   personalSocialLink(): NPC {
-    if (!this.#cache.personalSocialLink) {
-      this.#cache.personalSocialLink = this.getActorByName("Personal Social Link") as NPC;
+    return this.permanentCaches.personalSocialLink.value;
+  }
+
+  _personalSocialLink(): NPC {
+    const actor = this.getActorByName("Personal Social Link");
+    if (actor == undefined || !actor.isNPC()) {
+      throw new PersonaError("Personal Social Link not found");
     }
-    return this.#cache.personalSocialLink;
+    return actor;
   }
 
   teammateSocialLink(): NPC {
@@ -519,7 +527,8 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
   }
 
   skillCards(): readonly SkillCard[] {
-    return this.allItems().filter( item => item.system.type == "skillCard") as SkillCard[];
+    return this.allItems()
+      .filter( item => item.isSkillCard());
   }
 
   getPower(id: Power["id"]) : Power | undefined {

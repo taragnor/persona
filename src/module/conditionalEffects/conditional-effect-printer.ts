@@ -23,7 +23,8 @@ import {PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {localize} from "../persona.js";
-import {multiCheckToArray} from "../preconditions.js";
+import {getSocialLinkTarget, multiCheckToArray} from "../preconditions.js";
+import {PersonaSocial} from "../social/persona-social.js";
 import {ConditionalEffectC} from "./conditional-effect-class.js";
 
 export class ConditionalEffectPrinter {
@@ -64,9 +65,6 @@ export class ConditionalEffectPrinter {
         return "Disabled on Debug Mode";
       case "is-hit":
         return `Roll is ${cond.booleanState ? "" : "not"} a success`;
-        // case "numeric-v2":
-        // 	return "Numeric V2 amount (not used)";
-        // 	// return NumericV2.prettyPrintCondition(cond);
       case "diagnostic":
         return "Diagnostic breakpoint";
       default:
@@ -426,12 +424,19 @@ export class ConditionalEffectPrinter {
         case "talent-level":
           return `Talent Level ${endString(cond)}`;
         case "social-link-level": {
-          const socialTarget  = PersonaDB.allActors()
-          .find( x=> x.id == cond.socialLinkIdOrTarot)
-          ?? PersonaDB.socialLinks()
-          .find(x=> x.tarot?.name  == cond.socialLinkIdOrTarot);
-          const name = socialTarget ? socialTarget.displayedName : "Unknown";
+          try {
+          const situation = PersonaSocial.currentSocialCardExecutor?.cardData?.situation;
+          const socialTarget = getSocialLinkTarget (cond.socialLinkIdOrTarot, situation, null);
+          // const socialTarget  = PersonaDB.allActors()
+          // .find( x=> x.id == cond.socialLinkIdOrTarot)
+          // ?? PersonaDB.socialLinks()
+          // .find(x=> x.tarot?.name  == cond.socialLinkIdOrTarot);
+          const name = socialTarget ? socialTarget.displayedName : cond.socialLinkIdOrTarot;
           return `${name} SL ${endString(cond)}`;
+          } catch (e) {
+            PersonaError.softFail(e as Error, cond);
+            return "ERROR";
+          }
         }
         case "student-skill": {
           const skill = this.translate(cond.studentSkill!, STUDENT_SKILLS);

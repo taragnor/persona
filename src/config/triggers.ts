@@ -23,6 +23,7 @@ export const NONCOMBAT_TRIGGER_LIST = [
 	"on-presence-check",
 	"on-clock-tick",
 	"on-clock-change",
+  "on-clock-overflow",
 	"on-open-door",
 	"enter-metaverse",
 	"exit-metaverse",

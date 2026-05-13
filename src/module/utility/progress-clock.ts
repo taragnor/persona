@@ -5,6 +5,7 @@ declare global {
 	interface HOOKS {
 		"clockTick": (clock: ProgressClock, newAmt: number) => unknown;
 		"updateClock": (clock: ProgressClock, newAmt: number, delta : number) => unknown;
+    "clockOverflow": (clock: ProgressClock) => unknown;
 	}
 
 }
@@ -259,12 +260,16 @@ export  class ProgressClock {
 		Hooks.callAll("clockTick", this, newAmt);
 	}
 
-	async reportChange(newAmt: number, oldAmt: number) : Promise<void> {
+	async reportChange(newAmt: number, oldAmt: number, cyclicOverflow: boolean = false) : Promise<void> {
 		const delta = newAmt - oldAmt;
 		if (delta != 0) {
 			await this.onUpdate();
 			Hooks.callAll("updateClock", this, newAmt, delta);
 		}
+    if (cyclicOverflow) {
+      Hooks.callAll("clockOverflow", this);
+    }
+
 	}
 
 	async onUpdate() {
@@ -292,18 +297,21 @@ export  class ProgressClock {
 		return this.amt;
 	}
 
-	async add(mod : number): Promise<number> {
-		if (!this.isCyclical()) {
-			const oldVal = this.amt;
-			const amt = Math.min(this.max, Math.max(0, this.amt + mod));
-			await this.refreshValue(amt);
-			if (mod == 1) {this.reportTick(amt); }
-			await this.reportChange(amt, oldVal);
-			return this.amt;
-		}
+  private async add_nonCyclical(mod : number): Promise<number> {
+    const oldVal = this.amt;
+    const amt = Math.min(this.max, Math.max(0, this.amt + mod));
+    await this.refreshValue(amt);
+    if (mod == 1) {this.reportTick(amt); }
+    await this.reportChange(amt, oldVal);
+    return this.amt;
+  }
+
+	async add_cyclical(mod : number): Promise<number> {
 		let modAmt = this.amt + mod;
+    let cycle = false;
 		while (modAmt > this.max) {
 			modAmt = modAmt - (this.max +1);
+      cycle = true;
 		}
 		while (modAmt < 0) {
 			modAmt = modAmt + (this.max +1);
@@ -311,8 +319,33 @@ export  class ProgressClock {
 		const oldVal = this.amt;
 		await this.refreshValue(modAmt);
 		if (mod == 1) { this.reportTick(modAmt); }
-		await this.reportChange(modAmt, oldVal);
+		await this.reportChange(modAmt, oldVal, cycle);
 		return this.amt;
+  }
+
+	async add(mod : number): Promise<number> {
+		if (!this.isCyclical()) {
+      return this.add_nonCyclical(mod);
+			// const oldVal = this.amt;
+			// const amt = Math.min(this.max, Math.max(0, this.amt + mod));
+			// await this.refreshValue(amt);
+			// if (mod == 1) {this.reportTick(amt); }
+			// await this.reportChange(amt, oldVal);
+			// return this.amt;
+		}
+    return this.add_cyclical(mod);
+		// let modAmt = this.amt + mod;
+		// while (modAmt > this.max) {
+		// 	modAmt = modAmt - (this.max +1);
+		// }
+		// while (modAmt < 0) {
+		// 	modAmt = modAmt + (this.max +1);
+		// }
+		// const oldVal = this.amt;
+		// await this.refreshValue(modAmt);
+		// if (mod == 1) { this.reportTick(modAmt); }
+		// await this.reportChange(modAmt, oldVal);
+		// return this.amt;
 	}
 
 	#getClock(): undefined |  GlobalProgressClocks.ProgressClock {

@@ -130,7 +130,7 @@ type onTarotPerk = {
 }
 
 type ClockTickTrigger = {
-	trigger: "on-clock-tick" | "on-clock-change";
+	trigger: "on-clock-tick" | "on-clock-change" | "on-clock-overflow";
 	triggeringClockId: string;
 }
 

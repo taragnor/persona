@@ -1094,8 +1094,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       case 'target' : {
         if (!checkSituationProp(situation, "target")) { return []; }
         const target = PersonaDB.findActor<PersonaActor>(situation.target);
-        // : situation.socialTarget
-        // ? PersonaDB.findActor(situation.socialTarget)
         return target ? [target as ValidAttackers]: []; }
       case 'attacker': {
         if (!checkSituationProp(situation, "attacker")) { return []; }

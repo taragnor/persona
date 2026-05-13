@@ -547,6 +547,7 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
       return true;
     case "on-clock-change":
     case "on-clock-tick":
+    case "on-clock-overflow":
       if (!("triggeringClockId" in situation)) {
         return false;
       }
@@ -912,52 +913,10 @@ function accessPersonaCache(_situation: Situation, _dataLoc: string, creatorFn: 
   // return newData;
 }
 
-export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, situation: Situation, source: N<Sourced<object>["source"]>): NPC | PC | undefined {
+export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, situation: U<Situation>, source: N<Sourced<object>["source"]>): NPC | PC | undefined {
   if (socialLinkIdOrTarot == undefined ) {return undefined;}
   let targetIdOrTarot : SocialLinkIdOrTarot | undefined = socialLinkIdOrTarot;
   targetIdOrTarot = resolveSocialNonIDTarget(targetIdOrTarot, situation, source);
-  //const test = targetIdOrTarot as keyof typeof SOCIAL_LINK_OR_TAROT_OTHER;
-  //switch (test) {
-  //  case "target":
-  //  case "": {
-  //    targetIdOrTarot = situation.socialTarget?.actorId as unknown as AnyStringObject
-  //    ?? situation.target?.actorId as unknown as AnyStringObject
-  //    ?? undefined;
-  //    break;
-  //  }
-  //  case "attacker": {
-  //    targetIdOrTarot = situation.attacker?.actorId as unknown as AnyStringObject ?? undefined;
-  //    break;
-
-  //  }
-  //  case "user": {
-  //    targetIdOrTarot = situation.user?.actorId as unknown as AnyStringObject ?? undefined;
-  //    break;
-
-  //  }
-  //  case "cameo": {
-  //    targetIdOrTarot = situation.cameo?.actorId as unknown as AnyStringObject
-  //    ?? undefined;
-  //    break;
-  //  }
-  //  case "SLSource": {
-  //    const SLSource = source ? PersonaDB.find(source as UniversalAccessor<ContainerTypes>) : undefined;
-  //    targetIdOrTarot = SLSource?.parent?.id as unknown as AnyStringObject
-  //    ?? undefined;
-  //    if (targetIdOrTarot as unknown as string == PersonaDB.personalSocialLink().id) {
-  //      PersonaError.softFail("Using Personal Link");
-  //      return undefined;
-  //    } else if (targetIdOrTarot as unknown as string == PersonaDB.teammateSocialLink().id) {
-  //      PersonaError.softFail("Using Teammate link as source");
-  //      return undefined;
-  //    }
-  //    break;
-  //  }
-  //  default:
-  //    test satisfies never;
-  //    //NOTE: TS can't do a satsifies here so have to be careufl adding new types
-  //    break;
-  //}
   if (targetIdOrTarot == "target") {
     PersonaError.softFail( "Target seen in targetIdOrtarot and shouldnt' be there");
     return undefined;
@@ -968,7 +927,7 @@ export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, si
 
 function resolveSocialNonIDTarget (
   targetIdOrTarot :  SocialLinkIdOrTarot,
-  situation: Situation,
+  situation: U<Situation>,
   source: N<Sourced<object>["source"]>)
   : U<Exclude<SocialLinkIdOrTarot, keyof typeof SOCIAL_LINK_OR_TAROT_OTHER>> {
     type ret = U<Exclude<SocialLinkIdOrTarot, keyof typeof SOCIAL_LINK_OR_TAROT_OTHER>>;
@@ -977,21 +936,21 @@ function resolveSocialNonIDTarget (
     switch (test) {
       case "target":
       case "": {
-        if (checkSituationProp(situation, "target")) {
+        if (situation && checkSituationProp(situation, "target")) {
           return situation.target.actorId;
         }
         return undefined;
       }
       case "attacker": {
-        if (!checkSituationProp(situation, "attacker")) { return undefined; }
+        if (!situation || !checkSituationProp(situation, "attacker")) { return undefined; }
         return  situation.attacker.actorId;
       }
       case "user": {
-        if (!checkSituationProp(situation, "user")) { return undefined; }
+        if (!situation || !checkSituationProp(situation, "user")) { return undefined; }
         return situation.user.actorId;
       }
       case "cameo": {
-        if (!checkSituationProp(situation, "cameo")) { return undefined; }
+        if (!situation || !checkSituationProp(situation, "cameo")) { return undefined; }
         return situation.cameo.actorId;
       }
       case "SLSource": {

@@ -1,6 +1,7 @@
 import {LocalEffect, OtherEffect} from "../../config/consequence-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import { ConsequenceApplier } from "../combat/consequence-applier.js";
+import {StepsClock} from "../exploration/steps-clock.js";
 import {DowntimePanel} from "../panels/downtime-panel.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaSocial} from "../social/persona-social.js";
@@ -22,6 +23,12 @@ export class Tests {
   static async panelTest_downtime() {
     await PersonaSocial.panel.setActor(this.kim);
     await PersonaSocial.panel.activate();
+  }
+
+  static async stepsAdvance(num: number) {
+    while (num-- > 0) {
+      await StepsClock.instance.inc();
+    }
   }
 
   private static get dummyShell() {

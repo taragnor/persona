@@ -396,7 +396,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const CONST = PersonaActorSheetBase.CONST();
 		if (!power) {return;}
 		const persona = this.actor.persona();
-		const target= PersonaTargetting.targettedPTokens()
+		const target = PersonaTargetting.targettedPTokens()
 			.filter( x=> x.actor.persona().effectiveScanLevel >=2 ).at(0) ?? null ;
     const targetPersona  : Persona = target ? target.actor.persona() : persona;
 		const damage = await CombatantSheetBase.getDamage(persona, power);

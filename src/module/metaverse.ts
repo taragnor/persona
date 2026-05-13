@@ -67,7 +67,6 @@ export class Metaverse {
     for (const err of gen.errorLog) {
       PersonaError.softFail(err);
     }
-
     return gen;
   }
 
@@ -418,7 +417,6 @@ export class Metaverse {
       } as const satisfies TriggeredSituation.Select<"on-metaverse-turn-dual">;
       await TriggeredEffect.autoApplyTrigger(indiv_sit, undefined);
     }
-
 		ui.notifications.notify("Passing Metaverse turn");
 	}
 
@@ -607,7 +605,15 @@ Hooks.on("clockTick", async function (clock: ProgressClock, _newAmt: number) {
 		triggeringClockId: clock.id,
 		triggeringUser: game.user,
 	};
-	// console.log("Triggering ClockTick");
+	await TriggeredEffect.autoApplyTrigger(situation, undefined);
+});
+
+Hooks.on("clockOverflow", async function (clock: ProgressClock) {
+	const situation : Situation = {
+		trigger: "on-clock-overflow",
+		triggeringClockId: clock.id,
+		triggeringUser: game.user,
+	};
 	await TriggeredEffect.autoApplyTrigger(situation, undefined);
 });
 
@@ -617,7 +623,6 @@ Hooks.on("updateClock", async function (clock: ProgressClock, _newAmt: number, _
 		triggeringClockId: clock.id,
 		triggeringUser: game.user,
 	};
-	// console.log("Triggering Clock Change");
 	await TriggeredEffect.autoApplyTrigger(situation, undefined);
 });
 

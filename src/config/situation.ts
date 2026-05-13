@@ -229,7 +229,7 @@ type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
   } & SituationComponent.RollParts.CompletedRoll;
 
   type ClockTrigger = {
-    trigger: "on-clock-tick" | "on-clock-change",
+    trigger: "on-clock-tick" | "on-clock-change" | "on-clock-overflow",
     triggeringClockId: string,
   }
 
