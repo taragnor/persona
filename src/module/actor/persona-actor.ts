@@ -161,7 +161,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   isRealPC(): this is RealPC {
-    return this.system.type == "pc" && this.hasPlayerOwner && this.tarot != undefined;
+    return this.system.type == "pc"
+      && this.hasPlayerOwner
+      && this.tarot != undefined;
   }
 
   async setAsNavigator(this: NPCAlly) {

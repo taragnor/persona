@@ -7,7 +7,7 @@ import { PersonaActor } from "./actor/persona-actor.js";
 import { BASIC_PC_POWER_NAMES } from "../config/basic-powers.js";
 import { BASIC_SHADOW_POWER_NAMES } from "../config/basic-powers.js";
 import {SocialEncounterCard} from "./social/social-card-executor.js";
-import {TimedCache} from "./utility/cache.js";
+import {PermanentCache, TimedCache} from "./utility/cache.js";
 
 declare global {
   interface HOOKS {
@@ -19,18 +19,40 @@ declare global {
 class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
   #cache: PersonaDBCache;
-  failLog: Map<string, string>;
-  storesCache: TimedCache<TokenDocument<PersonaActor>[]>;
+  failLog: Map<string, string> = new Map();
+
+  private timedCaches = {
+    storesCache: new TimedCache(() => this._getAllStores(), 3000),
+  } as const;
+
+  private permanentCaches = {
+    allTags: new PermanentCache( () => this._allTags()),
+    allPowers: new PermanentCache( () => this._allPowers()),
+    allTalents: new PermanentCache( () => this._allTalents()),
+    allPowersArr: new PermanentCache( () => this._allPowersArr()),
+    sceneModifiers: new PermanentCache( () => this._getSceneModifiers()),
+    NPCs : new PermanentCache( () => this._allNPCs()),
+    PCs : new PermanentCache( () => this._allPCs()),
+    NPCAllies: new PermanentCache( () => this._NPCAllies()),
+    classes: new PermanentCache( () => this._classes()),
+    allSocialCards: new PermanentCache( () => this._allSocialCards()),
+    tagsArr: new PermanentCache( () => this._tagsArr()),
+    enchantments: new PermanentCache( () => this._enchantments()),
+
+
+  };
 
   constructor() {
     super();
-    this.storesCache = new TimedCache(() => this._getAllStores(), 3000);
-    this.failLog = new Map();
     this.#resetCache();
   }
 
+
   #resetCache() : PersonaDBCache {
-    this.storesCache.clear();
+    Object.values(this.permanentCaches)
+      .forEach( cache=> cache.clear());
+    Object.values(this.timedCaches)
+      .forEach (cache=> cache.clear());
     const newCache =  this.#cache = {
       powers: undefined,
       NPCs: undefined,
@@ -76,7 +98,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     this.#resetCache();
   }
 
-  onCreateActor(_actor :PersonaActor) {
+  onCreateActor(_actor : PersonaActor) {
     this.#resetCache();
   }
 
@@ -187,13 +209,21 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
   }
 
   getSceneModifiers() : readonly UniversalModifier [] {
-    if (this.#cache.sceneModifiers == undefined) {
+    return this.permanentCaches.sceneModifiers.value;
+  }
+
+  _getSceneModifiers() : readonly UniversalModifier [] {
+    // if (this.#cache.sceneModifiers == undefined) {
+    //   const UMs = this.allUniversalModifierTypes();
+    //   this.#cache.sceneModifiers = UMs
+    //     .filter(um=> um.system.scope == "scene")
+    //     .sort ( (a,b) => a.name.localeCompare(b.name));
+    // }
+    // return this.#cache.sceneModifiers;
       const UMs = this.allUniversalModifierTypes();
-      this.#cache.sceneModifiers = UMs
+      return UMs
         .filter(um=> um.system.scope == "scene")
         .sort ( (a,b) => a.name.localeCompare(b.name));
-    }
-    return this.#cache.sceneModifiers;
   }
 
   getSceneAndRoomModifiers() : readonly UniversalModifier[] {
@@ -201,24 +231,32 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
       ... this.getRoomModifiers(),
       ... this.getSceneModifiers()
     ] .sort ( (a,b) => a.name.localeCompare(b.name));
-    // const items = this.getAllByType("Item") as PersonaItem[];
-    // const UMs = items.filter( x=> x.system.type == "universalModifier") as UniversalModifier[];
-    // return UMs
-    // 	.filter(um=> um.system.scope == "scene" || um.system.scope == "room")
-    // 	.sort ( (a,b) => a.name.localeCompare(b.name));
   }
 
 
   allPowersArr(): readonly Power[] {
+    return this.permanentCaches.allPowersArr.value;
+    // return Array.from(this.allPowers().values());
+  }
+
+  _allPowersArr(): readonly Power[] {
     return Array.from(this.allPowers().values());
   }
 
   allTalents(): readonly Talent[] {
+    return this.permanentCaches.allTalents.value;
+  }
+
+  _allTalents(): readonly Talent[] {
     return this.allItems().filter( x=> x.isTalent());
   }
 
   allPowers() : Map<string, Power> {
-    if (this.#cache.powers) {return this.#cache.powers;}
+    return this.permanentCaches.allPowers.value;
+  }
+
+  private _allPowers() : Map<string, Power> {
+    // if (this.#cache.powers) {return this.#cache.powers;}
     // const items = this.allItems();
     // return this.#cache.powers =
     const items = this.allItems()
@@ -292,7 +330,11 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     return game.scenes.contents;
   }
 
-  allSocialCards() :readonly SocialCard[] {
+  allSocialCards() : readonly SocialCard[] {
+    return this.permanentCaches.allSocialCards.value;
+  }
+
+  _allSocialCards() : readonly SocialCard[] {
     return this.allItems()
       .filter( x=> x.system.type == "socialCard") as SocialCard[];
   }
@@ -326,30 +368,54 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     return this.sortLocalizationObject(locObj);
   }
 
-  tagsArr(): Tag[] {
-    if (this.#cache.tagsArr != undefined) {return this.#cache.tagsArr;}
-    const tags= this.allItems()
+  tagsArr(): readonly Tag[] {
+    return this.permanentCaches.tagsArr.value;
+    // if (this.#cache.tagsArr != undefined) {return this.#cache.tagsArr;}
+    // const tags= this.allItems()
+    //   .filter (x=> x.isTag());
+    // return this.#cache.tagsArr = tags;
+  }
+
+  private _tagsArr(): readonly Tag[] {
+    return this.allItems()
       .filter (x=> x.isTag());
-    return this.#cache.tagsArr = tags;
   }
 
   allTags() :  Map<Tag["id"],Tag> {
+    return this.permanentCaches.allTags.value;
+    // if (!PersonaDB.isLoaded) {throw new PersonaError("DB not loaded yet");}
+    // if (this.#cache.tags) {return this.#cache.tags;}
+    // const tags= this.tagsArr()
+    // .map( tag=> [tag.id, tag] as [Tag["id"], Tag]);
+    // return this.#cache.tags = new Map(tags);
+  }
+
+  private _allTags() :  Map<Tag["id"],Tag> {
     if (!PersonaDB.isLoaded) {throw new PersonaError("DB not loaded yet");}
-    if (this.#cache.tags) {return this.#cache.tags;}
-    const tags= this.tagsArr()
+    const tags = this.tagsArr()
     .map( tag=> [tag.id, tag] as [Tag["id"], Tag]);
-    return this.#cache.tags = new Map(tags);
+    return new Map(tags);
+    // if (!PersonaDB.isLoaded) {throw new PersonaError("DB not loaded yet");}
+    // if (this.#cache.tags) {return this.#cache.tags;}
+    // const tags= this.tagsArr()
+    // .map( tag=> [tag.id, tag] as [Tag["id"], Tag]);
+    // return this.#cache.tags = new Map(tags);
   }
 
-  enchantments() : Tag[] {
-    if (this.#cache.enchantments) {return this.#cache.enchantments;}
-    const tags= this.allItems()
-      .filter (x=> x.isTag())
+  enchantments() : readonly Tag[] {
+    return this.permanentCaches.enchantments.value;
+    // if (this.#cache.enchantments) {return this.#cache.enchantments;}
+    // const tags= this.tagsArr()
+    //   .filter(tag=> tag.isEnchantmentTag());
+    // return this.#cache.enchantments = tags;
+  }
+
+  private _enchantments() : readonly Tag[] {
+    return this.tagsArr()
       .filter(tag=> tag.isEnchantmentTag());
-    return this.#cache.enchantments = tags;
   }
 
-  PCsAndAllies() : (PC | NPCAlly) [] {
+  PCsAndAllies() : readonly (PC | NPCAlly) [] {
     return [
       ...this.realPCs(),
       ...this.NPCAllies(),
@@ -389,16 +455,28 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
   }
 
   PCs() : readonly PC[] {
-    if (this.#cache.pcs) {return this.#cache.pcs;}
-    this.#cache.pcs=  this.allActors().filter( actor => actor.isPC() && actor.isRealPC());
-    return this.#cache.pcs;
+    return this.permanentCaches.PCs.value;
+    // if (this.#cache.pcs) {return this.#cache.pcs;}
+    // this.#cache.pcs=  this.allActors().filter( actor => actor.isPC() && actor.isRealPC());
+    // return this.#cache.pcs;
+  }
+
+  private _allPCs() : readonly PC[] {
+    return this.allActors()
+      .filter( actor => actor.isPC() && actor.isRealPC());
   }
 
   allNPCs(): readonly NPC[] {
-    if (this.#cache.NPCs) {return this.#cache.NPCs;}
-    this.#cache.NPCs=  this.allActors().filter( actor => actor.isNPC());
-    return this.#cache.NPCs;
+    return this.permanentCaches.NPCs.value;
+    // if (this.#cache.NPCs) {return this.#cache.NPCs;}
+    // this.#cache.NPCs=  this.allActors().filter( actor => actor.isNPC());
+    // return this.#cache.NPCs;
+  }
 
+  private _allNPCs(): readonly NPC[] {
+    return  this.allActors()
+      .filter( actor => actor.isNPC());
+    // return this.#cache.NPCs;
   }
 
   allActivities(): readonly Activity[] {
@@ -411,7 +489,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
       .filter( x=> (x.system.cardType == "job" || x.system.cardType =="training" || x.system.cardType == "recovery" || x.system.cardType == "other") );
   }
 
-  minorActionActivities() : SocialCard[] {
+  minorActionActivities() : readonly SocialCard[] {
     return this.allSocialCards()
       .filter( card=> card.isMinorActionItem());
   }
@@ -449,20 +527,28 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
   }
 
   NPCAllies() : readonly NPCAlly[] {
-    if (this.#cache.NPCAllies == undefined) {
-      this.#cache.NPCAllies = this.allActors().filter( x=>
-        x.system.type == "npcAlly") as NPCAlly[];
+    return this.permanentCaches.NPCAllies.value;
+    // if (this.#cache.NPCAllies == undefined) {
+    //   this.#cache.NPCAllies = this.allActors().filter( x=>
+    //     x.system.type == "npcAlly") as NPCAlly[];
+    // }
+    // return this.#cache.NPCAllies;
+  }
+
+  private _NPCAllies() : readonly NPCAlly[] {
+    return this.allActors().filter( x=>
+      x.system.type == "npcAlly") as NPCAlly[];
+  }
+
+  getAllStores(): readonly TokenDocument<PersonaActor>[] {
+    return this.timedCaches.storesCache.value;
+  }
+
+  _getAllStores(): readonly TokenDocument<PersonaActor>[] {
+    if (!game.itempiles) {
+      PersonaError.softFail("Item Piles not defined, can't get all stores");
+      return [];
     }
-    return this.#cache.NPCAllies;
-  }
-
-
-  getAllStores(): TokenDocument<PersonaActor>[] {
-    return this.storesCache.value;
-  }
-
-  _getAllStores(): TokenDocument<PersonaActor>[] {
-    if (!game.itempiles) {return [];}
     const IP = game.itempiles.API;
     return game.scenes.contents.flatMap( sc =>
       sc.tokens
@@ -470,8 +556,9 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     ) as TokenDocument<PersonaActor>[];
   }
 
-  stockableItems() : Carryable[] {
-    return game.items.filter ( (x: PersonaItem)=>
+  stockableItems() : readonly Carryable[] {
+    return this.allItems()
+      .filter ( (x: PersonaItem)=>
       x.isCarryableType()
       && (x.system?.storeId?.length ?? 0) > 0
       && (x.system?.storeMax ?? 0) > 0
@@ -486,7 +573,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     return this.#cache.navigator;
   }
 
-  personaCompendium() : Shadow[] {
+  personaCompendium() : readonly Shadow[] {
     if (!this.#cache.personaCompendium) {
       this.#cache.personaCompendium = this.allActors()
         .filter ( x=> x.isShadow())
@@ -496,7 +583,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     return this.#cache.personaCompendium;
   }
 
-  navigatorModifiers(): ModifierContainer[] {
+  navigatorModifiers(): readonly ModifierContainer[] {
     const navigator = this.getNavigator();
     if (!navigator) {return [];}
     const skills = navigator.navigatorSkills
@@ -504,14 +591,20 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     return skills;
   }
 
-  classes(): CClass[] {
-    if (!this.#cache.classes) {
-      this.#cache.classes = this.allItems().filter(item=> item.isCharacterClass());
-    }
-    return this.#cache.classes;
+  classes(): readonly CClass[] {
+    return this.permanentCaches.classes.value;
+    // if (!this.#cache.classes) {
+    //   this.#cache.classes = this.allItems().filter(item=> item.isCharacterClass());
+    // }
+    // return this.#cache.classes;
   }
 
-  possiblePersonas() : Shadow[] {
+  private _classes(): readonly CClass[] {
+    return  this.allItems()
+      .filter(item=> item.isCharacterClass());
+  }
+
+  possiblePersonas() : readonly Shadow[] {
     if (this.#cache.possiblePersonas) {
       return this.#cache.possiblePersonas;
     }
@@ -544,8 +637,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
 
   averagePCLevel(): number {
-    const pcs = game.actors
-      .filter( (x: PersonaActor)=> x.isRealPC() && x.hasPlayerOwner);
+    const pcs = this.realPCs();
     const totalLevels = pcs.reduce ((acc, i : PC) => acc + i.system.personaleLevel, 0 );
     const avgLevel = Math.round(totalLevels/ pcs.length);
     return avgLevel;
@@ -578,12 +670,6 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
       .map( p=> p.resetCombatStats(true));
     return await Promise.allSettled(promises);
   }
-
-  // PCParty() : (PC | NPCAlly)[] {
-  // 	return game.scenes.active.tokens.contents
-  // 		.map( x=> x.actor as PersonaActor)
-  // 		.filter( actor=> actor && (actor.isPC() || actor.isNPCAlly()));
-  // }
 
 }
 

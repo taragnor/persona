@@ -1123,7 +1123,7 @@ export class PersonaHandleBarsHelpers {
     );
   },
 
-  "compendium" : function () : Shadow[] {
+  "compendium" : function () : readonly Shadow[] {
     return PersonaDB.personaCompendium();
   },
 
