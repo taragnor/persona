@@ -807,33 +807,6 @@ form h5 {
   opacity: 0.8;
 }
 
-.side-panel-main {
-  pointer-events: auto;
-  background-image: var(--sheet-bg-color);
-  max-width: 100%;
-  min-width: 33%;
-  z-index: 30;
-  margin: 3px;
-  color: white;
-  padding: 10px;
-  opacity: 0.8;
-}
-.side-panel-main .panel-data {
-  display: flex;
-  height: 100%;
-}
-
-.panel-data > * {
-  flex-grow: 1;
-  flex-shrink: 1;
-}
-
-.side-panel-main .side-panel-button:disabled {
-  background-color: #111; /* default is #333 dark grey*/
-  opacity: 0.6;
-  background: linear-gradient(135deg, #0B1E3F 0%, #1D1E5F 40%, #1D1E69 100%) !important;
-  color: grey !important;
-}
 
 .region-panel .points-of-interest h3 {
   font-size: larger;
@@ -1418,15 +1391,86 @@ img.inline {
   gap: 0.5em;
 }
 
-.side-panel-main .side-panel-buttons {
-  flex-grow: 1;
-  flex-shrink: 1;
-  justify-content: flex-start;
-  align-items: flex-start;
-  align-content: flex-start;
+/* .side-panel-main { */
+/*   flex-grow: 3; */
+/*   max-height: 80vh; */
+/*   overflow-y: auto; */
+/*   scrollbar-width: thin;    /1* auto | thin | none *1/ */
+/*   scrollbar-color: #888 #222; /1* thumb track *1/ */
+/*   scrollbar-gutter: stable; */
+/* } */
+
+.side-panel-main {
+  flex-grow: 3;
+  max-height: 80vh;
+  overflow-y: auto;
+  scrollbar-width: thin;    /* auto | thin | none */
+  scrollbar-color: #888 #222; /* thumb track */
+  scrollbar-gutter: stable;
+  pointer-events: auto;
+  background-image: var(--sheet-bg-color);
+  max-width: 100%;
+  min-width: 33%;
+  z-index: 30;
+  margin: 3px;
+  color: white;
+  padding: 10px;
+  opacity: 0.8;
+
+  .side-panel-buttons {
+    margin-top: 2em;
+    flex-grow: 1;
+    flex-shrink: 1;
+    justify-content: flex-start;
+    align-items: flex-start;
+    align-content: flex-start;
+    overflow-y: auto;
+  }
+
+  .side-panel-button {
+    margin-top: 3px;
+    margin-bottom: 3px;
+  }
+
+  .panel-data {
+    display: flex;
+    height: 100%;
+  }
+
+  .panel-data > * {
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
+
+  .side-panel-button:disabled {
+    background-color: #111; /* default is #333 dark grey*/
+    opacity: 0.6;
+    background: linear-gradient(135deg, #0B1E3F 0%, #1D1E5F 40%, #1D1E69 100%) !important;
+    color: grey !important;
+  }
+
 }
 
 
+
+
+.side-panel-main::-webkit-scrollbar {
+  width: 8px;
+}
+
+.side-panel-main::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.side-panel-main::-webkit-scrollbar-track {
+  background: #222;
+}
+
+.side-panel-buttons > .inventory-item {
+  height: 4em;
+  font-size: 0.7em;
+}
 
 .social-list > .social-item,
 .item-list > .inventory-item,
@@ -1466,36 +1510,15 @@ img.inline {
   /* max-height: 50%; */
 }
 
-.side-panel-main {
-  flex-grow: 3;
-  max-height: 80vh;
-  overflow-y: auto;
-  scrollbar-width: thin;    /* auto | thin | none */
-  scrollbar-color: #888 #222; /* thumb track */
-  scrollbar-gutter: stable;
-}
+/* .side-panel-main { */
+/*   flex-grow: 3; */
+/*   max-height: 80vh; */
+/*   overflow-y: auto; */
+/*   scrollbar-width: thin;    /1* auto | thin | none *1/ */
+/*   scrollbar-color: #888 #222; /1* thumb track *1/ */
+/*   scrollbar-gutter: stable; */
+/* } */
 
-.side-panel-main::-webkit-scrollbar {
-  width: 8px;
-}
-
-.side-panel-main::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-.side-panel-main::-webkit-scrollbar-track {
-  background: #222;
-}
-
-.side-panel-buttons > .inventory-item {
-  height: 4em;
-  font-size: 0.7em;
-}
-
-.side-panel-buttons {
-  overflow-y: auto;
-}
 
 
 img.item-icon {
@@ -1503,11 +1526,22 @@ img.item-icon {
   width: 76px;
 }
 
+button.inventory-item {
+  display: flex;
+  flex-direction: row;
+  flex-wrap:nowrap;
+  justify-content: space-evenly;
+}
+
+button.inventory-item > * {
+  flex-grow: 1;
+  flex-shrink: 1;
+}
+
 .side-panel-buttons img.item-icon {
   /* modified size may not look right */
   height: 18px;
   width: 60px;
-
 }
 
 .talent-list .talent,
@@ -2000,9 +2034,6 @@ button.end-turn {
   text-align: left;
 }
 
-.side-panel-buttons {
-  margin-top: 2em;
-}
 
 img.navigator-img  {
   width: 100px;
@@ -2045,10 +2076,6 @@ li.craftable {
   padding: 3px;
 }
 
-.side-panel-button {
-  margin-top: 3px;
-  margin-bottom: 3px;
-}
 
 .follow-up.target-select {
   border: 2px solid red;
