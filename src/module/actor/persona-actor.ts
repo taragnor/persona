@@ -105,14 +105,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     if (this.isPC()) {
       this._farming = new Farming(this);
     }
-    if (this.isValidCombatant()) {
+    //real PCs are tough todetect at construct time for Actors so I added isPC
+    if (this.isNPCAlly() || this.isPC() || this.isShadow()) {
       this._powerLearning = new PowerLearningSystem(this);
     }
-    // this.cache2 = {
-    //   persona : new TimedCache( () => (this as ValidAttackers)._persona(), 3000),
-    //   basePersona : new TimedCache( () => (this as ValidAttackers)._basePersona(), 3000),
-    //   actorMainModifiers: new TimedCache( () => this._actorMainModifiers(), 1000),
-    // };
     this.clearCache();
   }
 
