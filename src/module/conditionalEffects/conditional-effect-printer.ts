@@ -427,10 +427,6 @@ export class ConditionalEffectPrinter {
           try {
           const situation = PersonaSocial.currentSocialCardExecutor?.cardData?.situation;
           const socialTarget = getSocialLinkTarget (cond.socialLinkIdOrTarot, situation, null);
-          // const socialTarget  = PersonaDB.allActors()
-          // .find( x=> x.id == cond.socialLinkIdOrTarot)
-          // ?? PersonaDB.socialLinks()
-          // .find(x=> x.tarot?.name  == cond.socialLinkIdOrTarot);
           const name = socialTarget ? socialTarget.displayedName : cond.socialLinkIdOrTarot;
           return `${name} SL ${endString(cond)}`;
           } catch (e) {

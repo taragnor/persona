@@ -896,21 +896,8 @@ function getSubjectPersonas<K extends string, T extends Sourced<Record<K, Condit
 }
 
 function accessPersonaCache(_situation: Situation, _dataLoc: string, creatorFn: () => Persona[]) : Persona[] {
+  //this had issues so we probably need to revise this for different situations
   return creatorFn();
-  //TODO: thsi cache produced in accurate results may have to cache by a different value as different conditons with condition targetsmay produce different values
-  // if (!PersonaSettings.agressiveCaching()) {
-  //   return creatorFn();
-  // }
-  // let memory = PersonaCache.get(situation);
-  // if (!memory) {
-  //   const memcell = {};
-  //   PersonaCache.set(situation, memcell);
-  //   memory = memcell;
-  // }
-  // if (memory[dataLoc]) {return memory[dataLoc]; }
-  // const newData = creatorFn();
-  // memory[dataLoc] = newData;
-  // return newData;
 }
 
 export function getSocialLinkTarget(socialLinkIdOrTarot: SocialLinkIdOrTarot, situation: U<Situation>, source: N<Sourced<object>["source"]>): NPC | PC | undefined {
@@ -1485,8 +1472,5 @@ function specialComparison(condition: SourcedPrecondition & {type: "boolean", bo
       return undefined;
   }
 }
-
-// const PersonaCache : WeakMap<Situation, PersonaData>= new WeakMap();
-// type PersonaData = Record<string, U<Persona[]>>;
 
 

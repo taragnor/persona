@@ -522,7 +522,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   get powerLearning() : PowerLearningSystem<typeof this.source> {
-    return new PowerLearningSystem(this.source);
+    return this.source.powerLearning() as PowerLearningSystem<typeof this.source>;
+    // return new PowerLearningSystem(this.source);
   }
 
   numOfWeaknesses(): number {

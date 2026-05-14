@@ -1089,7 +1089,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     return resolved;
   }
 
-  static solveEffectiveTargets< T extends keyof Omit<TargettingContextList, "situation">>(applyTo :T, situation: Situation, cons?: SourcedConsequence) : readonly (ValidAttackers | ValidSocialTarget)[]  {
+  static solveEffectiveTargets<T extends keyof Omit<TargettingContextList, "situation">>(applyTo :T, situation: Situation, cons?: SourcedConsequence) : readonly (ValidAttackers | ValidSocialTarget)[]  {
     switch (applyTo) {
       case 'target' : {
         if (!checkSituationProp(situation, "target")) { return []; }

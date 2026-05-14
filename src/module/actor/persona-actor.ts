@@ -71,6 +71,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   social = new ActorSocial<typeof this>(this);
 
+  private _powerLearning : PowerLearningSystem<ValidAttackers>;
+
   static MPMap = new Map<number, number>;
   _farming : U<Farming>;
 
@@ -95,6 +97,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     super(...arr);
     if (this.isPC()) {
       this._farming = new Farming(this);
+    }
+    if (this.isValidCombatant()) {
+      this._powerLearning = new PowerLearningSystem(this);
     }
     this.cache2 = {
       persona : new TimedCache( () => (this as ValidAttackers)._persona(), 3000),
@@ -134,6 +139,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
         return 0;
     }
     return this.system.combat.mp.value;
+  }
+
+  powerLearning(this: ValidAttackers) : PowerLearningSystem<typeof this> {
+    return this._powerLearning;
   }
 
   isNPC(): this is NPC {
@@ -1272,15 +1281,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return this.basePersona.powerLearning.powerLearningList();
   }
 
-  checkPowerLegality( pwr: Power)  :boolean {
-    if (!this.isValidCombatant()) {return false;}
-    if (
-      pwr.hasTag("shadow-only", this)
-      && (!this.isShadow() || this.isPersona())
-    ) {return false;}
-    return true;
-  }
-
   get nextPowerToLearn() : Power | undefined {
     return this.powerLearningList.at(0)?.power;
   }
@@ -1309,9 +1309,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   get learnedPowersBuffer() : Power[] {
     if (!this.isValidCombatant()) {return [];}
-    return this.system.combat.learnedPowersBuffer
-      .map( p => PersonaDB.getPower(p))
-      .filter( p=> p != undefined);
+    return this.powerLearning().learnedPowersBuffer;
   }
 
   get powers(): Power[] {

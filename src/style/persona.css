@@ -793,17 +793,10 @@ form h5 {
 .region-info-panel {
   pointer-events: auto;
   background-image: var(--sheet-bg-color);
-  /* background-image: url(https://taragnorgaming.hopto.org/ui/denim075.png); */
-  /* max-width: 15%; */
-  /* min-width: 15%; */
-  /* width: 15%; */
   max-width: 100%;
   min-width: 33%;
-  /* width: 33%; */
   z-index: 30;
-  /* margin: 3px; */
   color: white;
-  /* padding: 10px; */
   opacity: 0.8;
 }
 

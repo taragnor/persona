@@ -7,15 +7,15 @@ import {Logger} from "./utility/logger.js";
 
 export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 
-	actor: T;
+  #actor: T;
 
 	constructor (actor: T) {
-		this.actor = actor;
+		this.#actor = actor;
 	}
 
 	async onLevelUp_checkLearnedPowers( newLevel: number, logChanges= true) : Promise<void> {
 		if (!newLevel) {return;}
-		const actor = this.actor;
+		const actor = this.#actor;
 		const powersToLearn = actor.powerLearningList
 		.slice()
 		.sort( (a,b) => a.level - b.level);
@@ -31,15 +31,15 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 	}
 
 	powerLearningList() : readonly Readonly<{power: Power, level: number}>[] {
-		const actor = this.actor;
+		const actor = this.#actor;
 		const lastLearn = actor.system.combat.lastLearnedLevel <= 1 ? actor.startingLevel : actor.system.combat.lastLearnedLevel;
 		return this.powerLearningListFull()
 			.filter( x=> x.level > lastLearn)
-			.filter( x=> actor.checkPowerLegality(x.power ));
+			.filter( x=> this.checkPowerLegality(x.power ));
 	}
 
   powerLearningListFull() : readonly Readonly<{power: Power, level: number}>[] {
-    const actor = this.actor;
+    const actor = this.#actor;
     let powerList = actor.system.combat.powersToLearn;
     const baseShadow = actor.isShadow() ? actor.baseShadow() : undefined;
     if (baseShadow) {
@@ -58,8 +58,8 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
   }
 
 	async customPersona_learnedPowersMsg(newLevel: number) {
-		if (!this.actor.isCustomPersona()) {return;}
-		const actor = this.actor;
+		if (!this.#actor.isCustomPersona()) {return;}
+		const actor = this.#actor;
 		const lastLearn = actor.system.combat.lastLearnedLevel <= 1 ? actor.startingLevel: actor.system.combat.lastLearnedLevel;
 		const learned =	this.customPersonaLearningList()
 			.filter( x=> x.level > lastLearn && x.level <= newLevel);
@@ -79,7 +79,7 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 		// const uncommon : CustomPersonaLearningList[number]["rarity"] = "normal-minus" as const;
 		// const capstone : CustomPersonaLearningList[number]["rarity"] = "never" as const;
 		// const rare : CustomPersonaLearningList[number]["rarity"] = "rare-plus" as const;
-		const actor = this.actor;
+		const actor = this.#actor;
 		const lastLearn = actor.system.combat.lastLearnedLevel <= 1 ? actor.startingLevel: actor.system.combat.lastLearnedLevel;
 		// const baseList : CustomPersonaLearningList= {
 		// 	1: {slot: 0, rarity: common},
@@ -98,7 +98,7 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 		// 	92: {slot: 3, rarity: capstone},
 		// 	100: {slot :3, rarity: "rare"},
 		// } as const;
-    const baseList = this.actor.basePersona.hasTag("lone-persona") ? PowerLearningSystem.lonePersonaCustomLearningList() : PowerLearningSystem.multiPersonaCustomList();
+    const baseList = actor.basePersona.hasTag("lone-persona") ? PowerLearningSystem.lonePersonaCustomLearningList() : PowerLearningSystem.multiPersonaCustomList();
 		const retList = Object.entries(baseList)
 			.map( ([k,v]) => ({ level: Number(k), ...v, txt: this.prettyPrintCustomPower(v)}))
 			.filter( x=> x.level > lastLearn)
@@ -162,7 +162,7 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
   }
 
 	async learnPower(power: Power, logChanges = true): Promise<boolean> {
-		const actor = this.actor;
+		const actor = this.#actor;
 		try {
 			if (power.isNavigator()) {
 				if (!actor.isNPCAlly()) {
@@ -193,7 +193,7 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 	}
 
 	async tryToAddToMain( power: Power, logChanges = true) : Promise<boolean> {
-		const actor = this.actor;
+		const actor = this.#actor;
 		const powers = actor.system.combat.powers;
 		if (this.hasSpaceToAddPowerToMain()) {
 			powers.push(power.id);
@@ -210,13 +210,13 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 	}
 
   canLearnNewSkill() : boolean {
-    const actor = this.actor;
+    const actor = this.#actor;
     const persona = actor.basePersona;
     return persona.maxPowers - persona.mainPowers.length - persona.sideboardPowers.length >= 0;
   }
 
 	async tryToAddToSideboard( power: Power, logChanges: boolean) : Promise<boolean> {
-		const actor = this.actor;
+		const actor = this.#actor;
 		if (actor.isShadow()) {return false;}
 		const sideboard =  actor.system.combat.powers_sideboard;
 		if (this.hasSpaceToAddToSideboard()) {
@@ -234,15 +234,26 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
     if (pwr.hasTag("swappable", null)) {
       return true;
     }
-    if (!this.actor.isCustomPersona()) {
+    if (!this.#actor.isCustomPersona()) {
       return false;
     }
     return true; //TOOD: put actual restriction
   }
 
+  checkPowerLegality( pwr: Power)  :boolean {
+    const actor=  this.#actor;
+    if (!actor.isValidCombatant()) {return false;}
+    if (
+      pwr.hasTag("shadow-only", actor)
+      && (!actor.isShadow() || actor.isPersona())
+    ) {return false;}
+    return true;
+  }
+
+
 	async tryToAddToLearnedPowersBuffer( power: Power, logChanges: boolean) : Promise<boolean> {
 
-		const actor = this.actor;
+		const actor = this.#actor;
     const persona = actor.basePersona;
 		const buffer= actor.system.combat.learnedPowersBuffer;
 		buffer.push(power.id);
@@ -255,35 +266,43 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 		// }
 	}
 
+  get learnedPowersBuffer() : Power[] {
+    const actor= this.#actor;
+    if (!actor.isValidCombatant()) {return [];}
+    return actor.system.combat.learnedPowersBuffer
+      .map( p => PersonaDB.getPower(p))
+      .filter( p=> p != undefined);
+  }
+
 	hasSpaceToAddPowerToMain() : boolean {
-		const actor = this.actor;
+		const actor = this.#actor;
 		const powers = actor.mainPowers;
 		return (powers.length < actor.basePersona.maxMainPowers);
 	}
 
 	hasSpaceToAddToSideboard(): boolean {
-		const actor = this.actor;
+		const actor = this.#actor;
 		if (actor.isShadow()) {return false;}
 		const sideboard = actor.sideboardPowers;
 		return (sideboard.length < actor.basePersona.maxSideboardPowers);
 	}
 
 	async addLearnedPower( power: Power, level = 99) : Promise<void> {
-		const actor = this.actor;
+		const actor = this.#actor;
 		const arr = actor.system.combat.powersToLearn;
 		arr.push( { powerId: power.id, level});
 		await actor.update({ "system.combat.powersToLearn": arr});
 	}
 
 	async addNavigatorSkill(this: PowerLearningSystem<NPCAlly>, pwr: Power) {
-		const actor = this.actor;
+		const actor = this.#actor;
 		actor.system.combat.navigatorSkills.pushUnique(pwr.id);
 		await actor.update( {"system.combat.navigatorSkills" : actor.system.combat.navigatorSkills});
 		await Logger.sendToChat(`${actor.name} added Navigator skill: ${pwr.name}` , actor);
 	}
 
 	private async promotePowers_sideboardToMain() {
-		const actor = this.actor;
+		const actor = this.#actor;
 		if (!actor.hasPowerSideboard) { return false;}
 		while (this.hasSpaceToAddPowerToMain()) {
 			const sideboard = actor.sideboardPowers.at(0);
@@ -296,7 +315,7 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 	}
 
 	private async promotePowers_learnedToMain() {
-		const actor = this.actor;
+		const actor = this.#actor;
 		while (this.hasSpaceToAddPowerToMain()) {
 			const bufferPower = actor.learnedPowersBuffer.at(0);
 			if (bufferPower) {
@@ -308,7 +327,7 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 	}
 
 	private async promotePowers_learnedToSideboard() {
-		const actor = this.actor;
+		const actor = this.#actor;
 		if (!actor.hasPowerSideboard) { return false;}
 		while (this.hasSpaceToAddToSideboard()) {
 			const bufferPower = actor.learnedPowersBuffer.at(0);
@@ -328,7 +347,7 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 	}
 
 	async moveFromBufferToSideboard(this: PowerLearningSystem<PC | NPCAlly>, power : Power) {
-		const actor = this.actor;
+		const actor = this.#actor;
 		let buffer = actor.system.combat.learnedPowersBuffer;
 		const sideboard = actor.system.combat.powers_sideboard;
 		sideboard.push(power.id);
@@ -338,7 +357,7 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 	}
 
 	async moveFromBufferToMain( power : Power) {
-		const actor = this.actor;
+		const actor = this.#actor;
 		let buffer = actor.system.combat.learnedPowersBuffer;
 		const mainPowers = actor.system.combat.powers;
 		mainPowers.push(power.id);
@@ -348,7 +367,7 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
 	}
 
 async checkForMissingLearnedPowers() {
-	const actor = this.actor;
+	const actor = this.#actor;
 	if (!actor.isShadow()) {return;}
 	const powers = actor.system.combat.powers;
 	const learned= actor.powerLearningList;
@@ -363,7 +382,7 @@ async checkForMissingLearnedPowers() {
 }
 
 async deletePower(id: Power["id"] ) {
-	const actor = this.actor;
+	const actor = this.#actor;
   const item = actor.items.find(x => x.id == id);
   if (item) {
     await item.delete();
@@ -378,14 +397,14 @@ async deletePower(id: Power["id"] ) {
 }
 
 async deleteLearnablePower( id: Power["id"]) : Promise<void> {
-	const actor = this.actor;
+	const actor = this.#actor;
 	let learnables = actor.system.combat.powersToLearn;
 	learnables = learnables.filter(x=> x.powerId != id);
 	await actor.update({"system.combat.powersToLearn": learnables});
 }
 
 async deletefromLearnBuffer( id: Power["id"]) : Promise<boolean> {
-	const actor = this.actor;
+	const actor = this.#actor;
 	let buffer = actor.system.combat.learnedPowersBuffer;
 	const power = PersonaDB.getItemById(id) as Power;
 	if (buffer.includes(id)) {
@@ -398,7 +417,7 @@ async deletefromLearnBuffer( id: Power["id"]) : Promise<boolean> {
 }
 
 async deleteFromMainPowers( id: Power["id"]) : Promise<boolean> {
-	const actor = this.actor;
+	const actor = this.#actor;
 	let powers = actor.system.combat.powers;
 	const power = PersonaDB.getItemById(id) as Power;
 	if (powers.includes(id)) {
@@ -414,7 +433,7 @@ async deleteFromMainPowers( id: Power["id"]) : Promise<boolean> {
 }
 
 async deleteFromSideboard( id: Power["id"]) : Promise<boolean> {
-	const actor = this.actor;
+	const actor = this.#actor;
   if (!actor.isPC()) {return false;}
 	let sideboard = actor.system.combat.powers_sideboard;
 	if (sideboard && sideboard.includes(id)) {
@@ -428,7 +447,7 @@ async deleteFromSideboard( id: Power["id"]) : Promise<boolean> {
 }
 
 	async deleteNavigatorSkill(powerId: Power["id"] ) : Promise<boolean> {
-	const actor = this.actor;
+	const actor = this.#actor;
     if (!actor.isNPCAlly()){ return false;}
 		if (!actor.system.combat.navigatorSkills.find( x=> powerId == x)) {return false;}
 		const power = actor.navigatorSkills.find( x=> x.id == powerId);
