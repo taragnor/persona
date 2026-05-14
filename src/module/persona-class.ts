@@ -43,7 +43,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     mhp: new TimedCache(() => this._mhp(), 3000),
   };
 
-
   static leveling = {
     SHADOWS_TO_LEVEL: 10,
     BASE_XP: 600, // XP FOR FIRST LEVEL UP

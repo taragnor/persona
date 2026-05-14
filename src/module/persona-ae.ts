@@ -369,54 +369,12 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     const effects = this.getFlag("persona", "embeddedEffects") as string;
     if (!effects) { return []; }
     const effectsArr = JSON.parse(effects) as ConditionalEffect[];
-    // const sourceActorAcc = sourceActor?.accessor ?? undefined;
     return effectsArr.map( x=> new ConditionalEffectC(x, this, sourceActor, this));
-    // const effectsArrModified : SourcedConditionalEffect[]=  effectsArr
-    //   .map ( eff => {
-    //     const conditions:  SourcedConditionalEffect["conditions"] = eff.conditions.map( cond => {
-    //       return { ...cond, owner: sourceActorAcc, source: this.accessor, realSource: this.accessor, };
-    //     });
-    //     const consequences : SourcedConditionalEffect["consequences"] = eff.consequences.map( cons => { return { ...cons, owner: sourceActorAcc, source: this.accessor, realSource: this.accessor, };
-    //     });
-    //     return {
-    //       ...eff,
-    //       conditions,
-    //       consequences,
-    //       owner: sourceActorAcc,
-    //       source: this.accessor,
-    //       realSource: this.accessor,
-    //     };
-    //   });
-    // return effectsArrModified
-    //   .map( x=> new ConditionalEffectC(x, this, sourceActor, this));
   }
 
   getEmbeddedEffects(sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
     const {CETypes} = options;
     const base = this.cache.embeddedEffects.value;
-    // if (this.isAnchorHolder()) {return [];}
-    // const effects = this.getFlag("persona", "embeddedEffects") as string;
-    // if (!effects) {
-    //   return [];
-    // }
-    // const effectsArr = JSON.parse(effects) as SourcedConditionalEffect[];
-    // const sourceActorAcc = sourceActor?.accessor ?? undefined;
-    // const effectsArrModified : SourcedConditionalEffect[]=  effectsArr
-    //   .map ( eff => {
-    //     const conditions:  SourcedConditionalEffect["conditions"] = eff.conditions.map( cond => {
-    //       return { ...cond, owner: sourceActorAcc, source: this.accessor, realSource: this.accessor, };
-    //     });
-    //     const consequences : SourcedConditionalEffect["consequences"] = eff.consequences.map( cons => { return { ...cons, owner: sourceActorAcc, source: this.accessor, realSource: this.accessor, };
-    //     });
-    //     return {
-    //       ...eff,
-    //       conditions,
-    //       consequences,
-    //       owner: sourceActorAcc,
-    //       source: this.accessor,
-    //       realSource: this.accessor,
-    //     };
-    //   });
     if (CETypes == undefined || CETypes.length == 0){
       return base;
     }
@@ -436,15 +394,11 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 
   async createAnchoredHolder(duration: StatusDuration & {anchorHolder : U<UniversalActorAccessor<PersonaActor>>}) : Promise<PersonaAE | null> {
     const origDuration = duration;
-    // switch (origDuration.dtype) {
-    //   case "UEoNT":
-    //   case "USoNT":
-    //   case "UEoT": {
     const anchorHolderAcc = origDuration.anchorHolder;
     if (!anchorHolderAcc) {return null;}
     const anchorHolder = PersonaDB.findActor(anchorHolderAcc);
     if (PersonaSettings.debugMode()) {
-      ui.notifications.notify(`Creating anchored status on ${anchorHolder.name}`)
+      ui.notifications.notify(`Creating anchored status on ${anchorHolder.name}`);
     }
     if (anchorHolder == this.parent) {return null;}
     const anchorDuration = {
@@ -467,11 +421,6 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
       return null;
     }
   }
-  // default:
-  //   PersonaError.softFail(`Wrong Duraton Type, can't create Anchored : ${(origDuration as StatusDuration).dtype}`);
-  //   return null;
-  // }
-// }
 
   /** inform player this has ended*/
   displayOnEnd () : boolean {
