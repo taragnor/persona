@@ -53,6 +53,7 @@ declare interface HOOKS {
 	"updateItem": UpdateHook<Item>;
 	"updateCombat": UpdateHook<Combat, {advanceTime?: number, direction?:number, type?: string}>;
 	"updateActor": UpdateHook<Actor>;
+  "updateActiveEffect": UpdateHook<ActiveEffect>;
 	"updateWall": UpdateHook<WallDocument>;
 	"updateRegion": UpdateHook<RegionDocument>;
 	"updateSetting": UpdateHook<Setting<unknown>>;

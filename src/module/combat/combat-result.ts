@@ -229,7 +229,7 @@ export class CombatResult  {
           id: "bonus-action",
           duration: {
             dtype:  "UEoT",
-            actorTurn: effect.actor,
+            anchorHolder: effect.actor,
           },
         });
         break;
@@ -780,7 +780,24 @@ export type AttackResult = {
 };
 
 function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-flag", flagState: true} | {type: "combat-effect", combatEffect:"addStatus"}) , atkResultOrActor: AttackResult | ValidAttackers, situation : Situation) : StatusDuration {
+  const getAnchorHolder = function (applyTo: typeof cons["durationApplyTo"]) {
+    if (applyTo == undefined) {return undefined;}
+    const actor = PersonaCombat.solveEffectiveTargetsForce(applyTo, situation, cons).at(0)?.accessor;
+    if (actor) { return actor;}
+    PersonaError.softFail(`Can't find actor for actorTurn property in Status, defaulting to user`);
+    const actorTurn = "user" in situation
+      ? situation.user
+      : "triggeringCharacter" in situation
+      ? situation.triggeringCharacter
+      : undefined;
+    if (actorTurn) {return actorTurn;}
+    PersonaError.softFail(`Can't find actor for actorTurn property in Status, defaulting to instant Status`);
+    return undefined;
+  };
   const dur = cons.statusDuration;
+  const anchorHolder = cons.durationApplyTo
+    ? getAnchorHolder(cons.durationApplyTo)
+    : undefined;
   switch (dur) {
     case "X-rounds":
     case "X-days":
@@ -788,6 +805,7 @@ function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-fl
       return {
         dtype: dur,
         amount: cons.amount ?? 3,
+        anchorHolder,
       };
     case "expedition":
     case "combat":
@@ -795,82 +813,104 @@ function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-fl
     case "instant":
       return {
         dtype: dur,
+        anchorHolder,
       };
     case "save":
       return {
         dtype: "save",
         saveType: cons.saveType ?? "normal",
+        anchorHolder,
       };
     case "save-easy":
     case "presave-easy":
       return {
         dtype: "save",
         saveType: "easy",
+        anchorHolder,
       };
     case "save-normal":
     case "presave-normal":
       return {
         dtype: "save",
         saveType: "normal",
+        anchorHolder,
       };
     case "save-hard":
     case "presave-hard":
       return {
         dtype: "save",
         saveType: "hard",
+        anchorHolder,
       };
     case "UEoNT":
     case "USoNT":
     case "UEoT": {
-      if (atkResultOrActor instanceof PersonaActor) {
-        if (!cons.durationApplyTo) {
-          PersonaError.softFail(`No duration apply to provided for status`);
-          return {
-            dtype: dur,
-            actorTurn: atkResultOrActor.accessor
-          };
-        }
-        const actor = PersonaCombat.solveEffectiveTargetsForce(cons.durationApplyTo, situation, cons).at(0);
-        if (!actor) {
-          PersonaError.softFail(`Can't find actor for actorTurn property in Status, defaulting to user`);
-          const actorTurn = "user" in situation
-            ? situation.user
-            : "triggeringCharacter" in situation
-            ? situation.triggeringCharacter
-            : undefined;
-          if (!actorTurn) {
-            PersonaError.softFail(`Can't find actor for actorTurn property in Status, defaulting to instant Status`);
-            return {dtype: "instant"};
-          }
-          return {
-            dtype: dur,
-            actorTurn: actorTurn,
-          };
-          //TODO: need to bail here
-        }
-        return {
-          dtype: dur,
-          actorTurn: actor.accessor,
-        };
-      }
-      PersonaError.softFail(`Can't coinvert consequence ${cons.type}`, atkResultOrActor);
-      break;
+      return {
+        dtype: dur,
+        anchorHolder,
+      };
     }
+      // if (atkResultOrActor instanceof PersonaActor) {
+      //   if (!cons.durationApplyTo) {
+      //     PersonaError.softFail(`No duration apply to provided for status`);
+      //     return {
+      //       dtype: dur,
+      //       anchorHolder,
+      //       // actorTurn: atkResultOrActor.accessor
+      //     };
+      //   }
+      //   const actor = PersonaCombat.solveEffectiveTargetsForce(cons.durationApplyTo, situation, cons).at(0);
+      //   if (!actor) {
+      //     PersonaError.softFail(`Can't find actor for actorTurn property in Status, defaulting to user`);
+      //     const actorTurn = "user" in situation
+      //       ? situation.user
+      //       : "triggeringCharacter" in situation
+      //       ? situation.triggeringCharacter
+      //       : undefined;
+      //     if (!actorTurn) {
+      //       PersonaError.softFail(`Can't find actor for actorTurn property in Status, defaulting to instant Status`);
+      //       return {
+      //         dtype: "instant",
+      //         anchorHolder: undefined,
+      //       };
+      //     }
+      // return {
+      //   dtype: dur,
+      //   // actorTurn: actorTurn,
+      //   anchorHolder,
+      // };
+      //TODO: need to bail here
+      // return {
+      //   dtype: dur,
+      //   actorTurn: actor.accessor,
+      // };
+      // PersonaError.softFail(`Can't coinvert consequence ${cons.type}`, atkResultOrActor);
+      // return {
+      //   dtype: "instant",
+      //   anchorHolder: undefined,
+      // };
+      // break;
+      // }
     case "anchored":
       PersonaError.softFail("Anchored shouldn't happen here");
       return {
         dtype: "instant",
+        anchorHolder: undefined,
       };
     case "X-exploration-turns":
       return {
         dtype: "X-exploration-turns",
         amount: cons.amount ?? 3,
+        anchorHolder,
       };
     default:
       dur satisfies never;
   }
   PersonaError.softFail(`Invaliud Duration ${dur as string}`, cons);
-  return {dtype: "instant"};
+  return {
+    dtype: "instant",
+    anchorHolder: undefined
+  };
 }
 
 export type ResistResult =  {

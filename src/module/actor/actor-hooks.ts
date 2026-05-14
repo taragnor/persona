@@ -143,6 +143,25 @@ export class ActorHooks {
 			}
 		});
 
+    Hooks.on("createActiveEffect", (effect) => {
+      if (effect.parent instanceof PersonaActor) {
+        effect.parent.clearCache();
+      }
+    });
+
+    Hooks.on("updateActiveEffect", (effect) => {
+      if (effect.parent instanceof PersonaActor) {
+        effect.parent.clearCache();
+      }
+    });
+
+    Hooks.on("deleteActiveEffect", (effect) => {
+      if (effect.parent instanceof PersonaActor) {
+        effect.parent.clearCache();
+      }
+    });
+
 	}
+
 
 }

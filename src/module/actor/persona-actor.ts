@@ -58,7 +58,7 @@ import {PowerLearningSystem} from "../power-learning.js";
 import {Farming} from "./farming.js";
 import {ActorTagManager} from "./actor-tags.js";
 import {ActorSocial} from "./actor-social.js";
-import {TimedCache} from "../utility/cache.js";
+import {PermanentCache, TimedCache} from "../utility/cache.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -81,17 +81,24 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   private cache: {
     startingLevel: U<number>,
     level: U<number>,
-    tarot: Tarot | undefined;
+    // tarot: Tarot | undefined;
     complementRating: Map<Shadow["id"], number>;
     socialData: U<readonly SocialLinkData[]>;
     isDMon: U<boolean>;
   };
 
-  private cache2: {
-    actorMainModifiers: TimedCache<readonly ModifierContainer[]>,
-    persona: TimedCache<Persona>,
-    basePersona: TimedCache<Persona>,
-  };
+  private cache2 = {
+      persona : new TimedCache( () => (this as ValidAttackers)._persona(), 3000),
+      basePersona : new TimedCache( () => (this as ValidAttackers)._basePersona(), 3000),
+      actorMainModifiers: new TimedCache( () => this._actorMainModifiers(), 1000),
+    tarot: new PermanentCache( () => this._tarot()),
+    };
+
+  // private cache2: {
+  //   actorMainModifiers: TimedCache<readonly ModifierContainer[]>,
+  //   persona: TimedCache<Persona>,
+  //   basePersona: TimedCache<Persona>,
+  // };
 
   constructor(...arr: unknown[]) {
     super(...arr);
@@ -101,11 +108,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     if (this.isValidCombatant()) {
       this._powerLearning = new PowerLearningSystem(this);
     }
-    this.cache2 = {
-      persona : new TimedCache( () => (this as ValidAttackers)._persona(), 3000),
-      basePersona : new TimedCache( () => (this as ValidAttackers)._basePersona(), 3000),
-      actorMainModifiers: new TimedCache( () => this._actorMainModifiers(), 1000),
-    };
+    // this.cache2 = {
+    //   persona : new TimedCache( () => (this as ValidAttackers)._persona(), 3000),
+    //   basePersona : new TimedCache( () => (this as ValidAttackers)._basePersona(), 3000),
+    //   actorMainModifiers: new TimedCache( () => this._actorMainModifiers(), 1000),
+    // };
     this.clearCache();
   }
 
@@ -119,7 +126,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     this.cache = {
       startingLevel: undefined,
       level: undefined,
-      tarot: undefined,
+      // tarot: undefined,
       complementRating: new Map(),
       socialData: undefined,
       isDMon: undefined,
@@ -1934,6 +1941,7 @@ async setFatigueLevel(lvl: number,log = true) : Promise<FatigueStatusId | undefi
       id: newId,
       duration: {
         dtype:"permanent",
+        anchorHolder: undefined,
       }
     }, true);
   }
@@ -1942,6 +1950,7 @@ async setFatigueLevel(lvl: number,log = true) : Promise<FatigueStatusId | undefi
       id: "crippled",
       duration: {
         dtype:"permanent",
+        anchorHolder: undefined,
       }
     }, true);
   }
@@ -2473,7 +2482,7 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
       }
     }
     await this.fullHeal();
-    await this.endEffectsOfDurationOrLess( {dtype :"expedition"});
+    await this.endEffectsOfDurationOrLess( {dtype :"expedition", anchorHolder: undefined});
     const situation = {
       trigger : "exit-metaverse",
       triggeringUser: game.user,
@@ -2578,13 +2587,13 @@ async increaseFadeState( this: ValidAttackers) {
       await this.removeStatus("fading");
       await this.addStatus( {
         id: "full-fade",
-        duration: {dtype: "permanent"}
+        duration: {dtype: "permanent", anchorHolder: undefined}
       });
       return "full-fade";
     default :
       await this.addStatus( {
         id: "fading",
-        duration: {dtype: "combat"}
+        duration: {dtype: "combat", anchorHolder: undefined}
       });
   }
 }
@@ -2672,24 +2681,18 @@ get tarotLoc() : string{
   return localize(TAROT_DECK[tarot.name as TarotCard]);
 }
 
-get tarot() : (Tarot | undefined) {
-  if (this.cache.tarot != undefined) {
-    if (this.cache.tarot.name == "") {return undefined;}
-    return this.cache.tarot;
-  }
+_tarot() : (Tarot | undefined) {
   switch (this.system.type) {
     case "shadow":
     case "pc": {
       if (this.system.tarot == "")
-      {return this.cache.tarot = undefined;}
+      {return undefined;}
       const PC = this as PC | Shadow;
-      this.cache.tarot = PersonaDB.tarotCards().find(x=> x.name == PC.system.tarot);
-      break;
+      return PersonaDB.tarotCards().find(x=> x.name == PC.system.tarot);
     }
     case "npcAlly":
       if (this.system.tarot.length > 0) {
-        this.cache.tarot = PersonaDB.tarotCards().find(x=> x.name == (this as NPCAlly).system.tarot);
-        break;
+        return PersonaDB.tarotCards().find(x=> x.name == (this as NPCAlly).system.tarot);
       }
       if (this.system.NPCSocialProxyId) {
         const actor = PersonaDB.socialLinks().find( x=> x.id == (this as NPCAlly).system.NPCSocialProxyId);
@@ -2707,15 +2710,23 @@ get tarot() : (Tarot | undefined) {
       ) {
         return undefined;
       }
-      this.cache.tarot =  PersonaDB.tarotCards().find(x=> x.name == NPC.system.tarot);
-      break; }
+      return PersonaDB.tarotCards().find(x=> x.name == NPC.system.tarot);
+    }
     case "tarot":
       return this as Tarot;
     default:
       this.system satisfies never;
       return undefined;
   }
-  return this.cache.tarot;
+}
+
+get tarot() : (Tarot | undefined) {
+  if (!PersonaDB.isLoaded) {return undefined;}
+  return this.cache2.tarot.value;
+  // if (this.cache.tarot != undefined) {
+  //   if (this.cache.tarot.name == "") {return undefined;}
+  //   return this.cache.tarot;
+  // }
 }
 
 numOfIncAdvances(): number {
@@ -3243,7 +3254,7 @@ isPowerOnCooldown(power: Power) : boolean {
 
 async createEffectFlag(flagId: string,
   flagName ?: string,
-  duration: StatusDuration = {dtype: "instant"},
+  duration: StatusDuration = {dtype: "instant", anchorHolder: undefined},
   clearOnDeath = false)
   : Promise<PersonaAE> {
     if (!flagName) {flagName = flagId;}

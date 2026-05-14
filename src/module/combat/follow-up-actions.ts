@@ -326,6 +326,7 @@ export class FollowUpManager {
       id: "teamwork-shift",
       duration: {
         dtype: "instant",
+        anchorHolder: undefined,
       }
     };
     if (!leader) {

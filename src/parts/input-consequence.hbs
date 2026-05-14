@@ -51,13 +51,13 @@
 			{{#if (eqAny cons.statusDuration "X-days" "X-rounds" "X-exploration-turns") }}
 			<input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
 			{{/if}}
-			{{#if (eqAny cons.statusDuration "UEoNT" "USoNT" "UEoT") }}
+			{{#if (or (eqAny cons.statusDuration "UEoNT" "USoNT" "UEoT") cons.clearOnDeath) }}
 			<div>
 				 <label>
 						Status Anchored to
 				 </label>
 				 <select name="{{strcat namePrefix 'durationApplyTo'}}">
-						{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cons.durationApplyTo}}
+						{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=(defVal cons.durationApplyTo "target")}}
 				 </select>
 			</div>
 			{{/if}}
@@ -163,6 +163,7 @@
 	{{/if}}
 
 	{{#if (eq cons.type	"set-flag")}}
+  <div>
 	<div>
 		<label for="flag-id"> Flag Id</label>
 		<input class="flag-id" id="flag-id" type="text" name="{{strcat namePrefix 'flagId'}}" value="{{cons.flagId}}">
@@ -186,6 +187,7 @@
 		</label>
 		<input type="checkbox" name="{{strcat namePrefix 'applyEmbedded'}}" {{checked cons.applyEmbedded}}>
 	</div>
+  </div>
 	{{/if}}
 
 	{{/if}}

@@ -13,6 +13,7 @@ import {TriggeredEffect} from "./triggered-effect.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {StatusEffect} from "../config/consequence-types.js";
 import {PersonaSettings} from "../config/persona-settings.js";
+import {PermanentCache} from "./utility/cache.js";
 
 const POWER_COOLDOWN_FLAG_NAME =   "cooldownPowerId" as const;
 
@@ -20,6 +21,10 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 
   declare statuses: Set<StatusEffectId>;
   _flaggedDeletion: boolean;
+
+  cache= {
+    embeddedEffects: new PermanentCache( () => this._embeddedEffects()),
+  };
 
   static async applyHook (this: never, _actor: PersonaActor, _change: Foundry.AEChange, _current: unknown, _delta: unknown, _changes: Record<string, unknown> ) {
     //*changes object is a record of valeus taht may get changed by applying the AE;
@@ -58,7 +63,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     const duration =  this.getFlag<StatusDuration | StatusDuration["dtype"]>("persona", "duration");
     if (!duration) {
       return {
-        dtype: "permanent"
+        dtype: "permanent",
+        anchorHolder: undefined,
       };
     }
     if (typeof duration == "string") {
@@ -158,9 +164,9 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     await this.setFlag("persona", "potency", potency);
   }
 
-  durationFix(duration: TurnEndDuration) : void {
+  durationFix(duration: StatusDuration & TurnEndDuration) : void {
     if ("anchorStatus" in duration) {return;}
-    const owner = duration.actorTurn ? PersonaDB.findActor(duration.actorTurn) : this.parent;
+    const owner = duration.anchorHolder ? PersonaDB.findActor(duration.anchorHolder) : this.parent;
     if (!(owner instanceof PersonaActor)) { return;}
     const combat = game.combat;
     if (!combat) {
@@ -231,14 +237,15 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
       case "USoNT":
       case "UEoT": {
         if ("anchorStatus" in newDuration) {return;}
-        if (!newDuration.actorTurn) {return;}
-        const actorTurn = PersonaDB.findActor(newDuration.actorTurn);
+        if (newDuration.anchorHolder == undefined) {return;}
+        const actorTurn = PersonaDB.findActor(newDuration.anchorHolder);
         if (actorTurn == this.parent) {break;}
         const anchor = await this.createAnchoredHolder(newDuration);
         if (!anchor) {break;}
         const anchorD : StatusDuration = {
           dtype: "anchored",
           anchor: anchor.accessor,
+          anchorHolder: undefined,
         };
         await this.setFlag("persona", "duration", anchorD);
         return;
@@ -258,7 +265,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
   }
 
 
-  async setDuration(duration: StatusDuration, options: DurationOptions = {}) : Promise<void> {
+  async setDuration(duration: StatusDuration, options: Partial<DurationOptions> = {}) : Promise<void> {
     if (duration.dtype == "UEoNT") {
       this.durationFix(duration);
     }
@@ -266,21 +273,37 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
       ...duration,
       ...options,
     };
+    if ("anchorHolder" in duration && duration.anchorHolder) {
+      const actorTurn = PersonaDB.findActor(duration.anchorHolder);
+      if (actorTurn != this.parent) {
+        const anchor = await this.createAnchoredHolder(duration);
+        if (anchor) {
+          const newDuration : StatusDuration = {
+            dtype: "anchored",
+            anchor: anchor.accessor,
+            anchorHolder : undefined,
+          };
+          await this.setFlag("persona", "duration", newDuration);
+          return;
+        }
+      }
+    }
     switch (duration.dtype) {
       case "UEoNT":
       case "USoNT":
       case "UEoT": {
-        if ("anchorStatus" in duration) {break;}
-        if (!duration.actorTurn) {break;}
-        const actorTurn = PersonaDB.findActor(duration.actorTurn);
-        if (actorTurn == this.parent) {break;}
-        const anchor = await this.createAnchoredHolder(duration);
-        if (!anchor) {break;}
-        const newDuration : StatusDuration = {
-          dtype: "anchored",
-          anchor: anchor.accessor,
-        };
-        await this.setFlag("persona", "duration", newDuration);
+        // if ("anchorStatus" in duration) {break;}
+        // if (!duration.anchorHolder) {break;}
+        // const actorTurn = PersonaDB.findActor(duration.anchorHolder);
+        // if (actorTurn == this.parent) {break;}
+        // const anchor = await this.createAnchoredHolder(duration);
+        // if (!anchor) {break;}
+        // const newDuration : StatusDuration = {
+        //   dtype: "anchored",
+        //   anchor: anchor.accessor,
+        //   anchorHolder : undefined,
+        // };
+        // await this.setFlag("persona", "duration", newDuration);
         return;
       }
       default:
@@ -301,69 +324,103 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     return -1;
   }
 
-  async setEmbeddedEffects( effects: readonly SourcedConditionalEffect[])  : Promise<this> {
-    const effectsRedux : ConditionalEffect[]= effects
-    .map( eff=> {
-      return {
-        ...eff,
-        conditions: eff.conditions
-        .map (cond => {
-          return  {
-            ...cond,
-            owner: null,
-            realSource: null,
-            source: null,
-          };
-        }),
-        consequences: eff.consequences
-        .map( cons => {
-          return  {
-            ...cons,
-            owner: null,
-            realSource: null,
-            source: null,
-          };
-        }),
-        owner: null,
-        realSource: null,
-        source: null,
-      };
-    });
-    const effectString = JSON.stringify(effectsRedux);
-    await this.setFlag("persona", "embeddedEffects", effectString);
+  async setEmbeddedEffects( effects: readonly ConditionalEffectC[])  : Promise<this> {
+    // const effectsRedux : ConditionalEffect[]= effects
+    // .map( eff=> {
+    //   return {
+    //     ...eff,
+    //     conditions: eff.conditions
+    //     .map (cond => {
+    //       return  {
+    //         ...cond,
+    //         owner: null,
+    //         realSource: null,
+    //         source: null,
+    //       };
+    //     }),
+    //     consequences: eff.consequences
+    //     .map( cons => {
+    //       return  {
+    //         ...cons,
+    //         owner: null,
+    //         realSource: null,
+    //         source: null,
+    //       };
+    //     }),
+    //     owner: null,
+    //     realSource: null,
+    //     source: null,
+    //   };
+    // });
+    const effectsJSON = JSON.stringify(effects.map( eff=> eff.toJSON()));
+    // const effectString = JSON.stringify(effectsRedux);
+    await this.setFlag("persona", "embeddedEffects", effectsJSON);
     return this;
   }
 
+  isAnchorHolder () : boolean {
+    const duration = this.statusDuration;
+    return ("anchorStatus" in duration && duration.anchorStatus != undefined);
+  }
+
+  private _embeddedEffects() : ConditionalEffectC[] {
+    if (this.isAnchorHolder()) {return [];}
+    const sourceActor = this.parent instanceof PersonaActor ? this.parent : null;
+    const effects = this.getFlag("persona", "embeddedEffects") as string;
+    if (!effects) { return []; }
+    const effectsArr = JSON.parse(effects) as ConditionalEffect[];
+    // const sourceActorAcc = sourceActor?.accessor ?? undefined;
+    return effectsArr.map( x=> new ConditionalEffectC(x, this, sourceActor, this));
+    // const effectsArrModified : SourcedConditionalEffect[]=  effectsArr
+    //   .map ( eff => {
+    //     const conditions:  SourcedConditionalEffect["conditions"] = eff.conditions.map( cond => {
+    //       return { ...cond, owner: sourceActorAcc, source: this.accessor, realSource: this.accessor, };
+    //     });
+    //     const consequences : SourcedConditionalEffect["consequences"] = eff.consequences.map( cons => { return { ...cons, owner: sourceActorAcc, source: this.accessor, realSource: this.accessor, };
+    //     });
+    //     return {
+    //       ...eff,
+    //       conditions,
+    //       consequences,
+    //       owner: sourceActorAcc,
+    //       source: this.accessor,
+    //       realSource: this.accessor,
+    //     };
+    //   });
+    // return effectsArrModified
+    //   .map( x=> new ConditionalEffectC(x, this, sourceActor, this));
+  }
 
   getEmbeddedEffects(sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
     const {CETypes} = options;
-    const effects = this.getFlag("persona", "embeddedEffects") as string;
-    if (!effects) {
-      return [];
-    }
-    const effectsArr = JSON.parse(effects) as SourcedConditionalEffect[];
-    const sourceActorAcc = sourceActor?.accessor ?? undefined;
-    const effectsArrModified : SourcedConditionalEffect[]=  effectsArr
-      .map ( eff => {
-        const conditions:  SourcedConditionalEffect["conditions"] = eff.conditions.map( cond => {
-          return { ...cond, owner: sourceActorAcc, source: this.accessor, realSource: this.accessor, };
-        });
-        const consequences : SourcedConditionalEffect["consequences"] = eff.consequences.map( cons => { return { ...cons, owner: sourceActorAcc, source: this.accessor, realSource: this.accessor, };
-        });
-        return {
-          ...eff,
-          conditions,
-          consequences,
-          owner: sourceActorAcc,
-          source: this.accessor,
-          realSource: this.accessor,
-        };
-      });
+    const base = this.cache.embeddedEffects.value;
+    // if (this.isAnchorHolder()) {return [];}
+    // const effects = this.getFlag("persona", "embeddedEffects") as string;
+    // if (!effects) {
+    //   return [];
+    // }
+    // const effectsArr = JSON.parse(effects) as SourcedConditionalEffect[];
+    // const sourceActorAcc = sourceActor?.accessor ?? undefined;
+    // const effectsArrModified : SourcedConditionalEffect[]=  effectsArr
+    //   .map ( eff => {
+    //     const conditions:  SourcedConditionalEffect["conditions"] = eff.conditions.map( cond => {
+    //       return { ...cond, owner: sourceActorAcc, source: this.accessor, realSource: this.accessor, };
+    //     });
+    //     const consequences : SourcedConditionalEffect["consequences"] = eff.consequences.map( cons => { return { ...cons, owner: sourceActorAcc, source: this.accessor, realSource: this.accessor, };
+    //     });
+    //     return {
+    //       ...eff,
+    //       conditions,
+    //       consequences,
+    //       owner: sourceActorAcc,
+    //       source: this.accessor,
+    //       realSource: this.accessor,
+    //     };
+    //   });
     if (CETypes == undefined || CETypes.length == 0){
-      return effectsArrModified
-        .map( x=> new ConditionalEffectC(x, this, sourceActor, this));
+      return base;
     }
-    return effectsArrModified
+    return base
       .filter( x=> CETypes.includes(x.conditionalType))
       .map( x=> new ConditionalEffectC(x, this, sourceActor, this));
   }
@@ -377,41 +434,44 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     return PersonaDB.getUniversalAEAccessor(this);
   }
 
-  async createAnchoredHolder(duration: TurnEndDuration & {actorTurn : UniversalActorAccessor<PersonaActor>}) : Promise<PersonaAE | null> {
+  async createAnchoredHolder(duration: StatusDuration & {anchorHolder : U<UniversalActorAccessor<PersonaActor>>}) : Promise<PersonaAE | null> {
     const origDuration = duration;
-    switch (origDuration.dtype) {
-      case "UEoNT":
-      case "USoNT":
-      case "UEoT": {
-        const anchorHolderAcc = origDuration.actorTurn;
-        if (!anchorHolderAcc) {return null;}
-        const anchorHolder = PersonaDB.findActor(anchorHolderAcc);
-        if (anchorHolder == this.parent) {return null;}
-        const duration :StatusDuration = {
-          dtype: origDuration.dtype,
-          anchorStatus: this.accessor,
-        };
-        const anchored = {
-          name: `Anchor for ${this.name}`,
-        };
-        try {
-          const newEffect = (await  anchorHolder.createEmbeddedDocuments("ActiveEffect", [anchored]))[0] as PersonaAE;
-          await newEffect.setDuration(duration);
-          return newEffect;
-        } catch (e) {
-          if (!game.user.isGM) {
-            PersonaError.softFail("Problems creating Anchor status, probably ownership issues");
-          } else {
-            PersonaError.softFail(`Unknown Error: ${(e as Error).toString()}`);
-          }
-          return null;
-        }
+    // switch (origDuration.dtype) {
+    //   case "UEoNT":
+    //   case "USoNT":
+    //   case "UEoT": {
+    const anchorHolderAcc = origDuration.anchorHolder;
+    if (!anchorHolderAcc) {return null;}
+    const anchorHolder = PersonaDB.findActor(anchorHolderAcc);
+    if (PersonaSettings.debugMode()) {
+      ui.notifications.notify(`Creating anchored status on ${anchorHolder.name}`)
+    }
+    if (anchorHolder == this.parent) {return null;}
+    const anchorDuration = {
+      ...origDuration,
+      anchorStatus: this.accessor,
+    } satisfies StatusDuration;
+    const anchored = {
+      name: `Anchor for ${this.name}`,
+    };
+    try {
+      const newEffect = (await  anchorHolder.createEmbeddedDocuments("ActiveEffect", [anchored]))[0] as PersonaAE;
+      await newEffect.setDuration(anchorDuration);
+      return newEffect;
+    } catch (e) {
+      if (!game.user.isGM) {
+        PersonaError.softFail("Problems creating Anchor status, probably ownership issues");
+      } else {
+        PersonaError.softFail(`Unknown Error: ${(e as Error).toString()}`);
       }
-      default:
-        PersonaError.softFail(`Wrong Duraton Type, can't create Anchored : ${(origDuration as StatusDuration).dtype}`);
-        return null;
+      return null;
     }
   }
+  // default:
+  //   PersonaError.softFail(`Wrong Duraton Type, can't create Anchored : ${(origDuration as StatusDuration).dtype}`);
+  //   return null;
+  // }
+// }
 
   /** inform player this has ended*/
   displayOnEnd () : boolean {
@@ -486,25 +546,36 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
       await TriggeredEffect.autoApplyTrigger(situation, this.parent);
     }
     const duration = this.statusDuration;
-    switch (duration.dtype) {
-      case "USoNT":
-      case "UEoNT":
-      case "UEoT": {
-        if (!("anchorStatus" in  duration)) {break;}
-        const acc = duration.anchorStatus;
-        try {
-          const anchorStatus = PersonaDB.findAE(acc);
-          if (anchorStatus) {
-            await anchorStatus.delete();
-          }
-        } catch (e) {
-          console.log(e);
+    if ("anchorStatus" in  duration) {
+      const acc = duration.anchorStatus;
+      try {
+        const anchorStatus = PersonaDB.findAE(acc);
+        if (anchorStatus) {
+          await anchorStatus.delete();
         }
-        break;
+      } catch (e) {
+        console.log(e);
       }
-      default:
-        break;
     }
+    // switch (duration.dtype) {
+    //   case "USoNT":
+    //   case "UEoNT":
+    //   case "UEoT": {
+    //     if (!("anchorStatus" in  duration)) {break;}
+    //     const acc = duration.anchorStatus;
+    //     try {
+    //       const anchorStatus = PersonaDB.findAE(acc);
+    //       if (anchorStatus) {
+    //         await anchorStatus.delete();
+    //       }
+    //     } catch (e) {
+    //       console.log(e);
+    //     }
+    //     break;
+    //   }
+    //   default:
+    //     break;
+    // }
   }
 
   /** returns true if the status expires*/
@@ -749,7 +820,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 
   async onEndCombat() : Promise<boolean> {
     const dur: StatusDuration = {
-      dtype: "combat"
+      dtype: "combat",
+      anchorHolder: undefined,
     };
     if (this.durationLessThanOrEqualTo(dur)) {
       await this.delete();
@@ -822,11 +894,11 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     return undefined;
   }
 
-  durationLessThanOrEqualTo(x : StatusDuration): boolean {
+  durationLessThanOrEqualTo(x : SimpleStatusDuration): boolean {
     return PersonaAE.durationLessThanOrEqualTo(this.statusDuration, x);
   }
 
-  static durationLessThanOrEqualTo (a: StatusDuration, b: StatusDuration): boolean {
+  static durationLessThanOrEqualTo (a: SimpleStatusDuration,  b: SimpleStatusDuration): boolean {
     return  PersonaAE.getStatusValue(a) <= PersonaAE.getStatusValue(b);
   }
 
@@ -848,7 +920,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     return downtime.some( st => this.statuses.has(st.id as StatusEffectId) );
   }
 
-  static getStatusValue (duration : StatusDuration) : number {
+  static getStatusValue (duration : SimpleStatusDuration) : number {
     switch (duration?.dtype) {
       case "permanent":
       case undefined: //custom statuses player added
@@ -912,9 +984,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     }
     const actor = this.parent instanceof PersonaActor ? this.parent : null;
     return this.getLinkedTags().flatMap( tag => tag.getEffects(sourceActor, options))
-      .concat(
-        this.getEmbeddedEffects(actor, options)
-      );
+      .concat( this.getEmbeddedEffects(actor, options));
   }
 
 
@@ -1026,7 +1096,9 @@ Hooks.on("applyActiveEffect", PersonaAE.applyHook);
 //Sachi told me to disable this because it sucks apparently
 CONFIG.ActiveEffect.legacyTransferral = false;
 
-export type StatusDuration = (StatusDuration_Basic | StatusDuration_NonBasic) & DurationOptions;
+export type StatusDuration = SimpleStatusDuration & DurationOptions;
+
+type SimpleStatusDuration = (StatusDuration_Basic | StatusDuration_NonBasic);
 
 type StatusDuration_Basic = {
   dtype: Exclude<StatusDurationType, StatusDuration_NonBasic["dtype"] | DeprecatedDurations["dtype"]>;
@@ -1046,7 +1118,9 @@ export type TurnEndDuration =
   {
     dtype : Extract<StatusDurationType, "UEoNT" | "USoNT" | "UEoT">,
   } & (
-    {actorTurn : UniversalActorAccessor<PersonaActor>}
+    {
+      /** @deprecated use anchorHolder instead */
+      actorTurn ?: UniversalActorAccessor<PersonaActor>}
     | {anchorStatus : UniversalAEAccessor<PersonaAE>}
   );
 
@@ -1090,10 +1164,9 @@ Hooks.on("deleteActiveEffect", async function (eff: PersonaAE) {
 
 
 type DurationOptions = {
-  clearOnDeath?: boolean;
-
-}
-
+  clearOnDeath ?: boolean;
+} & ({ anchorHolder : U<UniversalActorAccessor<PersonaActor>>;} | {anchorStatus : UniversalAEAccessor<PersonaAE>;})
+;
 //@ts-expect-error adding to global scope
 window.testAE = async function testAE(actor: PersonaActor, name : string = "TEST") {
   const flag = await actor.createEffectFlag(name, name);
@@ -1112,4 +1185,5 @@ window.testAE = async function testAE(actor: PersonaActor, name : string = "TEST
   ];
   await flag.update({"changes": changes});
 };
+
 
