@@ -71,7 +71,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   social = new ActorSocial<typeof this>(this);
 
-  private _powerLearning : PowerLearningSystem<ValidAttackers>;
+  #powerLearning : PowerLearningSystem<ValidAttackers>;
 
   static MPMap = new Map<number, number>;
   _farming : U<Farming>;
@@ -94,12 +94,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     tarot: new PermanentCache( () => this._tarot()),
     };
 
-  // private cache2: {
-  //   actorMainModifiers: TimedCache<readonly ModifierContainer[]>,
-  //   persona: TimedCache<Persona>,
-  //   basePersona: TimedCache<Persona>,
-  // };
-
   constructor(...arr: unknown[]) {
     super(...arr);
     if (this.isPC()) {
@@ -107,7 +101,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     }
     //real PCs are tough todetect at construct time for Actors so I added isPC
     if (this.isNPCAlly() || this.isPC() || this.isShadow()) {
-      this._powerLearning = new PowerLearningSystem(this);
+      this.#powerLearning = new PowerLearningSystem(this);
     }
     this.clearCache();
   }
@@ -145,7 +139,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   powerLearning(this: ValidAttackers) : PowerLearningSystem<typeof this> {
-    return this._powerLearning;
+    return this.#powerLearning;
   }
 
   isNPC(): this is NPC {
