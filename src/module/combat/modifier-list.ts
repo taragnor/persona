@@ -148,9 +148,7 @@ export class ModifierList {
         return resolvedMods
         .map( x => {
           const mod = x ?? 1;
-          if (mod < 0)  {
-            return 1 + mod;
-          }
+          if (mod < 0)  { return 1 + mod; }
           return 1 + mod;
         })
         .reduce( (acc, mod) => acc * (mod ?? 1) , 1);

@@ -34,8 +34,8 @@ export class ConditionalEffectPrinter {
 
   static printEffect(effect: ConditionalEffectC): string {
     return `${this.printConditions(effect.conditions)} ---- ${this.printConsequences(effect.consequences)}`;
-
   }
+
   static printConditions(cond: Precondition[]) : string {
     return ConditionalEffectManager.getConditionals(cond, null, null, null)
       .map( x=> this.printConditional(x))
@@ -131,8 +131,8 @@ export class ConditionalEffectPrinter {
         case "is-resistant-to": {
           const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
           return `${target1} is ${not} resistant to ${damageType}`;
-        }  case "is-same-arcana": 
-          return `${target1} is ${not} the same arcana as attacker`; 
+        }  case "is-same-arcana":
+          return `${target1} is ${not} the same arcana as attacker`;
         case "flag-state":
           return `${target1} flag ${cond.flagId} is ${not} true`;
         case "is-consumable":
@@ -535,8 +535,6 @@ export class ConditionalEffectPrinter {
           const modifiers = this.translate(cons.modifiedFields, MODIFIERS_TABLE);
           return `${modifiers}: ${this.printConsequenceAmount(cons.amount)}`;
         }
-          // case "expend-slot":
-          // return `expend Slot`;
         case "expend-item":
           return `expend item`;
         case "add-power-to-list": {
@@ -546,7 +544,6 @@ export class ConditionalEffectPrinter {
         case "add-talent-to-list": {
           const grantedTalent = PersonaDB.getItemById(cons.id) as Talent;
           return `Add Talent to list ${grantedTalent?.displayedName?.toString() ?? "ERROR"}`;
-
         }
         case "other-effect":
           return this.#printOtherEffect(cons);
@@ -734,7 +731,6 @@ export class ConditionalEffectPrinter {
           cons satisfies never;
           return "ERROR";
       }
-
     }
 
     static #printOtherEffect(cons: Consequence & {type:"other-effect"}) : string {

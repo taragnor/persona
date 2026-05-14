@@ -178,7 +178,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     }
     if (combatInit.isSocialScene) {
       if (combatInit.disallowMetaverse) {
-        //this is techincally for exiting the MV
         await Metaverse.exitMetaverse();
       }
       await PersonaSocial.startSocialCombatRound(combatInit.disallowMetaverse, combatInit.advanceCalendar);
