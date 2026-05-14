@@ -556,7 +556,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       return baseMods.concat(modList);
     }
     const mods = PersonaItem.getModifier(sources, modnames);
-      // .filter( mod => mod.modifier != 0);
     return new ModifierList(mods).filterZero();
   }
 

@@ -82,11 +82,7 @@ export class ConsequenceAmountResolver {
 
   private static resolveActorProperty(amt: Sourced<ConsequenceAmountV2> & {type: "actor-property"}, situation: Partial<Situation>): U<number> {
     const targets= PersonaCombat.solveEffectiveTargets(amt.target, situation as Situation, amt);
-    // const list = PersonaCombat.createTargettingContextList(situation, null);
-    // const targets = list[amt.target];
-    // if (!targets) {return undefined;}
     const returns = targets
-    // .map (target => PersonaDB.findActor(target))
     .map( target => {
       switch (amt.property) {
         case "mhp":
