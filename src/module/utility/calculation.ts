@@ -170,7 +170,7 @@ export class Calculation {
 				const list = entry.amt.list(situation);
 				return list.map( ([val, txt]) =>
 					({
-						amt: val * flip,
+						amt: ModifierList.resolveModifier(val, situation) * flip,
 						name: txt,
 					} satisfies ResolvedCalculationNumber)
 				);

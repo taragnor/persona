@@ -87,7 +87,7 @@ export class ConsequenceConverter {
         const ret : NonDeprecatedConsequence = {
           type: dep.type,
           modifiedFields: fields,
-          modifierCategory: "",
+          modifierCategory: dep?.modifierCategory ?? "",
           amount: dep.amount,
         };
         return ret;

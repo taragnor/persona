@@ -1797,8 +1797,8 @@ passiveItems(): InvItem[] {
 
 getPersonalBonuses(modnames : ModifierTarget | ModifierTarget[], sources: readonly ModifierContainer[] = this.actorMainModifiers()) : ModifierList  {
   const modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this)
-    .filter( mod => mod.modifier != 0)
-  ));
+  ))
+    .filterZero();
   return modList;
 }
 
