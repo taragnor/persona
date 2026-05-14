@@ -121,22 +121,22 @@ export class ConsequenceAmountResolver {
           if (!amt.source) {return undefined;}
           const source = PersonaDB.find(amt.source as UniversalItemAccessor);
 
-        if (source instanceof PersonaItem && !source.isTag()) {
-          item = source;
-          break;
-        }
-        if (source instanceof PersonaAE
-          && source.parent instanceof PersonaItem
-          && !source.parent.isTag()
-        ) {
-          item = source.parent;
-          break;
-        }
-        const realSource = amt.realSource ?  PersonaDB.find(amt.realSource) : undefined;
-        if (realSource instanceof PersonaItem && !realSource.isTag()) {
-          item = realSource;
-          break;
-        }
+          if (source instanceof PersonaItem && !source.isTag()) {
+            item = source;
+            break;
+          }
+          if (source instanceof PersonaAE
+            && source.parent instanceof PersonaItem
+            && !source.parent.isTag()
+          ) {
+            item = source.parent;
+            break;
+          }
+          const realSource = amt.realSource ?  PersonaDB.find(amt.realSource) : undefined;
+          if (realSource instanceof PersonaItem && !realSource.isTag()) {
+            item = realSource;
+            break;
+          }
         } catch (e) {
           PersonaError.softFail(e as Error);
           return undefined;

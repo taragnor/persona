@@ -40,7 +40,6 @@ import {PersonaSockets} from '../persona.js';
 import {checkSituationProp} from '../preconditions.js';
 import {ResolvedRollBundle, RollBundle} from '../roll-bundle.js';
 
-
 declare global {
   interface SocketMessage {
     'QUERY_ALL_OUT_ATTACK' : Record<string, never>;
@@ -213,21 +212,20 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
   async runCombatStartTriggerGlobal() {
     if (!this.isSocial) {
-    const situationGlobal= {
-      trigger: "on-combat-start-dual",
-      global: true,
-    } as const;
-    const CRGlobal = TriggeredEffect
-      .onTrigger(situationGlobal, undefined);
-    await CRGlobal.autoApplyResult();
+      const situationGlobal= {
+        trigger: "on-combat-start-dual",
+        global: true,
+      } as const;
+      const CRGlobal = TriggeredEffect
+        .onTrigger(situationGlobal, undefined);
+      await CRGlobal.autoApplyResult();
     }
   }
 
 
   async navigatorOpen() {
-    await sleep(12000);
+    await sleep(8000);
     await NavigatorVoiceLines.onStartCombat(this);
-
   }
 
   override async delete() : Promise<void> {
@@ -798,8 +796,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
           requestor: requestor?.actor?.accessor,
           teammateTarget: actor.accessor,
         };
-      const response = await PersonaSockets.verifiedSend("REQUEST_TEAMWORK", teamworkData, owner.id);
-      return response;
+        const response = await PersonaSockets.verifiedSend("REQUEST_TEAMWORK", teamworkData, owner.id);
+        return response;
       } catch (e) {
         PersonaError.softFail(`Problem Contactign ${owner.name}`, e);
         return false;
@@ -914,7 +912,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       situation = simSitOrNat;
     }
     type maybeRange = U<AttackResult["ailmentRange"]>
-    let ailmentRange : maybeRange, critRange: maybeRange, instantKillRange: maybeRange;
+      let ailmentRange : maybeRange, critRange: maybeRange, instantKillRange: maybeRange;
     if (!power.isSocialCard()) {
       const ranges= CombatEngine.calculateRanges(attacker.actor.persona(), target.actor.persona(), power as Usable, situation);
       ailmentRange = ranges.ailmentRange;
@@ -1105,8 +1103,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
             const pt =  this.getPTokenFromActorAccessor(cons.owner);
             if (pt && pt.actor) {return [pt.actor];}
             try {
-            const actor =  PersonaDB.findActor(cons.owner);
-            if (actor) {return [actor as ValidAttackers | ValidSocialTarget];}
+              const actor =  PersonaDB.findActor(cons.owner);
+              if (actor) {return [actor as ValidAttackers | ValidSocialTarget];}
             } catch {}
           }
           else {return [];}

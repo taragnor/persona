@@ -86,7 +86,6 @@ export class ModifierList {
     });
   }
 
-
   static getModifierAmount(consequences: ConditionalEffectC["consequences"], targetMods: NonDeprecatedModifierTarget[] | NonDeprecatedModifierTarget) : (number | Sourced<ConsequenceAmountV2>)[] {
     targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
     return consequences
@@ -121,7 +120,6 @@ export class ModifierList {
     });
     this._data = this._data.concat(stuff);
     return this;
-
   }
 
   static resolveModifier(modifier: ModifierList["_data"][number]["modifier"], situation: Situation)  :number {
@@ -175,9 +173,7 @@ export class ModifierList {
       .filter(x=> x.raw != 0)
       .map ( ({name, modifier}) => `${modifier} ${name}`);
   }
-
 }
-
 
 export type ConditionalModifier = {
   conditions: Precondition[],
@@ -189,5 +185,4 @@ type Modifier = {
   amount: number;
 }
 
-export type ResolvedModifierList =string[];
-
+export type ResolvedModifierList = string[];
