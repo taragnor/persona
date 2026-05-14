@@ -1104,14 +1104,21 @@ export class PersonaCombat extends Combat<ValidAttackers> {
           if (cons.owner) {
             const pt =  this.getPTokenFromActorAccessor(cons.owner);
             if (pt && pt.actor) {return [pt.actor];}
-          }
-          if (cons.owner) {
-            const pt =  this.getPTokenFromActorAccessor(cons.owner);
-            if (pt && pt.actor) {return [pt.actor];}
+            try {
+            const actor =  PersonaDB.findActor(cons.owner);
+            if (actor) {return [actor as ValidAttackers | ValidSocialTarget];}
+            } catch {}
           }
           else {return [];}
         }
-        ui.notifications.notify("Can't find Owner of Consequnece");
+        if (cons && cons.owner) {
+          const msg= `Can't find Owner of Consequenece ${cons.owner?.actorName ?? "unknown"}`;
+          console.warn(msg);
+          if (PersonaSettings.debugMode()) {
+            ui.notifications.notify(msg);
+          }
+          Debug(cons);
+        }
         return [];
       case 'user': {
         if (!checkSituationProp(situation, "user")) { return []; }
