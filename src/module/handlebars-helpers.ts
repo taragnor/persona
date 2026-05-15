@@ -246,10 +246,9 @@ export class PersonaHandleBarsHelpers {
     'canUsePower': (persona:Persona | ValidAttackers, power: Power) : boolean => {
       try {
         if (persona instanceof PersonaActor) {
-          persona=persona.persona();
+          persona = persona.persona();
         }
         return persona.canUsePower(power, false);
-        // return persona.canUsePower(power, false) && power.system?.subtype != "passive" && power.system?.subtype != "defensive" ;
       } catch (e) {
         Debug(persona);
         console.log(e);
@@ -1025,6 +1024,16 @@ export class PersonaHandleBarsHelpers {
   "canUseSideboard": function (actor: PersonaActor) : boolean {
     return actor.isValidCombatant() && actor.class?.system?.canUsePowerSideboard && !actor.isNPCAlly();
   },
+
+    "canMoveToSideboard": function (persona: Persona, power: Power) {
+      const actor = persona.user;
+      return actor.isValidCombatant()
+        && actor.class.system.canUsePowerSideboard
+        && !actor.isNPCAlly()
+        && persona.mainPowers.includes(power)
+        && persona.user.isOwner
+        && persona == actor.basePersona;
+    },
 
   "resolvedPowerTagList": function (item: Power | Consumable) : string[]{
     return item.system.tags

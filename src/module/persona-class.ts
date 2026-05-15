@@ -113,17 +113,16 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   get activeCombatPowers() : readonly Power[] {
-    return this.powers.filter( pwr =>
-      pwr.isMagicSkill()
-      || pwr.isWeaponSkill()
-      || pwr.isCombatPower()
-    );
+    return this.powers
+      .filter( pwr => pwr.canBeUsedInCombat()
+        && !pwr.isOpener(this.user)
+        && !pwr.isFollowUpMove()
+      );
   }
 
   get explorationPowers() : readonly Power[] {
-    return this.powers.filter( pwr =>
-      pwr.canBeUsedInExploration()
-    );
+    return this.powers
+      .filter( pwr => pwr.canBeUsedInExploration());
   }
 
   get bonusPowers() : readonly Power [] {
@@ -594,14 +593,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     roomModifiers.push(...Metaverse.activeRoomModifiers());
     const passiveOrTriggeredPowers = (options && options.omitPowers) ? [] : this.nonActivePowers();
     const talents = (options && options?.omitTalents) ? [] : this.talents;
+    const navigatorMods = this.user.isPCLike() && PersonaDB.activePCParty().includes(this.user) ? PersonaDB.navigatorModifiers() : [];
     const mainModsList : ModifierContainer[]= [
-      // ...this.focii,
       ...talents,
       ...passiveOrTriggeredPowers,
       ...user.actorMainModifiers(options),
       ...roomModifiers,
       ...PersonaDB.getGlobalPassives(),
-      ...PersonaDB.navigatorModifiers(),
+      ...navigatorMods,
     ];
     return mainModsList;
   }

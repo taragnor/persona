@@ -1022,11 +1022,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   isCombatPower(this: Usable): boolean {
-    const combatTags : PowerTag[] = ["healing", "status-removal", "ailment", "buff", "debuff", "instantKill"];
-    return this.isMagicSkill()
-      || this.isWeaponSkill()
-      || this.canDealDamage()
-      || this.hasTag(combatTags, null);
+    return this.canBeUsedInCombat();
   }
 
   estimateShadowCosts(this: Power, persona: Persona) : Power["system"]["energy"] {

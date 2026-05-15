@@ -26,7 +26,7 @@
       <a class="sort-down">
         <i class="fa-solid fa-sort-down"></i>
       </a>
-      {{#if (canUseSideboard ../persona.user)}}
+      {{#if (and (canUseSideboard ../persona.user) (canMoveToSideboard ../persona power))}}
       <a class="move-to-sideboard" title="Move to Sideboard">
         <i class="fa-solid fa-people-carry-box"></i>
       </a>
