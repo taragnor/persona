@@ -119,11 +119,11 @@ export class ActorSocial <T extends PersonaActor> {
       case "pc": return [];
       case "shadow": return [];
       case "tarot":
-        focuses = (actor as Tarot).focii();
+        focuses = (actor as Tarot).focii;
         break;
       case "npc": case "npcAlly":
-        focuses = (actor as NPC | NPCAlly).focii()
-          .concat(this.tarot?.focii() ?? []);
+        focuses = (actor as NPC | NPCAlly).focii
+          .concat(this.tarot?.focii ?? []);
         break;
       default:
           actor.system satisfies never;

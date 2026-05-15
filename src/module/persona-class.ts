@@ -156,12 +156,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.source.system.combat.classData;
   }
 
-  get focii(): readonly Focus[] {
-    const actor = this.source;
-    if (actor.isPC())
-    {return [];}
-    return actor.items.filter( x=> x.isFocus()) as Focus[];
-  }
+  // get focii(): readonly Focus[] {
+  //   return this.source.focii();
+  // }
 
   async learnPower(power: Power, logChanges = true) {
     const ret= await this.powerLearning.learnPower(power, logChanges);
@@ -598,7 +595,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     const passiveOrTriggeredPowers = (options && options.omitPowers) ? [] : this.nonActivePowers();
     const talents = (options && options?.omitTalents) ? [] : this.talents;
     const mainModsList : ModifierContainer[]= [
-      ...this.focii,
+      // ...this.focii,
       ...talents,
       ...passiveOrTriggeredPowers,
       ...user.actorMainModifiers(options),
@@ -607,6 +604,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       ...PersonaDB.navigatorModifiers(),
     ];
     return mainModsList;
+  }
+
+  get theurgies() : Power[] {
+    return this.powers.filter( x=> x.hasTag("theurgy", this.user));
   }
 
   private _mainModifiers(options?: MainModifierOptions): ConditionalEffectC[] {

@@ -50,8 +50,9 @@
 
 {{> "systems/persona/parts/next-learned-powers-section.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers showLearnedBuffer=showLearnedBuffer}}
 
-
 {{> "systems/persona/parts/navigator-skills-section.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers}}
+
+{{> "systems/persona/parts/sub-power-list.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers list=persona.theurgies listName="Theurgies"}}
 
 {{#if showBonusPowers}}
 {{> "systems/persona/parts/bonus-powers-table.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers}}

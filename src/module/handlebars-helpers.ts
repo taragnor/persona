@@ -599,18 +599,19 @@ export class PersonaHandleBarsHelpers {
     },
 
     "canUseCustomFocii": function (actor: PersonaActor) : boolean {
-      switch (actor.system.type) {
-        case "tarot":
-        case "pc":
-        case "npc":
-          return false;
-        case "npcAlly":
-        case "shadow":
-          return true;
-        default:
-          actor.system satisfies never;
-          return false;
-      }
+      return actor.isValidCombatant();
+      // switch (actor.system.type) {
+      //   case "tarot":
+      //   case "pc":
+      //   case "npc":
+      //     return false;
+      //   case "npcAlly":
+      //   case "shadow":
+      //     return true;
+      //   default:
+      //     actor.system satisfies never;
+      //     return false;
+      // }
     },
 
     "hasMP": function (actor: PersonaActor) : boolean {
@@ -781,8 +782,17 @@ export class PersonaHandleBarsHelpers {
       return persona.user.isPC() && persona.user.isOwner &&  persona.isBasePersona;
     },
 
-    "canDeletePowers": function (persona: Persona): boolean {
-      return persona.user.isOwner && persona.source.isOwner && !persona.isHypothetical;
+    "canDeletePowers": function (persona: Persona, power?: Power): boolean {
+      try {
+      const base= persona.user.isOwner && persona.source.isOwner && !persona.isHypothetical;
+      if (!power || !(power instanceof PersonaItem)) {return base;}
+      if (persona.bonusPowers.includes(power)) {return false;}
+      return true;
+      } catch (e) {
+        PersonaError.softFail("Error on canDeletePowers", e);
+        Debug(persona, power);
+        return false;
+      }
     },
 
     "getRollTags": function (cardRoll: CardRoll): string {
@@ -961,7 +971,7 @@ export class PersonaHandleBarsHelpers {
     const sortFn = function (a: Focus, b: Focus) {
       return a.requiredLinkLevel() - b.requiredLinkLevel();
     };
-    return actor.focii()
+    return actor.focii
       .sort( sortFn) ;
   },
   "hasDescriptionText": function(power:Power) : boolean{

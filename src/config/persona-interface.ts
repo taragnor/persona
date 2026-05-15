@@ -14,7 +14,7 @@ export interface PersonaI {
 	resists: Foundry.SchemaConvert<ReturnType<typeof elementalResists>>;
 	classData: ValidAttackers["system"]["combat"]["classData"];
 	talents: readonly Talent[];
-	focii: readonly Focus[];
+	// focii: readonly Focus[];
 	XPForNextLevel: number;
 	level: number;
 	scanLevelRaw: number;

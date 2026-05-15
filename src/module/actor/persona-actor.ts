@@ -1007,8 +1007,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return this.social.getSocialSLWith(sl);
   }
 
-  focii(this:PersonaActor): Focus[] {
-    if (this.isPC()) {return [];}
+  get focii(): Focus[] {
     return this.items.filter( x=> x.isFocus()) as Focus[];
   }
 
@@ -1818,6 +1817,7 @@ actorMainModifiers(options ?: MainModifierOptions): readonly ModifierContainer[]
 _actorMainModifiers(options ?: MainModifierOptions): readonly ModifierContainer[] {
   const tags = (options && options.omitTags) ? [] : this.tags.realTags();
   const ret : readonly ModifierContainer[] = [
+    ...this.focii,
     ...this.passiveItems(),
     ...this.social.getAllSocialFocii(),
     ...this.equippedItems(),

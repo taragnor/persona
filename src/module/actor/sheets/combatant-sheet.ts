@@ -148,6 +148,10 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
         }
       }
       case "focus":
+        if (!game.user.isGM) {
+          ui.notifications.warn("Only GM can add Focii");
+          return;
+        }
         return super._onDropItem(_event, itemD);
         // if (this.actor.system.type != "pc") {
         // 	return super._onDropItem(_event, itemD);

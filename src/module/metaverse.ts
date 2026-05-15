@@ -651,3 +651,4 @@ const MEMENTOS_SCENE_MODS : GeneratorSceneModifier<UniversalModifier["name"]>[] 
 ];
 
 type GamePhase = "exploration" | "combat" | "downtime" | "postcombat"
+

@@ -100,4 +100,8 @@
 		{{> "systems/persona/parts/persona-stats-display.hbs" CONST=CONST persona=persona}}
 	</div>
 
+	 {{#if (isGM)}}
+	 {{> "systems/persona/parts/focii-table.hbs" actor=actor CONST=CONST persona=persona}}
+	 {{/if}}
+
 </section>

@@ -81,7 +81,7 @@ export class ConsequenceAmountResolver {
   }
 
   private static resolveActorProperty(amt: Sourced<ConsequenceAmountV2> & {type: "actor-property"}, situation: Partial<Situation>): U<number> {
-    const targets= PersonaCombat.solveEffectiveTargets(amt.target, situation as Situation, amt);
+    const targets = PersonaCombat.solveEffectiveTargets(amt.target, situation as Situation, amt);
     const returns = targets
     .map( target => {
       switch (amt.property) {
