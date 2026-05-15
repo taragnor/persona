@@ -39,6 +39,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   private _tags: PersonaTagManager<this>;
   private _talentCache: TimedCache<readonly Talent[]>;
 
+  BASE_PC_SIDEBOARD = 1 as const;
+
   private basicCaches = {
     mhp: new TimedCache(() => this._mhp(), 3000),
   };
@@ -937,8 +939,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
         return 0;
       case "pc": {
         if (!this.source.class.system.canUsePowerSideboard) {return 0;}
-        const extraMaxPowers = this.getPassiveBonusesIgnoreAuras("extraMaxPowers");
-        return extraMaxPowers
+        return this.BASE_PC_SIDEBOARD
+        + Math.floor(this.source.level / 50)
+        + this.getPassiveBonusesIgnoreAuras("extraMaxPowers")
         .total ( {user: this.user.accessor});
       }
       default:

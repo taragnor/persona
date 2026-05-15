@@ -528,11 +528,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.system.type == "characterClass";
   }
 
-  isOutfit(): this is InvItem {
+  isOutfit(): boolean {
     return this.system.type == 'item' && this.system.slot == 'body';
   }
 
-  isAccessory() : this is InvItem {
+  isAccessory() : boolean {
     return this.system.type == 'item' && this.system.slot == 'accessory';
   }
 
