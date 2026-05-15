@@ -767,6 +767,7 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
     }
     case "has-class": {
       const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+      if (!target) {return undefined;}
       return multiCheckContains(condition.classId, [target.class.id]);
     }
     case "status-to-be-inflicted": {

@@ -117,6 +117,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   get activeCombatPowers() : readonly Power[] {
     return this.powers
       .filter( pwr => pwr.canBeUsedInCombat()
+        && pwr.isTrulyUsable()
         && !pwr.isOpener(this.user)
         && !pwr.isFollowUpMove()
       );
