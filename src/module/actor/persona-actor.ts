@@ -194,7 +194,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     if (this.cache.level != undefined) {
       return this.cache.level;
     }
-    if (!this.isValidCombatant()) {return this.cache.level = 0;}
+    if (this.isNPC()) {
+      const proxy = this.getNPCAllyProxy();
+      if (proxy) {return proxy.level;}
+    }
+    if (!this.isValidCombatant()) {
+      return this.cache.level = 0;
+    }
     if (this.isPC()) {
       return this.cache.level = this.system.personaleLevel;
     }

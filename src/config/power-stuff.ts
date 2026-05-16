@@ -44,8 +44,7 @@ private static _powerStuffBase: Record<string, unknown>;
 			return this._powerStuffBase;
 		}
 		const SocialLinks = Object.fromEntries(
-			PersonaDB.allActors()
-			.filter (x=> x.tarot && x.system.type != "shadow" && x.system.type != "tarot")
+			PersonaDB.socialLinks()
 			.map( actor=> [actor.id,actor.name])
 		);
 
