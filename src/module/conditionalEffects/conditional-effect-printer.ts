@@ -22,6 +22,7 @@ import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
+import {PersonaTagManager} from "../persona-tags.js";
 import {localize} from "../persona.js";
 import {getSocialLinkTarget, multiCheckToArray} from "../preconditions.js";
 import {PersonaSocial} from "../social/persona-social.js";
@@ -76,12 +77,21 @@ export class ConditionalEffectPrinter {
 
     static translate<const T extends string>(items: MultiCheck<T> | T, translationTable?: Record<T, LocalizationString | string>) : string {
       if (typeof items == "string")  {
-        return translationTable ? localize(translationTable[items] as LocalizationString) : items;
+        return this._translate_sub(items, translationTable);
+        // const tagCheck = PersonaTagManager.resolveTag(items);
+        // if (tagCheck instanceof PersonaItem) {return tagCheck.displayedName;}
+        // return translationTable ? localize(translationTable[items] as LocalizationString) : items;
       }
       return Object.entries(items)
         .flatMap( ([k,v]) => v ? [k] : [])
-        .map( (x:T)=> translationTable ? localize(translationTable[x] as LocalizationString) : x)
+        .map( (x:T)=> this._translate_sub(x, translationTable))
         .join(", ");
+    }
+
+    private static _translate_sub<const T extends string>(item: T, translationTable?: Record<T, LocalizationString | string>) : string {
+      const tagCheck = PersonaTagManager.resolveTag(item);
+      if (tagCheck instanceof PersonaItem) {return tagCheck.displayedName;}
+      return translationTable ? localize(translationTable[item] as LocalizationString) : item;
     }
 
     static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
@@ -261,6 +271,7 @@ export class ConditionalEffectPrinter {
           const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, CONDITION_TARGETS) : "";
           return `${target1} ${not} has Actor Tag: ${tagName}`;
         }
+        case undefined:
         case "power":{
           const tagName = this.getTagNameForHasTag(cond);
           return `used power ${not} has power Tag: ${tagName}`;
@@ -392,8 +403,9 @@ export class ConditionalEffectPrinter {
     static getTagNameForHasTag(cond: Precondition & {type: "boolean"} & {boolComparisonTarget: "has-tag"}): string {
       switch (cond.tagComparisonType) {
         case undefined:
-        case "power":
+        case "power": {
           return this.translate(cond.powerTag, POWER_TAGS);
+        }
         case "actor":
           return this.translate(cond.creatureTag, CREATURE_TAGS);
         case "roll":
