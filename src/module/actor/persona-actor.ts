@@ -80,7 +80,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   private cache: {
     startingLevel: U<number>,
-    level: U<number>,
+    // level: U<number>,
     // tarot: Tarot | undefined;
     complementRating: Map<Shadow["id"], number>;
     socialData: U<readonly SocialLinkData[]>;
@@ -92,6 +92,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       basePersona : new TimedCache( () => (this as ValidAttackers)._basePersona(), 3000),
       actorMainModifiers: new TimedCache( () => this._actorMainModifiers(), 1000),
     tarot: new PermanentCache( () => this._tarot()),
+    level: new PermanentCache( () => this._level()),
     };
 
   constructor(...arr: unknown[]) {
@@ -115,7 +116,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     this.social.clearCache();
     this.cache = {
       startingLevel: undefined,
-      level: undefined,
+      // level: undefined,
       // tarot: undefined,
       complementRating: new Map(),
       socialData: undefined,
@@ -191,20 +192,39 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   get level() : number {
-    if (this.cache.level != undefined) {
-      return this.cache.level;
+    if (this.isNPC()) {
+      const proxy = this.getNPCAllyProxy();
+      if (proxy) {return proxy.level;}
     }
+    return this.cache2.level.value;
+    // if (this.cache.level != undefined) {
+    //   return this.cache.level;
+    // }
+    // if (this.isNPC()) {
+    //   const proxy = this.getNPCAllyProxy();
+    //   if (proxy) {return proxy.level;}
+    // }
+    // if (!this.isValidCombatant()) {
+    //   return this.cache.level = 0;
+    // }
+    // if (this.isPC()) {
+    //   return this.cache.level = this.system.personaleLevel;
+    // }
+    // return this.cache.level = this.system.combat.personaStats.pLevel ?? 0;
+  }
+
+  private _level() : number {
     if (this.isNPC()) {
       const proxy = this.getNPCAllyProxy();
       if (proxy) {return proxy.level;}
     }
     if (!this.isValidCombatant()) {
-      return this.cache.level = 0;
+      return 0;
     }
     if (this.isPC()) {
-      return this.cache.level = this.system.personaleLevel;
+      return this.system.personaleLevel;
     }
-    return this.cache.level = this.system.combat.personaStats.pLevel ?? 0;
+    return this.system.combat.personaStats.pLevel ?? 0;
   }
 
   get batonPassLevel() : number {
