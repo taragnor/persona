@@ -402,7 +402,7 @@ export const TAG_COMPARISON_TYPES = HTMLTools.createLocalizationObject(TAG_COMPA
 
 type GeneralTagComparison = {
 	boolComparisonTarget: "has-tag",
-	tagComparisonType : TagComparisonType | undefined,
+	tagComparisonType : TagComparisonType,
 } & (
 	{
 	tagComparisonType: "power" | undefined,

@@ -101,8 +101,7 @@ export class ConditionalEffectPrinter {
         case "is-pc":
           return `${target1} is ${not} PC type`;
         case "has-tag": {
-          const tagName = this.getTagNameForHasTag(cond);
-          return `used power ${not} has tag: ${tagName}`;
+          return this.#printHasTagCond(cond);
         }
         case "in-combat":
           return `is ${not} in combat`;
@@ -252,6 +251,29 @@ export class ConditionalEffectPrinter {
           cond satisfies never;
           return "";
       }
+    }
+
+    static #printHasTagCond(cond: Precondition & {type: "boolean"; boolComparisonTarget: "has-tag"}): string {
+      const not =  !cond.booleanState ? "not" : "";
+      const tagName = this.getTagNameForHasTag(cond);
+      switch (cond.tagComparisonType) {
+        case "actor": {
+          const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, CONDITION_TARGETS) : "";
+          return `${target1} ${not} has Actor Tag: ${tagName}`;
+        }
+        case "power":{
+          const tagName = this.getTagNameForHasTag(cond);
+          return `used power ${not} has power Tag: ${tagName}`;
+        }
+        case "roll":
+          return `roll ${not} has Tag: ${tagName}`;
+        case "weapon":
+          return `weapon ${not} has Tag: ${tagName}`;
+        default:
+          cond satisfies never;
+          return "ERROR";
+      }
+
     }
 
     static printPowerHasConditional(cond: Precondition & {type: "boolean"; boolComparisonTarget: "power-has"}) : string {

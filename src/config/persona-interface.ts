@@ -25,5 +25,4 @@ export interface PersonaI {
 
 export interface PersonaCombatI {
 	elemResist(type: Exclude<DamageType, "by-power">): ResistStrength;
-
 }
