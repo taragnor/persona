@@ -78,9 +78,6 @@ export class ConditionalEffectPrinter {
     static translate<const T extends string>(items: MultiCheck<T> | T, translationTable?: Record<T, LocalizationString | string>) : string {
       if (typeof items == "string")  {
         return this._translate_sub(items, translationTable);
-        // const tagCheck = PersonaTagManager.resolveTag(items);
-        // if (tagCheck instanceof PersonaItem) {return tagCheck.displayedName;}
-        // return translationTable ? localize(translationTable[items] as LocalizationString) : items;
       }
       return Object.entries(items)
         .flatMap( ([k,v]) => v ? [k] : [])
@@ -97,7 +94,6 @@ export class ConditionalEffectPrinter {
     static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
       const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, CONDITION_TARGETS) : "";
       const target2 = ("conditionTarget2" in cond) ? this.translate(cond.conditionTarget2, CONDITION_TARGETS): "" ;
-      // const boolComparison = this.translate (cond.boolComparisonTarget, BOOLEAN_COMPARISON_TARGET);
       const not =  !cond.booleanState ? "not" : "";
       switch (cond.boolComparisonTarget) {
         case "engaged":
