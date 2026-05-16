@@ -104,6 +104,7 @@ export class MultiTierCache<
   > {
     CacheConstructor: CacheType;
     map: Map<val, CacheOr<FullArgs, CacheType, restArgs>> = new Map();
+    //possible memory leak issues with map holding onto values
 
     constructor (cacheConstructor: CacheType) {
       this.CacheConstructor = cacheConstructor;

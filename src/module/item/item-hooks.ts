@@ -17,6 +17,11 @@ export class ItemHooks {
         void Logger.sendToChat(`${item.parent.name} -> ${item.name} Amount changed to ${itemChanges.system.amount} (old value: ${item?.system?.amount ?? 0})`);
       }
     });
-  }
 
+    Hooks.on("updateItem", (item: PersonaItem) => {
+      item.clearCache();
+    });
+  }
 }
+
+

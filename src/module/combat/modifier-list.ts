@@ -22,9 +22,9 @@ export class ModifierList {
   private _data: ModifierListItem[];
   private listType: MLListType;
 
-  constructor ( sourcedEffects: SourcedConditionalEffect[], bonusFn : (eff :SourcedConditionalEffect) => number ,listType?: MLListType);
+  constructor ( sourcedEffects: ConditionalEffectC[], bonusFn : (eff :SourcedConditionalEffect) => number ,listType?: MLListType);
   constructor ( list?: ModifierListItem[], listType?: MLListType);
-  constructor ( list: ModifierListItem[] | SourcedConditionalEffect[] = [], listTypeOrFn: MLListType | ((eff: SourcedConditionalEffect) => number) = "standard", listType ?: MLListType)
+  constructor ( list: ModifierListItem[] | ConditionalEffectC[] = [], listTypeOrFn: MLListType | ((eff: SourcedConditionalEffect) => number) = "standard", listType ?: MLListType)
   {
     this.listType = typeof listTypeOrFn != "function" ? listTypeOrFn : (listType ? listType : "standard");
     if (list.length == 0 || ("name" in list.at(0)!)) {

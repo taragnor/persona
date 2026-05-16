@@ -70,7 +70,8 @@ export class PersonaCombatStats {
       calc.mult(0, hpAdjustPercent,`HP Adjust (${hpAdjust})`);
       const multmods = persona.getPassiveBonusesIgnoreAuras("maxhpMult");
       if (user.isPC() || user.isNPCAlly()) {
-        const ArmorHPBoost = user.equippedItems().find(x=> x.isOutfit())?.armorHPBoost ?? 0;
+        const ArmorHPBoost = user.equippedItems()
+          .find(x=> x.isOutfit())?.armorHPBoost ?? 0;
         if (ArmorHPBoost > 0)
         {
           calc.add(0, ArmorHPBoost, "Armor HP Bonus");
