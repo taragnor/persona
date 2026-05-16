@@ -129,7 +129,6 @@ export class AltDamageSystem extends DamageSystemBase {
     return 0;
   }
 
-  //experimental version
   protected getPercentModifier(attackStat: number, endurance: number) : number {
     const PERCENT_PADDING = PersonaCombatStats.PERCENT_PADDING;
     let percent = (PERCENT_PADDING + attackStat) / (PERCENT_PADDING + endurance);
@@ -137,16 +136,6 @@ export class AltDamageSystem extends DamageSystemBase {
     percent = Math.round(percent * 100) / 100;
     return percent;
   }
-
-  //classic version
-  // protected getPercentModifier(attackStat: number, endurance: number) : number {
-  // 	const PERCENT_PADDING = this.PERCENT_PADDING;
-  // 	let percent = (PERCENT_PADDING + attackStat) / (PERCENT_PADDING + endurance);
-  // 	const deviance = 1 - percent;
-  // 	percent += deviance * (1 - this.END_DIFF_PERCENTAGE_MULT);
-  // 	percent = Math.round(percent * 100) / 100;
-  // 	return percent;
-  // }
 
   protected physDR(power: Power, attackerPersona : Persona, targetPersona: Persona): DamageCalculation {
     const calc = new DamageCalculation(null);

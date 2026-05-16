@@ -108,7 +108,6 @@ export class PersonaCombatStats {
       x.mult(0, maxMult, "Multiplier Bonuses" , true);
       x.add(0, nonMultMPBonus, "Permanent Bonus MP");
       return x.eval(sit);
-
     } catch {
       return new Calculation().eval();
     }

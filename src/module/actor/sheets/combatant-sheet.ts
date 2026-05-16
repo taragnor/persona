@@ -60,6 +60,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".rollPower").rightclick(this.displayDamageStack.bind(this));
 		html.find(".inventory-item").on("click", this.useItem.bind(this));
 		html.find(".powerName").on("click", this.openPower.bind(this));
+		html.find(".powerName").rightclick(this.openPower.bind(this));
 		html.find(".talentName").on("click", this.openTalent.bind(this));
 		html.find(".focusName").on("click", this.openFocus.bind(this));
 		html.find(".itemName").rightclick(this.openItem.bind(this));
