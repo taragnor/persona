@@ -79,7 +79,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   tags = new ActorTagManager(this);
 
   private cache: {
-    startingLevel: U<number>,
+    // startingLevel: U<number>;
     // level: U<number>,
     // tarot: Tarot | undefined;
     complementRating: Map<Shadow["id"], number>;
@@ -88,6 +88,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   };
 
   private cache2 = {
+    startingLevel: new PermanentCache( () => this._startingLevel()),
     accessor: new PermanentCache( () => this._accessor()),
     persona : new TimedCache( () => (this as ValidAttackers)._persona(), 3000),
     basePersona : new TimedCache( () => (this as ValidAttackers)._basePersona(), 3000),
@@ -116,7 +117,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     this.tags.clearCache();
     this.social.clearCache();
     this.cache = {
-      startingLevel: undefined,
+      // startingLevel: undefined,
       // level: undefined,
       // tarot: undefined,
       complementRating: new Map(),
@@ -3831,16 +3832,26 @@ async setAsActivePartyMember(this : NPCAlly)  {
 }
 
 get startingLevel() : number {
-  const cVal = this.cache.startingLevel;
-  if (cVal != undefined) {
-    return cVal;
-  }
+  return this.cache2.startingLevel.value;
+  // const cVal = this.cache.startingLevel;
+  // if (cVal != undefined) {
+  //   return cVal;
+  // }
+  // if (!this.isShadow()) {
+  //   return this.cache.startingLevel = 0;
+  // }
+  // const lvl = this.system.personaConversion.startingLevel;
+  // if (lvl == 1) {return this.cache.startingLevel = this.level;}
+  // return this.cache.startingLevel = lvl;
+}
+
+_startingLevel() : number {
   if (!this.isShadow()) {
-    return this.cache.startingLevel = 0;
+    return  0;
   }
   const lvl = this.system.personaConversion.startingLevel;
-  if (lvl == 1) {return this.cache.startingLevel = this.level;}
-  return this.cache.startingLevel = lvl;
+  if (lvl == 1) {return this.level;}
+  return lvl;
 }
 
 async swapPersona( this: PC, p1: Persona, p2: Persona) {

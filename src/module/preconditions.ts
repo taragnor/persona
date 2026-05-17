@@ -1340,8 +1340,7 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
       return false;
     }
     case "is-distracted": {
-      const target= subjects.at(0);
-      // const target = getSubjectActors(condition, situation,  "conditionTarget")[0];
+      const target = subjects.at(0);
       if (!target) {return undefined;}
       return target.user.isDistracted();
     }
@@ -1375,7 +1374,6 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
             const attacker = PersonaDB.findActor(situation?.attacker);
             dtype = power.getDamageType(attacker);
           }
-          // if (targetActor.system.type == "npc") {return undefined;}
           const resist = target.elemResist(dtype);
           switch (resist) {
             case "resist": case "block": case "absorb": case "reflect": return true;
@@ -1391,7 +1389,7 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
       const target = getSubjectTokens(condition, situation,   "conditionTarget")[0];
       const target2 = getSubjectTokens(condition, situation, "conditionTarget2")[0];
       if (!target || !target2) {return undefined;}
-      const combat = game.combat as PersonaCombat;
+      const combat = PersonaCombat.combat;
       if (!combat) {return undefined;}
       const enemies = combat.getAllEnemiesOf(target);
       return enemies.includes(target2);
