@@ -116,7 +116,7 @@ export class ConditionalEffectManager {
 		);
 	}
 
-	static getAllActiveConsequences(condEffects: ConditionalEffectC[], situation: Situation) : Consequence[] {
+	static getAllActiveConsequences(condEffects: readonly ConditionalEffectC[], situation: Situation) : Consequence[] {
 		return condEffects.flatMap( effect=> effect.getActiveConsequences(situation));
 	}
 

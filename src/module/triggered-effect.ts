@@ -9,7 +9,6 @@ import { PersonaCombat } from "./combat/persona-combat.js";
 import {ConsequenceProcessor} from "./conditionalEffects/consequence-processor.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
-import {PersonaSettings} from "../config/persona-settings.js";
 import {PersonaTargetting} from "./combat/persona-targetting.js";
 import {checkSituationProp} from "./preconditions.js";
 

@@ -60,8 +60,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   private _tags = new ItemTagManager(this);
 
   static #cache =  {
-    basicPCPowers: undefined as Power[] | undefined,
-    basicShadowPowers: undefined as Power[] | undefined,
+    basicPCPowers: undefined as readonly Power[] | undefined,
+    basicShadowPowers: undefined as readonly Power[] | undefined,
   };
 
   declare parent: PersonaActor | undefined;
@@ -130,7 +130,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       mpCost: undefined,
       mpGrowthTable: undefined,
       hpGrowthTable: undefined,
-      // tags: undefined,
     };
     this.tags.clearCache();
   }
@@ -1954,7 +1953,7 @@ async deleteCreatureTag(this: Tag, index: number) : Promise<void> {
   await this.update( {"system.creatureTags": tags});
 }
 
-getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options : GetEffectsOptions = {}): ConditionalEffectC[] {
+getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options : GetEffectsOptions = {}): readonly ConditionalEffectC[] {
   //possible caching error here with effects for items counting tags multiple times
   //proxy item is used for tags to redirect their source to their parent item (for purposes of reading item level)
   if (!PersonaDB.isLoaded) {
@@ -2831,8 +2830,8 @@ type AdvancedEffectsCache = {
 }
 
 type WeakMapPlus = {
-  actors: WeakMap<PersonaActor, ConditionalEffectC[]>;
-  nullActor: U<ConditionalEffectC[]>;
+  actors: WeakMap<PersonaActor, readonly ConditionalEffectC[]>;
+  nullActor: U<readonly ConditionalEffectC[]>;
 };
 
 type PowerSub<T extends Power['system']['subtype']> = Power & {system: {subtype: T}}

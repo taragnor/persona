@@ -2,7 +2,6 @@ import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-t
 import {PersonaActor} from "../actor/persona-actor.js";
 import { ConsequenceApplier } from "../combat/consequence-applier.js";
 import {StepsClock} from "../exploration/steps-clock.js";
-import {DowntimePanel} from "../panels/downtime-panel.js";
 import {StatusDuration} from "../persona-ae.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaSocial} from "../social/persona-social.js";
