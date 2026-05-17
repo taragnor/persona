@@ -9,6 +9,8 @@ import { BASIC_SHADOW_POWER_NAMES } from "../config/basic-powers.js";
 import {SocialEncounterCard} from "./social/social-card-executor.js";
 import {PermanentCache, TimedCache} from "./utility/cache.js";
 
+const STORES_CACHE_DURATION = 60000 as const;
+
 declare global {
   interface HOOKS {
     "DBrefresh": (db: PersonaDatabase) => unknown,
@@ -22,7 +24,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
   failLog: Map<string, string> = new Map();
 
   private timedCaches = {
-    storesCache: new TimedCache(() => this._getAllStores(), 3000),
+    storesCache: new TimedCache(() => this._getAllStores(), STORES_CACHE_DURATION),
   } as const;
 
   private permanentCaches = {
