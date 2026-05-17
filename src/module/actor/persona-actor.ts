@@ -88,12 +88,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   };
 
   private cache2 = {
-      persona : new TimedCache( () => (this as ValidAttackers)._persona(), 3000),
-      basePersona : new TimedCache( () => (this as ValidAttackers)._basePersona(), 3000),
-      actorMainModifiers: new TimedCache( () => this._actorMainModifiers(), 1000),
+    accessor: new PermanentCache( () => this._accessor()),
+    persona : new TimedCache( () => (this as ValidAttackers)._persona(), 3000),
+    basePersona : new TimedCache( () => (this as ValidAttackers)._basePersona(), 3000),
+    actorMainModifiers: new TimedCache( () => this._actorMainModifiers(), 1000),
     tarot: new PermanentCache( () => this._tarot()),
     level: new PermanentCache( () => this._level()),
-    };
+  };
 
   constructor(...arr: unknown[]) {
     super(...arr);
@@ -834,6 +835,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   get accessor() : UniversalActorAccessor<typeof this> {
+    return this.cache2.accessor.value;
+  }
+
+  _accessor() : UniversalActorAccessor<this> {
     return PersonaDB.getUniversalActorAccessor(this);
   }
 

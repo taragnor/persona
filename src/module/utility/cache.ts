@@ -46,7 +46,7 @@ export abstract class CacheBase<T> implements CacheI<T> {
         console.log(newValue);
       }
     }
-    if (!this._value || this.cacheInvalid(this._value)) {
+    if (this._value == undefined || this.cacheInvalid(this._value)) {
       this._stats.misses+=1;
       return this.regenerateCache();
     }

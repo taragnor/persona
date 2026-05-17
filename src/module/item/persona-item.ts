@@ -50,6 +50,7 @@ import {PersonaTargetting} from '../combat/persona-targetting.js';
 import {PersonaSocial} from '../social/persona-social.js';
 import {ItemTagManager} from './item-tags.js';
 import {ItemHooks} from './item-hooks.js';
+import {PermanentCache} from '../utility/cache.js';
 
 declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -82,6 +83,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     // tags: U<readonly UnifiedTagData[]>,
   };
 
+
+  private cache2 = {
+    accessor: new PermanentCache( () => this._accessor()),
+  };
 
   static cacheStats = {
     miss: 0,
@@ -119,6 +124,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   clearCache() {
+    Object.values(this.cache2)
+      .forEach (cache=> cache.clear());
     this.cache = {
       effects: PersonaItem.#newEffectsCache(),
       containsModifier: undefined,
@@ -491,7 +498,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
 
-  get accessor() : UniversalItemAccessor<typeof this> {
+  get accessor() : UniversalItemAccessor<this> {
+    return this.cache2.accessor.value;
+    // return PersonaDB.getUniversalItemAccessor(this);
+  }
+
+  _accessor() : UniversalItemAccessor<this> {
     return PersonaDB.getUniversalItemAccessor(this);
   }
 
