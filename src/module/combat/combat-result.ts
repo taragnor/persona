@@ -785,10 +785,12 @@ function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-fl
     const actor = PersonaCombat.solveEffectiveTargetsForce(applyTo, situation, cons).at(0)?.accessor;
     if (actor) { return actor;}
     PersonaError.softFail(`Can't find actor for actorTurn property in Status, defaulting to user`);
-    const actorTurn = "user" in situation
-      ? situation.user
+    const actorTurn = "target" in situation
+      ? situation.target
       : "triggeringCharacter" in situation
       ? situation.triggeringCharacter
+      : "user" in situation
+      ? situation.user
       : undefined;
     if (actorTurn) {return actorTurn;}
     PersonaError.softFail(`Can't find actor for actorTurn property in Status, defaulting to instant Status`);

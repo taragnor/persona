@@ -142,6 +142,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       if (!id || !user) {
         return false;
       }
+      if (!user.isValidCombatant()) {return false;}
       target = user.persona().getTalentLevel(id);
       break;
     }
@@ -206,7 +207,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
         element = power.getDamageType(attacker);
         if (element == "healing" || element == "untyped" || element == "all-out" || element =="none" ) {return false;}
       }
-      if (subject.isNPC()) {return false;}
+      if (!subject.isValidCombatant()) {return false;}
       const targetResist = subject.persona().resists[element]?? "normal";
       target = RESIST_STRENGTH_LIST.indexOf(targetResist);
       testCase = RESIST_STRENGTH_LIST.indexOf(condition.resistLevel);
@@ -222,6 +223,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       } else {
         statusId = condition.status;
       }
+      if (!subject.isValidCombatant()) {return false;}
       const targetResist = subject.persona().statusResist(statusId);
       target = RESIST_STRENGTH_LIST.indexOf(targetResist);
       testCase = RESIST_STRENGTH_LIST.indexOf(condition.resistLevel);
@@ -891,8 +893,11 @@ function getSubjectPersonas<K extends string, T extends Sourced<Record<K, Condit
         if (subject instanceof TokenDocument) {
           subject = subject.actor;
         }
-        return subject.persona();
-      });
+        if (subject.isValidCombatant()) {
+          return subject.persona();
+        }
+      })
+      .filter (x=> x!= undefined);
   });
 }
 
@@ -1327,6 +1332,7 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
         if (power.isSkillCard()) {continue;}
         if (!checkSituationProp(situation, "attacker")) {continue;}
         const attacker = PersonaDB.findActor(situation?.attacker);
+        if (!attacker.isValidCombatant()) {return undefined;}
         const pierce = CombatEngine.hasPierce(attacker.persona(), power, situation);
         const resist = target.elemResist(power.getDamageType(attacker));
         if (resist == "weakness" && !pierce) {return true;}

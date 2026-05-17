@@ -269,11 +269,13 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     if (duration.dtype == "UEoNT") {
       this.durationFix(duration);
     }
+    console.debug(duration);
+    Debug(duration);
     duration = {
       ...duration,
       ...options,
     };
-    if ("anchorHolder" in duration && duration.anchorHolder) {
+    if ("anchorHolder" in duration && duration.anchorHolder != undefined) {
       const actorTurn = PersonaDB.findActor(duration.anchorHolder);
       if (actorTurn != this.parent) {
         const anchor = await this.createAnchoredHolder(duration);
@@ -285,29 +287,10 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
           };
           await this.setFlag("persona", "duration", newDuration);
           return;
+        } else {
+          PersonaError.softFail("Failed to create Anchor for status", this);
         }
       }
-    }
-    switch (duration.dtype) {
-      case "UEoNT":
-      case "USoNT":
-      case "UEoT": {
-        // if ("anchorStatus" in duration) {break;}
-        // if (!duration.anchorHolder) {break;}
-        // const actorTurn = PersonaDB.findActor(duration.anchorHolder);
-        // if (actorTurn == this.parent) {break;}
-        // const anchor = await this.createAnchoredHolder(duration);
-        // if (!anchor) {break;}
-        // const newDuration : StatusDuration = {
-        //   dtype: "anchored",
-        //   anchor: anchor.accessor,
-        //   anchorHolder : undefined,
-        // };
-        // await this.setFlag("persona", "duration", newDuration);
-        return;
-      }
-      default:
-        break;
     }
     await this.setFlag("persona", "duration", duration);
   }
@@ -325,35 +308,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
   }
 
   async setEmbeddedEffects( effects: readonly ConditionalEffectC[])  : Promise<this> {
-    // const effectsRedux : ConditionalEffect[]= effects
-    // .map( eff=> {
-    //   return {
-    //     ...eff,
-    //     conditions: eff.conditions
-    //     .map (cond => {
-    //       return  {
-    //         ...cond,
-    //         owner: null,
-    //         realSource: null,
-    //         source: null,
-    //       };
-    //     }),
-    //     consequences: eff.consequences
-    //     .map( cons => {
-    //       return  {
-    //         ...cons,
-    //         owner: null,
-    //         realSource: null,
-    //         source: null,
-    //       };
-    //     }),
-    //     owner: null,
-    //     realSource: null,
-    //     source: null,
-    //   };
-    // });
     const effectsJSON = JSON.stringify(effects.map( eff=> eff.toJSON()));
-    // const effectString = JSON.stringify(effectsRedux);
     await this.setFlag("persona", "embeddedEffects", effectsJSON);
     return this;
   }

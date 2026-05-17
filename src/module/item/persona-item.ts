@@ -1931,7 +1931,7 @@ private _getLinkedEffects (this: ItemModifierContainer, sourceActor: PersonaActo
   if (!this.isTalent() && !this.isTag() && !this.isUniversalModifier()){
     const tags = this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
       .filter (tag=> tag instanceof PersonaItem);
-    tagEffects.push(...tags.flatMap(tag =>
+    tagEffects.pushUnique(...tags.flatMap(tag =>
       tag.getEffects(sourceActor, {CETypes, proxyItem: this})
     ));
   }
@@ -1955,6 +1955,7 @@ async deleteCreatureTag(this: Tag, index: number) : Promise<void> {
 }
 
 getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options : GetEffectsOptions = {}): ConditionalEffectC[] {
+  //possible caching error here with effects for items counting tags multiple times
   //proxy item is used for tags to redirect their source to their parent item (for purposes of reading item level)
   if (!PersonaDB.isLoaded) {
     throw new PersonaError("DB not loaded yet");
@@ -1973,6 +1974,7 @@ getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, optio
         .filter (ce => ce.isMainModifier);
     };
     return this.#accessEffectsCache('allMainEffects', sourceActor, options, effectsGetterFn)
+      .slice()
       .pushUnique(...tagEffects);
   } else {
     const effects: ConditionalEffectC[] = [];
@@ -2032,7 +2034,7 @@ getAuraEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, o
 }
 
 
-#accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, options: GetEffectsOptions, refresherFn: () => ConditionalEffectC[]) : ConditionalEffectC[] {
+#accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, options: GetEffectsOptions, refresherFn: () => ConditionalEffectC[]) : readonly ConditionalEffectC[] {
   if (!PersonaDB.isLoaded) {
     throw new PersonaError("DB not loaded yet!");
   }
@@ -2057,27 +2059,27 @@ getAuraEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, o
   }
 }
 
-getTriggeredEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
+getTriggeredEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : readonly ConditionalEffectC[] {
   options = {...options, CETypes: []};
   const data= this.#accessEffectsCache('triggeredEffects', sourceActor, options, () => this.getEffects(sourceActor, options)
     .filter( x => x.conditionalType === 'triggered')
   );
   if (!options.triggerType) {return data;}
   return data
-    .filter( x=> x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == options.triggerType));
+    .filter( x=> x.conditions
+      .some( cond => cond.type == "on-trigger" && cond.trigger == options.triggerType));
 }
 
 hasTriggeredEffects(this: ItemModifierContainer, actor: PersonaActor) : boolean {
   return this.getTriggeredEffects(actor).length > 0;
 }
 
-
-getOnUseEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
+getOnUseEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : readonly ConditionalEffectC[] {
   options = {...options, CETypes: []};
   return this.#accessEffectsCache('onUseEffects', sourceActor, options, () => this.getEffects(sourceActor, options).filter( x => x.conditionalType === 'on-use'));
 }
 
-getPassiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
+getPassiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : readonly ConditionalEffectC[] {
   options = {...options, CETypes: []};
   return this.#accessEffectsCache('passiveEffects', sourceActor, options, () => this.getEffects(sourceActor, options).filter( x => x.conditionalType === 'passive'));
 }

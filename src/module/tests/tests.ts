@@ -1,8 +1,9 @@
-import {LocalEffect, OtherEffect} from "../../config/consequence-types.js";
+import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import { ConsequenceApplier } from "../combat/consequence-applier.js";
 import {StepsClock} from "../exploration/steps-clock.js";
 import {DowntimePanel} from "../panels/downtime-panel.js";
+import {StatusDuration} from "../persona-ae.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {SocialCardExecutor} from "../social/social-card-executor.js";
@@ -64,6 +65,19 @@ export class Tests {
       return false;
     }
     return true;
+  }
+
+  static async statusTest() {
+    const kim = this.kim;
+    const std: StatusDuration = {
+      dtype: "UEoNT",
+      anchorHolder: kim.accessor,
+    } satisfies StatusDuration;
+    const st : StatusEffect = {
+      id: "dizzy",
+      duration: std,
+    } satisfies StatusEffect;
+    await kim.addStatus(st);
   }
 
   static async testRecovery() {
