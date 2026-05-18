@@ -655,7 +655,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     if (this.#cache.passivePowers == undefined || !PersonaCaching) {
       const val =  this.powers
         .filter( power => !power.isTrulyUsable())
-        .filter( power=> power.hasPassiveEffects(this.user) || power.hasTriggeredEffects(this.user) || power.hasDefensiveEffects(this.user));
+        .filter( power=> power.hasPassiveEffects(this.user) || power.hasTriggeredEffects(this.user) || power.hasDefensiveEffects(this.user) || power.hasAuraEffects(this.user));
       if (!PersonaCaching) {return val;}
       this.#cache.passivePowers = val;
     }

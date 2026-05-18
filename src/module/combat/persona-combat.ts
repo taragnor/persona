@@ -57,7 +57,7 @@ declare global {
 }
 
 export class PersonaCombat extends Combat<ValidAttackers> {
-  static WAIT_FOR_FOUNRY_DELAY = 1000 as const;
+  static WAIT_FOR_FOUNRY_DELAY = 750 as const;
   _resolvingAttack: boolean = false;
   _engagedList: EngagementList;
   consecutiveCombat: number =0;
@@ -564,8 +564,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     return combatant;
   }
 
-  async execStartingTrigger(combatant: PersonaCombat['combatant']) {
+  async execStartingTrigger(combatant: NonNullable<PersonaCombat['combatant']>) {
     const triggeringCharacter  = (combatant as Combatant<ValidAttackers>)?.token?.actor;
+    const combatResult = new CombatResult();
     if (triggeringCharacter != undefined) {
       for (const user of this.combatants) {
         if (user.token.actor == undefined) {continue;}
@@ -575,9 +576,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
           triggeringUser: game.user,
           user: user.token.actor.accessor,
         };
-        await TriggeredEffect.execCombatTrigger(situation, user.token.actor);
+        const res = TriggeredEffect.onTrigger(situation, user.token.actor);
+        combatResult.merge(res);
+        // await TriggeredEffect.execCombatTrigger(situation, user.token.actor);
       }
     }
+    await combatResult.emptyCheck()
+      ?.toMessage("On Start Turn Triggers", combatant?.actor);
   }
 
   static isSameTeam( one: PToken | Combatant<ValidAttackers> | ValidAttackers, two: PToken | Combatant<ValidAttackers> | ValidAttackers) : boolean {

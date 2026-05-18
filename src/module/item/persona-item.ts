@@ -2114,6 +2114,10 @@ hasDefensiveEffects(this: ItemModifierContainer, sourceActor: PersonaActor | nul
   return this.getDefensiveEffects(sourceActor).length > 0;
 }
 
+hasAuraEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null) : boolean {
+  return this.getAuraEffects(sourceActor).length > 0;
+}
+
 static triggersOn( eff: SourcedConditionalEffect, trig: Trigger) : boolean {
   return eff.conditions
     .some (cond => cond.type === 'on-trigger' && cond.trigger == trig);

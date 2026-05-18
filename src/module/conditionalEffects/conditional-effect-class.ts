@@ -115,7 +115,7 @@ export class ConditionalEffectC {
   }
 
   get isAura() : boolean {
-    return false;
+    return this._isAura;
   }
 
   findSource() { return this._source ? PersonaDB.find(this._source) : undefined;}
