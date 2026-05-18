@@ -30,6 +30,7 @@ import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaTagManager} from "./persona-tags.js";
 import {TimedCache} from "./utility/cache.js";
 
+
 export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidAttackers = ValidAttackers> implements PersonaI {
   #combatStats: U<PersonaCombatStats>;
   user: T;
@@ -38,6 +39,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   #cache: PersonaClassCache;
   private _tags: PersonaTagManager<this>;
   private _talentCache: TimedCache<readonly Talent[]>;
+
+  CACHE_TIME = 5000 as const;
+
+  private cache2 = {
+    talents: new TimedCache(() => this._talents(), this.CACHE_TIME),
+    auras: new TimedCache( ()=> this._aurasInRange(), this.CACHE_TIME),
+    myAuraEffects: new TimedCache(() => this._myAuraEffects(), this.CACHE_TIME),
+  };
 
   BASE_PC_SIDEBOARD = 1 as const;
 
@@ -57,7 +66,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     this._powers = powers == undefined ? this.loadPowers(): powers;
     this._tags = new PersonaTagManager(this);
     this._talentCache = new TimedCache(() => this._talents(), 5000);
-    this.clearCache();
+    this.#clearManualCaches();
   }
 
   loadPowers() {
@@ -69,11 +78,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this._tags;
   }
 
-  clearCache() {
-    Object.values(this.basicCaches)
-      .forEach(cache=> cache.clear());
-    this.tags.clearCache();
-    this._talentCache.clear();
+  #clearManualCaches() {
     this.#cache = {
       mainModifiers: undefined,
       passivePowers: undefined,
@@ -82,6 +87,16 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       mainModifiersList : undefined,
       passiveModifiers: undefined,
     };
+  }
+
+  clearCache() {
+    Object.values(this.basicCaches)
+      .forEach(cache=> cache.clear());
+    Object.values(this.cache2)
+      .forEach(cache=> cache.clear());
+    this.tags.clearCache();
+    this._talentCache.clear();
+    this.#clearManualCaches();
   }
 
   get combatName(): string {
@@ -562,13 +577,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     const personal = this.personalMainModifiers(options);
     const ret = personal.slice();
     if (!options?.omitAuras) {
-      ret.push(...this.aurasInRange());
+      ret.pushUnique(...this.aurasInRange());
       return ret;
     }
     return ret;
   }
 
-  private personalMainModifiers(options?: MainModifierOptions ): ConditionalEffectC[] {
+  private personalMainModifiers(options?: MainModifierOptions ): readonly ConditionalEffectC[] {
     const canCache = this.canCache(options);
     if (this.canCache(options) && this.#cache.mainModifiers != undefined) {
       return this.#cache.mainModifiers;
@@ -617,26 +632,21 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       .flatMap( x=> x.getEffects(this.user));
   }
 
-  myAuraEffects(options : MainModifierOptions = {}) : ConditionalEffectC[] {
+  myAuraEffects(options ?: MainModifierOptions) : readonly ConditionalEffectC[] {
+    if (!options) {return this.cache2.myAuraEffects.value;}
+    return this._myAuraEffects(options);
+  }
+
+  _myAuraEffects(options : MainModifierOptions = {}) : readonly ConditionalEffectC[] {
     return this._mainModifiersList(options)
       .flatMap( x=> x.getAuraEffects(this.user));
   }
 
-  private aurasInRange() : ConditionalEffectC[] {
-    if (!this.canCache(undefined)) {
-      return this._aurasInRange();
-    }
-    if (this.#cache.nearbyAuras == undefined) {
-      this.#cache.nearbyAuras = this._aurasInRange();
-    }
-    return this.#cache.nearbyAuras;
+  private aurasInRange() : readonly ConditionalEffectC[] {
+    return this.cache2.auras.value;
   }
 
-  private _aurasInRange() : ConditionalEffectC[] {
-    if (!PersonaSettings.aurasEnabled()) {
-      //TODO: temporary code to fix performance
-      return [];
-    }
+  private _aurasInRange() : readonly ConditionalEffectC[] {
     return PersonaAura.activeAuras(this);
   }
 

@@ -110,7 +110,7 @@ export class CombatEngine {
       this.ensureCombatCheck(power, attacker, targets);
       await this.handlePlayerInputModifier(options);
       const result = new CombatResult();
-      result.merge(await this.usePowerOn(attacker, power, targets, 'standard', options));
+      result.merge(await this.usePowerOn(attacker, power, targets, options));
       const costs = this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
       result.merge(costs);
       const finalizedResult = result.finalize();
@@ -173,11 +173,18 @@ export class CombatEngine {
     this.clearPendingResult();
   }
 
-  async usePowerOn(attacker: PToken, power: UsableAndCard, targets: PToken[], rollType : AttackRollType, options: CombatOptions = {}) : Promise<CombatResult> {
+  async usePowerOn(attacker: PToken, power: UsableAndCard, targets: PToken[],  options: CombatOptions = {}) : Promise<CombatResult> {
     const result = new CombatResult();
-    for (const target of targets) {
-      result.merge(await this.usePowerOnTarget(attacker, power, target, rollType, options));
-    }
+    const promises=  targets.map( async  (target, i) => {
+      const rollType = i == 0 && !options.subAttack ? "activation" : "standard";
+      return await this.usePowerOnTarget(attacker, power, target, rollType, options);
+    });
+    const resolved = (await Promise.allSettled(promises))
+    .filter( pr => pr.status == "fulfilled" )
+    .map (pr=> pr.value);
+    resolved.forEach( res => {
+      result.merge(res);
+    });
     this.computeResultBasedEffects(result);
     return result;
   }
@@ -187,7 +194,7 @@ export class CombatEngine {
     const num_of_attacks = this.getNumOfAttacks(power);
     for (let atkNum = 0; atkNum < num_of_attacks; ++atkNum) {
       rollType = atkNum > 0 ? 'iterative': rollType;
-      const atkResult = await this.attackRollProcess( attacker, power, target, rollType == 'standard' && atkNum==0 ? 'activation' : rollType, options);
+      const atkResult = await this.attackRollProcess( attacker, power, target, rollType, options);
       if (atkResult.activationRoll) {
         result.activationRoll = atkResult.activationRoll;
       }
@@ -203,7 +210,7 @@ export class CombatEngine {
   async handleSecondaryAttacks(CR: CombatResult, atkResult: AttackResult, power: UsableAndCard, attacker: PToken, _target: PToken, _rollType: AttackRollType, options: CombatOptions  ): Promise<CombatResult> {
     const result = new CombatResult;
     if (atkResult.result == 'reflect') {
-      result.merge(await this.usePowerOn(attacker, power, [attacker], 'reflect'));
+      result.merge(await this.usePowerOnTarget(attacker, power, attacker, 'reflect', options));
     }
 
     if (!power.isSkillCard()) {
@@ -238,7 +245,11 @@ export class CombatEngine {
       if (execPower && newAttacker) {
         const altTargets= PersonaCombat.getAltTargets(newAttacker, atkResult.situation, usePower.target );
         const newTargets = PersonaTargetting.getTargets(newAttacker, execPower, altTargets);
-        const extraPower = await this.usePowerOn(newAttacker, execPower, newTargets, 'standard', options);
+        const extraAtkOptions : CombatOptions= {
+          ...options,
+          subAttack: true,
+        };
+        const extraPower = await this.usePowerOn(newAttacker, execPower, newTargets, extraAtkOptions);
         extraPowers.push(extraPower);
       }
     }
@@ -305,19 +316,19 @@ export class CombatEngine {
     const rollTags: AttackResult["situation"]["rollTags"]= ['attack'];
     switch (rollType) {
       case "activation":
-        rollTags.push("activation");
+        rollTags.pushUnique("activation");
         break;
       case "iterative":
-        rollTags.push("secondary-attack");
+        rollTags.pushUnique("secondary-attack");
         break;
       case "reflect":
-        rollTags.push("reflected-attack");
+        rollTags.pushUnique("reflected-attack");
         break;
     }
-    const activationRoll = rollType == 'activation';
-    if (activationRoll) {
-      rollTags.push('activation');
-    }
+    // const activationRoll = rollType == 'activation';
+    // if (activationRoll) {
+    //   rollTags.push('activation');
+    // }
     return rollTags;
   }
 
@@ -719,7 +730,7 @@ export class CombatEngine {
     const situation = this.getBaseSituation(attacker, target, usableOrCard, rollData);
     const r = await new Roll('1d20').roll();
     const emptyList = new ModifierList();
-    const roll = (new RollBundle('Activation Roll Skiill Card', r, attacker.user.isPC(), emptyList, situation, 0))
+    const roll = (new RollBundle('Activation Roll Skill Card', r, attacker.user.isPC(), emptyList, situation, 0))
     .resolve();
 
     const combatRollSituation = {

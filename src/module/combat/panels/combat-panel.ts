@@ -62,9 +62,12 @@ export class CombatPanel extends PersonaPanel {
         && this._target?.isOwner
         && PersonaCombat.combat != undefined
         && turnCheck,
-        enabled: () => PersonaCombat.combat?.combatant?.token == this._target
+        enabled: () =>
+        this._target != undefined
+        && PersonaCombat.combat?.combatant?.token == this._target
         && validState
-        && turnCheck,
+        && turnCheck
+        && (PersonaSettings.debugMode() || this.combat.outOfActions(this._target)),
       },
     ];
   }

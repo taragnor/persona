@@ -767,6 +767,22 @@ div.weather-icon{
   max-width: 95%;
 }
 
+.downtime-panel-header {
+  * {
+    text-align: center;         /* horizontal alignment */
+  }
+
+  .day-weather {
+    font-size: 1.1rem;
+    font-weight: bold;
+  }
+
+  .doomsday-clock {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+}
+
 .power-name-block .cost-string{
   font-size: smaller;
 }

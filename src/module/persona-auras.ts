@@ -5,20 +5,21 @@ import {Persona} from "./persona-class.js";
 import {PersonaDB} from "./persona-db.js";
 
 export class PersonaAura {
-  static activeAuras(affectedTarget: Persona) : ConditionalEffectC[] {
+  static activeAuras(affectedTarget: Persona) : readonly ConditionalEffectC[] {
     if (!PersonaSettings.aurasEnabled())
       {return [];}
     if (PersonaCombat.combat) {
       return this.getCombatAuras(PersonaCombat.combat);
     }
     if (affectedTarget.user.isPC() || affectedTarget.user.isNPCAlly()) {
-      return PersonaDB.activePCParty().flatMap( actor => actor.activeAuras());
+      return PersonaDB.activePCParty()
+        .flatMap( actor => actor.activeAuras());
     }
     return affectedTarget.myAuraEffects();
   }
 
 
-  static getCombatAuras(combat: PersonaCombat) :ConditionalEffectC[] {
+  static getCombatAuras(combat: PersonaCombat) : readonly ConditionalEffectC[] {
     return combat.combatants.contents.flatMap(
       comb => comb.actor ? comb.actor.activeAuras() : []);
   }

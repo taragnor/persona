@@ -212,7 +212,7 @@ static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Sit
 					const altTargets= PersonaCombat.getAltTargets(newAttacker, situation, usePower.target );
 					const newTargets = PersonaTargetting.getTargets(newAttacker, execPower, altTargets);
 					const combatEngine = new CombatEngine();
-					const extraPower = await combatEngine.usePowerOn(newAttacker, execPower, newTargets, "standard");
+					const extraPower = await combatEngine.usePowerOn(newAttacker, execPower, newTargets, {subAttack: true});
 					triggerResult.merge(extraPower);
 				}
 			} catch (e) {

@@ -48,7 +48,6 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     this.#resetCache();
   }
 
-
   #resetCache() : PersonaDBCache {
     Object.values(this.permanentCaches)
       .forEach( cache=> cache.clear());

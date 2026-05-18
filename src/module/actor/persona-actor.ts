@@ -1827,7 +1827,7 @@ getPersonalBonuses(modnames : ModifierTarget | ModifierTarget[], sources: readon
   return modList;
 }
 
-activeAuras(options ?: MainModifierOptions) : ConditionalEffectC[] {
+activeAuras(options ?: MainModifierOptions) : readonly ConditionalEffectC[] {
   if (!this.isAlive()) {return [];}
   if (!this.isValidCombatant()) {return [];}
   return this.persona().myAuraEffects(options);

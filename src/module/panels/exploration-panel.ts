@@ -69,6 +69,12 @@ export class ExplorationPanel extends PersonaPanel {
     },
     ];
     buttons.push(...this.PowersAndItemsButtons());
+    const NPCAlly = PersonaDB.activePCParty().find( x=> x.isNPCAlly());
+    buttons.push( {
+      label: `Swap ${NPCAlly?.displayedName ?? "Teammate"}`,
+      onPress: () => void Metaverse.chooseAlly(),
+      enabled: () => !PersonaCombat.combat,
+    });
     return buttons;
   }
 
@@ -93,12 +99,6 @@ export class ExplorationPanel extends PersonaPanel {
         visible: () => member.persona().explorationPowers.length > 0
       });
     }
-    const NPCAlly = PersonaDB.activePCParty().find( x=> x.isNPCAlly());
-    buttons.push( {
-      label: `Swap ${NPCAlly?.displayedName ?? "Teammate"}`,
-      onPress: () => void Metaverse.chooseAlly(),
-      enabled: () => !PersonaCombat.combat,
-    });
     return buttons;
   }
 

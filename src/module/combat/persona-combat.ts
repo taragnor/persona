@@ -1455,6 +1455,15 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     return (this.combatant.id == combatant.id);
   }
 
+  outOfActions(token: PToken) : boolean {
+    const comb =this.getCombatantByToken(token);
+    if (! comb) {
+      PersonaError.softFail(`Can't find token ${token.name} as a combatant`);
+      return false;
+    }
+    return this.hasRunOutOfActions(comb);
+  }
+
   async waitUntilAttackResolves() {
     await waitUntilTrue(() => this._resolvingAttack == false, 150);
   }
@@ -1932,6 +1941,7 @@ export interface CombatOptions {
   ignorePrereqs?: boolean;
   simulated?: boolean;
   modifiers?: ModifierList;
+  subAttack?: boolean;
 }
 
 void CombatPanel.init();

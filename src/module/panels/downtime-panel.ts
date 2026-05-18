@@ -44,6 +44,7 @@ export class DowntimePanel extends PersonaPanel {
   protected override buttonConfig() : SidePanel.ButtonConfig[] {
     if (this.actor == undefined) {return [];}
     const actor = this.actor;
+    const NPCAlly = PersonaDB.activePCParty().find( x=> x.isNPCAlly());
     return [
       {
         label: "Social Links",
@@ -94,12 +95,17 @@ export class DowntimePanel extends PersonaPanel {
         visible: () => this.actor != undefined,
         cssClasses : ["tall-button"]
       }, {
+        label: `Swap ${NPCAlly?.displayedName ?? "Teammate"}`,
+        onPress: () => void Metaverse.chooseAlly(),
+        enabled: () => !PersonaCombat.combat || PersonaCombat.combat.isSocial,
+      }, {
         label: "End Turn",
         onPress: () => PersonaCombat.combat?.nextTurn(),
         enabled: () => this._outOfActions(),
         visible: () => (PersonaCombat.combat?.combatant?.actor == this.actor) && this.actor != undefined,
         cssClasses : ["tall-button"]
       },
+
       ...this.GMButtons(),
     ];
   }

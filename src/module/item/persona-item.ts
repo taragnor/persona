@@ -2037,13 +2037,12 @@ getAuraEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, o
     return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
       .filter (ce => ce.isAura);
   };
-  const auras= this.#accessEffectsCache('auraEffects', sourceActor, options, effectsGetterFn);
+  const auras = this.#accessEffectsCache('auraEffects', sourceActor, options, effectsGetterFn);
   const {CETypes} = options;
   if (CETypes == undefined || CETypes.length == 0) {return auras;}
   return auras
     .filter( x=> CETypes.includes(x.conditionalType));
 }
-
 
 #accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, options: GetEffectsOptions, refresherFn: () => ConditionalEffectC[]) : readonly ConditionalEffectC[] {
   if (!PersonaDB.isLoaded) {
