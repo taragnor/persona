@@ -182,28 +182,28 @@ export class PersonaScene extends Scene {
 		await Promise.allSettled(promises);
 	}
 
-	async onExitMetaverse(): Promise<void> {
-		await PersonaSettings.clearLastRegion();
-		const regionPromises : Promise<unknown>[] = this.regions.contents.map( reg => reg.onExitMetaverse());
-		const tokenPromises : Promise<unknown>[] = this.tokens.contents
-		.map( tok => {
-			try {
-				const actor = (tok.actor as PersonaActor);
-				if (!actor
-					|| !actor.isValidCombatant()
-					|| !actor.isShadow()
-					|| tok.actorLink == true
-				) {return Promise.resolve();}
-				return actor.onExitMetaverse();
-			} catch (e) {console.log(e);}
-			return Promise.reject(new Error("Error on running Actor triggers for exit-metaverse"));
-		});
-		const promises = [
-			...regionPromises,
-			...tokenPromises,
-		];
-		await Promise.allSettled(promises);
-	}
+  async onExitMetaverse(): Promise<void> {
+    await PersonaSettings.clearLastRegion();
+    const regionPromises : Promise<unknown>[] = this.regions.contents.map( reg => reg.onExitMetaverse());
+    const tokenPromises : Promise<unknown>[] = this.tokens.contents
+    .map( tok => {
+      try {
+        const actor = (tok.actor as PersonaActor);
+        if (!actor
+          || !actor.isValidCombatant()
+          || !actor.isShadow()
+          || tok.actorLink == true
+        ) {return Promise.resolve();}
+        return actor.onExitMetaverse();
+      } catch (e) {console.log(e);}
+      return Promise.reject(new Error("Error on running Actor triggers for exit-metaverse"));
+    });
+    const promises = [
+      ...regionPromises,
+      ...tokenPromises,
+    ];
+    await Promise.allSettled(promises);
+  }
 
 	stats() : void {
 		if (!game.user.isGM) {return;}

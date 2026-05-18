@@ -58,7 +58,7 @@ import {PowerLearningSystem} from "../power-learning.js";
 import {Farming} from "./farming.js";
 import {ActorTagManager} from "./actor-tags.js";
 import {ActorSocial} from "./actor-social.js";
-import {PermanentCache, TimedCache} from "../utility/cache.js";
+import {MultiTierCache, PermanentCache, TimedCache} from "../utility/cache.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -78,14 +78,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   tags = new ActorTagManager(this);
 
-  private cache: {
-    // startingLevel: U<number>;
-    // level: U<number>,
-    // tarot: Tarot | undefined;
-    complementRating: Map<Shadow["id"], number>;
-    socialData: U<readonly SocialLinkData[]>;
-    isDMon: U<boolean>;
-  };
+  // private cache: {
+    // complementRating: Map<Shadow["id"], number>;
+  // };
 
   private cache2 = {
     startingLevel: new PermanentCache( () => this._startingLevel()),
@@ -95,6 +90,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     actorMainModifiers: new TimedCache( () => this._actorMainModifiers(), 1000),
     tarot: new PermanentCache( () => this._tarot()),
     level: new PermanentCache( () => this._level()),
+    isDMon: new PermanentCache ( () => this._isDMon()),
+    complementRating: new MultiTierCache(
+      (other: Shadow) => new PermanentCache(
+        () => (this as Shadow)._complementRating(other)
+      )
+    ),
   };
 
   constructor(...arr: unknown[]) {
@@ -116,14 +117,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       .forEach( cache => cache.clear());
     this.tags.clearCache();
     this.social.clearCache();
-    this.cache = {
-      // startingLevel: undefined,
-      // level: undefined,
-      // tarot: undefined,
-      complementRating: new Map(),
-      socialData: undefined,
-      isDMon: undefined,
-    };
+    // this.cache.complementRating = new Map();
   }
 
   get mp() : number {
@@ -2009,13 +2003,18 @@ listComplementRatings(this: Shadow, list: Shadow[]) : string[] {
 }
 
 complementRating (this: Shadow, other: Shadow) : number {
-  const cachedRating = this.cache.complementRating.get(other.id);
-  if (cachedRating != undefined) {
-    return cachedRating;
-  }
-  const rating = this.#complementRating(other) + other.#complementRating(this);
-  this.cache.complementRating.set(other.id, rating);
-  return rating;
+  return this.cache2.complementRating.get(other);
+  // const cachedRating = this.cache.complementRating.get(other.id);
+  // if (cachedRating != undefined) {
+  //   return cachedRating;
+  // }
+  // const rating = this.#complementRating(other) + other.#complementRating(this);
+  // this.cache.complementRating.set(other.id, rating);
+  // return rating;
+}
+
+private _complementRating (this: Shadow, other: Shadow) : number {
+  return this.#complementRating(other) + other.#complementRating(this);
 }
 
 #complementRating (this: Shadow, other: Shadow) : number {
@@ -2161,8 +2160,11 @@ get printableActiveStatuses(): {name: string, description: string, id: PersonaAE
 }
 
 isDMon() : boolean {
-  if (this.cache.isDMon) {return this.cache.isDMon;}
-  return this.cache.isDMon = this.isShadow() && (this.system.creatureType == "d-mon" ||  this.hasCreatureTag("d-mon"));
+  return this.cache2.isDMon.value;
+}
+
+_isDMon() : boolean {
+  return this.isShadow() && (this.system.creatureType == "d-mon" ||  this.hasCreatureTag("d-mon"));
 }
 
 isPersona(this: Shadow): boolean {

@@ -134,7 +134,7 @@ export class MultiTierCache<
       }
     }
 
-    public get(...args: FullArgs) : LastArg<ValueList> {
+    public get(...args: FullArgs) : ReturnType<CacheType>["value"] {
       return this._get(args, args.slice() as restArgs);
     }
 
@@ -159,16 +159,10 @@ type CacheOr<fullArgs extends unknown[],
   ? (ReturnType<SingleCacheType>)
   : MultiTierCache< SingleCacheType, fullArgs,restArgs>
 
-type CacheFactory<ConsArgs extends unknown[], T extends CacheBase<unknown>>= (...args: ConsArgs) => T;
+type CacheFactory<ConsArgs extends unknown[], T extends CacheBase<unknown>> = (...args: ConsArgs) => T;
 
 type LastArg<T extends unknown[]> =
   T extends [...unknown[], infer Last] ? Last : never;
 
 // type DropLast<T extends unknown[]> = T extends [...infer Rest, unknown] ? Rest : [];
 
-//@ts-expect-error adding to global
-window.testCache= function () {
-  const x = new MultiTierCache(
-    (name: {x:number}, val: number, n2: number) => new TimedCache( () => name.x + val + n2  ));
-  return x;
-};

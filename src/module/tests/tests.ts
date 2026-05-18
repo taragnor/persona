@@ -6,6 +6,7 @@ import {StatusDuration} from "../persona-ae.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {SocialCardExecutor} from "../social/social-card-executor.js";
+import {MultiTierCache, TimedCache} from "../utility/cache.js";
 
 export class Tests {
 
@@ -18,6 +19,32 @@ export class Tests {
       throw new PersonaError("Can't find Kim Actor");
     }
     return kim;
+  }
+
+  static multiTierCacheTest () {
+  const cache = new MultiTierCache(
+    (name: {x:number}, val: number, n2: number) => new TimedCache( () => String(name.x + val + n2)  )
+  );
+    const obj = {x:3};
+    if (cache.get(obj, 8, 7) != "18") {
+      console.warn("MultiTier Test failed");
+      return false;
+    }
+    if (cache.get({x:2}, 6, 12) != "20") {
+      console.warn("MultiTier Test 2 failed");
+      return false;
+    }
+    obj.x = 1;
+    if (cache.get(obj, 8, 7) != "18") {
+      console.warn("MultiTier Test failed (Timed cache not being used)");
+      return false;
+    }
+    cache.clear();
+    if (cache.get(obj, 8, 7) != "16") {
+      console.warn("MultiTier Test failed (Cache not cleared)");
+      return false;
+    }
+    return true;
   }
 
   static async panelTest_downtime() {
@@ -103,6 +130,7 @@ export class Tests {
     }
     return true;
   }
+
 }
 
 
