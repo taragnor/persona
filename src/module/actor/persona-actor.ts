@@ -2318,9 +2318,9 @@ getSocialStat(this: PC, socialStat: SocialStat) : ModifierList {
   return mods.concat(this.persona().getBonuses(socialStat));
 }
 
-async spendInspiration(this: PC, linkId: SocialLink["id"], amt?: number) : Promise<void> ;
-async spendInspiration(this: PC, socialLink:SocialLink , amt?: number): Promise<void> ;
-async spendInspiration(this: PC, socialLinkOrId:SocialLink | SocialLink["id"], amt: number = 1): Promise<void> {
+async spendInspiration(this: PC | NPC | NPCAlly, linkId: SocialLink["id"], amt?: number) : Promise<void> ;
+async spendInspiration(this: PC | NPC | NPCAlly, socialLink:SocialLink , amt?: number): Promise<void> ;
+async spendInspiration(this: PC | NPC | NPCAlly, socialLinkOrId:SocialLink | SocialLink["id"], amt: number = 1): Promise<void> {
   await this.social.spendInspiration(socialLinkOrId, amt);
 }
 

@@ -1,4 +1,5 @@
 import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
+import {ActorSocial} from "../actor/actor-social.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
 import {PersonaItem} from "../item/persona-item.js";
@@ -249,10 +250,8 @@ export class ConsequenceApplier {
       case "add-power-to-list":
         break;
       case "inspiration-cost":
-        if (actor.isRealPC()) {
-          if (otherEffect.linkId) {
-            await actor.spendInspiration(otherEffect.linkId, otherEffect.amount);
-          }
+        if (otherEffect.linkId) {
+          await actor.social.spendInspiration(otherEffect.linkId, otherEffect.amount);
         }
         break;
       case "use-power":

@@ -5,7 +5,7 @@ import {PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaSounds} from "../persona-sounds.js";
-import {testPreconditions} from "../preconditions.js";
+import {resolveActorIdOrTarot, testPreconditions} from "../preconditions.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {TimedCache} from "../utility/cache.js";
 import {Logger} from "../utility/logger.js";
@@ -449,19 +449,41 @@ export class ActorSocial <T extends PersonaActor> {
     return PersonaDB.socialLinks().find(x=> x.id == socialLinkId);
   }
 
-  async spendInspiration(this: ActorSocial<PC>, socialLinkOrId:SocialLink | SocialLink["id"], amt: number = 1): Promise<void> {
-    const id = typeof socialLinkOrId == "string" ? socialLinkOrId : socialLinkOrId.id;
-    const link = this.actor.system.social.find( x=> x.linkId == id);
+  async spendInspiration(this: ActorSocial<ValidAttackers | NPC>, socialLinkOrId:SocialLink | SocialLink["id"], amt: number = 1, reciprocalSpending = true): Promise<void> {
+    let actor =this.actor;
+    if (actor.isShadow()) {return;}
+    let socialLink = socialLinkOrId instanceof PersonaActor ? socialLinkOrId : resolveActorIdOrTarot(socialLinkOrId); 
+    if (socialLink?.isNPCAlly()) {
+      socialLink = socialLink.getNPCProxyActor();
+    }
+    if (!socialLink) {return;}
+    if (actor.isNPCAlly()) {
+      const proxy = actor.getNPCProxyActor();
+      if (!proxy) {return;}
+      actor = proxy;
+    }
+    if (actor.isNPC()) {
+      if (socialLink.isPC() && reciprocalSpending) {
+        return socialLink.social.spendInspiration(actor, amt, false);
+      }
+      return;
+    }
+    // const id = typeof socialLinkOrId == "string" ? socialLinkOrId : socialLinkOrId.id;
+    // const link = this.actor.system.social.find( x=> x.linkId == id);
+    const link = actor.system.social.find( x=> x.linkId == socialLink.id);
     if (!link) {
       throw new PersonaError("Trying to refresh social link you don't have");
     }
     if (link.inspiration <= 0) {
       throw new PersonaError("You are trying to spend Inspiration you don't have");
     }
+    const oldVal = link.inspiration;
     link.inspiration -= amt;
     link.inspiration = Math.max(0, link.inspiration);
     link.inspiration = Math.min(link.linkLevel, link.inspiration);
-    await this.update({"system.social": this.actor.system.social});
+    const gainSpend = amt < 0 ? "gained" : "spent";
+    void Logger.sendToChat(`${actor.name} ${gainSpend} ${Math.abs(amt)} inspiraton for ${socialLink.name} (original amount: ${oldVal})`);
+    await actor.update({"system.social": actor.system.social});
   }
 
   getInspirationWith(link: SocialLink | Tarot, allowReciprocalForNPCs : boolean = true): number {
