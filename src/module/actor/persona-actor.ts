@@ -2582,7 +2582,6 @@ isFading(this: ValidAttackers): boolean {
   return this.hp <= 0 && !this.hasStatus("full-fade");
 }
 
-
 triggersOn( trigger : Trigger) : ConditionalEffectC[] {
   const triggers= this.triggers;
   return triggers.filter( CE => PersonaItem.triggersOn(CE, trigger));
