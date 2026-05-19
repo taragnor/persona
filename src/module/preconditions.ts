@@ -966,8 +966,6 @@ function resolveSocialNonIDTarget (
     }
     const ret =  targetIdOrTarot as Exclude<typeof targetIdOrTarot , testFilter>;
     return ret;
-
-
 };
 
 
@@ -1137,7 +1135,6 @@ function multiCheckTest<T extends string>(multiCheck: MultiCheck<T> | T, testFn:
   return Object.entries(multiCheck)
     .filter( ([_, val]) => val == true)
     .some (([item, _]) => testFn(item as T));
-
 }
 
 export function numberOfOthersWithResolver(condition: Sourced<NumberOfOthersWithComparison>, situation : Situation) : number | false {
