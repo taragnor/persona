@@ -578,7 +578,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         };
         const res = TriggeredEffect.onTrigger(situation, user.token.actor);
         combatResult.merge(res);
-        // await TriggeredEffect.execCombatTrigger(situation, user.token.actor);
       }
     }
     await combatResult.emptyCheck()
@@ -605,7 +604,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     throw new Error('Illegal Argument passed to toCombatant');
   }
 
-  /** finds enemies with defender auara that are engaging the target*/
+  /** finds enemies with defender aura that are engaging the target */
   getEnemyEngagedDefenders(x: IntoCombatant) : PersonaCombatant[] {
     const comb = this.toCombatant(x);
     if (!comb) {
@@ -618,8 +617,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         && !PersonaCombat.isSameTeam(comb,x )
         && x.actor.canEngage()
       );
-
-
   }
 
   getAlliedEngagedDefenders(Tacc: UniversalTokenAccessor<PToken>) : PersonaCombatant[];
@@ -646,12 +643,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     const userActor = user.token.actor;
     const targetActor = target.token.actor;
     if (!userActor || !targetActor) {return false;}
-    if (!userActor.hasStatus('challenged'))
-    {return false;}
-    if (!targetActor.hasStatus('challenged'))
-    {return false;}
+    if (!userActor.hasStatus('challenged')) {
+      return false;
+    }
+    if (!targetActor.hasStatus('challenged')) {
+      return false;
+    }
     return EngagementChecker.isWithinEngagedRange(user.token as PToken, target.token as PToken);
-
   }
 
   getAllEngagedEnemies(subject: PersonaCombatant): PersonaCombatant[] {

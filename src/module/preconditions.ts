@@ -159,14 +159,16 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
         target = 0;
         break;
       }
-      const link = actor.system.social.find(data=> data.linkId == socialLink.id);
-      if (link) {
-        target = link.linkLevel;
-        break;
-      } else {
-        target = 0;
-        break;
-      }
+      target = actor.social.getSocialSLWith(socialLink);
+      break;
+      // const link = actor.system.social.find(data=> data.linkId == socialLink.id);
+      // if (link) {
+      //   target = link.linkLevel;
+      //   break;
+      // } else {
+      //   target = 0;
+      //   break;
+      // }
     }
     case "student-skill": {
       if (!checkSituationProp(situation, "user")) { return false; };
@@ -218,7 +220,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       if (!subject || subject.isNPC()) {return false;}
       let statusId : StatusEffectId ;
       if (condition.status == "triggering") {
-      if (!checkSituationProp(situation, "statusEffect")) {return false;}
+        if (!checkSituationProp(situation, "statusEffect")) {return false;}
         statusId = situation.statusEffect;
       } else {
         statusId = condition.status;
@@ -289,7 +291,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       if (!subject) {return false;}
       const link = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, condition.source);
       if (!link) {return false;}
-      target = subject.social.getInspirationWith(link.id);
+      target = subject.social.getInspirationWith(link, true);
       break;
     }
     case "opening-roll": {

@@ -76,17 +76,29 @@ export class ActorSocial <T extends PersonaActor> {
   }
 
   getSocialSLWith( sl : Tarot | SocialLink | UniversalActorAccessor<SocialLink>) : number {
-    if (!this.actor.isPC()) {return 0;}
-    if (sl instanceof PersonaActor && sl.isTarot()) {
-      return (this as ActorSocial<PC>).getSocialSLWithTarot(sl);
-    }
+    if (!this.actor.isPCLike() && !this.actor.isNPC()) {return 0;}
     if ("actorId" in sl) {
       sl = PersonaDB.findActor(sl);
-
     }
-    const linkData= this.actor.system.social.find( x=> x.linkId == sl.id);
-    if (!linkData) {return 0;}
-    return linkData.linkLevel;
+    if (sl.isNPCAlly()) {
+      const proxy = sl.getNPCProxyActor();
+      if (!proxy) {return 0;}
+      sl = proxy;
+    }
+    if (this.actor.isNPCAlly() || this.actor.isNPC()) {
+      if ( sl.isPC() ) {
+        const targetActor = this.actor.isNPCAlly() ? this.actor.getNPCProxyActor() : this.actor;
+        if (targetActor) {
+          return sl.social.getSocialSLWith(targetActor);
+        }
+      }
+      return 0;
+    }
+    if (sl.isTarot()) {
+      return (this as ActorSocial<PC>).getSocialSLWithTarot(sl);
+    }
+    const linkData = this.actor.system.social.find( x=> x.linkId == sl.id);
+    return linkData ? linkData.linkLevel : 0;
   }
 
   /** returns the total SLs that the PCs have with this character*/
@@ -452,11 +464,24 @@ export class ActorSocial <T extends PersonaActor> {
     await this.update({"system.social": this.actor.system.social});
   }
 
-  getInspirationWith(linkId: SocialLink["id"]): number {
-    if (!this.actor.isPC()) {return 0;}
-    const link = this.actor.system.social.find( x=> x.linkId == linkId);
-    if (!link) {return 0;}
-    return link.inspiration;
+  getInspirationWith(link: SocialLink | Tarot, allowReciprocalForNPCs : boolean = true): number {
+    if (!this.actor.isPCLike() && !this.actor.isNPC()) {return 0;}
+    if (link.isNPCAlly()) {
+      const proxy = link.getNPCProxyActor();
+      if (!proxy) {return 0;}
+      link = proxy;
+    }
+    if (this.actor.isNPCAlly() || this.actor.isNPC()) {
+      if ( link.isPC() ) {
+        const targetActor = this.actor.isNPCAlly() ? this.actor.getNPCProxyActor() : this.actor;
+        if (targetActor && allowReciprocalForNPCs) {
+          return link.social.getInspirationWith(targetActor, false);
+        }
+      }
+      return 0;
+    }
+    const linkData = this.actor.system.social.find( x=> x.linkId == link.id);
+    return linkData ? linkData.inspiration: 0;
   }
 
   async addInspiration(this: ActorSocial<PC>, linkId:SocialLink["id"] | SocialLink, amt: number) {

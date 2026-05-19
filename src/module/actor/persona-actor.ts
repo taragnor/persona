@@ -79,7 +79,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   tags = new ActorTagManager(this);
 
   // private cache: {
-    // complementRating: Map<Shadow["id"], number>;
+  // complementRating: Map<Shadow["id"], number>;
   // };
 
   private cache2 = {
@@ -356,10 +356,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       return;
     }
     const tagIds =
-      [
-        ...tags,
-        ...treasure.enchantments,
-      ];
+    [
+      ...tags,
+      ...treasure.enchantments,
+    ];
     const name =`${baseItem.name}`;
     const baseData = baseItem.toJSON() as typeof baseItem;
     baseData.system.amount = 1;
@@ -370,7 +370,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     };
     const amount = treasure?.amount ?? 1;
     const stackableItem = this.items
-      .find( ownedItem=> ownedItem.isStackableWith(baseItem)) as U<typeof baseItem>;
+    .find( ownedItem=> ownedItem.isStackableWith(baseItem)) as U<typeof baseItem>;
     if (!stackableItem) {
       //create new Item
       const item = (await this.createEmbeddedDocuments("Item", [itemData]))[0] as typeof baseItem;
@@ -1778,327 +1778,327 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return returnStatus;
   }
 
-async removeStatus(status: Pick<StatusEffect, "id"> | StatusEffectId) : Promise<boolean>{
-  const id = typeof status == "object" ? status.id : status;
-  try {
-    const promises = this.effects
-      .filter( eff => eff.statuses.has(id))
-      .map( async (eff) => await eff.delete());
-    await Promise.all(promises);
-    return promises.length > 0;
-  } catch (e) {
-    PersonaError.softFail(`Error removing status ${id}`,e );
-    return false;
-  }
-}
-
-equippedItems() : (InvItem | Weapon)[]  {
-  if (!this.isPCLike()) {return [];}
-  const inv = this.inventory;
-  const slots : (keyof typeof this.system.equipped)[]=  ["weapon", "body", "accessory", "weapon_crystal"];
-  const ret = slots
-    .map( slot=> inv
-      .find(item => item.id == (this as PC).system.equipped[slot]))
-    .flatMap (x=> x? [x]: []);
-  return ret as (InvItem | Weapon)[];
-}
-
-passiveItems(): InvItem[] {
-  switch (this.system.type) {
-    case "shadow":
-    case "npc":
-    case "tarot":
-      return [];
-    case "pc":
-    case "npcAlly":
-      break;
-    default:
-      this.system satisfies never;
-      return [];
-  }
-  const inv = this.inventory;
-  return inv.filter( item => item.system.type == "item" && (item.system.slot == "none" || item.system.slot =="key-item")) as InvItem[];
-}
-
-getPersonalBonuses(modnames : ModifierTarget | ModifierTarget[], sources: readonly ModifierContainer[] = this.actorMainModifiers()) : ModifierList  {
-  const modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this)
-  ))
-    .filterZero();
-  return modList;
-}
-
-activeAuras(options ?: MainModifierOptions) : readonly ConditionalEffectC[] {
-  if (!this.isAlive()) {return [];}
-  if (!this.isValidCombatant()) {return [];}
-  return this.persona().myAuraEffects(options);
-}
-
-actorMainModifiers(options ?: MainModifierOptions): readonly ModifierContainer[] {
-  if (!options) {
-    return this.cache2.actorMainModifiers.value;
-  }
-  return this._actorMainModifiers(options);
-}
-
-_actorMainModifiers(options ?: MainModifierOptions): readonly ModifierContainer[] {
-  const tags = (options && options.omitTags) ? [] : this.tags.realTags();
-  const ret : readonly ModifierContainer[] = [
-    ...this.focii,
-    ...this.passiveItems(),
-    ...this.social.getAllSocialFocii(),
-    ...this.equippedItems(),
-    ...tags,
-    ...this.statusModifiers(),
-  ];
-  return ret;
-}
-
-statusModifiers() : ModifierContainer[]{
-  return this.effects.filter( eff => eff.hasEffects());
-}
-
-get downtimeMinorActions() : (Usable | SocialCard)[] {
-  const list = [
-    ...this.powers,
-    ...this.consumables,
-  ];
-  const allUsable = list.filter ( pwr => pwr.hasTag("downtime-minor", this.isValidCombatant() ? this : null));
-  return [
-    ...PersonaDB.minorActionActivities(),
-    ...allUsable,
-  ];
-}
-
-get usableDowntimeMinorActions(): (Usable | SocialCard)[] {
-  if (!this.isPC()) {return [];};
-  return this.downtimeMinorActions.filter( action=>  {
-    if (action.isUsableType()) {
-      return this.persona().canUsePower(action, false);
-    }
-    if (action.isSocialCard()) {
-      return PersonaSocial.isActivitySelectable(action, this);
-    }
-  })
-    .sort( (a,b) => a.displayedName.localeCompare(b.displayedName));
-}
-
-/** treasure multiplier on PCs wealth gained */
-get treasureMultiplier () : number {
-  if (!this.isValidCombatant()) {return 1;}
-  switch (this.system.type) {
-    case "pc": case "npcAlly": {
-      const situation :Situation = {
-        user: (this as PC | NPCAlly).accessor
-      };
-      const bonus= this.persona().getBonuses("shadowMoneyBoostPercent").total(situation, "percentage");
-      return !Number.isNaN(bonus) ? bonus : 1;
-    }
-    default:
-      return 1;
-  }
-}
-
-getFatigueStatus() : FatigueStatusId | undefined {
-  const eff = this.effects.contents.find( x=> x.getFatigueStatus() != undefined);
-  return eff?.getFatigueStatus();
-}
-
-get fatigueLevel() : number {
-  if (!this.isPCLike()) {return 0;}
-  const st = this.getFatigueStatus();
-  return statusToFatigueLevel(st);
-}
-
-async resetFatigueRecovery() {
-  await this.setFlag("persona", "fatigueRecovery", 0);
-}
-
-/** Auto NPC recovery for fatigue to be run each calendar day*/
-async recoverFatigue(this: NPCAlly) : Promise<number>{
-  if (this.fatigueLevel >= 1) {return -1;}
-  let recoveryDays = Number(this.getFlag<number>("persona", "fatigueRecovery") ?? 0);
-  if (Number.isNaN(recoveryDays)) {
-    PersonaError.softFail(`NaN recovery days for ${this.name}`);
-    recoveryDays = 0;
-  }
-  recoveryDays += 1;
-  if (recoveryDays >= 3) {
-    recoveryDays = 0;
-    await this.alterFatigueLevel(1);
-  }
-  await this.setFlag("persona", "fatigueRecovery", recoveryDays);
-  return recoveryDays;
-}
-
-hasAlteredFatigueToday(this:PC): boolean {
-  return this.system.fatigue.hasAlteredFatigueToday ?? false;
-}
-
-hasMadeFatigueRollToday(this:PC) : boolean {
-  return this.system.fatigue.hasMadeFatigueRollToday ?? false;
-}
-
-async setAlteredFatigue(val = true) {
-  await this.update({"system.fatigue.hasAlteredFatigueToday": val});
-}
-
-async setFatigueLevel(lvl: number,log = true) : Promise<FatigueStatusId | undefined> {
-  const oldLvl = this.fatigueLevel;
-  const oldId = fatigueLevelToStatus(oldLvl);
-  const newId = fatigueLevelToStatus(lvl);
-  for (const eff of this.effects.contents) {
-    if (eff.isFatigueStatus) {
-      if (!eff.statuses.has(newId!))
-      {await eff.delete();}
+  async removeStatus(status: Pick<StatusEffect, "id"> | StatusEffectId) : Promise<boolean>{
+    const id = typeof status == "object" ? status.id : status;
+    try {
+      const promises = this.effects
+        .filter( eff => eff.statuses.has(id))
+        .map( async (eff) => await eff.delete());
+      await Promise.all(promises);
+      return promises.length > 0;
+    } catch (e) {
+      PersonaError.softFail(`Error removing status ${id}`,e );
+      return false;
     }
   }
-  if (newId) {
-    await this.addStatus( {
-      id: newId,
-      duration: {
-        dtype:"permanent",
-        anchorHolder: undefined,
-      }
-    }, true);
+
+  equippedItems() : (InvItem | Weapon)[]  {
+    if (!this.isPCLike()) {return [];}
+    const inv = this.inventory;
+    const slots : (keyof typeof this.system.equipped)[]=  ["weapon", "body", "accessory", "weapon_crystal"];
+    const ret = slots
+      .map( slot=> inv
+        .find(item => item.id == (this as PC).system.equipped[slot]))
+      .flatMap (x=> x? [x]: []);
+    return ret as (InvItem | Weapon)[];
   }
-  if (lvl < statusToFatigueLevel("exhausted")) {
-    await this.addStatus( {
-      id: "crippled",
-      duration: {
-        dtype:"permanent",
-        anchorHolder: undefined,
-      }
-    }, true);
-  }
-  // const newId = await this.setFatigueLevel(st);
-  if (log && (oldId != newId || lvl < -1)) {
-    const oldName = oldId ? localize(statusMap.get(oldId)!.name as LocalizationString) : "Normal";
-    const newName = newId ? localize(statusMap.get(newId)!.name as LocalizationString): "Normal";
-    const hospital = lvl < statusToFatigueLevel("exhausted") ? `${this.displayedName} is over-fatigued and need to be hospitalized!`: "";
-    await Logger.sendToChat(`${this.displayedName}  fatigue changed from ${oldName} to ${newName}. ${hospital}`);
-  }
-  return newId;
-}
 
-/** positive removes fatigue and negative adds it*/
-async alterFatigueLevel(amt: number, log=true) : Promise<FatigueStatusId | undefined> {
-  const oldLvl = this.fatigueLevel;
-  const newLvl = oldLvl + amt;
-  return await this.setFatigueLevel(newLvl, log);
-}
-
-getUnarmedDamageType(): RealDamageType {
-  if (this.isShadow()) {return this.system.combat.baseDamageType ?? "physical";}
-  return "physical";
-}
-
-listComplementRatings(this: Shadow, list: Shadow[]) : string[] {
-  return list.map( shadow => {
-    const rating = Math.round(this.complementRating(shadow) * 10) / 10;
-    return {rating, name: shadow.name};
-  })
-    .sort( (a,b) => b.rating - a.rating)
-    .map(x => `${x.name}: ${x.rating}`);
-
-}
-
-complementRating (this: Shadow, other: Shadow) : number {
-  return this.cache2.complementRating.get(other);
-  // const cachedRating = this.cache.complementRating.get(other.id);
-  // if (cachedRating != undefined) {
-  //   return cachedRating;
-  // }
-  // const rating = this.#complementRating(other) + other.#complementRating(this);
-  // this.cache.complementRating.set(other.id, rating);
-  // return rating;
-}
-
-private _complementRating (this: Shadow, other: Shadow) : number {
-  return this.#complementRating(other) + other.#complementRating(this);
-}
-
-#complementRating (this: Shadow, other: Shadow) : number {
-  let rating = 0;
-  if (this == other) {return 0;} //baseline
-  const scaledPairs : [Shadow["system"]["role"], Shadow["system"]["role"], number][] = [
-    ["soldier", "lurker", 1],
-    ["soldier", "support", 1],
-    ["soldier", "artillery", 1],
-    ["brute", "support", 1],
-    ["brute", "controller", 1],
-    ["assassin", "lurker", -1],
-    ["lurker", "support", -1],
-    ["lurker", "controller", 1],
-    ["lurker", "lurker", -0.5],
-    ["soldier", "soldier", -0.5],
-    ["support", "support", -0.5],
-  ] as const;
-  for (const [r1,r2, amt] of scaledPairs) {
-    if (this.hasRole(r1) && other.hasRole(r2)) {
-      rating += amt;
-    }
-  }
-  const thisP= this.persona();
-  const otherP = other.persona();
-  const weaknesses = DAMAGE_TYPES_LIST
-    .filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "weakness") as RealDamageType[];
-  rating -= 0.5 * weaknesses.length;
-  const normalR = DAMAGE_TYPES_LIST
-    .filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "normal") as RealDamageType[];
-  for (const w of weaknesses) {
-    const res = otherP.elemResist(w);
-    switch (res)  {
-      case "block":
-        rating += 2;
-        break;
-      case "absorb":
-      case "reflect":
-        rating += 3;
-        break;
-      case "resist":
-        rating += 0.5;
-        break;
-      case "normal":
-        rating -= 1;
-        break;
-      case "weakness":
-        rating -= 2;
+  passiveItems(): InvItem[] {
+    switch (this.system.type) {
+      case "shadow":
+      case "npc":
+      case "tarot":
+        return [];
+      case "pc":
+      case "npcAlly":
         break;
       default:
-        break;
+        this.system satisfies never;
+        return [];
     }
+    const inv = this.inventory;
+    return inv.filter( item => item.system.type == "item" && (item.system.slot == "none" || item.system.slot =="key-item")) as InvItem[];
   }
-  for (const n of normalR) {
-    const res = otherP.elemResist(n);
-    switch (res) {
-      case "resist":
-        rating += 0.1;
-        break;
-      case "absorb":
-      case "reflect":
-      case "block":
-        rating += 1;
-        break;
-      case "weakness":
-        rating -= 1;
-        break;
+
+  getPersonalBonuses(modnames : ModifierTarget | ModifierTarget[], sources: readonly ModifierContainer[] = this.actorMainModifiers()) : ModifierList  {
+    const modList = new ModifierList( sources.flatMap( item => item.getModifier(modnames, this)
+    ))
+      .filterZero();
+    return modList;
+  }
+
+  activeAuras(options ?: MainModifierOptions) : readonly ConditionalEffectC[] {
+    if (!this.isAlive()) {return [];}
+    if (!this.isValidCombatant()) {return [];}
+    return this.persona().myAuraEffects(options);
+  }
+
+  actorMainModifiers(options ?: MainModifierOptions): readonly ModifierContainer[] {
+    if (!options) {
+      return this.cache2.actorMainModifiers.value;
+    }
+    return this._actorMainModifiers(options);
+  }
+
+  _actorMainModifiers(options ?: MainModifierOptions): readonly ModifierContainer[] {
+    const tags = (options && options.omitTags) ? [] : this.tags.realTags();
+    const ret : readonly ModifierContainer[] = [
+      ...this.focii,
+      ...this.passiveItems(),
+      ...this.social.getAllSocialFocii(),
+      ...this.equippedItems(),
+      ...tags,
+      ...this.statusModifiers(),
+    ];
+    return ret;
+  }
+
+  statusModifiers() : ModifierContainer[]{
+    return this.effects.filter( eff => eff.hasEffects());
+  }
+
+  get downtimeMinorActions() : (Usable | SocialCard)[] {
+    const list = [
+      ...this.powers,
+      ...this.consumables,
+    ];
+    const allUsable = list.filter ( pwr => pwr.hasTag("downtime-minor", this.isValidCombatant() ? this : null));
+    return [
+      ...PersonaDB.minorActionActivities(),
+      ...allUsable,
+    ];
+  }
+
+  get usableDowntimeMinorActions(): (Usable | SocialCard)[] {
+    if (!this.isPC()) {return [];};
+    return this.downtimeMinorActions.filter( action=>  {
+      if (action.isUsableType()) {
+        return this.persona().canUsePower(action, false);
+      }
+      if (action.isSocialCard()) {
+        return PersonaSocial.isActivitySelectable(action, this);
+      }
+    })
+      .sort( (a,b) => a.displayedName.localeCompare(b.displayedName));
+  }
+
+  /** treasure multiplier on PCs wealth gained */
+  get treasureMultiplier () : number {
+    if (!this.isValidCombatant()) {return 1;}
+    switch (this.system.type) {
+      case "pc": case "npcAlly": {
+        const situation :Situation = {
+          user: (this as PC | NPCAlly).accessor
+        };
+        const bonus= this.persona().getBonuses("shadowMoneyBoostPercent").total(situation, "percentage");
+        return !Number.isNaN(bonus) ? bonus : 1;
+      }
+      default:
+        return 1;
     }
   }
 
-  const attacks = new Set(
-    this.powers
-    .map(x=> x.getBaseDamageType())
-    .filter (dmgType => dmgType != "untyped" && dmgType != "none")
-  );
-  const otherAttacks =
-    other.powers
-    .map(x=> x.getBaseDamageType())
-    .filter (dmgType => dmgType != "healing" && dmgType != "untyped" && dmgType != "none");
-  rating += otherAttacks.reduce( (acc, dmg) =>
-    acc + (!attacks.has(dmg) ? 1 : 0)
-    , 0 );
-  return rating;
-}
+  getFatigueStatus() : FatigueStatusId | undefined {
+    const eff = this.effects.contents.find( x=> x.getFatigueStatus() != undefined);
+    return eff?.getFatigueStatus();
+  }
+
+  get fatigueLevel() : number {
+    if (!this.isPCLike()) {return 0;}
+    const st = this.getFatigueStatus();
+    return statusToFatigueLevel(st);
+  }
+
+  async resetFatigueRecovery() {
+    await this.setFlag("persona", "fatigueRecovery", 0);
+  }
+
+  /** Auto NPC recovery for fatigue to be run each calendar day*/
+  async recoverFatigue(this: NPCAlly) : Promise<number>{
+    if (this.fatigueLevel >= 1) {return -1;}
+    let recoveryDays = Number(this.getFlag<number>("persona", "fatigueRecovery") ?? 0);
+    if (Number.isNaN(recoveryDays)) {
+      PersonaError.softFail(`NaN recovery days for ${this.name}`);
+      recoveryDays = 0;
+    }
+    recoveryDays += 1;
+    if (recoveryDays >= 3) {
+      recoveryDays = 0;
+      await this.alterFatigueLevel(1);
+    }
+    await this.setFlag("persona", "fatigueRecovery", recoveryDays);
+    return recoveryDays;
+  }
+
+  hasAlteredFatigueToday(this:PC): boolean {
+    return this.system.fatigue.hasAlteredFatigueToday ?? false;
+  }
+
+  hasMadeFatigueRollToday(this:PC) : boolean {
+    return this.system.fatigue.hasMadeFatigueRollToday ?? false;
+  }
+
+  async setAlteredFatigue(val = true) {
+    await this.update({"system.fatigue.hasAlteredFatigueToday": val});
+  }
+
+  async setFatigueLevel(lvl: number,log = true) : Promise<FatigueStatusId | undefined> {
+    const oldLvl = this.fatigueLevel;
+    const oldId = fatigueLevelToStatus(oldLvl);
+    const newId = fatigueLevelToStatus(lvl);
+    for (const eff of this.effects.contents) {
+      if (eff.isFatigueStatus) {
+        if (!eff.statuses.has(newId!))
+        {await eff.delete();}
+      }
+    }
+    if (newId) {
+      await this.addStatus( {
+        id: newId,
+        duration: {
+          dtype:"permanent",
+          anchorHolder: undefined,
+        }
+      }, true);
+    }
+    if (lvl < statusToFatigueLevel("exhausted")) {
+      await this.addStatus( {
+        id: "crippled",
+        duration: {
+          dtype:"permanent",
+          anchorHolder: undefined,
+        }
+      }, true);
+    }
+    // const newId = await this.setFatigueLevel(st);
+    if (log && (oldId != newId || lvl < -1)) {
+      const oldName = oldId ? localize(statusMap.get(oldId)!.name as LocalizationString) : "Normal";
+      const newName = newId ? localize(statusMap.get(newId)!.name as LocalizationString): "Normal";
+      const hospital = lvl < statusToFatigueLevel("exhausted") ? `${this.displayedName} is over-fatigued and need to be hospitalized!`: "";
+      await Logger.sendToChat(`${this.displayedName}  fatigue changed from ${oldName} to ${newName}. ${hospital}`);
+    }
+    return newId;
+  }
+
+  /** positive removes fatigue and negative adds it*/
+  async alterFatigueLevel(amt: number, log=true) : Promise<FatigueStatusId | undefined> {
+    const oldLvl = this.fatigueLevel;
+    const newLvl = oldLvl + amt;
+    return await this.setFatigueLevel(newLvl, log);
+  }
+
+  getUnarmedDamageType(): RealDamageType {
+    if (this.isShadow()) {return this.system.combat.baseDamageType ?? "physical";}
+    return "physical";
+  }
+
+  listComplementRatings(this: Shadow, list: Shadow[]) : string[] {
+    return list.map( shadow => {
+      const rating = Math.round(this.complementRating(shadow) * 10) / 10;
+      return {rating, name: shadow.name};
+    })
+      .sort( (a,b) => b.rating - a.rating)
+      .map(x => `${x.name}: ${x.rating}`);
+
+  }
+
+  complementRating (this: Shadow, other: Shadow) : number {
+    return this.cache2.complementRating.get(other);
+    // const cachedRating = this.cache.complementRating.get(other.id);
+    // if (cachedRating != undefined) {
+    //   return cachedRating;
+    // }
+    // const rating = this.#complementRating(other) + other.#complementRating(this);
+    // this.cache.complementRating.set(other.id, rating);
+    // return rating;
+  }
+
+  private _complementRating (this: Shadow, other: Shadow) : number {
+    return this.#complementRating(other) + other.#complementRating(this);
+  }
+
+  #complementRating (this: Shadow, other: Shadow) : number {
+    let rating = 0;
+    if (this == other) {return 0;} //baseline
+    const scaledPairs : [Shadow["system"]["role"], Shadow["system"]["role"], number][] = [
+      ["soldier", "lurker", 1],
+      ["soldier", "support", 1],
+      ["soldier", "artillery", 1],
+      ["brute", "support", 1],
+      ["brute", "controller", 1],
+      ["assassin", "lurker", -1],
+      ["lurker", "support", -1],
+      ["lurker", "controller", 1],
+      ["lurker", "lurker", -0.5],
+      ["soldier", "soldier", -0.5],
+      ["support", "support", -0.5],
+    ] as const;
+    for (const [r1,r2, amt] of scaledPairs) {
+      if (this.hasRole(r1) && other.hasRole(r2)) {
+        rating += amt;
+      }
+    }
+    const thisP= this.persona();
+    const otherP = other.persona();
+    const weaknesses = DAMAGE_TYPES_LIST
+      .filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "weakness") as RealDamageType[];
+    rating -= 0.5 * weaknesses.length;
+    const normalR = DAMAGE_TYPES_LIST
+      .filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "normal") as RealDamageType[];
+    for (const w of weaknesses) {
+      const res = otherP.elemResist(w);
+      switch (res)  {
+        case "block":
+          rating += 2;
+          break;
+        case "absorb":
+        case "reflect":
+          rating += 3;
+          break;
+        case "resist":
+          rating += 0.5;
+          break;
+        case "normal":
+          rating -= 1;
+          break;
+        case "weakness":
+          rating -= 2;
+          break;
+        default:
+          break;
+      }
+    }
+    for (const n of normalR) {
+      const res = otherP.elemResist(n);
+      switch (res) {
+        case "resist":
+          rating += 0.1;
+          break;
+        case "absorb":
+        case "reflect":
+        case "block":
+          rating += 1;
+          break;
+        case "weakness":
+          rating -= 1;
+          break;
+      }
+    }
+
+    const attacks = new Set(
+      this.powers
+      .map(x=> x.getBaseDamageType())
+      .filter (dmgType => dmgType != "untyped" && dmgType != "none")
+    );
+    const otherAttacks =
+      other.powers
+      .map(x=> x.getBaseDamageType())
+      .filter (dmgType => dmgType != "healing" && dmgType != "untyped" && dmgType != "none");
+    rating += otherAttacks.reduce( (acc, dmg) =>
+      acc + (!attacks.has(dmg) ? 1 : 0)
+      , 0 );
+    return rating;
+  }
 
 instantKillResistanceMultiplier(this: ValidAttackers, attacker: ValidAttackers) : number {
   const situation : Situation = {

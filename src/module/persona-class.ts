@@ -30,7 +30,6 @@ import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaTagManager} from "./persona-tags.js";
 import {TimedCache} from "./utility/cache.js";
 
-
 export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidAttackers = ValidAttackers> implements PersonaI {
   #combatStats: U<PersonaCombatStats>;
   user: T;
@@ -58,7 +57,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     SHADOWS_TO_LEVEL: 10,
     BASE_XP: 600, // XP FOR FIRST LEVEL UP
     XP_GROWTH: 200, //added XP for additional level ups
-  };
+  } as const;
 
   constructor (source: S, user: T, powers?: Power[]) {
     this.user = user;
@@ -664,7 +663,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   defensiveModifiers(): readonly ConditionalEffectC[] {
     if (!this.#cache.defensiveModifiers || !this.canCache) {
-      const val =  this.mainModifiers().filter ( eff => eff.conditionalType == "defensive");
+      const val =  this.mainModifiers()
+        .filter ( eff => eff.conditionalType == "defensive");
       if (!this.canCache) {return val;}
       this.#cache.defensiveModifiers = val;
     }
@@ -677,7 +677,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   passiveModifiers() : readonly ConditionalEffectC[] {
     if (!this.#cache.passiveModifiers || !this.canCache) {
-      const val =  this.mainModifiers().filter ( eff => eff.conditionalType == "passive");
+      const val = this.mainModifiers()
+        .filter ( eff => eff.conditionalType == "passive");
       if (!this.canCache) {return val;}
       this.#cache.passiveModifiers = val;
     }
@@ -700,7 +701,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   async deleteTalent(id: Talent["id"]) {
     const source = this.source;
     const talent = PersonaDB.getItemById<Talent>(id);
-    if (!talent) {throw new PersonaError(`No such talent ${id}`);}
+    if (!talent) {
+      throw new PersonaError(`No such talent ${id}`);
+    }
     const arr = source.system.combat.talents
       .filter(x=> x != id);
     await source.update( {"system.combat.talents": arr});
@@ -726,8 +729,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return firstLevelUp/SHADOWS_TO_LEVEL;
   }
 
-  static MIN_XP_MULT = 0.05;
-  static MAX_XP_MULT = 3;
+  static MIN_XP_MULT = 0.05 as const;
+  static MAX_XP_MULT = 3 as const;
 
   static calcXP(killedTargets: ValidAttackers[], numOfAllies: number): number {
     const XP= killedTargets.reduce( (a,x) => x.XPValue() + a, 0);
@@ -1415,9 +1418,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   possibleElementTypes(): RealDamageType[] {
     return this.powers
-      .filter (pwr => pwr.system.damageLevel != "none")
+      .filter( pwr => pwr.system.damageLevel != "none" )
       .filter( x=> {
-        const dtype  = x.getDamageType(this.user);
+        const dtype = x.getDamageType(this.user);
         switch (dtype) {
           case "none":
           case "healing":
@@ -1444,7 +1447,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.user.sideboardPowers;
   }
 
-
   get needsToDeleteMainPower() : boolean {
     return this.mainPowers.length > this.maxPowers
       || this.source.topLearnedBuffer != undefined ;
@@ -1452,25 +1454,23 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
 } // end of class
 
-
 interface PersonaClassCache {
   mainModifiers: U<ConditionalEffectC[]>;
   passivePowers: U<readonly Power[]>;
   defensiveModifiers: U<ConditionalEffectC[]>;
   passiveModifiers: U<ConditionalEffectC[]>;
-  nearbyAuras:  U<ConditionalEffectC[]>;
+  nearbyAuras: U<ConditionalEffectC[]>;
   mainModifiersList: U<readonly ModifierContainer[]>;
 }
 
 export interface MainModifierOptions {
-  omitPowers?: boolean;
-  omitTalents?: boolean;
+  omitPowers ?: boolean;
+  omitTalents ?: boolean;
   omitTags ?: boolean;
   omitAuras ?: boolean;
 }
 
 type FailReason = string;
-
 
 interface PrintableResistData {
   /** Path to icon */
@@ -1478,5 +1478,5 @@ interface PrintableResistData {
   damageType: RealDamageType;
   resistance: ResistStrength;
   resistanceLoc: string;
-  modified: "normal" | "upgraded" | "downgraded"
+  modified: "normal" | "upgraded" | "downgraded";
 }

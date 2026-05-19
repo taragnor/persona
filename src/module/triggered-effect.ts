@@ -56,78 +56,78 @@ export class TriggeredEffect {
     });
   }
 
-static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Situation) :  ConditionalEffectC[] {
-  const triggers : ConditionalEffectC[] = PersonaDB.getGlobalModifiers().flatMap( x=> x
-    .getTriggeredEffects(null, {triggerType: trigger})
-  );
-  if (actor) {
-    triggers.push(...actor.triggersOn(trigger));
+  static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Situation) :  ConditionalEffectC[] {
+    const triggers : ConditionalEffectC[] = PersonaDB.getGlobalModifiers().flatMap( x=> x
+      .getTriggeredEffects(null, {triggerType: trigger})
+    );
+    if (actor) {
+      triggers.push(...actor.triggersOn(trigger));
+    }
+    if (checkSituationProp(situation, "usedPower")) {
+      const power = PersonaDB.findItem(situation.usedPower);
+      const user = situation.user ? PersonaDB.findActor(situation.user) : null;
+      const PowerTriggers = power.getTriggeredEffects(user, {triggerType: trigger});
+      triggers.push(...PowerTriggers);
+    }
+    if (!actor) {
+      const rm = Metaverse.activeRoomModifiers()
+        .flatMap (mod => mod.getEffects(null));
+      triggers.push(...rm);
+      const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
+      triggers.push(...PCTriggers);
+    }
+    const filteredEffects = removeDuplicates(triggers
+      .filter ( x=>
+        x.conditionalType == "triggered"
+        && x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == trigger)
+      )
+    );
+    // if (game.user.isGM && PersonaSettings.debugMode()) {
+    //   console.debug( `${actor?.name ?? "void actor"} triggerList (${trigger}) : \n${triggers.map( trig=> trig.toString()).join("\n")}`);
+    // }
+    return filteredEffects;
   }
-  if (checkSituationProp(situation, "usedPower")) {
-    const power = PersonaDB.findItem(situation.usedPower);
-    const user = situation.user ? PersonaDB.findActor(situation.user) : null;
-    const PowerTriggers = power.getTriggeredEffects(user, {triggerType: trigger});
-    triggers.push(...PowerTriggers);
+
+  static async autoApplyTrigger(...args : Parameters<typeof TriggeredEffect["onTrigger"]>) : Promise<void> {
+    const CR = this.autoTriggerToCR(...args);
+    await CR?.autoApplyResult();
   }
-  if (!actor) {
-    const rm = Metaverse.activeRoomModifiers()
-      .flatMap (mod => mod.getEffects(null));
-    triggers.push(...rm);
-    const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
-    triggers.push(...PCTriggers);
+
+  static autoTriggerToCR(...args : Parameters<typeof TriggeredEffect["onTrigger"]>) : U<CombatResult> {
+    const CR = this.onTrigger(...args);
+    return CR.emptyCheck();
   }
-  const filteredEffects = removeDuplicates(triggers
-    .filter ( x=>
-      x.conditionalType == "triggered"
-      && x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == trigger)
-    )
-  );
-  // if (game.user.isGM && PersonaSettings.debugMode()) {
-  //   console.debug( `${actor?.name ?? "void actor"} triggerList (${trigger}) : \n${triggers.map( trig=> trig.toString()).join("\n")}`);
-  // }
-	return filteredEffects;
-}
 
-	static async autoApplyTrigger(...args : Parameters<typeof TriggeredEffect["onTrigger"]>) : Promise<void> {
-		const CR = this.autoTriggerToCR(...args);
-		await CR?.autoApplyResult();
-	}
+  static async execNonCombatTrigger( situation: SituationTypes.TriggerSituation, actor: PC, msg = "Triggered Effect") : Promise<void> {
+    await (this.onTrigger(situation, actor))
+    .emptyCheck()
+    ?.toMessage(msg, actor);
+  }
 
-	static autoTriggerToCR(...args : Parameters<typeof TriggeredEffect["onTrigger"]>) : U<CombatResult> {
-		const CR = this.onTrigger(...args);
-		return CR.emptyCheck();
-	}
-
-	static async execNonCombatTrigger( situation: SituationTypes.TriggerSituation, actor: PC, msg = "Triggered Effect") : Promise<void> {
-		await (this.onTrigger(situation, actor))
-		.emptyCheck()
-		?.toMessage(msg, actor);
-	}
-
-	static async execCombatTrigger(situation: SituationTypes.TriggerSituation, actor: ValidAttackers) : Promise<void> {
-		const triggerResult = this.onTrigger(situation, actor)
-		.emptyCheck();
-		if (!triggerResult) {return;}
-		const usePowers = triggerResult.findEffects("use-power");
-		for (const usePower of usePowers) {
-			//TODO BUG: Extra attacks keep the main inputted modifier
-			try {
+  static async execCombatTrigger(situation: SituationTypes.TriggerSituation, actor: ValidAttackers) : Promise<void> {
+    const triggerResult = this.onTrigger(situation, actor)
+    .emptyCheck();
+    if (!triggerResult) {return;}
+    const usePowers = triggerResult.findEffects("use-power");
+    for (const usePower of usePowers) {
+      //TODO BUG: Extra attacks keep the main inputted modifier
+      try {
         if (!usePower.owner) {continue;}
-				const newAttacker = PersonaCombat.getPTokenFromActorAccessor(usePower.owner);
-				const execPower = PersonaDB.allPowers().get( usePower.powerId);
-				if (execPower && newAttacker) {
-					const altTargets= PersonaCombat.getAltTargets(newAttacker, situation, usePower.target );
-					const newTargets = PersonaTargetting.getTargets(newAttacker, execPower, altTargets);
-					const combatEngine = new CombatEngine();
-					const extraPower = await combatEngine.usePowerOn(newAttacker, execPower, newTargets, {subAttack: true});
-					triggerResult.merge(extraPower);
-				}
-			} catch (e) {
-				PersonaError.softFail(`Error on Use Power in execCombat Trigger for Power ${usePower?.powerId}`, e);
-				continue;
-			}
-		}
-		await triggerResult?.finalize().toMessage("Triggered Effect");
-		// await triggerResult?.finalize().toMessage("Triggered Effect", actor);
-	}
+        const newAttacker = PersonaCombat.getPTokenFromActorAccessor(usePower.owner);
+        const execPower = PersonaDB.allPowers().get( usePower.powerId);
+        if (execPower && newAttacker) {
+          const altTargets = PersonaCombat.getAltTargets(newAttacker, situation, usePower.target );
+          const newTargets = PersonaTargetting.getTargets(newAttacker, execPower, altTargets);
+          const combatEngine = new CombatEngine();
+          const extraPower = await combatEngine.usePowerOn(newAttacker, execPower, newTargets, {subAttack: true});
+          triggerResult.merge(extraPower);
+        }
+      } catch (e) {
+        PersonaError.softFail(`Error on Use Power in execCombat Trigger for Power ${usePower?.powerId}`, e);
+        continue;
+      }
+    }
+    await triggerResult?.finalize().toMessage("Triggered Effect");
+  }
+
 }
