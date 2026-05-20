@@ -74,30 +74,16 @@ type StatusEffect_FollowUp = {
 }
 
 export type EnhancedSourcedConsequence<C extends Consequence = Consequence> = SourcedConsequence<C> & {
-	// modifiers?: ConsModifiers[];
 }
 
-// type ConsModifiers = "blocked" | "absorbed" | "resisted";
 
 
 export type Consequence =
 	{
     type: ConsequenceType,
-		// actorOwner ?: UniversalActorAccessor<ValidAttackers>,
 	} & (
 		NonGenericConsequences
 	);
-
-// type GenericConsequence = {
-// 	type: Exclude<ConsequenceType, NonGenericConsequences["type"] | DeprecatedConsequence["type"]>,
-// 	itemAcc ?: UniversalItemAccessor<Usable>,
-// 	slotType ?: SlotType,
-// 	id ?: string,
-// 	otherEffect ?: OtherConsequence,
-// 	resistType ?: ResistType,
-// 	resistanceLevel ?: ResistStrength,
-// 	msg ?: string,
-// }
 
 type NumberedConsequencePart = {
 	amount: number;
@@ -167,8 +153,6 @@ type InventoryActions = {
   cropId: Consumable["id"],
   daysToGrow: ConsequenceAmount,
 }
-
-
 
 type CancelRequestConsequence = {
 	type: "cancel";
@@ -244,7 +228,6 @@ type VariableOperators = {
 	max: number,
 };
 
-
 export type VariableTypeSpecifier =
 	{
 		variableId: string,
@@ -268,8 +251,6 @@ type VariableTypes = ({
 });
 
 export type NonDeprecatedDamageCons = NonDeprecatedConsequence & {type: "combat-effect", combatEffect: "damage"};
-
-
 
 type FatigueConsequence = {
 	type: "alter-fatigue-lvl",
@@ -327,7 +308,6 @@ type CombatEffectConsequencesList =
     combatEffect: "escape-combat",
   }
 ;
-
 
 export type NewDamageConsequence =
 	{
@@ -458,11 +438,9 @@ type ExcludeDeprecatedModifiers<T extends Consequence> = Exclude<T, DeprecatedMu
   type ExcludeDeprecatedTypes<T extends Consequence>  =
   { type: Exclude<T["type"], DeprecatedConsequence["type"]> | NonDeprecatedMultiModifierConsequence["type"] | NonDeprecatedSingleModifierConsequence["type"] }
 
-
 type DeprecatedSimpleEffect = {
-	type: "save-slot" | "half-hp-cost";
+  type: "save-slot" | "half-hp-cost";
 }
-
 
  type AddEscalationConsequence = {
 	 type: "add-escalation"
@@ -507,7 +485,6 @@ type SlotRecoveryConsequence = {
 	amount?: number;
 	slot?: number;
 };
-
 
 export type OldDamageConsequence = {
 	type: "dmg-high" | "dmg-low" | "dmg-mult" | "absorb" | "dmg-allout-low" | "dmg-allout-high" | "revive" | "hp-loss" ;
@@ -574,7 +551,6 @@ type NonDeprecatedSingleModifierConsequence = {
 	modifierCategory: ModifierCategory,
 	modifiedField : NonDeprecatedModifierType,
 	amount: ConsequenceAmount,
-
 }
 
 export type SocialCardActionConsequence =
@@ -639,8 +615,6 @@ type CardActionTypes = [
     cardAction: "alter-major",
     amount: ConsequenceAmount,
   },
-
-
 ];
 
 type EventChainModification = {
@@ -691,7 +665,6 @@ export type VariableAction = typeof VARIABLE_ACTION_LIST[number];
 export const VARIABLE_ACTIONS = Object.fromEntries(
 	VARIABLE_ACTION_LIST.map( x=> [x, `persona.effecttypes.variableActions.${x}`])
 );
-
 
 export type DungeonActionConsequence = {
 	type: "dungeon-action",
@@ -811,7 +784,6 @@ type StatusPotency = {
   statusId: StatusEffectId,
 }
 
-
 export type AmountOperation = {
 	type: "operation",
 	amt1: ConsequenceAmountV2,
@@ -847,7 +819,6 @@ const CONSEQUENCE_AMOUNT_TYPES_LIST = [
 		type ConsequenceAmountType = typeof CONSEQUENCE_AMOUNT_TYPES_LIST[number];
 
 export const CONSEQUENCE_AMOUNT_TYPES = HTMLTools.createLocalizationObject(CONSEQUENCE_AMOUNT_TYPES_LIST, "persona.consequences.consequences-amount");
-
 
 const ARITHMETIC_OPERATOR_LIST = [
 	"add",
@@ -902,7 +873,6 @@ type ProcessedConsequenceToOtherEffect<T extends NonDeprecatedConsequence> =
   >;
 
 // type RemoveConsequenceAmount<T extends object> = T extends {amount: ConsequenceAmount} ? Omit<T, "amount"> & {amount: number} : T;
-
 
 type RemoveConsequenceAmount<T> = {
   [K in keyof T]: T[K] extends ConsequenceAmount ? number : T[K];
