@@ -22,16 +22,16 @@ export class ModifierList {
   private _data: ModifierListItem[];
   private listType: MLListType;
 
-  constructor ( sourcedEffects: ConditionalEffectC[], bonusFn : (eff :SourcedConditionalEffect) => number ,listType?: MLListType);
+  constructor ( sourcedEffects: ConditionalEffectC[], bonusFn : (eff :ConditionalEffectC) => number ,listType?: MLListType);
   constructor ( list?: ModifierListItem[], listType?: MLListType);
-  constructor ( list: ModifierListItem[] | ConditionalEffectC[] = [], listTypeOrFn: MLListType | ((eff: SourcedConditionalEffect) => number) = "standard", listType ?: MLListType)
+  constructor ( list: ModifierListItem[] | ConditionalEffectC[] = [], listTypeOrFn: MLListType | ((eff: ConditionalEffectC) => number) = "standard", listType ?: MLListType)
   {
     this.listType = typeof listTypeOrFn != "function" ? listTypeOrFn : (listType ? listType : "standard");
     if (list.length == 0 || ("name" in list.at(0)!)) {
       this._data = list as ModifierListItem[];
       return;
     }
-    const ModListItems = (list as SourcedConditionalEffect[]).map( eff=> {
+    const ModListItems = (list as ConditionalEffectC[]).map( eff=> {
       const realSource = eff.realSource ? PersonaDB.find(eff.realSource) : undefined;
       const source = eff.source ? PersonaDB.find(eff.source) : undefined;
       return {
@@ -47,8 +47,8 @@ export class ModifierList {
       .filter (x=> x.modifier[0] != 0);
   }
 
-  add(name: string, modifier: number, sourceItem?: ModifierListItem["source"]  , owner ?: ModifierListItem["owner"], conditions: SourcedPrecondition[] = []) : ModifierList {
-    this._data.push( {
+  add(name: string, modifier: number, sourceItem?: ModifierListItem["source"], owner ?: ModifierListItem["owner"], conditions: SourcedPrecondition[] = []) : ModifierList {
+    this._data.push({
       source: sourceItem,
       owner,
       name,
@@ -60,7 +60,12 @@ export class ModifierList {
   }
 
   filterZero(): this {
-    this._data= this._data.filter( x=> x.modifier[0] != 0);
+    this._data= this._data
+      .map( x=> ({
+        ...x,
+        modifier: x.modifier.filter( y => y != 0),
+      }))
+    .filter( x=> x.modifier.length > 0);
     return this;
   }
 
