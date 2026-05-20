@@ -721,6 +721,7 @@
 "persona.effecttypes.variableTypes.scene": "Scene",
 "persona.effecttypes.variableTypes.actor": "Actor",
 "persona.effecttypes.variableTypes.social-temp": "Temporary Social",
+"persona.effecttypes.variableTypes.combat": "Combat",
 
 	"persona.alter-mp-subtypes.direct": "Direct",
 	"persona.alter-mp-subtypes.cost-reduction": "Cost Multiplier",

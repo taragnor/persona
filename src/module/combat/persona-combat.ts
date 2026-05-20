@@ -57,6 +57,7 @@ declare global {
 }
 
 export class PersonaCombat extends Combat<ValidAttackers> {
+  VAR_FLAG_NAME = "combatVars" as const;
   static WAIT_FOR_FOUNRY_DELAY = 750 as const;
   _resolvingAttack: boolean = false;
   _engagedList: EngagementList;
@@ -637,6 +638,17 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
   static isPersonaCombatant(comb: Combatant<PersonaActor>) : comb is PersonaCombatant {
     return comb.actor?.isValidCombatant() == true && comb.parent != undefined;
+  }
+
+  async setVariable(id: string, value: number) : Promise<void> {
+    const variables = this.getFlag<Record<string, number>>("persona",this.VAR_FLAG_NAME) ?? {};
+    variables[id] = value;
+    await this.setFlag("persona", this.VAR_FLAG_NAME, variables);
+  }
+
+  getVariable(id: string) : number {
+    const variables = this.getFlag<Record<string, number>>("persona",this.VAR_FLAG_NAME) ?? {};
+    return variables[id] ?? 0;
   }
 
   isInChallengeWith(user: Combatant<ValidAttackers>, target: Combatant<ValidAttackers>) : boolean {

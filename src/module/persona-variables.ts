@@ -122,6 +122,14 @@ export class PersonaVariables {
 				PersonaSocial.currentSocialCardExecutor?.setSocialVariable(data.variableId, value);
 				break;
 			}
+      case "combat": {
+        if (!PersonaCombat.combat) {
+          PersonaError.softFail(`Can't set combat variable  ${data.variableId} as combat doens't exist`);
+          break;
+        }
+        await PersonaCombat.combat.setVariable(data.variableId, value);
+        break;
+      }
 			default:
 				data satisfies never;
 		}
@@ -143,6 +151,15 @@ export class PersonaVariables {
 			}
 			case "social-temp":
 				return PersonaSocial.getSocialVariable(data.variableId);
+      case "combat":
+        if (!PersonaCombat.combat) {
+          PersonaError.softFail(`Can't get combat variable  ${data.variableId} as combat doens't exist`);
+          break;
+        }
+        return PersonaCombat.combat.getVariable(data.variableId);
+      default:
+        data satisfies never;
+        return undefined;
 		}
 	}
 
@@ -169,6 +186,7 @@ export const VARIABLE_TYPE_LIST = [
 	"scene",
 	"actor",
 	"social-temp",
+  "combat",
 ] as const;
 
 export type VariableType = typeof VARIABLE_TYPE_LIST[number];
@@ -176,15 +194,17 @@ export type VariableType = typeof VARIABLE_TYPE_LIST[number];
 export const VARIABLE_TYPE = HTMLTools.createLocalizationObject(VARIABLE_TYPE_LIST, "persona.effecttypes.variableTypes");
 
 type VariableSpecifier = {
-	varType: "global",
+  varType: "global",
 } | {
-	varType: "scene",
-	scene: PersonaScene,
+  varType: "combat"
 } | {
-	varType: "actor",
-	actor : PersonaActor,
+  varType: "scene",
+  scene: PersonaScene,
 } | {
-	varType: "social-temp",
+  varType: "actor",
+  actor : PersonaActor,
+} | {
+  varType: "social-temp",
 };
 
 

@@ -253,17 +253,19 @@ export type VariableTypeSpecifier =
 	& VariableTypes;
 
 type VariableTypes = ({
-		varType: "global",
-	} | {
-		varType: "scene",
-		sceneId: string,
-	} | {
-		varType: "actor",
-		applyTo : ConsequenceTarget,
-	} | {
-		varType: "social-temp",
-    __localEffect: true,
-	});
+  varType: "global",
+} | {
+  varType: "combat",
+} | {
+  varType: "scene",
+  sceneId: string,
+} | {
+  varType: "actor",
+  applyTo : ConsequenceTarget,
+} | {
+  varType: "social-temp",
+  __localEffect: true,
+});
 
 export type NonDeprecatedDamageCons = NonDeprecatedConsequence & {type: "combat-effect", combatEffect: "damage"};
 

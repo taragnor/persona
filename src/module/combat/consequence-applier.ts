@@ -1,5 +1,4 @@
 import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
-import {ActorSocial} from "../actor/actor-social.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
 import {PersonaItem} from "../item/persona-item.js";
@@ -286,20 +285,24 @@ export class ConsequenceApplier {
           PersonaError.softFail("No situation present in variable alteration");
           break;
         }
-        switch (varCons.varType) {
-          case "actor": {
-            await PersonaVariables.alterVariable(varCons, varCons.situation);
-            break;
-          }
-          case "global":
-          case "scene": {
-            await PersonaVariables.alterVariable(varCons, varCons.situation);
-            break;
-          }
-          default:
-            varCons satisfies never;
-            PersonaError.softFail(`attempt to alter invalid Variable type :${varCons as string}`, varCons );
-        }
+        await PersonaVariables.alterVariable(varCons, varCons.situation);
+        // switch (varCons.varType) {
+        //   case "actor": {
+        //     await PersonaVariables.alterVariable(varCons, varCons.situation);
+        //     break;
+        //   }
+        //   case "global":
+        //   case "scene": {
+        //     await PersonaVariables.alterVariable(varCons, varCons.situation);
+        //     break;
+        //   }
+        //   case "combat":
+        //     await PersonaVariables.alterVariable(varCons, varCons.situation);
+        //     break;
+        //   default:
+        //     varCons satisfies never;
+        //     PersonaError.softFail(`attempt to alter invalid Variable type :${varCons as string}`, varCons );
+        // }
         break;
       }
       case "perma-buff":
@@ -326,19 +329,19 @@ export class ConsequenceApplier {
       case "cancel":
       case "set-roll-result":
         break;
-      // case "set-hp": {
-      //   let newhp : number;
-      //   switch (otherEffect.subtype) {
-      //     case "set-to-const":
-      //       newhp = otherEffect.value;
-      //       break;
-      //     case "set-to-percent":
-      //       newhp = otherEffect.value * actor.mhp;
-      //       break;
-      //   }
-      //   await actor.setHP(newhp);
-      //   break;
-      // }
+        // case "set-hp": {
+        //   let newhp : number;
+        //   switch (otherEffect.subtype) {
+        //     case "set-to-const":
+        //       newhp = otherEffect.value;
+        //       break;
+        //     case "set-to-percent":
+        //       newhp = otherEffect.value * actor.mhp;
+        //       break;
+        //   }
+        //   await actor.setHP(newhp);
+        //   break;
+        // }
       case "inventory-action":
         await this.resolveInventoryAction(actor, otherEffect);
         break;
