@@ -569,7 +569,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       return baseMods.concat(modList);
     }
     const mods = PersonaItem.getModifier(sources, modnames);
-    return new ModifierList(mods).filterZero();
+    return new ModifierList(mods);
   }
 
   private mainModifiers(options?: MainModifierOptions ): readonly ConditionalEffectC[] {

@@ -136,12 +136,15 @@ export class ActorHooks {
 			await	actor.refreshTrackers(persona);
 		});
 
-		Hooks.on("createToken", async function (token: TokenDocument<PersonaActor>)  {
-			if (!game.user.isGM) { return;}
-			if (token.actor && game.user.isGM && token.actor.system.type == "shadow") {
-				await token.actor.fullHeal();
-			}
-		});
+    Hooks.on("createToken", async function (token: TokenDocument<PersonaActor>)  {
+      if (!game.user.isGM) { return;}
+      if (token.actor && game.user.isGM && token.actor.system.type == "shadow") {
+        await token.actor.fullHeal();
+      }
+      if (token.actor && token.actor.isPCLike() && token.actorLink == false) {
+        await token.update({actorLink: true});
+      }
+    });
 
     Hooks.on("createActiveEffect", (effect) => {
       if (effect.parent instanceof PersonaActor) {

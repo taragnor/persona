@@ -276,6 +276,7 @@
 	"persona.modifier.magLow": "(Deprecated) Magic Damage Base (Low)",
 	"persona.modifier.magHigh": "(Deprecated) Magic Damage Base (High)",
 	"persona.modifier.criticalBoost": "Critical Boost",
+  "persona.modifier.theurgy-gain-multiplier": "Theurgy Gain Multiplier",
 	"persona.modifier.str": "Strength",
 	"persona.modifier.agi": "Agility",
 	"persona.modifier.end": "Endurance",

@@ -429,9 +429,6 @@ type DamageConsequenceShared = {
 export type NonDeprecatedConsequence = Prettify<ExcludeDeprecatedModifiers<Consequence>
   & ExcludeDeprecatedTypes<Consequence>
   >;
-  // & { type: Exclude<Consequence["type"], DeprecatedConsequence["type"]>}
-	// & {applyTo: U<ConditionTarget>};
-//modifier doiesn't have an applyTo but we need to fix this later
 
 type ExcludeDeprecatedModifiers<T extends Consequence> = Exclude<T, DeprecatedMultiModifierConsequence | DeprecatedSingleModifierConsequence>
 

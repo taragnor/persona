@@ -72,7 +72,6 @@ export class ConsequenceApplier {
       }
     }
     if (mutableState.theurgy != 0 && !actor.isShadow()) {
-      console.log(`Modify Theurgy: ${mutableState.theurgy}`);
       await actor.modifyTheurgy(mutableState.theurgy);
     }
     if (mutableState.mpCost != 0 && !actor.isShadow()) {
@@ -329,19 +328,6 @@ export class ConsequenceApplier {
       case "cancel":
       case "set-roll-result":
         break;
-        // case "set-hp": {
-        //   let newhp : number;
-        //   switch (otherEffect.subtype) {
-        //     case "set-to-const":
-        //       newhp = otherEffect.value;
-        //       break;
-        //     case "set-to-percent":
-        //       newhp = otherEffect.value * actor.mhp;
-        //       break;
-        //   }
-        //   await actor.setHP(newhp);
-        //   break;
-        // }
       case "inventory-action":
         await this.resolveInventoryAction(actor, otherEffect);
         break;
@@ -468,13 +454,15 @@ export class ConsequenceApplier {
         }
         break; // done elsewhere for local player
 
-      case "alter-theurgy":
+      case "alter-theurgy": {
+        const multiplier = actor.persona().getBonuses("theurgy-gain-multiplier").total(actor,"percentage");
+        const amt = effect.amount > 0 ? effect.amount * multiplier : effect.amount;
         switch (effect.subtype) {
           case "direct":
-            mutableState.theurgy += effect.amount;
+            mutableState.theurgy += amt;
             break;
           case "percent-of-total":
-            mutableState.theurgy += actor.mmp * (effect.amount / 100);
+            mutableState.theurgy += actor.mmp * (amt / 100);
             break;
           default:
             effect.subtype satisfies never;
@@ -482,6 +470,7 @@ export class ConsequenceApplier {
             PersonaError.softFail(`Bad subtype for Alter Theurgy effect : ${effect["subtype"]}`);
         }
         break;
+      }
       case "extraTurn":
         break;
       case "damage": {

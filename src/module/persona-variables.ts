@@ -169,7 +169,6 @@ export class PersonaVariables {
 
   static async setGlobalVariable(id: string, newVal: number) {
     return await PersonaSettings.setGlobalVariable(id, newVal);
-
   }
 
 }

@@ -47,6 +47,25 @@ export class Tests {
     return true;
   }
 
+  static async theurgyTest(amt = 10) {
+    const kim = this.kim;
+    const eff : Sourced<OtherEffect> = {
+      type: "combat-effect",
+      combatEffect: "alter-theurgy",
+      subtype: "direct",
+      amount: amt,
+      ...this.dummyShell,
+    } satisfies Sourced<OtherEffect>;
+    const mutableState =  {
+      mpCost: 0,
+      theurgy: 0,
+    };
+    await ConsequenceApplier._applyOtherEffect(kim, undefined, eff, mutableState);
+    console.log(mutableState.theurgy);
+    return mutableState.theurgy;
+    //note doesn't actualy add this to Therugy just checks the math on the modifier
+  }
+
   static async panelTest_downtime() {
     await PersonaSocial.panel.setActor(this.kim);
     await PersonaSocial.panel.activate();

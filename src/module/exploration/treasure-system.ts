@@ -8,42 +8,48 @@ import {PersonaItem} from "../item/persona-item.js";
 import {Metaverse} from "../metaverse.js";
 
 export class TreasureSystem {
-	static generate(treasureLevel: number, modifier : number = 0, treasureMin = 1) : EnchantedTreasureFormat[] {
-		const treasureRoll = this.treasureRoll(modifier, treasureMin);
-		const table = this.convertRollToTreasureTable(treasureRoll);
-		const item = this.generateFromTable(table, treasureLevel);
-		const otherTreasure = this.moreTreasure(treasureRoll) ? this.generate(treasureLevel, modifier, treasureMin) : [];
-		if (!item) {return otherTreasure;}
-		if (item.isEnchantable()) {
-			const enchantment = this.generateEnchantment(item, treasureLevel, modifier, treasureMin);
-			if (enchantment) {
-				return [{
-					item: item.accessor as UniversalItemAccessor<TreasureItem>,
-					enchantments: [enchantment.id],
-				} ] .concat(otherTreasure);
-			}
-		}
-		return [{
-			item: item.accessor,
-			enchantments: [],
-		} as EnchantedTreasureFormat].concat(otherTreasure);
-	}
+  static generate(treasureLevel: number, modifier : number = 0, treasureMin = 1) : EnchantedTreasureFormat[] {
+    const treasureRoll = this.treasureRoll(modifier, treasureMin);
+    const table = this.convertRollToTreasureTable(treasureRoll);
+    const item = this.generateFromTable(table, treasureLevel);
+    const otherTreasure = this.moreTreasure(treasureRoll) ? this.generate(treasureLevel, modifier, treasureMin) : [];
+    if (!item) {return otherTreasure;}
+    if (item.isEnchantable()) {
+      const enchantments = this.generateEnchantments(item, treasureLevel, modifier, treasureMin);
+      return [{
+        item: item.accessor as UniversalItemAccessor<TreasureItem>,
+        enchantments: enchantments.map( tag=> tag.id),
+      } ] .concat(otherTreasure);
+    }
+    return [{
+      item: item.accessor,
+      enchantments: [],
+    } as EnchantedTreasureFormat].concat(otherTreasure);
+  }
 
-	static generateEnchantment(item: Carryable, treasureLevel: number, modifier = 0, treasureMin = 1) : U<Tag> {
+	static generateEnchantments(item: Carryable, treasureLevel: number, modifier = 0, treasureMin = 1) : Tag[] {
 		if (item.isInvItem()) {
 			if (item.system.slot == "weapon_crystal") {
 				modifier -= 50;
 			}
-			if (item.system.slot == "accessory") {
+			if (item.isAccessory()) {
 				treasureMin = Math.max(50, treasureMin);
 			}
-
 		}
+    for  (let tries = 0 ;tries < 10; ++tries) {
 		const enchantmentRoll = this.treasureRoll(modifier, treasureMin);
-    if (enchantmentRoll <= 15) {return undefined;}
+    if (enchantmentRoll <= 15) {return [];}
 		const enchantmentTable = this.convertRollToTreasureTable(enchantmentRoll);
 		const enchantment = this.generateEnchantmentFromTable(enchantmentTable, treasureLevel);
-		return enchantment;
+      if (enchantment) {
+        if (this.moreEnchantments(enchantmentRoll)) {
+          return [enchantment].concat(this.generateEnchantments(item, treasureLevel, modifier, treasureMin));
+        }
+        return [enchantment];
+      }
+      if (!item.isAccessory()) {return [];}
+    }
+		return [];
 	}
 
 	static async DorisAbility(item: Carryable) {
@@ -51,10 +57,11 @@ export class TreasureSystem {
 			ui.notifications.warn("This requires an item held by a PC");
 			return null;
 		}
-		const enchantment = this.generateEnchantment(item, item.parent.level);
+		const enchantments = this.generateEnchantments(item, item.parent.level);
+    const enchantmentNames=  enchantments.length > 0 ? enchantments.map( x=> x.name) : ["Ritual Fizzled"];
 		const html = `
 			<h2> Re-enchanting ${item.name} </h2>
-			Result : ${enchantment?.name ?? "Ritual Fizzled"}
+			Result : ${enchantmentNames.join(", ")}
 			`;
 		await ChatMessage.create( {
 			speaker: {
@@ -64,7 +71,7 @@ export class TreasureSystem {
 			style: CONST.CHAT_MESSAGE_STYLES.OOC,
 
 		});
-		return enchantment;
+		return enchantments;
 	}
 
 	static moreTreasure (treasureRoll: number) : boolean {
@@ -75,6 +82,12 @@ export class TreasureSystem {
 			default: return false;
 		}
 	}
+
+  static moreEnchantments(treasureRoll: number) : boolean {
+    return treasureRoll % 12 == 0;
+  }
+
+
 	static treasureRoll(modifier: number, treasureRollMin: number) : number {
 		modifier += treasureRollMin;
 		const dieSize = 101 - treasureRollMin;

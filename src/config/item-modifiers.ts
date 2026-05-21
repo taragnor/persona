@@ -108,11 +108,16 @@ export const OTHER_TYPES = [
 	"power-hp-cost",
 ] as const;
 
+export const PERSONA_MODS_LIST = [
+  ...PERSONA_STATS_LIST,
+  "theurgy-gain-multiplier",
+] as const;
+
 export const MODIFIERLIST = [
 	...OFFENSE_TYPES,
 	...DEFENSE_TYPES,
 	...COMBAT_BONUS_TYPES,
-	...PERSONA_STATS_LIST,
+	...PERSONA_MODS_LIST,
 	...SHADOW_STATS_TYPES,
 	...STUDENT_SKILLS_TYPES,
 	...ACTOR_STATS_TYPES,
@@ -126,7 +131,7 @@ export const MODIFIER_CATEGORIES = {
 	"combat" : COMBAT_BONUS_TYPES,
 	"defense": DEFENSE_TYPES,
 	"offense": OFFENSE_TYPES,
-	"persona": PERSONA_STATS_LIST,
+	"persona": PERSONA_MODS_LIST,
 	"shadow": SHADOW_STATS_TYPES,
 	"social": STUDENT_SKILLS_TYPES,
 	"actor": ACTOR_STATS_TYPES,
