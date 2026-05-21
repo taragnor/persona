@@ -79,7 +79,7 @@ export class Metaverse {
       lvl = await HTMLTools.getNumber("Level of Dungeon to set", 1);
     }
     if (lvl < 1) {
-      throw new PersonaError("Can't getnerate dungeon wtih a level less than 1");
+      throw new PersonaError("Can't generate dungeon with a level less than 1");
     }
     const gen = await this.generateMementos(lvl-1);
     const scene = game.scenes.current as PersonaScene;
