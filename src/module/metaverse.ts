@@ -31,7 +31,7 @@ import {VotingDialog} from "./utility/shared-dialog.js";
 import {CombatScene} from "./combat/combat-scene.js";
 
 export class Metaverse {
-	static lastCrunch : number = 0;
+  static lastCrunch : number = 0;
 
   static async generateMementos(lvl : number, squares ?: number, stepDebug =false) {
     if (!game.user.isGM) {return;}
@@ -149,239 +149,239 @@ export class Metaverse {
     await Logger.sendToChat(`Exiting Metaverse... Everyone gains 1 level of fatigue`);
   }
 
-	static weightedTest(type :Shadow["system"]["creatureType"] = "shadow") {
-		const map = new Map<Shadow["name"], number>();
-		for (let tries =0; tries< 2000; tries++) {
-			const {enemies} = RandomEncounter.generateEncounter(type);
-			for (const shadow of enemies) {
-				const current = map.get(shadow.name) ?? 0;
-				map.set(shadow.name, current +1);
-			}
-		}
-		return this.#averageMap(map);
-	}
+  static weightedTest(type :Shadow["system"]["creatureType"] = "shadow") {
+    const map = new Map<Shadow["name"], number>();
+    for (let tries =0; tries< 2000; tries++) {
+      const {enemies} = RandomEncounter.generateEncounter(type);
+      for (const shadow of enemies) {
+        const current = map.get(shadow.name) ?? 0;
+        map.set(shadow.name, current +1);
+      }
+    }
+    return this.#averageMap(map);
+  }
 
-	static weightedTest2() {
-		const map = new Map<Shadow["name"], number>();
-		const encounterList = RandomEncounter.getEncounterList(game.scenes.current as PersonaScene, "shadow");
-		const weightedList = RandomEncounter.weightedEncounterList(encounterList);
-		for (let tries =0; tries< 5000; tries++) {
-			const shadow = weightedChoice(weightedList);
-			if (!shadow) {
-				console.warn("No choice was selected");
-				continue;
-			}
-			const current = map.get(shadow.name) ?? 0;
-			map.set(shadow.name, current +1);
-		}
-		return this.#averageMap(map);
-	}
+  static weightedTest2() {
+    const map = new Map<Shadow["name"], number>();
+    const encounterList = RandomEncounter.getEncounterList(game.scenes.current as PersonaScene, "shadow");
+    const weightedList = RandomEncounter.weightedEncounterList(encounterList);
+    for (let tries =0; tries< 5000; tries++) {
+      const shadow = weightedChoice(weightedList);
+      if (!shadow) {
+        console.warn("No choice was selected");
+        continue;
+      }
+      const current = map.get(shadow.name) ?? 0;
+      map.set(shadow.name, current +1);
+    }
+    return this.#averageMap(map);
+  }
 
-	static #averageMap(map: Map<string, number>) : string[] {
-		let total = 0;
-		const ret = [] as string[];
-		for (const amt of map.values()) {
-			total += amt;
-		}
-		const sorted = Array.from(map.entries()).sort( (a,b) => b[1] - a[1]);
-		for (const [data, amt] of sorted) {
-			const avg = Math.round(amt/total * 100)/100;
-			ret.push( `${data}: ${avg}`);
-		}
-		return ret;
-	}
+  static #averageMap(map: Map<string, number>) : string[] {
+    let total = 0;
+    const ret = [] as string[];
+    for (const amt of map.values()) {
+      total += amt;
+    }
+    const sorted = Array.from(map.entries()).sort( (a,b) => b[1] - a[1]);
+    for (const [data, amt] of sorted) {
+      const avg = Math.round(amt/total * 100)/100;
+      ret.push( `${data}: ${avg}`);
+    }
+    return ret;
+  }
 
-	/** for use by macro */
-	static async randomEncounter() {
-		const encounter = RandomEncounter.generateEncounter();
-		await RandomEncounter.printRandomEncounterList(encounter);
-	}
+  /** for use by macro */
+  static async randomEncounter() {
+    const encounter = RandomEncounter.generateEncounter();
+    await RandomEncounter.printRandomEncounterList(encounter);
+  }
 
-	static inactiveMembersXPRate(party: ValidAttackers[], ally: NPCAlly): number {
-		const bonuses = party.reduce( (acc, actor) => {
-			const situation = {
-				user: actor.accessor,
-				target: ally.accessor,
-			};
-			return acc + actor.persona().getBonuses("inactive-party-member-xp-gains").total(situation);
-		}, 0 );
-		return Math.clamp(bonuses, 0, 1);
-	}
+  static inactiveMembersXPRate(party: ValidAttackers[], ally: NPCAlly): number {
+    const bonuses = party.reduce( (acc, actor) => {
+      const situation = {
+        user: actor.accessor,
+        target: ally.accessor,
+      };
+      return acc + actor.persona().getBonuses("inactive-party-member-xp-gains").total(situation);
+    }, 0 );
+    return Math.clamp(bonuses, 0, 1);
+  }
 
-	static inactiveMembersXP (amt: number, party: ValidAttackers[]) : Promise<XPGainReport[]>[]  {
-		const otherAllies = PersonaDB.NPCAllies()
-			.filter (x=> !party.includes( x));
-		const otherAlliesAwards = otherAllies.map( async ally=> {
-			try {
-				const XPRate= this.inactiveMembersXPRate(party, ally);
-				if (XPRate <= 0) {return [];}
-				const inactiveAmt = XPRate * amt;
-				const XPReport = await ally.awardXP(inactiveAmt);
-				return XPReport;
-			} catch (e) {
-				PersonaError.softFail(`Error giving XP to Inactive Ally ${ally.name}`, e);
-				return [];
-			}
-		});
-		return otherAlliesAwards;
-	}
+  static inactiveMembersXP (amt: number, party: ValidAttackers[]) : Promise<XPGainReport[]>[]  {
+    const otherAllies = PersonaDB.NPCAllies()
+      .filter (x=> !party.includes( x));
+    const otherAlliesAwards = otherAllies.map( async ally=> {
+      try {
+        const XPRate= this.inactiveMembersXPRate(party, ally);
+        if (XPRate <= 0) {return [];}
+        const inactiveAmt = XPRate * amt;
+        const XPReport = await ally.awardXP(inactiveAmt);
+        return XPReport;
+      } catch (e) {
+        PersonaError.softFail(`Error giving XP to Inactive Ally ${ally.name}`, e);
+        return [];
+      }
+    });
+    return otherAlliesAwards;
+  }
 
-	static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void> {
-		if (!game.user.isGM) {return;}
-		const numOfPCs = party.length;
-		const xp= Persona.calcXP(shadows, numOfPCs );
-		const navigator = PersonaDB.getNavigator();
-		if (navigator) {
-			party.push(navigator);
-		}
-		const inactivePartyXP = this.inactiveMembersXP(xp, party);
-		const XPAwardDataPromises = party.map( async actor => {
-			try {
-				const XPReport = await actor.awardXP(xp);
-				return XPReport;
-			} catch (e) {
-				PersonaError.softFail(`Error giving XP to ${actor.name}`, e);
-				return [];
-			}
-		});
-		const data = (await Promise.all(XPAwardDataPromises.concat(inactivePartyXP)))
-		.flatMap(x=> x);
-		await this.reportXPGain(data);
-	}
+  static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void> {
+    if (!game.user.isGM) {return;}
+    const numOfPCs = party.length;
+    const xp= Persona.calcXP(shadows, numOfPCs );
+    const navigator = PersonaDB.getNavigator();
+    if (navigator) {
+      party.push(navigator);
+    }
+    const inactivePartyXP = this.inactiveMembersXP(xp, party);
+    const XPAwardDataPromises = party.map( async actor => {
+      try {
+        const XPReport = await actor.awardXP(xp);
+        return XPReport;
+      } catch (e) {
+        PersonaError.softFail(`Error giving XP to ${actor.name}`, e);
+        return [];
+      }
+    });
+    const data = (await Promise.all(XPAwardDataPromises.concat(inactivePartyXP)))
+    .flatMap(x=> x);
+    await this.reportXPGain(data);
+  }
 
-	static async reportXPGain(xpReport: XPGainReport[]) : Promise<void> {
-		const xpStringParts = xpReport
-		.map( ({name, amount, leveled}) => {
-			let LUMsg = "";
-			const base =  `<div> ${name}: +${amount} XP </div>`;
-			if (leveled) {
-				LUMsg =  `<div class="level-up-msg"> Level Up!</div>`;
-			}
-			return base + LUMsg;
-		});
-		const text = xpStringParts.join("");
-		if (xpReport.some(x=> x.leveled)) {
-			void PersonaSFX.onLevelUp();
-		}
-		await ChatMessage.create({
-			speaker: {
-				alias: "XP Award",
-			},
-			content: text ,
-			rolls: [],
-			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-		});
-	}
+  static async reportXPGain(xpReport: XPGainReport[]) : Promise<void> {
+    const xpStringParts = xpReport
+    .map( ({name, amount, leveled}) => {
+      let LUMsg = "";
+      const base =  `<div> ${name}: +${amount} XP </div>`;
+      if (leveled) {
+        LUMsg =  `<div class="level-up-msg"> Level Up!</div>`;
+      }
+      return base + LUMsg;
+    });
+    const text = xpStringParts.join("");
+    if (xpReport.some(x=> x.leveled)) {
+      void PersonaSFX.onLevelUp();
+    }
+    await ChatMessage.create({
+      speaker: {
+        alias: "XP Award",
+      },
+      content: text ,
+      rolls: [],
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+    });
+  }
 
-	static async distributeMoney(money: number, players: PersonaActor[]) {
-		if (players.length <= 0) {return;}
-		const moneyShare = Math.floor(money / players.length);
-		const shareDist =
-			players.map( actor => ({
-				pc: actor,
-				share: Math.round(moneyShare * actor.treasureMultiplier)
-			}));
-		shuffle(shareDist);
-		let moneyOverflow = money - (moneyShare * players.length);
-		for (const entry of shareDist) {
-			if (moneyOverflow > 0) {
-				entry.share += 1;
-				moneyOverflow--;
-			}
-			if (entry.pc.system.type == "pc") {
-				await (entry.pc as PC).gainMoney(entry.share, true, true);
-			}
-		}
-	}
+  static async distributeMoney(money: number, players: PersonaActor[]) {
+    if (players.length <= 0) {return;}
+    const moneyShare = Math.floor(money / players.length);
+    const shareDist =
+      players.map( actor => ({
+        pc: actor,
+        share: Math.round(moneyShare * actor.treasureMultiplier)
+      }));
+    shuffle(shareDist);
+    let moneyOverflow = money - (moneyShare * players.length);
+    for (const entry of shareDist) {
+      if (moneyOverflow > 0) {
+        entry.share += 1;
+        moneyOverflow--;
+      }
+      if (entry.pc.system.type == "pc") {
+        await (entry.pc as PC).gainMoney(entry.share, true, true);
+      }
+    }
+  }
 
-	static async executeDungeonAction( action: DungeonActionConsequence) : Promise<void> {
-		switch (action.dungeonAction) {
-			case "roll-tension-pool":
-				PersonaError.softFail("Rolling the tension pool is no longer a supported action");
-				// await TensionPool
-				// 	.instance.rollAuto();
-				break;
-			case "modify-tension-pool":
-				await TensionPool.instance.add(action.amount);
-				break;
-			case "modify-clock": {
-				const clock = ProgressClock.getClock(action.clockId);
-				if (!clock) {
-					const msg =`Can't find clock id ${action.clockId}`;
-					console.warn(msg);
-					// PersonaError.softFail(msg);
-					return;
-				}
-				if (clock == DoomsdayClock.instance) {
-					PersonaError.softFail("Can't modify doomsday clock via dungeon action");
-					return;
-				}
-				await clock.add(action.amount);
-			}
-				break;
-			case "close-all-doors":
-				await this.closeAllDoors();
-				break;
-			case "change-scene-weather":
-				await (game.scenes.active as PersonaScene).changeWeather(action.sceneWeatherType);
-				break;
-			case "set-clock": {
-				const clock = ProgressClock.getClock(action.clockId);
-				if (!clock) {
-					const msg = `Can't find clock id ${action.clockId}`;
-					console.warn (msg);
-					return;
-				}
-				if (clock == DoomsdayClock.instance) {
-					PersonaError.softFail("Can't modify doomsday clock via dungeon action");
-					return;
-				}
-				await clock.set(action.amount);
-				break;
-			}
-			case "rename-scene-clock": {
-				const clock = SceneClock.instance;
-				if (action.clockNewName) {clock.renameClock(action.clockNewName);}
-				clock.setCyclic(action.cyclicClock ?? false);
-				clock.setHideOnZero(action.hideOnZero ?? false);
-				if (action.clockMax) {
-					clock.setMax(action.clockMax);
-				}
-				break;
-			}
-			case "disable-region":
-				break; // handled in persona-region class
-			default:
-				action satisfies never;
-		}
-	}
+  static async executeDungeonAction( action: DungeonActionConsequence) : Promise<void> {
+    switch (action.dungeonAction) {
+      case "roll-tension-pool":
+        PersonaError.softFail("Rolling the tension pool is no longer a supported action");
+        // await TensionPool
+        // 	.instance.rollAuto();
+        break;
+      case "modify-tension-pool":
+        await TensionPool.instance.add(action.amount);
+        break;
+      case "modify-clock": {
+        const clock = ProgressClock.getClock(action.clockId);
+        if (!clock) {
+          const msg =`Can't find clock id ${action.clockId}`;
+          console.warn(msg);
+          // PersonaError.softFail(msg);
+          return;
+        }
+        if (clock == DoomsdayClock.instance) {
+          PersonaError.softFail("Can't modify doomsday clock via dungeon action");
+          return;
+        }
+        await clock.add(action.amount);
+      }
+        break;
+      case "close-all-doors":
+        await this.closeAllDoors();
+        break;
+      case "change-scene-weather":
+        await (game.scenes.active as PersonaScene).changeWeather(action.sceneWeatherType);
+        break;
+      case "set-clock": {
+        const clock = ProgressClock.getClock(action.clockId);
+        if (!clock) {
+          const msg = `Can't find clock id ${action.clockId}`;
+          console.warn (msg);
+          return;
+        }
+        if (clock == DoomsdayClock.instance) {
+          PersonaError.softFail("Can't modify doomsday clock via dungeon action");
+          return;
+        }
+        await clock.set(action.amount);
+        break;
+      }
+      case "rename-scene-clock": {
+        const clock = SceneClock.instance;
+        if (action.clockNewName) {clock.renameClock(action.clockNewName);}
+        clock.setCyclic(action.cyclicClock ?? false);
+        clock.setHideOnZero(action.hideOnZero ?? false);
+        if (action.clockMax) {
+          clock.setMax(action.clockMax);
+        }
+        break;
+      }
+      case "disable-region":
+        break; // handled in persona-region class
+      default:
+        action satisfies never;
+    }
+  }
 
-	static async closeAllDoors() {
-		const scene = game.scenes.current;
-		const openDoors = scene.walls
-			.filter(w=> w.door > 0 && w.ds == 1);
-		for (const door of openDoors) {
-			await door.update( {ds: 0});
-		}
-	}
+  static async closeAllDoors() {
+    const scene = game.scenes.current;
+    const openDoors = scene.walls
+      .filter(w=> w.door > 0 && w.ds == 1);
+    for (const door of openDoors) {
+      await door.update( {ds: 0});
+    }
+  }
 
-	static async searchRoom() {
-		const region = this.getRegion();
-		if (!region) {
-			throw new PersonaError("Can't find region");
-		}
-		if (region.isSafe) {
-			throw new PersonaError("Room is safe can't be searched");
-		}
-		await this.searchRegion(region);
-	}
+  static async searchRoom() {
+    const region = this.getRegion();
+    if (!region) {
+      throw new PersonaError("Can't find region");
+    }
+    if (region.isSafe) {
+      throw new PersonaError("Room is safe can't be searched");
+    }
+    await this.searchRegion(region);
+  }
 
-	static async passMetaverseTurn() {
-		if (game.user.isGM)
-		{return await this.#passMetaverseTurn();}
-		else
-		{return this.#sendPassTurnRequest();}
-	}
+  static async passMetaverseTurn() {
+    if (game.user.isGM)
+    {return await this.#passMetaverseTurn();}
+    else
+    {return this.#sendPassTurnRequest();}
+  }
 
   static async #passMetaverseTurn() {
     console.log("Trying to pass MV turn");
@@ -417,13 +417,13 @@ export class Metaverse {
       } as const satisfies TriggeredSituation.Select<"on-metaverse-turn-dual">;
       await TriggeredEffect.autoApplyTrigger(indiv_sit, undefined);
     }
-		ui.notifications.notify("Passing Metaverse turn");
-	}
+    ui.notifications.notify("Passing Metaverse turn");
+  }
 
-	static #sendPassTurnRequest() {
-		const gms = game.users.filter(x=> x.isGM).map (x=> x.id);
-		PersonaSockets.simpleSend("PASS_MV_TURN", {}, gms);
-	}
+  static #sendPassTurnRequest() {
+    const gms = game.users.filter(x=> x.isGM).map (x=> x.id);
+    PersonaSockets.simpleSend("PASS_MV_TURN", {}, gms);
+  }
 
   static async searchRegion(region: PersonaRegion) {
     const data = region.regionData;
@@ -478,152 +478,152 @@ export class Metaverse {
     await this.passMetaverseTurn();
   }
 
-	static getRegion(regionId ?: string) : PersonaRegion | undefined {
-		let scene = game.scenes.active;
-		const regionData = PersonaSettings.getLastRegion();
-		if (regionData.lastRegionId && regionData.lastSceneId) {
-			const storedScene = game.scenes.get(regionData.lastSceneId);
-			regionId = regionId || regionData.lastRegionId;
-			if (storedScene) {scene = storedScene;}
-			const region = scene.regions.find( (r: PersonaRegion) => r.id == regionId && !r?.regionData?.ignore);
-			if (!region) {
-				return undefined;
-			}
-			return region as PersonaRegion;
-		}
-		const actor = game.user.character;
-		if (!actor) {return undefined;}
-		let region = scene.regions.find( (region : PersonaRegion) => {
-			if (region?.regionData?.ignore) {return false;}
-			const arr = Array.from(region.tokens);
-			return arr.some( tok => tok.actor?.id == actor.id);
-		});
-		if (!region) {
-			//Search for party token
-			region = scene.regions.find(
-				(region : PersonaRegion) => {
-					if (region?.regionData?.ignore) {return false;}
-					const arr = Array.from(region.tokens);
-					return arr.some(token => token.actor?.isOwner);
-				});
-			if (!region) {
-				return undefined;
-			}
-		}
-		if ((region as PersonaRegion)?.regionData?.ignore == true) {
-			throw new PersonaError("Region is ignore!");
+  static getRegion(regionId ?: string) : PersonaRegion | undefined {
+    let scene = game.scenes.active;
+    const regionData = PersonaSettings.getLastRegion();
+    if (regionData.lastRegionId && regionData.lastSceneId) {
+      const storedScene = game.scenes.get(regionData.lastSceneId);
+      regionId = regionId || regionData.lastRegionId;
+      if (storedScene) {scene = storedScene;}
+      const region = scene.regions.find( (r: PersonaRegion) => r.id == regionId && !r?.regionData?.ignore);
+      if (!region) {
+        return undefined;
+      }
+      return region as PersonaRegion;
+    }
+    const actor = game.user.character;
+    if (!actor) {return undefined;}
+    let region = scene.regions.find( (region : PersonaRegion) => {
+      if (region?.regionData?.ignore) {return false;}
+      const arr = Array.from(region.tokens);
+      return arr.some( tok => tok.actor?.id == actor.id);
+    });
+    if (!region) {
+      //Search for party token
+      region = scene.regions.find(
+        (region : PersonaRegion) => {
+          if (region?.regionData?.ignore) {return false;}
+          const arr = Array.from(region.tokens);
+          return arr.some(token => token.actor?.isOwner);
+        });
+      if (!region) {
+        return undefined;
+      }
+    }
+    if ((region as PersonaRegion)?.regionData?.ignore == true) {
+      throw new PersonaError("Region is ignore!");
 
-		}
-		return region as PersonaRegion;
-	}
+    }
+    return region as PersonaRegion;
+  }
 
-	static async toggleCrunchParty () : Promise<void> {
-		if (game.user.isGM) {
-			if ("PartyCruncher" in window) {
-				this.lastCrunch = Date.now();
-				//@ts-expect-error party curnch stuff
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-				await window.PartyCruncher.toggleParty(1);
-			}
-		} else {
-			Helpers.pauseCheck();
-			this.sendPartyCrunchRequest();
-		}
-	}
+  static async toggleCrunchParty () : Promise<void> {
+    if (game.user.isGM) {
+      if ("PartyCruncher" in window) {
+        this.lastCrunch = Date.now();
+        //@ts-expect-error party curnch stuff
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        await window.PartyCruncher.toggleParty(1);
+      }
+    } else {
+      Helpers.pauseCheck();
+      this.sendPartyCrunchRequest();
+    }
+  }
 
-	static sendPartyCrunchRequest() {
-		const gms = game.users.filter(x=> x.isGM);
-		PersonaSockets.simpleSend("CRUNCH_TOGGLE", {}, gms.map( x=> x.id));
-	}
+  static sendPartyCrunchRequest() {
+    const gms = game.users.filter(x=> x.isGM);
+    PersonaSockets.simpleSend("CRUNCH_TOGGLE", {}, gms.map( x=> x.id));
+  }
 
-	static async onCrunchRequest() {
-		if (game.user.isGM) {
-			const currTime = Date.now();
-			if (currTime - this.lastCrunch > 8000) {
-				await this.toggleCrunchParty();
-			}
-		} else {
-			PersonaError.softFail("Crunch request recieved by non-GM, this is in error");
-		}
-	}
+  static async onCrunchRequest() {
+    if (game.user.isGM) {
+      const currTime = Date.now();
+      if (currTime - this.lastCrunch > 8000) {
+        await this.toggleCrunchParty();
+      }
+    } else {
+      PersonaError.softFail("Crunch request recieved by non-GM, this is in error");
+    }
+  }
 
-	 static activeRoomModifiers() : UniversalModifier[] {
-			if (PersonaCombat.combat) {
-				 return PersonaCombat.combat.getRoomEffects();
-			} else {
-				 return Metaverse.getRegion()?.allRoomEffects ?? [];
-			}
-	 }
+  static activeRoomModifiers() : UniversalModifier[] {
+    if (PersonaCombat.combat) {
+      return PersonaCombat.combat.getRoomEffects();
+    } else {
+      return Metaverse.getRegion()?.allRoomEffects ?? [];
+    }
+  }
 
 }
 
 Hooks.on("socketsReady", () => {
-	console.log("Sockets set handler");
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-	PersonaSockets.setHandler("CRUNCH_TOGGLE", Metaverse.onCrunchRequest.bind(Metaverse));
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-	PersonaSockets.setHandler("PASS_MV_TURN", Metaverse.passMetaverseTurn.bind(Metaverse));
+  console.log("Sockets set handler");
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  PersonaSockets.setHandler("CRUNCH_TOGGLE", Metaverse.onCrunchRequest.bind(Metaverse));
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  PersonaSockets.setHandler("PASS_MV_TURN", Metaverse.passMetaverseTurn.bind(Metaverse));
 });
 
 declare global {
-	interface SocketMessage {
-		"CRUNCH_TOGGLE": object;
-		"PASS_MV_TURN" : object;
-	}
+  interface SocketMessage {
+    "CRUNCH_TOGGLE": object;
+    "PASS_MV_TURN" : object;
+  }
 }
 
 export type PresenceRollData = {
-	presenceValue: number,
-	rollString: string,
-	region: PersonaRegion,
-	label: string,
-	encounterType: "wandering" | "room" | "secondary",
-	atkText ?: string,
-	safeText ?: string,
+  presenceValue: number,
+  rollString: string,
+  region: PersonaRegion,
+  label: string,
+  encounterType: "wandering" | "room" | "secondary",
+  atkText ?: string,
+  safeText ?: string,
 }
 
 declare global {
-	interface HOOKS {
-		"exitMetaverse" : () => void;
-		"enterMetaverse" : () => void;
-	}
+  interface HOOKS {
+    "exitMetaverse" : () => void;
+    "enterMetaverse" : () => void;
+  }
 }
 
 Hooks.on("updateWall", async function (_updateItem: WallDocument, changes: Record<string, unknown>, _diff: unknown, userId: User["id"]) {
-	if (changes.ds == 1 && game.user.isGM) {
-		const situation : Situation = {
-			trigger: "on-open-door",
-			triggeringUser: game.users.get(userId)!,
-		};
-		await TriggeredEffect.autoApplyTrigger(situation, undefined);
-	}
+  if (changes.ds == 1 && game.user.isGM) {
+    const situation : Situation = {
+      trigger: "on-open-door",
+      triggeringUser: game.users.get(userId)!,
+    };
+    await TriggeredEffect.autoApplyTrigger(situation, undefined);
+  }
 });
 
 Hooks.on("clockTick", async function (clock: ProgressClock, _newAmt: number) {
-	const situation : Situation = {
-		trigger: "on-clock-tick",
-		triggeringClockId: clock.id,
-		triggeringUser: game.user,
-	};
-	await TriggeredEffect.autoApplyTrigger(situation, undefined);
+  const situation : Situation = {
+    trigger: "on-clock-tick",
+    triggeringClockId: clock.id,
+    triggeringUser: game.user,
+  };
+  await TriggeredEffect.autoApplyTrigger(situation, undefined);
 });
 
 Hooks.on("clockOverflow", async function (clock: ProgressClock) {
-	const situation : Situation = {
-		trigger: "on-clock-overflow",
-		triggeringClockId: clock.id,
-		triggeringUser: game.user,
-	};
-	await TriggeredEffect.autoApplyTrigger(situation, undefined);
+  const situation : Situation = {
+    trigger: "on-clock-overflow",
+    triggeringClockId: clock.id,
+    triggeringUser: game.user,
+  };
+  await TriggeredEffect.autoApplyTrigger(situation, undefined);
 });
 
 Hooks.on("updateClock", async function (clock: ProgressClock, _newAmt: number, _delta: number) {
-	const situation : Situation = {
-		trigger: "on-clock-change",
-		triggeringClockId: clock.id,
-		triggeringUser: game.user,
-	};
-	await TriggeredEffect.autoApplyTrigger(situation, undefined);
+  const situation : Situation = {
+    trigger: "on-clock-change",
+    triggeringClockId: clock.id,
+    triggeringUser: game.user,
+  };
+  await TriggeredEffect.autoApplyTrigger(situation, undefined);
 });
 
 //@ts-expect-error adding to window
