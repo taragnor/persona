@@ -1337,6 +1337,7 @@
 	"persona.consequenceAmount.actorProperties.batonPassLevel": "Baton Pass Lvl",
 	"persona.consequenceAmount.actorProperties.level": "Level",
 	"persona.consequenceAmount.actorProperties.statusPotency": "Status Potency",
+	"persona.consequenceAmount.actorProperties.money": "Resource Points",
 
 	"persona.consequenceAmount.sitProperties.damage-dealt": "Damage Dealt",
 	"persona.consequenceAmount.sitProperties.card-item-value": "Value of Card Item",

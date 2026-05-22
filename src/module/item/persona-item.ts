@@ -1856,6 +1856,9 @@ equals(other: PersonaItem) : boolean {
   return this == other;
 }
 
+isSameBaseItem (other: Carryable) : boolean {
+  return this.itemBase == other.itemBase;
+}
 
 get isStackable() : boolean {
   return this.isCraftingMaterial() || this.isConsumable() || this.isSkillCard();

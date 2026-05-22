@@ -695,15 +695,19 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
     }
 
     case "has-item-in-inventory": {
-      const item = game.items.get(condition.itemId);
-      if (!item) {return undefined;}
+      const item = PersonaDB.getItemById(condition.itemId);
+
+      if (!item || !item.isCarryableType()) {return undefined;}
       const targets = getSubjectActors(condition, situation,  "conditionTarget");
       if (!targets) {return undefined;}
       return targets.some( target => {
         const itemList = condition.equipped
           ? target.equippedItems()
           : target.items.contents;
-        return itemList.some(x=> x.name == item.name && (("amount" in x.system)? x.system.amount > 0 : true ));
+        return itemList.some( x =>
+          x.isSameBaseItem(item)
+        );
+        // return itemList.some(x=> x.name == item.name && (("amount" in x.system)? x.system.amount > 0 : true ));
       });
     }
 
