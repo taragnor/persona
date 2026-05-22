@@ -84,7 +84,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   private cache2 = {
     startingLevel: new PermanentCache( () => this._startingLevel()),
-    accessor: new PermanentCache( () => this._accessor()),
     persona : new TimedCache( () => (this as ValidAttackers)._persona(), 3000),
     basePersona : new TimedCache( () => (this as ValidAttackers)._basePersona(), 3000),
     actorMainModifiers: new TimedCache( () => this._actorMainModifiers(), 1000),
@@ -829,11 +828,12 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return this.persona().combatInit.eval(situation).total;
   }
 
-  get accessor() : UniversalActorAccessor<typeof this> {
-    return this.cache2.accessor.value;
-  }
+  // get accessor() : UniversalActorAccessor<typeof this> {
+  //   return this.cache2.accessor.value;
+  // }
 
-  _accessor() : UniversalActorAccessor<this> {
+  get accessor() : UniversalActorAccessor<this> {
+    //cannot cache this due to tokens screwing it up
     return PersonaDB.getUniversalActorAccessor(this);
   }
 

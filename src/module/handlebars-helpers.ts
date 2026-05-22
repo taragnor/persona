@@ -1167,7 +1167,8 @@ export class PersonaHandleBarsHelpers {
     return String(Math.round(100 * actor.theurgyVal / actor.theurgyMax));
   },
 
-  "isSpecialPower": function (power: Power) : boolean {
+  "isSpecialPower": function (persona: Persona, power: Power) : boolean {
+    if (!persona.canUsePower(power, false)) {return false;}
     return power.hasTag("theurgy", null);
   },
 

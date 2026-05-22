@@ -57,7 +57,7 @@ export function powerCost() {
 
 export function powerOnlyUsableProps() {
 	return {
-		damageLevel: new txt({choices: DAMAGE_LEVELS_LIST, initial: "-"}),
+		damageLevel: new txt({choices: DAMAGE_LEVELS_LIST, initial: "none"}),
 		customCost: new bool(),
 		mag_mult: new num( {integer:true, min:0, max: 100, initial:1}),
 		attacksMin: new num( {integer: true, min: 1, initial:1 }),
@@ -78,8 +78,6 @@ export function UsablePowerProps() {
 		targets: new txt<typeof TARGETINGLIST[number]> ( {choices: TARGETINGLIST, initial: "self"}),
 		validTargetConditions: new arr( new obj<Precondition>()),
 		dmg_type: new txt( {choices: DAMAGE_TYPES_LIST, initial:"none"}),
-		// crit_boost: new num( {min: -20, max:20, initial: 0, integer:true}),
-		// atk_bonus: new num({initial: 0, integer: true}),
 		openerConditions: new arr(new obj<Precondition>()),
 		teamworkConditions: new arr(new obj<Precondition>()),
 	};

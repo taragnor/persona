@@ -678,9 +678,9 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
       if (!target) {return undefined;}
       if (!target.isShadow()) {return false;}
       if (typeof condition.shadowRole == "string") {
-        return (condition.shadowRole == target.system.role || target.system.role2 == condition.shadowRole);
+        return target.hasRole(condition.shadowRole);
       }
-      return multiCheckContains(condition.shadowRole, [target.system.role, target.system.role2]);
+      return multiCheckContains(condition.shadowRole, target.shadowRoles);
     }
 
     case "active-scene-is": {

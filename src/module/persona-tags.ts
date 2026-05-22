@@ -100,12 +100,22 @@ export class PersonaTagManager<PType extends Persona> extends TagManager<TagType
       }
     }
     if (this.user.isShadow()) {
-      if (this.user.system.role != "base") {
-        autoPTags.pushUnique(this.user.system.role);
+      const props = [
+        "role", "role2", "role3" ] as const satisfies (keyof Shadow["system"])[];
+      for (const prop of props) {
+        const role = this.user.system[prop];
+        if (!role || role == "base") {continue;}
+        autoPTags.pushUnique(role);
       }
-      if (this.user.system.role2 != "base") {
-        autoPTags.pushUnique(this.user.system.role2);
-      }
+      // if (this.user.system.role != "base") {
+      //   autoPTags.pushUnique(this.user.system.role);
+      // }
+      // if (this.user.system.role2 != "base") {
+      //   autoPTags.pushUnique(this.user.system.role2);
+      // }
+      // if (this.user.system.role3 != "base") {
+      //   autoPTags.pushUnique(this.user.system.role3);
+      // }
     }
     if (autoPTags.includes("persona") && this.source.isPC() &&  this.source.hasSoloPersona) {
       autoPTags.pushUnique("lone-persona");

@@ -50,7 +50,7 @@ import {PersonaTargetting} from '../combat/persona-targetting.js';
 import {PersonaSocial} from '../social/persona-social.js';
 import {ItemTagManager} from './item-tags.js';
 import {ItemHooks} from './item-hooks.js';
-import {PermanentCache} from '../utility/cache.js';
+import {PermanentCache, TimedCache} from '../utility/cache.js';
 
 declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -85,7 +85,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 
   private cache2 = {
-    accessor: new PermanentCache( () => this._accessor()),
+    accessor: new TimedCache( () => this._accessor(), 1500),
   };
 
   static cacheStats = {
