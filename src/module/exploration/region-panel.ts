@@ -8,7 +8,7 @@ import {ExplorationPanel} from "../panels/exploration-panel.js";
 
 
 export class RegionPanel {
-	private static panel: ExplorationPanel;
+	static panel: ExplorationPanel;
 
 	static init() {
 		if (!this.panel) {

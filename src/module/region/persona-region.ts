@@ -15,6 +15,7 @@ import {EncounterOptions, RandomEncounter} from "../exploration/random-encounter
 import {randomSelect, removeDuplicates} from "../utility/array-tools.js";
 import {RegionPanel} from "../exploration/region-panel.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
+import {ExplorationPanel} from "../panels/exploration-panel.js";
 
 declare global {
 	interface SocketMessage {
@@ -683,4 +684,10 @@ Hooks.on("renderRegionConfig", async (app, html) => {
 
 RegionPanel.init();
 
-
+Hooks.on("controlRegion", async (region, controlled) => {
+  if (controlled == false) {return;}
+  const panel = RegionPanel.panel;
+  panel.setRegion(region.document as PersonaRegion);
+  await panel.activate();
+  Debug(panel);
+});

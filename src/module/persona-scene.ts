@@ -104,32 +104,32 @@ export class PersonaScene extends Scene {
 		return this.getFlag("persona", "baseDiff") ?? 0;
 	}
 
-	encounterList() : Shadow[] {
-		if (this.difficultyLevel > 0) {
-			const shadows = RandomEncounter.getRandomEncounterListFromDiffLevel(this.difficultyLevel);
-			if (shadows.length > 0) {return shadows;}
-		}
-		const disAllowedRoles: ShadowRole[] = [
-			"boss",
-		];
-		let encounterList =
-			this.allFoes()
-			.filter( shadow => !disAllowedRoles.includes(shadow.system.role)
-				&& shadow.getEncounterWeight(this) > 0
-			)
-			.filter( shadow => {
-				const situation = {
-					user: shadow.accessor,
-					target: shadow.accessor,
-				};
-				const sourced = ConditionalEffectManager.getConditionals(shadow.system.encounter.conditions, null, shadow, null);
-				return testPreconditions(sourced, situation);
-			});
-		if (!PersonaCalendar.isStormy()) {
-			encounterList = encounterList.filter( shadow => shadow.system.encounter.rareShadow != true);
-		}
-		return encounterList;
-	}
+  encounterList() : Shadow[] {
+    if (this.difficultyLevel > 0) {
+      const shadows = RandomEncounter.getRandomEncounterListFromDiffLevel(this.difficultyLevel);
+      if (shadows.length > 0) {return shadows;}
+    }
+    const disAllowedRoles: ShadowRole[] = [
+      "boss",
+    ];
+    let encounterList =
+      this.allFoes()
+      .filter( shadow => !disAllowedRoles.includes(shadow.system.role)
+        && shadow.getEncounterWeight(this) > 0
+      )
+      .filter( shadow => {
+        const situation = {
+          user: shadow.accessor,
+          target: shadow.accessor,
+        };
+        const sourced = ConditionalEffectManager.getConditionals(shadow.system.encounter.conditions, null, shadow, null);
+        return testPreconditions(sourced, situation);
+      });
+    if (!PersonaCalendar.isStormy()) {
+      encounterList = encounterList.filter( shadow => shadow.system.encounter.rareShadow != true);
+    }
+    return encounterList;
+  }
 
 	async setAllDoorSound(snd: string) {
 		const doors = this.walls.filter( wall => wall.door != 0);

@@ -1,11 +1,13 @@
 import {PersonaActor} from "../actor/persona-actor.js";
 import {CombatScene, CombatSetupOptions} from "../combat/combat-scene.js";
 import {ModifierList} from "../combat/modifier-list.js";
+import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {Metaverse, PresenceRollData} from "../metaverse.js";
 import {NavigatorVoiceLines} from "../navigator/nav-voice-lines.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
+import {testPreconditions} from "../preconditions.js";
 import {PersonaRegion} from "../region/persona-region.js";
 import {weightedChoice} from "../utility/array-tools.js";
 import {CreateToken} from "../utility/createToken.js";
@@ -477,8 +479,18 @@ export class RandomEncounter {
     const CR = difficultyLevel;
     const shadows = PersonaDB.shadows()
       .filter( x => x.isEligibleForRandomEncounter())
-      .filter(x=> x.level >= CR - lowRange &&  x.level<= CR + highRange)
-      .filter( x=> !x.isBossOrMiniBossType());
+      .filter(x=> x.level >= CR - lowRange
+        &&  x.level<= CR + highRange
+        && !x.isBossOrMiniBossType())
+      .filter( shadow => {
+        const situation = {
+          user: shadow.accessor,
+          target: shadow.accessor,
+        };
+        const sourced = ConditionalEffectManager.getConditionals(shadow.system.encounter.conditions, null, shadow, null);
+        return testPreconditions(sourced, situation);
+      });
+
     return shadows;
   }
 
