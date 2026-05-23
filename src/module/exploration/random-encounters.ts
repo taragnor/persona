@@ -402,7 +402,6 @@ export class RandomEncounter {
           );
         if (encounterList.length == 0) {
           console.log(`Encounter size remianing: ${encounterSizeRemaining} ${enemyType}`);
-          // PersonaError.softFail(`Error on encounter size value ${encounterSizeRemaining} for ${enemyType}`);
           return {
             enemies: encounter,
             encounterDifficulty: etype
@@ -425,7 +424,7 @@ export class RandomEncounter {
       if (enemyType == undefined) {
         enemyType = pick.system.creatureType;
       }
-      if (pick.system.creatureType != enemyType) {
+      if (pick.system.creatureType != enemyType && !allowShadowAndDaemonMix) {
         bailout++; //escape hatch for if it keeps screwing up
         continue;
       }
