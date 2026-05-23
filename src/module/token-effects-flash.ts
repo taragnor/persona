@@ -15,10 +15,8 @@ export class TokenEffectsFlash {
       if (!effect) {return sprite;}
       arr.push( [sprite, effect]);
       flashMap.set(this, arr);
-      // Debug(sprite);
       return sprite;
     };
-    // game.canvas.app.ticker.add( handleFlash);
   }
 
 }
@@ -43,5 +41,3 @@ function handleFlash( delta: number) : void {
   });
 }
 
-//@ts-expect-error adding to global scope
-window.flashMap = flashMap;
