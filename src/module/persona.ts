@@ -58,6 +58,7 @@ import {PersonaToken} from "./persona-token.js";
 import {SeededRandom} from "./utility/seededRandom.js";
 import {CraftingPrinter} from "./printers/crafting-list.js";
 import {PostCombatPanel} from "./panels/post-combat-panel.js";
+import {TokenEffectsFlash} from "./token-effects-flash.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -132,6 +133,7 @@ Hooks.once("init", function() {
   CraftingPrinter.init();
   PostCombatPanel.init();
   Tests.init();
+  TokenEffectsFlash.init();
 });
 
 function registerHandlebarsHelpers() {
@@ -200,4 +202,5 @@ Hooks.on("renderChatMessageHTML", (msg, html) => {
 
 //@ts-expect-error adding to global
 window.seededRandom = SeededRandom;
+
 

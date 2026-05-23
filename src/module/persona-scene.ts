@@ -406,11 +406,15 @@ html.find("section.window-content").children().last().before(tab);
 }
 
 get treasureLevel() : number {
-	const list = this.encounterList()
-		.filter( x=> !x.hasRole("treasure-shadow"));
-	if (list.length ==0) {return 0;}
-	const totalWeight = list.reduce( (a,s) => a + s.getEncounterWeight(this), 0);
-	return Math.floor(list.reduce( (a,s) => a + (s.level * s.getEncounterWeight(this)) , 0) / totalWeight);
+  if (this.difficultyLevel > 0) {return this.difficultyLevel;}
+  const list = this.encounterList()
+    .filter( x=> !x.hasRole("treasure-shadow"));
+  if (list.length ==0) {return 0;}
+  const totalWeight = list.reduce( (a,s) => a + s.getEncounterWeight(this), 0);
+  return Math.round( list
+    .reduce( (a,s) => a + (s.level * s.getEncounterWeight(this)) , 0)
+    / totalWeight
+  );
 }
 
 async removeShadowFromEncounterList(id: Shadow["id"])  : Promise<PersonaScene>{

@@ -7,13 +7,14 @@ export class PersonaToken extends TokenDocument<PersonaActor> {
 	 FULL_FADE_OPACITY = 0.20 as const;
 	 _oldAlpha: U<number>;
 
-	 override get alpha() : number{
-			if (this.hidden) {return this.oldAlpha();}
-			const actor = this.actor;
-			if  (!actor || !actor.isValidCombatant()) {return this.oldAlpha();}
-			const opacity = actor.hp > 0 ? 1.0 : (actor.isFullyFaded() ? this.FULL_FADE_OPACITY : this.DOWNED_OPACITY);
-			return opacity;
-	 }
+
+  override get alpha() : number{
+    if (this.hidden) {return this.oldAlpha();}
+    const actor = this.actor;
+    if  (!actor || !actor.isValidCombatant()) {return this.oldAlpha();}
+    const opacity = actor.hp > 0 ? 1.0 : (actor.isFullyFaded() ? this.FULL_FADE_OPACITY : this.DOWNED_OPACITY);
+    return opacity;
+  }
 
 	 private oldAlpha() : number {
 			return this._oldAlpha ?? (this._source.alpha as number) ?? 1;
@@ -28,6 +29,7 @@ export class PersonaToken extends TokenDocument<PersonaActor> {
 			}
 			this._oldAlpha = val;
 	 }
+
 }
 
 Hooks.on( "updateActor", (actor : PersonaActor, diff) => {

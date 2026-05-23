@@ -13,7 +13,7 @@ import {TriggeredEffect} from "./triggered-effect.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {StatusEffect} from "../config/consequence-types.js";
 import {PersonaSettings} from "../config/persona-settings.js";
-import {PermanentCache} from "./utility/cache.js";
+import {PermanentCache, TimedCache} from "./utility/cache.js";
 
 const POWER_COOLDOWN_FLAG_NAME =   "cooldownPowerId" as const;
 
@@ -22,7 +22,13 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
   declare statuses: Set<StatusEffectId>;
   _flaggedDeletion: boolean;
 
+  DURATION_ABOUT_TO_EXPIRE_STATUS = {
+    dtype: "X-rounds",
+    amount: 0,
+  } as const;
+
   cache= {
+    expireCache: new TimedCache( () => this._aboutToExpire()),
     embeddedEffects: new PermanentCache( () => this._embeddedEffects()),
   };
 
@@ -263,6 +269,18 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     }
     await this.setFlag("persona", "duration", newDuration);
   }
+
+  get aboutToExpire() : boolean {
+    return this.cache.expireCache.value;
+  }
+
+  private _aboutToExpire() : boolean {
+    return this.durationLessThanOrEqualTo(
+      this.DURATION_ABOUT_TO_EXPIRE_STATUS
+    );
+  }
+
+
 
 
   async setDuration(duration: StatusDuration, options: Partial<DurationOptions> = {}) : Promise<void> {

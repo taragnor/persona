@@ -360,6 +360,7 @@ export class RandomEncounter {
   static generateEncounter(shadowType ?: Shadow["system"]["creatureType"], options: EncounterOptions = {}): Omit<Encounter, "encounterType"> {
     const region = Metaverse.getRegion();
     const scene =  region ?  region.parent : game.scenes.current as PersonaScene;
+    const allowShadowAndDaemonMix = true;
     const regionOrScene = region ? region : scene;
     const baseList  = this.getEncounterList(regionOrScene); //allow for mixed daemon/shadow encounters
     let enemyType : Shadow["system"]["creatureType"] | undefined = undefined;
@@ -397,7 +398,7 @@ export class RandomEncounter {
         encounterList = encounterList
           .filter ( x=>
             x.encounterSizeValue() <= encounterSizeRemaining
-            && x.system.creatureType == enemyType
+            && (x.system.creatureType == enemyType || allowShadowAndDaemonMix)
           );
         if (encounterList.length == 0) {
           console.log(`Encounter size remianing: ${encounterSizeRemaining} ${enemyType}`);
