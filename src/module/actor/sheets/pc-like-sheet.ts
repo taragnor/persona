@@ -118,13 +118,13 @@ export class PCLikeSheet extends CombatantSheetBase {
       ...super.powerMenuOptions(event),
       {
         label: "Sort Up",
-        visible: persona.mainPowers.includes(power) && persona.isOwner,
+        visible: persona && persona.mainPowers.includes(power) && persona.isOwner,
         action: (ev: JQuery.Event)=> {
           void this.reorderPowerUp(ev);
         },
       }, {
         label: "Sort Down",
-        visible: persona.mainPowers.includes(power) && persona.isOwner,
+        visible: persona && persona.mainPowers.includes(power) && persona.isOwner,
         action: (ev: JQuery.Event)=> {
           void this.reorderPowerDown(ev);
         },

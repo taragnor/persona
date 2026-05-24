@@ -251,14 +251,14 @@ export class PCSheet extends PCLikeSheet {
       ...super.powerMenuOptions(event),
       {
         label: "Move To Sideboard",
-        visible: persona.canMoveToSideboard(power),
+        visible: persona && persona.canMoveToSideboard(power),
         action: (ev: JQuery.ClickEvent) => {
           void this.movePowerToSideboard(ev);
         },
       },
       {
         label: "Move To Main Powers",
-        visible: persona.canMoveToMain(power),
+        visible: persona && persona.canMoveToMain(power),
         action: (ev: JQuery.ClickEvent) => {
           void this.movePowerToMain(ev);
         },

@@ -78,7 +78,7 @@ export class ContextMenu {
 
   public hide() {
     ContextMenu.openMenus = ContextMenu.openMenus
-      .filter( menu=> menu != this);
+      .filter( menu => menu != this);
     this.element.hide();
   }
 
@@ -103,9 +103,7 @@ type ContextMenuOptions = {
 
 Hooks.on("ready", () => {
   $(document).on("keydown", function (e) {
-    if (e.key === "Escape") {
-      ContextMenu.closeAll();
-    }
+    if (e.key === "Escape") { ContextMenu.closeAll(); }
   });
   $(document).on("click", function () {
     ContextMenu.closeAll();

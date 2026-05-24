@@ -342,19 +342,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		power.sheet.render(true);
 	}
 
-  // getPower(event: JQuery.Event) : Power {
-		// const powerId = HTMLTools.getClosestData(event, "powerId");
-		// if (powerId == undefined) {
-			// throw new PersonaError(`Can't find power`);
-		// }
-		// const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.allPowers().get(powerId);
-		// if (!power) {
-			// throw new PersonaError(`Can't find power id ${powerId}`);
-		// }
-  //   return power;
-  // }
-
-  getPersona (event: JQuery.Event) : Persona {
+  getPersona (event: JQuery.Event) : U<Persona> {
+    try {
 		const personaSourceId = HTMLTools.getClosestData(event, "personaId");
 		if (personaSourceId == undefined) {
 			throw new PersonaError(`Can't find Persona, no Id`);
@@ -365,6 +354,13 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new PersonaError(`Can't find persona id ${personaSourceId} on ${this.actor.name}`);
 		}
     return persona;
+    } catch (e) {
+      if (PersonaSettings.debugMode() && game.user.isGM) {
+        console.warn(e);
+        Debug(e);
+      }
+      return undefined;
+    }
   }
 
   protected powerMenuOptions (event: JQuery.ContextMenuEvent) : ContextMenu["options"] {
@@ -388,7 +384,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
           return this.deletePower(ev);
         },
         label: "Delete",
-        visible: persona.canDeletePower(power),
+        visible: persona && persona.canDeletePower(power),
       },
     ] satisfies ContextMenu["options"];
     return options;
@@ -466,7 +462,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			.filter( x=> x.actor.persona().effectiveScanLevel >=2 ).at(0) ?? null ;
     const targetPersona  : Persona = target ? target.actor.persona() : persona;
 		const damage = await CombatantSheetBase.getDamage(persona, power);
-    await sleep(10);//allow Async break to allow rendering (smooth behavior)
+    await sleep(5);//allow Async break to allow rendering (smooth behavior)
 		const balanceReport = await this.getBalanceTest(power);
 		const ailmentRange = CombatEngine.calculateAilmentRange(persona, targetPersona, power, null);
 		const instantDeathRange = CombatEngine.calculateInstantDeathRange(persona, targetPersona, power, null);
