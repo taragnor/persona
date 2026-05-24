@@ -17,7 +17,7 @@ export class PersonaSocialSheetBase extends PersonaItemSheetBase {
 	}
 
 	async deleteTokenSpend(ev: JQuery.ClickEvent) {
-		const spendIndex= Number(HTMLTools.getClosestData(ev, "spendIndex"));
+		const spendIndex = Number(HTMLTools.getClosestData(ev, "spendIndex"));
 		await this.item.deleteTokenSpend(spendIndex);
 	}
 

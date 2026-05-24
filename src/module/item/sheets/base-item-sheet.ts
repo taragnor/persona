@@ -4,54 +4,63 @@ import { PersonaItem } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { ConditionalEffectManager } from "../../conditional-effect-manager.js";
 import {PersonaDB} from "../../persona-db.js";
+import {ContextMenu} from "../../utility/context-menu.js";
 
 export class PersonaItemSheetBase extends foundry.appv1.sheets.ItemSheet<PersonaItem> {
 
-	static override get defaultOptions() {
-		return foundry.utils.mergeObject(super.defaultOptions, {
-			classes: ["persona", "sheet", "item"],
-			template: `${HBS_TEMPLATES_DIR}/item-sheet-base.hbs`,
-			width: 800,
-			height: 800,
-			tabs: [{navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "main"}]
-		});
-	}
+  protected contextMenu: ContextMenu;
 
-	 override async getData() {
-			await PersonaDB.waitUntilLoaded();
-			return super.getData();
-	 }
+  constructor(obj: object, options: object) {
+    super(obj, options );
+    this.contextMenu = new ContextMenu("item-sheet-context-menu");
+  }
 
-	override activateListeners(html: JQuery<HTMLElement>) {
-		super.activateListeners(html);
-		ConditionalEffectManager.applyHandlers(html, this.item);
-		html.find(".itemTags .addItemTag").on("click", this.addItemTag.bind(this));
-		html.find(".itemTags .delTag").on("click", this.deleteItemTag.bind(this));
-	}
+  static override get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, {
+      classes: ["persona", "sheet", "item"],
+      template: `${HBS_TEMPLATES_DIR}/item-sheet-base.hbs`,
+      width: 800,
+      height: 800,
+      tabs: [{navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "main"}]
+    });
+  }
 
-	async addItemTag(_ev: JQuery.ClickEvent) {
-		await (this.item as Consumable).addItemTag();
-	}
+  override async getData() {
+    await PersonaDB.waitUntilLoaded();
+    return super.getData();
+  }
 
-	async deleteItemTag(ev: JQuery.ClickEvent) {
-		const index = HTMLTools.getClosestData(ev, "tagIndex");
-		await (this.item as Consumable).deleteItemTag(Number(index));
+  override activateListeners(html: JQuery<HTMLElement>) {
+    super.activateListeners(html);
+    this.contextMenu.attachToContainer(html);
+    ConditionalEffectManager.applyHandlers(html, this.item);
+    html.find(".itemTags .addItemTag").on("click", this.addItemTag.bind(this));
+    html.find(".itemTags .delTag").on("click", this.deleteItemTag.bind(this));
+  }
 
-	}
+  async addItemTag(_ev: JQuery.ClickEvent) {
+    await (this.item as Consumable).addItemTag();
+  }
 
-	defaultConditionalEffect(_ev: JQuery.ClickEvent): ConditionalEffect {
-		const effect : ConditionalEffect = {
-			isDefensive: false,
-			isEmbedded: false,
-			isAura: false,
-			conditions: [{
-				type: "always",
-			}],
-			consequences: [ {
-				type: "none"
-			}]
-		};
-		return effect;
-	}
+  async deleteItemTag(ev: JQuery.ClickEvent) {
+    const index = HTMLTools.getClosestData(ev, "tagIndex");
+    await (this.item as Consumable).deleteItemTag(Number(index));
+
+  }
+
+  defaultConditionalEffect(_ev: JQuery.ClickEvent): ConditionalEffect {
+    const effect : ConditionalEffect = {
+      isDefensive: false,
+      isEmbedded: false,
+      isAura: false,
+      conditions: [{
+        type: "always",
+      }],
+      consequences: [ {
+        type: "none"
+      }]
+    };
+    return effect;
+  }
 
 }

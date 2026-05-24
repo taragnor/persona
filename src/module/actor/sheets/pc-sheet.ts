@@ -272,8 +272,7 @@ export class PCSheet extends PCLikeSheet {
 	}
 
 	async removeStrike(event: JQuery.ClickEvent) {
-		await this.#modStrike (event, -1);
-
+		await this.#modStrike(event, -1);
 	}
 
 	async relationshipTypeChange(event: JQuery.ChangeEvent) {

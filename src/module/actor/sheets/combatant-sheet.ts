@@ -390,8 +390,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
     return options;
   }
   powerMenu(event: JQuery.ContextMenuEvent) {
-    this.contextMenu.setOptions(this.powerMenuOptions(event));
-    this.contextMenu.show(event);
+    this.contextMenu.show(event, this.powerMenuOptions(event));
   }
 
 	openTalent(event: Event) {
@@ -625,9 +624,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
         },
         label: "Delete",
       },
-
     ] satisfies ContextMenu["options"];
-    this.contextMenu.setOptions(options);
-    this.contextMenu.show(ev);
+    this.contextMenu.show(ev, options);
   }
 }

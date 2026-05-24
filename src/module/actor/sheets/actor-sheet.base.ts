@@ -23,7 +23,7 @@ import { ContextMenu } from "../../utility/context-menu.js";
 
 export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSheet<PersonaActor> {
 
-  contextMenu: ContextMenu;
+  protected contextMenu: ContextMenu;
   #activeQuestion = -1;
   static openSheets : Set<PersonaActorSheetBase> = new Set();
 

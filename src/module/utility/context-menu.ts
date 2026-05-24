@@ -18,7 +18,7 @@ export class ContextMenu {
     this.activateListeners();
   }
 
-  public setOptions (options: ContextMenuOptions[]) {
+  private setOptions (options: ContextMenuOptions[]) {
     this.options = options;
     const menu = this.element;
     menu.empty();
@@ -48,7 +48,8 @@ export class ContextMenu {
     return menuItems;
   }
 
-  public show(ev: JQuery.Event & {clientX: number, clientY:number}): void {
+  public show(ev: JQuery.Event & {clientX: number, clientY:number}, options: ContextMenuOptions[]): void {
+    this.setOptions(options);
     this.openingEvent = ev;
     ev.stopPropagation();
     ev.preventDefault();
