@@ -19,6 +19,7 @@ import {PROBABILITIES_POWER_RARITY} from "../../../config/probability.js";
 import {localize} from "../../persona.js";
 import {PersonaTargetting, TargettingError} from "../../combat/persona-targetting.js";
 import {PersonaSettings} from "../../../config/persona-settings.js";
+import {ContextMenu} from "../../utility/context-menu.js";
 
 export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	declare actor: ValidAttackers;
@@ -81,6 +82,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".active-statuses .status-effect").rightclick(this.removeStatus.bind(this));
 		html.find(".copy-to-compendium").on("click", this.copyToCompendium.bind(this));
 		html.find(".cooldown").on("contextmenu", ev => void this.removeCooldown(ev));
+    html.find(".focusName").on("contextmenu", ev => this.FocusContextMenu(ev));
 	}
 
 	override async _onDropActor(_event: JQuery.Event, actorD: unknown) {
@@ -555,4 +557,22 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		this.actor.clearCooldown(power);
 	}
 
+  FocusContextMenu(ev: JQuery.ContextMenuEvent) {
+    const options = [
+      {
+        action: (ev: JQuery.ClickEvent) => {
+          this.openFocus(ev);
+        },
+        label: "Edit"
+      }, {
+        action: (ev: JQuery.ClickEvent) => {
+          return this.deleteFocus(ev);
+        },
+        label: "Delete",
+      },
+
+    ] satisfies ContextMenu["options"];
+    this.contextMenu.setOptions(options);
+    this.contextMenu.show(ev);
+  }
 }

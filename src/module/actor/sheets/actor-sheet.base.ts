@@ -18,16 +18,19 @@ import {PersonaEffectContainerBaseSheet} from "../../item/sheets/effect-containe
 import {TarotPrinter} from "../../printers/tarot-list.js";
 import {TalentPrinter} from "../../printers/talent-list.js";
 import {STAT_DEVIATION_LOCTABLE} from "../persona-combat-stats.js";
+import { ContextMenu } from "../../utility/context-menu.js";
 
 
 export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSheet<PersonaActor> {
 
+  contextMenu: ContextMenu;
   #activeQuestion = -1;
   static openSheets : Set<PersonaActorSheetBase> = new Set();
 
 	constructor(obj: object, options: object) {
 		super(obj, options );
 		this.refreshQuestionFocus();
+    this.contextMenu = new ContextMenu("actor-sheet-context-menu");
 	}
 
 	override async getData() {
@@ -110,6 +113,7 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 		html.find(".showTarotList").on("click", (ev) => this.showTarotTable(ev));
 		html.find(".showTalentsTable").on("click", (ev) => this.showTalentTable(ev));
 		this.refreshQuestionFocus();
+    this.contextMenu.attachToContainer(html);
 	}
 
 	activateCreatureTagListeners(html: JQuery<HTMLElement>) {
@@ -181,7 +185,7 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 		await this.actor.deleteCreatureTag(Number(index));
 	}
 
-	async deleteFocus(event: Event) {
+	async deleteFocus(event: JQuery.ClickEvent) {
 		const focusId = HTMLTools.getClosestData<Focus["id"]>(event, "focusId");
 		if (focusId == undefined) {
 			const err = `Can't find talent at index $focusId}`;
@@ -193,14 +197,14 @@ export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSh
 	}
 
 
-	async onAddFocus(_ev: Event) {
+	async onAddFocus(_ev: JQuery.ClickEvent) {
 		await this.actor.createEmbeddedDocuments( "Item", [{
 			name: "New Social Link Benefit",
 			type: "focus",
 		}]);
 	}
 
-	openFocus(event: Event) {
+	openFocus(event: JQuery.ClickEvent) {
 		const itemType = "Focus";
 		const focusId = HTMLTools.getClosestData(event, "focusId");
 		if (focusId == undefined) {

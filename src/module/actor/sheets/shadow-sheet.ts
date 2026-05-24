@@ -141,7 +141,7 @@ export class ShadowSheet extends CombatantSheetBase {
 		}]);
 	}
 
-	override async onAddFocus(_ev: Event) {
+	override async onAddFocus(_ev: JQuery.ClickEvent) {
 		await this.actor.createEmbeddedDocuments( "Item", [{
 			name: "New Focus",
 			type: "focus",
