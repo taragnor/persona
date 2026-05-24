@@ -783,10 +783,11 @@ export class PersonaHandleBarsHelpers {
 
     "canDeletePowers": function (persona: Persona, power?: Power): boolean {
       try {
-      const base= persona.user.isOwner && persona.source.isOwner && !persona.isHypothetical;
-      if (!power || !(power instanceof PersonaItem)) {return base;}
-      if (persona.bonusPowers.includes(power)) {return false;}
-      return true;
+        return persona.canDeletePower(power);
+      // const base= persona.user.isOwner && persona.source.isOwner && !persona.isHypothetical;
+      // if (!power || !(power instanceof PersonaItem)) {return base;}
+      // if (persona.bonusPowers.includes(power)) {return false;}
+      // return true;
       } catch (e) {
         PersonaError.softFail("Error on canDeletePowers", e);
         Debug(persona, power);
@@ -1022,17 +1023,19 @@ export class PersonaHandleBarsHelpers {
   },
 
   "canUseSideboard": function (actor: PersonaActor) : boolean {
-    return actor.isValidCombatant() && actor.class?.system?.canUsePowerSideboard && !actor.isNPCAlly();
+    return actor.isValidCombatant() && actor.canUseSideboard();
+    // return actor.isValidCombatant() && actor.class?.system?.canUsePowerSideboard && !actor.isNPCAlly();
   },
 
     "canMoveToSideboard": function (persona: Persona, power: Power) {
-      const actor = persona.user;
-      return actor.isValidCombatant()
-        && actor.class.system.canUsePowerSideboard
-        && !actor.isNPCAlly()
-        && persona.mainPowers.includes(power)
-        && persona.user.isOwner
-        && persona == actor.basePersona;
+      return persona.canMoveToSideboard(power);
+      // const actor = persona.user;
+      // return actor.isValidCombatant()
+      //   && actor.class.system.canUsePowerSideboard
+      //   && !actor.isNPCAlly()
+      //   && persona.mainPowers.includes(power)
+      //   && persona.user.isOwner
+      //   && persona == actor.basePersona;
     },
 
   "resolvedPowerTagList": function (item: Power | Consumable) : string[]{

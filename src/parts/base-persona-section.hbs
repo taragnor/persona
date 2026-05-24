@@ -1,4 +1,4 @@
-<section class="f-col base-persona-section {{#if (isSimulated persona)}} simulated-persona {{/if}}">
+<section class="f-col base-persona-section {{#if (isSimulated persona)}} simulated-persona {{/if}}" data-persona-id="{{persona.source.id}}">
 	 {{#if (or (not (isShadow actor)) actor.system.combat.builtInPersona)}}
 	 <input type="text" class="borderless character-name" name="system.personaName" value="{{actor.system.personaName}}" title="Persona Name" placeholder="Persona Name">
 	 {{/if}}

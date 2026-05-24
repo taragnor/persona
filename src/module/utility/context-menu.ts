@@ -1,5 +1,4 @@
 import {HTMLTools} from "./HTMLTools.js";
-
 export class ContextMenu {
 
   static openMenus : ContextMenu[] = [];
@@ -42,37 +41,40 @@ export class ContextMenu {
 
   private optionsHTML() : string[] {
     const menuItems = this.options
-      .map ( (item, index) => `<div class="menu-item" data-index="${index}">${item.label}</div> `);
+      .map ( (item, index) => item.visible === undefined || item.visible ?
+        `<div class="menu-item" data-index="${index}">${item.label}</div> ` : '')
+    .filter( str => str.length > 0)
+    ;
     return menuItems;
   }
 
   public show(ev: JQuery.Event & {clientX: number, clientY:number}): void {
-  this.openingEvent = ev;
-  ev.stopPropagation();
-  ev.preventDefault();
-  let y = ev.clientY;
-  let x = ev.clientX;
-  if (y == undefined) {throw new Error("Y should never be undefined here");}
-  const menu= this.element;
-  menu.show();
-  if (!ContextMenu.openMenus.includes(this)) {
-    ContextMenu.openMenus.push(this);
+    this.openingEvent = ev;
+    ev.stopPropagation();
+    ev.preventDefault();
+    let y = ev.clientY;
+    let x = ev.clientX;
+    if (y == undefined) {throw new Error("Y should never be undefined here");}
+    const menu= this.element;
+    menu.show();
+    if (!ContextMenu.openMenus.includes(this)) {
+      ContextMenu.openMenus.push(this);
+    }
+    const menuWidth = menu.outerWidth() ?? 0;
+    const menuHeight = menu.outerHeight() ?? 0;
+    const winWidth = window.innerWidth;
+    const winHeight = window.innerHeight;
+    if (x + menuWidth > winWidth) {
+      x = winWidth - menuWidth - 4;
+    }
+    if (y + menuHeight > winHeight) {
+      y = winHeight - menuHeight - 4;
+    }
+    menu.css({
+      left: x,
+      top: y
+    });
   }
-  const menuWidth = menu.outerWidth() ?? 0;
-  const menuHeight = menu.outerHeight() ?? 0;
-  const winWidth = window.innerWidth;
-  const winHeight = window.innerHeight;
-  if (x + menuWidth > winWidth) {
-    x = winWidth - menuWidth - 4;
-  }
-  if (y + menuHeight > winHeight) {
-    y = winHeight - menuHeight - 4;
-  }
-  menu.css({
-    left: x,
-    top: y
-  });
-}
 
   public hide() {
     ContextMenu.openMenus = ContextMenu.openMenus
@@ -93,10 +95,10 @@ export class ContextMenu {
   }
 }
 
-
 type ContextMenuOptions = {
+  label: string;
+  visible ?: boolean;
   action: (ev: JQuery.Event) => unknown;
-  label: string,
 };
 
 Hooks.on("ready", () => {

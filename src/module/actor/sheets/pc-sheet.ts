@@ -16,6 +16,7 @@ import {HypotheticalPersona} from "../../pre-fusion-persona.js";
 import {PersonaCompendium} from "../../persona-compendium.js";
 import {PowerPrinter} from "../../printers/power-list.js";
 import {PersonaCombat} from "../../combat/persona-combat.js";
+import {ContextMenu} from "../../utility/context-menu.js";
 
 export class PCSheet extends PCLikeSheet {
 	declare actor: Subtype<PersonaActor, "pc">;
@@ -242,6 +243,29 @@ export class PCSheet extends PCLikeSheet {
 		}
 
 	}
+
+  protected override powerMenuOptions (event: JQuery.ContextMenuEvent) {
+    const power = this.getPower(event);
+    const persona = this.getPersona(event);
+    const options = [
+      ...super.powerMenuOptions(event),
+      {
+        label: "Move To Sideboard",
+        visible: persona.canMoveToSideboard(power),
+        action: (ev: JQuery.ClickEvent) => {
+          void this.movePowerToSideboard(ev);
+        },
+      },
+      {
+        label: "Move To Main Powers",
+        visible: persona.canMoveToMain(power),
+        action: (ev: JQuery.ClickEvent) => {
+          void this.movePowerToMain(ev);
+        },
+      },
+    ] satisfies ContextMenu["options"];
+    return options;
+  }
 
 	async addStrike(event: JQuery.ClickEvent) {
 		await this.#modStrike(event, 1);

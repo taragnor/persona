@@ -61,7 +61,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".rollPower").rightclick(this.displayDamageStack.bind(this));
 		html.find(".inventory-item").on("click", this.useItem.bind(this));
 		html.find(".powerName").on("click", this.openPower.bind(this));
-		html.find(".powerName").rightclick(this.openPower.bind(this));
+		html.find(".powerName").on("contextmenu", ev=>  this.powerMenu(ev));
+		// html.find(".powerName").rightclick(this.openPower.bind(this));
 		html.find(".talentName").on("click", this.openTalent.bind(this));
 		html.find(".focusName").on("click", this.openFocus.bind(this));
 		html.find(".itemName").rightclick(this.openItem.bind(this));
@@ -201,13 +202,15 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
   }
 
 	getPower(event: JQuery.ClickEvent | JQuery.ContextMenuEvent) : Power {
-		const powerId = HTMLTools.getClosestData(event, "powerId");
-		const power = this.actor.powers.find(power => power.id == powerId);
+		const powerId = HTMLTools.getClosestData<Power["id"]>(event, "powerId");
+		const power = this.actor.powers.find(power => power.id == powerId) ??
+      this.actor.sideboardPowers.find(power=> power.id == powerId)
+    ?? PersonaDB.getPower(powerId)
+      ;
 		if (!power) {
 			throw new PersonaError(`Can't find Power Id:${powerId}`);
 		}
-		const ptype = power.system.type;
-		if (ptype != "power" && ptype != "consumable")
+		if (!power.isPower())
 		{throw new PersonaError(`powerId pointed to unsualbe power ${powerId}`);}
 		return power;
 	}
@@ -293,7 +296,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 	}
 
-  async deletePower(event: Event) {
+  async deletePower(event: JQuery.Event) {
     const powerId = HTMLTools.getClosestData<Power["id"]>(event, "powerId");
     const personaId = HTMLTools.getClosestDataSafe<Persona["source"]["id"]>(event, "personaId", "" as Persona["source"]["id"]);
     if (powerId == undefined) {
@@ -327,7 +330,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 	}
 
-	openPower(event: Event) {
+	openPower(event: JQuery.Event) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		if (powerId == undefined) {
 			throw new PersonaError(`Can't find power`);
@@ -338,6 +341,62 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		}
 		power.sheet.render(true);
 	}
+
+  // getPower(event: JQuery.Event) : Power {
+		// const powerId = HTMLTools.getClosestData(event, "powerId");
+		// if (powerId == undefined) {
+			// throw new PersonaError(`Can't find power`);
+		// }
+		// const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.allPowers().get(powerId);
+		// if (!power) {
+			// throw new PersonaError(`Can't find power id ${powerId}`);
+		// }
+  //   return power;
+  // }
+
+  getPersona (event: JQuery.Event) : Persona {
+		const personaSourceId = HTMLTools.getClosestData(event, "personaId");
+		if (personaSourceId == undefined) {
+			throw new PersonaError(`Can't find Persona, no Id`);
+		}
+		const persona = this.actor.personaList.find(p=> p.source.id == personaSourceId)
+      ?? this.actor.sideboardPersonas.find( p=> p.source.id == personaSourceId);
+		if (!persona) {
+			throw new PersonaError(`Can't find persona id ${personaSourceId} on ${this.actor.name}`);
+		}
+    return persona;
+  }
+
+  protected powerMenuOptions (event: JQuery.ContextMenuEvent) : ContextMenu["options"] {
+    const power = this.getPower(event);
+    const persona = this.getPersona(event);
+    const options = [
+      {
+        action: (ev: JQuery.ClickEvent) => {
+          this.openPower(ev);
+        },
+        label: "View",
+        visible: !power.isOwner,
+      }, {
+        action: (ev: JQuery.ClickEvent) => {
+          this.openPower(ev);
+        },
+        label: "Edit",
+        visible: power.isOwner,
+      }, {
+        action: (ev: JQuery.ClickEvent) => {
+          return this.deletePower(ev);
+        },
+        label: "Delete",
+        visible: persona.canDeletePower(power),
+      },
+    ] satisfies ContextMenu["options"];
+    return options;
+  }
+  powerMenu(event: JQuery.ContextMenuEvent) {
+    this.contextMenu.setOptions(this.powerMenuOptions(event));
+    this.contextMenu.show(event);
+  }
 
 	openTalent(event: Event) {
 		const itemType = "Talent";

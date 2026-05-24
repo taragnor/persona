@@ -4,6 +4,7 @@ import { localize } from "../../persona.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaDB } from "../../persona-db.js";
 import { CombatantSheetBase } from "./combatant-sheet.js";
+import {ContextMenu} from "../../utility/context-menu.js";
 
 export class PCLikeSheet extends CombatantSheetBase {
 	declare actor: PC | NPCAlly;
@@ -87,7 +88,7 @@ export class PCLikeSheet extends CombatantSheetBase {
 		await Logger.sendToChat(`${this.actor.name} changed ${itemType} ${item?.name ?? "ERROR"}` , this.actor);
 	}
 
-	async reorderPowerUp (event: JQuery.ClickEvent) {
+	async reorderPowerUp (event: JQuery.Event) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		const powers = this.actor.system.combat.powers;
 		const index = powers.indexOf(powerId as Power["id"]);
@@ -98,7 +99,7 @@ export class PCLikeSheet extends CombatantSheetBase {
 		await this.actor.update({"system.combat.powers": powers});
 	}
 
-	async reorderPowerDown (event: JQuery.ClickEvent) {
+	async reorderPowerDown (event: JQuery.Event) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		const powers = this.actor.system.combat.powers;
 		const index = powers.indexOf(powerId as Power["id"]);
@@ -109,6 +110,28 @@ export class PCLikeSheet extends CombatantSheetBase {
 		powers[index+1] = powerId as Power["id"];
 		await this.actor.update({"system.combat.powers": powers});
 	}
+
+  protected override powerMenuOptions(event: JQuery.ContextMenuEvent): ContextMenu["options"] {
+    const power = this.getPower(event);
+    const persona = this.getPersona(event);
+    const options =  [
+      ...super.powerMenuOptions(event),
+      {
+        label: "Sort Up",
+        visible: persona.mainPowers.includes(power) && persona.isOwner,
+        action: (ev: JQuery.Event)=> {
+          void this.reorderPowerUp(ev);
+        },
+      }, {
+        label: "Sort Down",
+        visible: persona.mainPowers.includes(power) && persona.isOwner,
+        action: (ev: JQuery.Event)=> {
+          void this.reorderPowerDown(ev);
+        },
+      }
+    ] satisfies ContextMenu["options"];
+    return options;
+  }
 
 }
 

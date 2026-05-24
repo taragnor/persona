@@ -711,6 +711,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return actorList.map( source=> new Persona(source, this));
   }
 
+  canUseSideboard(this: ValidAttackers) : boolean {
+    return this.class?.system?.canUsePowerSideboard && !this.isNPCAlly();
+
+  }
+
   equals(other: PersonaActor) : boolean {
     return this == other;
   }

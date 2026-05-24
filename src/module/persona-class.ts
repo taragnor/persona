@@ -1452,6 +1452,35 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       || this.source.topLearnedBuffer != undefined ;
   }
 
+  canDeletePower(power?: Power) : boolean {
+    const base= this.user.isOwner && this.source.isOwner && !this.isHypothetical;
+    if (!power || !(power instanceof PersonaItem)) {return base;}
+    if (power && !this.mainPowers.includes(power)) {return false;}
+    if (this.bonusPowers.includes(power)) {return false;}
+    return true;
+  }
+
+  get isOwner() : boolean {
+    return this.source.isOwner && this.user.isOwner;
+  }
+
+  canMoveToSideboard(power: Power) : boolean {
+    const user = this.user;
+    return user.canUseSideboard()
+      && this.mainPowers.includes(power)
+      && user.isOwner
+      && this.equals(user.basePersona);
+  }
+
+  canMoveToMain(power: Power) : boolean {
+    const user = this.user;
+    return user.canUseSideboard()
+      && this.sideboardPowers.includes(power)
+      && user.isOwner
+      && this.equals(user.basePersona)
+      && user.powerLearning().hasSpaceToAddPowerToMain();
+  }
+
 } // end of class
 
 interface PersonaClassCache {
