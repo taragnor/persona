@@ -474,7 +474,7 @@ export class ActorSocial <T extends PersonaActor> {
     if (!link) {
       throw new PersonaError("Trying to refresh social link you don't have");
     }
-    if (link.inspiration <= 0) {
+    if (link.inspiration - amt < 0) {
       throw new PersonaError("You are trying to spend Inspiration you don't have");
     }
     const oldVal = link.inspiration;

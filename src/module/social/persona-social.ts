@@ -276,22 +276,25 @@ export class PersonaSocial {
 		return await ChatMessage.create(msgData,{} );
 	}
 
-	static lookupActivity(actor: PC, activityId: string): ActivityLink {
-		const link = actor.social.activityLinks.find( x=> x.activity.id == activityId);
-		if (!link) {
-			const minorLink=  actor.downtimeMinorActions.find(x=> x.isSocialCard() && x.id == activityId) as SocialCard;
-			if (!minorLink) {
-				throw new PersonaError(`Can't find activity: ${activityId}`);
-			}
-			return {
-				strikes: 0,
-				available: true,
-				activity: minorLink,
-				currentProgress: 0,
-			} satisfies ActivityLink;
-		}
-		return link;
-	}
+  static async lookupActivity(actor: PC, activityId: string): Promise<ActivityLink> {
+    const link = actor.social.activityLinks.find( x=> x.activity.id == activityId);
+    if (link) {return link;}
+      const minorLink =  actor.downtimeMinorActions.find(x=> x.isSocialCard() && x.id == activityId) as SocialCard;
+      if (minorLink) {
+        return {
+          strikes: 0,
+          available: true,
+          activity: minorLink,
+          currentProgress: 0,
+        } satisfies ActivityLink;
+      }
+    const newact = PersonaDB.allActivities().find( x=> x.id == activityId);
+    if (!newact) {
+      throw new PersonaError(`Can't find activity ${activityId}`);
+    }
+    await actor.social.addNewActivity(newact);
+    return this.lookupActivity(actor, activityId);
+  }
 
 	static lookupSocialLink(actor: PC, linkId: string) :SocialLinkData {
 		const link = actor.socialLinks.find(link => link.actor.id == linkId);

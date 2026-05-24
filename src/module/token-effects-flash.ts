@@ -33,7 +33,7 @@ function handleFlash( delta: number) : void {
   time += 0.05 * delta;
   game.scenes.current.tokens.forEach( (tok: PersonaToken) => {
     if (!tok.object) {return;}
-    const sprites= tok.object ? flashMap.get(tok?.object) ?? [] : [];
+    const sprites = tok.object ? flashMap.get(tok?.object) ?? [] : [];
     sprites.forEach( ([sprite, effect]) => {
       if (effect.aboutToExpire) {
         sprite.alpha = 0.5 + Math.sin(time) * 0.5;

@@ -133,7 +133,7 @@ export class SocialCardEventHandler {
 			case "studentSkillCheck": {
 				// modifiers.add("Roll Modifier", cardRoll.modifier);
 				const DCMods = this.getCardRollDCModifiers(cardData, cardRoll, rollTags);
-				const link = this.owner.link;
+				const link = await this.owner.link;
 				const activityOrActor = "actor" in link ? link.actor: link.activity;
 				const skill = this.resolvePrimarySecondarySocialStat(cardRoll.studentSkill, activityOrActor);
         const rollSituation = {

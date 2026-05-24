@@ -56,7 +56,7 @@ export class SocialCardExecutor {
     this.rollState.continuation(x);
   }
 
-  get link() : ActivityLink | SocialLinkData  {
+  get link() : Promise<ActivityLink | SocialLinkData> {
     return this.lookupLink();
   }
 
@@ -204,7 +204,7 @@ export class SocialCardExecutor {
 
   async #printCardIntro(cardData: CardData) {
     const {card, cameos, perk, actor } = cardData;
-    const link = this.link;
+    const link = await this.link;
     const DC = this.handler?.getBaseSkillDC(cardData) ?? -999;
     const linkId =  "actor" in link ? link.actor.id : link.activity.id;
     const { perkDisabled } = card.system;
@@ -224,7 +224,7 @@ export class SocialCardExecutor {
     let SLImproveSpend = "";
     let giftStr= "";
     if (cardData.card.system.cardType == "social") {
-      const link = this.lookupLink() as SocialLinkData;
+      const link = (await this.lookupLink()) as SocialLinkData;
       if (link.actor) {
         const SL=  (cardData.actor.getSocialSLWith(link.actor));
         let improveAmt = 5;
@@ -410,7 +410,7 @@ export class SocialCardExecutor {
   }
 
 
-  private lookupLink(): ActivityLink | SocialLinkData {
+  private async lookupLink(): Promise<ActivityLink | SocialLinkData> {
     const cardData = this.cardData;
     switch (cardData.card.system.cardType) {
       case "social":

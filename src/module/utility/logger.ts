@@ -60,8 +60,8 @@ export class Logger {
   private static async printBuffer(actor ?: Actor) {
     const msg = this.bufferStorage
       .join("<br>");
-    await this._sendToChat(msg, actor);
     this.bufferStorage = [];
+    await this._sendToChat(msg, actor);
   }
 
   private static async _sendToChat<T extends Actor>(text: string, actor?: T) {
