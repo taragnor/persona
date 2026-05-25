@@ -254,7 +254,8 @@ export type NonDeprecatedDamageCons = NonDeprecatedConsequence & {type: "combat-
 
 type FatigueConsequence = {
 	type: "alter-fatigue-lvl",
-	amount:number,
+	amount: number,
+  applyTo: ConsequenceTarget,
 };
 
 type CombatEffectConsequence = {

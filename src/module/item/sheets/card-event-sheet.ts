@@ -1,194 +1,231 @@
 import {ConsequenceAmountV2, NonDeprecatedConsequence} from "../../../config/consequence-types.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import {PowerStuff} from "../../../config/power-stuff.js";
+import {NonDeprecatedPrecondition} from "../../../config/precondition-types.js";
 import {ConditionalEffectManager, MenuDataI} from "../../conditional-effect-manager.js";
+import {ConsequenceAmountResolver} from "../../conditionalEffects/consequence-amount.js";
 import {SocialCardEventDM} from "../../datamodel/item-types.js";
 import {PersonaError} from "../../persona-error.js";
-import {ContextMenu} from "../../utility/context-menu.js";
+import {ContextMenu, ContextMenuOptions} from "../../utility/context-menu.js";
 import {HTMLTools} from "../../utility/HTMLTools.js";
 import {PersonaItem} from "../persona-item.js";
 import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 import {PersonaSocialCardSheet} from "./social-card-sheet.js";
 
 export class CardEventSheet extends FormApplication<SocialCardEventDM> implements MenuDataI {
-	_event: SocialCardEventDM;
-	_card: SocialCard;
-	private _eventIndex : number;
+  _event: SocialCardEventDM;
+  _card: SocialCard;
+  private _eventIndex : number;
   protected contextMenu : ContextMenu = new ContextMenu("social-card-context-menu");
 
-	constructor (item: SocialCardEventDM, containingCard: SocialCard,  options ?:ApplicationV1Options) {
-		super(item, options);
-		this._card = containingCard;
-		this._event = item;
-		if (!(item instanceof SocialCardEventDM)) {
-			this._collectDebugInfo();
-			throw new PersonaError("Item isn't a socialcard event DM");
-		}
-		this._eventIndex = item.parentIndex() ?? -1;
-		if (this._eventIndex < 0) {
-			this._collectDebugInfo();
-			throw new PersonaError("Something bad happened with getting the index of  event");
-		}
-		Debug(this);
-	}
+  constructor (item: SocialCardEventDM, containingCard: SocialCard,  options ?:ApplicationV1Options) {
+    super(item, options);
+    this._card = containingCard;
+    this._event = item;
+    if (!(item instanceof SocialCardEventDM)) {
+      this._collectDebugInfo();
+      throw new PersonaError("Item isn't a socialcard event DM");
+    }
+    this._eventIndex = item.parentIndex() ?? -1;
+    if (this._eventIndex < 0) {
+      this._collectDebugInfo();
+      throw new PersonaError("Something bad happened with getting the index of  event");
+    }
+    Debug(this);
+  }
 
-	private _collectDebugInfo() {
-		Debug(this._card);
-		Debug(this._event);
-		console.log(this._event);
-		console.log(this._card);
+  private _collectDebugInfo() {
+    Debug(this._card);
+    Debug(this._event);
+    console.log(this._event);
+    console.log(this._card);
 
-	}
+  }
 
-	static override get defaultOptions() {
-		return foundry.utils.mergeObject(super.defaultOptions, {
-			classes: ["persona", "sheet", "event"],
-			template: `${HBS_TEMPLATES_DIR}/card-event-sheet.hbs`,
-			width: 800,
-			height: 800,
-			tabs: [],
-			submitOnChange: true,
-			closeOnSubmit: false,
-			submitOnClose: true,
-		});
-	}
+  static override get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, {
+      classes: ["persona", "sheet", "event"],
+      template: `${HBS_TEMPLATES_DIR}/card-event-sheet.hbs`,
+      width: 800,
+      height: 800,
+      tabs: [],
+      submitOnChange: true,
+      closeOnSubmit: false,
+      submitOnClose: true,
+    });
+  }
 
-	get card() {
-		return this._card;
-	}
+  get card() {
+    return this._card;
+  }
 
-	get item() {
-		return this._card;
-	}
+  get item() {
+    return this._card;
+  }
 
-	get event() : SocialCardEventDM & SocialCard["system"]["events"][number] {
-		if (this._event instanceof SocialCardEventDM) {
-		return this._event as SocialCardEventDM & SocialCard["system"]["events"][number];
-		} else {
-			console.log("ERROR");
-			console.log(this._event);
-			throw new PersonaError("Event is bugged");
-		}
-	}
+  get event() : SocialCardEventDM & SocialCard["system"]["events"][number] {
+    if (this._event instanceof SocialCardEventDM) {
+      return this._event as SocialCardEventDM & SocialCard["system"]["events"][number];
+    } else {
+      console.log("ERROR");
+      console.log(this._event);
+      throw new PersonaError("Event is bugged");
+    }
+  }
 
-	override activateListeners(html: JQuery) {
-		//TODO for next time, need listeners to do conditional events and event tags
-		super.activateListeners(html);
+  override activateListeners(html: JQuery) {
+    //TODO for next time, need listeners to do conditional events and event tags
+    super.activateListeners(html);
     this.contextMenu.attachToContainer(html);
-		ConditionalEffectManager.applyHandlers(html, this.event as unknown as FoundryDocument, this.contextMenu);
-		html.find(".eventTags .addTag").on("click", (ev) => void this.addEventTag(ev));
-		html.find(".eventTags .delTag").on("click", (ev) => void this.deleteEventTag(ev));
-		html.find(".add-choice").on("click", (ev) => void this.addChoice(ev));
-		html.find(".del-choice").on("click", (ev) => void this.deleteChoice(ev));
-		html.find(".paste-choice").on("click", (ev) => void this.pasteChoice(ev));
-		html.find(".copy-choice").on("click", ev => this.copyChoice(ev));
-	}
+    ConditionalEffectManager.applyHandlers(html, this.event as unknown as FoundryDocument, this.contextMenu);
+    html.find(".eventTags .addTag").on("click", (ev) => void this.addEventTag(ev));
+    html.find(".eventTags .delTag").on("click", (ev) => void this.deleteEventTag(ev));
+    html.find(".add-choice").on("click", (ev) => void this.addChoice(ev));
+    html.find(".del-choice").on("click", (ev) => void this.deleteChoice(ev));
+    html.find(".paste-choice").on("click", (ev) => void this.pasteChoice(ev));
+    html.find(".copy-choice").on("click", ev => this.copyChoice(ev));
+  }
 
 
-	get eventIndex() {
-		const index=  this.event.parentIndex();
-		if (index == undefined)  {
-			Debug(this.event);
-			throw new PersonaError("Something bad happened with getting the index of  event");
-		}
-		return index;
-	}
+  get eventIndex() {
+    const index=  this.event.parentIndex();
+    if (index == undefined)  {
+      Debug(this.event);
+      throw new PersonaError("Something bad happened with getting the index of  event");
+    }
+    return index;
+  }
 
-	async addEventTag(_ev: JQuery.ClickEvent) {
-		await this.#refreshEventTag( () =>
-			this.item.addEventTag(this.eventIndex)
-		);
-		this.render(false);
-	}
+  async addEventTag(_ev: JQuery.ClickEvent) {
+    await this.#refreshEventTag( () =>
+      this.item.addEventTag(this.eventIndex)
+    );
+    this.render(false);
+  }
 
 
-	async #refreshEventTag<T, F extends (() => T)>( fn: F) : Promise<T> {
-		const index = this.eventIndex;
-		const ret = await fn();
-		this._event =  this.card.system.events[index] as unknown as SocialCardEventDM;
-		if (!(this.event instanceof SocialCardEventDM)) {
-			console.log("Problem Encountered");
-			console.log(this.card);
-			console.log(this._event);
-			ui.notifications.warn(`Problem with event not being a socialcardEventDM, index ${index}`);
-		}
-		return ret;
-	}
+  async #refreshEventTag<T, F extends (() => T)>( fn: F) : Promise<T> {
+    const index = this.eventIndex;
+    const ret = await fn();
+    this._event =  this.card.system.events[index] as unknown as SocialCardEventDM;
+    if (!(this.event instanceof SocialCardEventDM)) {
+      console.log("Problem Encountered");
+      console.log(this.card);
+      console.log(this._event);
+      ui.notifications.warn(`Problem with event not being a socialcardEventDM, index ${index}`);
+    }
+    return ret;
+  }
 
-	async deleteEventTag(ev: JQuery.ClickEvent) {
-		const eventIndex = this.eventIndex;
-		const tagIndex = HTMLTools.getClosestDataNumber(ev, "tagIndex");
-		if (eventIndex != undefined && tagIndex != undefined) {
-			await this.#refreshEventTag(
-				() => this.item.deleteEventTag(eventIndex, tagIndex)
-			);
-			this.render(false);
-			return;
-		}
-		ui.notifications.warn("something went wrong with adding tag");
-	}
+  async deleteEventTag(ev: JQuery.ClickEvent) {
+    const eventIndex = this.eventIndex;
+    const tagIndex = HTMLTools.getClosestDataNumber(ev, "tagIndex");
+    if (eventIndex != undefined && tagIndex != undefined) {
+      await this.#refreshEventTag(
+        () => this.item.deleteEventTag(eventIndex, tagIndex)
+      );
+      this.render(false);
+      return;
+    }
+    ui.notifications.warn("something went wrong with adding tag");
+  }
 
-	override async getData(options: Record<string, unknown>) {
-		const data= await super.getData(options);
-		return {
-			POWERSTUFF :  PersonaEffectContainerBaseSheet.powerStuff,
-			SOCIAL_DATA : PersonaSocialCardSheet.socialData(),
-			event : this.event,
-			item : this._card,
-			...data,
-		};
-	}
+  override async getData(options: Record<string, unknown>) {
+    const data= await super.getData(options);
+    return {
+      POWERSTUFF :  PersonaEffectContainerBaseSheet.powerStuff,
+      SOCIAL_DATA : PersonaSocialCardSheet.socialData(),
+      event : this.event,
+      item : this._card,
+      ...data,
+    };
+  }
 
-	override async _updateObject(_event: JQuery.SubmitEvent, formData: Record<string, unknown>) {
-		try {
-			await this.#refreshEventTag( () =>
-				this.event.update(formData)
-			);
-			// await this._card.sheet.render(false);
-		} catch (e) {
-			console.log("Form Data");
-			console.log(formData);
-			throw e;
-		}
-	}
+  override async _updateObject(_event: JQuery.SubmitEvent, formData: Record<string, unknown>) {
+    try {
+      await this.#refreshEventTag( () =>
+        this.event.update(formData)
+      );
+      // await this._card.sheet.render(false);
+    } catch (e) {
+      console.log("Form Data");
+      console.log(formData);
+      throw e;
+    }
+  }
 
-	powerStuff() {
-		return PowerStuff.powerStuff();
-	}
+  powerStuff() {
+    return PowerStuff.powerStuff();
+  }
 
-	async addChoice(_ev: JQuery.ClickEvent) {
-		await this.item.addEventChoice(this.eventIndex);
-	}
+  async addChoice(_ev: JQuery.ClickEvent) {
+    await this.item.addEventChoice(this.eventIndex);
+  }
 
-	async deleteChoice(ev: JQuery.ClickEvent) {
-		const eventIndex = this.eventIndex;
-		const choiceIndex = Number(HTMLTools.getClosestData(ev, "choiceIndex"));
-		if (!await HTMLTools.confirmBox(`Delete Choice ${choiceIndex}`, `Really Delete this choice`)) {
-			return;
-		}
-		await this.item.deleteEventChoice(eventIndex,choiceIndex);
-	}
+  async deleteChoice(ev: JQuery.ClickEvent) {
+    const eventIndex = this.eventIndex;
+    const choiceIndex = Number(HTMLTools.getClosestData(ev, "choiceIndex"));
+    if (!await HTMLTools.confirmBox(`Delete Choice ${choiceIndex}`, `Really Delete this choice`)) {
+      return;
+    }
+    await this.item.deleteEventChoice(eventIndex,choiceIndex);
+  }
 
-	async pasteChoice(_ev: JQuery.ClickEvent) {
-		const eventIndex = this.eventIndex;
-		// const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
-		const choice = PersonaSocialCardSheet.clipboard.choice;
-		if (!choice) {
-			ui.notifications.warn("No choice stored in clipboard, nothing to paste");
-			return;
-		}
-		await this.item.addEventChoice(eventIndex, choice);
-	}
+  async pasteChoice(_ev: JQuery.ClickEvent) {
+    const eventIndex = this.eventIndex;
+    // const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
+    const choice = PersonaSocialCardSheet.clipboard.choice;
+    if (!choice) {
+      ui.notifications.warn("No choice stored in clipboard, nothing to paste");
+      return;
+    }
+    await this.item.addEventChoice(eventIndex, choice);
+  }
 
-	copyChoice( ev: JQuery.ClickEvent) {
-		const choiceIndex = Number(HTMLTools.getClosestData(ev, "choiceIndex"));
-		const choice = this.event.choices[choiceIndex];
-		if (!choice) {
-			return;
-		}
-		ui.notifications.notify("Choice copied to clipboard");
-		PersonaSocialCardSheet.clipboard.choice = JSON.parse(JSON.stringify(choice)) as typeof choice;
-	}
+  copyChoice( ev: JQuery.ClickEvent) {
+    const choiceIndex = Number(HTMLTools.getClosestData(ev, "choiceIndex"));
+    const choice = this.event.choices[choiceIndex];
+    if (!choice) {
+      return;
+    }
+    ui.notifications.notify("Choice copied to clipboard");
+    PersonaSocialCardSheet.clipboard.choice = JSON.parse(JSON.stringify(choice)) as typeof choice;
+  }
+
+  newConditionalMenu() : ContextMenuOptions<NonDeprecatedPrecondition>[] {
+    const options = [
+      {
+        label : "Social Link Required",
+        action: (_ev: JQuery.ClickEvent) => ({
+          "type": "numeric",
+          "comparisonTarget": "social-link-level",
+          "comparator": ">=",
+          "num": ConsequenceAmountResolver.constant(10),
+          "socialLinkIdOrTarot": "target",
+        } satisfies NonDeprecatedPrecondition),
+      }, {
+        label : "Has Cameo",
+        action : () => ({
+          type: "boolean",
+          booleanState: true,
+          boolComparisonTarget: "actor-exists",
+          "conditionTarget": "cameo",
+        }),
+      }, {
+        label: "temp Social Variable",
+        action : () => ({
+          type: "numeric",
+          "comparisonTarget": "variable-value",
+          "varType" :"social-temp",
+          comparator: "==",
+          "num": ConsequenceAmountResolver.constant(1),
+          "variableId": "",
+          __localEffect: true,
+        } satisfies NonDeprecatedPrecondition),
+      }
+    ] satisfies ContextMenuOptions<NonDeprecatedPrecondition>[];
+    return options;
+  }
 
   newConsequenceMenu() {
     const options = [
@@ -213,11 +250,7 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
             type: "social-card-action",
             cardAction: "modify-progress-tokens",
             socialLinkIdOrTarot: "target",
-            amount: {
-              type: "constant",
-              val: 1,
-            } satisfies ConsequenceAmountV2
-            ,
+            amount: ConsequenceAmountResolver.constant(1),
           } satisfies NonDeprecatedConsequence;
         },
       }, {
@@ -227,25 +260,16 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
             type: "inventory-action",
             invAction: "add-item",
             itemId: "" as PersonaItem["id"],
-            amount: {
-              type: "constant",
-              val: 1,
-            } satisfies ConsequenceAmountV2
-            ,
+            amount: ConsequenceAmountResolver.constant(1),
           } satisfies NonDeprecatedConsequence;
         }
       }, {
-        label: "Add Item",
+        label: "Fatigue",
         action: (_ev: JQuery.ClickEvent) => {
           return {
-            type: "inventory-action",
-            invAction: "add-item",
-            itemId: "" as PersonaItem["id"],
-            amount: {
-              type: "constant",
-              val: 1,
-            } satisfies ConsequenceAmountV2
-            ,
+            type: "alter-fatigue-lvl",
+            "amount": -1,
+            applyTo: "user",
           } satisfies NonDeprecatedConsequence;
         }
       }

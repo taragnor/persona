@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* esjint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 // import { NumericV2 } from "./conditionalEffects/numericV2.js";
@@ -30,7 +30,7 @@ type MenuHolder<D extends FoundryDocument> = D & {
 };
 
 export interface MenuDataI {
-    newConsequenceMenu?: () => ContextMenuOptions<NonDeprecatedConsequence>[],
+  newConsequenceMenu?: () => ContextMenuOptions<NonDeprecatedConsequence>[],
     newConditionalMenu?: () => ContextMenuOptions<NonDeprecatedPrecondition>[],
 }
 
@@ -316,7 +316,7 @@ export class ConditionalEffectManager {
     html.find(".copy-condition").on("click", (ev) => void this.handler_copyCondition(ev, doc));
     html.find("div.multi-check .selected").on("click", (ev) => void this.handler_clickMCSelector(ev, doc));
     html.find(".MC-selectors").on("click", (ev) => void this.handler_clickMCSelected(ev, doc));
-    if (contextMenu != undefined) {
+    if (contextMenu != undefined && game.user.isGM) {
       console.log("Setting context menu handlers");
       html.find("section.conditions-section").on("contextmenu", ev => void this.openConditionsMenu(ev, doc, contextMenu));
       html.find("section.consequences-section").on("contextmenu", ev => void this.openConsequencesMenu(ev, doc, contextMenu));
@@ -495,12 +495,43 @@ export class ConditionalEffectManager {
   }
 
   private static openConditionsMenu<D extends FoundryDocument<any>>(ev: JQuery.ContextMenuEvent, item: MenuHolder<D>, contextMenu: ContextMenu) {
-    const options = [{
-      label: "Add Condition",
-      action: (ev: JQuery.Event) => {
-        void this.handler_addPrecondition(ev, item);
+    const options = [
+      {
+        label: "Hit",
+        action: (ev: JQuery.Event) => {
+          const cond = {
+            type : "boolean",
+            "boolComparisonTarget": "roll-property-is",
+            rollProp:"is-hit",
+            booleanState: true,
+          } satisfies NonDeprecatedPrecondition;
+          void this.handler_addPrecondition(ev, item, cond);
+        }
+      }, {
+        label: "Critical",
+        action: (ev: JQuery.Event) => {
+          const cond = {
+            type : "boolean",
+            "boolComparisonTarget": "roll-property-is",
+            rollProp:"is-critical",
+            booleanState: true,
+          } satisfies NonDeprecatedPrecondition;
+          void this.handler_addPrecondition(ev, item, cond);
+        }
+      }, {
+        label: "Has Status",
+        action: (ev: JQuery.Event) => {
+          const cond = {
+            type : "boolean",
+            boolComparisonTarget: "has-status",
+            status: {},
+            booleanState: true,
+            conditionTarget: "user",
+          } satisfies NonDeprecatedPrecondition;
+          void this.handler_addPrecondition(ev, item, cond);
+        }
       }
-    }] satisfies ContextMenu["options"];
+    ] satisfies ContextMenu["options"];
     const menu = item.sheet.newConditionalMenu
       ? item.sheet
       .newConditionalMenu()
@@ -509,12 +540,11 @@ export class ConditionalEffectManager {
         action: () => this.handler_addPrecondition(ev, item, menuItem.action(ev)),
       })
       ) : [];
-    // const menu = item.sheet.new? item.sheet.newConditionalMenu() : options;
     options.push( ...menu);
     contextMenu.show(ev, options);
   }
 
-  private static openConsequencesMenu<D extends FoundryDocument<any>>(ev: JQuery.ContextMenuEvent, item: MenuHolder<D>, contextMenu: ContextMenu) {
+  private static openConsequencesMenu<D extends FoundryDocument>(ev: JQuery.ContextMenuEvent, item: MenuHolder<D>, contextMenu: ContextMenu) {
     const options = [{
       label: "Add Consequence",
       action: (ev: JQuery.Event) => {

@@ -30,6 +30,13 @@ export class ConsequenceAmountResolver {
     };
   }
 
+  public static constant(num: number) {
+    return {
+      type: "constant",
+      val: num,
+    } as const;
+  }
+
   static resolveConsequenceAmount< C extends ConsequenceAmount>(amt: C extends object ? Sourced<C> : number, situation: Partial<Situation>) : U<number> {
     if (typeof amt == "number") {return amt;}
     return this.resolveConsequenceAmountV2(amt, situation);

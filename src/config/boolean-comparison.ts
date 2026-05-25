@@ -376,7 +376,7 @@ type PowerTypeComparison = {
 
 type StatusComparisonPC = {
 	boolComparisonTarget: "has-status",
-	status : StatusEffectId | Record<StatusEffectId, boolean>,
+	status : MultiCheckOrSingle<StatusEffectId>,
 	conditionTarget : ConditionTarget,
 }
 
