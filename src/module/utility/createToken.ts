@@ -45,8 +45,8 @@ export class CreateToken {
 
     // Submit the Token creation request and activate the Tokens layer (if not already active)
     tokenLayer.activate();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
-    return (token.constructor as (typeof TokenDocument<T>)).create(token as any, {parent: scene});
+    //@ts-expect-error TS doesn't like this
+    return (token.constructor as (typeof TokenDocument<T>)).create<TokenDocument<T>>(token, {parent: scene});
   }
 
 }

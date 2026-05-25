@@ -21,7 +21,7 @@ import {STAT_DEVIATION_LOCTABLE} from "../persona-combat-stats.js";
 import { ContextMenu } from "../../utility/context-menu.js";
 
 
-export abstract class PersonaActorSheetBase extends foundry.appv1.sheets.ActorSheet<PersonaActor> {
+export abstract class PersonaActorSheetBase<T extends PersonaActor = PersonaActor> extends foundry.appv1.sheets.ActorSheet<T> {
 
   protected contextMenu: ContextMenu;
   #activeQuestion = -1;

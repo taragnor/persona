@@ -3,7 +3,7 @@ namespace Foundry {
 		// new<Embedded extends (FoundryDocument | never) = never>(...args: unknown[]) : Document<Embedded>;
 		get hierarchy(): Record<string, EmbeddedCollectionField<unknown>>;
 		defineSchema(): SchemaReturnObject;
-		create<const T extends Document<any>>(data: CreationData<T>, options ?: unknown): Promise<T>;
+		create<const T extends FoundryDocument>(data: CreationData<T>, options ?: unknown): Promise<T>;
 
 	}
 
@@ -25,7 +25,7 @@ namespace Foundry {
 		 prepareBaseData() : void;
 		 updateEmbeddedDocuments(type: string, updates: unknown): Promise<unknown>;
 		 createEmbeddedDocuments<E extends FoundryDocument = Embedded>(type: string, objData: object[], context?: unknown): Promise<E[]>;
-		 sheet: Sheet<this>
+		 sheet: DocumentSheet<this>
 		 get schema(): SchemaField<unknown>;
 		 delete(): Promise<void>;
 		 deleteEmbeddedDocuments( embeddedName: string, ids: unknown, context: Record<string, unknown> = {}): Promise<void>;
@@ -49,8 +49,8 @@ namespace Foundry {
 		 _initialize() : void;
 	}
 
-	type CreationData<T extends Document> = 
-		DeepPartial<T>;
+	type CreationData<T extends FoundryDocument> = 
+		Omit<DeepPartial<T>, "sheet" | "object">;
 
 	interface Folder {
 	};

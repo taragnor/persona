@@ -23,7 +23,16 @@ import {ConsequenceConverter} from "./migration/convertConsequence.js";
 import {PreconditionConverter} from "./migration/convertPrecondition.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {PersonaAE} from "./persona-ae.js";
-import {ContextMenu} from "./utility/context-menu.js";
+import {ContextMenu, ContextMenuOptions} from "./utility/context-menu.js";
+
+type MenuHolder<D extends FoundryDocument> = D & {
+  sheet: MenuDataI,
+};
+
+export interface MenuDataI {
+    newConsequenceMenu?: () => ContextMenuOptions<NonDeprecatedConsequence>[],
+    newConditionalMenu?: () => ContextMenuOptions<NonDeprecatedPrecondition>[],
+}
 
 export class ConditionalEffectManager {
 
@@ -152,21 +161,23 @@ export class ConditionalEffectManager {
     await this.alterConditionalEffect(topPath, dataPath, action, item);
   }
 
-  static async handler_addPrecondition<D extends FoundryDocument<any>>(ev: JQuery.Event, item: D) {
+  static async handler_addPrecondition<D extends FoundryDocument<any>>(ev: JQuery.Event, item: D, cond ?: NonDeprecatedPrecondition) {
     const effectIndex = this.#getEffectIndex(ev);
     const action : CEAction= {
       type: "create-conditional",
-      effectIndex
+      effectIndex,
+      conditional: cond,
     };
     const {topPath, dataPath} = this.#getPaths(ev);
     await this.alterConditionalEffect(topPath, dataPath, action, item);
   }
 
-  static async handler_addConsequence<D extends FoundryDocument<any>>(ev: JQuery.Event, item: D) {
+  static async handler_addConsequence<D extends FoundryDocument<any>>(ev: JQuery.Event, item: D, cons ?: NonDeprecatedConsequence) {
     const effectIndex = this.#getEffectIndex(ev);
     const action : CEAction= {
       type: "create-consequence",
-      effectIndex
+      effectIndex,
+      consequence: cons,
     };
     const {topPath, dataPath} = this.#getPaths(ev);
     await this.alterConditionalEffect(topPath, dataPath, action, item);
@@ -306,6 +317,7 @@ export class ConditionalEffectManager {
     html.find("div.multi-check .selected").on("click", (ev) => void this.handler_clickMCSelector(ev, doc));
     html.find(".MC-selectors").on("click", (ev) => void this.handler_clickMCSelected(ev, doc));
     if (contextMenu != undefined) {
+      console.log("Setting context menu handlers");
       html.find("section.conditions-section").on("contextmenu", ev => void this.openConditionsMenu(ev, doc, contextMenu));
       html.find("section.consequences-section").on("contextmenu", ev => void this.openConsequencesMenu(ev, doc, contextMenu));
     }
@@ -482,23 +494,42 @@ export class ConditionalEffectManager {
     return data as any;
   }
 
-  private static openConditionsMenu<D extends FoundryDocument<any>>(ev: JQuery.ContextMenuEvent, item: D, contextMenu: ContextMenu) {
+  private static openConditionsMenu<D extends FoundryDocument<any>>(ev: JQuery.ContextMenuEvent, item: MenuHolder<D>, contextMenu: ContextMenu) {
     const options = [{
       label: "Add Condition",
       action: (ev: JQuery.Event) => {
         void this.handler_addPrecondition(ev, item);
       }
     }] satisfies ContextMenu["options"];
+    const menu = item.sheet.newConditionalMenu
+      ? item.sheet
+      .newConditionalMenu()
+      .map (menuItem => ({
+        ...menuItem,
+        action: () => this.handler_addPrecondition(ev, item, menuItem.action(ev)),
+      })
+      ) : [];
+    // const menu = item.sheet.new? item.sheet.newConditionalMenu() : options;
+    options.push( ...menu);
     contextMenu.show(ev, options);
   }
 
-  private static openConsequencesMenu<D extends FoundryDocument<any>>(ev: JQuery.ContextMenuEvent, item: D, contextMenu: ContextMenu) {
+  private static openConsequencesMenu<D extends FoundryDocument<any>>(ev: JQuery.ContextMenuEvent, item: MenuHolder<D>, contextMenu: ContextMenu) {
     const options = [{
       label: "Add Consequence",
       action: (ev: JQuery.Event) => {
         void this.handler_addConsequence(ev, item);
       }
     }] satisfies ContextMenu["options"];
+    const menu = item.sheet.newConsequenceMenu
+      ? item.sheet
+      .newConsequenceMenu()
+      .map (menuItem => ({
+        ...menuItem,
+        action: () => this.handler_addConsequence(ev, item, menuItem.action(ev)),
+      })
+      ) : [];
+    options.push( ...menu);
     contextMenu.show(ev, options);
   }
 

@@ -1,16 +1,20 @@
+import {ConsequenceAmountV2, NonDeprecatedConsequence} from "../../../config/consequence-types.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import {PowerStuff} from "../../../config/power-stuff.js";
-import {ConditionalEffectManager} from "../../conditional-effect-manager.js";
+import {ConditionalEffectManager, MenuDataI} from "../../conditional-effect-manager.js";
 import {SocialCardEventDM} from "../../datamodel/item-types.js";
 import {PersonaError} from "../../persona-error.js";
+import {ContextMenu} from "../../utility/context-menu.js";
 import {HTMLTools} from "../../utility/HTMLTools.js";
+import {PersonaItem} from "../persona-item.js";
 import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 import {PersonaSocialCardSheet} from "./social-card-sheet.js";
 
-export class CardEventSheet extends FormApplication<SocialCardEventDM> {
+export class CardEventSheet extends FormApplication<SocialCardEventDM> implements MenuDataI {
 	_event: SocialCardEventDM;
 	_card: SocialCard;
 	private _eventIndex : number;
+  protected contextMenu : ContextMenu = new ContextMenu("social-card-context-menu");
 
 	constructor (item: SocialCardEventDM, containingCard: SocialCard,  options ?:ApplicationV1Options) {
 		super(item, options);
@@ -70,7 +74,8 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> {
 	override activateListeners(html: JQuery) {
 		//TODO for next time, need listeners to do conditional events and event tags
 		super.activateListeners(html);
-		ConditionalEffectManager.applyHandlers(html, this.event as unknown as FoundryDocument);
+    this.contextMenu.attachToContainer(html);
+		ConditionalEffectManager.applyHandlers(html, this.event as unknown as FoundryDocument, this.contextMenu);
 		html.find(".eventTags .addTag").on("click", (ev) => void this.addEventTag(ev));
 		html.find(".eventTags .delTag").on("click", (ev) => void this.deleteEventTag(ev));
 		html.find(".add-choice").on("click", (ev) => void this.addChoice(ev));
@@ -184,5 +189,68 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> {
 		ui.notifications.notify("Choice copied to clipboard");
 		PersonaSocialCardSheet.clipboard.choice = JSON.parse(JSON.stringify(choice)) as typeof choice;
 	}
+
+  newConsequenceMenu() {
+    const options = [
+      {
+        label: "Modify Student Stat",
+        action: (_ev: JQuery.ClickEvent) => {
+          return {
+            type: "social-card-action",
+            cardAction: "alter-student-skill",
+            studentSkill : "diligence",
+            amount: {
+              type: "constant",
+              val: 1,
+            } satisfies ConsequenceAmountV2
+            ,
+          } satisfies NonDeprecatedConsequence;
+        },
+      }, {
+        label: "Modify Progress Tokens",
+        action: (_ev: JQuery.ClickEvent) => {
+          return {
+            type: "social-card-action",
+            cardAction: "modify-progress-tokens",
+            socialLinkIdOrTarot: "target",
+            amount: {
+              type: "constant",
+              val: 1,
+            } satisfies ConsequenceAmountV2
+            ,
+          } satisfies NonDeprecatedConsequence;
+        },
+      }, {
+        label: "Add Item",
+        action: (_ev: JQuery.ClickEvent) => {
+          return {
+            type: "inventory-action",
+            invAction: "add-item",
+            itemId: "" as PersonaItem["id"],
+            amount: {
+              type: "constant",
+              val: 1,
+            } satisfies ConsequenceAmountV2
+            ,
+          } satisfies NonDeprecatedConsequence;
+        }
+      }, {
+        label: "Add Item",
+        action: (_ev: JQuery.ClickEvent) => {
+          return {
+            type: "inventory-action",
+            invAction: "add-item",
+            itemId: "" as PersonaItem["id"],
+            amount: {
+              type: "constant",
+              val: 1,
+            } satisfies ConsequenceAmountV2
+            ,
+          } satisfies NonDeprecatedConsequence;
+        }
+      }
+    ] satisfies ContextMenu["options"];
+    return options;
+  }
 
 }

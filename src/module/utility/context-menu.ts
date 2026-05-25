@@ -96,10 +96,10 @@ export class ContextMenu {
   }
 }
 
-type ContextMenuOptions = {
+export type ContextMenuOptions<Ret = unknown> = {
   label: string;
   visible ?: boolean;
-  action: (ev: JQuery.Event) => unknown;
+  action: (ev: JQuery.Event) => Ret;
 };
 
 Hooks.on("ready", () => {

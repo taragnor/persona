@@ -43,7 +43,7 @@ export type DeprecatedPrecondition<T extends object> = T & {
 	___deprecated: true;
 }
 
-export type NonDeprecatedPrecondition<T extends object> = T & {
+export type NonDeprecatedPrecondition<T extends object = Precondition> = T & {
 	___deprecated ?: never;
 }
 

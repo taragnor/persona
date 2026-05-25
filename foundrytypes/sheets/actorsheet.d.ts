@@ -1,7 +1,7 @@
 namespace Foundry {
 class ActorSheet <T extends Actor> extends DocumentSheet<T> {
 	actor: T;
-	async _onDropActor<T extends Actor>(_event: JQuery.Event, actorObj: unknown ): Promise<Actor| undefined>;
+	async _onDropActor(_event: JQuery.Event, actorObj: unknown ): Promise<Actor| undefined>;
 	/** call  Item.implementation.fromDropData to convert the item type to an actual FoundryItem*/
 	async _onDropItem(_event: JQuery.Event, item: unknown): Promise<Item | undefined>;
 	_tabs: TabTypeData[];

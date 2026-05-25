@@ -65,6 +65,8 @@ export class PersonaCompendium {
 			ownership: actor.ownership,
 		} as const;
 		const persona = await PersonaActor.create<Shadow>(personaData);
+    type R = Shadow["sheet"]
+    persona.sheet.object
 		if (!persona) {throw new PersonaError(`Couldn't create Compendiume entry for ${actor.name}`);}
 		return persona;
 	}

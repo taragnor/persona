@@ -19,14 +19,15 @@ namespace Foundry {
 		// & UnionizeTCSplit<T>;
 		// declare class Actor<const T extends SchemaDict = any, ItemType extends Item<any, this, any> = Item<any, this>, AEType extends ActiveEffect<this, ItemType> = ActiveEffect<this, ItemType>> extends FoundryDocument<ItemType | AEType>{
 
-		interface Actor<const T extends SchemaDict = any, in ItemType extends Item<any, this, any> = Item<any, this>, in AEType extends ActiveEffect<this, ItemType> = ActiveEffect<this, ItemType>> extends Document<ItemType | AEType>{
+		interface Actor<const T extends SchemaDict = any, in ItemType extends Item<any, this, any> = Item<any, this>, in AEType extends ActiveEffect<this, ItemType> = ActiveEffect<this, ItemType>> extends FoundryDocument<ItemType | AEType>{
 
 			type: keyof T;
 			id: Branded<Document["id"], "ActorId">;
 			system: TotalConvert<T>;
 			items: Collection<ItemType>;
 			getRollData(): TotalConvert<T>;
-			sheet: ActorSheet<Actor<T, ItemType, AEType>>;
+			sheet: ActorSheet<typeof this>;
+			// sheet: ActorSheet<Actor<T, ItemType, AEType>>;
 			statuses: Set<string>;
 			prototypeToken: PrototypeToken<typeof this>;
 			effects: Collection<AEType>;

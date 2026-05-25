@@ -64,7 +64,7 @@ const BASE_PERSONA_SIDEBOARD = 5 as const;
 
 export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, PersonaAE> {
   declare statuses: Set<StatusEffectId>;
-  declare sheet: PersonaActorSheetBase;
+  declare sheet: PersonaActorSheetBase<this>;
 
   DOWNED_OPACITY = 0.5 as const;
   FULL_FADE_OPACITY = 0.2 as const;
@@ -713,6 +713,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   canUseSideboard(this: ValidAttackers) : boolean {
     return this.class?.system?.canUsePowerSideboard && !this.isNPCAlly();
+    this.sheet
 
   }
 

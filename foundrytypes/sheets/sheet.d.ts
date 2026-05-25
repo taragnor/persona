@@ -1,10 +1,10 @@
-class DocumentSheet<T extends FoundryDocument<unknown>> extends FormApplication<T> {
+class DocumentSheet<T extends FoundryDocument> extends FormApplication<T> {
 	options: SheetOptions;
 	getData(): SheetData | Promise<SheetData>;
 	activateListeners(html: JQuery<HTMLElement>): void;
 	get form(): HMTLFormElement;
 	// async render(force: boolean = false, options?: Record<string, unknown>):Promise<void>;
-	_getSubmitData(data: Record<string, any>): Record<string, any>;
+	protected _getSubmitData(data: Record<string, any>): Record<string, any>;
 	_onDrop(event: DragEvent): unknown;
 	get isEditable(): boolean;
 	get template(): string;
@@ -20,7 +20,6 @@ class FormApplication<T extends object> extends Application {
 	close( options?: unknown): void;
 	abstract _updateObject(_event : TypeGuess<JQuery.SubmitEvent>, formData: Record<string, unknown> ): void | Promise<void>;
 }
-
 
 interface SheetOptions {
 	editable: boolean;
