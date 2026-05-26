@@ -339,10 +339,19 @@ export class CombatResult  {
       case "lower-resistance":
       case "raise-status-resistance":
         break;
-      case "add-power-to-list":
-      case "add-talent-to-list":
-        break;
+        // case "add-power-to-list":
+        // case "add-talent-to-list":
+        //   PersonaError.softFail(`Deprecated result type: ${cons.type}`)
+        //   break;
       case "other-effect":
+        switch (cons.otherEffect) {
+          case "teach-power":
+            if (!effect) {break;}
+            effect.otherEffects.push( {
+              ...cons
+            });
+            break;
+        }
         break;
       case "set-flag": {
         if (!effect || !target || !target.isValidCombatant()) {break;}
@@ -443,14 +452,14 @@ export class CombatResult  {
         });
         break;
       }
-      case "teach-power":
-        if (!effect) {break;}
-        effect.otherEffects.push( {
-          ...cons
-        });
-        break;
-      case "add-creature-tag":
-        break;
+      // case "teach-power":
+      //   if (!effect) {break;}
+      //   effect.otherEffects.push( {
+      //     ...cons
+      //   });
+      //   break;
+      // case "add-creature-tag":
+      //   break;
       case "combat-effect":
         if (!effect || !target || !target.isValidCombatant()) {break;}
         this.addEffect_combatEffect(cons, effect, target, situation);

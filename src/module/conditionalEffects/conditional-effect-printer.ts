@@ -280,7 +280,6 @@ export class ConditionalEffectPrinter {
           cond satisfies never;
           return "ERROR";
       }
-
     }
 
     static printPowerHasConditional(cond: Precondition & {type: "boolean"; boolComparisonTarget: "power-has"}) : string {
@@ -567,14 +566,14 @@ export class ConditionalEffectPrinter {
         }
         case "expend-item":
           return `expend item`;
-        case "add-power-to-list": {
-          const grantedPower = PersonaDB.getPower(cons.id);
-          return `Add power to list ${grantedPower?.displayedName?.toString() ?? "ERROR"}`;
-        }
-        case "add-talent-to-list": {
-          const grantedTalent = PersonaDB.getItemById(cons.id) as Talent;
-          return `Add Talent to list ${grantedTalent?.displayedName?.toString() ?? "ERROR"}`;
-        }
+        // case "add-power-to-list": {
+        //   const grantedPower = PersonaDB.getPower(cons.id);
+        //   return `Add power to list ${grantedPower?.displayedName?.toString() ?? "ERROR"}`;
+        // }
+        // case "add-talent-to-list": {
+        //   const grantedTalent = PersonaDB.getItemById(cons.id) as Talent;
+        //   return `Add Talent to list ${grantedTalent?.displayedName?.toString() ?? "ERROR"}`;
+        // }
         case "other-effect":
           return this.#printOtherEffect(cons);
         case "set-flag":
@@ -606,20 +605,20 @@ export class ConditionalEffectPrinter {
           const amount = this.printConsequenceAmount(cons.amount);
           return `${modified} ${amount}`;
         }
-        case "teach-power": {
-          if (cons.randomPower) {
-            return "Random Power";
-          } else {
-            const power = PersonaDB.getPower(cons.id);
-            return `Teach Power ${power?.displayedName?.toString() ?? "ERROR"}`;
-          }
-        }
+        // case "teach-power": {
+        //   if (cons.randomPower) {
+        //     return "Random Power";
+        //   } else {
+        //     const power = PersonaDB.getPower(cons.id);
+        //     return `Teach Power ${power?.displayedName?.toString() ?? "ERROR"}`;
+        //   }
+        // }
         case "raise-status-resistance":
           return `${this.translate(cons.resistanceLevel, RESIST_STRENGTHS)} status ${this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE)}`;
-        case "add-creature-tag": {
-          const tag = this.translate(cons.creatureTag, CREATURE_TAGS);
-          return `Add ${tag} tag`;
-        }
+       // case "add-creature-tag": {
+        //   const tag = this.translate(cons.creatureTag, CREATURE_TAGS);
+        //   return `Add ${tag} tag`;
+        // }
         case "combat-effect":
           return this.#printCombatEffect(cons);
         case "alter-fatigue-lvl":
@@ -769,9 +768,29 @@ export class ConditionalEffectPrinter {
           return "search Twice";
         case "ignore-surprise":
           return "Ignore Surprise";
+        case "add-power-to-list": {
+          const grantedPower = PersonaDB.getPower(cons.id);
+          return `Add power to list ${grantedPower?.displayedName?.toString() ?? "ERROR"}`;
+        }
+        case "add-talent-to-list": {
+          const grantedTalent = PersonaDB.getItemById(cons.id) as Talent;
+          return `Add Talent to list ${grantedTalent?.displayedName?.toString() ?? "ERROR"}`;
+        }
+        case "teach-power": {
+          if (cons.randomPower) {
+            return "Random Power";
+          } else {
+            const power = PersonaDB.getPower(cons.id);
+            return `Teach Power ${power?.displayedName?.toString() ?? "ERROR"}`;
+          }
+        }
+        case "add-creature-tag": {
+          const tag = this.translate(cons.creatureTag, CREATURE_TAGS);
+          return `Add ${tag} tag`;
+        }
         default:
-          cons.otherEffect satisfies never;
-          return "ERROR";
+        cons satisfies never;
+        return "ERROR";
       }
     }
 

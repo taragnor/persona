@@ -8,7 +8,7 @@ import { Persona } from '../persona-class.js';
 import { POWER_ICONS } from '../../config/icons.js';
 import { RealDamageType } from '../../config/damage-types.js';
 import { PToken, PersonaCombat } from '../combat/persona-combat.js';
-import { ItemSelector } from '../../config/consequence-types.js';
+import { ItemSelector, NonDeprecatedConsequence} from '../../config/consequence-types.js';
 import { Trigger } from '../../config/triggers.js';
 import { CombatResult, AttackResult } from '../combat/combat-result.js';
 import { ROLL_TAGS_AND_CARD_TAGS, RollTag } from '../../config/roll-tags.js';
@@ -17,7 +17,6 @@ import { PersonaSettings } from '../../config/persona-settings.js';
 import { Logger } from '../utility/logger.js';
 import { DamageType } from '../../config/damage-types.js';
 import { EQUIPMENT_TAGS, EquipmentTag } from '../../config/equipment-tags.js';
-import { Consequence } from '../../config/consequence-types.js';
 import { CreatureTag } from '../../config/creature-tags.js';
 import { removeDuplicates } from '../utility/array-tools.js';
 import { PowerTag } from '../../config/power-tags.js';
@@ -50,7 +49,7 @@ import {PersonaTargetting} from '../combat/persona-targetting.js';
 import {PersonaSocial} from '../social/persona-social.js';
 import {ItemTagManager} from './item-tags.js';
 import {ItemHooks} from './item-hooks.js';
-import {PermanentCache, TimedCache} from '../utility/cache.js';
+import {TimedCache} from '../utility/cache.js';
 
 declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -80,7 +79,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     mpCost: U<number>,
     mpGrowthTable: U<GrowthCalculator>,
     hpGrowthTable: U<GrowthCalculator>,
-    // tags: U<readonly UnifiedTagData[]>,
   };
 
 
@@ -862,7 +860,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   static grantsPowers(eff: SourcedConditionalEffect) : boolean{
     return eff.consequences.some(
-      cons => cons.type == 'add-power-to-list'
+      cons => cons.type == "other-effect" && cons.otherEffect == "add-power-to-list"
+      // cons.type == 'add-power-to-list'
     );
   }
   grantsPowers(this: ItemModifierContainer): boolean {
@@ -873,7 +872,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     try{
       const grantsPowers= this.getEffects(null).some(
         eff => eff.consequences.some(
-          cons => cons.type == 'add-power-to-list'
+          cons => cons.type == "other-effect" && cons.otherEffect == "add-power-to-list"
+          // cons.type == 'add-power-to-list'
         ));
       this.cache.grantsPowers = grantsPowers;
       return this.cache.grantsPowers;
@@ -891,7 +891,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     try{
       const grantsTalents= this.getEffects(null).some(
         eff => eff.consequences.some(
-          cons => cons.type == 'add-talent-to-list'
+          cons => cons.type == "other-effect" && cons.otherEffect == "add-talent-to-list"
+          // cons.type == 'add-talent-to-list'
         ));
       this.cache.grantsTalents = grantsTalents;
       return this.cache.grantsTalents;
@@ -903,7 +904,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   static grantsTalents (eff: TypedConditionalEffect) : boolean {
     return eff.consequences.some(
-      cons => cons.type == 'add-talent-to-list'
+      cons => cons.type == "other-effect" && cons.otherEffect == "add-talent-to-list"
+      // cons.type == 'add-talent-to-list'
     );
   }
 
@@ -942,7 +944,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       };
     }
     const powers = eff.getActiveConsequences(situation)
-      .flatMap(cons => cons.type == 'add-power-to-list' ? [cons.id] : [])
+      .flatMap(cons => cons.type == "other-effect" && cons.otherEffect == 'add-power-to-list' ? [cons.id] : [])
       .map(id=> PersonaDB.allPowers().get(id))
       .filter (pwr=> pwr != undefined);
     return removeDuplicates(powers);
@@ -958,10 +960,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const talents= this.getPassiveEffects(user)
       .filter(
         eff => eff.consequences.some(
-          cons => cons.type == 'add-talent-to-list'
+          cons => cons.type == "other-effect" &&
+          cons.otherEffect == 'add-talent-to-list'
         ))
       .flatMap(eff=> eff.getActiveConsequences(situation))
-      .flatMap(x=> x.type == 'add-talent-to-list' ? [x.id] : [])
+      .flatMap(x=>  x.type == "other-effect"
+        && x.otherEffect == 'add-talent-to-list' ? [x.id] : [])
       .map(id=> PersonaDB.allTalents().find(x=> x.id == id))
       .flatMap( tal=> tal? [tal]: []);
     return removeDuplicates(talents);
@@ -976,7 +980,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const cons =
       sourcedEffect.getActiveConsequences(situation);
     return cons
-      .filter (x=> x.type == "add-talent-to-list")
+      .filter (x=> x.type == "other-effect" && x.otherEffect == "add-talent-to-list")
       .map(cons=> PersonaDB.allTalents().find(x=> x.id == cons.id))
       .filter ( x=> x!= undefined);
   }
@@ -1310,15 +1314,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
     const effects = this.getEffects(actor);
     if (!effects.some( e => e.consequences
-      .some( cons => cons.type == 'add-creature-tag'))) {
+      .some( cons => cons.type == "other-effect" && cons.otherEffect == 'add-creature-tag'))) {
       this.cache.containsTagAdd = false;
       return [];
     }
     const situation = {
       user: actor.accessor,
     };
-    const cons : (Consequence & {type : 'add-creature-tag'})[] = ConditionalEffectManager.getAllActiveConsequences(effects, situation)
-      .filter( c=> c.type == 'add-creature-tag') ;
+    const cons : (NonDeprecatedConsequence & {type : 'other-effect', otherEffect: 'add-creature-tag'})[] = ConditionalEffectManager.getAllActiveConsequences(effects, situation)
+      .filter( c=> c.type == "other-effect" && c.otherEffect == 'add-creature-tag') ;
     return cons
       .map( c => c.creatureTag)
       .map( t => PersonaItem.resolveTag(t));

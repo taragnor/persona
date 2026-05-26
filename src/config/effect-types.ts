@@ -25,7 +25,10 @@ const DEPRECATED_CONSEQUENCE_TYPES = [
 	"revive",
 	"extraTurn",
 	"scan",
-
+	"add-talent-to-list",
+	"add-power-to-list",
+	"add-creature-tag",
+	"teach-power",
 ] as const;
 
 export const NON_DEPRECATED_CONSQUENCELIST = [
@@ -33,18 +36,14 @@ export const NON_DEPRECATED_CONSQUENCELIST = [
 	"modifier", //singular-mod
 	"modifier-new", //multi-mod
 	"combat-effect",
-	"expend-item",
-	"add-talent-to-list",
-	"add-power-to-list",
-	"teach-power",
+	"social-card-action",
+	"inventory-action",
+	"dungeon-action",
 	"other-effect",
 	"set-flag",
 	"inspiration-cost",
 	"display-msg",
-	"social-card-action",
 	"alter-variable",
-	"add-creature-tag",
-	"dungeon-action",
 	"perma-buff",
 	"play-sound",
 	"raise-status-resistance", // functions as raise and lower
@@ -56,14 +55,14 @@ export const NON_DEPRECATED_CONSQUENCELIST = [
 	"gain-levels",
 	"cancel",
 	"set-roll-result",
-	"inventory-action",
+	"expend-item",
+
 ] as const;
 
 export const CONSQUENCELIST = [
 	...NON_DEPRECATED_CONSQUENCELIST,
 	...DEPRECATED_CONSEQUENCE_TYPES,
 ] as const;
-
 
 export type ConsequenceType = typeof CONSQUENCELIST[number];
 
@@ -117,8 +116,7 @@ export const TARGETINGLIST = [
 	"everyone-even-dead", // includes dead
 ] as const;
 
-export const TARGETING= HTMLTools.createLocalizationObject(TARGETINGLIST, "persona.power.targets");
-// export const TARGETING= Object.fromEntries( TARGETINGLIST.map(x=> [x, `persona.power.targets.${x}`]));
+export const TARGETING = HTMLTools.createLocalizationObject(TARGETINGLIST, "persona.power.targets");
 
 export const SHADOW_CHANGE_REQ_LIST_FULL= [
 	"none",

@@ -86,12 +86,12 @@ export class ConsequenceProcessor {
       case 'none':
       case 'modifier':
       case 'modifier-new':
-      case 'add-creature-tag':
+      // case 'add-creature-tag':
         break;
+      // case 'add-power-to-list':
+      // case 'add-talent-to-list':
       case 'other-effect':
       case 'set-flag':
-      case 'add-power-to-list':
-      case 'add-talent-to-list':
       case "inventory-action":
         return targets.map( applyTo => ({applyTo, cons}));
       case 'raise-resistance':
@@ -101,8 +101,8 @@ export class ConsequenceProcessor {
       case 'use-power':
       case 'alter-mp':
         return targets.map( applyTo => ({applyTo, cons}));
+      // case 'teach-power':
       case 'social-card-action':
-      case 'teach-power':
       case 'combat-effect':
         return targets.map( applyTo => ({applyTo, cons}));
       case 'alter-variable':

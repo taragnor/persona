@@ -217,36 +217,68 @@ export class ConsequenceApplier {
       case "set-flag":
         await actor.setEffectFlag(otherEffect);
         break;
-      case "teach-power": {
-        if (!actor.isPC() && !actor.isNPCAlly()) {
-          break;
-        }
-        const persona = actor.persona();
-        if (otherEffect.randomPower == false) {
-          const power = PersonaDB.allPowers().get(otherEffect.id);
-          if (power) {
-            await persona.learnPower(power);
-          }
-        } else {
-          const highest = persona.highestPowerSlotUsable();
-          let safetyBreak = 0;
-          while (true) {
-            const power = TreasureSystem.randomPower(highest);
-            if (!power) {break;}
-            if (!persona.knowsPowerInnately(power)) {
-              await persona.learnPower(power);
-              break;
-            }
-            if (++safetyBreak > 100) {
-              PersonaError.softFail("Error trying to add random Power, couldn't find candidate");
-              break;
-            }
-          }
-        }
+      case "other-effect" :
+        await this._applyExoticOtherEffect(actor, otherEffect);
         break;
-      }
-      case "add-power-to-list":
-        break;
+        // switch (otherEffect.otherEffect) {
+        //   case "teach-power": {
+        //     if (!actor.isPC() && !actor.isNPCAlly()) {
+        //       break;
+        //     }
+        //     const persona = actor.persona();
+        //     if (otherEffect.randomPower == false) {
+        //       const power = PersonaDB.allPowers().get(otherEffect.id);
+        //       if (power) {
+        //         await persona.learnPower(power);
+        //       }
+        //     } else {
+        //       const highest = persona.highestPowerSlotUsable();
+        //       let safetyBreak = 0;
+        //       while (true) {
+        //         const power = TreasureSystem.randomPower(highest);
+        //         if (!power) {break;}
+        //         if (!persona.knowsPowerInnately(power)) {
+        //           await persona.learnPower(power);
+        //           break;
+        //         }
+        //         if (++safetyBreak > 100) {
+        //           PersonaError.softFail("Error trying to add random Power, couldn't find candidate");
+        //           break;
+        //         }
+        //       }
+        //     }
+        //   }
+
+      // case "teach-power": {
+      //   if (!actor.isPC() && !actor.isNPCAlly()) {
+      //     break;
+      //   }
+      //   const persona = actor.persona();
+      //   if (otherEffect.randomPower == false) {
+      //     const power = PersonaDB.allPowers().get(otherEffect.id);
+      //     if (power) {
+      //       await persona.learnPower(power);
+      //     }
+      //   } else {
+      //     const highest = persona.highestPowerSlotUsable();
+      //     let safetyBreak = 0;
+      //     while (true) {
+      //       const power = TreasureSystem.randomPower(highest);
+      //       if (!power) {break;}
+      //       if (!persona.knowsPowerInnately(power)) {
+      //         await persona.learnPower(power);
+      //         break;
+      //       }
+      //       if (++safetyBreak > 100) {
+      //         PersonaError.softFail("Error trying to add random Power, couldn't find candidate");
+      //         break;
+      //       }
+      //     }
+      //   }
+      //   break;
+      // }
+      // case "add-power-to-list":
+      //   break;
       case "inspiration-cost":
         if (otherEffect.linkId) {
           await actor.social.spendInspiration(otherEffect.linkId, otherEffect.amount);
@@ -285,23 +317,6 @@ export class ConsequenceApplier {
           break;
         }
         await PersonaVariables.alterVariable(varCons, varCons.situation);
-        // switch (varCons.varType) {
-        //   case "actor": {
-        //     await PersonaVariables.alterVariable(varCons, varCons.situation);
-        //     break;
-        //   }
-        //   case "global":
-        //   case "scene": {
-        //     await PersonaVariables.alterVariable(varCons, varCons.situation);
-        //     break;
-        //   }
-        //   case "combat":
-        //     await PersonaVariables.alterVariable(varCons, varCons.situation);
-        //     break;
-        //   default:
-        //     varCons satisfies never;
-        //     PersonaError.softFail(`attempt to alter invalid Variable type :${varCons as string}`, varCons );
-        // }
         break;
       }
       case "perma-buff":
@@ -336,6 +351,38 @@ export class ConsequenceApplier {
         break;
       default:
         otherEffect satisfies never;
+    }
+  }
+
+  private static async _applyExoticOtherEffect(actor: ValidAttackers, otherEffect: Sourced<OtherEffect> & {type: "other-effect"}) : Promise<void> {
+    switch (otherEffect.otherEffect) {
+      case "teach-power": {
+        if (!actor.isPC() && !actor.isNPCAlly()) {
+          break;
+        }
+        const persona = actor.persona();
+        if (otherEffect.randomPower == false) {
+          const power = PersonaDB.allPowers().get(otherEffect.id);
+          if (power) {
+            await persona.learnPower(power);
+          }
+        } else {
+          const highest = persona.highestPowerSlotUsable();
+          let safetyBreak = 0;
+          while (true) {
+            const power = TreasureSystem.randomPower(highest);
+            if (!power) {break;}
+            if (!persona.knowsPowerInnately(power)) {
+              await persona.learnPower(power);
+              break;
+            }
+            if (++safetyBreak > 100) {
+              PersonaError.softFail("Error trying to add random Power, couldn't find candidate");
+              break;
+            }
+          }
+        }
+      }
     }
   }
 

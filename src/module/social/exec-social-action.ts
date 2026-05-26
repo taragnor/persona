@@ -193,24 +193,12 @@ export class SocialActionExecutor {
 
 	static async modifyProgress(eff: Sourced<LocalEffect> & {type : "social-card-action", cardAction: "modify-progress-tokens"}) {
 		const choice = eff.linkId ?? this.cardData.socialTarget ?? this.cardData.actor.id;
-		// if (choice == undefined || choice == "target") {
-		// 	const amount = this.resolveConsAmount(eff, situation);
-		// 	if (!amount) {return;}
-		// 	return this.modifyTargetProgress(amount);
-		// }
-		// if (choice == "cameo") {
-      // const amount =eff.amount;
-		// 	// const amount = this.resolveConsAmount(eff, situation);
-		// 	if (!amount) {return;}
-		// 	return this.modifyCameoProgress(amount);
-		// }
 		const target = resolveActorIdOrTarot(choice);
 		if (!target) {
 			PersonaError.softFail(`Can't find target for ${choice as string}`);
 			return;
 		}
 		const actor  = this.cardData.actor;
-		// const amount = this.resolveConsAmount(eff, situation);
 		const amount = eff.amount;
 		if (!amount) {return;}
 		await actor.social.socialLinkProgress(target.id, amount);

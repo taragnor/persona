@@ -114,11 +114,29 @@
 	</select>
 	{{/if}}
 
-	{{#if (eq cons.type	"other-effect")}}
-	<select name="{{strcat namePrefix 'otherEffect'}}">
-		{{selectOptions POWERSTUFF.OTHER_CONSEQUENCES localize=true selected=cons.otherEffect}}
-	</select>
+  {{#if (eq cons.type	"other-effect")}}
+
+  <select name="{{strcat namePrefix 'otherEffect'}}">
+    {{selectOptions POWERSTUFF.OTHER_CONSEQUENCES localize=true selected=cons.otherEffect}}
+  </select>
+  {{#if (eq cons.otherEffect "add-creature-tag")}}
+  <select name="{{strcat namePrefix 'creatureTag'}}">
+    {{selectOptions POWERSTUFF.CREATURE_TAGS localize=true selected=cons.creatureTag}}
+  </select>
+  {{/if}}
+  {{#if (eq cons.otherEffect "add-talent-to-list")}}
+  <select name="{{strcat namePrefix 'creatureTag'}}">
+    {{selectOptions POWERSTUFF.CREATURE_TAGS localize=true selected=cons.creatureTag}}
+  </select>
+  {{/if}}
+  {{#if (eq cons.otherEffect "add-power-to-list")}}
+  <select name="{{strcat namePrefix 'id'}}">
+    {{selectOptions POWERSTUFF.COMPENDIUM_POWERS localize=false selected=cons.id}}
+  </select>
+  {{/if}}
+
 	{{/if}}
+
 	{{#if (eqAny cons.type "raise-resistance" "lower-resistance")}}
 	<div>
 		{{multicheck (strcat namePrefix 'resistType') POWERSTUFF.DAMAGETYPES localize=true checked=cons.resistType}}

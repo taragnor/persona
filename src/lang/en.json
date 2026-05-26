@@ -975,6 +975,10 @@
 
 	"persona.othereffect.search-twice": "Search Twice",
 	"persona.othereffect.ignore-surprise": "Act during surprise rounds",
+	"persona.othereffect.add-talent-to-list": "Add a talent to the list",
+	"persona.othereffect.add-power-to-list": "Add a power to the list",
+	"persona.othereffect.add-creature-tag": "Add a creature tag",
+	"persona.othereffect.teach-power": "Permanently Teach power",
 
 	"persona.search.actions.undecided": "Undecided",
 	"persona.search.actions.search": "Search",

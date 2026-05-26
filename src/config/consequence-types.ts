@@ -30,8 +30,9 @@ import {PowerTagOrId} from "./power-tags.js";
 
 
 export type OtherEffect = {__localEffect?: undefined} &
-  ProcessedConsequenceToOtherEffect< ExpendItemConsequence | SetFlagConsequence | StatusResistanceAlterConsequence | InspirationChangeConsequence | DisplayMessageConsequence | UsePowerConsequence | DungeonActionConsequence | AlterMPConsequence | AddPowerConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | InventoryActionConsequence | setRollResultConsequence>;
+  ProcessedConsequenceToOtherEffect< ExpendItemConsequence | SetFlagConsequence | StatusResistanceAlterConsequence | InspirationChangeConsequence | DisplayMessageConsequence | UsePowerConsequence | DungeonActionConsequence | AlterMPConsequence |  OtherEffectConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | InventoryActionConsequence | setRollResultConsequence>;
 
+//removed : AddPowerConsequence
 //stripped
 //SocialCardActionConsequence
 
@@ -107,11 +108,8 @@ type NonGenericConsequences =
   | ElementalResistanceAlterConsequence
   | StatusResistanceAlterConsequence
   | OtherEffectConsequence
-  | AddPowerConsequence
-  | AddTalentConsequence
   | InspirationChangeConsequence
   | SetFlagConsequence
-  | AddTagConsequence
   | CombatEffectConsequence
   | FatigueConsequence
   | AlterVariableConsequence
@@ -388,7 +386,28 @@ type AddTalentConsequence = {
 type OtherEffectConsequence = {
 	type: "other-effect",
 	otherEffect : OtherConsequence,
-}
+} & OtherConsequences;
+
+type OtherConsequences = {
+  otherEffect: "add-talent-to-list",
+	id: Talent["id"], //id of talent
+} | {
+  otherEffect: "add-power-to-list",
+	id: Power["id"], // id of power
+} | {
+  applyTo : ConsequenceTarget,
+	otherEffect:  "teach-power"
+	id: Power["id"], // id of power
+	randomPower: false,
+} | {
+	otherEffect:  "teach-power"
+	randomPower: true,
+} | {
+  otherEffect: "add-creature-tag",
+	creatureTag: InternalCreatureTag | Tag["id"];
+} | {
+  otherEffect: "search-twice" | "ignore-surprise",
+};
 
 type ElementalResistanceAlterConsequence = {
 	type: "raise-resistance" | "lower-resistance";
@@ -450,22 +469,25 @@ type OldDeprecatedStyle =
 ;
 
 export type DeprecatedConsequence =
-	OldDeprecatedStyle & (
-		OldDamageConsequence
-		| DeprecatedSimpleEffect
-		| AddEscalationConsequence
-		| SlotRecoveryConsequence
-		| EscalationManipulation
-		| Dep_DamageConsequence
-		| AddStatusConsequence
-		| RemoveStatusConsequence
+  OldDeprecatedStyle & (
+    OldDamageConsequence
+    | DeprecatedSimpleEffect
+    | AddEscalationConsequence
+    | SlotRecoveryConsequence
+    | EscalationManipulation
+    | Dep_DamageConsequence
+    | AddStatusConsequence
+    | RemoveStatusConsequence
     | Dep_ExtraActionConsequence
-		| Dep_ExtraAttackConsequence
-		| Deprecated_ScanConsequence
-		| Deprecated_BasicNumberedConsequence
+    | Dep_ExtraAttackConsequence
+    | Deprecated_ScanConsequence
+    | Deprecated_BasicNumberedConsequence
     | DeprecatedMultiModifierConsequence
     | DeprecatedSingleModifierConsequence
     | ExpendSlotDep
+    | AddPowerConsequence
+    | AddTalentConsequence
+    | AddTagConsequence
 	)
 ;
 

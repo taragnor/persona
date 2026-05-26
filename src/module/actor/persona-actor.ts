@@ -3234,6 +3234,7 @@ async setEffectFlag(effect: Sourced<OtherEffect> & {type: "set-flag"}) {
   const flag = await this.createEffectFlag(effect.flagId, effect.flagName, effect.duration, effect.clearOnDeath);
   const owner = effect.owner ? PersonaDB.findActor(effect.owner) : null;
   const source = effect.source ? PersonaDB.find(effect.source) : undefined;
+  //TODO: handle embedded effects for social card CEs
   const embeddedEffects = (effect.applyEmbedded
     && source != undefined
     && owner

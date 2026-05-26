@@ -109,6 +109,43 @@ export class ConsequenceConverter {
       }
       case "expend-slot":
         return { type : "none", };
+      case "add-power-to-list":
+        return {
+          type:"other-effect",
+          otherEffect: "add-power-to-list",
+          id: dep.id,
+        };
+      case "teach-power":{
+        const base = {
+          type: "other-effect",
+          otherEffect: dep.type,
+          applyTo: dep.applyTo,
+        } as const;
+        if (dep.randomPower == true) {
+          return {
+            ...base,
+            randomPower: true,
+          };
+        } else {
+          return {
+            ...base,
+            randomPower: false,
+            id: dep.id,
+          };
+        }
+      }
+      case "add-talent-to-list":
+        return {
+          type: "other-effect",
+          otherEffect: dep.type,
+          id: dep.id,
+        };
+      case "add-creature-tag":
+        return {
+          type: "other-effect",
+          otherEffect: dep.type,
+          "creatureTag" : dep.creatureTag,
+        };
       default:
         dep satisfies never;
     }

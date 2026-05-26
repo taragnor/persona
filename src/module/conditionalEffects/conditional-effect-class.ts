@@ -170,12 +170,12 @@ export class ConditionalEffectC {
     this._original = card;
     this._source = card.accessor;
     this._owner = card.parent?.accessor;
-    this._isEmbedded= false;
+    this._isEmbedded = false;
     this._conditionalType = "on-use";
-    this._realSource =undefined;
+    this._realSource = undefined;
     if (!card.system.skillId) {
-      this._preconditions= [];
-      this._consequences= [];
+      this._preconditions = [];
+      this._consequences = [];
       return;
     }
     this._preconditions = [ {
@@ -185,7 +185,8 @@ export class ConditionalEffectC {
       realSource: undefined,
     } as const ];
     this._consequences= [ {
-      type: 'teach-power',
+      type: 'other-effect',
+      otherEffect: "teach-power",
       randomPower: false,
       id: card.system.skillId,
       source: card.accessor,

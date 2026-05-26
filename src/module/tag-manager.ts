@@ -55,10 +55,10 @@ export abstract class TagManager<TagTypeRaw extends string = string> {
       user: actor.accessor,
     };
     //may need to double check to prevent infinite loops
-    const hasTagGivingCons =  eff.consequences.filter( c=> c.type == 'add-creature-tag') as (Consequence & {type : 'add-creature-tag'})[] ;
+    const hasTagGivingCons =  eff.consequences.filter( c=> c.type == "other-effect" && c.otherEffect == 'add-creature-tag') as (Consequence & {type: "other-effect", otherEffect : 'add-creature-tag'})[] ;
     if (hasTagGivingCons.length == 0) {return [];}
     const activeCons = eff.getActiveConsequences(situation);
-    const tagGivingCons =  activeCons.filter( c=> c.type == 'add-creature-tag') as (Consequence & {type : 'add-creature-tag'})[] ;
+    const tagGivingCons =  activeCons.filter( c=> c.type == "other-effect" && c.otherEffect == 'add-creature-tag') as (Consequence & {type: "other-effect", otherEffect : 'add-creature-tag'})[] ;
     return tagGivingCons.map( x=> x.creatureTag);
   }
 
