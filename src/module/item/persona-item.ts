@@ -66,7 +66,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   declare parent: PersonaActor | undefined;
 
-  _targeting  : U<PersonaTargetting>;
+  _targeting : U<PersonaTargetting>;
 
   public cache: {
     effects: AdvancedEffectsCache;
