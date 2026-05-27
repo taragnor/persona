@@ -6,27 +6,36 @@ namespace foundryApps {
 		}
 	}
 
-	interface Applications {
-		api: ApplicationsAPI
-		ux: UXStuff;
-		handlebars: {
-			renderTemplate(templatePath: string, templateData: Record<string|number, unknown>): Promise<string>;
-		}
-		sidebar: foundryApps.Sidebar
-		apps: foundryApps.Apps;
+  interface Applications {
+    api: ApplicationsAPI
+    ux: UXStuff;
+    handlebars: {
+      renderTemplate(templatePath: string, templateData: Record<string|number, unknown>): Promise<string>;
+      loadTemplates(templatePaths: readonly string[]) : void;
+    }
+    sidebar: foundryApps.Sidebar
+    apps: foundryApps.Apps;
+
 	}
+
 
 	interface Sidebar {
 		tabs: {
-			ActorDirectory: typeof ActorDirectory
+			ActorDirectory: typeof Foundry.ActorDirectory,
+			ItemDirectory: typeof Foundry.ItemDirectory,
 		}
 	}
 
 	interface UXStuff{
 		Draggable : {
 			implementation: typeof Draggable;
-		}
-
+		};
+    DragDrop: {
+      implementation: typeof Foundry.DragDrop;
+    };
+    TextEditor: {
+      implementation: typeof Foundry.TextEditor;
+    };
 	}
 
 	class Draggable {

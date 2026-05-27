@@ -52,9 +52,6 @@ namespace Foundry {
 	type CreationData<T extends FoundryDocument> = 
 		Omit<DeepPartial<T>, "sheet" | "object">;
 
-	interface Folder {
-	};
-
 	type AllStringsStartingWith<Prefix extends string, T extends string | number | symbol = string | number | symbol>=
 		T extends `${Prefix}${infer _}` ? T : never;
 	type updateObj = {[k:string] : any};

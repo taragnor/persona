@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 //Start of fix for actors directory and private names
 
@@ -75,6 +74,7 @@ export class EnhancedActorDirectory {
 		const _getEntryContextOptionsOldCity = ActorDirectory.prototype._getEntryContextOptions;
 
 		//Sets window title to directory Name on character sheets
+    const ActorSheet = foundry.appv1.sheets.ActorSheet;
 		Object.defineProperty(ActorSheet.prototype, 'title', {
 			get: function() { return this.actor.directoryName; }
 		});
@@ -127,13 +127,11 @@ export class EnhancedActorDirectory {
 			return options;
 		};
 
-		/// @ts-expect-error doing crazy monkeypatching
 		ActorDirectory._entryPartial =  `${systemPath}/module/enhanced-directory/enhanced-template.hbs`;
 		// ActorDirectory._entryPartial =  "systems/city-of-mist/module/enhanced-directory/enhanced-template.hbs";
 
 		//@ts-expect-error monkeypatching
 		ActorDirectory.prototype._matchSearchEntries = function(query : string, entryIds : EntryId[], folderIds: string[], autoExpandIds: boolean, _options={}) {
-			//@ts-expect-error monkeypatching
     const nameOnlySearch = this.collection.searchMode === CONST.DIRECTORY_SEARCH_MODES.NAME;
     const entries = this.collection.index ?? this.collection.contents;
 
@@ -176,10 +174,8 @@ export class EnhancedActorDirectory {
 
 		//@ts-expect-error monkeypatch
 		ActorDirectory.prototype.onMatchFolder= function(folder: Folder, folderIds: string[], autoExpandIds: boolean, { autoExpand=true }={}) {
-			//@ts-expect-error monkeypatch
 			if ( typeof folder === "string" ) {folder = game.packs.folders.get(folder);}
 			if ( !folder ) {return;}
-			//@ts-expect-error monkeypatch
 			const folderId = folder._id;
 			//@ts-expect-error monkeypatch
 			const visited = folderIds.has(folderId);
