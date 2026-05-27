@@ -713,8 +713,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   canUseSideboard(this: ValidAttackers) : boolean {
     return this.class?.system?.canUsePowerSideboard && !this.isNPCAlly();
-    this.sheet
-
   }
 
   equals(other: PersonaActor) : boolean {

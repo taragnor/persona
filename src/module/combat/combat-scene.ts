@@ -232,23 +232,26 @@ export class CombatScene {
 		return combat.createEmbeddedDocuments("Combatant", sanitizedData);
 	}
 
-	async getOrCreateCombat() {
-		let combat: U<PersonaCombat> = game.combats.viewed as PersonaCombat;
-		if ( !combat ) {
-			if ( game.user.isGM ) {
-				//@ts-expect-error using special fn
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-				const cls : typeof PersonaCombat = getDocumentClass("Combat") as typeof PersonaCombat;
-				const state = false;
-				//@ts-expect-error doesn't wnt to take scene for some reason
-				combat = await cls.create({scene: canvas.scene.id, active: true}, {render: !state}) as PersonaCombat;
-			} else {
-				ui.notifications.warn("COMBAT.NoneActive", {localize: true});
-				throw new PersonaError("No combat active");
-			}
-		}
-		return combat;
-	}
+  async getOrCreateCombat(): Promise<PersonaCombat> {
+    let combat: U<PersonaCombat> = game.combats.viewed as PersonaCombat;
+    if ( !combat ) {
+      if ( game.user.isGM ) {
+        //@ts-expect-error using special fn
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const cls : typeof PersonaCombat = getDocumentClass("Combat") as typeof PersonaCombat;
+        const state = false;
+        //@ts-expect-error doesn't wnt to take scene for some reason
+        combat = await cls.create({scene: canvas.scene.id, active: true}, {render: !state});
+      } else {
+        ui.notifications.warn("COMBAT.NoneActive", {localize: true});
+        throw new PersonaError("No combat active");
+      }
+    }
+    if (!combat) {
+      throw new PersonaError("Unable to create Combat");
+    }
+    return combat;
+  }
 
   static async createTreasure(treasure: BattleTreasure) {
     if (game.scenes.current != this.scene)  {

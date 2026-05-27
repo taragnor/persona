@@ -15,7 +15,6 @@ import {EncounterOptions, RandomEncounter} from "../exploration/random-encounter
 import {randomSelect, removeDuplicates} from "../utility/array-tools.js";
 import {RegionPanel} from "../exploration/region-panel.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
-import {ExplorationPanel} from "../panels/exploration-panel.js";
 
 declare global {
 	interface SocketMessage {
