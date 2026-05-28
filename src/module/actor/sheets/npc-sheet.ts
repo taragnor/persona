@@ -4,6 +4,10 @@ import { PersonaSocial } from "../../social/persona-social.js";
 import { PersonaActor } from "../persona-actor.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { NoncombatantSheet } from "./noncombatant-sheet.js";
+import {ContextMenuOptions} from "../../utility/context-menu.js";
+import {NonDeprecatedConsequence} from "../../../config/consequence-types.js";
+import {ConsequenceAmountResolver} from "../../conditionalEffects/consequence-amount.js";
+import {NonDeprecatedPrecondition} from "../../../config/precondition-types.js";
 
 export class NPCSheet extends NoncombatantSheet  {
 	declare actor: Subtype<PersonaActor, "npc">;
@@ -26,7 +30,6 @@ export class NPCSheet extends NoncombatantSheet  {
 		super.activateListeners(html);
 	}
 
-
 	async activatePerk(_ev: JQuery.ClickEvent) {
 		const target = Array.from(game.user.targets)
 			.find( (x: Token<PersonaActor>) => x.actor && x.actor.isPC());
@@ -45,6 +48,36 @@ export class NPCSheet extends NoncombatantSheet  {
 		await this.actor.deleteTokenSpend(spendIndex);
 	}
 
+  override newConditionalMenu() : ContextMenuOptions<NonDeprecatedPrecondition>[]  {
+    return [
+      ...super.newConditionalMenu(),
+      {
+        label: "Has Roll Tag",
+        action: () => ({
+          type: "boolean",
+          "boolComparisonTarget": "has-tag",
+          "tagComparisonType": "roll",
+          "rollTag": {},
+          "booleanState": true,
+        } satisfies NonDeprecatedPrecondition),
+      },
+    ];
+  }
+
+  override newConsequenceMenu() : ContextMenuOptions<NonDeprecatedConsequence>[]  {
+    return [
+      ...super.newConsequenceMenu(),
+      {
+        label: "Social DC modifier",
+        action: () => ({
+          type: "modifier",
+          "modifierCategory": "social",
+          "modifiedField": "DCIncrease",
+          amount: ConsequenceAmountResolver.constant(0),
+        } satisfies NonDeprecatedConsequence),
+      },
+    ];
+  }
 
 }
 

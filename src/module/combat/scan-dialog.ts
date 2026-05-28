@@ -1,4 +1,4 @@
-import { PersonaActorSheetBase } from "../actor/sheets/actor-sheet.base.js";
+import { PersonaActorSheetBase } from "../actor/sheets/actor-sheet-base.js";
 
 export class ScanDialog extends Dialog {
 	constructor(html: string) {

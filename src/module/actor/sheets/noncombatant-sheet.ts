@@ -1,4 +1,4 @@
-import { PersonaActorSheetBase } from "./actor-sheet.base.js";
+import { PersonaActorSheetBase } from "./actor-sheet-base.js";
 
 export class NoncombatantSheet extends PersonaActorSheetBase {
 	declare actor: NPC | Tarot;

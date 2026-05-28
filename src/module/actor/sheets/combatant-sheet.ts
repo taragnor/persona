@@ -10,7 +10,7 @@ import { PersonaCombat} from "../../combat/persona-combat.js";
 import { PToken } from "../../combat/persona-combat.js";
 import { CanceledDialgogError, HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaItem } from "../../item/persona-item.js";
-import { PersonaActorSheetBase } from "./actor-sheet.base.js";
+import { PersonaActorSheetBase } from "./actor-sheet-base.js";
 import {Persona} from "../../persona-class.js";
 import {CombatEngine} from "../../combat/combat-engine.js";
 import {antiLoop} from "../../utility/anti-loop.js";

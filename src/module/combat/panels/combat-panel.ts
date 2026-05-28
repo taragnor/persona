@@ -1,6 +1,6 @@
 import {PersonaSettings} from "../../../config/persona-settings.js";
 import {PersonaActor} from "../../actor/persona-actor.js";
-import {PersonaActorSheetBase} from "../../actor/sheets/actor-sheet.base.js";
+import {PersonaActorSheetBase} from "../../actor/sheets/actor-sheet-base.js";
 import {Metaverse} from "../../metaverse.js";
 import {ItemUsePanel} from "../../panels/item-use-panel.js";
 import {PersonaSwitchPanel} from "../../panels/persona-switch-panel.js";

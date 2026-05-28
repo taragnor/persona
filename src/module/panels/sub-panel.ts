@@ -1,4 +1,4 @@
-import {PersonaActorSheetBase} from "../actor/sheets/actor-sheet.base.js";
+import {PersonaActorSheetBase} from "../actor/sheets/actor-sheet-base.js";
 import {PersonaDB} from "../persona-db.js";
 import { SidePanel } from "../side-panel/side-panel.js";
 

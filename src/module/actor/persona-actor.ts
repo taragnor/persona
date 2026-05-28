@@ -29,7 +29,7 @@ import { localize } from "../persona.js";
 import { STATUS_EFFECT_LIST } from "../../config/status-effects.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../../config/status-effects.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
-import { PersonaActorSheetBase } from "./sheets/actor-sheet.base.js";
+import { PersonaActorSheetBase } from "./sheets/actor-sheet-base.js";
 import { Logger } from "../utility/logger.js";
 import { STUDENT_SKILLS } from "../../config/student-skills.js";
 import { SocialStat } from "../../config/student-skills.js";
@@ -707,7 +707,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     if (maxCustomPersonas > customPersonas) {
       actorList.pushUnique(this);
     }
-
     return actorList.map( source=> new Persona(source, this));
   }
 
