@@ -116,6 +116,11 @@ export class HTMLTools {
 		});
 	}
 
+  static async cancelBox(text: string, title : string = "Confirm Action", defaultYes = false) {
+    const val = await this.confirmBox(title, text, defaultYes);
+    return !val;
+  }
+
 
 	static async singleChoiceBox<K extends string, const T extends Record<K, unknown>>(choices: T, options: ChoiceBoxOptions<T> = {}) : Promise<K | null> {
 		const localize = options.localize ?? false;

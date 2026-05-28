@@ -21,7 +21,18 @@ export class ItemHooks {
     Hooks.on("updateItem", (item: PersonaItem) => {
       item.clearCache();
     });
-  }
-}
 
+    Hooks.on("deleteItem", (item: PersonaItem) => {
+      const parent= item.parent;
+      if (!parent || !(parent instanceof PersonaActor)) {
+        return;
+      }
+      if (parent.isPCLike() && parent.hasPlayerOwner) {
+        const msg = `${parent.name} deleted ${item.name} (${item.amount}`;
+        void Logger.sendToChat(msg, parent);
+      }
+    });
+  }
+
+}
 

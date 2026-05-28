@@ -4,7 +4,7 @@ import { localize } from "../../persona.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaDB } from "../../persona-db.js";
 import { CombatantSheetBase } from "./combatant-sheet.js";
-import {ContextMenu} from "../../utility/context-menu.js";
+import {ContextMenu, ContextMenuOptions} from "../../utility/context-menu.js";
 
 export class PCLikeSheet extends CombatantSheetBase {
 	declare actor: PC | NPCAlly;
@@ -49,13 +49,16 @@ export class PCLikeSheet extends CombatantSheetBase {
 		super.activateListeners(html);
 		html.find(".delItem").on("click", this.delItem.bind(this));
 		html.find(".addItem").on("click", this.#addItem.bind(this));
+    html.find(".inventory-item").on("contextmenu", ev => this._inventoryItemContext(ev));
 		html.find(".equips select").on("change", this.equipmentChange.bind(this));
 		html.find(".sort-up").on("click", this.reorderPowerUp.bind(this));
 		html.find(".sort-down").on("click", this.reorderPowerDown.bind(this));
 
 	}
 
-	async delItem (event : Event) {
+	async delItem (event : JQuery.Event) {
+    event.preventDefault();
+    event.stopPropagation();
 		const item_id= String(HTMLTools.getClosestData(event, "itemId"));
 		const item = this.actor.items.find(x=> x.id == item_id);
 		if (item && await HTMLTools.confirmBox("Confirm", `Really delete <b>${item?.name ?? "Unknown item"}</b>?`)) {
@@ -132,6 +135,52 @@ export class PCLikeSheet extends CombatantSheetBase {
     ] satisfies ContextMenu["options"];
     return options;
   }
+
+  protected _inventoryItemContext(ev: JQuery.ContextMenuEvent) {
+    const item = this.getItem(ev);
+    const defaultOwnership = item.isOwner && item.parent == this.actor;
+    const options :ContextMenuOptions[] = [
+      {
+        "label": "View / Edit",
+        action: () => {
+          item.sheet.render(true);
+        },
+        "visible": item.isOwner,
+      } satisfies ContextMenuOptions,
+      {
+        "label":"Remove 1",
+        action: async () => {
+          await this.actor.expendItem(item, 1);
+        },
+        "visible": defaultOwnership && !item.isKeyItem(),
+      } satisfies ContextMenuOptions,
+      {
+        "label":"Remove All",
+        action: async () => {
+          if (await HTMLTools.cancelBox(`Really delete ${item.name}`)) {return;}
+          await item.delete();
+        },
+        "visible": defaultOwnership && !item.isKeyItem(),
+      } satisfies ContextMenuOptions,
+      {
+        "label": "Send All To Party Token",
+        action: async () => {
+          const partyToken = PersonaDB.partyTokenActor();
+          if (!partyToken || !partyToken.isOwner) {
+            ui.notifications.warn("No usable party token found");
+            return;
+          }
+          await partyToken.addItem( item, item.amount);
+          await item.delete();
+        },
+        "visible": defaultOwnership
+        && item.canBeTraded
+        && this.actor != PersonaDB.partyTokenActor(),
+      } satisfies ContextMenuOptions,
+    ];
+    this.contextMenu.show(ev, options);
+  }
+
 
 }
 

@@ -65,7 +65,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		// html.find(".powerName").rightclick(this.openPower.bind(this));
 		html.find(".talentName").on("click", this.openTalent.bind(this));
 		html.find(".focusName").on("click", this.openFocus.bind(this));
-		html.find(".itemName").rightclick(this.openItem.bind(this));
+		// html.find(".itemName").rightclick(this.openItem.bind(this));
 		html.find(".rollSave").on("click", this.rollSave.bind(this));
 		html.find(".powerName").on("mouseover", this.createDamageEstimate.bind(this));
 		html.find(".power-img").on("mouseover", this.createDamageEstimate.bind(this));
@@ -268,13 +268,26 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		 }, lockOptions);
 	}
 
-	async useItem(event: JQuery.Event) {
-    event.preventDefault();
+  protected getItem(event: JQuery.Event) : Carryable {
 		const itemId = HTMLTools.getClosestData(event, "itemId");
 		const item = this.actor.inventory.find(item => item.id ==itemId);
 		if (!item) {
 			throw new PersonaError(`Can't find Item Id:${itemId}`);
 		}
+    return item;
+  }
+
+	async useItem(event: JQuery.Event) {
+    event.preventDefault();
+		// const itemId = HTMLTools.getClosestData(event, "itemId");
+		// const item = this.actor.inventory.find(item => item.id ==itemId);
+		// if (!item) {
+		// 	throw new PersonaError(`Can't find Item Id:${itemId}`);
+		// }
+		// if (!item.isSkillCard() && (!item.isUsableType() || !item.isTrulyUsable())) {
+		// 	throw new PersonaError(`item ${item.name} isn't usable`);
+		// }
+    const item = this.getItem(event);
 		if (!item.isSkillCard() && (!item.isUsableType() || !item.isTrulyUsable())) {
 			throw new PersonaError(`item ${item.name} isn't usable`);
 		}

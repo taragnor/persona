@@ -2765,6 +2765,13 @@ get craftingIngredients() : string[][] {
     }));
 }
 
+get canBeTraded() : boolean {
+  if (!this.isCarryableType()) {return false;}
+  if (!(this.parent instanceof PersonaActor) ) {return false;}
+  if (!this.isOwner) {return false;}
+  return !this.system.noTrade;
+}
+
 }
 
 declare global {
