@@ -3,7 +3,7 @@ import {PersonaSettings} from "../../config/persona-settings.js";
 export class Logger {
   static bufferStorage: string[] = [];
   static lastMsgTime: number = Date.now();
-  static MS_DELAY_FOR_BUFFER = 1500;
+  static MS_DELAY_FOR_BUFFER = 2000;
   static useBuffering = true;
 
   static log(txt: string) {

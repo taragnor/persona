@@ -24,6 +24,8 @@ declare interface HOOKS {
 	"chatMessage": (chatLog: ChatLog, contents: string, chatMsgData: unknown) => unknown;
 	"preCreateActor": PreCreateHook<Actor>;
 	"preCreateItem": PreCreateHook<Item>;
+	"preDeleteItem": PreDeleteHook<Item>;
+	"preDeleteActor": PreDeleteHook<Actor>;
 	"preCreateChatMessage": PreCreateHook<ChatMessage>;
 	"createChatMessage": CreateHook<ChatMessage>;
 	"preUpdateActor": UpdateHook<Actor>;

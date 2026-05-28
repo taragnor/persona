@@ -19,7 +19,7 @@ export class ItemHooks {
       }
     });
 
-    Hooks.on("createItem", (item: PersonaItem) => {
+    Hooks.on("preCreateItem", (item: PersonaItem) => {
       const parent= item.parent;
       if (!parent || !(parent instanceof PersonaActor)) {
         return;
@@ -27,7 +27,7 @@ export class ItemHooks {
       if (!item.isCarryableType()) {return;}
       if (!parent.isPCLike() && parent != PersonaDB.partyTokenActor()) {return;}
       if (!parent?.hasPlayerOwner) {return;}
-      const msg = `${parent.name} gained ${item.name} (${item.amount})`;
+      const msg = `${parent.name} gained ${item.displayedName} (${item.amount})`;
       void Logger.sendToChat(msg, parent);
     });
 
@@ -35,7 +35,7 @@ export class ItemHooks {
       item.clearCache();
     });
 
-    Hooks.on("deleteItem", (item: PersonaItem) => {
+    Hooks.on("preDeleteItem", (item: PersonaItem) => {
       const parent= item.parent;
       if (!parent || !(parent instanceof PersonaActor)) {
         return;
@@ -43,7 +43,7 @@ export class ItemHooks {
       if (!item.isCarryableType()) {return;}
       if (!parent.isPCLike() && parent != PersonaDB.partyTokenActor()) {return;}
       if (!parent?.hasPlayerOwner) {return;}
-      const msg = `${parent.name} deleted ${item.name} (${item.amount})`;
+      const msg = `${parent.name} deleted ${item.displayedName} (${item.amount})`;
       void Logger.sendToChat(msg, parent);
     });
   }

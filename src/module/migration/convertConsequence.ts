@@ -232,24 +232,49 @@ export class ConsequenceConverter {
 		};
 	}
 
-	static resolveApplyTo ( cons: Consequence) : ConditionTarget {
-		if ("applyTo" in cons && cons.applyTo != undefined) {
-			return cons.applyTo;
-		}
-		if ("applyToSelf" in cons) {
-			return cons.applyToSelf ? "user" : "target";
-		}
-		if (PersonaSettings.debugMode()) {
-			switch (cons.type) {
-				case "modifier":
-				case "modifier-new":
-				case "none":
-					break;
-				default:
-					console.debug(`Applying default applyTo of 'target' for ${cons.type}`);
-			}
-		}
-		return "target";
-	}
+  static resolveApplyTo ( cons: Consequence) : ConditionTarget {
+    if ("applyTo" in cons && cons.applyTo != undefined) {
+      return cons.applyTo;
+    }
+    if ("applyToSelf" in cons) {
+      return cons.applyToSelf ? "user" : "target";
+    }
+    if (PersonaSettings.debugMode()) {
+      switch (cons.type) {
+        case "modifier":
+        case "modifier-new":
+        case "none":
+          break;
+        case "alter-variable":
+          switch (cons.varType) {
+            case "global":
+            case "social-temp":
+            case "scene":
+              break;
+            default:
+              console.debug(`Applying default applyTo of 'target' for other effect ${cons.varType}`);
+              Debug(cons);
+          }
+          break;
+        case "other-effect":
+          switch (cons.otherEffect) {
+            case "add-power-to-list":
+              break;
+            case "add-talent-to-list":
+              break;
+            case "add-creature-tag":
+              break;
+            default:
+              console.debug(`Applying default applyTo of 'target' for other effect ${cons.otherEffect}`);
+              Debug(cons);
+          }
+          break;
+        default:
+          console.debug(`Applying default applyTo of 'target' for ${cons.type}`);
+          Debug(cons);
+      }
+    }
+    return "target";
+  }
 
 }
