@@ -1,4 +1,5 @@
 import {PersonaActor} from "../actor/persona-actor.js";
+import {PersonaDB} from "../persona-db.js";
 import {Logger} from "../utility/logger.js";
 import {PersonaItem} from "./persona-item.js";
 
@@ -18,6 +19,18 @@ export class ItemHooks {
       }
     });
 
+    Hooks.on("createItem", (item: PersonaItem) => {
+      const parent= item.parent;
+      if (!parent || !(parent instanceof PersonaActor)) {
+        return;
+      }
+      if (!item.isCarryableType()) {return;}
+      if (!parent.isPCLike() && parent != PersonaDB.partyTokenActor()) {return;}
+      if (!parent?.hasPlayerOwner) {return;}
+      const msg = `${parent.name} gained ${item.name} (${item.amount})`;
+      void Logger.sendToChat(msg, parent);
+    });
+
     Hooks.on("updateItem", (item: PersonaItem) => {
       item.clearCache();
     });
@@ -27,10 +40,11 @@ export class ItemHooks {
       if (!parent || !(parent instanceof PersonaActor)) {
         return;
       }
-      if (parent.isPCLike() && parent.hasPlayerOwner) {
-        const msg = `${parent.name} deleted ${item.name} (${item.amount}`;
-        void Logger.sendToChat(msg, parent);
-      }
+      if (!item.isCarryableType()) {return;}
+      if (!parent.isPCLike() && parent != PersonaDB.partyTokenActor()) {return;}
+      if (!parent?.hasPlayerOwner) {return;}
+      const msg = `${parent.name} deleted ${item.name} (${item.amount})`;
+      void Logger.sendToChat(msg, parent);
     });
   }
 
