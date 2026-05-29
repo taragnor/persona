@@ -6,9 +6,13 @@ import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
 import {PersonaAE} from "../persona-ae.js";
 import {PersonaDB} from "../persona-db.js";
 import {testPrecondition} from "../preconditions.js";
+import {TimedCache} from "../utility/cache.js";
 import {ConditionalEffectPrinter} from "./conditional-effect-printer.js";
 
 export class ConditionalEffectC {
+
+  #CACHE_TIME = 5000;
+
   _preconditions : SourcedPrecondition<NonDeprecatedPrecondition<Precondition>>[];
   _consequences: SourcedConsequence<NonDeprecatedConsequence>[];
   _isEmbedded : boolean;
@@ -20,6 +24,10 @@ export class ConditionalEffectC {
   _isDefensiveRaw: boolean;
   _isMainModifier: boolean;
   _isAura: boolean;
+
+  #cache = {
+    allowOpenersForPowers: new TimedCache( () => this._canAllowOpenersForPowers(), this.#CACHE_TIME)
+  };
 
   constructor (card: SkillCard);
   constructor (ce: CondEffectObject, sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem);
@@ -132,6 +140,13 @@ export class ConditionalEffectC {
     // && PersonaDB.accessorEq(this._source, other._source);
   }
 
+  testPreconditions(situation: Situation) : boolean {
+    if (!this.conditions
+      .every( cond=>testPrecondition(cond, situation))
+    ) {return false;}
+    return true;
+  }
+
   getActiveConsequences(situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {
     const source = this.source;
     if (!this.conditions
@@ -146,7 +161,8 @@ export class ConditionalEffectC {
 
   checkForCancelEffect(situation: Situation) : boolean {
     const cons = this.getActiveConsequences(situation);
-    return cons.some(cons => cons.type =="cancel");
+    return cons.some(cons => cons.type == "trigger-event-cons"
+      && cons.eventMod == "cancel");
   }
 
   #determineConditionalType (ce: CondEffectObject, _conditions: SourcedConditionalEffect["conditions"], _consequences : SourcedConditionalEffect["consequences"], sourceItem: N<ConditonalEffectHolderItem> ) : this["_conditionalType"] {
@@ -164,6 +180,17 @@ export class ConditionalEffectC {
         }
     }
     return condType;
+  }
+
+  public canAllowOpenersForPowers() : boolean {
+    return this.#cache.allowOpenersForPowers.value;
+  }
+
+  private _canAllowOpenersForPowers() : boolean {
+    return this._consequences
+      .some (cons =>
+        cons.type == "trigger-event-cons"
+        && cons.eventMod == "allow-as-opener");
   }
 
   private _generateSkillCardTeachEffect(card: SkillCard) {

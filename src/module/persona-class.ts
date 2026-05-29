@@ -45,6 +45,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     talents: new TimedCache(() => this._talents(), this.CACHE_TIME),
     auras: new TimedCache( ()=> this._aurasInRange(), this.CACHE_TIME),
     myAuraEffects: new TimedCache(() => this._myAuraEffects(), this.CACHE_TIME),
+    allPowers: new TimedCache( () => this._allPowers(), this.CACHE_TIME),
   };
 
   BASE_PC_SIDEBOARD = 1 as const;
@@ -123,8 +124,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   get powers() : readonly Power[] {
-    return this.mainPowers
-      .concat(this.bonusPowers)
+    return this.allPowers
+      .filter(x=> !x.isOpener(this))
       .filter( pwr => this.highestPowerSlotUsable() >= pwr.system.slot);
   }
 
@@ -132,7 +133,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.powers
       .filter( pwr => pwr.canBeUsedInCombat()
         && pwr.isTrulyUsable()
-        && !pwr.isOpener(this.user)
+        && !pwr.isOpener(this)
         && !pwr.isFollowUpMove()
       );
   }
@@ -142,12 +143,32 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       .filter( pwr => pwr.canBeUsedInExploration());
   }
 
+  get openers() : readonly Usable[] {
+    return (this.allPowers as Usable[])
+      .concat(this.usableItems)
+      .filter(pwr => pwr.canBeUsedAsOpener(this));
+  }
+
+  get usableItems() : readonly Usable[] {
+    return this.user.usableConsumables;
+  }
+
+  get allPowers() : readonly Power[] {
+    return this.cache2.allPowers.value;
+  }
+
+  _allPowers() : readonly Power[] {
+    return this.mainPowers
+      .concat(this.bonusPowers);
+  }
+
   get bonusPowers() : readonly Power [] {
     const bonusPowers : Power[] =
-      this.mainModifiers({omitPowers:true, omitTalents: true, omitAuras: true})
+      this.mainModifiers({omitPowers: true, omitAuras: true})
+      // this.mainModifiers({omitPowers:true, omitTalents: true, omitAuras: true})
       .filter(trait => PersonaItem.grantsPowers(trait))
       .flatMap(powerGranter=> PersonaItem.getAllGrantedPowers(powerGranter, this.user))
-      .filter( pwr=> !pwr.hasTag("opener", this))
+      // .filter( pwr=> !pwr.hasTag("opener", this))
       .sort ( (a,b)=> a.name.localeCompare(b.name)) ;
     return removeDuplicates(bonusPowers);
   }
@@ -570,6 +591,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     }
     const mods = PersonaItem.getModifier(sources, modnames);
     return new ModifierList(mods);
+  }
+
+  openerElevatingModifiers() : readonly ConditionalEffectC[]{
+    const mods = this.mainModifiers();
+    return mods.filter( x=> x.canAllowOpenersForPowers());
   }
 
   private mainModifiers(options?: MainModifierOptions ): readonly ConditionalEffectC[] {
@@ -1056,8 +1082,16 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     || this._checkTeamworkMove(usable)
     || this._checkCooldown(usable)
     || this._pauseCheck()
+    || this._sideboardCheck(usable)
     ;
     return msg;
+  }
+
+  private _sideboardCheck(usable: UsableAndCard) : N<FailReason> {
+    if (usable.isConsumable()) {return null;}
+    if (usable.isOpener(this)) {
+    }
+    return null;
   }
 
   canUsePower (usable: UsableAndCard, outputReason: boolean) : boolean {
@@ -1217,14 +1251,19 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       usedPower: usable.accessor,
       triggeringUser: game.user,
     };
-    for (const eff of effects) {
-      const cons = eff.getActiveConsequences(situation);
-      const cancelEffect = cons.find(cons => cons.type =="cancel");
-      if (cancelEffect) {
-        return `Failed due to Conditional ${ConditionalEffectPrinter.printConditions(eff.conditions)}`;
-      }
+    const cancel =  effects.find( eff => eff.checkForCancelEffect(situation) );
+    if (cancel) {
+      return `Failed due to Conditional ${ConditionalEffectPrinter.printConditions(cancel.conditions)}`;
     }
     return null;
+    // for (const eff of effects) {
+    //   const cons = eff.getActiveConsequences(situation);
+    //   const cancelEffect = cons.find(cons => cons.type =="cancel");
+    //   if (cancelEffect) {
+    //     return `Failed due to Conditional ${ConditionalEffectPrinter.printConditions(eff.conditions)}`;
+    //   }
+    // }
+    // return null;
   }
 
   private _canPayActivationCostCheck_pc(this: Persona<PC | NPCAlly>, usable: UsableAndCard) : N<FailReason> {

@@ -411,7 +411,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
   }
 
-  get usableConsumables() : Consumable[] {
+  get usableConsumables() : readonly Consumable[] {
     if (!this.isValidCombatant()) {return [];}
     const persona= this.persona();
     return this.trueConsumables
@@ -1351,7 +1351,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   get displayedBonusPowers() : Power[] {
     if (!this.isValidCombatant()) {return [];}
     return this.persona().bonusPowers.filter( power=>
-      !power.isOpener(this) && !power.isMinorActionItem()
+      !power.isOpener(this.persona()) && !power.isMinorActionItem()
     );
   }
 
@@ -1628,18 +1628,23 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     }
   }
 
-  get openerActions() : Usable[] {
+  get openerActions() : readonly Usable[] {
     if (!this.isValidCombatant()) {return [];}
-    const powerBased = (this.isShadow() ? this.mainPowers : this.consumables)
-      .filter( power => power.isOpener(this));
-    const arr : Usable[] = (this as ValidAttackers).mainModifiers({omitPowers:true})
-      .filter(x=> PersonaItem.grantsPowers(x))
-      .flatMap(eff=> PersonaItem.getAllGrantedPowers(eff, this as ValidAttackers) as Usable[])
-      .filter( eff => eff.isOpener(this))
-    // .flatMap(x=> x.getOpenerPowers(this as PC ) as Usable[])
-      .concat(powerBased);
-    return removeDuplicates(arr);
+    return this.persona().openers;
   }
+
+  // get openerActions() : Usable[] {
+  //   if (!this.isValidCombatant()) {return [];}
+  //   const powerBased = (this.isShadow() ? this.mainPowers : this.consumables)
+  //     .filter( power => power.isOpener(this));
+  //   const arr : Usable[] = (this as ValidAttackers).mainModifiers({omitPowers:true})
+  //     .filter(x=> PersonaItem.grantsPowers(x))
+  //     .flatMap(eff=> PersonaItem.getAllGrantedPowers(eff, this as ValidAttackers) as Usable[])
+  //     .filter( eff => eff.isOpener(this))
+  //   // .flatMap(x=> x.getOpenerPowers(this as PC ) as Usable[])
+  //     .concat(powerBased);
+  //   return removeDuplicates(arr);
+  // }
 
   async setTeamworkMove(this: ValidAttackers, power: Power) {
     const id = power.id;

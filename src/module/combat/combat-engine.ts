@@ -115,7 +115,7 @@ export class CombatEngine {
       result.merge(costs);
       const finalizedResult = result.finalize();
       if (options.simulated) { return finalizedResult;}
-      if (!power.isOpener(attacker.actor))  {
+      if (!power.isOpener(attacker.actor.persona()))  {
         await attacker.actor.expendAction();
       }
       await attacker.actor.removeStatusesOfType("out-of-turn-action");
@@ -479,7 +479,7 @@ export class CombatEngine {
       triggeringCharacter: attacker.user.accessor,
     } as const satisfies TriggeredSituation.Select<"on-use-power">;
     const overrideResult = TriggeredEffect.onTrigger(trigSit, attacker.user)
-    .globalOtherEffects.filter( eff=> eff.type == "set-roll-result");
+    .globalOtherEffects.filter( eff=> eff.type == "trigger-event-cons" && eff.eventMod == "set-roll-result");
     const rank = this.rankAttackResult;
     if (overrideResult.length) {
       const finalResult = overrideResult

@@ -348,7 +348,8 @@ export class FinalizedCombatResult {
 
   hasCancelRequest() : boolean {
     return this.globalOtherEffects.some(
-      eff => eff.type == "cancel"
+      eff => eff.type == "trigger-event-cons"
+      && eff.eventMod == "cancel"
     );
   }
 

@@ -28,7 +28,9 @@ const DEPRECATED_CONSEQUENCE_TYPES = [
   "add-talent-to-list",
   "add-power-to-list",
   "add-creature-tag",
+  "cancel",
   "teach-power",
+  "set-roll-result",
 ] as const;
 
 export const NON_DEPRECATED_CONSQUENCELIST = [
@@ -53,8 +55,7 @@ export const NON_DEPRECATED_CONSQUENCELIST = [
   "alter-mp",
   "alter-fatigue-lvl",
   "gain-levels",
-  "cancel",
-  "set-roll-result",
+  "trigger-event-cons", //modifies triggering events (cancel, add effect)
   "expend-item",
 ] as const;
 
@@ -62,6 +63,7 @@ export const CONSQUENCELIST = [
   ...NON_DEPRECATED_CONSQUENCELIST,
   ...DEPRECATED_CONSEQUENCE_TYPES,
 ] as const;
+
 
 export type ConsequenceType = typeof CONSQUENCELIST[number];
 
@@ -263,4 +265,12 @@ const INVENTORY_ACTION_LIST = [
 ] as const;
 
 export const INVENTORY_ACTION = HTMLTools.createLocalizationObject(INVENTORY_ACTION_LIST, "persona.consequences.inventoryAction");
+
+const TRIGGER_EVENT_CONS_LIST = [
+  "cancel",
+  "allow-as-opener",
+  "set-roll-result",
+] as const;
+
+export const TRIGGER_EVENT_CONS = HTMLTools.createLocalizationObject(TRIGGER_EVENT_CONS_LIST, "persona.consequences.triggerEventCons");
 

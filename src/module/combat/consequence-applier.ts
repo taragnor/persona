@@ -340,12 +340,10 @@ export class ConsequenceApplier {
         void PersonaSFX.onLevelUp();
         break;
       }
-      case "cancel":
-      case "set-roll-result":
-        break;
       case "inventory-action":
         await this.resolveInventoryAction(actor, otherEffect);
         break;
+      case "trigger-event-cons":
       case "raise-status-resistance":
       case "display-msg":
         break;

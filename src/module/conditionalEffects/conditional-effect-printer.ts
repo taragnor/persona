@@ -635,17 +635,32 @@ export class ConditionalEffectPrinter {
           const gainTarget =this.translate(cons.gainTarget, LEVEL_GAIN_TARGETS);
           return `Gain ${cons.value} Levels for ${gainTarget}`;
         }
-        case "cancel":
-          return `Cancel Triggering Event`;
+        case "trigger-event-cons":
+          return this._printTriggerEventCons(cons);
+        // case "cancel":
+        //   return `Cancel Triggering Event`;
+        // case "set-roll-result":
+        //   return `Set Roll Result to ${cons.result}`;
         case "inventory-action":
           return this.printInventoryAction(cons);
-        case "set-roll-result":
-          return `Set Roll Result to ${cons.result}`;
         default:
           cons satisfies never;
           return "ERROR";
       }
+    }
 
+    private static _printTriggerEventCons (cons: Consequence & {type: "trigger-event-cons"}) : string{
+      switch (cons.eventMod) {
+        case "cancel":
+          return `Cancel Triggering Event`;
+        case "set-roll-result":
+          return `Set Roll Result to ${cons.result}`;
+        case "allow-as-opener":
+          return `Allow triggeringPower as opener`;
+        default:
+          cons satisfies never;
+          return "ERROR";
+      }
     }
 
     private static printInventoryAction (cons: Consequence & {type: "inventory-action"}) {

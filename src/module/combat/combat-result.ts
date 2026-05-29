@@ -216,7 +216,7 @@ export class CombatResult  {
         if (checkSituationProp(situation, "usedPower")) {
           const user = situation.user ? PersonaDB.findActor(situation.user) : null;
           const power = PersonaDB.findItem(situation.usedPower);
-          if (power.isOpener(user)) {break;}
+          if (power.isOpener(user?.persona() ?? null)) {break;}
           if (power.isTeamwork()) {break;}
         }
         if (!effect) {break;}
@@ -532,9 +532,6 @@ export class CombatResult  {
       case "play-sound":
         this.globalOtherEffects.push(cons);
         break;
-      case "cancel":
-        this.globalOtherEffects.push(cons);
-        break;
       case "inventory-action": {
         if (!effect) {
           PersonaError.softFail(`No Target to apply Effect to ${cons.invAction}`);
@@ -543,7 +540,7 @@ export class CombatResult  {
         this.addEffect_inventoryAction( cons, effect, situation);
         break;
       }
-      case "set-roll-result":
+      case "trigger-event-cons":
         this.globalOtherEffects.push(cons);
         break;
       default: {

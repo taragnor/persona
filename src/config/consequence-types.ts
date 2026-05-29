@@ -1,7 +1,7 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { PersonaItem } from "../module/item/persona-item.js";
 import { PermaBuffType } from "./perma-buff-type.js";
-import { EVENT_CHAIN_ACTIONS, INVENTORY_ACTION, SocialCardAction } from "./effect-types.js";
+import { EVENT_CHAIN_ACTIONS, INVENTORY_ACTION, SocialCardAction, TRIGGER_EVENT_CONS } from "./effect-types.js";
 import { CardTag } from "./card-tags.js";
 import { VariableType } from "../module/persona-variables.js";
 import { CombatEffect } from "./effect-types.js";
@@ -30,9 +30,11 @@ import {PowerTagOrId} from "./power-tags.js";
 
 
 export type OtherEffect = {__localEffect?: undefined} &
-  ProcessedConsequenceToOtherEffect< ExpendItemConsequence | SetFlagConsequence | StatusResistanceAlterConsequence | InspirationChangeConsequence | DisplayMessageConsequence | UsePowerConsequence | DungeonActionConsequence | AlterMPConsequence |  OtherEffectConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence | CancelRequestConsequence | InventoryActionConsequence | setRollResultConsequence>;
+  ProcessedConsequenceToOtherEffect< ExpendItemConsequence | SetFlagConsequence | StatusResistanceAlterConsequence | InspirationChangeConsequence | DisplayMessageConsequence | UsePowerConsequence | DungeonActionConsequence | AlterMPConsequence |  OtherEffectConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence |  InventoryActionConsequence | TriggerEventModifierConsequence>;
 
 //removed : AddPowerConsequence
+// setRollResultConsequence 
+//CancelRequestConsequence
 //stripped
 //SocialCardActionConsequence
 
@@ -116,8 +118,9 @@ type NonGenericConsequences =
   | PermabuffConsequence
   | PlaySoundConsequence
   | GainLevelConsequence
-  | CancelRequestConsequence
-  | setRollResultConsequence
+  | TriggerEventModifierConsequence
+// | CancelRequestConsequence
+// | setRollResultConsequence
   | InventoryActionConsequence
   | DeprecatedConsequence
 ;
@@ -155,6 +158,24 @@ type InventoryActions = {
 type CancelRequestConsequence = {
 	type: "cancel";
 }
+
+type TriggerEventModifierConsequence = {
+  type : "trigger-event-cons",
+  eventMod: keyof typeof TRIGGER_EVENT_CONS,
+} & TriggerEventModifierConsequence_sub;
+
+type TriggerEventModifierConsequence_sub = 
+  {
+    eventMod: "cancel",
+  } | {
+    eventMod: "allow-as-opener",
+  } |  {
+    eventMod: "set-roll-result",
+    result: AttackResult["result"];
+    priority ?: number; //not used yet but could be
+  }
+
+
 
 type setRollResultConsequence = {
 	type: "set-roll-result";
@@ -488,6 +509,8 @@ export type DeprecatedConsequence =
     | AddPowerConsequence
     | AddTalentConsequence
     | AddTagConsequence
+    | setRollResultConsequence
+    | CancelRequestConsequence
 	)
 ;
 

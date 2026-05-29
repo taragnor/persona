@@ -340,12 +340,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   restoresMP(this: Consumable | Power) : boolean {
-    return this.getEffects(null).some( eff => {
-      return eff.consequences.some( cons => {
-        return (cons.type == "alter-mp");
-      });
-    });
+    return this.getEffects(null, {deepTags: false}).some( eff => eff.consequences.filter (cons => cons.type == "alter-mp")
+      .some(cons => typeof cons.amount == "number"
+        ? cons.amount > 0
+        : cons.amount.type == "constant" && cons.amount.val > 0)
+    );
   }
+
+  // restoresMP(this: Consumable | Power) : boolean {
+  //   return this.getEffects(null).some( eff => {
+  //     return eff.consequences.some( cons => {
+  //       return (cons.type == "alter-mp");
+  //     });
+  //   });
+  // }
 
   inflictsDamage(this:Consumable) : boolean {
     const dmgType = this.getBaseDamageType();
@@ -563,7 +571,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case 'talent':
       case 'weapon':
       case 'consumable':
-        return (this as Usable | Focus | InvItem | Talent | Weapon).tagList(null).includes('defensive');
+        return false;
+        // return (this as Usable | Focus | InvItem | Talent | Weapon).tagList(null).includes('defensive');
       case 'universalModifier':
       case 'tag':
       case 'skillCard':
@@ -621,7 +630,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case 'skillCard':
         return true;
       case 'consumable':
-        if (this.isCraftingItem) {return false;}
+        if (this.isConsumable() && this.isCraftingItem && !this.hasTag("secondary-crafting", null)) {return false;}
         return true;
       case 'characterClass':
       case 'focus':
@@ -1565,6 +1574,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   defaultConditionalEffectType() : TypedConditionalEffect['conditionalType'] {
+    if (this.isConsumable() || this.isSkillCard()) {return "on-use";}
     if (this.isTrulyUsable()) {return 'on-use';}
     if (this.isDefensive()) {return 'defensive';}
     return 'passive';
@@ -1655,10 +1665,26 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
   }
 
-  isOpener(this: UsableAndCard, user: N<ValidAttackers>) : boolean {
-    return this.hasTag('opener', user);
+  isOpener(this: UsableAndCard, persona: N<Persona>) : boolean {
+    if (this.hasTag('opener', persona?.user ?? null)) {return true;}
+    return false;
   }
 
+  canBeUsedAsOpener(this: UsableAndCard, persona: N<Persona>): boolean {
+    //TODO: finish this
+    if (this.isOpener(persona)) {return true;}
+    if (this.hasTag("optional-opener", persona)) {return true;};
+    if (!persona) {return false;}
+    const situation = {
+      trigger: "on-power-usage-check",
+      usedPower: this.accessor,
+      user: persona.user.accessor,
+    } satisfies Situation;
+    const effects = persona.openerElevatingModifiers();
+    return effects
+      .filter (eff => eff.testPreconditions(situation))
+      .some( eff => eff.canAllowOpenersForPowers());
+  }
 
   isTrueItem() : this is InvItem | SkillCard | Weapon | Consumable {
     switch(this.system.type) {

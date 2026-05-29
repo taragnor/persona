@@ -106,6 +106,7 @@ const templateFileNames : string[] =[
   "crafting-recipe-input.hbs",
   "token-panel-header.hbs",
   "sub-power-list.hbs",
+  "power-table.hbs",
 ];
 
 export const templatePaths = templateFileNames.

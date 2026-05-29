@@ -125,27 +125,14 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
       Debug(this.item, ...this._cache.autoTags_power.errors);
     }
     return val;
-    //if (this.cache.tags == undefined) {
-    //  this.cache.tags = this.#autoTags_power(this.item);
-    //  return this.cache.tags;
-    //}
-    ////Safety check to see if there's cache corruption
-    //if (PersonaSettings.debugMode()) {
-    //  const checkTags =  this.#autoTags_power(this.item);
-    //  if (checkTags.length != this.cache.tags.length) {
-    //    PersonaError.softFail(`Tag Length mismatch, possible cache corruption on ${this.item.name}`, checkTags, this.cache.tags);
-    //  }
-    //}
-    // return this.cache.tags;
   }
-
-  #autoTags_power(power : Power): TagType[] {
+  #autoTags_usable(power: Usable): TagType[] {
     const list : TagType [] = [];
-    if (power.system.subtype == "weapon" || power.system.subtype == "magic") {
-      list.pushUnique(power.system.subtype);
-    }
     if (power.system.instantKillChance != 'none') {
       list.pushUnique('instantKill');
+    }
+    if (power.restoresMP()) {
+      list.pushUnique("restore-mp");
     }
     if (power.causesAilment()) {
       list.pushUnique('ailment');
@@ -154,6 +141,26 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
           list.pushUnique(ail as keyof typeof POWER_TAGS);
         }
       }
+    }
+    if (power.isAoE()) {
+      list.pushUnique("multi-target");
+    }
+    if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
+      list.pushUnique('ailment');
+    }
+    const subtype : typeof POWER_TYPE_TAGS[number]  = power.system.subtype as typeof POWER_TYPE_TAGS[number];
+    if (POWER_TYPE_TAGS.includes(subtype) && !list.includes(subtype)) { list.pushUnique(subtype);}
+    list.pushUnique(...(power.system?.tags ?? []));
+    if (power.getBaseDamageType() == 'by-power') {
+      list.pushUnique('variable-damage');
+    }
+    return list;
+  }
+
+  #autoTags_power(power : Power): TagType[] {
+    const list : TagType [] = this.#autoTags_usable(power);
+    if (power.system.subtype == "weapon" || power.system.subtype == "magic") {
+      list.pushUnique(power.system.subtype);
     }
     switch (power.system.rarity) {
       case "rare":
@@ -166,21 +173,9 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
         list.pushUnique("exotic");
         break;
     }
-    if (power.getBaseDamageType() == 'by-power') {
-      list.pushUnique('variable-damage');
-    }
     if (power.system.attacksMax > 1) {
       list.pushUnique('flurry');
     }
-    if (power.isAoE()) {
-      list.pushUnique("multi-target");
-    }
-    if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
-      list.pushUnique('ailment');
-    }
-    const subtype : typeof POWER_TYPE_TAGS[number]  = power.system.subtype as typeof POWER_TYPE_TAGS[number];
-    if (POWER_TYPE_TAGS.includes(subtype) && !list.includes(subtype)) { list.pushUnique(subtype);}
-    list.pushUnique(...(power.system?.tags ?? []));
     return list;
   }
 
@@ -228,6 +223,7 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
       ([] as TagType[])
       .concat( item.system.tags)
       .concat(item.system.itemTags)
+      .pushUnique(...this.#autoTags_usable(item))
       .pushUnique(...this.baseItemExtraTags(user ?? null));
     if (!list.includes(item.system.type)) {
       list.pushUnique(item.system.type);

@@ -1024,18 +1024,10 @@ export class PersonaHandleBarsHelpers {
 
   "canUseSideboard": function (actor: PersonaActor) : boolean {
     return actor.isValidCombatant() && actor.canUseSideboard();
-    // return actor.isValidCombatant() && actor.class?.system?.canUsePowerSideboard && !actor.isNPCAlly();
   },
 
     "canMoveToSideboard": function (persona: Persona, power: Power) {
       return persona.canMoveToSideboard(power);
-      // const actor = persona.user;
-      // return actor.isValidCombatant()
-      //   && actor.class.system.canUsePowerSideboard
-      //   && !actor.isNPCAlly()
-      //   && persona.mainPowers.includes(power)
-      //   && persona.user.isOwner
-      //   && persona == actor.basePersona;
     },
 
   "resolvedPowerTagList": function (item: Power | Consumable) : string[]{

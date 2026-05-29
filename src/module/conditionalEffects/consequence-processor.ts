@@ -145,8 +145,7 @@ export class ConsequenceProcessor {
           };
         });
       }
-      case "cancel":
-      case "set-roll-result":
+      case "trigger-event-cons":
         return [{applyTo: 'global', cons}];
       default:
         cons satisfies never;

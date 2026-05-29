@@ -1,0 +1,44 @@
+<div class="power-table">
+  {{#each powerList as |power i|}}
+  <div class="main-power" data-power-id="{{power.id}}">
+    <div class="power-name-block
+    {{#if (and (not ../activePowersOnly) (lte ../persona.maxMainPowers i))}} over-max-power {{/if}}
+    {{#if (isPowerOnCooldown ../persona power)}} on-cooldown{{/if}}
+    {{#if (isPowerIllegal ../persona power)}} illegal-level {{/if}}">
+      <span class="die-with-text">
+        {{#if (and ../usePowers (canUsePower ../persona power))}}
+        <a class="rollPower" >
+          <img class="small-die" src="icons/dice/d20black.svg">
+        </a>
+          {{/if}}
+          <a class="powerName">
+            {{> "systems/persona/parts/pretty-power-name.hbs" CONST=CONST power=power user=../persona}}
+            <span class="cost-string">
+              {{powerCostString power ../persona}}
+            </span>
+          </a>
+      </span>
+    </div>
+    {{#if false}}
+    <div class="power-operations">
+      <a class="sort-up">
+        <i class="fa-solid fa-sort-up"></i>
+      </a>
+      <a class="sort-down">
+        <i class="fa-solid fa-sort-down"></i>
+      </a>
+      {{#if (and (canUseSideboard ../persona.user) (canMoveToSideboard ../persona power))}}
+      <a class="move-to-sideboard" title="Move to Sideboard">
+        <i class="fa-solid fa-people-carry-box"></i>
+      </a>
+      {{/if}}
+      {{#if (and (canDeletePowers ../persona) ../canDelete)}}
+      <a class="delPower" title="Delete Power">
+        <i class="fa-solid fa-trash-can"></i>
+      </a>
+      {{/if}}
+    </div>
+    {{/if}}
+  </div>
+  {{/each}}
+</div>

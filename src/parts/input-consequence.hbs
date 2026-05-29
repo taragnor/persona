@@ -431,8 +431,22 @@
 
   {{/if}}
 
-
 	{{/if}}
+
+  {{#if (eqAny cons.type "trigger-event-cons")}} 
+	<select name="{{strcat namePrefix 'eventMod'}}">
+		{{selectOptions POWERSTUFF.TRIGGER_EVENT_CONS localize=true selected=(defVal cons.eventMod "cancel")}}
+	</select>
+
+
+  {{#if (eqAny cons.eventMod "set-roll-result")}}
+	<select name="{{strcat namePrefix 'result'}}">
+		{{selectOptions POWERSTUFF.ATTACK_RESULT localize=true selected=cons.result}}
+	</select>
+  {{/if}}
+
+
+  {{/if}}
 
 	<div>
 		<a class="copy-consequence">

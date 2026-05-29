@@ -463,6 +463,7 @@
 	"persona.power.tag.status-removal": "Status Removal",
 	"persona.power.tag.cooldown": "Cooldown",
 	"persona.power.tag.resurrection": "Resurrection",
+	"persona.power.tag.restore-mp": "Restores MP",
 	"persona.power.tag.price-lower-for-shadow": "Shadow Favored",
 	"persona.power.tag.charm": "Charm",
 	"persona.power.tag.dizzy": "Dizzy",
@@ -483,6 +484,7 @@
 	"persona.power.tag.blind": "Blind",
 	"persona.power.tag.mouse": "Mouse",
 	"persona.power.tag.opener": "Opener",
+	"persona.power.tag.optional-opener": "Optional Opener",
 	"persona.power.tag.navigator": "Navigator",
 	"persona.power.tag.downtime": "Downtime",
 	"persona.power.tag.downtime-minor": "Downtime (Minor Action)",
@@ -645,6 +647,7 @@
 	"persona.effecttypes.alter-fatigue-lvl": "Alter Rested Level (negative = fatigue)",
 	"persona.effecttypes.gain-levels": "Gain Levels",
 	"persona.effecttypes.cancel": "Request Cancel of Triggering Event",
+	"persona.effecttypes.trigger-event-cons": "Triggering Event Modifier",
 	"persona.effecttypes.set-roll-result": "Set Roll Result of triggering event to X",
 	"persona.effecttypes.escalationManipulation": " (Deprecated) Change Escalation",
 	"persona.effecttypes.extraAttack": "Extra Attack",
@@ -1074,6 +1077,11 @@
 "persona.consequences.inventoryAction.add-card-item" : "Add Card Item",
 "persona.consequences.inventoryAction.plant-crops" : "Plant Crops",
 "persona.consequences.inventoryAction.harvest-crops" : "Harvest Crops",
+
+"persona.consequences.triggerEventCons.cancel": "Request Cancel of Triggering Event",
+"persona.consequences.triggerEventCons.allow-as-opener": "Allow Power to be used as Opener",
+	"persona.consequences.triggerEventCons.set-roll-result": "Set Roll Result of triggering event to X",
+
 
 	"persona.modifier-variable.escalationDie": "Escalation Die",
 	"persona.modifier-variable.tensionPool": "Tension Pool",
