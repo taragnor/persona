@@ -54,8 +54,13 @@
 <select name="{{strcat namePrefix 'tagComparisonType'}}">
 	{{selectOptions POWERSTUFF.TAG_COMPARISON_TYPES localize=true selected=cond.tagComparisonType}}
 </select>
+
 {{#if (eqAny cond.tagComparisonType "power")}}
 {{multicheck (strcat namePrefix 'powerTag') POWERSTUFF.TAGS checked=cond.powerTag localize=true}}
+{{/if}}
+
+{{#if (eqAny cond.tagComparisonType "item-used-consumable")}}
+{{multicheck (strcat namePrefix 'powerTag') POWERSTUFF.EQUIPMENT_TAGS checked=cond.powerTag localize=true}}
 {{/if}}
 
 {{#if (eqAny cond.tagComparisonType "actor")}}

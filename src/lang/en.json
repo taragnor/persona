@@ -1243,6 +1243,7 @@
 	"persona.comparison.tagType.actor": "Actor Tag",
 	"persona.comparison.tagType.roll": "Roll Tag",
 	"persona.comparison.tagType.weapon": "Weapon Tag",
+	"persona.comparison.tagType.item-used-consumable": "Item Tag (of used consumable)",
 
 	"persona.permabuff.max-hp": "Max HP",
 	"persona.permabuff.max-mp": "Max MP",

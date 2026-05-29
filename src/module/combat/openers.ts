@@ -522,7 +522,6 @@ export class OpenerManager {
     const usableActions = openerActions
       .filter( action => {
         const useSituation = {
-          // ...situation,
           rollTags: situation.rollTags,
           naturalRoll: situation.naturalRoll,
           rollTotal: situation.rollTotal,
@@ -639,7 +638,6 @@ export class OpenerManager {
 
 
   async requestOpenerChoice() {
-    console.log("Requesting Opener Choice");
     const comb = this.combat.combatant;
     if (!comb) { return; }
     if (!comb.actor.isOwner) { return; }

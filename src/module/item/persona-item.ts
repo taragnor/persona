@@ -918,16 +918,22 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     );
   }
 
-  testOpenerPrereqs (this: UsableAndCard, situation: SituationComponent.PowerUse & SituationComponent.RollParts.CompletedRollPart, user: PersonaActor) : boolean {
-    switch (this.system.type) {
-      case 'skillCard': return false;
-      case 'power': case 'consumable':
-        break;
-      default:
-        this.system satisfies never;
+  testOpenerPrereqs (this: UsableAndCard, situation: SituationComponent.PowerUse & SituationComponent.RollParts.CompletedRollPart, user: ValidAttackers) : boolean {
+    if (this.isSkillCard()) {return false;}
+    if (this.hasTag(["opener", "optional-opener"], user.persona())) {
+      const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this, user , this);
+      return testPreconditions(conditions, situation);
     }
-    const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this, user , this);
-    return testPreconditions(conditions, situation);
+    const inheritedPrereqs = this._openerElevators(user.persona());
+    for (const CE of inheritedPrereqs) {
+      const elevator = CE.consequences.find( ce=>
+        ce.type == "trigger-event-cons" && ce.eventMod == "allow-as-opener");
+      if (!elevator) {continue;}
+      if (situation.naturalRoll >= elevator.low && situation.naturalRoll <= elevator.high) {
+        return true;
+      }
+    }
+    return false;
   }
 
   testTeamworkPrereqs (this: UsableAndCard, situation: Situation, user: PersonaActor) : boolean {
@@ -1670,11 +1676,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return false;
   }
 
-  canBeUsedAsOpener(this: UsableAndCard, persona: N<Persona>): boolean {
-    //TODO: finish this
-    if (this.isOpener(persona)) {return true;}
-    if (this.hasTag("optional-opener", persona)) {return true;};
-    if (!persona) {return false;}
+  private _openerElevators(this: UsableAndCard, persona: Persona) : ConditionalEffectC[]  {
     const situation = {
       trigger: "on-power-usage-check",
       usedPower: this.accessor,
@@ -1682,8 +1684,27 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     } satisfies Situation;
     const effects = persona.openerElevatingModifiers();
     return effects
-      .filter (eff => eff.testPreconditions(situation))
-      .some( eff => eff.canAllowOpenersForPowers());
+      .filter (eff => eff.testPreconditions(situation)
+        && eff.canAllowOpenersForPowers()
+      );
+  }
+
+
+  canBeUsedAsOpener(this: UsableAndCard, persona: N<Persona>): boolean {
+    //TODO: finish this
+    if (this.isOpener(persona)) {return true;}
+    if (this.hasTag("optional-opener", persona)) {return true;};
+    if (!persona) {return false;}
+    return this._openerElevators(persona).length > 0;
+    // const situation = {
+    //   trigger: "on-power-usage-check",
+    //   usedPower: this.accessor,
+    //   user: persona.user.accessor,
+    // } satisfies Situation;
+    // const effects = persona.openerElevatingModifiers();
+    // return effects
+    //   .filter (eff => eff.testPreconditions(situation))
+      // .some( eff => eff.canAllowOpenersForPowers());
   }
 
   isTrueItem() : this is InvItem | SkillCard | Weapon | Consumable {

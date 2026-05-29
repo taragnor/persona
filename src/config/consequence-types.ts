@@ -169,6 +169,8 @@ type TriggerEventModifierConsequence_sub =
     eventMod: "cancel",
   } | {
     eventMod: "allow-as-opener",
+    low: number,
+    high: number,
   } |  {
     eventMod: "set-roll-result",
     result: AttackResult["result"];

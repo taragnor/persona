@@ -445,6 +445,11 @@
 	</select>
   {{/if}}
 
+  {{#if (eqAny cons.eventMod "allow-as-opener")}}
+  <input class="short" type=number name="{{strcat namePrefix 'low'}}" value="{{defVal cons.low 21}}">
+  -
+  <input class="short" type=number name="{{strcat namePrefix 'high'}}" value="{{defVal cons.high 21}}">
+  {{/if}}
 
   {{/if}}
 

@@ -801,6 +801,7 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
 function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC & {boolComparisonTarget: "has-tag"}, situation: Situation) : boolean | undefined {
   switch (condition.tagComparisonType) {
     case undefined:
+    case "item-used-consumable":
     case "power": {
       if (!checkSituationProp(situation, "usedPower")) { return undefined; };
       const power = PersonaDB.findItem(situation.usedPower);

@@ -4,7 +4,7 @@ import {DAMAGETYPES, RESIST_STRENGTHS} from "../../config/damage-types.js";
 import {DAYS} from "../../config/days.js";
 import {DEFENSE_TYPES} from "../../config/defense-types.js";
 import {DAMAGE_SUBTYPES, POWERTYPES, TARGETING} from "../../config/effect-types.js";
-import {WEAPON_TAGS} from "../../config/equipment-tags.js";
+import {EQUIPMENT_TAGS, WEAPON_TAGS} from "../../config/equipment-tags.js";
 import {ITEM_PROPERTIES, MODIFIERS_TABLE} from "../../config/item-modifiers.js";
 import {CombatResultComparison} from "../../config/numeric-comparison.js";
 import {POWER_TAGS} from "../../config/power-tags.js";
@@ -276,6 +276,8 @@ export class ConditionalEffectPrinter {
           return `roll ${not} has Tag: ${tagName}`;
         case "weapon":
           return `weapon ${not} has Tag: ${tagName}`;
+        case "item-used-consumable":
+          return `used consumable ${not} has Equipment Tag: ${tagName}`;
         default:
           cond satisfies never;
           return "ERROR";
@@ -407,6 +409,8 @@ export class ConditionalEffectPrinter {
           return this.translate (cond.rollTag, ROLL_TAGS_AND_CARD_TAGS);
         case "weapon":
           return this.translate (cond.rollTag, WEAPON_TAGS);
+        case "item-used-consumable":
+          return this.translate(cond.powerTag as keyof typeof EQUIPMENT_TAGS, EQUIPMENT_TAGS);
         default:
           cond satisfies never;
           return "ERROR";

@@ -394,6 +394,7 @@ const TAG_COMPARISON_TYPE_LIST = [
 	"actor",
 	"roll",
 	"weapon",
+  "item-used-consumable",
 ] as const;
 
 type TagComparisonType = typeof TAG_COMPARISON_TYPE_LIST[number];
@@ -405,6 +406,9 @@ type GeneralTagComparison = {
 	tagComparisonType : TagComparisonType | undefined,
 } & (
 	{
+	tagComparisonType: "item-used-consumable",
+	powerTag: MultiCheckOrSingle<Exclude<PowerTag, Tag>>,
+} | {
 	tagComparisonType: "power" | undefined,
 	powerTag: MultiCheckOrSingle<Exclude<PowerTag, Tag>>,
 } | {
