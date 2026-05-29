@@ -86,10 +86,10 @@ export class ConsequenceProcessor {
       case 'none':
       case 'modifier':
       case 'modifier-new':
-      // case 'add-creature-tag':
+        // case 'add-creature-tag':
         break;
-      // case 'add-power-to-list':
-      // case 'add-talent-to-list':
+        // case 'add-power-to-list':
+        // case 'add-talent-to-list':
       case 'other-effect':
       case 'set-flag':
       case "inventory-action":
@@ -101,7 +101,7 @@ export class ConsequenceProcessor {
       case 'use-power':
       case 'alter-mp':
         return targets.map( applyTo => ({applyTo, cons}));
-      // case 'teach-power':
+        // case 'teach-power':
       case 'social-card-action':
       case 'combat-effect':
         return targets.map( applyTo => ({applyTo, cons}));
@@ -115,8 +115,8 @@ export class ConsequenceProcessor {
       case 'alter-fatigue-lvl':
       case "gain-levels":
         return targets.map( applyTo => ({applyTo, cons}));
-      case 'play-sound':
-        return [{applyTo: 'global', cons}];
+      // case 'play-sound':
+      //   return [{applyTo: 'global', cons}];
       case 'display-msg':
         if (cons.newChatMsg) {
           return [{applyTo: 'global', cons}];
@@ -147,6 +147,18 @@ export class ConsequenceProcessor {
       }
       case "trigger-event-cons":
         return [{applyTo: 'global', cons}];
+      case "sfx":
+        switch (cons.sfxType) {
+          case "play-sound":
+            return [{applyTo: 'global', cons}];
+          case "play-animation":
+          case "floating-text":
+            return targets.map( applyTo => ({applyTo, cons}));
+          default:
+            cons satisfies never;
+            PersonaError.softFail("Unknown cons type");
+        }
+        break;
       default:
         cons satisfies never;
         break;

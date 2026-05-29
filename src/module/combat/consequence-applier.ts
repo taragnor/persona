@@ -7,12 +7,12 @@ import {NavigatorVoiceLines} from "../navigator/nav-voice-lines.js";
 import {StatusDuration} from "../persona-ae.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
-import {PersonaSounds} from "../persona-sounds.js";
 import {PersonaVariables} from "../persona-variables.js";
 import {SocialActionExecutor} from "../social/exec-social-action.js";
 import {TriggeredEffect} from "../triggered-effect.js";
 import {EvaluatedDamage} from "./damage-calc.js";
 import {FinalizedCombatResult, ResolvedActorChange} from "./finalized-combat-result.js";
+import {PersonaAnimation} from "./persona-animations.js";
 import {PersonaCombat, PToken} from "./persona-combat.js";
 import {PersonaSFX} from "./persona-sfx.js";
 
@@ -322,9 +322,9 @@ export class ConsequenceApplier {
       case "perma-buff":
         await actor.addPermaBuff(otherEffect.buffType, otherEffect.value ?? 0);
         break;
-      case "play-sound":
-          await PersonaSounds.playFile(otherEffect.soundSrc);
-        break;
+      // case "play-sound":
+      //     await PersonaSounds.playFile(otherEffect.soundSrc);
+      //   break;
       case "gain-levels": {
         const {gainTarget, value}=  otherEffect;
         if (!value) {
@@ -347,10 +347,33 @@ export class ConsequenceApplier {
       case "raise-status-resistance":
       case "display-msg":
         break;
+      case "sfx":
+        this._applySFX(actor, otherEffect);
+        break;
       default:
         otherEffect satisfies never;
     }
   }
+
+  private static _applySFX(actor: ValidAttackers, otherEffect: Sourced<OtherEffect> & {type: "sfx"}) : void {
+    switch (otherEffect.sfxType) {
+      case "play-sound":
+        PersonaAnimation.queue.addSound(otherEffect);
+        break;
+      case "play-animation":
+        PersonaAnimation.queue.addAnimation(actor, otherEffect);
+        break;
+      case "floating-text":
+        PersonaAnimation.queue.addFloatingText(actor, otherEffect);
+        break;
+      default:
+        otherEffect satisfies never;
+        PersonaError.softFail("Invalid Type of otherEffect SFX type");
+        Debug(otherEffect);
+    }
+  }
+
+
 
   private static async _applyExoticOtherEffect(actor: ValidAttackers, otherEffect: Sourced<OtherEffect> & {type: "other-effect"}) : Promise<void> {
     switch (otherEffect.otherEffect) {
@@ -443,18 +466,18 @@ export class ConsequenceApplier {
     }
   }
 
-  static async applyGlobalEffect (eff: OtherEffect) {
+  static async applyGlobalEffect (eff: Sourced<OtherEffect>) {
     switch (eff.type) {
       case "dungeon-action":
         await Metaverse.executeDungeonAction(eff);
         break;
-      case "play-sound": {
-        const promise  = PersonaSounds.playFile(eff.soundSrc, eff.volume ?? 1.0);
-        if (eff.waitUntilFinished) {
-          await promise;
-        }
-        break;
-      }
+      // case "play-sound": {
+      //   const promise  = PersonaSounds.playFile(eff.soundSrc, eff.volume ?? 1.0);
+      //   if (eff.waitUntilFinished) {
+      //     await promise;
+      //   }
+      //   break;
+      // }
       case "display-msg": {
         if (!eff.newChatMsg) {break;}
         const html = eff.msg;
@@ -468,6 +491,10 @@ export class ConsequenceApplier {
         });
         break;
       }
+      case "sfx":
+        if (eff.sfxType == "play-sound") {
+          PersonaAnimation.queue.addSound(eff);
+        }
     }
   }
 

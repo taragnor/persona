@@ -158,6 +158,16 @@ export class ConsequenceConverter {
           type: "trigger-event-cons",
           eventMod: dep.type,
         };
+      case "play-sound":
+        return {
+          type: "sfx",
+          fileName: dep.soundSrc,
+          volume: dep.volume ?? 1,
+          waitUntilFinished: dep.waitUntilFinished ?? false,
+          sfxType: "play-sound",
+          actionType: "standard",
+          priority: 0,
+        };
       default:
         dep satisfies never;
     }

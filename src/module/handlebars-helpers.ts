@@ -862,7 +862,7 @@ export class PersonaHandleBarsHelpers {
     "hasPersona": function (actor: PersonaActor) : boolean {
       if (actor.isRealPC() || actor.isNPCAlly()) {return true;}
       if (actor.isShadow())  {
-        return (actor.persona().source != actor);
+        return actor.persona().source != actor;
       }
       return false;
     },

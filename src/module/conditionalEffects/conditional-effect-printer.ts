@@ -633,8 +633,8 @@ export class ConditionalEffectPrinter {
               return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${cons.min} - ${cons.max}`; }
         case "perma-buff":
           return `Add Permabuff ${cons.buffType} :${cons.value}`;
-        case "play-sound":
-          return `Play Sound: ${cons.soundSrc} (${cons.volume})`;
+        // case "play-sound":
+        //   return `Play Sound: ${cons.soundSrc} (${cons.volume})`;
         case "gain-levels": {
           const gainTarget =this.translate(cons.gainTarget, LEVEL_GAIN_TARGETS);
           return `Gain ${cons.value} Levels for ${gainTarget}`;
@@ -647,10 +647,27 @@ export class ConditionalEffectPrinter {
         //   return `Set Roll Result to ${cons.result}`;
         case "inventory-action":
           return this.printInventoryAction(cons);
+        case "sfx":
+          return this._printSFX(cons);
         default:
           cons satisfies never;
           return "ERROR";
       }
+    }
+
+    private static _printSFX(cons: Consequence & {type: "sfx"}) : string {
+      switch (cons.sfxType) {
+        case "play-sound":
+          return `Play Sound: ${cons.fileName} (${cons.volume})`;
+        case "play-animation" :
+          return `Play Animation: ${cons.fileName} on ${cons.applyTo}`;
+        case "floating-text":
+          return `Floating Text on ${cons.applyTo}`;
+        default:
+          cons satisfies never;
+          return "ERROR";
+      }
+
     }
 
     private static _printTriggerEventCons (cons: Consequence & {type: "trigger-event-cons"}) : string{

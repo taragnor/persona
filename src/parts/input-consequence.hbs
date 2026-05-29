@@ -101,11 +101,11 @@
 	</select>
 	{{/if}}
 	{{/if}}
+
 	{{#if (eqAny cons.type	"add-talent-to-list")}}
 	<select name="{{strcat namePrefix 'id'}}">
 		{{selectOptions POWERSTUFF.COMPENDIUM_TALENTS localize=false selected=cons.id}}
 	</select>
-
 	{{/if}}
 
 	{{#if (eq cons.type "add-creature-tag")}}
@@ -115,7 +115,6 @@
 	{{/if}}
 
   {{#if (eq cons.type	"other-effect")}}
-
   <select name="{{strcat namePrefix 'otherEffect'}}">
     {{selectOptions POWERSTUFF.OTHER_CONSEQUENCES localize=true selected=cons.otherEffect}}
   </select>
@@ -124,11 +123,13 @@
     {{selectOptions POWERSTUFF.CREATURE_TAGS localize=true selected=cons.creatureTag}}
   </select>
   {{/if}}
+
   {{#if (eq cons.otherEffect "add-talent-to-list")}}
   <select name="{{strcat namePrefix 'creatureTag'}}">
     {{selectOptions POWERSTUFF.CREATURE_TAGS localize=true selected=cons.creatureTag}}
   </select>
   {{/if}}
+
   {{#if (eq cons.otherEffect "add-power-to-list")}}
   <select name="{{strcat namePrefix 'id'}}">
     {{selectOptions POWERSTUFF.COMPENDIUM_POWERS localize=false selected=cons.id}}
@@ -451,6 +452,10 @@
   <input class="short" type=number name="{{strcat namePrefix 'high'}}" value="{{defVal cons.high 21}}">
   {{/if}}
 
+  {{/if}}
+
+  {{#if (eqAny cons.type "sfx")}}
+	{{> "systems/persona/parts/input-consequence-sfx.hbs" namePrefix=namePrefix cons=cons POWERSTUFF=POWERSTUFF owner=owner}}
   {{/if}}
 
 	<div>

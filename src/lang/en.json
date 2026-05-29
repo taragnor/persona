@@ -1082,6 +1082,16 @@
 "persona.consequences.triggerEventCons.allow-as-opener": "Allow Power to be used as Opener",
 	"persona.consequences.triggerEventCons.set-roll-result": "Set Roll Result of triggering event to X",
 
+	"persona.consequences.sfx.play-sound": "Sound",
+	"persona.consequences.sfx.play-animation": "Animation",
+	"persona.consequences.sfx.floating-text": "Floating Text",
+
+	"persona.consequences.sfx.action.standard": "Standard",
+	"persona.consequences.sfx.action.override": "Override",
+
+	"persona.consequences.sfx.animation-offset.none": "None",
+	"persona.consequences.sfx.animation-offset.random": "Random",
+	"persona.consequences.sfx.animation-offset.missed": "Missed",
 
 	"persona.modifier-variable.escalationDie": "Escalation Die",
 	"persona.modifier-variable.tensionPool": "Tension Pool",

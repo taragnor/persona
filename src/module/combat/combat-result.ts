@@ -32,7 +32,7 @@ export class CombatResult  {
 	escalationMod: number = 0;
 	costs: ActorChange<ValidAttackers>[] = [];
 	sounds: {sound: ValidSound, timing: "pre" | "post"}[] = [];
-	globalOtherEffects: OtherEffect[] = [];
+	globalOtherEffects: Sourced<OtherEffect>[] = [];
   globalLocalEffects: Sourced<LocalEffect>[] = [];
   activationRoll: U<number>;
 
@@ -529,9 +529,9 @@ export class CombatResult  {
         if (!effect) {break;}
         effect.otherEffects.push(cons);
         break;
-      case "play-sound":
-        this.globalOtherEffects.push(cons);
-        break;
+      // case "play-sound":
+      //   this.globalOtherEffects.push(cons);
+      //   break;
       case "inventory-action": {
         if (!effect) {
           PersonaError.softFail(`No Target to apply Effect to ${cons.invAction}`);
@@ -542,6 +542,9 @@ export class CombatResult  {
       }
       case "trigger-event-cons":
         this.globalOtherEffects.push(cons);
+        break;
+      case "sfx":
+        this.addEffect_sfx(cons, effect, situation);
         break;
       default: {
         cons satisfies never;
@@ -560,7 +563,32 @@ export class CombatResult  {
     CombatResult.mergeChanges(effects, [effect]);
   }
 
-  addEffect_inventoryAction( cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "inventory-action"}, effect: ActorChange<ValidAttackers>, situation: Readonly<Situation>) {
+  private addEffect_sfx( cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "sfx"}, effect: U<ActorChange<ValidAttackers>>, _situation: Readonly<Situation>) {
+    switch (cons.sfxType) {
+      case"play-sound":
+        this.globalOtherEffects.push(cons);
+        break;
+      case "play-animation":
+        if (!effect) {
+          PersonaError.softFail("No effect for play-animation");
+          break;
+        }
+        effect.otherEffects.push(cons);
+        break;
+      case "floating-text":
+        if (!effect) {
+          PersonaError.softFail("No effect for play-animation");
+          break;
+        }
+        effect.otherEffects.push(cons);
+        break;
+      default:
+        cons satisfies never;
+        PersonaError.softFail(`Unrecognized sfxType ${(cons as GenericObject)?.sfxType as string}`);
+    }
+  }
+
+  private addEffect_inventoryAction( cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "inventory-action"}, effect: ActorChange<ValidAttackers>, situation: Readonly<Situation>) {
     switch (cons.invAction) {
       case "harvest-crops":
         effect.otherEffects.push(cons);
@@ -785,7 +813,7 @@ export type AttackResult = {
   activationRoll?: number;
 };
 
-function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-flag", flagState: true} | {type: "combat-effect", combatEffect:"addStatus"}) , atkResultOrActor: AttackResult | ValidAttackers, situation : Situation) : StatusDuration {
+function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-flag", flagState: true} | {type: "combat-effect", combatEffect:"addStatus"}) , _atkResultOrActor: AttackResult | ValidAttackers, situation : Situation) : StatusDuration {
   const getAnchorHolder = function (applyTo: typeof cons["durationApplyTo"]) {
     if (applyTo == undefined) {return undefined;}
     const actor = PersonaCombat.solveEffectiveTargetsForce(applyTo, situation, cons).at(0)?.accessor;

@@ -22,6 +22,7 @@ import {TriggeredEffect} from "../triggered-effect.js";
 import {sleep} from "../utility/async-wait.js";
 import {LocalEffectCombatResult} from "./local-effect-combat-result.js";
 import {ResolvedRollBundle} from "../roll-bundle.js";
+import {PersonaAnimation} from "./persona-animations.js";
 
 const SAFETY_SLEEP_DURATION = 250 as const;
 const DELAY_FOR_UPDATES_TO_GET_THERE_FIRST = 25 as const;
@@ -36,7 +37,7 @@ export class FinalizedCombatResult {
   attacks: ResolvedAttackResult[] = [];
   costs: ResolvedActorChange<ValidAttackers>[] = [];
   sounds: {sound: ValidSound, timing: "pre" | "post"}[] = [];
-  globalOtherEffects: OtherEffect[] = [];
+  globalOtherEffects: Sourced<OtherEffect>[] = [];
   chainedResults: FinalizedCombatResult[]= [];
   globalLocalEffects: Sourced<LocalEffect>[] = [];
   options : CombatResultOptions = {activationRoll: -1};
@@ -341,6 +342,7 @@ export class FinalizedCombatResult {
       await this.#applyGlobalOtherEffects();
       this.#onUsePowerTriggered();
       await this.#applyChained();
+      await PersonaAnimation.queue.play();
     } catch (e) {
       PersonaError.softFail("Trouble executing combat result", e, this);
     }

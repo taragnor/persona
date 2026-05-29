@@ -31,6 +31,7 @@ const DEPRECATED_CONSEQUENCE_TYPES = [
   "cancel",
   "teach-power",
   "set-roll-result",
+  "play-sound",
 ] as const;
 
 export const NON_DEPRECATED_CONSQUENCELIST = [
@@ -47,7 +48,7 @@ export const NON_DEPRECATED_CONSQUENCELIST = [
   "display-msg",
   "alter-variable",
   "perma-buff",
-  "play-sound",
+  "sfx",
   "raise-status-resistance", //functions as raise and lower
   "raise-resistance",
   "lower-resistance",
@@ -273,4 +274,29 @@ const TRIGGER_EVENT_CONS_LIST = [
 ] as const;
 
 export const TRIGGER_EVENT_CONS = HTMLTools.createLocalizationObject(TRIGGER_EVENT_CONS_LIST, "persona.consequences.triggerEventCons");
+
+
+const SFX_CONSEQUENCE_LIST = [
+  "play-sound",
+  "play-animation",
+  "floating-text",
+] as const;
+
+export const SFX_CONSEQUENCE= HTMLTools.createLocalizationObject(SFX_CONSEQUENCE_LIST, "persona.consequences.sfx");
+
+
+const ANIMATION_ACTION_LIST = [
+  "standard",
+  "override",
+] as const;
+
+export const ANIMATION_ACTION = HTMLTools.createLocalizationObject(ANIMATION_ACTION_LIST, "persona.consequences.sfx.action");
+
+const ANIMATION_OFFSET_LIST = [
+  "none",
+  "random",
+  "missed",
+];
+
+export const ANIMATION_OFFSET = HTMLTools.createLocalizationObject(ANIMATION_OFFSET_LIST, "persona.consequences.sfx.animation-offset");
 

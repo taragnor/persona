@@ -69,3 +69,7 @@ type NonNullableProps<T> =
     ? { [K in keyof T]: NonNullable<T[K]> }
     : never;
 
+
+type GenericObject = {
+  [key: string]: string | GenericObject;
+};

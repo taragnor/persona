@@ -1,7 +1,7 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { PersonaItem } from "../module/item/persona-item.js";
 import { PermaBuffType } from "./perma-buff-type.js";
-import { EVENT_CHAIN_ACTIONS, INVENTORY_ACTION, SocialCardAction, TRIGGER_EVENT_CONS } from "./effect-types.js";
+import { ANIMATION_ACTION, ANIMATION_OFFSET, EVENT_CHAIN_ACTIONS, INVENTORY_ACTION, SFX_CONSEQUENCE, SocialCardAction, TRIGGER_EVENT_CONS } from "./effect-types.js";
 import { CardTag } from "./card-tags.js";
 import { VariableType } from "../module/persona-variables.js";
 import { CombatEffect } from "./effect-types.js";
@@ -30,7 +30,7 @@ import {PowerTagOrId} from "./power-tags.js";
 
 
 export type OtherEffect = {__localEffect?: undefined} &
-  ProcessedConsequenceToOtherEffect< ExpendItemConsequence | SetFlagConsequence | StatusResistanceAlterConsequence | InspirationChangeConsequence | DisplayMessageConsequence | UsePowerConsequence | DungeonActionConsequence | AlterMPConsequence |  OtherEffectConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence	| PlaySoundConsequence | GainLevelConsequence |  InventoryActionConsequence | TriggerEventModifierConsequence>;
+  ProcessedConsequenceToOtherEffect< ExpendItemConsequence | SetFlagConsequence | StatusResistanceAlterConsequence | InspirationChangeConsequence | DisplayMessageConsequence | UsePowerConsequence | DungeonActionConsequence | AlterMPConsequence |  OtherEffectConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence| GainLevelConsequence |  InventoryActionConsequence | TriggerEventModifierConsequence | SFXConsequence>;
 
 //removed : AddPowerConsequence
 // setRollResultConsequence 
@@ -79,13 +79,11 @@ type StatusEffect_FollowUp = {
 export type EnhancedSourcedConsequence<C extends Consequence = Consequence> = SourcedConsequence<C> & {
 }
 
-
-
 export type Consequence =
 	{
     type: ConsequenceType,
 	} & (
-		NonGenericConsequences
+		NonGenericConsequences | DeprecatedConsequence
 	);
 
 type NumberedConsequencePart = {
@@ -116,14 +114,58 @@ type NonGenericConsequences =
   | FatigueConsequence
   | AlterVariableConsequence
   | PermabuffConsequence
-  | PlaySoundConsequence
+  // | PlaySoundConsequence
   | GainLevelConsequence
   | TriggerEventModifierConsequence
 // | CancelRequestConsequence
 // | setRollResultConsequence
   | InventoryActionConsequence
-  | DeprecatedConsequence
+  | SFXConsequence
 ;
+
+type SFXConsequence = {
+  type: "sfx",
+  priority: number,
+  sfxType: keyof typeof SFX_CONSEQUENCE,
+  actionType: keyof typeof ANIMATION_ACTION,
+  delay?: number,
+  duration?: number,
+  waitUntilFinished?: boolean
+} & SFXConsList;
+
+type SFXConsList = {
+  sfxType: "play-sound",
+  fileName: string,
+  volume?: number,
+  fadeIn?: number,
+  fadeOut?: number,
+} | ({
+  sfxType: "play-animation",
+  fileName: string,
+  fadeIn?: number,
+  fadeOut?: number,
+  opacity?: number,
+  playbackRate?: number,
+	applyTo : ConsequenceTarget,
+  scale ?: number,
+} & AnimationOffset) | {
+  sfxType: "floating-text",
+  text: string,
+	applyTo : ConsequenceTarget,
+  fontFamily: string,
+  color: string,
+};
+
+type AnimationOffset = {
+  type: keyof typeof ANIMATION_OFFSET;
+} & ({
+  offType: "none",
+} | {
+  offType: "random",
+  offsetPercent: number,
+} | {
+  offType: "missed",
+});
 
 type InventoryActionConsequence = {
 	type: "inventory-action",
@@ -513,6 +555,8 @@ export type DeprecatedConsequence =
     | AddTagConsequence
     | setRollResultConsequence
     | CancelRequestConsequence
+    | PlaySoundConsequence
+
 	)
 ;
 

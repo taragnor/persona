@@ -1,10 +1,14 @@
+import {OtherEffect} from "../../config/consequence-types.js";
 import {DAMAGE_LEVELS, RealDamageType} from "../../config/damage-types.js";
 import {PersonaError} from "../persona-error.js";
+import {AnimationQueue} from "../sfx/animation-queue.js";
 import {sleep} from "../utility/async-wait.js";
 import {AttackResult} from "./combat-result.js";
 import {PToken} from "./persona-combat.js";
 
 export class PersonaAnimation {
+
+  static queue: AnimationQueue = new AnimationQueue(PersonaAnimation);
 
 	usable: Usable;
 	damageType: RealDamageType;

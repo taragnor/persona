@@ -38,6 +38,7 @@ interface SoundProxy extends Sequence {
   file(name: string) : this;
   fadeInAudio(ms: number) : this;
   fadeOutAudio(ms: number) : this;
+  volume( percent: number): this;
 }
 
 interface FadeOptions {

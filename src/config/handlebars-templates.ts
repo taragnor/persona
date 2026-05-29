@@ -107,6 +107,7 @@ const templateFileNames : string[] =[
   "token-panel-header.hbs",
   "sub-power-list.hbs",
   "power-table.hbs",
+  "input-consequence-sfx.hbs",
 ];
 
 export const templatePaths = templateFileNames.
