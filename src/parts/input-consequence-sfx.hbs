@@ -1,6 +1,16 @@
-<select name="{{strcat namePrefix 'actionType'}}">
-  {{selectOptions POWERSTUFF.ANIMATION_ACTION localize=true selected=cons.actionType}}
-</select>
+
+<div class="f-row">
+  <select name="{{strcat namePrefix 'actionType'}}">
+    {{selectOptions POWERSTUFF.ANIMATION_ACTION localize=true selected=cons.actionType}}
+  </select>
+
+  <div>
+    <label>
+      Wait Until Finished
+    </label>
+    <input type="checkbox" name="{{strcat namePrefix 'waitUntilFinished'}}" {{checked cons.waitUntilFinished}}>
+  </div>
+</div>
 
 <div class="f-row">
   <div>
@@ -106,13 +116,13 @@
   <label>
     Offset
   </label>
-  <select name="{{strcat namePrefix 'actionType'}}">
-    {{selectOptions POWERSTUFF.ANIMATION_OFFSET localize=true selected=cons.offset}}
+  <select name="{{strcat namePrefix 'offType'}}">
+    {{selectOptions POWERSTUFF.ANIMATION_OFFSET localize=true selected=cons.offType}}
   </select>
 
 </div>
 
-{{#if (eqAny cons.offset "random")}}
+{{#if (eqAny cons.offType "random")}}
 <input class="short" type=number name="{{strcat namePrefix 'offsetPercent'}}" value="{{defVal cons.offSetPercent 1}}">
 {{/if}}
 
