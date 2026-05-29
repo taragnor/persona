@@ -8,6 +8,7 @@ class Sequence {
 	scrollingText(): ScrollingTextProxy;
 	duration(ms: number): this;
 	addSequence <T extends SequencerBase>( seq : T) : T;
+	waitUntilFinished(timeOffset: number) : this;
 }
 
 
@@ -28,7 +29,6 @@ interface EffectProxy extends Sequence {
 	randomSpriteRotation() : this;
 	aboveInterface(): this;
 	screenSpace(): this;
-	waitUntilFinished(timeOffset: number) : this;
 
 	/** target a location near but not at the target*/
 	missed(): this;

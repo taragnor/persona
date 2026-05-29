@@ -60,7 +60,7 @@ export class Tests {
       mpCost: 0,
       theurgy: 0,
     };
-    await ConsequenceApplier._applyOtherEffect(kim, undefined, eff, mutableState);
+    await ConsequenceApplier._applyOtherEffect(kim, undefined, eff, undefined, mutableState);
     console.log(mutableState.theurgy);
     return mutableState.theurgy;
     //note doesn't actualy add this to Therugy just checks the math on the modifier
@@ -140,7 +140,7 @@ export class Tests {
     await kim.modifyHP(-1);
     const oldHP = kim.hp;
 
-    await ConsequenceApplier._applyOtherEffect(kim, undefined, eff, mutableState);
+    await ConsequenceApplier._applyOtherEffect(kim, undefined, eff, undefined, mutableState);
     const newHP = kim.hp;
     await kim.setHP(origHP);
     if (oldHP == newHP) {

@@ -678,6 +678,7 @@
 	"persona.effecttypes.alter-variable": "Alter Variable",
 	"persona.effecttypes.perma-buff": "Permanent Buff",
 	"persona.effecttypes.play-sound": "Play Sound",
+	"persona.effecttypes.sfx": "SFX",
 
 	"persona.effecttypes.social-card.stop-execution": "Stop Card Execution",
 	"persona.effecttypes.social-card.exec-event": "Execute Event (+1 event)",
@@ -1093,6 +1094,10 @@
 	"persona.consequences.sfx.animation-offset.random": "Random",
 	"persona.consequences.sfx.animation-offset.missed": "Missed",
 
+"persona.consequences.sfx.proj-options.none" : "None",
+"persona.consequences.sfx.proj-options.single-shot" : "Single Shot",
+"persona.consequences.sfx.proj-options.burst" : "Burst",
+"persona.consequences.sfx.proj-options.barrage" : "Barrage",
 	"persona.modifier-variable.escalationDie": "Escalation Die",
 	"persona.modifier-variable.tensionPool": "Tension Pool",
 

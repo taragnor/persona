@@ -300,3 +300,13 @@ const ANIMATION_OFFSET_LIST = [
 
 export const ANIMATION_OFFSET = HTMLTools.createLocalizationObject(ANIMATION_OFFSET_LIST, "persona.consequences.sfx.animation-offset");
 
+
+const PROJECTILE_OPTIONS_LIST = [
+  "none",
+  "single-shot",
+  "burst",
+  "barrage",
+] as const;
+
+export const PROJECTILE_OPTIONS = HTMLTools.createLocalizationObject(PROJECTILE_OPTIONS_LIST, "persona.consequences.sfx.proj-options");
+

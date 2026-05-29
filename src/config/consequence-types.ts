@@ -1,7 +1,7 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { PersonaItem } from "../module/item/persona-item.js";
 import { PermaBuffType } from "./perma-buff-type.js";
-import { ANIMATION_ACTION, ANIMATION_OFFSET, EVENT_CHAIN_ACTIONS, INVENTORY_ACTION, SFX_CONSEQUENCE, SocialCardAction, TRIGGER_EVENT_CONS } from "./effect-types.js";
+import { ANIMATION_ACTION, ANIMATION_OFFSET, EVENT_CHAIN_ACTIONS, INVENTORY_ACTION, PROJECTILE_OPTIONS, SFX_CONSEQUENCE, SocialCardAction, TRIGGER_EVENT_CONS } from "./effect-types.js";
 import { CardTag } from "./card-tags.js";
 import { VariableType } from "../module/persona-variables.js";
 import { CombatEffect } from "./effect-types.js";
@@ -148,6 +148,8 @@ type SFXConsList = {
   playbackRate?: number,
 	applyTo : ConsequenceTarget,
   scale ?: number,
+  projectile: keyof typeof PROJECTILE_OPTIONS,
+
 } & AnimationOffset) | {
   sfxType: "floating-text",
   text: string,

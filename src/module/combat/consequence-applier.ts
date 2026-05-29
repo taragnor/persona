@@ -66,7 +66,7 @@ export class ConsequenceApplier {
     } satisfies MutableActorState;
     for (const otherEffect of change.otherEffects) {
       try {
-        await this._applyOtherEffect(actor, token, otherEffect, mutableState);
+        await this._applyOtherEffect(actor, token, otherEffect, attacker, mutableState);
       } catch (e) {
         PersonaError.softFail(`Error trying to execute ${otherEffect.type} on ${actor.name}`, e);
       }
@@ -193,7 +193,7 @@ export class ConsequenceApplier {
     return ret;
   }
 
-  static async _applyOtherEffect(actor: ValidAttackers, _token: PToken | undefined, otherEffect: Sourced<OtherEffect>, mutableState: MutableActorState): Promise<void> {
+  static async _applyOtherEffect(actor: ValidAttackers, _token: PToken | undefined, otherEffect: Sourced<OtherEffect>, attacker : U<UniversalTokenAccessor<PToken>>, mutableState: MutableActorState): Promise<void> {
     switch (otherEffect.type) {
       case "expend-item": {
         if (!otherEffect.source) {
@@ -220,65 +220,6 @@ export class ConsequenceApplier {
       case "other-effect" :
         await this._applyExoticOtherEffect(actor, otherEffect);
         break;
-        // switch (otherEffect.otherEffect) {
-        //   case "teach-power": {
-        //     if (!actor.isPC() && !actor.isNPCAlly()) {
-        //       break;
-        //     }
-        //     const persona = actor.persona();
-        //     if (otherEffect.randomPower == false) {
-        //       const power = PersonaDB.allPowers().get(otherEffect.id);
-        //       if (power) {
-        //         await persona.learnPower(power);
-        //       }
-        //     } else {
-        //       const highest = persona.highestPowerSlotUsable();
-        //       let safetyBreak = 0;
-        //       while (true) {
-        //         const power = TreasureSystem.randomPower(highest);
-        //         if (!power) {break;}
-        //         if (!persona.knowsPowerInnately(power)) {
-        //           await persona.learnPower(power);
-        //           break;
-        //         }
-        //         if (++safetyBreak > 100) {
-        //           PersonaError.softFail("Error trying to add random Power, couldn't find candidate");
-        //           break;
-        //         }
-        //       }
-        //     }
-        //   }
-
-      // case "teach-power": {
-      //   if (!actor.isPC() && !actor.isNPCAlly()) {
-      //     break;
-      //   }
-      //   const persona = actor.persona();
-      //   if (otherEffect.randomPower == false) {
-      //     const power = PersonaDB.allPowers().get(otherEffect.id);
-      //     if (power) {
-      //       await persona.learnPower(power);
-      //     }
-      //   } else {
-      //     const highest = persona.highestPowerSlotUsable();
-      //     let safetyBreak = 0;
-      //     while (true) {
-      //       const power = TreasureSystem.randomPower(highest);
-      //       if (!power) {break;}
-      //       if (!persona.knowsPowerInnately(power)) {
-      //         await persona.learnPower(power);
-      //         break;
-      //       }
-      //       if (++safetyBreak > 100) {
-      //         PersonaError.softFail("Error trying to add random Power, couldn't find candidate");
-      //         break;
-      //       }
-      //     }
-      //   }
-      //   break;
-      // }
-      // case "add-power-to-list":
-      //   break;
       case "inspiration-cost":
         if (otherEffect.linkId) {
           await actor.social.spendInspiration(otherEffect.linkId, otherEffect.amount);
@@ -348,21 +289,23 @@ export class ConsequenceApplier {
       case "display-msg":
         break;
       case "sfx":
-        this._applySFX(actor, otherEffect);
+        this._applySFX(actor, otherEffect, attacker);
         break;
       default:
         otherEffect satisfies never;
     }
   }
 
-  private static _applySFX(actor: ValidAttackers, otherEffect: Sourced<OtherEffect> & {type: "sfx"}) : void {
+  private static _applySFX(actor: ValidAttackers, otherEffect: Sourced<OtherEffect> & {type: "sfx"}, attacker : U<UniversalTokenAccessor<PToken>> ) : void {
     switch (otherEffect.sfxType) {
       case "play-sound":
         PersonaAnimation.queue.addSound(otherEffect);
         break;
-      case "play-animation":
-        PersonaAnimation.queue.addAnimation(actor, otherEffect);
+      case "play-animation": {
+        const attackerTok = attacker ? PersonaDB.findToken(attacker): null;
+        PersonaAnimation.queue.addAnimation(actor, attackerTok?.actor ?? null, otherEffect);
         break;
+      }
       case "floating-text":
         PersonaAnimation.queue.addFloatingText(actor, otherEffect);
         break;
