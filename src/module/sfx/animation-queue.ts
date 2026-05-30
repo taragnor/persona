@@ -19,7 +19,7 @@ export class AnimationQueue {
   }
 
   private filterQueue() {
-    this.queue.sort ( (a, b) => b.priority - a.priority);
+    this.queue.sort ( (a, b) => a.order - b.order);
     const overrides= this.queue
       .filter (x => x.actionType == "override");
     for (const override of overrides) {
@@ -36,6 +36,7 @@ export class AnimationQueue {
       ...otherEffect,
       target: "global",
       attacker: null,
+      order: otherEffect.order ?? 0,
     } as const;
     this.queue.push(queueObj);
     this.filterQueue();
@@ -44,13 +45,14 @@ export class AnimationQueue {
   addAnimation(actor: ValidAttackers, attacker: N<ValidAttackers>, otherEffect: Sourced<OtherEffect> & {type: "sfx", sfxType: "play-animation"}) : void {
     const token = this.getToken(actor);
     if (!token) {
-      PersonaError.softFail(`Couldnt' find ${actor.name}'s token for animation`);
+      PersonaError.softFail(`Couldnt' find ${actor.name}'s token for animation ${otherEffect.sfxType}`);
       return;
     }
     const attackerTok = attacker ? this.getToken(attacker) : null;
     const queueObj = {
       ...otherEffect,
       target: token,
+      order: otherEffect.order ?? 0,
       attacker: attackerTok? attackerTok : null,
     } as const;
     this.queue.push(queueObj);
@@ -66,6 +68,7 @@ export class AnimationQueue {
     const queueObj = {
       ...otherEffect,
       target: token,
+      order: otherEffect.order ?? 0,
       attacker: null,
     } as const;
     this.queue.push(queueObj);
@@ -90,30 +93,21 @@ export class AnimationQueue {
 
 
   async play() : Promise<void> {
-    const queue = this.queue;
+    let queue = this.queue;
     this.clearQueue();
-    const seq=  queue
-    .reduce ( (seq, anim) => this.convertToSequence(anim, seq)
-      , new Sequence());
-    await seq.play({preload: true});
-    //for (const anim of queue) {
-    //  try {
-    //    const seq
-
-    //    switch (anim.sfxType) {
-    //      case "play-sound":
-    //        await this.playSound(anim);
-    //        break;
-    //      case "play-animation":
-    //        break;
-    //      case "floating-text":
-    //        break;
-    //        //TODO finishthis
-    //    }
-    //  } catch (e) {
-    //    PersonaError.softFail(e as Error, queue);
-    //  }
-    //}
+    while (queue.length > 0) {
+      const order = queue.at(0)?.order ?? 0;
+      const playable = queue.filter( x=> (x.order ?? 0) == order);
+      queue = queue.filter(x=> (x.order ?? 0) != order);
+      const seq =  playable
+        .reduce ( (seq, anim) => this.convertToSequence(anim, seq)
+          , new Sequence());
+      await seq.play({preload: true});
+    }
+    // const seq=  queue
+    // .reduce ( (seq, anim) => this.convertToSequence(anim, seq)
+    //   , new Sequence());
+    // await seq.play({preload: true});
   }
 
   private convertToSequence(anim: typeof this.queue[number], seq: Sequence = new Sequence() ): Sequence {
@@ -168,8 +162,11 @@ export class AnimationQueue {
         if (anim.fadeOut) {
           seq = seq.fadeOut(anim.fadeOut);
         }
-        if (anim.opacity) {
-          seq = seq.opacity(anim.fadeOut);
+        if (anim.scale) {
+          seq = seq.scaleToObject(anim.scale);
+        }
+        if (anim.opacity && anim.opacity != 1) {
+          seq = seq.opacity(anim.opacity);
         }
         return seq;
       }
@@ -205,6 +202,10 @@ export class AnimationQueue {
           break;
         case "missed":
           seq = seq.missed();
+          break;
+        default:
+          anim satisfies never;
+          PersonaError.softFail("Bad anim type");
       }
       return seq;
     }

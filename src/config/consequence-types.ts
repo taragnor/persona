@@ -124,13 +124,14 @@ type NonGenericConsequences =
 ;
 
 type SFXConsequence = {
-  type: "sfx",
-  priority: number,
-  sfxType: keyof typeof SFX_CONSEQUENCE,
-  actionType: keyof typeof ANIMATION_ACTION,
-  delay?: number,
-  duration?: number,
-  waitUntilFinished?: boolean
+  type: "sfx";
+  priority: number;
+  sfxType: keyof typeof SFX_CONSEQUENCE;
+  actionType: keyof typeof ANIMATION_ACTION;
+  delay?: number;
+  duration?: number;
+  waitUntilFinished?: boolean;
+  order: number;
 } & SFXConsList;
 
 type SFXConsList = {

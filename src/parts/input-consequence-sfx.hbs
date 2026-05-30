@@ -1,129 +1,144 @@
+<div class="sfx-consequence">
 
-<div class="f-row">
-  <select name="{{strcat namePrefix 'actionType'}}">
-    {{selectOptions POWERSTUFF.ANIMATION_ACTION localize=true selected=cons.actionType}}
+  <div class="f-row">
+    <select name="{{strcat namePrefix 'actionType'}}">
+      {{selectOptions POWERSTUFF.ANIMATION_ACTION localize=true selected=cons.actionType}}
+    </select>
+
+    <div>
+      <label>
+        Wait Until Finished
+      </label>
+      <input type="checkbox" name="{{strcat namePrefix 'waitUntilFinished'}}" {{checked cons.waitUntilFinished}}>
+    </div>
+  </div>
+
+  <div class="f-row">
+    <div>
+      <label>
+        Order
+      </label>
+      <input class="short" type=number name="{{strcat namePrefix 'order'}}" value="{{defVal cons.order 0}}">
+    </div>
+
+    <div>
+      <label>
+        Priority
+      </label>
+      <input class="short" type=number name="{{strcat namePrefix 'priority'}}" value="{{defVal cons.priority 0}}">
+    </div>
+
+    <div>
+      <label>
+        Delay
+      </label>
+      <input class="short" type=number name="{{strcat namePrefix 'delay'}}" value="{{defVal cons.delay 0}}">
+    </div>
+
+    <div>
+      <label>
+        Duration
+      </label>
+      <input class="short" type=number name="{{strcat namePrefix 'duration'}}" value="{{cons.duration}}">
+    </div>
+  </div>
+
+  <select name="{{strcat namePrefix 'sfxType'}}">
+    {{selectOptions POWERSTUFF.SFX_CONSEQUENCE localize=true selected=cons.sfxType}}
   </select>
 
-  <div>
-    <label>
-      Wait Until Finished
-    </label>
-    <input type="checkbox" name="{{strcat namePrefix 'waitUntilFinished'}}" {{checked cons.waitUntilFinished}}>
-  </div>
-</div>
 
-<div class="f-row">
-  <div>
-    <label>
-      Priority
-    </label>
-    <input class="short" type=number name="{{strcat namePrefix 'priority'}}" value="{{defVal cons.priority 0}}">
+  {{#if (eqAny (defVal cons.sfxType "play-animation") "play-sound" "play-animation")}}
+
+  <div class="f-row" data-filename="{{cons.fileName}}">
+    <label>FilePath</label>
+    {{#if (eqAny cons.sfxType "play-sound")}}
+    {{filePicker type="audio" target=(strcat namePrefix 'fileName')}}
+    {{/if}}
+    <input class="file-name" type="text" name="{{strcat namePrefix 'fileName'}}" value="{{cons.fileName}}">
+    {{#if (and (eqAny cons.sfxType "play-sound") cons.fileName)}}
+    <button class="play-sound">Play </button>
+    {{/if}}
   </div>
 
-  <div>
-    <label>
-      Delay
-    </label>
-    <input class="short" type=number name="{{strcat namePrefix 'delay'}}" value="{{defVal cons.delay 0}}">
+  <div class="f-row">
+
+    <span>
+      <label>
+        Fade In
+      </label>
+      <input class="short" type=number name="{{strcat namePrefix 'fadeIn'}}" value="{{defVal cons.fadeIn 0}}">
+    </span>
+
+
+    <span>
+      <label>
+        Fade Out
+      </label>
+      <input class="short" type=number name="{{strcat namePrefix 'fadeOut'}}" value="{{defVal cons.fadeOut 0}}">
+    </span>
+
   </div>
 
-  <div>
-    <label>
-      Duration
-    </label>
-    <input class="short" type=number name="{{strcat namePrefix 'duration'}}" value="{{cons.duration}}">
-  </div>
-</div>
-
-<select name="{{strcat namePrefix 'sfxType'}}">
-  {{selectOptions POWERSTUFF.SFX_CONSEQUENCE localize=true selected=cons.sfxType}}
-</select>
+  {{/if}}
 
 
-{{#if (eqAny (defVal cons.sfxType "play-animation") "play-sound" "play-animation")}}
-
-<div>
-  <label>FilePath</label>
-  <input class="file-name" type="text" name="{{strcat namePrefix 'fileName'}}" value="{{cons.fileName}}">
-</div>
-
-<div class="f-row">
-
-  <span>
-    <label>
-      Fade In
-    </label>
-    <input class="short" type=number name="{{strcat namePrefix 'fadeIn'}}" value="{{defVal cons.fadeIn 0}}">
-  </span>
-
-
-  <span>
-    <label>
-      Fade Out
-    </label>
-    <input class="short" type=number name="{{strcat namePrefix 'fadeOut'}}" value="{{defVal cons.fadeOut 0}}">
-  </span>
-
-</div>
-
-{{/if}}
-
-
-{{#if (eqAny (defVal cons.sfxType "play-animation") "play-sound")}}
-
-<div>
-  <label>
-    Volume
-  </label>
-  <input class="short" type=number name="{{strcat namePrefix 'volume'}}" value="{{cons.volume}}">
-</div>
-
-{{/if}}
-
-
-
-{{#if (eqAny (defVal cons.sfxType "play-animation") "play-animation")}}
-
-<div>
-  <label> Projectile</label>
-  <select name="{{strcat namePrefix 'projectile'}}">
-    {{selectOptions POWERSTUFF.PROJECTILE_OPTIONS localize=true selected=cons.projectile}}
-  </select>
-</div>
-
-<div class="f-row">
-  <div>
-    <label>
-      Playback Rate
-    </label>
-    <input class="short" type=number name="{{strcat namePrefix 'playbackRate'}}" value="{{defVal cons.playbackRate 1}}">
-  </div>
+  {{#if (eqAny (defVal cons.sfxType "play-animation") "play-sound")}}
 
   <div>
     <label>
-      Opacity
+      Volume
     </label>
-    <input class="short" type=number name="{{strcat namePrefix 'opacity'}}" value="{{defVal cons.opacity 1}}">
+    <input class="short" type=number name="{{strcat namePrefix 'volume'}}" value="{{defVal cons.volume 1}}">
   </div>
+
+  {{/if}}
+
+
+
+  {{#if (eqAny (defVal cons.sfxType "play-animation") "play-animation")}}
 
   <div>
-    <label>
-      Scale
-    </label>
-    <input class="short" type=number name="{{strcat namePrefix 'scale'}}" value="{{defVal cons.scale 1}}">
+    <label> Projectile</label>
+    <select name="{{strcat namePrefix 'projectile'}}">
+      {{selectOptions POWERSTUFF.PROJECTILE_OPTIONS localize=true selected=cons.projectile}}
+    </select>
   </div>
 
-  <label>
-    Offset
-  </label>
-  <select name="{{strcat namePrefix 'offType'}}">
-    {{selectOptions POWERSTUFF.ANIMATION_OFFSET localize=true selected=cons.offType}}
-  </select>
+  <div class="f-row">
+    <div>
+      <label>
+        Playback Rate
+      </label>
+      <input class="short" type=number name="{{strcat namePrefix 'playbackRate'}}" value="{{defVal cons.playbackRate 1}}">
+    </div>
 
+    <div>
+      <label>
+        Opacity
+      </label>
+      <input class="short" type=number name="{{strcat namePrefix 'opacity'}}" value="{{defVal cons.opacity 1}}">
+    </div>
+
+    <div>
+      <label>
+        Scale
+      </label>
+      <input class="short" type=number name="{{strcat namePrefix 'scale'}}" value="{{defVal cons.scale 1}}">
+    </div>
+
+    <label>
+      Offset
+    </label>
+    <select name="{{strcat namePrefix 'offType'}}">
+      {{selectOptions POWERSTUFF.ANIMATION_OFFSET localize=true selected=cons.offType}}
+    </select>
+
+  </div>
+
+  {{#if (eqAny cons.offType "random")}}
+  <input class="short" type=number name="{{strcat namePrefix 'offsetPercent'}}" value="{{defVal cons.offsetPercent 1}}">
+  {{/if}}
+
+  {{/if}}
 </div>
-
-{{#if (eqAny cons.offType "random")}}
-<input class="short" type=number name="{{strcat namePrefix 'offsetPercent'}}" value="{{defVal cons.offSetPercent 1}}">
-{{/if}}
-
-{{/if}}

@@ -292,6 +292,15 @@ export class ConditionalEffectManager {
     // this.lastClick = "";
   }
 
+  static handler_playSound(ev: JQuery.ClickEvent) {
+    const fileName = HTMLTools.getClosestData(ev, "filename");
+    void foundry.audio.AudioHelper.play( {
+      src: fileName,
+      volume: 1,
+      loop: false
+    }, false);
+  }
+
   static handler_clickMCSelector<D extends FoundryDocument<any>>(ev: JQuery.ClickEvent, _item: D) {
     ev.stopPropagation();
     $(ev.currentTarget).parent().find(".MC-selectors").toggleClass("hidden");
@@ -322,6 +331,7 @@ export class ConditionalEffectManager {
       html.find("section.conditions-section").on("contextmenu", ev => void this.openConditionsMenu(ev, doc, contextMenu));
       html.find("section.consequences-section").on("contextmenu", ev => void this.openConsequencesMenu(ev, doc, contextMenu));
     }
+    html.find(".sfx-consequence .play-sound"). on("click", ev => void this.handler_playSound(ev));
   }
 
   static getEffects<T extends PersonaActor, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null, realSource ?: ConditonalEffectHolderItem) : ConditionalEffectC[] {

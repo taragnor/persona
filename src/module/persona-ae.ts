@@ -275,6 +275,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
   }
 
   private _aboutToExpire() : boolean {
+    if (this.statusDuration.dtype != "X-rounds" && this.statusDuration.dtype != "3-rounds" ) {return false;}
     return this.durationLessThanOrEqualTo(
       this.DURATION_ABOUT_TO_EXPIRE_STATUS
     );

@@ -167,6 +167,7 @@ export class ConsequenceConverter {
           sfxType: "play-sound",
           actionType: "standard",
           priority: 0,
+          order: 0,
         };
       default:
         dep satisfies never;

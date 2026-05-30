@@ -78,6 +78,20 @@ export class PersonaItemSheetBase extends foundry.appv1.sheets.ItemSheet<Persona
           "statusName": "burn",
         } satisfies NonDeprecatedConsequence),
       },
+      {
+        label: "SFX",
+        action: () => ({
+          type :"sfx",
+          sfxType: "play-animation",
+          actionType: "standard",
+          applyTo: "target",
+          fileName : "",
+          offType : "none",
+          priority : 0,
+          order: 0,
+          projectile : "none",
+        } satisfies NonDeprecatedConsequence),
+      },
     ];
   }
 
