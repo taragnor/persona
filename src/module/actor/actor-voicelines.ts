@@ -3,7 +3,6 @@ import {PersonaCombat} from "../combat/persona-combat.js";
 import {GENERAL_COMBATANT_VOICE_TRIGGERS} from "../navigator/nav-voice-lines.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
-import {PersonaSounds} from "../persona-sounds.js";
 import {randomSelect} from "../utility/array-tools.js";
 import {sleep} from "../utility/async-wait.js";
 import {PersonaActor} from "./persona-actor.js";
@@ -11,7 +10,7 @@ import {PersonaActor} from "./persona-actor.js";
 export class ActorVoiceLines {
   private actor: PersonaActor;
 
-  private nowPlaying: boolean = false;
+  nowPlaying: boolean = false;
 
   constructor (actor: PersonaActor) {
     this.actor = actor;
@@ -84,12 +83,16 @@ export class ActorVoiceLines {
       }
       if (lines.length == 0) {return false;}
       const line = randomSelect(lines);
+      this.nowPlaying = true;
       if (options.selfOnly) {
-        this.nowPlaying = true;
-        await PersonaSounds.playFileSelf(line.fileName);
+        console.log(`Playing voice(self) for ${this.actor.name}`);
+        await ActorVoiceLines.playVoice(line.fileName, this, true);
+
+        // await PersonaSounds.playFileSelf(line.fileName);
       } else {
-        this.nowPlaying = true;
-        await PersonaSounds.playFileAll(line.fileName);
+        console.log(`Playing voice(all) for ${this.actor.name}`);
+        await ActorVoiceLines.playVoice(line.fileName, this);
+        // await PersonaSounds.playFileAll(line.fileName);
       }
       this.nowPlaying = false;
       return true;
@@ -99,6 +102,18 @@ export class ActorVoiceLines {
       this.nowPlaying = false;
       return false;
     }
+  }
+
+  static async playVoice(fileName: string,owner: {nowPlaying: boolean}, selfOnly: boolean = false) : Promise<void> {
+    try {
+    owner.nowPlaying = true;
+    await new Sequence().sound()
+      .file(fileName)
+      .play({local: selfOnly} );
+    } catch (e) {
+      PersonaError.softFail(`Erorr with sound playback : ${fileName}`, e as Error);
+    }
+    owner.nowPlaying = false;
   }
 
   private async onAttack( eventOptions : VoiceEventOptions = {}) : Promise<boolean> {
@@ -124,6 +139,7 @@ export class ActorVoiceLines {
 
   private async onTurnStart() : Promise<boolean> {
     if (!this.actor.isAlive()) {return false;}
+    if (!PersonaSettings.debugMode() && this.actor.hasPlayerOwner && game.user.isGM) {return false;}
     let severity = 0;
     if (this.actor.hp < this.actor.mhp * 0.25) {
       severity = 1;

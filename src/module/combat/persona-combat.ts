@@ -486,10 +486,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   async startCombatantTurn( combatant: Combatant<PersonaActor>){
     if (!PersonaCombat.isPersonaCombatant(combatant)) {return;}
     const actor = combatant.actor;
+    await actor.voicelines.onEvent( "on-turn-start");
     if (!game.user.isGM && actor.isOwner) {
       await this.panel.activate(true);
       await this.panel.setTarget(combatant.token);
-      await actor.voicelines.onEvent( "on-turn-start");
     }
     if (!game.user.isGM) {return;}
     await this.resetBatonStates();
@@ -1702,9 +1702,19 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     } catch (e)  {
       PersonaError.softFail('Problem with generating treasure', e);
     }
+    void this.endingVoiceLine(); //voiding this so it doesnt take time
+  }
+
+  async endingVoiceLine() : Promise<void> {
+    const party = this.combatants.contents.filter( x => x.actor &&  x.actor.isAlive() && x.hasPlayerOwner);
+    for (const member of party) {
+      const voice = await member.actor!.voicelines.onEvent("battle-won");
+      if (voice) {return;}
+    }
     await NavigatorVoiceLines.playVoice({
       type: "great-work"
     });
+
   }
 
   displayCombatHeader(element : JQuery<HTMLElement>) {

@@ -1,5 +1,6 @@
 import {RealDamageType, ResistStrength} from "../../config/damage-types.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
+import {ActorVoiceLines} from "../actor/actor-voicelines.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaCombat} from "../combat/persona-combat.js";
 import {Encounter, RandomEncounter} from "../exploration/random-encounters.js";
@@ -136,10 +137,12 @@ export class NavigatorVoiceLines {
       const line = randomSelect(lines);
       if (selfOnly) {
         this.nowPlaying = true;
-        await PersonaSounds.playFileSelf(line.fileName);
+        await ActorVoiceLines.playVoice(line.fileName, this, true);
+        // await PersonaSounds.playFileSelf(line.fileName);
       } else {
         this.nowPlaying = true;
-        await PersonaSounds.playFileAll(line.fileName);
+        await ActorVoiceLines.playVoice(line.fileName, this, false);
+        // await PersonaSounds.playFileAll(line.fileName);
       }
       this.nowPlaying = false;
     } catch (e) {
