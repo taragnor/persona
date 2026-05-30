@@ -590,6 +590,12 @@ img.small-die {
   width: 20px;
 }
 
+div.bubble-power-list {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+div.bubble-power-list,
 div.powers-table,
 div.main-powers,
 div.navigator-skills,

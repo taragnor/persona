@@ -108,6 +108,7 @@ const templateFileNames : string[] =[
   "sub-power-list.hbs",
   "power-table.hbs",
   "input-consequence-sfx.hbs",
+  "bubble-power-list.hbs",
 ];
 
 export const templatePaths = templateFileNames.

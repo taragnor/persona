@@ -169,9 +169,11 @@ export class FollowUpManager {
       addedTags: [],
     } satisfies Situation;
     const persona = actor.persona();
-    const followUpMoves = actor.powers
-      .filter(pwr => pwr.isFollowUpMove()
-        && persona.canPayActivationCost(pwr)
+    const followUpMoves = actor
+    // .powers
+    // .filter(pwr => pwr.isFollowUpMove())
+      .persona().followUpMoves
+      .filter( pwr=> persona.canPayActivationCost(pwr)
         && pwr.testFollowUpPrereqs(situation, actor)
       );
     return followUpMoves;

@@ -56,7 +56,13 @@
 {{#if persona.openers}}
 <section class="openers">
   <h3> Openers </h3>
-  {{> "systems/persona/parts/power-table.hbs" CONST=CONST persona=persona powerList=persona.openers usePowers=(allowManualOpeners)}}
+  {{> "systems/persona/parts/power-table.hbs" CONST=CONST persona=persona powerList=persona.trueOpeners usePowers=(allowManualOpeners)}}
+{{/if}}
+
+{{#if persona.followUpMoves}}
+<section class="openers">
+  <h3> Follow Up Moves </h3>
+  {{> "systems/persona/parts/power-table.hbs" CONST=CONST persona=persona powerList=persona.followUpMoves usePowers=(allowManualOpeners)}}
 {{/if}}
 
 {{/if}}

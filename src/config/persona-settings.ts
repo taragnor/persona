@@ -222,7 +222,7 @@ const SETTINGS = {
 
   "allowManualOpeners" : {
     name: "Allow Manual Openers",
-    hint: "Allows Openers to be manually triggered",
+    hint: "Allows Openers/Follow Ups to be manually triggered",
     scope: "world",
     restricted: true,
     config: true,

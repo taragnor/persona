@@ -1340,13 +1340,14 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return this.powerLearning().learnedPowersBuffer;
   }
 
-  get powers(): Power[] {
+  get powers(): readonly Power[] {
     if (!this.isValidCombatant()) {return [];}
-    return [
-      ...this.basicPowers,
-      ...this.mainPowers,
-      ...this.persona().bonusPowers,
-    ].flat();
+    return this.persona().allPowers;
+    // return [
+    //   ...this.basicPowers,
+    //   ...this.mainPowers,
+    //   ...this.persona().bonusPowers,
+    // ].flat();
   }
 
   get displayedBonusPowers() : Power[] {

@@ -143,6 +143,12 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       .filter( pwr => pwr.canBeUsedInExploration());
   }
 
+
+  get trueOpeners(): readonly Usable[] {
+    return this.allPowers
+      .filter (pwr=> pwr.isOpener(this));
+  }
+
   get openers() : readonly Usable[] {
     return (this.allPowers as Usable[])
       .concat(this.usableItems)
@@ -159,6 +165,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   _allPowers() : readonly Power[] {
     return this.mainPowers
+      .concat(this.basicPowers)
       .concat(this.bonusPowers);
   }
 
@@ -175,7 +182,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   get displayedBonusPowers() : Power[]{
     return this.bonusPowers
-      .filter( power=> !power.isOpener(this)
+      .filter( power=>
+        !power.isOpener(this)
+        && !power.isFollowUpMove()
         && !power.isMinorActionItem()
         && !power.isTheurgy()
         && !this.displayedMainSkills.includes(power)
@@ -1159,6 +1168,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     //   return "Requires a status effect that allows teamwork moves";
     // }
     return null;
+  }
+
+  get followUpMoves() : Power[] {
+    return this.allPowers
+      .filter( pwr => pwr.isFollowUpMove());
   }
 
   private _isTrulyUsable( usable: UsableAndCard) : N<FailReason> {
