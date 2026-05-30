@@ -21,7 +21,6 @@ import { TriggeredEffect } from "../triggered-effect.js";
 import { RealDamageType } from "../../config/damage-types.js";
 import { FlagData } from "../../config/actor-parts.js";
 import { TarotCard } from "../../config/tarot.js";
-import { removeDuplicates } from "../utility/array-tools.js";
 import { CreatureTag, InternalCreatureTag } from "../../config/creature-tags.js";
 import { PersonaSocial } from "../social/persona-social.js";
 import { TAROT_DECK } from "../../config/tarot.js";
@@ -59,6 +58,7 @@ import {Farming} from "./farming.js";
 import {ActorTagManager} from "./actor-tags.js";
 import {ActorSocial} from "./actor-social.js";
 import {MultiTierCache, PermanentCache, TimedCache} from "../utility/cache.js";
+import {ActorVoiceLines} from "./actor-voicelines.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -78,9 +78,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   tags = new ActorTagManager(this);
 
-  // private cache: {
-  // complementRating: Map<Shadow["id"], number>;
-  // };
+  voicelines = new ActorVoiceLines(this);
 
   private cache2 = {
     startingLevel: new PermanentCache( () => this._startingLevel()),
@@ -520,6 +518,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   get theurgyMax() : number {
     if (!this.isPCLike()) {return 0;}
     return this.system.combat.theurgy.max ?? 0;
+  }
+
+  theurgyCharged(): boolean {
+    return this.theurgyMax > 0
+      && this.theurgyVal == this.theurgyMax;
   }
 
   get directoryName() : string {

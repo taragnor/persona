@@ -11,6 +11,18 @@ import {PersonaSocial} from "../social/persona-social.js";
 import {randomSelect} from "../utility/array-tools.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 
+const GENERAL_COMBATANT_VOICE_TRIGGERS_LIST = [
+  "on-attack", // 1 for all out, sever 2 for theurgy
+  "on-turn-start", //severity is damage level fo actor
+  "theurgy-ready",
+  "take-damage", //severity is damage dealt
+  "post-attack", //severity 0 = enemy killed, 1 =enemies survived, 2 = no effect
+  "enemies-remaining", //severity is amount
+  "battle-won",
+  "status-added", //statusCondition holeds which
+] as const;
+
+
 const NAVIGATOR_TRIGGER_LIST = [
 	"unused",
 	"rare-enemy",
@@ -46,9 +58,21 @@ const NAVIGATOR_TRIGGER_LIST = [
   "warning",
 ] as const;
 
+const VOICE_LINE_TRIGGER_LIST =[
+  ...GENERAL_COMBATANT_VOICE_TRIGGERS_LIST,
+  ...NAVIGATOR_TRIGGER_LIST,
+] as const;
+
 export type NavigatorTrigger = typeof NAVIGATOR_TRIGGER_LIST[number];
 
 export const NAVIGATOR_TRIGGERS = HTMLTools.createLocalizationObject( NAVIGATOR_TRIGGER_LIST, "persona.navigator.voicelines.types");
+
+export const GENERAL_COMBATANT_VOICE_TRIGGERS = HTMLTools.createLocalizationObject( GENERAL_COMBATANT_VOICE_TRIGGERS_LIST, "persona.combatant.voicelines.types");
+
+export const ALL_VOICE_TRIGGERS = {
+  ...NAVIGATOR_TRIGGERS,
+  ...GENERAL_COMBATANT_VOICE_TRIGGERS,
+} as const;
 
 export class NavigatorVoiceLines {
 
@@ -247,25 +271,6 @@ export class NavigatorVoiceLines {
     await PersonaSocial.characterDialog(navigator, text);
   }
 
-    // const speaker  = {
-    //   alias: navigator.name,
-    // };
-    // const content = `
-    // <div class="f-row">
-    // <img class="navigator-img" src=${navigator.img}>
-    // <div class="navigator-speech">
-    //   "${text}"
-    // </div>
-    // </div>
-    // `;
-    // const messageData = {
-    //   speaker: speaker,
-    //   content,
-    //   style: CONST.CHAT_MESSAGE_STYLES.IC,
-    // };
-    // await ChatMessage.create(messageData, {});
-    // }
-
 }
 
 
@@ -274,6 +279,7 @@ Hooks.on("hoverToken", function (token: Token<PersonaActor>, hover: boolean) {
 });
 
 type PVoid = Promise<void>; //for some reason Promise<void> screws up indenting
+
 
 
 type NavigatorVoiceEvent = {

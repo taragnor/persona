@@ -20,8 +20,8 @@
       <label> Strong Enemy</label>
       <input class="strong-enemy" type="checkbox" name="system.combat.navigatorVoice.{{i}}.strongEnemy" {{checked vl.strongEnemy}}>
       {{/if}}
-      {{#if (eqAny vl.trigger "injured" "enemy-spotted")}}
-      <input class="short" type=number name="system.combat.navigatorVoice.{{i}}.level" value="{{vl.level}}">
+      {{#if (eqAny vl.trigger "injured" "enemy-spotted" "on-turn-start" "take-damage" "post-attack" "enemies-remaining" "on-attack" )}}
+      <input class="short" type=number name="system.combat.navigatorVoice.{{i}}.level" value="{{defVal vl.level 0}}">
       {{/if}}
       {{#if (eqAny vl.trigger "status-added")}}
       <select name="system.combat.navigatorVoice.{{i}}.statusCondition">

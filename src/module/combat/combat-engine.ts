@@ -109,6 +109,12 @@ export class CombatEngine {
       const targets = presetTargets ? presetTargets :  PersonaTargetting.getTargets(attacker, power);
       this.ensureCombatCheck(power, attacker, targets);
       await this.handlePlayerInputModifier(options);
+      if (!options.simulated && targets.some( targ => targ.actor.isShadow())) {
+        await attacker.actor.voicelines.onEvent("on-attack", {
+          usedPower: power.isUsableType() ? power : undefined,
+          targets: targets.map( x=> x.actor),
+        });
+      }
       const result = new CombatResult();
       result.merge(await this.usePowerOn(attacker, power, targets, options));
       const costs = this.#processCosts(attacker, power, result.getOtherEffects(attacker.actor));
@@ -120,6 +126,12 @@ export class CombatEngine {
       }
       await attacker.actor.removeStatusesOfType("out-of-turn-action");
       await finalizedResult.toMessage(power.name, attacker.actor);
+      if (!options.simulated) {
+        void attacker.actor.voicelines.onEvent("post-attack", {
+          targets: targets.map( x=> x.actor),
+          usedPower: power.isUsableType() ? power : undefined,
+        });
+      }
       await this.postActionCleanup(attacker, finalizedResult);
       return finalizedResult;
     } catch(e) {

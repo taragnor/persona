@@ -83,9 +83,11 @@ export class ConsequenceApplier {
 
   private static async _applyStatus (status: StatusEffect, actor : ValidAttackers, power: U<UsableAndCard>,  attacker : U<UniversalTokenAccessor<PToken>>, token : U<PToken>) : Promise<FinalizedCombatResult[]> {
     const statusAdd = await actor.addStatus(status);
+    void actor.voicelines.onEvent("status-added" , {"statusAdded" : status.id});
     const chained : FinalizedCombatResult[] = [];
     if (statusAdd && attacker && token && power?.isUsableType()) {
-      chained.push(... (await this._resolveCombatStatus(token, attacker, status, power)));
+      chained.push(...(await this._resolveCombatStatus(token, attacker, status, power))
+      );
     }
     if (statusAdd && token) {
       Hooks.callAll("onAddStatus", token, status);
@@ -179,6 +181,12 @@ export class ConsequenceApplier {
     }
     if (power) {
       PersonaSFX.onDamage(token, dmg.hpChange, dmg.damageType, power);
+      if (dmg.hpChange < 0) {
+        await actor.voicelines.onEvent("take-damage", {
+          usedPower: power.isUsableType() ? power : undefined,
+          hpChange: dmg.hpChange,
+        });
+      }
     }
     if (power && !power.isAoE()) {
       await PersonaSFX.onSingleTargetDamage(token, dmg.hpChange, dmg.damageType, power);

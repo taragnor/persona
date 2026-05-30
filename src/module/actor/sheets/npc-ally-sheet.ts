@@ -8,13 +8,15 @@ import { PersonaActor } from "../persona-actor.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import { PCLikeSheet } from "./pc-like-sheet.js";
 import { Logger } from "../../utility/logger.js";
-import { NAVIGATOR_TRIGGERS } from "../../navigator/nav-voice-lines.js";
+import { ALL_VOICE_TRIGGERS } from "../../navigator/nav-voice-lines.js";
 import {PersonaSounds} from "../../persona-sounds.js";
 import {Persona} from "../../persona-class.js";
 import {STATUS_EFFECT_TRANSLATION_TABLE} from "../../../config/status-effects.js";
 
 
 export class NPCAllySheet extends PCLikeSheet {
+
+  sound: U<FOUNDRY.AUDIO.Sound>;
 
 	declare actor: NPCAlly;
 	static override get defaultOptions() {
@@ -33,7 +35,7 @@ export class NPCAllySheet extends PCLikeSheet {
 	override CONST() {
 		return {
 			...super.CONST(),
-			NAVIGATOR_TRIGGERS,
+			NAVIGATOR_TRIGGERS : ALL_VOICE_TRIGGERS,
 			STATUSEFFECTS: STATUS_EFFECT_TRANSLATION_TABLE,
 		};
 	}
@@ -102,7 +104,6 @@ export class NPCAllySheet extends PCLikeSheet {
 
 	async addNewVoiceline(ev: JQuery.ClickEvent) {
 		await HTMLTools.ArrayAddEvent(ev, this.actor);
-
 	}
 
 	async deleteVoiceline(ev: JQuery.ClickEvent) {
@@ -113,8 +114,11 @@ export class NPCAllySheet extends PCLikeSheet {
 	}
 
 	async playVoiceLine(ev: JQuery.ClickEvent) {
+    if (this.sound) {
+      this.sound.stop();
+    }
 		const file = HTMLTools.getClosestData(ev, "soundFile");
-		await PersonaSounds.playFile(file);
+    this.sound = await PersonaSounds.playFree(file);
 	}
 
 }

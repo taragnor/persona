@@ -489,6 +489,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     if (!game.user.isGM && actor.isOwner) {
       await this.panel.activate(true);
       await this.panel.setTarget(combatant.token);
+      await actor.voicelines.onEvent( "on-turn-start");
     }
     if (!game.user.isGM) {return;}
     await this.resetBatonStates();

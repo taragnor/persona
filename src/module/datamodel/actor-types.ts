@@ -25,7 +25,7 @@ import { equipslots } from "../../config/actor-parts.js";
 import { tarotFields } from "../../config/actor-parts.js";
 import { combatCommonStats } from "../../config/actor-parts.js";
 import {PersonaStat} from "../../config/persona-stats.js";
-import {NavigatorTrigger} from "../navigator/nav-voice-lines.js";
+import {ALL_VOICE_TRIGGERS, NavigatorTrigger} from "../navigator/nav-voice-lines.js";
 import {PROBABILITY_LIST} from "../../config/probability.js";
 
 abstract class BaseStuff extends window.foundry.abstract.DataModel {
@@ -211,7 +211,7 @@ class NPCAllySchema extends foundry.abstract.TypeDataModel {
 				navigatorVoice: new arr(
 					new sch({
 						fileName: new txt(),
-						trigger: new txt<NavigatorTrigger>(),
+						trigger: new txt<keyof typeof ALL_VOICE_TRIGGERS>(),
 						elementType: new txt<DamageType>(),
 						level: new num(),
             statusCondition: new txt(),
