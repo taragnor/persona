@@ -1714,7 +1714,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     await NavigatorVoiceLines.playVoice({
       type: "great-work"
     });
-
   }
 
   displayCombatHeader(element : JQuery<HTMLElement>) {
