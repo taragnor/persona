@@ -1022,8 +1022,8 @@ export class PersonaHandleBarsHelpers {
     return PersonaSettings.debugMode();
   },
 
-  "canUseSideboard": function (actor: PersonaActor) : boolean {
-    return actor.isValidCombatant() && actor.canUseSideboard();
+  "canUseSideboard": function (persona: Persona) : boolean {
+    return persona.user.canUseSideboard();
   },
 
     "canMoveToSideboard": function (persona: Persona, power: Power) {

@@ -648,6 +648,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return mainModsList;
   }
 
+  get navigatorSkills() : Power [] {
+    return this.user.navigatorSkills;
+  }
+
   get theurgies() : Power[] {
     return this.powers.filter( x=> x.hasTag("theurgy", this.user));
   }
@@ -1502,8 +1506,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   canDeletePower(power?: Power) : boolean {
     const base= this.user.isOwner && this.source.isOwner && !this.isHypothetical;
     if (!power || !(power instanceof PersonaItem)) {return base;}
-    if (power && !this.mainPowers.includes(power)) {return false;}
     if (this.bonusPowers.includes(power)) {return false;}
+    if (this.mainPowers.includes(power)) {return true;}
+    if (this.navigatorSkills.includes(power)) {return true;}
     return true;
   }
 

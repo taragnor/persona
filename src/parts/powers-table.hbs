@@ -19,46 +19,29 @@
 {{> "systems/persona/parts/main-powers-table.hbs" CONST=CONST persona=persona activePowersOnly=activePowersOnly canDelete=canDelete showSideboard=showSideboard usePowers=usePowers}}
 {{/if}}
 
-<div class="main-powers">
+<section class="main-powers">
   {{> "systems/persona/parts/power-table.hbs" CONST=CONST persona=persona powerList=persona.activeCombatPowers usePowers=usePowers}}
-</div>
+</section>
 
 
-{{#if (and (canUseSideboard actor) showSideboard)}}
+{{#if (and (canUseSideboard persona) showSideboard)}}
 <section class="power-sideboard">
   <h3> Sideboarded Powers (max {{persona.maxSideboardPowers}}) </h3>
-  <div class="power-sideboard">
-    {{#each actor.sideboardPowers as |power i|}}
-    <div class="sideboard-power" data-power-id="{{power.id}}">
-      <div class="power-name-block {{#if (lte ../persona.maxSideboardPowers i)}} over-max-power {{/if}} {{#if (isPowerIllegal ../persona power)}} illegal-level {{/if}} {{#if (isPowerOnCooldown ../persona power)}} on-cooldown{{/if}}">
-        <a class="powerName">
-          {{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../persona}}
-          <span class="cost-string">
-            {{powerCostString power ../persona}}
-          </span>
-        </a>
-      </div>
-      <div class="power-operations">
-        {{#if false}}
-        {{#if (eq ../actor.system.type "pc")}}
-        <a class="move-to-main" title="Move to Main powers">
-          <i class="fa-solid fa-truck-ramp-box"></i>
-        </a>
-        {{/if}}
-        <a class="delPower" title="Delete Power">
-          <i class="fa-solid fa-trash-can"></i>
-        </a>
-        {{/if}}
-      </div>
-    </div>
-    {{/each}}
-  </div>
+  {{> "systems/persona/parts/power-table.hbs" CONST=CONST persona=persona powerList=persona.user.sideboardPowers usePowers=false}}
+
 </section>
 {{/if}}
 
 {{> "systems/persona/parts/next-learned-powers-section.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers showLearnedBuffer=showLearnedBuffer}}
 
+{{#if false}}
 {{> "systems/persona/parts/navigator-skills-section.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers}}
+{{/if}}
+
+{{#if persona.navigatorSkills}}
+  <h3> Navigator Skills </h3>
+  {{> "systems/persona/parts/power-table.hbs" CONST=CONST persona=persona powerList=persona.navigatorSkills usePowers=false}}
+{{/if}}
 
 {{> "systems/persona/parts/sub-power-list.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers list=persona.theurgies listName="Theurgies"}}
 
