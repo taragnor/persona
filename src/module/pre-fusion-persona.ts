@@ -128,6 +128,10 @@ export class HypotheticalPersona extends Persona<PC> {
 		await ChatMessage.create(data);
 	}
 
+  override canUsePower_getIneligibilityReason (usable: UsableAndCard) : N<string> {
+    return "Hypothetical Personas can't use powers";
+  }
+
 	private async selectSkillToInherit() : Promise<N<Power>> {
 		const currentPowers= this.powers;
 		const inheritableSkills = this.components

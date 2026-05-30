@@ -571,11 +571,13 @@ img.small-die {
 div.powers-table,
 div.main-powers,
 div.navigator-skills,
-div.power-sideboard {
+div.power-sideboard,
+div.power-table {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
 }
+
 
 div.power-list {
   display: flex;

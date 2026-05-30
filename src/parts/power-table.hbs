@@ -2,7 +2,7 @@
   {{#each powerList as |power i|}}
   <div class="main-power" data-power-id="{{power.id}}">
     <div class="power-name-block
-    {{#if (and (not ../activePowersOnly) (lte ../persona.maxMainPowers i))}} over-max-power {{/if}}
+    {{#if (gt i (defVal maxPowers 1000))}} over-max-power {{/if}}
     {{#if (isPowerOnCooldown ../persona power)}} on-cooldown{{/if}}
     {{#if (isPowerIllegal ../persona power)}} illegal-level {{/if}}">
       <span class="die-with-text">
@@ -19,26 +19,6 @@
           </a>
       </span>
     </div>
-    {{#if false}}
-    <div class="power-operations">
-      <a class="sort-up">
-        <i class="fa-solid fa-sort-up"></i>
-      </a>
-      <a class="sort-down">
-        <i class="fa-solid fa-sort-down"></i>
-      </a>
-      {{#if (and (canUseSideboard ../persona.user) (canMoveToSideboard ../persona power))}}
-      <a class="move-to-sideboard" title="Move to Sideboard">
-        <i class="fa-solid fa-people-carry-box"></i>
-      </a>
-      {{/if}}
-      {{#if (and (canDeletePowers ../persona) ../canDelete)}}
-      <a class="delPower" title="Delete Power">
-        <i class="fa-solid fa-trash-can"></i>
-      </a>
-      {{/if}}
-    </div>
-    {{/if}}
   </div>
   {{/each}}
 </div>

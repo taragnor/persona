@@ -1070,6 +1070,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   canUsePower_getIneligibilityReason (usable: UsableAndCard) : N<string> {
     const msg =
     this._consumableCheck(usable)
+    || this._compendiumCheck()
     || this._explorationCheck(usable)
     || this._combatTypeCheck(usable)
     || this._downtimeUsageCheck(usable)
@@ -1085,6 +1086,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     || this._sideboardCheck(usable)
     ;
     return msg;
+  }
+
+  private _compendiumCheck() : N<FailReason> {
+    if (this.isCompendiumEntry) {
+      return "Compendium Personas can't use powers";
+    }
+    return null;
   }
 
   private _sideboardCheck(usable: UsableAndCard) : N<FailReason> {
