@@ -1695,32 +1695,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
 
   canBeUsedAsOpener(this: UsableAndCard, persona: N<Persona>): boolean {
-    //TODO: finish this
     if (this.isOpener(persona)) {return true;}
     if (this.hasTag("optional-opener", persona)) {return true;};
     if (!persona) {return false;}
     return this._openerElevators(persona).length > 0;
-    // const situation = {
-    //   trigger: "on-power-usage-check",
-    //   usedPower: this.accessor,
-    //   user: persona.user.accessor,
-    // } satisfies Situation;
-    // const effects = persona.openerElevatingModifiers();
-    // return effects
-    //   .filter (eff => eff.testPreconditions(situation))
-      // .some( eff => eff.canAllowOpenersForPowers());
-  }
-
-  isTrueItem() : this is InvItem | SkillCard | Weapon | Consumable {
-    switch(this.system.type) {
-      case 'consumable':
-      case 'item':
-      case 'weapon':
-      case 'skillCard':
-        return true;
-      default:
-        return false;
-    }
   }
 
   isPassive(this: UsableAndCard) : boolean {

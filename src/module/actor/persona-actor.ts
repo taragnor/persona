@@ -1352,14 +1352,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   get displayedBonusPowers() : Power[] {
     if (!this.isValidCombatant()) {return [];}
     return this.persona().displayedBonusPowers;
-    // return this.persona().bonusPowers
-    //   .filter( power=>
-    //   !power.isOpener(this.persona()) && !power.isMinorActionItem()
-    // );
   }
 
   randomItem(this:PC): InvItem | SkillCard | Weapon | Consumable  {
-    const items = this.items.filter(x=> x.isTrueItem() == true);
+    const items = this.items.filter(x=> x.isCarryableType() == true);
     return randomSelect(items) as InvItem | SkillCard | Weapon | Consumable;
   }
 
