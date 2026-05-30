@@ -10,7 +10,7 @@ import {PersonaActor} from "./persona-actor.js";
 export class ActorVoiceLines {
   private actor: PersonaActor;
 
-  nowPlaying: boolean = false;
+  private nowPlaying: boolean = false;
 
   constructor (actor: PersonaActor) {
     this.actor = actor;
@@ -84,16 +84,7 @@ export class ActorVoiceLines {
       if (lines.length == 0) {return false;}
       const line = randomSelect(lines);
       this.nowPlaying = true;
-      if (options.selfOnly) {
-        console.log(`Playing voice(self) for ${this.actor.name}`);
-        await ActorVoiceLines.playVoice(line.fileName, this, true);
-
-        // await PersonaSounds.playFileSelf(line.fileName);
-      } else {
-        console.log(`Playing voice(all) for ${this.actor.name}`);
-        await ActorVoiceLines.playVoice(line.fileName, this);
-        // await PersonaSounds.playFileAll(line.fileName);
-      }
+      await this._playVoice(line.fileName, options.selfOnly);
       this.nowPlaying = false;
       return true;
     } catch (e) {
@@ -104,16 +95,24 @@ export class ActorVoiceLines {
     }
   }
 
-  static async playVoice(fileName: string,owner: {nowPlaying: boolean}, selfOnly: boolean = false) : Promise<void> {
+  async _playVoice(fileName: string, selfOnly: boolean = false) : Promise<void> { 
     try {
-    owner.nowPlaying = true;
-    await new Sequence().sound()
-      .file(fileName)
-      .play({local: selfOnly} );
+      this.nowPlaying = true;
+      await ActorVoiceLines.playVoice(fileName, selfOnly);
     } catch (e) {
       PersonaError.softFail(`Erorr with sound playback : ${fileName}`, e as Error);
     }
-    owner.nowPlaying = false;
+    this.nowPlaying = false;
+  }
+
+  static async playVoice(fileName: string, selfOnly: boolean = false) : Promise<void> {
+    try {
+      await new Sequence().sound()
+        .file(fileName)
+        .play({local: selfOnly} );
+    } catch (e) {
+      PersonaError.softFail(`Erorr with sound playback : ${fileName}`, e as Error);
+    }
   }
 
   private async onAttack( eventOptions : VoiceEventOptions = {}) : Promise<boolean> {

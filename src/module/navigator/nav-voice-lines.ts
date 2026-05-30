@@ -7,7 +7,6 @@ import {Encounter, RandomEncounter} from "../exploration/random-encounters.js";
 import {Persona} from "../persona-class.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
-import {PersonaSounds} from "../persona-sounds.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {randomSelect} from "../utility/array-tools.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
@@ -59,10 +58,10 @@ const NAVIGATOR_TRIGGER_LIST = [
   "warning",
 ] as const;
 
-const VOICE_LINE_TRIGGER_LIST =[
-  ...GENERAL_COMBATANT_VOICE_TRIGGERS_LIST,
-  ...NAVIGATOR_TRIGGER_LIST,
-] as const;
+// const VOICE_LINE_TRIGGER_LIST =[
+//   ...GENERAL_COMBATANT_VOICE_TRIGGERS_LIST,
+//   ...NAVIGATOR_TRIGGER_LIST,
+// ] as const;
 
 export type NavigatorTrigger = typeof NAVIGATOR_TRIGGER_LIST[number];
 
@@ -78,7 +77,7 @@ export const ALL_VOICE_TRIGGERS = {
 export class NavigatorVoiceLines {
 
 	static lastChat = 0;
-	static nowPlaying = false;
+	private static nowPlaying = false;
 
 	static async onStartCombat(combat: PersonaCombat) {
 		const shadows = combat.combatants.contents
@@ -137,11 +136,11 @@ export class NavigatorVoiceLines {
       const line = randomSelect(lines);
       if (selfOnly) {
         this.nowPlaying = true;
-        await ActorVoiceLines.playVoice(line.fileName, this, true);
+        await ActorVoiceLines.playVoice(line.fileName, true);
         // await PersonaSounds.playFileSelf(line.fileName);
       } else {
         this.nowPlaying = true;
-        await ActorVoiceLines.playVoice(line.fileName, this, false);
+        await ActorVoiceLines.playVoice(line.fileName, false);
         // await PersonaSounds.playFileAll(line.fileName);
       }
       this.nowPlaying = false;
