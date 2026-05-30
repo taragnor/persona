@@ -1689,6 +1689,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       );
   }
 
+  isTheurgy(this: Power) : boolean {
+    return this.hasTag("theurgy", null);
+  }
+
 
   canBeUsedAsOpener(this: UsableAndCard, persona: N<Persona>): boolean {
     //TODO: finish this

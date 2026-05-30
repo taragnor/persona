@@ -220,6 +220,16 @@ const SETTINGS = {
 		default: false,
 	},
 
+  "allowManualOpeners" : {
+    name: "Allow Manual Openers",
+    hint: "Allows Openers to be manually triggered",
+    scope: "world",
+    restricted: true,
+    config: true,
+    type: Boolean,
+    default: false,
+  },
+
 	"autoEndTurn" : {
 		name: "Auto End Turn",
 		hint: "End Creatures turn when it's out of actions",

@@ -24,6 +24,24 @@ div.short{
   min-width: 1%;
 }
 
+section.theurgies,
+section.openers,
+section.bonus-powers,
+section.navigator-skills,
+section.power-sideboard {
+  margin-top: 15px;
+}
+
+.powers-section h2,
+.powers-section h3 {
+  justify-content: center;
+  text-align: center;
+}
+
+.powers-section {
+  margin-top: 15px;
+}
+
 
 div.resistance-block {
   display:flex;
@@ -144,6 +162,11 @@ input.single-digit {
 
 }
 
+section.powers-section {
+  margin-bottom: 10px;
+}
+
+
 .powers-section img {
   width: 20px;
   height: 20px;
@@ -157,7 +180,6 @@ input.single-digit {
   display:flex;
   flex-direction:column;
   justify-content: flex-start;
-
 }
 
 .power-effect {
@@ -2214,5 +2236,6 @@ span.author-name {
   .menu-item:hover {
     background: #3d3d3d;
   }
+
 
 }

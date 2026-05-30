@@ -173,6 +173,29 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return removeDuplicates(bonusPowers);
   }
 
+  get displayedBonusPowers() : Power[]{
+    return this.bonusPowers
+      .filter( power=> !power.isOpener(this)
+        && !power.isMinorActionItem()
+        && !power.isTheurgy()
+        && !this.displayedMainSkills.includes(power)
+    );
+  }
+
+  get displayedMainSkills() : Power [] {
+
+    const bonusCombatSkills = this.bonusPowers
+      .filter ( pwr=> pwr.isWeaponSkill() || pwr.isMagicSkill())
+      .filter(pwr=> !pwr.isTheurgy());
+    return [
+      ...this.mainPowers,
+      ...bonusCombatSkills,
+    ];
+
+  }
+
+
+
   get basicPowers() {
     return this.user.basicPowers;
   }

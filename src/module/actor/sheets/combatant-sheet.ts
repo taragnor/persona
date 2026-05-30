@@ -20,6 +20,7 @@ import {localize} from "../../persona.js";
 import {PersonaTargetting, TargettingError} from "../../combat/persona-targetting.js";
 import {PersonaSettings} from "../../../config/persona-settings.js";
 import {ContextMenu} from "../../utility/context-menu.js";
+import {Logger} from "../../utility/logger.js";
 
 export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	declare actor: ValidAttackers;
@@ -218,6 +219,18 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	async usePower(event: JQuery.ClickEvent) {
 		Helpers.ownerCheck(this.actor);
 		const power = this.getPower(event);
+    if (power.isOpener(this.actor.persona())) {
+      if (!PersonaSettings.get("allowManualOpeners")) {
+        ui.notifications.warn("Manually activated openers are forbidden by settings");
+        return;
+      }
+      if (await HTMLTools.cancelBox("Openers aren't meant to be triggered this way and should be done only in cases where the automated systems are failing. Are you sure?")) {
+        return;
+      }
+      if (!game.user.isGM) {
+        void Logger.sendToChat(`${this.actor.name} manually used an opener.` );
+      }
+    }
 		await this._useItemOrPower(power);
 	}
 

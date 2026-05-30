@@ -1026,6 +1026,10 @@ export class PersonaHandleBarsHelpers {
     return persona.user.canUseSideboard();
   },
 
+    "allowManualOpeners": function () : boolean {
+      return PersonaSettings.get("allowManualOpeners") ?? false;
+    },
+
     "canMoveToSideboard": function (persona: Persona, power: Power) {
       return persona.canMoveToSideboard(power);
     },

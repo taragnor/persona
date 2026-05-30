@@ -1,4 +1,4 @@
-<div class="powers-section">
+<section class="powers-section">
 	<h2>
 		{{localize 	"persona.statistic.powers"}}
 		{{#if showPowerTableButton}}
@@ -15,38 +15,50 @@
 	</h2>
 {{> "systems/persona/parts/basic-powers-section.hbs" CONST=CONST persona=persona activePowersOnly=activePowersOnly canDelete=canDelete showSideboard=showSideboard usePowers=usePowers actor=actor}}
 
-{{#if false}}
-{{> "systems/persona/parts/main-powers-table.hbs" CONST=CONST persona=persona activePowersOnly=activePowersOnly canDelete=canDelete showSideboard=showSideboard usePowers=usePowers}}
-{{/if}}
-
 <section class="main-powers">
-  {{> "systems/persona/parts/power-table.hbs" CONST=CONST persona=persona powerList=persona.activeCombatPowers usePowers=usePowers}}
+  {{> "systems/persona/parts/power-table.hbs" CONST=CONST persona=persona powerList=persona.displayedMainSkills usePowers=usePowers}}
 </section>
 
+{{> "systems/persona/parts/next-learned-powers-section.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers showLearnedBuffer=showLearnedBuffer}}
 
 {{#if (and (canUseSideboard persona) showSideboard)}}
 <section class="power-sideboard">
   <h3> Sideboarded Powers (max {{persona.maxSideboardPowers}}) </h3>
   {{> "systems/persona/parts/power-table.hbs" CONST=CONST persona=persona powerList=persona.user.sideboardPowers usePowers=false}}
+</section>
+{{/if}}
+
+{{#if persona.navigatorSkills}}
+<section class="navigator-skills">
+  <h3> Navigator Skills </h3>
+  {{> "systems/persona/parts/power-table.hbs" CONST=CONST persona=persona powerList=persona.navigatorSkills usePowers=false}}
+</section>
+{{/if}}
+
+{{#if persona.theurgies}}
+<section class="theurgies">
+  <h3> Theurgy </h3>
+  {{> "systems/persona/parts/power-table.hbs" CONST=CONST persona=persona powerList=persona.theurgies usePowers=usePowers}}
 
 </section>
 {{/if}}
 
-{{> "systems/persona/parts/next-learned-powers-section.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers showLearnedBuffer=showLearnedBuffer}}
-
 {{#if false}}
-{{> "systems/persona/parts/navigator-skills-section.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers}}
-{{/if}}
-
-{{#if persona.navigatorSkills}}
-  <h3> Navigator Skills </h3>
-  {{> "systems/persona/parts/power-table.hbs" CONST=CONST persona=persona powerList=persona.navigatorSkills usePowers=false}}
-{{/if}}
-
 {{> "systems/persona/parts/sub-power-list.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers list=persona.theurgies listName="Theurgies"}}
+{{/if}}
 
-{{#if showBonusPowers}}
-{{> "systems/persona/parts/bonus-powers-table.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers}}
+{{#if (and persona.bonusPowers showBonusPowers)}}
+<section class="bonus-powers">
+  <h3> Bonus Powers </h3>
+  {{> "systems/persona/parts/power-table.hbs" CONST=CONST persona=persona powerList=persona.displayedBonusPowers usePowers=false}}
+</section>
+
+{{#if persona.openers}}
+<section class="openers">
+  <h3> Openers </h3>
+  {{> "systems/persona/parts/power-table.hbs" CONST=CONST persona=persona powerList=persona.openers usePowers=(allowManualOpeners)}}
+{{/if}}
+
 {{/if}}
 
 </div>
