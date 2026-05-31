@@ -922,6 +922,10 @@
 	"persona.preconditions.socialChecks.is-available": "Is Currently Available",
 	"persona.preconditions.socialChecks.is-dating": "Is Dating",
 
+	"persona.preconditions.itemChecks.specific-item": "Specific Item",
+	"persona.preconditions.itemChecks.has-tag": "item With  a tag",
+
+
 	"persona.preconditions.comparison.comparison-groups.allies": "Allies",
 	"persona.preconditions.comparison.comparison-groups.enemies": "Enemies",
 	"persona.preconditions.comparison.comparison-groups.both": "Both",

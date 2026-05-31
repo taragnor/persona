@@ -2,8 +2,10 @@ import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-t
 import {PersonaActor} from "../actor/persona-actor.js";
 import { ConsequenceApplier } from "../combat/consequence-applier.js";
 import {StepsClock} from "../exploration/steps-clock.js";
+import {TreasureSystem} from "../exploration/treasure-system.js";
 import {StatusDuration} from "../persona-ae.js";
 import {PersonaError} from "../persona-error.js";
+import {PersonaScene} from "../persona-scene.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {SocialCardExecutor} from "../social/social-card-executor.js";
 import {MultiTierCache, TimedCache} from "../utility/cache.js";
@@ -22,9 +24,9 @@ export class Tests {
   }
 
   static multiTierCacheTest () {
-  const cache = new MultiTierCache(
-    (name: {x:number}, val: number, n2: number) => new TimedCache( () => String(name.x + val + n2)  )
-  );
+    const cache = new MultiTierCache(
+      (name: {x:number}, val: number, n2: number) => new TimedCache( () => String(name.x + val + n2)  )
+    );
     const obj = {x:3};
     if (cache.get(obj, 8, 7) != "18") {
       console.warn("MultiTier Test failed");
@@ -88,8 +90,8 @@ export class Tests {
 
   static async testSocialActionChange() {
     const kim = this.kim;
-		PersonaSocial["_cardExecutor"] = new SocialCardExecutor(kim, kim);
-		await PersonaSocial.currentSocialCardExecutor!["_preExec"]();
+    PersonaSocial["_cardExecutor"] = new SocialCardExecutor(kim, kim);
+    await PersonaSocial.currentSocialCardExecutor!["_preExec"]();
     const eff : Sourced<LocalEffect> = {
       type: "social-card-action",
       ...this.dummyShell,
@@ -150,9 +152,30 @@ export class Tests {
     return true;
   }
 
+  static async treasureTest(roomType: "treasure-poor" | "treasure-rich" | "treasure-ultra" | "standard" = "standard") {
+    const scene = game.scenes.current as PersonaScene;
+    let mod = 0, min = 0;
+    switch (roomType) {
+      case "standard":
+        break;
+      case "treasure-poor":
+        mod -= 50;
+        break;
+      case "treasure-rich":
+        mod +=10;
+        min +=25;
+        break;
+      case "treasure-ultra":
+        mod += 25;
+        min += 50;
+        break;
+      default:
+        throw new PersonaError("Invalid roomType");
+    }
+    await TreasureSystem.test(scene.treasureLevel, mod, min);
+  }
+
 }
-
-
 
 //@ts-expect-error adding to global
 window.tests = Tests;

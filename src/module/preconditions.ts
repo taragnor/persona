@@ -695,22 +695,34 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
     }
 
     case "has-item-in-inventory": {
-      const item = PersonaDB.getItemById(condition.itemId);
-
-      if (!item || !item.isCarryableType()) {return undefined;}
       const targets = getSubjectActors(condition, situation,  "conditionTarget");
       if (!targets) {return undefined;}
-      return targets.some( target => {
-        const itemList = condition.equipped
-          ? target.equippedItems()
-          : target.items.contents;
-        return itemList.some( x =>
-          x.isSameBaseItem(item)
-        );
-        // return itemList.some(x=> x.name == item.name && (("amount" in x.system)? x.system.amount > 0 : true ));
-      });
-    }
+      const itemList = targets.flatMap( target=> condition.equipped
+      ? target.equippedItems()
+      : target.items.contents);
+      switch (condition.itemCheck) {
+        case undefined:
+        case "specific-item": {
+          const targetItem = PersonaDB.getItemById(condition.itemId);
 
+          if (!targetItem || !targetItem.isCarryableType()) {return undefined;}
+          return itemList.some(item=> item.isSameBaseItem(targetItem));
+        }
+        case "has-tag":{
+          const MCArray = multiCheckToArray(condition.tagId);
+          return itemList.some( item =>
+            item.tagList(null).some( tag=> 
+              tag instanceof PersonaItem
+              ? MCArray.includes(tag.system.linkedInternalTag) || MCArray.includes(tag.id)
+              : MCArray.includes(tag))
+          );
+        }
+        default:
+          condition satisfies never;
+          PersonaError.softFail(`Bad conmparison type for inventoyr item check:  ${(condition as GenericObject).itemCheck as string}`);
+          return undefined;
+      }
+    }
     case "creature-type-is": {
       const target = getSubjectActors(condition, situation,  "conditionTarget")[0];
       if (!target) {return undefined;}
@@ -1121,7 +1133,7 @@ export function multiCheckToArray<
       .map( ([k,_v]) => k as T);
   }
 
-export function multiCheckContains<const T extends R, const R extends string>(multiCheck: MultiCheck<T> | T, arrOrSingle: R[] | R) : boolean {
+export function multiCheckContains<const T extends R, const R extends string>(multiCheck: MultiCheck<T> | T, arrOrSingle: readonly R[] | R) : boolean {
   const arr = Array.isArray(arrOrSingle)
     ? arrOrSingle
     : [arrOrSingle];

@@ -204,6 +204,7 @@ export class TreasureSystem {
 		return `${basename} (${enchantments.join(", ")})`;
 	}
 
+  /**prints out 100 treasure items*/
 	static async test(treasureLevel: number, modifier: number = 0, minLevel: number = 1) {
 		const arr : EnchantedTreasureFormat[] = [];
 		for (let i = 0; i <100; i++ ) {

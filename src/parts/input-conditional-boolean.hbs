@@ -156,16 +156,26 @@
 
 {{#if (eq cond.boolComparisonTarget  "has-item-in-inventory")}}
 <select name="{{strcat namePrefix 'conditionTarget'}}">
-	{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
-</select>
-<select name="{{strcat namePrefix 'itemId'}}">
-	{{selectOptions POWERSTUFF.ITEMS localize=false selected=cond.itemId}}
+  {{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
 </select>
 <div>
-	<span>
-		<label> Must Be Equipped </label>
-		<input type="checkbox" id="flagState" name="{{strcat namePrefix 'equipped'}}" {{checked cond.equipped}}>
-	</span>
+  <select name="{{strcat namePrefix 'itemCheck'}}">
+    {{selectOptions POWERSTUFF.ITEM_CHECK_TYPE localize=true selected=(defVal cond.itemCheck "specific-item")}}
+  </select>
+</div>
+{{#if (eqAny (defVal cond.itemCheck "specific-item") "specific-item")}}
+<select name="{{strcat namePrefix 'itemId'}}">
+  {{selectOptions POWERSTUFF.ITEMS localize=false selected=cond.itemId}}
+</select>
+{{/if}}
+{{#if (eqAny cond.itemCheck "has-tag")}}
+{{multicheck (strcat namePrefix 'tagId') POWERSTUFF.TAGS checked=cond.tagId localize=false}}
+{{/if}}
+<div>
+  <span>
+    <label> Must Be Equipped </label>
+    <input type="checkbox" id="flagState" name="{{strcat namePrefix 'equipped'}}" {{checked cond.equipped}}>
+  </span>
 </div>
 {{/if}}
 

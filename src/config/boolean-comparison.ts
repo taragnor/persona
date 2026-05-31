@@ -275,9 +275,18 @@ export const SOCIAL_CHECKS_LIST = [
 
 export type SocialCheck = typeof SOCIAL_CHECKS_LIST[number];
 
+
 export const SOCIAL_CHECKS = Object.fromEntries(
 	SOCIAL_CHECKS_LIST.map( x=> [x, `persona.preconditions.socialChecks.${x}`])
 );
+
+const ITEM_CHECK_TYPE_LIST = [
+  "specific-item",
+  "has-tag",
+] as const;
+
+export const ITEM_CHECK_TYPE = HTMLTools.createLocalizationObject(ITEM_CHECK_TYPE_LIST, "persona.preconditions.itemChecks");
+
 
 export type SocialComparisonBase = {
 	boolComparisonTarget : "social-availability",
@@ -346,10 +355,20 @@ type DeprecatedTwoTargetComparisons = {
 
 type HasItemCheckComparison = {
 	boolComparisonTarget: "has-item-in-inventory",
-	itemId: PersonaItem["id"],
+	// itemId: PersonaItem["id"],
 	conditionTarget: ConditionTarget,
 	equipped: boolean,
-}
+  itemCheck: U<keyof typeof ITEM_CHECK_TYPE>
+} & HasItemCheckSublist;
+
+type HasItemCheckSublist = {
+  itemCheck: U<"specific-item">, //allow undefined for old versions that alwasys scanned specific item
+	itemId: PersonaItem["id"],
+} | {
+  itemCheck: "has-tag",
+  tagId: MultiCheckOrSingle<string | Tag["id"]>,
+};
+
 
 type SocialTargetIsComparisonMulti = {
 	boolComparisonTarget: "social-target-is-multi",

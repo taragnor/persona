@@ -173,8 +173,23 @@ export class ConditionalEffectPrinter {
         case "is-gm":
           return `User is ${not} GM`;
         case "has-item-in-inventory": {
-          const item = game.items.get(cond.itemId);
-          return `${target1} ${not} has ${item?.name ?? "Unknown Item"} in Inventory`;
+          switch (cond.itemCheck) {
+            case undefined:
+            case "specific-item": {
+              const item = game.items.get(cond.itemId);
+              return `${target1} ${not} has ${item?.name ?? "Unknown Item"} in Inventory`;
+            }
+            case "has-tag": {
+              const tagList= this.translate(cond.tagId, {
+                ...POWER_TAGS,
+                ...EQUIPMENT_TAGS
+              });
+              return `${target1} ${not} has item with tags: ${tagList}`;
+            }
+            default:
+              cond satisfies never;
+              return "ERROR";
+          }
         }
         case "creature-type-is": {
           const creatureType = this.translate(cond.creatureType, CREATURE_TYPE);
