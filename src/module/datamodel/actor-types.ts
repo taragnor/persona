@@ -25,7 +25,7 @@ import { equipslots } from "../../config/actor-parts.js";
 import { tarotFields } from "../../config/actor-parts.js";
 import { combatCommonStats } from "../../config/actor-parts.js";
 import {PersonaStat} from "../../config/persona-stats.js";
-import {ALL_VOICE_TRIGGERS, NavigatorTrigger} from "../navigator/nav-voice-lines.js";
+import {ALL_VOICE_TRIGGERS} from "../navigator/nav-voice-lines.js";
 import {PROBABILITY_LIST} from "../../config/probability.js";
 
 abstract class BaseStuff extends window.foundry.abstract.DataModel {

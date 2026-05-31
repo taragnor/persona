@@ -1,4 +1,3 @@
-import {OtherEffect} from "../../config/consequence-types.js";
 import {DAMAGE_LEVELS, RealDamageType} from "../../config/damage-types.js";
 import {PersonaError} from "../persona-error.js";
 import {AnimationQueue} from "../sfx/animation-queue.js";

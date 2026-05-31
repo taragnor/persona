@@ -132,7 +132,7 @@ export class ActorVoiceLines {
     return this.playVoice("on-attack", {severity: 0});
   }
 
-  private async battleWon(eventOptions : VoiceEventOptions = {}) : Promise<boolean> {
+  private async battleWon(_eventOptions : VoiceEventOptions = {}) : Promise<boolean> {
     return this.playVoice("battle-won", {percent: 0.5});
   }
 

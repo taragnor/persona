@@ -128,7 +128,7 @@ export class HypotheticalPersona extends Persona<PC> {
 		await ChatMessage.create(data);
 	}
 
-  override canUsePower_getIneligibilityReason (usable: UsableAndCard) : N<string> {
+  override canUsePower_getIneligibilityReason (_usable: UsableAndCard) : N<string> {
     return "Hypothetical Personas can't use powers";
   }
 

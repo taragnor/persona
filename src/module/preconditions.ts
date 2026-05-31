@@ -1185,7 +1185,7 @@ export function multiCheckContains<const T extends R, const R extends string>(mu
   }
   return Object.entries(multiCheck)
     .filter( ([_, val]) => val == true)
-    .some (([item, _]) => arr.includes(item as T));
+    .some (([item, _]) => arr.includes(item));
 }
 
 function multiCheckTest<T extends string>(multiCheck: MultiCheck<T> | T, testFn: (x: T) => boolean) : boolean {
