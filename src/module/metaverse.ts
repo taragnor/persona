@@ -29,6 +29,7 @@ import {PersonaQuests} from "./exploration/persona-quests.js";
 import {NavigatorVoiceLines} from "./navigator/nav-voice-lines.js";
 import {VotingDialog} from "./utility/shared-dialog.js";
 import {CombatScene} from "./combat/combat-scene.js";
+import {sleep} from "./utility/async-wait.js";
 
 export class Metaverse {
   static lastCrunch : number = 0;
@@ -122,6 +123,14 @@ export class Metaverse {
       await newAlly.setAsActivePartyMember();
     }
   }
+
+  /** return true if party votes for metaverse */
+  static async downtimeVote()  : Promise<boolean> {
+    //TODO: finish this
+    await sleep(5);
+    return false;
+  }
+
 
   static getPhase() : GamePhase {
     const combat = PersonaCombat.combat;

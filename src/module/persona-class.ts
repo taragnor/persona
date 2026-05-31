@@ -193,17 +193,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   get displayedMainSkills() : Power [] {
 
-    const bonusCombatSkills = this.bonusPowers
-      .filter ( pwr=> pwr.isWeaponSkill() || pwr.isMagicSkill())
-      .filter(pwr=> !pwr.isTheurgy());
+    const bonusCombatSkills = this.bonusPowers;
     return [
       ...this.mainPowers,
       ...bonusCombatSkills,
-    ];
+    ] .filter ( pwr=> pwr.isWeaponSkill() || pwr.isMagicSkill())
+      .filter(pwr=> !pwr.isTheurgy());
 
   }
-
-
 
   get basicPowers() {
     return this.user.basicPowers;
