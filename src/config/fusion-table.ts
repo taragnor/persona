@@ -1,8 +1,8 @@
-import {ConditionalEffectManager} from "../module/conditional-effect-manager.js";
+import {ConditionalEffectManager} from "../module/conditionalEffects/conditional-effect-manager.js";
+import {testPreconditions} from "../module/conditionalEffects/preconditions.js";
 import {Persona} from "../module/persona-class.js";
 import {PersonaDB} from "../module/persona-db.js";
 import {PersonaError} from "../module/persona-error.js";
-import {testPreconditions} from "../module/preconditions.js";
 import {TarotCard} from "./tarot.js";
 
 type TarotTable = Record<TarotCard, U<TarotCard>>;

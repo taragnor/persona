@@ -1,13 +1,13 @@
 import {PersonaActor} from "../actor/persona-actor.js";
 import {CombatScene, CombatSetupOptions} from "../combat/combat-scene.js";
 import {ModifierList} from "../combat/modifier-list.js";
-import {ConditionalEffectManager} from "../conditional-effect-manager.js";
+import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
+import {testPreconditions} from "../conditionalEffects/preconditions.js";
 import {Metaverse, PresenceRollData} from "../metaverse.js";
 import {NavigatorVoiceLines} from "../navigator/nav-voice-lines.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
-import {testPreconditions} from "../preconditions.js";
 import {PersonaRegion} from "../region/persona-region.js";
 import {weightedChoice} from "../utility/array-tools.js";
 import {CreateToken} from "../utility/createToken.js";

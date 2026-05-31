@@ -1,10 +1,10 @@
 import { ResolvedModifierList } from "./combat/modifier-list.js"; import {Calculation} from "./utility/calculation.js";
 import {CombatEngine} from "./combat/combat-engine.js";
-import {checkSituationProp} from "./preconditions.js";
 import { ModifierList } from "./combat/modifier-list.js";
 import { PersonaError } from "./persona-error.js";
 import {PersonaDB} from "./persona-db.js";
 import {PersonaCombat} from "./combat/persona-combat.js";
+import {checkSituationProp} from "../config/situation.js";
 
 abstract class RollBundleBase {
   name: string | ((b: RollBundle) => string);

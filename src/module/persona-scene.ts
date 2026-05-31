@@ -5,17 +5,17 @@ import { Logger } from "./utility/logger.js";
 import { PersonaCombat } from "./combat/persona-combat.js";
 import { sleep } from "./utility/async-wait.js";
 import { Metaverse } from "./metaverse.js";
-import { testPreconditions } from "./preconditions.js";
 import { DamageType } from "../config/damage-types.js";
 import { ShadowRole } from "../config/shadow-types.js";
 import { PersonaDB } from "./persona-db.js";
 import { PersonaCalendar } from "./social/persona-calendar.js";
 import { PersonaRegion } from "./region/persona-region.js";
 import { PersonaActor } from "./actor/persona-actor.js";
-import { ConditionalEffectManager } from "./conditional-effect-manager.js";
 import { HTMLTools } from "./utility/HTMLTools.js";
 import {ENCOUNTER_RATE_PROBABILITY, ProbabilityRate} from "../config/probability.js";
 import {RandomEncounter} from "./exploration/random-encounters.js";
+import {ConditionalEffectManager} from "./conditionalEffects/conditional-effect-manager.js";
+import {testPreconditions} from "./conditionalEffects/preconditions.js";
 
 export class PersonaScene extends Scene {
 	static ENCOUNTER_DATA_FLAG_NAME = "encounterData" as const;

@@ -44,7 +44,6 @@ import { PersonaDB } from "../persona-db.js";
 import { ACTORMODELS } from "../datamodel/actor-types.js";
 import { PersonaItem } from "../item/persona-item.js";
 import {Calculation} from "../utility/calculation.js";
-import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {Defense} from "../../config/defense-types.js";
 import {FusionCombination, FusionTable} from "../../config/fusion-table.js";
 import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-system.js";
@@ -59,6 +58,7 @@ import {ActorTagManager} from "./actor-tags.js";
 import {ActorSocial} from "./actor-social.js";
 import {MultiTierCache, PermanentCache, TimedCache} from "../utility/cache.js";
 import {ActorVoiceLines} from "./actor-voicelines.js";
+import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 

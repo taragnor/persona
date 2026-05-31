@@ -5,15 +5,15 @@ import {CardChoice, CardEvent, CardRoll} from "../../config/social-card-config.j
 import {StudentSkill, StudentSkillExt} from "../../config/student-skills.js";
 import { PersonaActor} from "../actor/persona-actor.js";
 import {ModifierList} from "../combat/modifier-list.js";
-import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
+import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
+import {testPreconditions, unifiedTagList} from "../conditionalEffects/preconditions.js";
 import { PersonaItem} from "../item/persona-item.js";
 import {PreconditionConverter} from "../migration/convertPrecondition.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaRoller} from "../persona-roll.js";
 import {PersonaSounds} from "../persona-sounds.js";
-import {testPreconditions, unifiedTagList} from "../preconditions.js";
 import {shuffle, weightedChoice} from "../utility/array-tools.js";
 import {sleep} from "../utility/async-wait.js";
 import {HTMLTools} from "../utility/HTMLTools.js";

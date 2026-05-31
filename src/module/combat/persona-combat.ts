@@ -37,8 +37,8 @@ import {ModifierList} from './modifier-list.js';
 import {FollowUpManager} from './follow-up-actions.js';
 import {ConditionalEffectPrinter} from '../conditionalEffects/conditional-effect-printer.js';
 import {PersonaSockets} from '../persona.js';
-import {checkSituationProp} from '../preconditions.js';
 import {ResolvedRollBundle, RollBundle} from '../roll-bundle.js';
+import {checkSituationProp} from '../../config/situation.js';
 
 declare global {
   interface SocketMessage {

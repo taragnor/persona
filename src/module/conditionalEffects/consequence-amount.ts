@@ -6,7 +6,7 @@ import {PersonaAE} from "../persona-ae.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaVariables} from "../persona-variables.js";
-import {getSocialLinkTarget} from "../preconditions.js";
+import {getSocialLinkTarget} from "./preconditions.js";
 
 export class ConsequenceAmountResolver {
 

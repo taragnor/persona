@@ -1,39 +1,40 @@
-import { TarotCard } from "../config/tarot.js";
-import { ConsequenceAmount, EnhancedSourcedConsequence, NonDeprecatedConsequence } from "../config/consequence-types.js";
-import { SceneClock } from "./exploration/scene-clock.js";
-import { NumberOfOthersWithComparison } from "../config/numeric-comparison.js";
-import { CombatResultComparison } from "../config/numeric-comparison.js";
-import { PersonaVariables } from "./persona-variables.js";
-import { PersonaScene } from "./persona-scene.js";
-import { AttackResult } from "./combat/combat-result.js";
-import { PersonaSettings } from "../config/persona-settings.js";
-import { PersonaSocial } from "./social/persona-social.js";
-import { MultiCheckOrSingle, NonDeprecatedPrecondition, SOCIAL_LINK_OR_TAROT_OTHER } from "../config/precondition-types.js";
-import { SocialLinkIdOrTarot } from "../config/precondition-types.js";
-import { MultiCheck } from "../config/precondition-types.js";
-import { UserComparisonTarget } from "../config/precondition-types.js";
-import { ProgressClock } from "./utility/progress-clock.js";
-import { DamageType } from "../config/damage-types.js";
-import { RESIST_STRENGTH_LIST } from "../config/damage-types.js";
-import { PersonaCalendar } from "./social/persona-calendar.js";
-import { BooleanComparisonPC } from "../config/boolean-comparison.js";
-import { PToken } from "./combat/persona-combat.js";
-import { ConditionTarget } from "../config/precondition-types.js";
-import { PersonaActor } from "./actor/persona-actor.js";
-import { Metaverse } from "./metaverse.js";
-import { PersonaDB } from "./persona-db.js";
-import { PersonaError } from "./persona-error.js";
-import { StatusEffectId } from "../config/status-effects.js";
-import { PersonaCombat } from "./combat/persona-combat.js";
-import {ConsequenceAmountResolver} from "./conditionalEffects/consequence-amount.js";
-import {PreconditionConverter} from "./migration/convertPrecondition.js";
-import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
-import {ResolvedActorChange} from "./combat/finalized-combat-result.js";
-import {ContainerTypes, PersonaItem} from "./item/persona-item.js";
-import {CombatEngine} from "./combat/combat-engine.js";
-import {PersonaAE} from "./persona-ae.js";
-import {Persona} from "./persona-class.js";
-import {PowerTag} from "../config/power-tags.js";
+import { TarotCard } from "../../config/tarot.js";
+import { ConsequenceAmount, EnhancedSourcedConsequence, NonDeprecatedConsequence } from "../../config/consequence-types.js";
+import { SceneClock } from "../exploration/scene-clock.js";
+import { NumberOfOthersWithComparison } from "../../config/numeric-comparison.js";
+import { CombatResultComparison } from "../../config/numeric-comparison.js";
+import { PersonaVariables } from "../persona-variables.js";
+import { PersonaScene } from "../persona-scene.js";
+import { AttackResult } from "../combat/combat-result.js";
+import { PersonaSettings } from "../../config/persona-settings.js";
+import { PersonaSocial } from "../social/persona-social.js";
+import { MultiCheckOrSingle, NonDeprecatedPrecondition, SOCIAL_LINK_OR_TAROT_OTHER } from "../../config/precondition-types.js";
+import { SocialLinkIdOrTarot } from "../../config/precondition-types.js";
+import { MultiCheck } from "../../config/precondition-types.js";
+import { UserComparisonTarget } from "../../config/precondition-types.js";
+import { ProgressClock } from "../utility/progress-clock.js";
+import { DamageType } from "../../config/damage-types.js";
+import { RESIST_STRENGTH_LIST } from "../../config/damage-types.js";
+import { PersonaCalendar } from "../social/persona-calendar.js";
+import { BooleanComparisonPC } from "../../config/boolean-comparison.js";
+import { PToken } from "../combat/persona-combat.js";
+import { ConditionTarget } from "../../config/precondition-types.js";
+import { PersonaActor } from "../actor/persona-actor.js";
+import { Metaverse } from ".././metaverse.js";
+import { PersonaDB } from ".././persona-db.js";
+import { PersonaError } from ".././persona-error.js";
+import { StatusEffectId } from "../../config/status-effects.js";
+import { PersonaCombat } from "../combat/persona-combat.js";
+import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
+import {PreconditionConverter} from "../migration/convertPrecondition.js";
+import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
+import {ResolvedActorChange} from "../combat/finalized-combat-result.js";
+import {ContainerTypes, PersonaItem} from "../item/persona-item.js";
+import {CombatEngine} from "../combat/combat-engine.js";
+import {PersonaAE} from "../persona-ae.js";
+import {Persona} from "../persona-class.js";
+import {PowerTag} from "../../config/power-tags.js";
+import {checkSituationProp} from "../../config/situation.js";
 
 /** @deprecated Use ConditionalEffectC.getActiveConsequences instead */
 export function getActiveConsequences(condEffect: ConditionalEffectC, situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {
@@ -91,15 +92,6 @@ export function testPrecondition (condition: SourcedPrecondition, situation: Sit
   }
 }
 
-export function checkSituationProp<T extends keyof MergeUnion<S>, S extends Situation>(situation: S, prop: T)
-  : situation is NonNullableProps<HasKey<S, T>> & {[k in T]: NonNullable<S[k]>}
-{
-  const key : keyof S = prop as unknown as keyof S;
-  if (!(key in situation) || situation[key] == undefined  || situation[key] == null) {
-    return false;
-  }
-  return true;
-}
 
 function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, situation: Situation) : boolean {
   let target: number;

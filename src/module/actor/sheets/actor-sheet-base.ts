@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */ import { PERSONA_STATS } from "../../../config/persona-stats.js"; import { PersonaError } from "../../persona-error.js";
 import { HTMLTools } from "../../utility/HTMLTools.js";
-import { ConditionalEffectManager } from "../../conditional-effect-manager.js";
 import { DEFENSE_CATEGORY } from "../../../config/defense-categories.js";
 import { RESIST_STRENGTHS } from "../../../config/damage-types.js";
 import { PersonaActor } from "../persona-actor.js";
@@ -20,6 +19,7 @@ import {STAT_DEVIATION_LOCTABLE} from "../persona-combat-stats.js";
 import { ContextMenu, ContextMenuOptions } from "../../utility/context-menu.js";
 import {NonDeprecatedConsequence} from "../../../config/consequence-types.js";
 import {NonDeprecatedPrecondition} from "../../../config/precondition-types.js";
+import {ConditionalEffectManager} from "../../conditionalEffects/conditional-effect-manager.js";
 
 
 export abstract class PersonaActorSheetBase<T extends PersonaActor = PersonaActor> extends foundry.appv1.sheets.ActorSheet<T> {

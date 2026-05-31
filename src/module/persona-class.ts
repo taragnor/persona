@@ -14,7 +14,6 @@ import { PersonaError } from "./persona-error.js";
 import { localize } from "./persona.js";
 import { STATUS_EFFECT_TRANSLATION_TABLE } from "../config/status-effects.js";
 import { RealDamageType, RESIST_STRENGTH_LIST, RESIST_STRENGTHS } from "../config/damage-types.js";
-import { multiCheckContains, multiCheckToArray } from "./preconditions.js";
 import { PersonaI } from "../config/persona-interface.js";
 import { DamageType } from "../config/damage-types.js";
 import { ResistStrength } from "../config/damage-types.js";
@@ -29,6 +28,7 @@ import {PowerLearningSystem} from "./power-learning.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaTagManager} from "./persona-tags.js";
 import {TimedCache} from "./utility/cache.js";
+import {multiCheckContains, multiCheckToArray} from "./conditionalEffects/preconditions.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidAttackers = ValidAttackers> implements PersonaI {
   #combatStats: U<PersonaCombatStats>;

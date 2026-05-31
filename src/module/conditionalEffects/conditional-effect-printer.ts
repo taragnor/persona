@@ -18,15 +18,15 @@ import {TAROT_DECK} from "../../config/tarot.js";
 import {TRIGGERS} from "../../config/triggers.js";
 import {WEATHER_TYPES} from "../../config/weather-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
-import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaTagManager} from "../persona-tags.js";
 import {localize} from "../persona.js";
-import {getSocialLinkTarget, multiCheckToArray} from "../preconditions.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {ConditionalEffectC} from "./conditional-effect-class.js";
+import {ConditionalEffectManager} from "./conditional-effect-manager.js";
+import {getSocialLinkTarget, multiCheckToArray} from "./preconditions.js";
 
 export class ConditionalEffectPrinter {
   static printEffects(effects: ConditionalEffectC[]) : string[] {

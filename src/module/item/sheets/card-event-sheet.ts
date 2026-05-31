@@ -2,7 +2,7 @@ import {ConsequenceAmountV2, NonDeprecatedConsequence} from "../../../config/con
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
 import {PowerStuff} from "../../../config/power-stuff.js";
 import {NonDeprecatedPrecondition} from "../../../config/precondition-types.js";
-import {ConditionalEffectManager, MenuDataI} from "../../conditional-effect-manager.js";
+import {ConditionalEffectManager, MenuDataI} from "../../conditionalEffects/conditional-effect-manager.js";
 import {ConsequenceAmountResolver} from "../../conditionalEffects/consequence-amount.js";
 import {SocialCardEventDM} from "../../datamodel/item-types.js";
 import {PersonaError} from "../../persona-error.js";

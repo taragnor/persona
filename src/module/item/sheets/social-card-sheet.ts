@@ -23,7 +23,7 @@ import { SAVE_TYPES_LOCALIZED } from "../../../config/save-types.js";
 import { STUDENT_SKILLS_EXT } from "../../../config/student-skills.js";
 import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 import {SocialCardEventDM} from "../../datamodel/item-types.js";
-import {ConditionalEffectManager} from "../../conditional-effect-manager.js";
+import {ConditionalEffectManager} from "../../conditionalEffects/conditional-effect-manager.js";
 
 const PRIMARY_SECONDARY = {
   "primary": "persona.term.primary",

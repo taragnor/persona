@@ -1,11 +1,11 @@
 import {TarotCard} from "../../config/tarot.js";
-import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
+import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
+import {resolveActorIdOrTarot, testPreconditions} from "../conditionalEffects/preconditions.js";
 import {PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaSounds} from "../persona-sounds.js";
-import {resolveActorIdOrTarot, testPreconditions} from "../preconditions.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {TimedCache} from "../utility/cache.js";
 import {Logger} from "../utility/logger.js";
@@ -729,10 +729,6 @@ export class ActorSocial <T extends PersonaActor> {
     list.pushUnique(...tags);
     list.pushUnique(...ConditionalEffectManager.getEffects(actor?.system?.socialEffects ?? [],null, actor ));
     return list;
-    // return [
-    //   ...tags,
-    //   ...ConditionalEffectManager.getEffects(this?.system?.socialEffects ?? [],null, this ),
-    // ];
   }
 
 }

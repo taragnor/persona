@@ -2,18 +2,18 @@ import {CARD_RESTRICTOR_TAGS, CardTag} from "../../config/card-tags.js";
 import {HBS_TEMPLATES_DIR, PersonaSettings} from "../../config/persona-settings.js";
 import {RollTag} from "../../config/roll-tags.js";
 import {PersonaActor} from "../actor/persona-actor.js";
-import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-system.js";
 import {PersonaItem} from "../item/persona-item.js";
 import {PersonaSockets} from "../persona.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
-import {testPreconditions} from "../preconditions.js";
 import {randomSelect} from "../utility/array-tools.js";
 import { SocialCardEventHandler} from "./card-event-handler.js";
 import { PersonaSocial} from "./persona-social.js";
 import {ItemSelector} from "../../config/consequence-types.js";
 import {DowntimeActionData} from "../actor/actor-social.js";
+import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
+import {testPreconditions} from "../conditionalEffects/preconditions.js";
 
 export class SocialCardExecutor {
   _handler : U<SocialCardEventHandler>;
@@ -138,12 +138,6 @@ export class SocialCardExecutor {
 
   async exec() : Promise<ChatMessage[]> {
     await this._preExec();
-    // const continuation = this._nullContinuation;
-    // const cardData= await this.generateCardData();
-    // this.rollState = {
-    // 	cardData,
-    // 	continuation,
-    // };
     return await this.#execCardSequence();
   }
 

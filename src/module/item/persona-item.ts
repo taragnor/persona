@@ -1,3 +1,4 @@
+import { checkSituationProp } from '../../config/situation.js';
 import { GrowthCalculator } from '../utility/growth-calculator.js';
 import { STATUS_AILMENT_SET } from '../../config/status-effects.js';
 import { NewDamageParams } from '../combat/damage-calc.js';
@@ -20,11 +21,9 @@ import { EQUIPMENT_TAGS, EquipmentTag } from '../../config/equipment-tags.js';
 import { CreatureTag } from '../../config/creature-tags.js';
 import { removeDuplicates } from '../utility/array-tools.js';
 import { PowerTag } from '../../config/power-tags.js';
-import { ConditionalEffectManager } from '../conditional-effect-manager.js';
 import { localize } from '../persona.js';
 import { POWER_TAGS } from '../../config/power-tags.js';
 import { ModifierList, ModifierListItem } from '../combat/modifier-list.js';
-import { checkSituationProp, multiCheckToArray, testPreconditions } from '../preconditions.js';
 import { CardChoice, CardEvent, CardRoll } from '../../config/social-card-config.js';
 import { BASIC_PC_POWER_NAMES } from '../../config/basic-powers.js';
 import { BASIC_SHADOW_POWER_NAMES } from '../../config/basic-powers.js';
@@ -50,6 +49,8 @@ import {PersonaSocial} from '../social/persona-social.js';
 import {ItemTagManager} from './item-tags.js';
 import {ItemHooks} from './item-hooks.js';
 import {TimedCache} from '../utility/cache.js';
+import {ConditionalEffectManager} from '../conditionalEffects/conditional-effect-manager.js';
+import {multiCheckToArray, testPreconditions} from '../conditionalEffects/preconditions.js';
 
 declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -1584,6 +1585,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     if (this.isTrulyUsable()) {return 'on-use';}
     if (this.isDefensive()) {return 'defensive';}
     return 'passive';
+  }
+
+  validTargetConditions(this: Usable, user: ValidAttackers) : ConditionalEffectC["conditions"] {
+  const sourcedTC = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user, this );
+    return sourcedTC;
   }
 
   critBoost(this: Usable, userPersona: Persona) : Calculation {

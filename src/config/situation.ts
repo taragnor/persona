@@ -390,3 +390,14 @@ export type PowerOnlySituation =
 // type R = Prettify<
 //   {x: 5} & TriggeredSituation.GlobalSplit
 // >
+
+export function checkSituationProp<T extends keyof MergeUnion<S>, S extends Situation>(situation: S, prop: T)
+  : situation is NonNullableProps<HasKey<S, T>> & {[k in T]: NonNullable<S[k]>}
+{
+  const key : keyof S = prop as unknown as keyof S;
+  if (!(key in situation) || situation[key] == undefined  || situation[key] == null) {
+    return false;
+  }
+  return true;
+}
+

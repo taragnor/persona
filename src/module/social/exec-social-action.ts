@@ -1,8 +1,8 @@
 import {CardTag} from "../../config/card-tags.js";
 import {ConsequenceAmount, LocalEffect, SocialCardActionConsequence, VariableAction} from "../../config/consequence-types.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
+import {resolveActorIdOrTarot} from "../conditionalEffects/preconditions.js";
 import {PersonaError} from "../persona-error.js";
-import {resolveActorIdOrTarot} from "../preconditions.js";
 import {SocialCardEventHandler} from "./card-event-handler.js";
 import {PersonaSocial} from "./persona-social.js";
 import {CardData, SocialCardExecutor} from "./social-card-executor.js";

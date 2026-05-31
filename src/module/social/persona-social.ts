@@ -2,13 +2,11 @@
 import { StatusEffectId } from "../../config/status-effects.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { TurnAlert } from "../utility/turnAlert.js";
-import { ConditionalEffectManager } from "../conditional-effect-manager.js";
 import { TriggeredEffect } from "../triggered-effect.js";
 import { SocketPayload } from "../utility/socket-manager.js";
 import { PersonaCalendar } from "./persona-calendar.js";
 import { StudentSkill } from "../../config/student-skills.js";
 
-import { testPreconditions } from "../preconditions.js";
 import { CardEvent } from "../../config/social-card-config.js";
 import { PersonaSockets } from "../persona.js";
 import { TarotCard } from "../../config/tarot.js";
@@ -30,6 +28,8 @@ import {weightedChoice} from "../utility/array-tools.js";
 import {ConditionalEffectPrinter} from "../conditionalEffects/conditional-effect-printer.js";
 import {DowntimePanel} from "../panels/downtime-panel.js";
 import {Helpers} from "../utility/helpers.js";
+import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
+import {testPreconditions} from "../conditionalEffects/preconditions.js";
 
 export class PersonaSocial {
 	static allowMetaverse: boolean = true;
@@ -710,23 +710,6 @@ export class PersonaSocial {
     PersonaError.softFail("Can't identify type of Activity", activity);
     return false;
   }
-
-// private static _isAvailable_SL(sl : SocialLink, pc: PC): boolean {
-//   const sit: Situation = {
-//     user: pc.accessor,
-//     target: sl.accessor,
-//   };
-//   if(!testPreconditions(sl.getAvailabilityConditions(), sit)) {
-//     return false;
-//   }
-//   if (PersonaSocial.availabilityDisqualifierStatuses.some (st=> sl.hasStatus(st))) {return false;}
-//   const availability = sl.system.weeklyAvailability;
-//   if (!pc.canTakeNormalDowntimeActions()) {
-//     // 		ui.notifications.warn("You're currently unable to take this action, you must recover first");
-//     return false;
-//   }
-//   return availability?.available ?? false;
-// }
 
   private static _isAvailable_Activity(activity: Activity, pc: PC) : boolean {
     const sit: Situation = {

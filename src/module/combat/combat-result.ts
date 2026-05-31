@@ -4,7 +4,6 @@ import { ConsequenceProcessed } from "./persona-combat.js";
 import { ConsequenceAmount, LocalEffect, NewDamageConsequence } from "../../config/consequence-types.js";
 import { DamageCalculation } from "./damage-calc.js";
 import { PersonaItem} from "../item/persona-item.js";
-import { checkSituationProp, getSocialLinkTarget, multiCheckToArray } from "../preconditions.js";
 import { OtherEffect } from "../../config/consequence-types.js";
 import { StatusEffect } from "../../config/consequence-types.js";
 import { ValidSound } from "../persona-sounds.js";
@@ -17,6 +16,8 @@ import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amoun
 import {ATTACK_RESULT} from "../../config/attack-result-config.js";
 import {PersonaAE, StatusDuration} from "../persona-ae.js";
 import {ResolvedRollBundle} from "../roll-bundle.js";
+import {getSocialLinkTarget, multiCheckToArray} from "../conditionalEffects/preconditions.js";
+import {checkSituationProp} from "../../config/situation.js";
 
 declare global {
 	interface SocketMessage {

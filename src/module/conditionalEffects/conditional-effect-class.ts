@@ -1,13 +1,13 @@
 import { EnhancedSourcedConsequence, NonDeprecatedConsequence } from "../../config/consequence-types.js";
 import {NonDeprecatedPrecondition} from "../../config/precondition-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
-import {CETypes, ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
 import {PersonaAE} from "../persona-ae.js";
 import {PersonaDB} from "../persona-db.js";
-import {testPrecondition} from "../preconditions.js";
 import {TimedCache} from "../utility/cache.js";
+import {CETypes, ConditionalEffectManager} from "./conditional-effect-manager.js";
 import {ConditionalEffectPrinter} from "./conditional-effect-printer.js";
+import {testPrecondition} from "./preconditions.js";
 
 export class ConditionalEffectC {
 

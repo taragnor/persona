@@ -1,8 +1,7 @@
 import { PersonaActor } from "../actor/persona-actor.js";
-import {ConditionalEffectManager} from "../conditional-effect-manager.js";
+import {testPreconditions} from "../conditionalEffects/preconditions.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
-import {testPreconditions} from "../preconditions.js";
 import {randomSelect} from "../utility/array-tools.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
 
@@ -241,50 +240,49 @@ export class PersonaTargetting {
       target: target.accessor,
       usedPower: power.accessor,
     } satisfies Situation;
-  const targets = power.targets();
-  switch (targets) {
-    case '1-engaged':
-    case '1-nearby':
-    case '1d4-random':
-    case '1d4-random-rep':
-    case '1d3-random':
-    case '1d3-random-rep':
-      if (!target.isAlive()) {return false;}
-      break;
-    case '1-nearby-dead':
-      if (target.isAlive()) {return false;}
-      break;
-    case 'self':
-      if (user != target) {return false;}
-      break;
-    case '1-random-enemy':
-    case 'all-enemies':
-      if (PersonaCombat.isSameTeam(user, target)) {return false;}
-      if (!target.isAlive()) {return false;}
-      break;
-    case 'all-allies':
-      if (!PersonaCombat.isSameTeam(user, target)) {return false;}
-      if (!target.isAlive()) {return false;}
-      break;
-    case 'all-dead-allies':
-      if (!PersonaCombat.isSameTeam(user, target)) {return false;}
-      if (target.isAlive()) {return false;}
-      break;
-    case 'all-others':
-      if (user == target) {return false;}
-      if (target.isAlive()) {return false;}
-      break;
-    case 'everyone':
-      if (!target.isAlive()) {return false;}
-      break;
-    case 'everyone-even-dead':
-      break;
-    default:
-      targets satisfies never;
+    const targets = power.targets();
+    switch (targets) {
+      case '1-engaged':
+      case '1-nearby':
+      case '1d4-random':
+      case '1d4-random-rep':
+      case '1d3-random':
+      case '1d3-random-rep':
+        if (!target.isAlive()) {return false;}
+        break;
+      case '1-nearby-dead':
+        if (target.isAlive()) {return false;}
+        break;
+      case 'self':
+        if (user != target) {return false;}
+        break;
+      case '1-random-enemy':
+      case 'all-enemies':
+        if (PersonaCombat.isSameTeam(user, target)) {return false;}
+        if (!target.isAlive()) {return false;}
+        break;
+      case 'all-allies':
+        if (!PersonaCombat.isSameTeam(user, target)) {return false;}
+        if (!target.isAlive()) {return false;}
+        break;
+      case 'all-dead-allies':
+        if (!PersonaCombat.isSameTeam(user, target)) {return false;}
+        if (target.isAlive()) {return false;}
+        break;
+      case 'all-others':
+        if (user == target) {return false;}
+        if (target.isAlive()) {return false;}
+        break;
+      case 'everyone':
+        if (!target.isAlive()) {return false;}
+        break;
+      case 'everyone-even-dead':
+        break;
+      default:
+        targets satisfies never;
+    }
+    return testPreconditions(power.validTargetConditions(user), situation);
   }
-  const sourcedTC = ConditionalEffectManager.getConditionals(power.system.validTargetConditions, power, user, power );
-  return testPreconditions(sourcedTC, situation);
-}
 
 }
 

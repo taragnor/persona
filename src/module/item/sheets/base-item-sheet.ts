@@ -2,11 +2,11 @@
 import { HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaItem } from "../persona-item.js";
 import { HBS_TEMPLATES_DIR } from "../../../config/persona-settings.js";
-import { ConditionalEffectManager, MenuDataI } from "../../conditional-effect-manager.js";
 import {PersonaDB} from "../../persona-db.js";
 import {ContextMenu,  ContextMenuOptions} from "../../utility/context-menu.js";
 import {NonDeprecatedPrecondition} from "../../../config/precondition-types.js";
 import {NonDeprecatedConsequence} from "../../../config/consequence-types.js";
+import {ConditionalEffectManager, MenuDataI} from "../../conditionalEffects/conditional-effect-manager.js";
 
 export class PersonaItemSheetBase extends foundry.appv1.sheets.ItemSheet<PersonaItem> implements MenuDataI {
 

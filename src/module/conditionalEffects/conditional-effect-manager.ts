@@ -6,25 +6,25 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 // import { NumericV2 } from "./conditionalEffects/numericV2.js";
 
-import { PersonaSettings } from "../config/persona-settings.js";
-import { NonDeprecatedModifierTarget } from "../config/item-modifiers.js";
-import { ModifierContainer, PersonaItem} from "./item/persona-item.js";
-import { Helpers } from "./utility/helpers.js";
-import { Consequence, NonDeprecatedConsequence } from "../config/consequence-types.js";
-import { PersonaActor } from "./actor/persona-actor.js";
-import { NonDeprecatedPrecondition } from "../config/precondition-types.js";
-import { HTMLTools } from "./utility/HTMLTools.js";
-import { PersonaError } from "./persona-error.js";
-import { PreconditionType } from "../config/precondition-types.js";
-import { ConsequenceType } from "../config/effect-types.js";
-import { CONSQUENCELIST } from "../config/effect-types.js";
-import { PRECONDITIONLIST } from "../config/precondition-types.js";
-import { PersonaDB } from "./persona-db.js";
-import {ConsequenceConverter} from "./migration/convertConsequence.js";
-import {PreconditionConverter} from "./migration/convertPrecondition.js";
-import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
-import {PersonaAE} from "./persona-ae.js";
-import {ContextMenu, ContextMenuOptions} from "./utility/context-menu.js";
+import { PersonaSettings } from "../../config/persona-settings.js";
+import { NonDeprecatedModifierTarget } from "../../config/item-modifiers.js";
+import { ModifierContainer, PersonaItem} from "../item/persona-item.js";
+import { Helpers } from "../utility/helpers.js";
+import { Consequence, NonDeprecatedConsequence } from "../../config/consequence-types.js";
+import { PersonaActor } from "../actor/persona-actor.js";
+import { NonDeprecatedPrecondition } from "../../config/precondition-types.js";
+import { HTMLTools } from "../utility/HTMLTools.js";
+import { PersonaError } from "../persona-error.js";
+import { PreconditionType } from "../../config/precondition-types.js";
+import { ConsequenceType } from "../../config/effect-types.js";
+import { CONSQUENCELIST } from "../../config/effect-types.js";
+import { PRECONDITIONLIST } from "../../config/precondition-types.js";
+import { PersonaDB } from "../persona-db.js";
+import {ConsequenceConverter} from "../migration/convertConsequence.js";
+import {PreconditionConverter} from "../migration/convertPrecondition.js";
+import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
+import {PersonaAE} from "../persona-ae.js";
+import {ContextMenu, ContextMenuOptions} from "../utility/context-menu.js";
 
 type MenuHolder<D extends FoundryDocument> = D & {
   sheet: MenuDataI,
@@ -852,7 +852,7 @@ declare global{
 
   export type SourcedConsequence<T extends Consequence= NonDeprecatedConsequence> = Sourced<T>;
 
-  type SourcedPrecondition<T extends Precondition = NonDeprecatedPrecondition<Precondition>> = 
+  type SourcedPrecondition<T extends Precondition = NonDeprecatedPrecondition<Precondition>> =
     Sourced<T>;
 
   type Sourced<T extends object>= T & {

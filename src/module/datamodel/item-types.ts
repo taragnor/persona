@@ -25,10 +25,10 @@ import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaError} from "../persona-error.js";
 import {CardEventSheet} from "../item/sheets/card-event-sheet.js";
 import {SocialCardEventHandler} from "../social/card-event-handler.js";
-import {ConditionalEffectManager} from "../conditional-effect-manager.js";
 import {CardTag} from "../../config/card-tags.js";
 import {POWER_TAGS_LIST} from "../../config/power-tags.js";
 import {InternalCreatureTag} from "../../config/creature-tags.js";
+import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
 
 function itemBase() {
 	return {
@@ -391,14 +391,6 @@ export class ConditionalEffectDM extends foundry.abstract.DataModel {
 	}
 
 }
-
-// class CEContainer extends foundry.abstract.DataModel {
-// 	static override defineSchema() {
-// 		return {
-// 			emb: new arr(new embedded(ConditionalEffectDM)),
-// 		};
-// 	}
-// }
 
 export class SocialQuestionDM extends foundry.abstract.DataModel {
 	static override defineSchema() {

@@ -10,7 +10,7 @@ import {ConsequenceProcessor} from "./conditionalEffects/consequence-processor.j
 import {CombatEngine} from "./combat/combat-engine.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {PersonaTargetting} from "./combat/persona-targetting.js";
-import {checkSituationProp} from "./preconditions.js";
+import {checkSituationProp} from "../config/situation.js";
 
 type TriggerParam<T extends Trigger=Trigger> = PartialKeys<TriggeredSituation.TriggerSituation, "triggeringUser"> & {trigger: T};
 

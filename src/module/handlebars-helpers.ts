@@ -16,12 +16,10 @@ import { Helpers } from "./utility/helpers.js";
 import { PersonaItem } from "./item/persona-item.js";
 import { CREATURE_TAGS } from "../config/creature-tags.js";
 import { PersonaSocial } from "./social/persona-social.js";
-import { ConditionalEffectManager } from "./conditional-effect-manager.js";
 import { DamageType } from "../config/damage-types.js";
 import { DAMAGETYPES } from "../config/damage-types.js";
 import { localize } from "./persona.js";
 import { AttackResult } from "./combat/combat-result.js";
-import { testPreconditions } from "./preconditions.js";
 import { SocialBenefit } from "./actor/persona-actor.js";
 import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaDB } from "./persona-db.js";
@@ -47,6 +45,8 @@ import {PowerLearningSystem} from "./power-learning.js";
 import {TARGETING} from "../config/effect-types.js";
 import {PersonaAE} from "./persona-ae.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
+import {testPreconditions} from "./conditionalEffects/preconditions.js";
+import {ConditionalEffectManager} from "./conditionalEffects/conditional-effect-manager.js";
 
 
 export class PersonaHandleBarsHelpers {
