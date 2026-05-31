@@ -144,10 +144,6 @@ export class PersonaCombatStats {
       .mult(1, 1/PersonaCombatStats.INIT_DIVISOR, `Initiative Divisor`);
   }
 
-  baseEnduranceDR() : number{
-    return Math.floor(this.endurance);
-  }
-
   getPhysicalVariance() : number {
     return 2 + Math.floor(this.strength / 5);
   }

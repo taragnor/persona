@@ -1,5 +1,5 @@
 import { TarotCard } from "../config/tarot.js";
-import { EnhancedSourcedConsequence, NonDeprecatedConsequence } from "../config/consequence-types.js";
+import { ConsequenceAmount, EnhancedSourcedConsequence, NonDeprecatedConsequence } from "../config/consequence-types.js";
 import { SceneClock } from "./exploration/scene-clock.js";
 import { NumberOfOthersWithComparison } from "../config/numeric-comparison.js";
 import { CombatResultComparison } from "../config/numeric-comparison.js";
@@ -29,7 +29,7 @@ import {ConsequenceAmountResolver} from "./conditionalEffects/consequence-amount
 import {PreconditionConverter} from "./migration/convertPrecondition.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {ResolvedActorChange} from "./combat/finalized-combat-result.js";
-import {PersonaItem} from "./item/persona-item.js";
+import {ContainerTypes, PersonaItem} from "./item/persona-item.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaAE} from "./persona-ae.js";
 import {Persona} from "./persona-class.js";
@@ -430,15 +430,71 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       PersonaError.softFail(`Unknown numeric comparison type ${(condition as Record<string, string>)["comparisonTarget"]}`);
       return false;
   }
-  const source = condition.source ? PersonaDB.find(condition.source): undefined;
-  const owner = condition.owner ? PersonaDB.find(condition.owner) : undefined;
-  const ownersList = owner
-    ? [owner]
-    : source?.parent instanceof PersonaActor
-    && source.parent.isValidCombatant()
-    ? [source.parent.accessor]
-    : [];
+  const resolvedNum = resolveTestCase(testCase, condition, situation);
+  if (!resolvedNum) {return false;}
+  testCase = resolvedNum;
+  // if (typeof testCase != "number") {
+  //   const source = condition.source ? PersonaDB.find(condition.source): undefined;
+  //   const owner = condition.owner ? PersonaDB.find(condition.owner) : undefined;
+  //   const ownersList = owner
+  //     ? [owner]
+  //     : source?.parent instanceof PersonaActor
+  //     && source.parent.isValidCombatant()
+  //     ? [source.parent.accessor]
+  //     : [];
+  //   const sourced = {
+  //     source: condition.source,
+  //     owner: condition.owner,
+  //     realSource: condition.realSource,
+  //     ...testCase,
+  //   };
+  //   const situationN = {
+  //     actorOwner: ownersList.at(0),
+  //     ...situation,
+  //   };
+  //   const resolvedCA = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situationN);
+  //   if (resolvedCA == undefined) {return false;}
+  //   testCase = resolvedCA;
+  // }
+  switch (condition.comparator) {
+    case "!=" : return target != testCase;
+    case "==" : return target == testCase;
+    case ">=": return target >= (testCase ?? Infinity);
+    case ">": return target > (testCase ?? Infinity) ;
+    case "<": return target < (testCase ?? -Infinity);
+    case "<=": return target <= (testCase ?? -Infinity);
+    case "odd": return target % 2 != 0;
+    case "even": return target % 2 == 0;
+    case "range": return target >= testCase && target <= condition.high;
+    default: {
+      condition satisfies undefined;
+      PersonaError.softFail("Undefined comparatoron condition");
+      Debug(condition);
+      return false;
+    }
+  }
+}
+
+function resolveTestCase(testCase: ConsequenceAmount , condition: Sourced<NonDeprecatedPrecondition>, situation: Situation) : N<number> {
   if (typeof testCase != "number") {
+    let source : U<ContainerTypes> = undefined;
+    let owner : U<PersonaActor> = undefined;
+    try {
+      source = condition.source ? PersonaDB.find(condition.source): undefined;
+    }  catch  {
+      source = undefined;
+    }
+    try {
+      owner = condition.owner ? PersonaDB.find(condition.owner) : undefined;
+    } catch {
+      owner=undefined;
+    }
+    const ownersList = owner
+      ? [owner]
+      : source?.parent instanceof PersonaActor
+      && source.parent.isValidCombatant()
+      ? [source.parent.accessor]
+      : [];
     const sourced = {
       source: condition.source,
       owner: condition.owner,
@@ -450,23 +506,10 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       ...situation,
     };
     const resolvedCA = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situationN);
-    if (resolvedCA == undefined) {return false;}
-    testCase = resolvedCA;
+    if (resolvedCA == undefined) {return null;}
+    return resolvedCA;
   }
-  switch (condition.comparator) {
-    case "!=" : return target != testCase;
-    case "==" : return target == testCase;
-    case ">=": return target >= (testCase ?? Infinity);
-    case ">": return target > (testCase ?? Infinity) ;
-    case "<": return target < (testCase ?? -Infinity);
-    case "<=": return target <= (testCase ?? -Infinity);
-    case "odd": return target % 2 != 0;
-    case "even": return target % 2 == 0;
-    case "range": return target >= testCase && target <= condition.high;
-    default:
-        condition satisfies undefined;
-  }
-  return false;
+  return testCase;
 }
 
 export function combatResultBasedNumericTarget(condition: CombatResultComparison, situation: Situation): number | boolean {
@@ -1312,9 +1355,7 @@ function rollPropertyIs(condition : SourcedPrecondition  & {type: "boolean"; boo
 
 function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "combat-comparison"}, situation: Situation)  : U<boolean> {
   if (condition.combatProp == "in-combat") {
-    if (Metaverse.getPhase() == "combat") {return true;}
-    const combat = PersonaCombat.combat;
-    return combat != undefined && !combat.isSocial;
+    return Metaverse.getPhase() == "combat";
   }
   if (condition.combatProp == "combat-result-is") {
     if ("combatOutcome" in situation) {

@@ -674,11 +674,12 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   get navigatorSkills() : Power [] {
-    return this.user.navigatorSkills;
+    return this.source.navigatorSkills;
   }
 
   get theurgies() : Power[] {
-    return this.powers.filter( x=> x.hasTag("theurgy", this.user));
+    return this.allPowers
+      .filter( x=> x.isTheurgy());
   }
 
   private _mainModifiers(options?: MainModifierOptions): ConditionalEffectC[] {
@@ -764,7 +765,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     await source.update( {"system.combat.talents": arr});
     await Logger.sendToChat(`${this.name} deleted ${talent.name} Talent` , source);
   }
-
 
   get effectiveLevel() : number {
     const advances = this.numOfIncAdvances();

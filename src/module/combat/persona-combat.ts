@@ -261,8 +261,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
   async combatantsEndCombat() : Promise<void> {
     if (!game.user.isGM) {return;}
-    await this.endCombatTriggers();
     await this.reviveFallenActors();
+    await this.endCombatTriggers()
+    .toMessage("End Combat Triggers", undefined);
     const promises = this.combatants.contents.map( async (c) => {
       try {
         await c.actor?.onEndCombat();
@@ -292,13 +293,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     await Promise.allSettled(promises);
   }
 
-  async endCombatTriggers() : Promise<void> {
-    if (this.isSocial) {return;}
+  endCombatTriggers() : CombatResult {
+    if (this.isSocial) {new CombatResult();}
     const PCsWin = this.didPCsWin();
     const combatOutcome = PCsWin ? "win" : "draw";
-    const promises = this.combatants
+    const results = this.combatants
     .filter (x=> x.actor != undefined)
-    .map( async (comb) => {
+    .map( comb => {
       const situation ={
         trigger: 'on-combat-end-dual',
         triggeringUser: game.user,
@@ -309,9 +310,14 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         combatOutcome,
       } satisfies TriggeredSituation.TriggerSituation;
       const CR =  TriggeredEffect.autoTriggerToCR(situation, comb.actor);
-      return await CR?.toMessage('End Combat Triggered Effect', comb.actor);
+      return CR ? CR : new CombatResult();
+      // return await CR?.toMessage('End Combat Triggered Effect', comb.actor);
     });
-    await Promise.allSettled(promises);
+    const result = results.reduce( (acc, cr) => {
+      acc.merge(cr);
+      return acc;
+    }, new CombatResult());
+    // await Promise.allSettled(promises);
     const situation = {
       trigger: "on-combat-end-dual",
       global: true,
@@ -320,7 +326,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       combatOutcome,
     } satisfies TriggeredSituation.Select<"on-combat-end-dual">;
     const CR = TriggeredEffect.autoTriggerToCR(situation, undefined);
-    await CR?.toMessage('End Combat Global Trigger', undefined);
+    if (CR) {
+      result.merge(CR);
+    }
+    return result;
+    // await CR?.toMessage('End Combat Global Trigger', undefined);
   }
 
   async checkEndCombat() : Promise<boolean> {
