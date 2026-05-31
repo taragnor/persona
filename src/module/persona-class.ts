@@ -222,10 +222,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.source.system.combat.classData;
   }
 
-  // get focii(): readonly Focus[] {
-  //   return this.source.focii();
-  // }
-
   async learnPower(power: Power, logChanges = true) {
     const ret= await this.powerLearning.learnPower(power, logChanges);
     if (ret) { this.loadPowers();}

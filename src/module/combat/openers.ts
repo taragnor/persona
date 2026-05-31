@@ -740,7 +740,7 @@ export class OpenerManager {
         case "disengage":
           break;
         case "skipTurn":
-          await this.combat.endTurn(combatant);
+          await this.combat.nextTurn();
           break;
         case "fightInSpirit":
           break;

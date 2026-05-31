@@ -1314,7 +1314,7 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
   if (condition.combatProp == "in-combat") {
     if (Metaverse.getPhase() == "combat") {return true;}
     const combat = PersonaCombat.combat;
-    return combat && !combat.isSocial;
+    return combat != undefined && !combat.isSocial;
   }
   if (condition.combatProp == "combat-result-is") {
     if ("combatOutcome" in situation) {
