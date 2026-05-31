@@ -186,12 +186,12 @@ export class HTMLTools {
 					two: {
 						icon: `<i class="fas fa-times"></i>`,
 						label: "Cancel",
-						callback: () => reject(new CanceledDialgogError("Cancel")),
+						callback: () => reject(new CanceledDialogError("Cancel")),
 					}
 				},
 				default: "one",
 				close: () => {
-					reject(new CanceledDialgogError("close"));
+					reject(new CanceledDialogError("close"));
 				},
 			}, {});
 			dialog.render(true);
@@ -436,9 +436,7 @@ type ChoiceBoxOptions<T> = {
 	default?: keyof T;
 }
 
-export class CanceledDialgogError extends Error {
-
-}
+export class CanceledDialogError extends Error { }
 
 
 type HTMLGenerationOptions = object;

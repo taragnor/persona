@@ -4,11 +4,11 @@ import { PowerPrinter } from "../../printers/power-list.js";
 import { PersonaRoller } from "../../persona-roll.js";
 import { PersonaDB } from "../../persona-db.js";
 import { PersonaActor } from "../persona-actor.js";
-import { Helpers } from "../../utility/helpers.js";
-import { PersonaError } from "../../persona-error.js";
+import { Helpers, OwnerCheckError, PauseCheckError } from "../../utility/helpers.js";
+import { PersonaError, UnusableItemError } from "../../persona-error.js";
 import { PersonaCombat} from "../../combat/persona-combat.js";
 import { PToken } from "../../combat/persona-combat.js";
-import { CanceledDialgogError, HTMLTools } from "../../utility/HTMLTools.js";
+import { CanceledDialogError, HTMLTools } from "../../utility/HTMLTools.js";
 import { PersonaItem } from "../../item/persona-item.js";
 import { PersonaActorSheetBase } from "./actor-sheet-base.js";
 import {Persona} from "../../persona-class.js";
@@ -198,7 +198,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
       default:
         item.system satisfies never;
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        throw new Error(`Unknown supported type ${item["system"]["type"]}`);
+        throw new PersonaError(`Unknown supported type ${item["system"]["type"]}`);
     }
   }
 
@@ -242,44 +242,43 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			inUseMsg: "Can't use another power now, as a power is already in process"
 		};
 
-		 await antiLoop( this, async () => {
-				const actor = this.actor;
-				let token : PToken | undefined;
-				if (actor.token) {
-					 token = actor.token as PToken;
-				} else {
-					 token = this.actor.getDependentTokens()
-							.find( tok => tok.parent == game.scenes.current);
-				}
-				if (!token) {
-					 token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
-				}
-				if (!token) {
-					 throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` );
-				}
-				try {
-					 const combat = PersonaCombat.combat && PersonaCombat.combat.findCombatant(token) ? PersonaCombat.combat : undefined;
-					 const engine = new CombatEngine(combat);
-					 await engine.usePower(token, power );
-				} catch (e) {
-					 switch (true) {
-							case e instanceof CanceledDialgogError: {
-								 break;
-							}
-							case e instanceof TargettingError: {
-								 break;
-							}
-							case e instanceof Error: {
-								 console.error(e);
-								 console.error(e.stack);
-								 PersonaError.softFail("Problem with Using Item or Power", e, e.stack);
-								 break;
-							}
-							default: break;
-					 }
-				}
-		 }, lockOptions);
-	}
+    await antiLoop( this, async () => {
+      const actor = this.actor;
+      let token : PToken | undefined;
+      if (actor.token) {
+        token = actor.token as PToken;
+      } else {
+        token = this.actor.getDependentTokens()
+          .find( tok => tok.parent == game.scenes.current);
+      }
+      if (!token) {
+        token = game.scenes.current.tokens.find(tok => tok.actorId == actor.id) as PToken;
+      }
+      if (!token) {
+        throw new PersonaError(`Can't find token for ${this.actor.name}: ${this.actor.id}` );
+      }
+      try {
+        const combat = PersonaCombat.combat && PersonaCombat.combat.findCombatant(token) ? PersonaCombat.combat : undefined;
+        const engine = new CombatEngine(combat);
+        await engine.usePower(token, power );
+      } catch (e) {
+        switch (true) {
+          case e instanceof OwnerCheckError:
+          case e instanceof PauseCheckError:
+          case e instanceof TargettingError:
+          case e instanceof CanceledDialogError:
+            break;
+          case e instanceof Error: {
+            console.error(e);
+            console.error(e.stack);
+            PersonaError.softFail("Problem with Using Item or Power", e, e.stack);
+            break;
+          }
+          default: break;
+        }
+      }
+    }, lockOptions);
+  }
 
   protected getItem(event: JQuery.Event) : Carryable {
 		const itemId = HTMLTools.getClosestData(event, "itemId");
@@ -292,17 +291,9 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async useItem(event: JQuery.Event) {
     event.preventDefault();
-		// const itemId = HTMLTools.getClosestData(event, "itemId");
-		// const item = this.actor.inventory.find(item => item.id ==itemId);
-		// if (!item) {
-		// 	throw new PersonaError(`Can't find Item Id:${itemId}`);
-		// }
-		// if (!item.isSkillCard() && (!item.isUsableType() || !item.isTrulyUsable())) {
-		// 	throw new PersonaError(`item ${item.name} isn't usable`);
-		// }
     const item = this.getItem(event);
 		if (!item.isSkillCard() && (!item.isUsableType() || !item.isTrulyUsable())) {
-			throw new PersonaError(`item ${item.name} isn't usable`);
+			throw new UnusableItemError(`item ${item.name} isn't usable`);
 		}
     if (!await HTMLTools.confirmBox(`Use ${item.name}?`, `Use ${item.name}`)) {return;}
 		await this._useItemOrPower(item);
@@ -312,9 +303,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const talentId = HTMLTools.getClosestData<Talent["id"]>(event, "talentId");
 		if (talentId == undefined) {
 			const err = `Can't find talent: TalentId is undefined`;
-			console.error(err);
-			ui.notifications.error(err);
-			throw new Error(err);
+			throw new PersonaError(err);
 		}
 		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this talent?")) {
 			//TODO: temp fix until we get a persona Id
@@ -327,9 +316,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
     const personaId = HTMLTools.getClosestDataSafe<Persona["source"]["id"]>(event, "personaId", "" as Persona["source"]["id"]);
     if (powerId == undefined) {
       const err = `Can't find power: Power Id is undefied`;
-      console.error(err);
-      ui.notifications.error(err);
-      throw new Error(err);
+      throw new PersonaError(err);
     }
     let persona: Persona;
     if (personaId.length> 0 ) {
@@ -347,9 +334,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
 		if (powerId == undefined) {
 			const err = `Can't find power: Power Id is undefined`;
-			console.error(err);
-			ui.notifications.error(err);
-			throw new Error(err);
+			throw new PersonaError(err);
 		}
 		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this power?")) {
 			await this.actor.basePersona.powerLearning.deleteLearnablePower(powerId as Power["id"]);

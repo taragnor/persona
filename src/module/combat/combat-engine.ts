@@ -18,8 +18,8 @@ import {TagManager} from "../tag-manager.js";
 import {TriggeredEffect} from "../triggered-effect.js";
 import {sleep} from "../utility/async-wait.js";
 import {Calculation} from "../utility/calculation.js";
-import {Helpers} from "../utility/helpers.js";
-import {CanceledDialgogError, HTMLTools} from "../utility/HTMLTools.js";
+import {Helpers, OwnerCheckError, PauseCheckError} from "../utility/helpers.js";
+import { CanceledDialogError, HTMLTools} from "../utility/HTMLTools.js";
 import {TimeLog} from "../utility/logger.js";
 import {AttackResult, CombatResult} from "./combat-result.js";
 import {AILMENT_LEVELS, DamageCalculation, INSTANT_KILL_LEVELS, InstantKillLevel} from "./damage-calc.js";
@@ -76,12 +76,11 @@ export class CombatEngine {
       return await engine.usePower(attacker, power, presetTargets, options );
     } catch (e) {
       switch (true) {
-        case e instanceof CanceledDialgogError: {
+        case e instanceof OwnerCheckError:
+        case e instanceof PauseCheckError:
+        case e instanceof CanceledDialogError:
+        case e instanceof TargettingError:
           break;
-        }
-        case e instanceof TargettingError: {
-          break;
-        }
         case e instanceof Error: {
           console.error(e);
           console.error(e.stack);
@@ -135,7 +134,7 @@ export class CombatEngine {
       await this.postActionCleanup(attacker, finalizedResult);
       return finalizedResult;
     } catch(e) {
-      if (e instanceof CanceledDialgogError) {
+      if (e instanceof CanceledDialogError) {
         this.clearPendingResult();
         throw e;
       }

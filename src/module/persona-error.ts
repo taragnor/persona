@@ -136,3 +136,10 @@ type RemoteErrorInfo = {
 	 userId: User["id"],
 	 args: string[],
 }
+
+export class UnusableItemError extends Error {
+  constructor (txt: string) {
+    super(txt);
+    ui.notifications.warn(txt);
+  }
+}

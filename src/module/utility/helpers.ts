@@ -13,7 +13,7 @@ export class Helpers {
 		}
 		const msg = `Can't perform this action as you are not the owner of ${doc.name}`;
 		ui.notifications.warn(msg);
-		throw new Error(msg);
+		throw new OwnerCheckError(msg);
 	}
 
 	/** errors if the game is paused and the user isn't a GM, else returns true */
@@ -104,3 +104,7 @@ export class Helpers {
 		return true;
 	}
 }
+
+export class OwnerCheckError extends Error {};
+export class PauseCheckError extends Error {};
+
