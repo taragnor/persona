@@ -536,7 +536,7 @@ export class OpenerManager {
       });
     options = usableActions
       .flatMap<OpenerOption>( action =>  {
-        const possibleTargets= this.combat.combatants.contents.filter (x=> PersonaCombat.isPersonaCombatant(x));
+        const possibleTargets = this.combat.combatants.contents.filter (x=> PersonaCombat.isPersonaCombatant(x));
         const targets= PersonaTargetting.getValidTargetsFor(action, combatant, possibleTargets);
         if (targets.length == 0) {return [];}
         // const printableName = this.getOpenerPrintableName(action, targets);
@@ -740,7 +740,7 @@ export class OpenerManager {
         case "disengage":
           break;
         case "skipTurn":
-          await this.combat.nextTurn();
+          await this.advanceTurn(combatant);
           break;
         case "fightInSpirit":
           break;
@@ -753,6 +753,7 @@ export class OpenerManager {
           const targets = engaged.length > 0 ? engaged.map( x=> x.token) : this.combat.getAllEnemiesOf(combatant.token).filter (x=> x.actor.isAlive());
           const choice = randomSelect(targets);
           await this.combat.combatEngine.usePower(combatant.token, combatant.actor.basicAttack, [choice]);
+          await this.advanceTurn(combatant);
           break;
         }
         case "attackAlly": {
@@ -761,6 +762,7 @@ export class OpenerManager {
           const targets = engaged.length > 0 ? engaged.map( x=> x.token) : PersonaCombat.getAllAlliesOf(combatant.token).filter (x=> x.actor.isAlive() && x != combatant.token);
           const choice = randomSelect(targets);
           await this.combat.combatEngine.usePower(combatant.token, combatant.actor.basicAttack, [choice]);
+          await this.advanceTurn(combatant);
           break;
         }
         case "throw-away-money": {
@@ -773,6 +775,12 @@ export class OpenerManager {
           effect satisfies never;
           break;
       }
+    }
+  }
+
+  private async advanceTurn(combatant: PersonaCombatant) {
+    if (combatant == PersonaCombat.combat?.combatant && combatant.actor.actionsRemaining <= 1) {
+      await this.combat.nextTurn();
     }
   }
 

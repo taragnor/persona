@@ -170,7 +170,7 @@ export class PersonaCombatStats {
     }
     const sl = persona.startingLevel;
     switch (true) {
-      case (sl < 20) :return 2;
+      case (sl < 20): return 2;
       case (sl < 40): return 5;
       case (sl < 60): return 8;
       case (sl < 80): return 12;
