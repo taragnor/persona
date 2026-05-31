@@ -263,7 +263,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     if (!game.user.isGM) {return;}
     await this.reviveFallenActors();
     await this.endCombatTriggers()
-    .toMessage("End Combat Triggers", undefined);
+    .emptyCheck()
+    ?.toMessage("End Combat Triggers", undefined);
     const promises = this.combatants.contents.map( async (c) => {
       try {
         await c.actor?.onEndCombat();
@@ -512,7 +513,11 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     if (!actor.hasPlayerOwner) {
       await this.ensureSheetOpen(combatant);
     }
-    let startTurnMsg = [ `<u><h2> Start of ${combatant.token.name}'s turn</h2></u><hr>`];
+    const pc = actor.isPCLike() ? "pc" : "enemy";
+    let startTurnMsg = [ `
+      <div class="start-turn-header ${pc}" data-combatant-id="${combatant.id}">
+      <u><h2> Start of ${combatant.token.name}'s turn</h2></u>
+      </div> `];
     const engaged = this.getAllEngagedEnemies(combatant);
     if (engaged.length > 0) {
       const engagedMsg  = `<div> <b>Engaged By:</b> ${engaged.map(x=> x.name).join(', ')}</div>`;
@@ -694,6 +699,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   }
 
   async endTurn(combatant: Combatant<ValidAttackers>) {
+    this.disableHeaderFlash();
     const actor = combatant.actor;
     if (!actor) {return;}
     if (!actor.isOwner) {return;}
@@ -1918,6 +1924,15 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     }, 10);
   }
 
+  disableHeaderFlash() {
+    try {
+      const headers = $(document).find(".start-turn-header.lashing");
+      headers.removeClass("flashing");
+    } catch (e) {
+      PersonaError.softFail(e);
+    }
+  }
+
 } // end of class
 
 
@@ -1992,4 +2007,19 @@ const COMBAT_OUTCOME_LIST = [
 ] as const;
 
 export const COMBAT_OUTCOME = HTMLTools.createLocalizationObject(COMBAT_OUTCOME_LIST, "persona.combat.outcome");
+
+//flashing text
+Hooks.on("renderChatMessageHTML", (_msg, content) => {
+  if (!PersonaCombat.combat) {return;}
+  const header = $(content).find(".start-turn-header");
+  if (header.length == 0) {return;}
+  const combatantId= HTMLTools.getClosestData(header, "combatant-id");
+  const combatant = PersonaCombat.combat.combatant;
+  if (!combatant) {return;}
+  if (combatant.id  == combatantId && combatant.actor.hasPlayerOwner && !game.user.isGM && combatant.actor.isOwner) {
+    header.addClass("flashing");
+    return;
+  }
+});
+
 

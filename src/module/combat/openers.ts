@@ -504,3 +504,12 @@ declare global {
   }
 }
 
+
+Hooks.on("renderChatMessageHTML", (_msg, content) => {
+  const choices = $(content).find(".opener-choices").hide();
+  $(content).find(".opener-block").on("click", (_ev) => {
+    _ev.preventDefault();
+    _ev.stopPropagation();
+    choices.slideToggle(200);
+  });
+});
