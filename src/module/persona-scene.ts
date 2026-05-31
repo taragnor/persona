@@ -462,7 +462,6 @@ async setAsMementosScene() {
 
 }
 
-
 type WeatherData = {
 	name: string,
 	type: "rain" | "snow" | "fog" | "clouds" | "snowstorm",
@@ -476,15 +475,12 @@ type WeatherData = {
 	}
 };
 
-
 type SceneEncounterData = {
 	monsters: {
 		id: Shadow["id"]
 		frequency: number
 	}[],
-
 }
-
 
 Hooks.on("updateScene", async (_scene: PersonaScene, diff) => {
 	if (!game.user.isGM) {return;}
