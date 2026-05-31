@@ -516,7 +516,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     const pc = actor.isPCLike() ? "pc" : "enemy";
     let startTurnMsg = [ `
       <div class="start-turn-header ${pc}" data-combatant-id="${combatant.id}">
-      <u><h2> Start of ${combatant.token.name}'s turn</h2></u>
+      <u><h2> ${combatant.token.name}'s turn</h2></u>
       </div> `];
     const engaged = this.getAllEngagedEnemies(combatant);
     if (engaged.length > 0) {
@@ -1926,7 +1926,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
   disableHeaderFlash() {
     try {
-      const headers = $(document).find(".start-turn-header.lashing");
+      const headers = $(document).find(".start-turn-header.flashing");
       headers.removeClass("flashing");
     } catch (e) {
       PersonaError.softFail(e);
@@ -2016,7 +2016,11 @@ Hooks.on("renderChatMessageHTML", (_msg, content) => {
   const combatantId= HTMLTools.getClosestData(header, "combatant-id");
   const combatant = PersonaCombat.combat.combatant;
   if (!combatant) {return;}
-  if (combatant.id  == combatantId && combatant.actor.hasPlayerOwner && !game.user.isGM && combatant.actor.isOwner) {
+  if (combatant.id  == combatantId
+    && combatant.actor.hasPlayerOwner
+    // && !game.user.isGM
+    && combatant.actor.isOwner) {
+    console.log(`Adding flash to ${combatant.name} msg`);
     header.addClass("flashing");
     return;
   }
