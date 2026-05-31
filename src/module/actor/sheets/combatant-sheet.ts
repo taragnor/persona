@@ -45,8 +45,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
   override render(force: boolean = false, options?: Record<string, unknown>) {
     const ret= super.render(force, options);
-    if (PowerPrinter._instance) {
-      PowerPrinter._instance.setTargetPersona(this.actor.persona());
+    if (PowerPrinter.instance) {
+      PowerPrinter.instance.setTargetPersona(this.actor.persona());
     }
     return ret;
   }
@@ -483,7 +483,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async showPowersTable(_ev: JQuery.ClickEvent) {
 		await PowerPrinter.open();
-    PowerPrinter._instance?.setTargetPersona(this.actor.persona());
+    PowerPrinter.instance?.setTargetPersona(this.actor.persona());
 	}
 
 	isOnPersonaListTab() : boolean {

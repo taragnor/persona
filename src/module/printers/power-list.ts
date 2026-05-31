@@ -18,7 +18,7 @@ type PowerFilter = {
   };
 
 export class PowerPrinter extends FormApplication<PowerFilter> {
-  static _instance : U<PowerPrinter>;
+  static #instance : U<PowerPrinter>;
 
   targetPersona: U<Persona>;
 
@@ -38,6 +38,10 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
 
   static init() {
 
+  }
+
+  static get instance(): U<PowerPrinter> {
+    return this.#instance;
   }
 
   constructor();
@@ -157,11 +161,11 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
   }
 
   private static createGeneralizedInstance() {
-    if (!this._instance) {
-      this._instance = new PowerPrinter();
+    if (!this.#instance) {
+      this.#instance = new PowerPrinter();
     }
-    this._instance.render(true);
-    return this._instance;
+    this.#instance.render(true);
+    return this.#instance;
   }
 
   setTargetPersona(persona : Persona) {
@@ -400,7 +404,7 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
 }
 
 Hooks.on("DBrefresh", function () {
-  const instance = PowerPrinter._instance;
+  const instance = PowerPrinter.instance;
   if (instance && instance._state >= 2) {
     instance.render(false);
   }
@@ -408,7 +412,7 @@ Hooks.on("DBrefresh", function () {
 
 async function powerPrinter() {
   await PowerPrinter.open();
-  return PowerPrinter._instance;
+  return PowerPrinter.instance;
 }
 
 
