@@ -1,107 +1,107 @@
-<section class="combat-section {{#if (isSimulated persona)}} simulated-persona {{/if}} f-col" data-persona-id="{{persona.source.id}}">
-	<div class="combat-stats f-col">
-		<div class="f-row">
-			<div class="hp" title="{{hpBreakdown persona}}">
-				<label>
-					HP:
-				</label>
-				<span>
-					{{#if (isGM)}}
-					<span class="hp-main">
-						<input class="short" type="number" name="system.combat.hp" value="{{actor.hp}}">
-					</span>
-					{{else}}
-					<span class="hp-main">
-						{{actor.hp}}
-					</span>
-					{{/if}}
-				</span>
-				<span class="max-hp">
-					/ {{persona.mhp}}
-				</span>
-				{{#if actor.system.combat.bonusHP}}
-				<span class="bonus-HP">
-					(+ {{actor.system.combat.bonusHP}})
-				</span>
-				{{/if}}
-			</div>
-			{{#if (hasMP actor)}}
-			<div class="mp" title="{{mpBreakdown persona}}">
-				<label> MP </label>
-				<span>
-					{{#if (isGM)}}
-					<input class="short" type="number" name="system.combat.mp.value" value="{{actor.system.combat.mp.value}}">
-					{{else}}
-					{{actor.system.combat.mp.value}}
-					{{/if}}
-				</span>
-				<span>
-					/ {{persona.mmp}}
-				</span>
-				{{#if actor.system.combat.bonusMP}}
-				<span class="bonus-MP">
-					(+ {{actor.system.combat.bonusMP}})
-				</span>
-				{{/if}}
-			</div>
-			{{/if}}
+<div class="combat-section {{#if (isSimulated persona)}} simulated-persona {{/if}} f-col" data-persona-id="{{persona.source.id}}">
+  <div class="combat-stats f-col">
+    <div class="f-row">
+      <div class="hp" title="{{hpBreakdown persona}}">
+        <label>
+          HP:
+        </label>
+        <span>
+          {{#if (isGM)}}
+          <span class="hp-main">
+            <input class="short" type="number" name="system.combat.hp" value="{{actor.hp}}">
+          </span>
+          {{else}}
+          <span class="hp-main">
+            {{actor.hp}}
+          </span>
+          {{/if}}
+        </span>
+        <span class="max-hp">
+          / {{persona.mhp}}
+        </span>
+        {{#if actor.system.combat.bonusHP}}
+        <span class="bonus-HP">
+          (+ {{actor.system.combat.bonusHP}})
+        </span>
+        {{/if}}
+      </div>
+      {{#if (hasMP actor)}}
+      <div class="mp" title="{{mpBreakdown persona}}">
+        <label> MP </label>
+        <span>
+          {{#if (isGM)}}
+          <input class="short" type="number" name="system.combat.mp.value" value="{{actor.system.combat.mp.value}}">
+          {{else}}
+          {{actor.system.combat.mp.value}}
+          {{/if}}
+        </span>
+        <span>
+          / {{persona.mmp}}
+        </span>
+        {{#if actor.system.combat.bonusMP}}
+        <span class="bonus-MP">
+          (+ {{actor.system.combat.bonusMP}})
+        </span>
+        {{/if}}
+      </div>
+      {{/if}}
 
-			{{#if (and (isGM) (isPCLike actor))}}
-			<div class="theurgy">
-				<label> Theurgy </label>
-				<span>
-					{{#if (isGM)}}
-					<input class="short" type="number" name="system.combat.theurgy.value" value="{{actor.system.combat.theurgy.value}}">
-					/
-					<input class="short" type="number" name="system.combat.theurgy.max" value="{{actor.system.combat.theurgy.max}}">
-					{{else}}
-					{{actor.theurgyVal}}
-					/ {{actor.theurgyMax}}
-					{{/if}}
-				</span>
-			</div>
-			{{/if}}
+      {{#if (and (isGM) (isPCLike actor))}}
+      <div class="theurgy">
+        <label> Theurgy </label>
+        <span>
+          {{#if (isGM)}}
+          <input class="short" type="number" name="system.combat.theurgy.value" value="{{actor.system.combat.theurgy.value}}">
+          /
+          <input class="short" type="number" name="system.combat.theurgy.max" value="{{actor.system.combat.theurgy.max}}">
+          {{else}}
+          {{actor.theurgyVal}}
+          / {{actor.theurgyMax}}
+          {{/if}}
+        </span>
+      </div>
+      {{/if}}
 
-		</div>
+    </div>
 
-		{{> "systems/persona/parts/status-block.hbs" CONST=CONST actor=actor}}
+    {{> "systems/persona/parts/status-block.hbs" CONST=CONST actor=actor}}
 
-		{{#if (hasPersona actor)}}
-		<div class="active-persona">
-			<label>
-				Active Persona:
-			</label>
-			<span>
-				{{persona.displayedName}}
-			</span>
-		</div>
-		{{/if}}
-		{{#if (isShadow actor)}}
-		<div class="basic-attack-type">
-			<span>
-				<label> Basic Attack Damage Type:</label>
-			</span>
-			<span>
-				{{actor.system.combat.baseDamageType}}
+    {{#if (hasPersona actor)}}
+    <div class="active-persona">
+      <label>
+        Active Persona:
+      </label>
+      <span>
+        {{persona.displayedName}}
+      </span>
+    </div>
+    {{/if}}
+    {{#if (isShadow actor)}}
+    <div class="basic-attack-type">
+      <span>
+        <label> Basic Attack Damage Type:</label>
+      </span>
+      <span>
+        {{actor.system.combat.baseDamageType}}
 
-			</span>
-		</div>
-		{{/if}}
+      </span>
+    </div>
+    {{/if}}
 
-		{{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=persona}}
-		{{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=persona}}
-		<button class="rollSave">
-			Roll Save
-		</button>
-		{{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=true showLearnedBuffer=true activePowersOnly=activePowersOnly canDelete=canDelete showSideboard=false usePowers=true}}
-	</div>
-		{{> "systems/persona/parts/talents-section.hbs" actor=actor CONST=CONST persona=persona}}
-	<div>
-		{{> "systems/persona/parts/persona-stats-display.hbs" CONST=CONST persona=persona}}
-	</div>
+    {{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=persona}}
+    {{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=persona}}
+    <button class="rollSave">
+      Roll Save
+    </button>
+    {{> "systems/persona/parts/powers-table.hbs" actor=actor CONST=CONST persona=persona showBonusPowers=true showLearnedBuffer=true activePowersOnly=activePowersOnly canDelete=canDelete showSideboard=false usePowers=true}}
+  </div>
+  {{> "systems/persona/parts/talents-section.hbs" actor=actor CONST=CONST persona=persona}}
+  <div>
+    {{> "systems/persona/parts/persona-stats-display.hbs" CONST=CONST persona=persona}}
+  </div>
 
-	 {{#if (isGM)}}
-	 {{> "systems/persona/parts/focii-table.hbs" actor=actor CONST=CONST persona=persona}}
-	 {{/if}}
+  {{#if (isGM)}}
+  {{> "systems/persona/parts/focii-table.hbs" actor=actor CONST=CONST persona=persona}}
+  {{/if}}
 
-</section>
+</div>

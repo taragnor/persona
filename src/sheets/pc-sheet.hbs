@@ -1,116 +1,111 @@
 <form class="pc-sheet {{#if actor.system.locked}} locked {{else}} unlocked {{/if}}">
-	<header class="f-col">
-		<div class="f-row no-wrap">
-			<div class="flex-shrink">
-				<img class="profile-img" src="{{actor.img}}" data-edit="img"/>
-			</div>
-			<section class="pc-header-data flex-shrink">
-				<div class="f-row">
-					<input type="text" class="borderless character-name" name="name" value="{{actor.name}}" title="Character Name" placeholder="Character Name" {{#if actor.system.locked}} disabled {{/if}}>
-					<div>
-						<label> Character Level</label>
-						<span> {{actor.personalLevel}}
-					</div>
-				</div>
-				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF allowEdit=true}}
-				<div class="f-row">
-					<div>
-						<label>
-							Using Meta Pod
-						</label>
-						<input type="checkbox" name="system.combat.usingMetaPod" {{checked actor.system.combat.usingMetaPod}} {{#if (not (canChangePodStatus actor))}} disabled {{/if}}>
-					</div>
-					<div>
-						{{#if (isGM)}}
-						<label> True Owner </label>
-						<span class="trueOwnerSelector">
-							<select name="system.trueOwner">
-								{{selectOptions CONST.USERS localize=false selected=actor.system.trueOwner}}
-							</select>
-						</span>
-						{{/if}}
-					</div>
-				</div>
-			</section>
-			<div>
-				{{#if (not persona.img)}}
-				{{filePicker type="image" target="system.combat.personaImg"}}
-				<input class="img" type="hidden" name="system.combat.personaImg" value="{{actor.system.combat.personaImg}}">
-				{{else}}
-				<img class="profile-img persona-img" src="{{persona.img}}" title="{{persona.publicName}}">
-				{{/if}}
-			</div>
-		</div>
-	</header>
+  <header class="f-col">
+    <div class="f-row no-wrap">
+      <div class="flex-shrink">
+        <img class="profile-img" src="{{actor.img}}" data-edit="img"/>
+      </div>
+      <section class="pc-header-data flex-shrink">
+        <div class="f-row">
+          <input type="text" class="borderless character-name" name="name" value="{{actor.name}}" title="Character Name" placeholder="Character Name" {{#if actor.system.locked}} disabled {{/if}}>
+          <div>
+            <label> Character Level</label>
+            <span> {{actor.personalLevel}}
+          </div>
+        </div>
+        {{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF allowEdit=true}}
+        <div class="f-row">
+          <div>
+            <label>
+              Using Meta Pod
+            </label>
+            <input type="checkbox" name="system.combat.usingMetaPod" {{checked actor.system.combat.usingMetaPod}} {{#if (not (canChangePodStatus actor))}} disabled {{/if}}>
+          </div>
+          <div>
+            {{#if (isGM)}}
+            <label> True Owner </label>
+            <span class="trueOwnerSelector">
+              <select name="system.trueOwner">
+                {{selectOptions CONST.USERS localize=false selected=actor.system.trueOwner}}
+              </select>
+            </span>
+            {{/if}}
+          </div>
+        </div>
+      </section>
+      <div>
+        {{#if (not persona.img)}}
+        {{filePicker type="image" target="system.combat.personaImg"}}
+        <input class="img" type="hidden" name="system.combat.personaImg" value="{{actor.system.combat.personaImg}}">
+        {{else}}
+        <img class="profile-img persona-img" src="{{persona.img}}" title="{{persona.publicName}}">
+        {{/if}}
+      </div>
+    </div>
+  </header>
 
-	<nav class="sheet-tabs tabs" data-group="primary">
-		<a class="item" data-tab="combat">
-			{{localize "persona.sheet.tabs.combat.tabname" }}
-		</a>
-		<a class="item" data-tab="personal-stat">
-			{{localize "persona.sheet.tabs.personal-stats.tabname" }}
-		</a>
-		{{#if (PersonaListContainsBasePersona actor)}}
-		<a class="item" data-tab="persona">
-			{{actor.system.personaName}}
-		</a>
-		{{/if}}
-		{{#if (hasMultiplePersonas actor)}}
-		<a class="item" data-tab="persona-list">
-			Persona List
-		</a>
-		{{/if}}
+  <nav class="sheet-tabs tabs" data-group="primary">
+    <a class="item" data-tab="combat">
+      {{localize "persona.sheet.tabs.combat.tabname" }}
+    </a>
+    <a class="item" data-tab="personal-stat">
+      {{localize "persona.sheet.tabs.personal-stats.tabname" }}
+    </a>
+    {{#if (PersonaListContainsBasePersona actor)}}
+    <a class="item" data-tab="persona">
+      {{actor.system.personaName}}
+    </a>
+    {{/if}}
+    {{#if (hasMultiplePersonas actor)}}
+    <a class="item" data-tab="persona-list">
+      Persona List
+    </a>
+    {{/if}}
 
-		<a class="item" data-tab="social">
-			{{localize "persona.sheet.tabs.social.tabname" }}
-		</a>
-		<a class="item" data-tab="soc-benefits">
-			{{localize "persona.sheet.tabs.social-benefits.tabname" }}
-		</a>
-		<a class="item" data-tab="inv">
-			{{localize "persona.sheet.tabs.inventory.tabname" }}
-		</a>
-		{{#if false}}
-		<a class="item" data-tab="inc">
-			{{localize "persona.sheet.tabs.incremental.tabname" }}
-		</a>
-		{{/if}}
-		{{#if (isTrueOwner actor)}}
-		<a class="item" data-tab="questions">
-			{{localize "persona.sheet.tabs.questions.tabname" }}
-		</a>
-		{{/if}}
-	</nav>
-	<section class="sheet-body">
-		<section class="tab tab-content social-section" data-group="primary" data-tab="social">
-			{{> "systems/persona/parts/social-section.hbs" actor=actor}}
-		</section>
-		<section class="tab tab-content character-stats-section" data-group="primary" data-tab="personal-stat">
-			{{> "systems/persona/parts/character-tab.hbs" actor=actor CONST=CONST}}
-		</section>
-		<section class="tab tab-content combat-section" data-group="primary" data-tab="combat">
-			{{> "systems/persona/parts/combat-section.hbs" actor=actor persona=(persona actor) activePowersOnly=true canDelete=false}}
-		</section>
-		<section class="tab tab-content social-benefits-section" data-group="primary" data-tab="soc-benefits">
-			{{> "systems/persona/parts/social-benefits-section.hbs" actor=actor CONST=CONST equips=equips}}
-		</section>
-		{{#if (PersonaListContainsBasePersona actor)}}
-		<section class="tab tab-content base-persona-section" data-group="primary" data-tab="persona">
-			{{> "systems/persona/parts/base-persona-section.hbs" actor=actor CONST=CONST persona=actor.basePersona}}
-		</section>
-		{{/if}}
-		{{#if (hasMultiplePersonas actor)}}
-		<section class="tab tab-content persona-list" data-group="primary" data-tab="persona-list">
-			{{> "systems/persona/parts/persona-list-tab.hbs" actor=actor CONST=CONST selectedPersona=selectedPersona}}
-		</section>
-		{{/if}}
-		<section class="tab tab-content inventory-section" data-group="primary" data-tab="inv">
-			{{> "systems/persona/parts/inventory-section.hbs" actor=actor CONST=CONST equips=equips}}
-		</section>
-		{{#if (isTrueOwner actor)}}
-		<section class="tab tab-content questions-section " data-group="primary" data-tab="questions">
-			{{> "systems/persona/parts/npc-questions.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
-		</section>
-		{{/if}}
-	</section>
+    <a class="item" data-tab="social">
+      {{localize "persona.sheet.tabs.social.tabname" }}
+    </a>
+    <a class="item" data-tab="soc-benefits">
+      {{localize "persona.sheet.tabs.social-benefits.tabname" }}
+    </a>
+    <a class="item" data-tab="inv">
+      {{localize "persona.sheet.tabs.inventory.tabname" }}
+    </a>
+    {{#if (isTrueOwner actor)}}
+    <a class="item" data-tab="questions">
+      {{localize "persona.sheet.tabs.questions.tabname" }}
+    </a>
+    {{/if}}
+  </nav>
+  <section class="sheet-body">
+    <section class="tab tab-content social-section" data-group="primary" data-tab="social">
+      {{> "systems/persona/parts/social-section.hbs" actor=actor}}
+    </section>
+    <section class="tab tab-content character-stats-section" data-group="primary" data-tab="personal-stat">
+      {{> "systems/persona/parts/character-tab.hbs" actor=actor CONST=CONST}}
+    </section>
+    <section class="tab tab-content combat-section" data-group="primary" data-tab="combat">
+      {{> "systems/persona/parts/combat-section.hbs" actor=actor persona=(persona actor) activePowersOnly=true canDelete=false}}
+    </section>
+    <section class="tab tab-content social-benefits-section" data-group="primary" data-tab="soc-benefits">
+      {{> "systems/persona/parts/social-benefits-section.hbs" actor=actor CONST=CONST equips=equips}}
+    </section>
+    {{#if (PersonaListContainsBasePersona actor)}}
+    <section class="tab tab-content base-persona-section" data-group="primary" data-tab="persona">
+      {{> "systems/persona/parts/base-persona-section.hbs" actor=actor CONST=CONST persona=actor.basePersona}}
+    </section>
+    {{/if}}
+    {{#if (hasMultiplePersonas actor)}}
+    <section class="tab tab-content persona-list" data-group="primary" data-tab="persona-list">
+      {{> "systems/persona/parts/persona-list-tab.hbs" actor=actor CONST=CONST selectedPersona=selectedPersona}}
+    </section>
+    {{/if}}
+    <section class="tab tab-content inventory-section" data-group="primary" data-tab="inv">
+      {{> "systems/persona/parts/inventory-section.hbs" actor=actor CONST=CONST equips=equips}}
+    </section>
+    {{#if (isTrueOwner actor)}}
+    <section class="tab tab-content questions-section " data-group="primary" data-tab="questions">
+      {{> "systems/persona/parts/npc-questions.hbs" actor=actor POWERSTUFF=POWERSTUFF}}
+    </section>
+    {{/if}}
+  </section>
 </form>
