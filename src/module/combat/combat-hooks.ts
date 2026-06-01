@@ -183,10 +183,6 @@ export class CombatHooks {
       }
     });
 
-
 	}
 
-
-
-
-}
+}//end of class

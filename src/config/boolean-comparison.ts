@@ -113,6 +113,7 @@ const COMBAT_COMPARISON_SUBLIST_LIST = [
 	"in-melee-with",
 	"struck-weakness",
 	"is-resistant-to",
+	"is-vulnerable-to",
 	"is-distracted",
   "combat-result-is",
 ] as const;
@@ -180,6 +181,10 @@ type CombatComparisonSub = {
 	combatProp: "in-combat",
 } | {
 	combatProp:  "is-resistant-to",
+	powerDamageType : MultiCheckOrSingle<DamageType>,
+	conditionTarget : ConditionTarget,
+} |  {
+	combatProp:  "is-vulnerable-to",
 	powerDamageType : MultiCheckOrSingle<DamageType>,
 	conditionTarget : ConditionTarget,
 } | {

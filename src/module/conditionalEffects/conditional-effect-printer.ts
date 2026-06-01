@@ -379,9 +379,11 @@ export class ConditionalEffectPrinter {
           return `${target1} is ${not} engaged with anyone`;
         case "engaged-with":
           return `${target1} is ${not} engaged with ${target2}`;
+        case "is-vulnerable-to":
         case "is-resistant-to": {
+          const vulnOrResist = cond.combatProp == "is-resistant-to" ? "resistant" : "weak";
           const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
-          return `${target1} is ${not} resistant to ${damageType}`;
+          return `${target1} is ${not} ${vulnOrResist} to ${damageType}`;
         }
         case "is-enemy":
           return `${target1} is ${not} enemy of ${target2}`;

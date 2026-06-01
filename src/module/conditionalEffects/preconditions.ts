@@ -1411,6 +1411,7 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
       const tok2 = PersonaDB.getUniversalTokenAccessor(target2);
       return combat.isInMeleeWith(tok1, tok2);
     }
+    case "is-vulnerable-to":
     case "is-resistant-to": {
       return subjects.some( target => {
         const arr = typeof condition.powerDamageType == "string" ? [condition.powerDamageType] : multiCheckToArray(condition.powerDamageType);
@@ -1425,8 +1426,11 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
           }
           const resist = target.elemResist(dtype);
           switch (resist) {
-            case "resist": case "block": case "absorb": case "reflect": return true;
-            case "weakness": case "normal": return  false;
+            case "resist": case "block": case "absorb": case "reflect":
+              return condition.combatProp == "is-resistant-to";
+            case "weakness":
+              return condition.combatProp == "is-vulnerable-to";
+            case "normal": return false;
             default:
               resist satisfies never;
               return false;
