@@ -678,6 +678,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   get theurgies() : Power[] {
+    if (this.user.isPCLike() && this.user.theurgyMax <= 0) {
+      return [];
+    }
     return this.allPowers
       .filter( x=> x.isTheurgy());
   }
