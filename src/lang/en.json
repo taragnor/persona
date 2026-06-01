@@ -881,6 +881,7 @@
 	"persona.preconditions.comparison.status-to-be-inflicted": "Status To Be Inflicted",
 	"persona.preconditions.comparison.struck-weakness": "Attack struck weakness",
 	"persona.preconditions.comparison.is-resistant-to": "Is Resistant To",
+	"persona.preconditions.comparison.is-vulnerable-to": "Is Weak To",
 	"persona.preconditions.comparison.is-same-arcana": "Is Same Arcana as Attacker",
 	"persona.preconditions.comparison.flag-state": "Flag State",
 	"persona.preconditions.comparison.is-dead": "Is Dead",
