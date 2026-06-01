@@ -2008,22 +2008,3 @@ const COMBAT_OUTCOME_LIST = [
 
 export const COMBAT_OUTCOME = HTMLTools.createLocalizationObject(COMBAT_OUTCOME_LIST, "persona.combat.outcome");
 
-//flashing text
-Hooks.on("renderChatMessageHTML", (_msg, content) => {
-  if (!PersonaCombat.combat) {return;}
-  const header = $(content).find(".start-turn-header");
-  if (header.length == 0) {return;}
-  const combatantId= HTMLTools.getClosestData(header, "combatant-id");
-  const combatant = PersonaCombat.combat.combatant;
-  if (!combatant) {return;}
-  if (combatant.id  == combatantId
-    && combatant.actor.hasPlayerOwner
-    // && !game.user.isGM
-    && combatant.actor.isOwner) {
-    console.log(`Adding flash to ${combatant.name} msg`);
-    header.addClass("flashing");
-    return;
-  }
-});
-
-

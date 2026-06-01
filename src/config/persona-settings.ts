@@ -1,6 +1,5 @@
-import {ALT_DAMAGE_SYSTEM} from "../module/combat/alt-damage-system.js";
+import { MainDamageSystem } from "../module/combat/damage-system-v1.js";
 import {DamageInterface} from "../module/combat/damage-system.js";
-import {ORIGINAL_DAMAGE_SYSTEM} from "../module/combat/original-damage-system.js";
 import {PersonaError} from "../module/persona-error.js";
 import {PersonaScene} from "../module/persona-scene.js";
 import {PersonaRegion} from "../module/region/persona-region.js";
@@ -11,6 +10,8 @@ export const SYSTEMPATH = `systems/${SYSTEMNAME}` as const;
 export const HBS_TEMPLATES_DIR = `${SYSTEMPATH}/sheets` as const;
 export const HANDLEBARS_TEMPLATE_DIR = `${SYSTEMPATH}/parts` as const;
 
+
+const DAMAGE_SYSTEM_V1= new MainDamageSystem();
 
 export class PersonaSettings {
 	static cache : ReturnType<typeof PersonaSettings["resetCache"]>;
@@ -131,7 +132,7 @@ export class PersonaSettings {
 	}
 
 	static getDamageSystem() : DamageInterface {
-		return PersonaSettings.get("alternateDamageSystem") ? ALT_DAMAGE_SYSTEM : ORIGINAL_DAMAGE_SYSTEM;
+		return DAMAGE_SYSTEM_V1;
 	}
 
 }
@@ -183,16 +184,6 @@ const SETTINGS = {
 	"xpLock" : {
 		name: "XP Lock",
 		hint: "Lock XP advancement",
-		scope: "world",
-		restricted: true,
-		config: true,
-		type :Boolean,
-		default: false,
-	},
-
-	"alternateDamageSystem" : {
-		name: "Alternate Damage System",
-		hint: "Use Alternate Damage System (multiplier based)",
 		scope: "world",
 		restricted: true,
 		config: true,

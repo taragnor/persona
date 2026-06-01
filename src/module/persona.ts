@@ -59,6 +59,7 @@ import {SeededRandom} from "./utility/seededRandom.js";
 import {CraftingPrinter} from "./printers/crafting-list.js";
 import {PostCombatPanel} from "./panels/post-combat-panel.js";
 import {TokenEffectsFlash} from "./token-effects-flash.js";
+import {MathUtilityFunctions} from "./utility/math.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -134,6 +135,7 @@ Hooks.once("init", function() {
   PostCombatPanel.init();
   Tests.init();
   TokenEffectsFlash.init();
+  MathUtilityFunctions.init();
 });
 
 function registerHandlebarsHelpers() {
@@ -142,7 +144,7 @@ function registerHandlebarsHelpers() {
 
 function preloadHandlebarsTemplates() {
 	templatePaths.forEach(path => console.log(path));
-	loadTemplates(templatePaths);
+	foundry.applications.handlebars.loadTemplates(templatePaths);
 }
 
 Hooks.on("init", () => {

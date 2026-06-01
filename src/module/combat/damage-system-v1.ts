@@ -10,8 +10,7 @@ import {AttackResult} from "./combat-result.js";
 import {DamageCalculation} from "./damage-calc.js";
 import {ConvertableDamageLevel, DamageSystemBase, NewDamageParams} from "./damage-system.js";
 
-
-export class AltDamageSystem extends DamageSystemBase {
+export class MainDamageSystem extends DamageSystemBase {
 
   private WEAPON_STRENGTH_DAMAGE_MULT = 0.333 as const;
   private MAGIC_DAMAGE_MULT = 0.333 as const;
@@ -24,6 +23,7 @@ export class AltDamageSystem extends DamageSystemBase {
   private BASE_DAMAGE_LEVEL_DIVISOR = 0.666 as const;
   // private STAT_DIFF_DAMAGE_BOOST_PERCENT = 0.02;
   private _weaponDmgGrowth = new GrowthCalculator(1.20, 11, 4.5);
+  private DAMAGE_STAT_DIFF_PERCENT_SCALER = 0.75 as const;
 
   individualContributionToAllOutAttackDamage(actor: ValidAttackers, target: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation {
     if (!actor.canAllOutAttack()) {
@@ -132,6 +132,7 @@ export class AltDamageSystem extends DamageSystemBase {
   protected getPercentModifier(attackStat: number, endurance: number) : number {
     const PERCENT_PADDING = PersonaCombatStats.PERCENT_PADDING;
     let percent = (PERCENT_PADDING + attackStat) / (PERCENT_PADDING + endurance);
+    percent = Math.scalePercentage(percent, this.DAMAGE_STAT_DIFF_PERCENT_SCALER);
     percent = Math.clamp(percent, 0.1, 5);
     percent = Math.round(percent * 100) / 100;
     return percent;
@@ -307,8 +308,6 @@ const DAMAGE_LEVEL_NEW = {
   "severe": {extraVariance: 0, baseAmt: 40, mult: 2, healMult: 3.5},
   "colossal": {extraVariance: 0, baseAmt: 55, mult: 2.333, healMult :5},
 } as const satisfies Readonly<Record< ConvertableDamageLevel, ExtraDamageParams>>;
-
-export const ALT_DAMAGE_SYSTEM = new AltDamageSystem();
 
 type ExtraDamageParams = {
   mult: number,

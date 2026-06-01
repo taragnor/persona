@@ -34,7 +34,6 @@ import {PersonaSettings} from "../config/persona-settings.js";
 import {POWER_TAGS} from "../config/power-tags.js";
 import {FusionCombination, FusionTable} from "../config/fusion-table.js";
 import {PCSheet} from "./actor/sheets/pc-sheet.js";
-import {OriginalDamageSystem} from "./combat/original-damage-system.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaCompendium} from "./persona-compendium.js";
 import { CombatPanel } from "./combat/panels/combat-panel.js";
@@ -201,28 +200,21 @@ export class PersonaHandleBarsHelpers {
       return (pc as PC).meetsSLRequirement(benefit.focus);
     },
 
-    "getWeaponDR": function (persona: Persona) : number {
-      const DR = (PersonaSettings.getDamageSystem() as OriginalDamageSystem).armorDR(persona);
-      DR.setMinValue(-Infinity);
-      return Math.abs(DR.eval().hpChange);
-    },
-    "getMagicDR": function (persona: Persona) : number {
-
-      const DR = (PersonaSettings.getDamageSystem() as OriginalDamageSystem).magDR(persona);
-      DR.setMinValue(-Infinity);
-      return Math.abs(DR.eval().hpChange);
-    },
-
-    "WeaponDRBreakdown": function (persona: Persona) : string {
-      const DR = (PersonaSettings.getDamageSystem() as OriginalDamageSystem).armorDR(persona);
-      DR.setMinValue(-Infinity);
-      return DR.eval().str.join("\n");
-    },
-    "MagicDRBreakdown": function (persona: Persona) : string {
-      const DR = (PersonaSettings.getDamageSystem() as OriginalDamageSystem).magDR(persona);
-      DR.setMinValue(-Infinity);
-      return DR.eval().str.join("\n");
-    },
+    // "getWeaponDR": function (persona: Persona) : number {
+    //   const DR = (PersonaSettings.getDamageSystem() as MainDamageSystem)["armorDR"](persona);
+    //   DR.setMinValue(-Infinity);
+    //   return Math.abs(DR.eval().hpChange);
+    // },
+    // "WeaponDRBreakdown": function (persona: Persona) : string {
+    //   const DR = (PersonaSettings.getDamageSystem() as OriginalDamageSystem).armorDR(persona);
+    //   DR.setMinValue(-Infinity);
+    //   return DR.eval().str.join("\n");
+    // },
+    // "MagicDRBreakdown": function (persona: Persona) : string {
+    //   const DR = (PersonaSettings.getDamageSystem() as OriginalDamageSystem).magDR(persona);
+    //   DR.setMinValue(-Infinity);
+    //   return DR.eval().str.join("\n");
+    // },
 
     "getTokenAccName" : (tokenAcc: UniversalTokenAccessor<PToken> | UniversalActorAccessor<PC | Shadow>) =>  {
       if ("actorId" in tokenAcc) {
@@ -939,10 +931,11 @@ export class PersonaHandleBarsHelpers {
     if (source.isShadow() && source.system.creatureType == "daemon") {return true;}
     return source.hasTag("simulated");
   },
-  "armorDR": function (item: InvItem) {
-    const DR = (PersonaSettings.getDamageSystem() as OriginalDamageSystem).armorDRByEquipment(item);
-    return DR;
-  },
+
+  // "armorDR": function (item: InvItem) {
+  //   const DR = (PersonaSettings.getDamageSystem() as OriginalDamageSystem).armorDRByEquipment(item);
+  //   return DR;
+  // },
 
   "getModifierTypesByCategory": function (category: U<keyof typeof MODIFIER_CATEGORIES>) {
     if (!category || category.length == 0)
