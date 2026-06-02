@@ -422,9 +422,11 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       PersonaError.softFail(`Unknown numeric comparison type ${(condition as Record<string, string>)["comparisonTarget"]}`);
       return false;
   }
+
   const resolvedNum = resolveTestCase(testCase, condition, situation);
-  if (!resolvedNum) {return false;}
+  if (resolvedNum == null) {return false;}
   testCase = resolvedNum;
+
   // if (typeof testCase != "number") {
   //   const source = condition.source ? PersonaDB.find(condition.source): undefined;
   //   const owner = condition.owner ? PersonaDB.find(condition.owner) : undefined;
@@ -448,6 +450,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
   //   if (resolvedCA == undefined) {return false;}
   //   testCase = resolvedCA;
   // }
+
   switch (condition.comparator) {
     case "!=" : return target != testCase;
     case "==" : return target == testCase;
@@ -460,7 +463,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
     case "range": return target >= testCase && target <= condition.high;
     default: {
       condition satisfies undefined;
-      PersonaError.softFail("Undefined comparatoron condition");
+      PersonaError.softFail(`Undefined comparison comparator operator: ${(condition as GenericObject).comparator as string}`);
       Debug(condition);
       return false;
     }

@@ -1990,6 +1990,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   /** positive removes fatigue and negative adds it*/
   async alterFatigueLevel(amt: number, log=true) : Promise<FatigueStatusId | undefined> {
+    if (amt == 0) {return;}
     const oldLvl = this.fatigueLevel;
     const newLvl = oldLvl + amt;
     return await this.setFatigueLevel(newLvl, log);
@@ -2457,14 +2458,25 @@ async fullHeal() {
   }
 }
 
+async endEffectsOfDurationOrLess( duration: StatusDuration) : Promise<ActiveEffect[]> {
+  const removed : ActiveEffect[] = [];
+  for (const eff of this.effects) {
+    if (eff.durationLessThanOrEqualTo(duration)) {
+      removed.push(eff);
+      await eff.delete();
+    }
+  }
+  return removed;
+}
+
 async onEnterMetaverse()  : Promise<void> {
   if (!this.isValidCombatant()) {return;}
   if (this.system.type == "pc" && !this.hasPlayerOwner) {return;} //deal with removing item piles and such
   try {
     await this.resetTheurgy();
     await this.fullHeal();
-    if (this.system.type == "pc") {
-      await (this as PC).social.refreshSocialLink(this as PC);
+    if (this.isPC()) {
+      await this.social.refreshSocialLink(this);
     }
     const situation = {
       trigger: "enter-metaverse",
@@ -2477,17 +2489,6 @@ async onEnterMetaverse()  : Promise<void> {
     console.log(e);
     PersonaError.softFail(`problem with onEnterMetaverse for ${this.name}`, e);
   }
-}
-
-async endEffectsOfDurationOrLess( duration: StatusDuration) : Promise<ActiveEffect[]> {
-  const removed : ActiveEffect[] = [];
-  for (const eff of this.effects) {
-    if (eff.durationLessThanOrEqualTo(duration)) {
-      removed.push(eff);
-      await eff.delete();
-    }
-  }
-  return removed;
 }
 
 async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
@@ -2509,9 +2510,7 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
     }
     if (this.isNPCAlly()) {
       await this.setFlag("persona", "fatigueRecovery", 0);
-      if (this.hasStatus("full-fade")) {
-        await this.alterFatigueLevel(-2);
-      }
+      await this.resetMetaverseActivity();
     }
     await this.fullHeal();
     await this.endEffectsOfDurationOrLess( {dtype :"expedition", anchorHolder: undefined});
@@ -3153,6 +3152,9 @@ get canSwitchPersonas() : boolean {
 
 /** should get called after a search action or after entering a new region*/
 async onMetaverseTimeAdvance(): Promise<string[]> {
+  if (this.isNPCAlly()) {
+    void this.incrementMetaverseActivity();
+  }
   const ret: string[] = [];
   for (const eff of this.effects) {
     if ( await eff.onMetaverseTimeAdvance()) {
@@ -3160,6 +3162,21 @@ async onMetaverseTimeAdvance(): Promise<string[]> {
     }
   }
   return ret;
+}
+
+async resetMetaverseActivity(this: NPCAlly): Promise<void> {
+  const activity = this.system.metaverseActivityRounds ?? 0;
+  await this.update({"system.metaverseActivityRounds" : 0});
+  const fatigue = this.hasStatus("full-fade")
+  || activity > 80 ? -2
+  : activity > 20 ? -1
+  : 0;
+  await this.alterFatigueLevel(fatigue);
+}
+
+async incrementMetaverseActivity(this: NPCAlly) : Promise<void> {
+  const activity = this.system.metaverseActivityRounds ?? 0;
+  await this.update({"system.metaverseActivityRounds" : activity + 1});
 }
 
 async resetFatigueChecks(this: PC) {
@@ -3178,7 +3195,6 @@ async onEndDay(this:  PC | NPCAlly): Promise<string[]> {
   }
   return ret;
 }
-
 
 async onStartDay(this: PC | NPCAlly) : Promise<string[]> {
   return this.checkEffectExpire( eff => eff.onStartDay());
@@ -3292,12 +3308,8 @@ async createEffectFlag(flagId: string,
     if (!flagName) {flagName = flagId;}
     flagId = flagId.toLowerCase();
     const eff = this.effects.find(x=> x.isFlag(flagId));
-    const newAE = {
-      name: flagName,
-    };
-    const durationOptions = {
-      clearOnDeath,
-    };
+    const newAE = { name: flagName, };
+    const durationOptions = { clearOnDeath, };
     if (eff) {
       await eff.setDuration(duration, durationOptions);
       return eff;
@@ -3315,8 +3327,8 @@ async clearEffectFlag(flagId: string) {
 }
 
 async setRelationshipType(this: PC, socialLinkId: string, newRelationshipType: string) {
-  const link = this.system.social.find(x=> x.linkId == socialLinkId);
-
+  const link = this.system.social
+    .find(x=> x.linkId == socialLinkId);
   if (!link) {
     throw new PersonaError(`Can't find link for Id ${socialLinkId}`);
   }
@@ -3325,7 +3337,7 @@ async setRelationshipType(this: PC, socialLinkId: string, newRelationshipType: s
 }
 
 isSpecialEvent(this:SocialLink, numberToCheck: number) : boolean {
-  if (this.system.type == "pc") {return false;}
+  if (this.isPC()) {return false;}
   const peices = (this.system.specialEvents ?? "").split(",", 20).map(x=> Number(x?.trim() ?? ""));
   return peices.includes(numberToCheck);
 }
@@ -3349,7 +3361,7 @@ async deleteTokenSpend(this: SocialLink, deleteIndex:number) {
 }
 
 getAvailabilityConditions(this: SocialLink)  : readonly SourcedPrecondition[] {
-  if (this.isPC()){ return [];}
+  if (this.isPC()) {return [];}
   const conds = ConditionalEffectManager.getConditionals(this.system.availabilityConditions, null, null, null);
   return conds;
 }
@@ -3927,7 +3939,7 @@ declare global {
   type NPC = Subtype<PersonaActor, "npc">;
   type NPCAlly =Subtype<PersonaActor, "npcAlly">;
   type Tarot = Subtype<PersonaActor, "tarot">;
-
+  type PCLike = NPCAlly | PC;
   type SocialLink = PC | NPC | NPCAlly;
 }
 

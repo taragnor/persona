@@ -436,9 +436,7 @@ export class ConditionalEffectPrinter {
 
     private static printNumericCond(cond: Precondition & {type: "numeric"}) : string {
       const endString = (cond: Precondition & {type: "numeric"} , derivedVar?: string) => {
-        if (!("comparator" in cond)) {
-          return "ERROR";
-        }
+        if (!("comparator" in cond)) { return "ERROR"; }
         switch (cond.comparator) {
           case "odd":
             return "is Odd";

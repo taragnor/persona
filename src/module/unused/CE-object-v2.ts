@@ -17,9 +17,7 @@ interface CEItem<O extends object = object> {
   object : O;
 
   deepObject(): O & object;
-
 }
-
 
 interface MenuI< O extends object=object, Children extends ChildrenT = ChildrenT, Selector extends (keyof Children)[] = (keyof Children)[] > extends CEItem< O>{
 

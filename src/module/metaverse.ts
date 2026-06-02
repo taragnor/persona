@@ -131,7 +131,6 @@ export class Metaverse {
     return false;
   }
 
-
   static getPhase() : GamePhase {
     const combat = PersonaCombat.combat;
     switch (true) {
@@ -148,8 +147,11 @@ export class Metaverse {
   }
 
   static async exitMetaverse() {
-    (game.actors as Collection<PersonaActor>)
-      .filter( (x: PersonaActor)=> x.isRealPC() || x.isNPCAlly())
+    const PCsAndNPCs = (PersonaDB.NPCAllies() as PCLike[])
+      .concat(PersonaDB.PCs());
+    // (game.actors as Collection<PersonaActor>)
+    // .filter( (x: PersonaActor)=> x.isRealPC() || x.isNPCAlly())
+    PCsAndNPCs
       .forEach( (x: PC | NPCAlly) => void x.onExitMetaverse());
     const promises = game.scenes.contents.map(sc => (sc as PersonaScene).onExitMetaverse());
     await Promise.allSettled(promises);
@@ -160,12 +162,12 @@ export class Metaverse {
 
   static weightedTest(type :Shadow["system"]["creatureType"] = "shadow") {
     const map = new Map<Shadow["name"], number>();
-    for (let tries =0; tries< 2000; tries++) {
+    for (let tries = 0; tries < 2000; tries ++) {
       const {enemies} = RandomEncounter.generateEncounter(type);
-      for (const shadow of enemies) {
+      enemies.forEach( shadow => {
         const current = map.get(shadow.name) ?? 0;
         map.set(shadow.name, current +1);
-      }
+      });
     }
     return this.#averageMap(map);
   }

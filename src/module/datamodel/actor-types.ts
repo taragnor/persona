@@ -226,12 +226,13 @@ class NPCAllySchema extends foundry.abstract.TypeDataModel {
 			...sharedAbilities(),
 			NPCSocialProxyId: new id(),
       isInActiveParty: new bool(),
+      metaverseActivityRounds: new num({initial: 0, integer: true}),
 		} as const;
 		return ret;
 	}
 
 	static override migrateData(d : any) {
-		const data= super.migrateData(d);
+		const data = super.migrateData(d);
 		return talentConversion(data);
 	}
 }

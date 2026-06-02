@@ -140,7 +140,7 @@ export const BOOLEAN_COMPARISON_TARGET = HTMLTools.createLocalizationObject(BOOL
 export const NONDEPBOOLEAN_COMPARISON_TARGET = HTMLTools.createLocalizationObject(ACTIVE_BOOLEAN_COMPARISON_TARGET_LIST, "persona.preconditions.comparison");
 
 
-type BasicComparisonTargets=  typeof BASIC_BOOLEAN_COMPARISON_LIST[number];
+type BasicComparisonTargets = typeof BASIC_BOOLEAN_COMPARISON_LIST[number];
 
 export type BooleanComparisonPC = {
 	type : "boolean",
