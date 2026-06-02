@@ -308,7 +308,7 @@ export class CombatEngine {
       user: attackerActor.accessor,
       attacker: attackerActor.accessor,
       triggeringCharacter: attackerActor.accessor,
-      triggeringUser: game.user,
+      triggeringUser: game.user.id,
       addedTags: "addedTags" in situation ? situation.addedTags ?? [] : [],
     } satisfies TriggeredSituation.Select<"get-added-power-tags">;
     const consList = TriggeredEffect.onTrigger_consequences(trigSit, attackerActor);
@@ -486,7 +486,7 @@ export class CombatEngine {
     const trigSit ={
       ...resultSituation,
       trigger: "on-use-power",
-      triggeringUser: game.user,
+      triggeringUser: game.user.id,
       triggeringCharacter: attacker.user.accessor,
     } as const satisfies TriggeredSituation.Select<"on-use-power">;
     const overrideResult = TriggeredEffect.onTrigger(trigSit, attacker.user)

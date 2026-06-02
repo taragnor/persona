@@ -133,7 +133,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       global: false,
       user: comb.actor.accessor,
       triggeringCharacter: comb.actor.accessor,
-      triggeringUser: game.user,
+      triggeringUser: game.user.id,
     } as const satisfies TriggeredSituation.Select<"on-combat-start-dual">;
     const CR = TriggeredEffect
     .onTrigger(situation, token.actor);
@@ -303,7 +303,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     .map( comb => {
       const situation ={
         trigger: 'on-combat-end-dual',
-        triggeringUser: game.user,
+        triggeringUser: game.user.id,
         global: false,
         result: PCsWin ? "hit" : "miss",
         triggeringCharacter: comb.actor!.accessor,
@@ -322,7 +322,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     const situation = {
       trigger: "on-combat-end-dual",
       global: true,
-      triggeringUser: game.user,
+      triggeringUser: game.user.id,
       result: PCsWin ? "hit" : "miss",
       combatOutcome,
     } satisfies TriggeredSituation.Select<"on-combat-end-dual">;
@@ -590,7 +590,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         const situation : Situation = {
           trigger: "start-turn",
           triggeringCharacter: triggeringCharacter.accessor,
-          triggeringUser: game.user,
+          triggeringUser: game.user.id,
           user: user.token.actor.accessor,
         };
         const res = TriggeredEffect.onTrigger(situation, user.token.actor);
@@ -714,7 +714,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         if (user.token.actor == undefined) {continue;}
         const situation : Situation = {
           trigger: 'end-turn',
-          triggeringUser: game.user,
+          triggeringUser: game.user.id,
           triggeringCharacter,
           user: user.token.actor.accessor,
         };

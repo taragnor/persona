@@ -117,7 +117,7 @@ export class PersonaRegion extends RegionDocument {
 		const situation : Situation = {
 			trigger: "on-enter-region",
 			triggeringRegionId: this.id,
-			triggeringUser: game.user,
+			triggeringUser: game.user.id,
 		};
 		return this.allRoomEffects
 			.flatMap( eff=> eff.getPassiveEffects(null))
@@ -308,7 +308,7 @@ export class PersonaRegion extends RegionDocument {
 			trigger: "on-enter-region",
 			triggeringRegionId: this.id,
 			triggeringCharacter: token.actor.accessor,
-			triggeringUser: game.user,
+			triggeringUser: game.user.id,
 		};
 		if (!this.disabled) {
 			await TriggeredEffect.autoApplyTrigger(situation, token.actor);
@@ -361,7 +361,7 @@ export class PersonaRegion extends RegionDocument {
 		const shadowType = randomSelect(removeDuplicates(shadowTypes));
 		const situation : Situation = {
 			trigger: "on-presence-check",
-			triggeringUser: game.user,
+			triggeringUser: game.user.id,
 			triggeringRegionId : this.id,
 		};
 		const modifiers = [

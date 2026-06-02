@@ -117,7 +117,7 @@ export class ConsequenceApplier {
     for (const SitUser of [attackerActor, targetActor]) {
       const situation : Situation =  {
         ...sitPartial,
-        triggeringUser: game.user,
+        triggeringUser: game.user.id,
         user: SitUser.accessor,
       } as const satisfies TriggeredSituation.Select<"on-inflict-status">;
       const eff = (TriggeredEffect.onTrigger(situation, SitUser))
@@ -154,7 +154,7 @@ export class ConsequenceApplier {
         attacker,
         amt: -dmg.hpChange,
         damageType: dmg.damageType,
-        triggeringUser: game.user,
+        triggeringUser: game.user.id,
       } as const;
       const preDamageSit = {
         ...situation,
@@ -558,7 +558,7 @@ export class ConsequenceApplier {
         attacker: attacker.actor.accessor,
         target: target.actor.accessor,
         user: attackerActor.accessor,
-        triggeringUser: game.user,
+        triggeringUser: game.user.id,
       };
       for (const comb of combat.combatants) {
         if (!comb.actor) {continue;}

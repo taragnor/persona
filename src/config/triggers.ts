@@ -49,6 +49,7 @@ export const SHARED_TRIGGERS = [
 export const CANCEL_CHECK = [
 	"on-power-usage-check",
   "on-equip-check",
+  "check-legal-target",
 ] as const;
 
 export const TRIGGER_LIST = [

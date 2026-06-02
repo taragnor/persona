@@ -1,6 +1,8 @@
-import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
+import {LocalEffect, NonDeprecatedConsequence, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
+import {ActorChange, CombatResult} from "../combat/combat-result.js";
 import { ConsequenceApplier } from "../combat/consequence-applier.js";
+import {ResolvedActorChange} from "../combat/finalized-combat-result.js";
 import {StepsClock} from "../exploration/steps-clock.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
 import {StatusDuration} from "../persona-ae.js";
@@ -8,6 +10,7 @@ import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {SocialCardExecutor} from "../social/social-card-executor.js";
+import {sleep} from "../utility/async-wait.js";
 import {MultiTierCache, TimedCache} from "../utility/cache.js";
 
 export class Tests {
@@ -15,12 +18,20 @@ export class Tests {
   /** purely as a loading mechanism*/
   static init() {}
 
-  static get kim() : PC {
-    const kim= game.actors.getName("Kimberly Newton") as PersonaActor;
-    if (!kim || !kim.isRealPC()) {
-      throw new PersonaError("Can't find Kim Actor");
+  static getPC(actorName: string) : PC {
+    const actor= game.actors.getName(actorName) as PersonaActor;
+    if (!actor || !actor.isRealPC()) {
+      throw new PersonaError(`Can't find ${actorName} Actor`);
     }
-    return kim;
+    return actor;
+  }
+
+  static get anya(): PC {
+    return this.getPC("Anya Forsythe");
+  }
+
+  static get kim() : PC {
+    return this.getPC("Kimberly Newton");
   }
 
   static multiTierCacheTest () {
@@ -175,7 +186,50 @@ export class Tests {
     await TreasureSystem.test(scene.treasureLevel, mod, min);
   }
 
+  static async testAnchoredStatus () : TestResult {
+    const anya = this.anya;
+    const kim = this.kim;
+    const statusEffect =  {
+      "duration": {
+        "dtype" :"3-rounds",
+        "anchorHolder": anya.accessor,
+        "amount": 3,
+      },
+      "id" :"jailed",
+    } satisfies StatusEffect;
+    const change = {
+      "actor": kim.accessor,
+      "addStatus" : [statusEffect],
+      "removeStatus": [],
+      "localEffects" : [],
+      "damage": [],
+      "otherEffects" : [],
+    } satisfies ResolvedActorChange;
+    await ConsequenceApplier.applyActorChange(change, undefined);
+    if (!kim.hasStatus("jailed")) {
+      console.warn("Anchored Status test failed to apply");
+      return false;
+    }
+    for (let x=0 ; x < 10; x++) {
+      await kim.onStartCombatTurn();
+    }
+    if (!kim.hasStatus("jailed")) {
+      console.warn("Anchored Status test failed: treated as nonachored");
+      return false;
+    }
+    for (let x=0 ; x < 10; x++) {
+      await anya.onStartCombatTurn();
+    }
+    await sleep(500);
+    if (kim.hasStatus("jailed")) {
+      console.warn("Anchored Status test failed: not removed");
+      return false;
+    }
+    return true;
+  }
 }
 
 //@ts-expect-error adding to global
 window.tests = Tests;
+
+type TestResult = Promise<boolean>;

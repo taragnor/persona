@@ -450,7 +450,7 @@ export class FinalizedCombatResult {
       attacker: attacker.actor.accessor,
       usedPower: power.accessor,
       triggeringCharacter : this.attacker.actor.accessor,
-      triggeringUser: game.user,
+      triggeringUser: game.user.id,
       combatResult: this,
       addedTags: [],
     } as const satisfies TriggeredSituation.Select<"on-use-power">;
@@ -503,7 +503,7 @@ export class FinalizedCombatResult {
   }
 }
 
-export interface ResolvedActorChange<T extends PersonaActor> {
+export interface ResolvedActorChange<T extends PersonaActor = PersonaActor> {
   actor: UniversalActorAccessor<T>;
   damage: EvaluatedDamage[];
   addStatus: StatusEffect[];

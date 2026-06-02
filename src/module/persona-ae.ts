@@ -281,9 +281,6 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     );
   }
 
-
-
-
   async setDuration(duration: StatusDuration, options: Partial<DurationOptions> = {}) : Promise<void> {
     if (duration.dtype == "UEoNT") {
       this.durationFix(duration);
@@ -412,7 +409,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
       const activeDuration = game.combat && "amount" in this.statusDuration ? game.combat.round - this.duration.startRound : undefined ;
       const situation : Situation = {
         trigger: "on-active-effect-time-out",
-        triggeringUser: game.user,
+        triggeringUser: game.user.id,
         activeEffect: this.accessor,
         user: this.parent.accessor,
         triggeringCharacter: this.parent.accessor,
@@ -457,7 +454,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
       const activeDuration = game.combat ? game.combat.round - this.duration.startRound : undefined ;
       const situation : Situation = {
         trigger: "on-active-effect-end",
-        triggeringUser: game.user,
+        triggeringUser: game.user.id,
         activeEffect: this.accessor,
         user: this.parent.accessor,
         triggeringCharacter: this.parent.accessor,

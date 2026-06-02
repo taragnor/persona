@@ -1564,7 +1564,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       const situation: Situation ={
         trigger: "pre-inflict-status",
         triggeringCharacter: this.accessor,
-        triggeringUser: game.user,
+        triggeringUser: game.user.id,
         user: this.accessor,
         statusEffect: id,
         target: this.accessor,
@@ -2516,7 +2516,7 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
     await this.endEffectsOfDurationOrLess( {dtype :"expedition", anchorHolder: undefined});
     const situation = {
       trigger : "exit-metaverse",
-      triggeringUser: game.user,
+      triggeringUser: game.user.id,
       user: this.accessor,
       triggeringCharacter: this.accessor,
     } as const satisfies Situation;

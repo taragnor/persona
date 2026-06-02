@@ -174,9 +174,14 @@ namespace TriggeredSituation {
     | OnRollTrigger
     | ClockTrigger
     | StartSocialTurnTrigger
-    | OnPowerUsageCheckTrigger
     | CombatTrigger
-    | EquipCheck ;
+    | Checks;
+
+  type Checks =
+    OnPowerUsageCheckTrigger
+    | EquipCheck
+    | LegalTargetCheck;
+
 
 type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
 
@@ -193,6 +198,12 @@ type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
     {
     trigger: "on-equip-check",
   }
+
+  type LegalTargetCheck = SituationComponent.PowerUse &
+    SituationComponent.TriggeringCharacter &
+    {
+      trigger: "check-legal-target",
+    };
 
   type GenericExplorationTrigger = Partial<SituationComponent.TriggeringCharacter> & {
     trigger: "on-open-door" | "on-search-end" | "exit-metaverse" | "on-active-scene-change";
@@ -353,7 +364,7 @@ type CombatStartTrigger = {
 } & GlobalSplit;
 
   type TriggerSituation_base = {
-    triggeringUser : FoundryUser,
+    triggeringUser : FoundryUser["id"],
   }
 
   type PresenceCheckTrigger = {

@@ -1294,21 +1294,13 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       trigger : "on-power-usage-check",
       user: this.user.accessor,
       usedPower: usable.accessor,
-      triggeringUser: game.user,
+      triggeringUser: game.user.id,
     };
     const cancel =  effects.find( eff => eff.checkForCancelEffect(situation) );
     if (cancel) {
       return `Failed due to Conditional ${ConditionalEffectPrinter.printConditions(cancel.conditions)}`;
     }
     return null;
-    // for (const eff of effects) {
-    //   const cons = eff.getActiveConsequences(situation);
-    //   const cancelEffect = cons.find(cons => cons.type =="cancel");
-    //   if (cancelEffect) {
-    //     return `Failed due to Conditional ${ConditionalEffectPrinter.printConditions(eff.conditions)}`;
-    //   }
-    // }
-    // return null;
   }
 
   private _canPayActivationCostCheck_pc(this: Persona<PC | NPCAlly>, usable: UsableAndCard) : N<FailReason> {

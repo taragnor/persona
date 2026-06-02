@@ -414,14 +414,14 @@ export class Metaverse {
     await StepsClock.instance.inc();
     const global_situation = {
       trigger: "on-metaverse-turn-dual",
-      triggeringUser: game.user,
+      triggeringUser: game.user.id,
       global: true,
     } as const satisfies TriggeredSituation.Select<"on-metaverse-turn-dual">;
     await TriggeredEffect.autoApplyTrigger(global_situation, undefined);
     for (const member of PersonaDB.activePCParty()) {
       const indiv_sit = {
         trigger: "on-metaverse-turn-dual",
-        triggeringUser:game.user,
+        triggeringUser: game.user.id,
         global: false,
         user: member.accessor,
         triggeringCharacter : member.accessor,
@@ -604,7 +604,7 @@ Hooks.on("updateWall", async function (_updateItem: WallDocument, changes: Recor
   if (changes.ds == 1 && game.user.isGM) {
     const situation : Situation = {
       trigger: "on-open-door",
-      triggeringUser: game.users.get(userId)!,
+      triggeringUser: userId,
     };
     await TriggeredEffect.autoApplyTrigger(situation, undefined);
   }
@@ -614,7 +614,7 @@ Hooks.on("clockTick", async function (clock: ProgressClock, _newAmt: number) {
   const situation : Situation = {
     trigger: "on-clock-tick",
     triggeringClockId: clock.id,
-    triggeringUser: game.user,
+    triggeringUser: game.user.id,
   };
   await TriggeredEffect.autoApplyTrigger(situation, undefined);
 });
@@ -623,7 +623,7 @@ Hooks.on("clockOverflow", async function (clock: ProgressClock) {
   const situation : Situation = {
     trigger: "on-clock-overflow",
     triggeringClockId: clock.id,
-    triggeringUser: game.user,
+    triggeringUser: game.user.id,
   };
   await TriggeredEffect.autoApplyTrigger(situation, undefined);
 });
@@ -632,7 +632,7 @@ Hooks.on("updateClock", async function (clock: ProgressClock, _newAmt: number, _
   const situation : Situation = {
     trigger: "on-clock-change",
     triggeringClockId: clock.id,
-    triggeringUser: game.user,
+    triggeringUser: game.user.id,
   };
   await TriggeredEffect.autoApplyTrigger(situation, undefined);
 });

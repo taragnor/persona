@@ -51,6 +51,7 @@ import {ItemHooks} from './item-hooks.js';
 import {TimedCache} from '../utility/cache.js';
 import {ConditionalEffectManager} from '../conditionalEffects/conditional-effect-manager.js';
 import {multiCheckToArray, testPreconditions} from '../conditionalEffects/preconditions.js';
+import {TriggeredEffect} from '../triggered-effect.js';
 
 declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -1588,7 +1589,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   validTargetConditions(this: Usable, user: ValidAttackers) : ConditionalEffectC["conditions"] {
-  const sourcedTC = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user, this );
+    const targetConditions = this.itemBase?.system.validTargetConditions ?? this.system.validTargetConditions;
+  const sourcedTC = ConditionalEffectManager.getConditionals(targetConditions, this, user, this );
     return sourcedTC;
   }
 
@@ -2449,8 +2451,22 @@ targetMeetsConditions(this: UsableAndCard, user: ValidAttackers, target: ValidAt
     user: user.accessor,
     target: target.accessor,
     usedPower: usable.accessor,
-  };
-  return testPreconditions(conditions, sit);
+  } as const;
+  const precond= testPreconditions(conditions, sit);
+  if (!precond) {return false;}
+  const triggerSit = {
+    trigger: "check-legal-target",
+    triggeringUser: game.user.id,
+    triggeringCharacter: user.accessor,
+    addedTags: [],
+    usedPower: this.accessor,
+    user: user.accessor,
+    target: target.accessor,
+    attacker : user.accessor,
+  } satisfies Situation;
+  const triggerCheck = TriggeredEffect.onTrigger_cancelCheck(triggerSit, user);
+  if (triggerCheck) {return false;}
+  return true;
 }
 
 requiresTargetSelection(this: UsableAndCard) : boolean {

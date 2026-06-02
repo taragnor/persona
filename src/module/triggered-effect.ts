@@ -21,7 +21,7 @@ export class TriggeredEffect {
   static onTrigger<const T extends Trigger>(situation: TriggerParam<T> | TriggeredSituation.Select<T>, actor : U<ValidAttackers>) : CombatResult {
     const situationCopy = {
       ...(situation satisfies TriggerParam<T>),
-      triggeringUser: game.user,
+      triggeringUser: game.user.id,
     } satisfies TriggeredSituation.TriggerSituation;
     if (!situationCopy) {
       PersonaError.softFail(`Trigger Fizzle: ${situation.trigger}`, situation);
@@ -35,12 +35,20 @@ export class TriggeredEffect {
   static onTrigger_consequences<const T extends Trigger>(situation: TriggerParam<T>, actor : U<ValidAttackers>) : SourcedConsequence[] {
     const situationCopy = {
       ...(situation satisfies TriggerParam<T>),
-      triggeringUser: game.user,
+      triggeringUser: game.user.id,
     } satisfies TriggeredSituation.TriggerSituation;
-    if (!situationCopy) {return [];}
     const triggers = this.getTriggerList(situationCopy.trigger, actor, situationCopy);
     const consequences = this._getTriggerConsequences(triggers, situationCopy );
     return consequences;
+  }
+
+  static onTrigger_cancelCheck<const T extends Trigger>(situation: TriggerParam<T>, actor : U<ValidAttackers>) : boolean {
+    const situationCopy = {
+      ...(situation satisfies TriggerParam<T>),
+      triggeringUser: game.user.id,
+    } satisfies TriggeredSituation.TriggerSituation;
+    const triggers = this.getTriggerList(situationCopy.trigger, actor, situationCopy);
+    return triggers.some( trig=> trig.checkForCancelEffect(situationCopy));
   }
 
   private static _getTriggerConsequences ( triggers: ConditionalEffectC[], situation: Situation) {

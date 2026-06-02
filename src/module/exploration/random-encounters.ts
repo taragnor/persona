@@ -33,7 +33,7 @@ export class RandomEncounter {
       situation = {
         trigger: "on-presence-check",
         triggeringRegionId : region.id,
-        triggeringUser: game.user,
+        triggeringUser: game.user.id,
       };
     }
     const sModifiers = new ModifierList(

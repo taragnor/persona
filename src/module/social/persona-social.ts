@@ -136,7 +136,7 @@ export class PersonaSocial {
       trigger: "on-social-turn-start",
       user: pc.accessor,
       triggeringCharacter: pc.accessor,
-      triggeringUser: game.user,
+      triggeringUser: game.user.id,
     } satisfies Situation;
     await TriggeredEffect.execNonCombatTrigger(situation, pc, "Start Social Turn Triggered Effects");
   }
@@ -369,7 +369,7 @@ export class PersonaSocial {
 			user: target.accessor,
 			tarot: socialLink.tarot?.name as TarotCard,
 			target: target.accessor,
-      triggeringUser: game.user,
+      triggeringUser: game.user.id,
 		} satisfies Situation;
 		await this.execTrigger(situation, target, `Gains Perk (${socialLink.tarot?.name})`) ;
 	}

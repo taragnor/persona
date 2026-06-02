@@ -786,7 +786,7 @@ export class CombatResult  {
   }
 }
 
-export interface ActorChange<T extends PersonaActor> {
+export interface ActorChange<T extends PersonaActor = PersonaActor> {
 	actor: UniversalActorAccessor<T>;
 	damage: Partial<Record<NonNullable<DamageCalculation["damageType"]>, DamageCalculation>>;
 	addStatus: StatusEffect[],
