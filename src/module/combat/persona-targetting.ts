@@ -157,7 +157,7 @@ export class PersonaTargetting {
 				;
 			}
 			case 'everyone': {
-				const combat= PersonaCombat.ensureCombatExists();
+				const combat = PersonaCombat.ensureCombatExists();
         const attackerToken = combat.getCombatantByActor(attacker)?.token;
 				return combat.validCombatants(attackerToken as PToken)
 				.filter( x=> x?.actor?.isAlive())

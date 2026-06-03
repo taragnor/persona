@@ -26,6 +26,7 @@ declare interface HOOKS {
 	"preCreateItem": PreCreateHook<Item>;
 	"preDeleteItem": PreDeleteHook<Item>;
 	"preDeleteActor": PreDeleteHook<Actor>;
+  "preDeleteToken": PreDeleteHook<TokenDocument>;
 	"preCreateChatMessage": PreCreateHook<ChatMessage>;
 	"createChatMessage": CreateHook<ChatMessage>;
 	"preUpdateActor": UpdateHook<Actor>;

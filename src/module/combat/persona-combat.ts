@@ -1971,9 +1971,7 @@ CombatHooks.init();
 
 export type PersonaCombatant = Combatant<ValidAttackers> & {actor: ValidAttackers , token: PToken, parent: PersonaCombat};
 
-
 type IntoCombatant = PersonaCombatant | UniversalTokenAccessor<PToken> | UniversalActorAccessor<ValidAttackers>;
-
 
 export type TargettingContextList = Omit<Record<ValidAttackersApplies, UniversalActorAccessor<ValidAttackers>[]>, "owner"> & {
   owner: UniversalActorAccessor<PersonaActor>[],
@@ -1983,7 +1981,6 @@ export type TargettingContextList = Omit<Record<ValidAttackersApplies, Universal
 type ValidAttackersApplies = Exclude<NonNullable<ConditionTarget>, 'cameo'>;
 
 export type TargettingContext = <T extends keyof TargettingContextList>( applyTo: T) => TargettingContextList[T]
-
 
 export interface CombatOptions {
   askForModifier ?: boolean;

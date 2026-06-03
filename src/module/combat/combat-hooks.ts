@@ -6,6 +6,7 @@ import { PersonaError } from "../persona-error.js";
 import { PersonaSockets } from "../persona.js";
 import {FlagChangeDiffObject} from "./openers.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
+import {sleep} from "../utility/async-wait.js";
 
 export class CombatHooks {
 
@@ -158,10 +159,18 @@ export class CombatHooks {
 			$(elem).find('.outer-roll-block').on('click', (ev) => void PersonaCombat._openRollBlock(ev));
 		});
 
-    Hooks.on("deleteToken", (tok) => {
-      PersonaCombat.combat?.combatants.contents
-        .filter( comb => comb.token == tok || comb.token == undefined)
-        .forEach(comb=> void comb.delete());
+    Hooks.on("deleteToken", async tok => {
+      await sleep(1000); //wait a bit to see if something else deletes the combatant
+      const combatants = PersonaCombat.combat
+        ?.combatants.contents
+        .filter( comb => comb.token == tok);
+      for (const comb of (combatants ?? [])) {
+        try {
+          await comb.delete();
+        } catch {
+          PersonaError.softFail(`Failed to Delete ${comb.id} when deleting token ${tok.id}`);
+        }
+      }
     });
 
     //flashing text
