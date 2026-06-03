@@ -1,6 +1,6 @@
 import {EquipmentTagOrId} from "../../config/equipment-tags.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
-import {POWER_TAGS, POWER_TAGS_LIST, POWER_TYPE_TAGS, PowerTagOrId, STATUS_AILMENT_POWER_TAGS} from "../../config/power-tags.js";
+import {POWER_TAGS, POWER_TYPE_TAGS, PowerTagOrId, STATUS_AILMENT_POWER_TAGS} from "../../config/power-tags.js";
 import {Persona} from "../persona-class.js";
 import {PersonaError} from "../persona-error.js";
 import {FullTag, TagManager} from "../tag-manager.js";

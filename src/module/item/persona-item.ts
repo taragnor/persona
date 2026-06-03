@@ -51,7 +51,6 @@ import {ItemHooks} from './item-hooks.js';
 import {TimedCache} from '../utility/cache.js';
 import {ConditionalEffectManager} from '../conditionalEffects/conditional-effect-manager.js';
 import {multiCheckToArray, testPreconditions} from '../conditionalEffects/preconditions.js';
-import {TriggeredEffect} from '../triggered-effect.js';
 
 declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -348,14 +347,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         : cons.amount.type == "constant" && cons.amount.val > 0)
     );
   }
-
-  // restoresMP(this: Consumable | Power) : boolean {
-  //   return this.getEffects(null).some( eff => {
-  //     return eff.consequences.some( cons => {
-  //       return (cons.type == "alter-mp");
-  //     });
-  //   });
-  // }
 
   inflictsDamage(this:Consumable) : boolean {
     const dmgType = this.getBaseDamageType();
