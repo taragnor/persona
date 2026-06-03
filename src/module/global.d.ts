@@ -73,3 +73,4 @@ type NonNullableProps<T> =
 type GenericObject = {
   [key: string]: string | GenericObject;
 };
+

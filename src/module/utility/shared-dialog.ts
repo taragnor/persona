@@ -2,22 +2,22 @@ import {HTMLDataInputDefinition, HTMLInputReturnType, HTMLTools} from "./HTMLToo
 import {SocketManager, SocketPayload} from "./socket-manager.js";
 
 declare global {
-	interface SocketMessage {
-		"SHARED_DIALOG_START" : {
-			name: string,
-			dataDef: SharedDataDefinition,
-			dialogId: string,
-			userIds: User["id"][]
-		};
-		"SHARED_DIALOG_UPDATE" : {
-			name: string;
-			data: object;
-			dialogId: string;
-		};
-		"SHARED_DIALOG_CLOSE": {
-			dialogId: string;
-		};
-	}
+  interface SocketMessage {
+    "SHARED_DIALOG_START" : {
+      name: string,
+      dataDef: SharedDataDefinition,
+      dialogId: string,
+      userIds: User["id"][]
+    };
+    "SHARED_DIALOG_UPDATE" : {
+      name: string;
+      data: object;
+      dialogId: string;
+    };
+    "SHARED_DIALOG_CLOSE": {
+      dialogId: string;
+    };
+  }
 }
 
 Hooks.on("socketsReady", (sm) => {

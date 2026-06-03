@@ -87,14 +87,13 @@ export class SharedData<T extends SharedDataDefinition = HTMLDataInputDefinition
 		return HTMLTools.generateDefaultData(this._definition);
 	}
 
-
 	private _sendData(users : FoundryUser[] = this.users) {
 		const data = this._data;
 		const payload = {
 			name: this.name,
 			data: data,
 			dialogId: this.id,
-		};
+		} as const;
 		for (const user of users) {
 			void SharedData.socketManager.verifiedSend( "SHARED_DIALOG_UPDATE", payload, user.id);
 		}
@@ -149,7 +148,7 @@ export class SharedData<T extends SharedDataDefinition = HTMLDataInputDefinition
 }
 
 
-type SharedDataDefinition = HTMLDataInputDefinition;
+type SharedDataDefinition = OmitNever<HTMLDataInputDefinition>;
 
 type SharedDataType<T extends SharedDataDefinition> = HTMLInputReturnType<T>;
 
@@ -159,4 +158,9 @@ interface SharedDataListener<SD extends SharedData> {
   onSharedDataUpdate (data: SD["data"]): Promise<void>;
   onSharedDataClose (data: SD["data"]) : Promise<void>;
 }
+
+
+type OmitNever<T> = {
+    [K in keyof T as T[K] extends never ? never : K]: T[K]
+};
 

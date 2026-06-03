@@ -1,6 +1,5 @@
-import {LocalEffect, NonDeprecatedConsequence, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
+import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
-import {ActorChange, CombatResult} from "../combat/combat-result.js";
 import { ConsequenceApplier } from "../combat/consequence-applier.js";
 import {ResolvedActorChange} from "../combat/finalized-combat-result.js";
 import {StepsClock} from "../exploration/steps-clock.js";

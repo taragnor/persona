@@ -2,13 +2,14 @@ import { PersonaActor } from "../actor/persona-actor.js";
 import {testPreconditions} from "../conditionalEffects/preconditions.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
+import {TriggeredEffect} from "../triggered-effect.js";
 import {randomSelect} from "../utility/array-tools.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
 
 export class PersonaTargetting {
-  power : Usable;
+  power : UsableAndCard;
 
-  constructor (usable: Usable) {
+  constructor (usable: UsableAndCard) {
     this.power = usable;
   }
 
@@ -49,7 +50,7 @@ export class PersonaTargetting {
 				target: target.actor.accessor,
 				usedPower: power.accessor,
 			};
-      return power.targetMeetsConditions(attacker.actor, target.actor, situation);
+      return power.targeting().targetMeetsTargettingConditions(attacker.actor, target.actor, situation);
     });
 
     if (filteredTargets.length == 0) {
@@ -65,6 +66,38 @@ export class PersonaTargetting {
 
   }
 
+  targetMeetsTargettingConditions(user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
+    if (target.hasStatus('protected') && user != target) {return false;}
+    const usable = this.power;
+    if (usable.isSkillCard()) {
+      return target.persona().powerLearning.canLearnNewSkill();
+    }
+    if (!usable.system.validTargetConditions) {return true;}
+    const conditions  = usable.validTargetConditions(user);
+    const sit = situation ? situation : {
+      attacker : user.accessor,
+      user: user.accessor,
+      target: target.accessor,
+      usedPower: usable.accessor,
+    } as const;
+    const precond= testPreconditions(conditions, sit);
+    if (!precond) {return false;}
+    const triggerSit = {
+      ...sit,
+      trigger: "check-legal-target",
+      triggeringUser: game.user.id,
+      triggeringCharacter: user.accessor,
+      addedTags: "addedTags" in sit && sit.addedTags ? sit.addedTags : [],
+      usedPower: usable.accessor,
+      user: user.accessor,
+      target: target.accessor,
+      attacker : user.accessor,
+    } satisfies Situation;
+    const triggerCheck = TriggeredEffect.onTrigger_cancelCheck(triggerSit, user);
+    if (triggerCheck) {return false;}
+    return true;
+  }
+
   static getDefaultPowerTargets(attacker: ValidAttackers, power: UsableAndCard): PToken[] {
     const targets = power.targets();
     const attackerType = attacker.getAllegiance();
@@ -72,7 +105,7 @@ export class PersonaTargetting {
     switch (targets) {
       case '1-random-enemy': {
         const list = PersonaCombat.getAllEnemiesOf(attacker)
-        .filter(target => power.targetMeetsConditions(attacker, target.actor));
+        .filter(target => power.targeting().targetMeetsTargettingConditions(attacker, target.actor));
         return [randomSelect(list)];
       }
       case '1-engaged':
@@ -84,7 +117,7 @@ export class PersonaTargetting {
         return selected;
       case 'all-enemies': {
         return PersonaCombat.getAllEnemiesOf(attacker)
-        .filter(target => power.targetMeetsConditions(attacker, target.actor));
+        .filter(target => power.targeting().targetMeetsTargettingConditions(attacker, target.actor));
       }
       case 'all-dead-allies': {
         const combat = PersonaCombat.ensureCombatExists();
@@ -120,16 +153,16 @@ export class PersonaTargetting {
 				.filter( x=> x.actor != attacker
 					&& x?.actor?.isAlive())
 				.map( x=> x.token)
-				.filter(target => power.targetMeetsConditions(attacker, target.actor));
+				.filter(target => power.targeting().targetMeetsTargettingConditions(attacker, target.actor));
 				;
 			}
-			case 'everyone':{
+			case 'everyone': {
 				const combat= PersonaCombat.ensureCombatExists();
         const attackerToken = combat.getCombatantByActor(attacker)?.token;
 				return combat.validCombatants(attackerToken as PToken)
 				.filter( x=> x?.actor?.isAlive())
 				.map( x=> x.token)
-				.filter(target => power.targetMeetsConditions(attacker, target.actor));
+				.filter(target => power.targeting().targetMeetsTargettingConditions(attacker, target.actor));
 			}
 			case 'everyone-even-dead': {
 				const combat= PersonaCombat.ensureCombatExists();
@@ -137,7 +170,7 @@ export class PersonaTargetting {
 				return combat.validCombatants(attackerToken as PToken)
 				.filter( x=> x.actor && !x.actor.isFullyFaded())
 				.map( x=> x.token)
-				.filter(target => power.targetMeetsConditions(attacker, target.actor));
+				.filter(target => power.targeting().targetMeetsTargettingConditions(attacker, target.actor));
 			}
 			default:
 				targets satisfies never;
@@ -186,7 +219,7 @@ export class PersonaTargetting {
 		}
 	}
 
-  static getValidTargetsFor(usable: Usable, user: PersonaCombatant,  possibleTargets?: PersonaCombatant[], situation ?: Situation) : PersonaCombatant[] {
+  static getValidTargetsFor(usable: UsableAndCard, user: PersonaCombatant,  possibleTargets?: PersonaCombatant[], situation ?: Situation) : PersonaCombatant[] {
     const userActor = user.token.actor;
     if (!userActor) {return [];}
     if (possibleTargets == undefined) {
@@ -200,7 +233,7 @@ export class PersonaTargetting {
         const targetActor = comb.token.actor;
         if (!targetActor) {return false;}
         if (!PersonaCombat.isPersonaCombatant(comb)) {return false;}
-        return this.isValidTargetFor( usable, user, comb, situation);
+          return this.isValidTargetFor( usable, user, comb, situation);
       });
   }
 
@@ -208,7 +241,7 @@ export class PersonaTargetting {
     return PersonaTargetting.getValidTargetsFor(this.power, user, possibleTargets, situation);
   }
 
-  static isValidTargetFor(usable: Usable, user: PersonaCombatant, target: PersonaCombatant, situation?:Situation): boolean {
+  static isValidTargetFor(usable: UsableAndCard, user: PersonaCombatant, target: PersonaCombatant, situation?:Situation): boolean {
     const userActor = user.token.actor;
     const targetActor = target.token.actor;
     if (!userActor || !targetActor) {return false;}
@@ -228,6 +261,7 @@ export class PersonaTargetting {
 
   isValidTargetFor(user: ValidAttackers, target: ValidAttackers, baseSit?: Situation): boolean {
     const power = this.power;
+    if (power.isSkillCard()) {return target.isPCLike();}
     const situation = !baseSit ? {
       user : user.accessor,
       attacker: user.accessor,
@@ -281,7 +315,8 @@ export class PersonaTargetting {
       default:
         targets satisfies never;
     }
-    return testPreconditions(power.validTargetConditions(user), situation);
+    return this.targetMeetsTargettingConditions(user, target, situation);
+    // return testPreconditions(power.validTargetConditions(user), situation);
   }
 
 }

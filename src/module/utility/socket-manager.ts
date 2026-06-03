@@ -1,8 +1,9 @@
-declare global { export interface SocketMessage {
+declare global {
+  export interface SocketMessage extends Record<string, unknown> {
 		"TEST": string;
 		"X": number;
 		"__VERIFY__": VerificationId;
-		"__VERIFY_ERROR__": VerificationId
+		"__VERIFY_ERROR__": VerificationId,
 	}
 
 	interface HOOKS {
@@ -91,7 +92,8 @@ export class SocketManager {
 			targetInfo: sessionInfo,
 			recipients: recipientIds,
 			data	:dataToSend,
-		};
+		} as const;
+    // game.socket.emit(this.#socketName, {x: () => 5});
 		game.socket.emit(this.#socketName, sPayload );
 	}
 
@@ -288,3 +290,5 @@ export class TimeoutError extends Error{ };
 export class VerificationFailedError extends Error{ }
 export class SocketsNotConnectedError extends Error { }
 class PlayerDisconnectedError extends Error { }
+
+

@@ -1805,7 +1805,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.hasTag('navigator', null);
   }
 
-  targeting(this: Usable) : PersonaTargetting {
+  targeting(this: UsableAndCard) : PersonaTargetting {
     if (!this._targeting) {
       this._targeting = new PersonaTargetting(this);
     }
@@ -2440,34 +2440,38 @@ async setPowerCost(this: Power, required: number, cost: number) {
   });
 }
 
-targetMeetsConditions(this: UsableAndCard, user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
-  if (target.hasStatus('protected') && user != target) {return false;}
-  if (this.system.type == 'skillCard') {return target.persona().powerLearning.canLearnNewSkill();}
-  const usable = this as Usable;
-  if (!usable.system.validTargetConditions) {return true;}
-  const conditions  = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user, this);
-  const sit = situation ? situation : {
-    attacker : user.accessor,
-    user: user.accessor,
-    target: target.accessor,
-    usedPower: usable.accessor,
-  } as const;
-  const precond= testPreconditions(conditions, sit);
-  if (!precond) {return false;}
-  const triggerSit = {
-    trigger: "check-legal-target",
-    triggeringUser: game.user.id,
-    triggeringCharacter: user.accessor,
-    addedTags: [],
-    usedPower: this.accessor,
-    user: user.accessor,
-    target: target.accessor,
-    attacker : user.accessor,
-  } satisfies Situation;
-  const triggerCheck = TriggeredEffect.onTrigger_cancelCheck(triggerSit, user);
-  if (triggerCheck) {return false;}
-  return true;
-}
+// targetMeetsConditions(this: UsableAndCard, user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
+//   if (target.hasStatus('protected') && user != target) {return false;}
+//   if (this.system.type == 'skillCard') {return target.persona().powerLearning.canLearnNewSkill();}
+//   const usable = this as Usable;
+//   if (!usable.system.validTargetConditions) {return true;}
+//   const conditions  = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user, this);
+//   const sit = situation ? situation : {
+//     attacker : user.accessor,
+//     user: user.accessor,
+//     target: target.accessor,
+//     usedPower: usable.accessor,
+//   } as const;
+//   const precond= testPreconditions(conditions, sit);
+//   if (!precond) {return false;}
+//   const triggerSit = {
+//     trigger: "check-legal-target",
+//     triggeringUser: game.user.id,
+//     triggeringCharacter: user.accessor,
+//     addedTags: [],
+//     usedPower: this.accessor,
+//     user: user.accessor,
+//     target: target.accessor,
+//     attacker : user.accessor,
+//   } satisfies Situation;
+//   const triggerCheck = TriggeredEffect.onTrigger_cancelCheck(triggerSit, user);
+//   if (triggerCheck) {return false;}
+//   return true;
+// }
+
+// getTargetConditions(this: Usable, user: N<ValidAttackers>) : SourcedConditionalEffect["conditions"]{
+//     return ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user, this);
+// }
 
 requiresTargetSelection(this: UsableAndCard) : boolean {
   if (this.isSkillCard()) {return false;}
