@@ -180,40 +180,41 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
   }
 
   //this can vary by user so has to be in its own function
-  private getWeaponDamageTypeTags(power: Power, user: N<ValidAttackers>) :  TagType[] {
+  private getDamageTypeTags(power: Usable, user: N<ValidAttackers>) :  TagType[] {
     const list : TagType[]  = [];
-    if (power.system.damageLevel != "none") {
-      const damageType = user ? power.getDamageType(user) : power.getBaseDamageType();
-      switch (damageType) {
-        case "none":
-        case "all-out":
-          break;
-        case "cold":
-          list.pushUnique("ice");
-          break;
-        case "by-power":
-          list.pushUnique("variable-damage");
-          break;
-        case "lightning":
-          list.pushUnique("elec");
-          break;
-        case "untyped":
-          list.pushUnique("almighty");
-          break;
-        default:
-          list.pushUnique(damageType);
-      }
+    if (power.isPower()
+      && power.system.damageLevel == "none") {
+      return list;
+    }
+    const damageType = user ? power.getDamageType(user) : power.getBaseDamageType();
+    switch (damageType) {
+      case "none":
+      case "all-out":
+        break;
+      case "cold":
+        list.pushUnique("ice");
+        break;
+      case "by-power":
+        list.pushUnique("variable-damage");
+        break;
+      case "lightning":
+        list.pushUnique("elec");
+        break;
+      case "untyped":
+        list.pushUnique("almighty");
+        break;
+      default:
+        list.pushUnique(damageType);
     }
     return list;
   }
-
 
   private getTags_power(item : Power, user: N<ValidAttackers>) : readonly TagType[] {
     const retTags : TagType[] = this._getUniformAutoTags().slice();
     if (item.getCooldown(user ?? null)) {
       retTags.pushUnique(`cooldown`);
     }
-    const dmgTags = this.getWeaponDamageTypeTags(item, user ?? null);
+    const dmgTags = this.getDamageTypeTags(item, user ?? null);
     retTags.pushUnique(...dmgTags);
     return retTags;
   }
@@ -228,11 +229,9 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
     if (!list.includes(item.system.type)) {
       list.pushUnique(item.system.type);
     }
-    if (!list.includes( item.getBaseDamageType()) && POWER_TAGS_LIST.includes( item.getBaseDamageType())) {
-      if (item.getBaseDamageType() != "none") {
-        list.pushUnique(item.getBaseDamageType());
-      }
-    }
+    list.pushUnique(
+      ... this.getDamageTypeTags(item, user)
+    );
     if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
       list.pushUnique('ailment');
     }

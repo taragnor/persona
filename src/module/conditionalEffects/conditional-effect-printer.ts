@@ -569,6 +569,7 @@ export class ConditionalEffectPrinter {
     }
 
     static printConsequences(cons: ConditionalEffectC["consequences"]) : string {
+      if (cons == undefined) {return "ERROR";}
       return ConditionalEffectManager.getConsequences(cons, null , null, null)
         .map(x=> this.printConsequence(x))
         .filter(x => x)
@@ -585,14 +586,6 @@ export class ConditionalEffectPrinter {
         }
         case "expend-item":
           return `expend item`;
-        // case "add-power-to-list": {
-        //   const grantedPower = PersonaDB.getPower(cons.id);
-        //   return `Add power to list ${grantedPower?.displayedName?.toString() ?? "ERROR"}`;
-        // }
-        // case "add-talent-to-list": {
-        //   const grantedTalent = PersonaDB.getItemById(cons.id) as Talent;
-        //   return `Add Talent to list ${grantedTalent?.displayedName?.toString() ?? "ERROR"}`;
-        // }
         case "other-effect":
           return this.#printOtherEffect(cons);
         case "set-flag":
@@ -624,20 +617,8 @@ export class ConditionalEffectPrinter {
           const amount = this.printConsequenceAmount(cons.amount);
           return `${modified} ${amount}`;
         }
-        // case "teach-power": {
-        //   if (cons.randomPower) {
-        //     return "Random Power";
-        //   } else {
-        //     const power = PersonaDB.getPower(cons.id);
-        //     return `Teach Power ${power?.displayedName?.toString() ?? "ERROR"}`;
-        //   }
-        // }
         case "raise-status-resistance":
           return `${this.translate(cons.resistanceLevel, RESIST_STRENGTHS)} status ${this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE)}`;
-       // case "add-creature-tag": {
-        //   const tag = this.translate(cons.creatureTag, CREATURE_TAGS);
-        //   return `Add ${tag} tag`;
-        // }
         case "combat-effect":
           return this.#printCombatEffect(cons);
         case "alter-fatigue-lvl":
@@ -648,18 +629,12 @@ export class ConditionalEffectPrinter {
               return `Alter ${cons.varType} Variable ${cons.variableId} : ${cons.operator} ${cons.min} - ${cons.max}`; }
         case "perma-buff":
           return `Add Permabuff ${cons.buffType} :${cons.value}`;
-        // case "play-sound":
-        //   return `Play Sound: ${cons.soundSrc} (${cons.volume})`;
         case "gain-levels": {
           const gainTarget =this.translate(cons.gainTarget, LEVEL_GAIN_TARGETS);
           return `Gain ${cons.value} Levels for ${gainTarget}`;
         }
         case "trigger-event-cons":
           return this._printTriggerEventCons(cons);
-        // case "cancel":
-        //   return `Cancel Triggering Event`;
-        // case "set-roll-result":
-        //   return `Set Roll Result to ${cons.result}`;
         case "inventory-action":
           return this.printInventoryAction(cons);
         case "sfx":

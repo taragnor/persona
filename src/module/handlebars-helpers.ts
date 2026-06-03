@@ -1182,12 +1182,14 @@ export class PersonaHandleBarsHelpers {
     return true;
   },
 
-  "getBaseItem": function<T extends PersonaItem | PersonaActor | PersonaAE> (owner: T) :T  {
-    if (owner instanceof PersonaItem) {
-      return owner.itemBase as T;
+    "getBaseItem": function<T extends PersonaItem | PersonaActor | PersonaAE> (owner: T) :T  {
+      if (owner instanceof PersonaItem) {
+        // console.log(`Returning base item for ${owner.name}`);
+        return owner.itemBase as T;
+      }
+      // console.log(`Returning non-base item for ${owner.name}`);
+      return owner;
     }
-    return owner;
-  }
 
 };
 

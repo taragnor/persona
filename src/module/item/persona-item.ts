@@ -1940,8 +1940,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   isBasicPower(this: UsableAndCard) : boolean {
-    if (this.system.type == 'skillCard') {return false;}
-    if (this.system.type == 'consumable') {return false;}
+    if (this.isSkillCard()) {return false;}
+    if (this.isConsumable()) {return false;}
     const basics = [
       ...PersonaItem.getBasicPCPowers(),
       ...PersonaItem.getBasicShadowPowers(),
@@ -2010,8 +2010,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options : GetEffectsOptions = {}): readonly ConditionalEffectC[] {
-    //possible caching error here with effects for items counting tags multiple times
-    //proxy item is used for tags to redirect their source to their parent item (for purposes of reading item level)
     if (!PersonaDB.isLoaded) {
       throw new PersonaError("DB not loaded yet");
     }
@@ -2289,7 +2287,6 @@ async addEventChoice(this: SocialCard, eventIndex: number, newChoice ?: CardChoi
   arr.push( newChoice);
   event.choices = arr;
   await event.update!({choices: arr});
-  // await this.update({'system.events': Helpers.expandObject(this.system.events)});
 }
 
 async deleteEventChoice(this: SocialCard, eventIndex: number, choiceIndex: number) {
@@ -2298,7 +2295,6 @@ async deleteEventChoice(this: SocialCard, eventIndex: number, choiceIndex: numbe
   arr.splice(choiceIndex, 1);
   event.choices = arr;
   await event.update!({choices: arr});
-  // await this.update({'system.events': Helpers.expandObject(this.system.events)});
 }
 
 
@@ -2422,7 +2418,6 @@ powerEffectLevel(this: Power) : number {
   if (tags.includes('healing')) {
     mod += 1;
   }
-  // const multiMod = this.isMultiTarget() ? 1 : 0;
   const dmgtype = this.getBaseDamageType();
   if (dmgtype == 'dark' || dmgtype == 'light')
   {mod+= 1;}
@@ -2439,39 +2434,6 @@ async setPowerCost(this: Power, required: number, cost: number) {
     'system.energy.newForm': true,
   });
 }
-
-// targetMeetsConditions(this: UsableAndCard, user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
-//   if (target.hasStatus('protected') && user != target) {return false;}
-//   if (this.system.type == 'skillCard') {return target.persona().powerLearning.canLearnNewSkill();}
-//   const usable = this as Usable;
-//   if (!usable.system.validTargetConditions) {return true;}
-//   const conditions  = ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user, this);
-//   const sit = situation ? situation : {
-//     attacker : user.accessor,
-//     user: user.accessor,
-//     target: target.accessor,
-//     usedPower: usable.accessor,
-//   } as const;
-//   const precond= testPreconditions(conditions, sit);
-//   if (!precond) {return false;}
-//   const triggerSit = {
-//     trigger: "check-legal-target",
-//     triggeringUser: game.user.id,
-//     triggeringCharacter: user.accessor,
-//     addedTags: [],
-//     usedPower: this.accessor,
-//     user: user.accessor,
-//     target: target.accessor,
-//     attacker : user.accessor,
-//   } satisfies Situation;
-//   const triggerCheck = TriggeredEffect.onTrigger_cancelCheck(triggerSit, user);
-//   if (triggerCheck) {return false;}
-//   return true;
-// }
-
-// getTargetConditions(this: Usable, user: N<ValidAttackers>) : SourcedConditionalEffect["conditions"]{
-//     return ConditionalEffectManager.getConditionals(this.system.validTargetConditions, this, user, this);
-// }
 
 requiresTargetSelection(this: UsableAndCard) : boolean {
   if (this.isSkillCard()) {return false;}
