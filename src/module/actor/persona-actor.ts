@@ -344,6 +344,48 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return item;
   }
 
+  private async stackItems(a: Carryable, b: Carryable) : Promise<boolean> {
+    if (!this.items.contents.includes(a)
+      || !this.items.contents.includes(b)
+      || a.parent != this
+      || b.parent != this
+    ) {
+      throw new PersonaError("You don't own all these items");
+    }
+    if (a==b) {
+      ui.notifications.warn("trying to stack wit itself");
+      return false;
+    }
+    if (a.isStackableWith(b)) {
+      const bAmt = b.amount;
+      const oldA_Amt = a.amount;
+      const newA_Amt = oldA_Amt +  bAmt;
+      await a.update( {"system.amount": newA_Amt});
+      Logger.log(`${this.name} ${a.displayedName} amount changed to ${newA_Amt} (old ${oldA_Amt}, stacked with ${b.displayedName} (amt: ${bAmt})`);
+      if (a.system.amount == newA_Amt) {
+        await b.delete();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async compressInventory() : Promise<void> {
+    const items = this.inventory;
+    for (const i of items) {
+      if (i.isStackable) {
+        const stackable = items
+          .find( item => i != item && i.isStackableWith(item));
+        if (!stackable) {continue;}
+        const stackAttempt = await this.stackItems(i, stackable);
+        if (!stackAttempt) {
+          throw new PersonaError(`Couldn't stack ${i.name} and ${stackable.name} for ${this.name}`);
+        }
+        return this.compressInventory();
+      }
+    }
+  }
+
   async addTreasureItem( treasure: EnchantedTreasureFormat, quietLog = false) : Promise<void> {
     let logMsg = "";
     const baseItem = PersonaDB.findItem(treasure.item);
@@ -3906,6 +3948,11 @@ private async _trySwapPersona(this: PC, p1: Persona, p2: Persona)  : Promise<boo
     }
   }
   return false;
+}
+
+get hasVelvetRoomAccess() : boolean{
+  if (!this.isPCLike()){ return false;}
+  return this.getVariable("VELVET") > 0;
 }
 
 /** number of R to summon from compendium*/

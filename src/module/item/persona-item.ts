@@ -1130,17 +1130,38 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return PersonaItem.createSkillCardFromPower(this);
   }
 
-  static async createSkillCardFromPower(power: Power) : Promise<SkillCard> {
-    if (power.system.type != 'power') {
-      throw new Error('Not a power');
+  static async createSkillCardFromPower(power: Power, options: SkillCardCreationOptions = {}) : Promise<SkillCard> {
+    if (!power.isPower()) {
+      throw new PersonaError('Not a power');
     }
-    return await PersonaItem.create<SkillCard>( {
-      name: `${power.name} card`,
+    try {
+      const rawData = this.getSkillCardDataFromPower(power, options);
+    return await PersonaItem.create<SkillCard>(
+      rawData
+    );
+    } catch (e) {
+      PersonaError.softFail(`Conversion o Power ${power.name} to skill card Failed`, e);
+      throw e;
+    }
+    // return await PersonaItem.create<SkillCard>( {
+    //   name: `${power.name} card`,
+    //   type: 'skillCard',
+    //   system: {
+    //     skillId: power.id,
+    //   }
+    // });
+  }
+
+  static getSkillCardDataFromPower(power: Power, options: SkillCardCreationOptions) {
+    const velvetName = options.velvetCard ? "Velvet Card" : "Card";
+    return {
+      name: `${power.name} ${velvetName}`,
       type: 'skillCard',
       system: {
         skillId: power.id,
+        velvetCard : options.velvetCard ?? false,
       }
-    });
+    } satisfies Foundry.CreationData<SkillCard>;
   }
 
   /** required because foundry input hates arrays*/
@@ -1898,7 +1919,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   isStackableWith(a: TagBearingItem): boolean {
     if (!this.isStackable || !a.isStackable) {return false;}
-
     const tagListA = a.tagList(null);
     const thisTagList = this.tagList(null);
     if (this.itemBase != a.itemBase) {return false;}
@@ -2885,3 +2905,8 @@ export interface GetEffectsOptions {
 type TagBearingItem = Talent | Focus | UsableAndCard | InvItem | Weapon;
 
 ItemHooks.init();
+
+
+type SkillCardCreationOptions = {
+  velvetCard?: boolean;
+}

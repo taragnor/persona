@@ -5,10 +5,12 @@ import {PersonaDB} from "../persona-db.js";
 import {SidePanelManager} from "../side-panel/side-panel-manager.js";
 import {PersonaCalendar} from "../social/persona-calendar.js";
 import {PersonaSocial} from "../social/persona-social.js";
-import {CraftingPanel} from "./crafting-panel.js";
+import {CardCraftingPanel} from "./card-crafting-panel.js";
+import {ItemCraftingPanel} from "./item-crafting-panel.js";
 import {ItemUsePanel} from "./item-use-panel.js";
 import {PersonaPanel} from "./sub-panel.js";
 import {UsableUsePanel} from "./usable-use-panel.js";
+import { SidePanel } from "../side-panel/side-panel.js";
 
 export class DowntimePanel extends PersonaPanel {
   actor: U<PC> = undefined;
@@ -88,13 +90,22 @@ export class DowntimePanel extends PersonaPanel {
         enabled: () => true,
         visible: () => true,
         cssClasses : ["tall-button"]
-      }, {
-        label: "Crafting",
-        onPress: () => CraftingPanel.open(this.actor!, this),
-        enabled: () => CraftingPanel.allowCrafting(),
-        visible: () => this.actor != undefined,
-        cssClasses : ["tall-button"]
-      }, {
+      },
+      ...DowntimePanel.craftingButtons(this.actor, this),
+      // {
+        // label: "Crafting",
+        // onPress: () => ItemCraftingPanel.open(this.actor!, this),
+        // enabled: () => ItemCraftingPanel.allowCrafting(),
+        // visible: () => this.actor != undefined,
+        // cssClasses : ["tall-button"]
+      // }, {
+        // label: "Card Crafting",
+        // onPress: () => CardCraftingPanel.open(this.actor!, this),
+        // enabled: () => CardCraftingPanel.allowCrafting(),
+        // visible: () => this.actor != undefined && this.actor.hasVelvetRoomAccess,
+        // cssClasses : ["tall-button"]
+      // },
+      {
         label: `Swap ${NPCAlly?.displayedName ?? "Teammate"}`,
         onPress: () => void Metaverse.chooseAlly(),
         enabled: () => !PersonaCombat.combat || PersonaCombat.combat.isSocial,
@@ -117,6 +128,23 @@ export class DowntimePanel extends PersonaPanel {
       weatherIcon : PersonaCalendar.getWeatherIcon()[0].outerHTML,
       actor: this.actor,
     };
+  }
+
+  static craftingButtons(actor: U<PersonaActor>, thisPanel: N<SidePanel>) {
+    if (actor == undefined || !actor.isRealPC()) {return [];}
+    return [ {
+      label: "Crafting",
+      onPress: () => ItemCraftingPanel.open(actor, thisPanel),
+      enabled: () => ItemCraftingPanel.allowCrafting(),
+      visible: () => actor != undefined,
+      cssClasses : ["tall-button"]
+    }, {
+      label: "Create Cards (Velvet Room)",
+      onPress: () => CardCraftingPanel.open(actor, thisPanel),
+      enabled: () => CardCraftingPanel.allowCrafting(),
+      visible: () => actor != undefined && actor.hasVelvetRoomAccess,
+      cssClasses : ["tall-button"]
+    } ];
   }
 
   private GMButtons() : SidePanel.ButtonConfig[] {

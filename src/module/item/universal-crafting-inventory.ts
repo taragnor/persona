@@ -60,7 +60,7 @@ export class UniversalCraftingInventory {
 
   private hasItem(spec: ItemSpecifier) :boolean {
     const entry = this.sortedItemList.get(spec.item.itemBase.id);
-   if ( entry  == undefined) {return false;}
+    if ( entry  == undefined) {return false;}
     const totalAmt  = entry.reduce ( (acc, x) => acc + x.amount, 0);
     return spec.amount <= totalAmt;
   }
@@ -77,10 +77,10 @@ export class UniversalCraftingInventory {
   private async expendItem(spec: ItemSpecifier) : Promise<void> {
     let amountRequired= spec.amount;
     const entry = this.sortedItemList.get(spec.item.itemBase.id);
-   if ( entry  == undefined) {
-     Debug(this);
-     throw new PersonaError("Item not present in UnifiedCrafting INventory")
-     ;}
+    if ( entry  == undefined) {
+      Debug(this);
+      throw new PersonaError("Item not present in UnifiedCrafting INventory")
+      ;}
     const ownedByMyPC = entry.filter( e =>e.owner.isTrueOwner);
     const ownedByPartyToken = entry.filter( e=> e.owner.isPC() && !e.owner.isRealPC());
     const ownedByOther = entry.filter( e=> !e.owner.isTrueOwner && e.owner.isPCLike());
@@ -110,8 +110,8 @@ interface OwnedCraftingMaterial extends ItemSpecifier {
   owner: PersonaActor,
 }
 
-export interface ItemSpecifier {
+export interface ItemSpecifier<ItemType extends PersonaItem = Carryable> {
   amount: number;
-  item: Carryable;
+  item: ItemType;
 }
 

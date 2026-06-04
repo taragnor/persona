@@ -168,6 +168,7 @@ class SkillCardSchema extends foundry.abstract.TypeDataModel {
 		return {
 			...itemBase(),
 			skillId: new id<Item>(),
+      velvetCard: new bool(),
 		};
 	}
 }

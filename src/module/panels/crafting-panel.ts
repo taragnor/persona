@@ -3,14 +3,12 @@ import {Metaverse} from "../metaverse.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {SubPanel} from "./sub-panel.js";
-import { SidePanel } from "../side-panel/side-panel.js";
-import {EnchantedTreasureFormat} from "../exploration/treasure-system.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {PersonaCompendium} from "../persona-compendium.js";
+import {PersonaItem} from "../item/persona-item.js";
 
-export class CraftingPanel extends SubPanel {
+export abstract class CraftingPanel extends SubPanel {
 
-  static panel : CraftingPanel = new CraftingPanel();
   actor: PC;
   private cachedData = {
     _inventory: undefined as U<UniversalCraftingInventory>
@@ -30,18 +28,14 @@ export class CraftingPanel extends SubPanel {
     };
   }
 
-  craftingRecipes() : CraftingRecipe[] {
-    const craftables = PersonaDB.craftableItems();
-    const recipes = craftables
-      .flatMap (item=> this.convertToRecipes(item));
-    return recipes;
-  }
+  abstract craftingRecipes() : CraftingRecipe<PersonaItem>[] ;
 
   override buttonConfig() : SidePanel.ButtonConfig[] {
     this.clearCache();
     if (!this.actor.isOwner) {return super.buttonConfig();}
     const buttons = this.craftingRecipes()
       .map (recipe => this.craftingRecipeToButton(recipe))
+      .sort((a, b) => (a.label as string).localeCompare(b.label as string))
       .sort (( a,b) => a.enabled == b.enabled ? 0 : a.enabled ? -1 : b.enabled ? 1 : 0);
     return [
       ...buttons,
@@ -52,7 +46,7 @@ export class CraftingPanel extends SubPanel {
   private craftingRecipeToButton(recipe: CraftingRecipe): SidePanel.ButtonConfig {
     try {
       const label = recipe.products
-        .map (prod => this.itemSpecifierToString(prod))
+        .map (prod => this.productSpecifierToString(prod))
         .join( ", ");
       return {
         label:  `${label}`,
@@ -72,6 +66,7 @@ export class CraftingPanel extends SubPanel {
     }
   }
 
+
   private async craftRecipe(recipe: CraftingRecipe) {
     if (recipe.products.length == 0 || recipe.components.length == 0) {
       Debug(recipe);
@@ -82,26 +77,24 @@ export class CraftingPanel extends SubPanel {
     }
     await this.unifiedCraftingInventory().expendItems(recipe.components);
     for (const product of recipe.products) {
-      const treasureItem :EnchantedTreasureFormat = {
-        item: product.item.accessor,
-        enchantments: []
-      };
-      for (let i = 0 ; i< product.amount; ++i) {
-        await this.actor.addTreasureItem(treasureItem);
-      }
+      await this.produceProduct(product);
     }
   }
 
+  abstract produceProduct(product: CraftingRecipe["products"][number]): Promise<void>
+
   private generateTooltip(recipe: CraftingRecipe) : string {
     const components = recipe.components
-      .map (comp => this.itemSpecifierToString(comp))
-      .join( ", ");
-    const base=  `Requires ${components}`;
+      .map (comp => `<li>${this.itemSpecifierToString(comp)}</li>`)
+      .join( "");
+    const base=  `<ul>${components}</ul>`;
     const product = recipe.products[0];
-    return `${base}\n${product.item.description.toString()}`;
+    return `${base}<br>${this.tooltipDescription(product)}`;
   }
 
-  private convertToRecipes(item: TreasureItem) : CraftingRecipe[] {
+  abstract tooltipDescription(product: ItemSpecifier<PersonaItem>) : string;
+
+  protected convertToRecipes<const T extends Power | Carryable>(item: T) : CraftingRecipe<T>[] {
     const products= [{
       item: item,
       amount: 1,
@@ -116,7 +109,8 @@ export class CraftingPanel extends SubPanel {
           amount: comp.amount || 1,
         };
       })
-        .filter (x=> x != undefined);
+        .filter (x=> x != undefined)
+        .sort( (a,b) => a.item.displayedName.localeCompare(b.item.displayedName)) ;
       return {
         products,
         components
@@ -124,11 +118,15 @@ export class CraftingPanel extends SubPanel {
     });
   }
 
-  itemSpecifierToString(spec: ItemSpecifier) : string {
+  itemSpecifierToString(spec: ItemSpecifier<PersonaItem>) {
     const item = spec.item;
     if (!item) {throw  new PersonaError("Can't find crafting item ${spec.item}");}
     const amt = spec.amount > 1 ? ` (${spec.amount})` : "";
     return `${item.name}${amt}`;
+  }
+
+  productSpecifierToString(spec: ItemSpecifier<PersonaItem>) {
+    return this.itemSpecifierToString(spec);
   }
 
   override async getData() {
@@ -164,18 +162,11 @@ export class CraftingPanel extends SubPanel {
     return false;
   }
 
-  static async open(actor: PC, openingPanel : N<SidePanel>) {
-    this.panel.setActor(actor);
-    if (openingPanel) {
-      await openingPanel.push(this.panel);
-    } else {
-      await this.panel.activate();
-    }
-  }
 }
 
 
-interface CraftingRecipe {
-  products: ItemSpecifier[];
-  components: ItemSpecifier[];
+export interface CraftingRecipe<ItemType extends PersonaItem = PersonaItem> {
+  products: ItemSpecifier<ItemType>[];
+  components: ItemSpecifier<Carryable>[];
 }
+

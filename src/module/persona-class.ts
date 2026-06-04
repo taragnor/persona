@@ -1116,8 +1116,18 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     || this._checkCooldown(usable)
     || this._pauseCheck()
     || this._sideboardCheck(usable)
+    || this._velvetCardCheck(usable)
     ;
     return msg;
+  }
+
+  private _velvetCardCheck(usable: UsableAndCard) : N<FailReason> {
+    if (!usable.isSkillCard()) {return null;}
+    if (!usable.system.velvetCard){ return null;}
+    if (!this.user.hasVelvetRoomAccess) {
+      return "Only guests of the velvet room can use Velvet Cards";
+    }
+    return null;
   }
 
   private _compendiumCheck() : N<FailReason> {

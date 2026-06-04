@@ -6,6 +6,7 @@ import {PersonaSockets} from "../persona.js";
 import {PersonaRegion} from "../region/persona-region.js";
 import {Helpers} from "../utility/helpers.js";
 import {CraftingPanel} from "./crafting-panel.js";
+import {DowntimePanel} from "./downtime-panel.js";
 import {ExplorationPowerPanel} from "./explorationPowerPanel.js";
 import {ItemUsePanel} from "./item-use-panel.js";
 import {PersonaPanel} from "./sub-panel.js";
@@ -60,13 +61,15 @@ export class ExplorationPanel extends PersonaPanel {
       label: "Search Room",
       onPress : () => this.searchButton(),
       enabled : () => this.region != undefined && this.region.isSearchable && !PersonaCombat.combat,
-    }, {
-        label: "Crafting",
-        onPress: () => CraftingPanel.open(myPC as PC, this),
-        enabled: () => CraftingPanel.allowCrafting(),
-        visible: () => myPC != undefined && myPC.isRealPC(),
-        cssClasses : ["tall-button"]
     },
+      ...DowntimePanel.craftingButtons(myPC, this),
+      // {
+      //   label: "Crafting",
+      //   onPress: () => CraftingPanel.open(myPC as PC, this),
+      //   enabled: () => CraftingPanel.allowCrafting(),
+      //   visible: () => myPC != undefined && myPC.isRealPC(),
+      //   cssClasses : ["tall-button"]
+    // },
     ];
     buttons.push(...this.PowersAndItemsButtons());
     const NPCAlly = PersonaDB.activePCParty().find( x=> x.isNPCAlly());

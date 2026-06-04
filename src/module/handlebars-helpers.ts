@@ -1179,7 +1179,7 @@ export class PersonaHandleBarsHelpers {
         [["", "-"]].concat(
           PersonaDB.craftingItems()
           .filter( x=> x.hasTag("card-crafting", null))
-          .map( x=> [x.id, x.name])
+          .map( x=> [x.id, `${x.name} (L ${x.itemLevel()})`])
         )
       ) as Record<Item["id"], string>;
       return CARD_CRAFTING_LIST;
