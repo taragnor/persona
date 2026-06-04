@@ -41,6 +41,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     tagsArr: new PermanentCache( () => this._tagsArr()),
     enchantments: new PermanentCache( () => this._enchantments()),
     personalSocialLink: new PermanentCache( () => this._personalSocialLink()),
+    craftingItems: new PermanentCache( () => this._craftingItems()),
   };
 
   constructor() {
@@ -318,6 +319,16 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     return this.treasureItems()
       .filter (item => item.system.craftingRecipes
         && item.system.craftingRecipes.length > 0);
+  }
+
+  craftingItems() : readonly TreasureItem[] {
+    return this.permanentCaches.craftingItems.value;
+  }
+
+  _craftingItems() : readonly TreasureItem[] {
+    return this.treasureItems()
+      .filter( item => item.isCraftingItem || item.isSecondaryCraftingItem)
+      .sort( (a, b) => a.name.localeCompare(b.name));
   }
 
   partyTokenActor() : U<PC> {

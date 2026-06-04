@@ -2722,7 +2722,7 @@ getCooldown(this:Power, user: N<ValidAttackers | Persona>) : number {
   return Math.max(cost, this.system.cooldown ?? 0);
 }
 
-async addCraftingRecipe ( this: Carryable) {
+async addCraftingRecipe ( this: Carryable | Power) {
   const recipes = this.system.craftingRecipes;
   recipes.push( {
     components: [],
@@ -2730,7 +2730,7 @@ async addCraftingRecipe ( this: Carryable) {
   await this.update( {"system.craftingRecipes": recipes});
 }
 
-async addCraftingRecipeComponent ( this: Carryable, index: number) {
+async addCraftingRecipeComponent ( this: Carryable | Power, index: number) {
   const recipes = this.system.craftingRecipes.slice();
   const recipe  = recipes.at(index);
   if (!recipe) {
@@ -2751,13 +2751,13 @@ async addCraftingRecipeComponent ( this: Carryable, index: number) {
   await this.update( {"system.craftingRecipes": recipesJSON});
 }
 
-async deleteCraftingRecipe (this: Carryable, recipe_index: number) {
+async deleteCraftingRecipe (this: Carryable | Power, recipe_index: number) {
   const recipes = this.system.craftingRecipes.slice();
   recipes.splice(recipe_index, 1);
   await this.update( {"system.craftingRecipes": recipes});
 }
 
-async deleteCraftingRecipeComponent( this: Carryable, recipe_index: number, componentIndex: number) {
+async deleteCraftingRecipeComponent( this: Carryable | Power, recipe_index: number, componentIndex: number) {
   const recipes = this.system.craftingRecipes.map(k => k.toJSON!()) as typeof this.system.craftingRecipes ;
   const recipe= recipes[recipe_index];
   recipe.components.splice(componentIndex, 1);

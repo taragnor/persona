@@ -880,7 +880,6 @@ form h5 {
 
 }
 
-
 .region-panel .points-of-interest h3 {
   font-size: larger;
   text-decoration: underline;
@@ -1463,19 +1462,11 @@ img.inline {
   gap: 0.5em;
 }
 
-/* .side-panel-main { */
-/*   flex-grow: 3; */
-/*   max-height: 80vh; */
-/*   overflow-y: auto; */
-/*   scrollbar-width: thin;    /1* auto | thin | none *1/ */
-/*   scrollbar-color: #888 #222; /1* thumb track *1/ */
-/*   scrollbar-gutter: stable; */
-/* } */
-
 .side-panel-main {
   flex-grow: 3;
   max-height: 80vh;
   overflow-y: auto;
+  overflow-x: clip;
   scrollbar-width: thin;    /* auto | thin | none */
   scrollbar-color: #888 #222; /* thumb track */
   scrollbar-gutter: stable;
@@ -1499,9 +1490,24 @@ img.inline {
     overflow-y: auto;
   }
 
+
+
   .side-panel-button {
     margin-top: 3px;
     margin-bottom: 3px;
+    display: flex;
+    flex-direction: row;
+  }
+
+  .side-panel-button > * {
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
+
+  .side-panel-button .sl-level {
+    max-width: 25%;
+    min-width: 20%;
+    font-size: 0.7em;
   }
 
   .panel-data {

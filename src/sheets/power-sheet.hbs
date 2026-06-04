@@ -150,7 +150,12 @@
 		</section>
 		{{/if}}
 
-		<hr>
-	</header>
-	{{> "systems/persona/parts/power-effects.hbs" item=item POWERSTUFF=POWERSTUFF}}
+    <hr>
+  </header>
+  {{> "systems/persona/parts/power-effects.hbs" item=item POWERSTUFF=POWERSTUFF}}
+  {{#if (isGM)}}
+  {{> "systems/persona/parts/crafting-recipe-input.hbs" item=item POWERSTUFF=POWERSTUFF componentList=(cardCraftingList)}}
+  {{/if}}
 </form>
+
+

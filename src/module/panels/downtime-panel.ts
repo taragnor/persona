@@ -256,7 +256,7 @@ class SocialActivityPanel extends UsableUsePanel {
     const star = PersonaSocial.isHighestLinkerWith(this.actor, activity) && SL < 10
       ? `<i title="Highest Link Level" class="fa-solid fa-star gold"></i>`
       : "";
-    const SLText = SL > 0 ? `<span class="sl-level"> (SL ${SL}) </span>` : "";
+    const SLText = SL > 0 ? `<span class="sl-level">SL ${SL}</span>` : "";
     const newLinkText = isNewLink ? `<span class="new-link">(New Link)</span>` : "";
     return `${star}${img}${name}${SLText}${newLinkText}`;
   }

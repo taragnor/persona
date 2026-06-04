@@ -1164,17 +1164,27 @@ export class PersonaHandleBarsHelpers {
     return power.hasTag("theurgy", null);
   },
 
-  "craftingList": function () {
-    const CRAFTING_TREASURE_LIST = Object.fromEntries(
-      [["", "-"]].concat(
-        PersonaDB.treasureItems()
-        .filter( item => item.isCraftingItem || item.isSecondaryCraftingItem)
-        .sort( (a, b) => a.name.localeCompare(b.name))
-        .map( x=> [x.id, x.name])
-      )
-    ) as Record<Item["id"], string>;
-    return CRAFTING_TREASURE_LIST;
-  },
+    "craftingList": function () {
+      const CRAFTING_TREASURE_LIST = Object.fromEntries(
+        [["", "-"]].concat(
+          PersonaDB.craftingItems()
+          .map( x=> [x.id, x.name])
+        )
+      ) as Record<Item["id"], string>;
+      return CRAFTING_TREASURE_LIST;
+    },
+
+    "cardCraftingList": function() {
+      const CARD_CRAFTING_LIST = Object.fromEntries(
+        [["", "-"]].concat(
+          PersonaDB.craftingItems()
+          .filter( x=> x.hasTag("card-crafting", null))
+          .map( x=> [x.id, x.name])
+        )
+      ) as Record<Item["id"], string>;
+      return CARD_CRAFTING_LIST;
+    },
+
   "ownsOwnEffects": function (owner: PersonaItem | PersonaActor) {
     if (owner instanceof PersonaItem) {
       return owner.itemBase == owner;

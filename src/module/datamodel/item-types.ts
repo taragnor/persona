@@ -160,20 +160,6 @@ class UniversalModifierDM extends foundry.abstract.TypeDataModel {
 		return ret;
 	}
 
-	// static override migrateData(data: UniversalModifier["system"])  {
-	// 	if (data.scope == undefined) {
-	// 		if (data?.room_effect === true) {
-	// 			data.scope = "room";
-	// 			if ("room_effect" in data) {
-	// 				data.room_effect = false;
-	// 			}
-	// 		} else {
-	// 			data.scope = "global";
-	// 		}
-	// 	}
-	// 	return data;
-	// }
-
 }
 
 class SkillCardSchema extends foundry.abstract.TypeDataModel {
@@ -187,14 +173,15 @@ class SkillCardSchema extends foundry.abstract.TypeDataModel {
 }
 
 class PowerSchema extends foundry.abstract.TypeDataModel {
-	get type() {return "power" as const;}
-	static override defineSchema() {
-		const ret = {
-			...powerOnlyUsableProps(),
-			...powerSpecific(),
-			...powerCost(),
-			...UsablePowerProps(),
-			...effects(true),
+  get type() {return "power" as const;}
+  static override defineSchema() {
+    const ret = {
+      ...powerOnlyUsableProps(),
+      ...powerSpecific(),
+      ...powerCost(),
+      ...UsablePowerProps(),
+      ...effects(true),
+      craftingRecipes: new arr( new embedded(CraftingRecipeDM)),
 		};
 		return ret;
 	}

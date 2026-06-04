@@ -20,7 +20,7 @@
       <div class="component" data-component-index="{{j}}">
 
         <select name="system.craftingRecipes.{{i}}.components.{{j}}.itemId">
-          {{selectOptions (craftingList) localize=false selected=comp.itemId}}
+          {{selectOptions ../../componentList localize=false selected=comp.itemId}}
         </select>
         <input class="short" type="number" name="system.craftingRecipes.{{i}}.components.{{j}}.amount" value="{{comp.amount}}">
         <a class="del-crafting-component">
@@ -31,3 +31,4 @@
     </div>
     {{/each}}
   </div>
+</div>
