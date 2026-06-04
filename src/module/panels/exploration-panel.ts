@@ -5,7 +5,6 @@ import {PersonaError} from "../persona-error.js";
 import {PersonaSockets} from "../persona.js";
 import {PersonaRegion} from "../region/persona-region.js";
 import {Helpers} from "../utility/helpers.js";
-import {CraftingPanel} from "./crafting-panel.js";
 import {DowntimePanel} from "./downtime-panel.js";
 import {ExplorationPowerPanel} from "./explorationPowerPanel.js";
 import {ItemUsePanel} from "./item-use-panel.js";

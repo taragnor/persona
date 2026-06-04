@@ -74,3 +74,5 @@ type GenericObject = {
   [key: string]: string | GenericObject;
 };
 
+
+type MaybePromise<T> = Promise<T> | T;

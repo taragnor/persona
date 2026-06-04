@@ -44,7 +44,7 @@ export class CardCraftingPanel extends CraftingPanel {
     return `${item.name}${amt} Velvet Card`;
   }
 
-
+  //could change this to await with a better tooltip
   override tooltipDescription(_product: ItemSpecifier<Power>): string {
     return "";
   }

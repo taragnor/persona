@@ -30,7 +30,7 @@ export abstract class CraftingPanel extends SubPanel {
 
   abstract craftingRecipes() : CraftingRecipe<PersonaItem>[] ;
 
-  override buttonConfig() : SidePanel.ButtonConfig[] {
+  override async buttonConfig() : Promise<SidePanel.ButtonConfig[]> {
     this.clearCache();
     if (!this.actor.isOwner) {return super.buttonConfig();}
     const buttons = this.craftingRecipes()
@@ -39,7 +39,7 @@ export abstract class CraftingPanel extends SubPanel {
       .sort (( a,b) => a.enabled == b.enabled ? 0 : a.enabled ? -1 : b.enabled ? 1 : 0);
     return [
       ...buttons,
-      ...super.buttonConfig(),
+      ...await super.buttonConfig(),
     ];
   }
 
@@ -152,7 +152,6 @@ export abstract class CraftingPanel extends SubPanel {
     this.actor = pc;
   }
 
-
   static allowCrafting() {
     const phase = Metaverse.getPhase();
     switch (phase) {
@@ -163,7 +162,6 @@ export abstract class CraftingPanel extends SubPanel {
   }
 
 }
-
 
 export interface CraftingRecipe<ItemType extends PersonaItem = PersonaItem> {
   products: ItemSpecifier<ItemType>[];

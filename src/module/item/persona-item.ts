@@ -82,7 +82,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     hpGrowthTable: U<GrowthCalculator>,
   };
 
-
   private cache2 = {
     accessor: new TimedCache( () => this._accessor(), 1500),
   };
