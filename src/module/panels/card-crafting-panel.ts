@@ -45,8 +45,10 @@ export class CardCraftingPanel extends CraftingPanel {
   }
 
   //could change this to await with a better tooltip
-  override tooltipDescription(_product: ItemSpecifier<Power>): string {
-    return "";
+  override tooltipDescription(product: ItemSpecifier<Power>): MaybePromise<string> {
+    return foundry.applications.handlebars.renderTemplate("systems/persona/parts/power-tooltip-lite.hbs", {
+      persona: this.actor.persona(),
+      power: product.item,
+    });
   }
-
 }

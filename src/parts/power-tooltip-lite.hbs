@@ -1,25 +1,25 @@
 {{#if (not (canUsePower persona power))}}
-<div>
+<div class="can't use reason">
   {{cantUseReason persona power}}
 </div>
 {{/if}}
-<div>
+<div class="power-name">
   {{power.name}}
 </div>
-<div>
+<div class="tags">
   Tags: {{getPowerTagsL persona.user power}}
 </div>
 {{#if (ne power.system.damageLevel "none")}}
-<div>
+<div class="targets">
   Targets: {{getPowerTargetsL power}}
 </div>
-<div>
+<div class="damage-level">
   Damage Level: {{power.system.damageLevel}}
 </div>
 {{/if}}
-<div>
+<div class="description">
   {{power.descriptionHTML}}
 </div>
-<div>
+<div class="costs">
   Cost: {{powerCostString power persona}}
 </div>

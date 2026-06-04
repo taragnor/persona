@@ -660,7 +660,7 @@ export class PersonaHandleBarsHelpers {
         if (costString.length == 0) {
           return new Handlebars.SafeString("");
         }
-        return new Handlebars.SafeString(`(${costString})`);
+        return new Handlebars.SafeString(`${costString}`);
       } catch {return new Handlebars.SafeString("ERROR");}
     },
 

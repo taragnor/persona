@@ -55,8 +55,6 @@ type ValidProp<T extends object> = {
   [K in keyof Required<T>]: T[K] extends unknown ? NonNullable<T[K]>: never
 };
 
-
-
 type HasKey<T, K extends keyof MergeUnion<T>> =
   T extends unknown
     ? K extends keyof T
@@ -73,6 +71,5 @@ type NonNullableProps<T> =
 type GenericObject = {
   [key: string]: string | GenericObject;
 };
-
 
 type MaybePromise<T> = Promise<T> | T;

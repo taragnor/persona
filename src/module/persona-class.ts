@@ -143,7 +143,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       .filter( pwr => pwr.canBeUsedInExploration());
   }
 
-
   get trueOpeners(): readonly Usable[] {
     return this.allPowers
       .filter (pwr=> pwr.isOpener(this));

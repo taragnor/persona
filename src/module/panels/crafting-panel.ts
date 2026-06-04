@@ -33,8 +33,9 @@ export abstract class CraftingPanel extends SubPanel {
   override async buttonConfig() : Promise<SidePanel.ButtonConfig[]> {
     this.clearCache();
     if (!this.actor.isOwner) {return super.buttonConfig();}
-    const buttons = this.craftingRecipes()
-      .map (recipe => this.craftingRecipeToButton(recipe))
+    const buttonsPromises = this.craftingRecipes()
+      .map (recipe => this.craftingRecipeToButton(recipe));
+    const buttons = (await Promise.all(buttonsPromises))
       .sort((a, b) => (a.label as string).localeCompare(b.label as string))
       .sort (( a,b) => a.enabled == b.enabled ? 0 : a.enabled ? -1 : b.enabled ? 1 : 0);
     return [
@@ -43,7 +44,7 @@ export abstract class CraftingPanel extends SubPanel {
     ];
   }
 
-  private craftingRecipeToButton(recipe: CraftingRecipe): SidePanel.ButtonConfig {
+  private async craftingRecipeToButton(recipe: CraftingRecipe): Promise <SidePanel.ButtonConfig> {
     try {
       const label = recipe.products
         .map (prod => this.productSpecifierToString(prod))
@@ -53,7 +54,7 @@ export abstract class CraftingPanel extends SubPanel {
         onPress : () => this.craftRecipe(recipe),
         enabled : this.canCraftRecipe(recipe),
         cssClasses: ["crafting-button"],
-        tooltip: this.generateTooltip(recipe),
+        tooltip: await this.generateTooltip(recipe),
       };
     } catch (e) {
       PersonaError.softFail(e as Error);
@@ -83,16 +84,18 @@ export abstract class CraftingPanel extends SubPanel {
 
   abstract produceProduct(product: CraftingRecipe["products"][number]): Promise<void>
 
-  private generateTooltip(recipe: CraftingRecipe) : string {
+  private async generateTooltip(recipe: CraftingRecipe) : Promise<string> {
     const components = recipe.components
-      .map (comp => `<li>${this.itemSpecifierToString(comp)}</li>`)
+      .map (comp => `<li class="component-list-item">${this.itemSpecifierToString(comp)}</li>`)
       .join( "");
-    const base=  `<ul>${components}</ul>`;
+    const base= `<ul class="crafting-component-list">${components}</ul>`;
     const product = recipe.products[0];
-    return `${base}<br>${this.tooltipDescription(product)}`;
+    const tooltip = await this.tooltipDescription(product);
+    const toolTipStr = tooltip.length > 0 ? `<hr>${tooltip}`: "";
+    return `${base}${toolTipStr}`;
   }
 
-  abstract tooltipDescription(product: ItemSpecifier<PersonaItem>) : string;
+  abstract tooltipDescription(product: ItemSpecifier<PersonaItem>) : MaybePromise<string>;
 
   protected convertToRecipes<const T extends Power | Carryable>(item: T) : CraftingRecipe<T>[] {
     const products= [{
