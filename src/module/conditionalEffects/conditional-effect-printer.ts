@@ -814,9 +814,16 @@ export class ConditionalEffectPrinter {
           const tag = this.translate(cons.creatureTag, CREATURE_TAGS);
           return `Add ${tag} tag`;
         }
+        case "add-room-effect":{
+          const RE = PersonaDB.getRoomModifiers().find( x=> x.id == cons.roomEffectId);
+          if (!RE) {
+            return "ERROR";
+          }
+          return `add ${RE.name} to Room`;
+        }
         default:
-        cons satisfies never;
-        return "ERROR";
+          cons satisfies never;
+          return "ERROR";
       }
     }
 

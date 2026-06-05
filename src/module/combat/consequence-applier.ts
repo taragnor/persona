@@ -328,6 +328,25 @@ export class ConsequenceApplier {
 
   private static async _applyExoticOtherEffect(actor: ValidAttackers, otherEffect: Sourced<OtherEffect> & {type: "other-effect"}) : Promise<void> {
     switch (otherEffect.otherEffect) {
+      case "add-talent-to-list":
+      case "add-power-to-list":
+      case "add-creature-tag":
+      case "search-twice":
+      case "ignore-surprise":
+        return;
+      case "add-room-effect": {
+        const mod = PersonaDB.getRoomModifiers()
+        .find (eff=> eff.id == otherEffect.roomEffectId);
+        if (!mod) {
+          PersonaError.softFail(`Can't find room effect ${otherEffect.roomEffectId}`, otherEffect);
+          return;
+        }
+        await Metaverse.getRegion()?.addRoomModifier(mod);
+        if (PersonaCombat.combat) {
+          await PersonaCombat.combat.addRoomEffect(mod);
+        }
+      }
+        return;
       case "teach-power": {
         if (!actor.isPC() && !actor.isNPCAlly()) {
           break;

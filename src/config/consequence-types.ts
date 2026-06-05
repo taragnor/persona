@@ -475,6 +475,9 @@ type OtherConsequences = {
 	creatureTag: InternalCreatureTag | Tag["id"];
 } | {
   otherEffect: "search-twice" | "ignore-surprise",
+} | {
+  otherEffect: "add-room-effect",
+  roomEffectId: UniversalModifier["id"],
 };
 
 type ElementalResistanceAlterConsequence = {

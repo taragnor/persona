@@ -991,6 +991,7 @@
 	"persona.othereffect.add-power-to-list": "Add a power to the list",
 	"persona.othereffect.add-creature-tag": "Add a creature tag",
 	"persona.othereffect.teach-power": "Permanently Teach power",
+	"persona.othereffect.add-room-effect": "Add Effect to Room (Permanent)",
 
 	"persona.search.actions.undecided": "Undecided",
 	"persona.search.actions.search": "Search",

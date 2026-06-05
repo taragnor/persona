@@ -1591,10 +1591,28 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     });
   }
 
+  async addRoomEffect(eff: UniversalModifier) : Promise<void> {
+    const effects= this.getRoomEffects();
+    effects.push(eff);
+    await this.setRoomEffects(effects);
+    await this.sendRoomEffectsToChat();
+  }
+
   async alterRoomEffects() {
     const initial = this.getRoomEffects().map( x=> x.id);
     const result = await this.roomEffectsDialog(initial, false);
     await this.setRoomEffects(result.roomModifiers);
+    await this.sendRoomEffectsToChat();
+    // const msg = this.roomEffectsMsg();
+    // const messageData: MessageData = {
+    //   speaker: {alias: 'Room Effects Update'},
+    //   content: msg,
+    //   style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+    // };
+    // await ChatMessage.create(messageData, {});
+  }
+
+  async sendRoomEffectsToChat() : Promise<void> {
     const msg = this.roomEffectsMsg();
     const messageData: MessageData = {
       speaker: {alias: 'Room Effects Update'},
@@ -1604,11 +1622,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     await ChatMessage.create(messageData, {});
   }
 
-  roomEffectsMsg(): string {
+  private roomEffectsMsg(): string {
     const mods = this.getRoomEffects();
-    if (mods.length == 0) {
-      return '';
-    }
+    if (mods.length == 0) { return ''; }
     let msg = '';
     msg += '<u><h2>Room Effects</h2></u><ul>';
     msg += mods.map( x=> `<li><b>${x.name}</b> : ${x.system.description}</li>`).join('');
@@ -1633,7 +1649,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     });
     return new Promise( (conf, rej) => {
       const dialogOptions : DialogOptions = {
-        title: 'room Effects',
+        title: 'Room Effects',
         content: html,
         close: () => rej(new Error('Closed')),
         buttons: {

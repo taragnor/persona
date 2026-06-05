@@ -14,7 +14,7 @@ export class Tooltip { static init() {
       $tooltip.css({
         top: `${top}px`,
         left: `${left}px`,
-        // transform: "translateX(-50%)"
+        transform: "translateX(-50%)"
       });
       requestAnimationFrame(() => $tooltip.addClass("visible"));
     });

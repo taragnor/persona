@@ -346,12 +346,24 @@ export class CombatResult  {
         //   break;
       case "other-effect":
         switch (cons.otherEffect) {
+          case "add-room-effect":
+            this.globalOtherEffects.push( {...cons});
+            break;
           case "teach-power":
             if (!effect) {break;}
             effect.otherEffects.push( {
               ...cons
             });
             break;
+          case "add-talent-to-list":
+          case "add-power-to-list":
+          case "add-creature-tag":
+          case "search-twice":
+          case "ignore-surprise":
+            return;
+          default:
+            cons satisfies never;
+
         }
         break;
       case "set-flag": {
