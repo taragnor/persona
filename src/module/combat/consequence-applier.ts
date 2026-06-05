@@ -341,6 +341,10 @@ export class ConsequenceApplier {
           PersonaError.softFail(`Can't find room effect ${otherEffect.roomEffectId}`, otherEffect);
           return;
         }
+        if (Metaverse.getPhase() == "downtime") {
+          PersonaError.softFail("Can't add room traits while in downtime");
+          return;
+        }
         await Metaverse.getRegion()?.addRoomModifier(mod);
         if (PersonaCombat.combat) {
           await PersonaCombat.combat.addRoomEffect(mod);

@@ -490,6 +490,7 @@ export class Metaverse {
   }
 
   static getRegion(regionId ?: string) : PersonaRegion | undefined {
+    if (this.getPhase() == "downtime") {return undefined;}
     let scene = game.scenes.active;
     const regionData = PersonaSettings.getLastRegion();
     if (regionData.lastRegionId && regionData.lastSceneId) {
