@@ -336,7 +336,7 @@ export class PersonaRegion extends RegionDocument {
 			ui.notifications.warn("${this.name} ${this.id} Effects full");
 			return false;
 		}
-		data.roomEffects.push(mod.id);
+		data.roomEffects.pushUnique(mod.id);
 		await this.setRegionData(data);
 		return true;
 	}

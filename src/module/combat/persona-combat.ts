@@ -1593,7 +1593,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
   async addRoomEffect(eff: UniversalModifier) : Promise<void> {
     const effects= this.getRoomEffects();
-    effects.push(eff);
+    effects.pushUnique(eff);
     await this.setRoomEffects(effects);
     await this.sendRoomEffectsToChat();
   }
@@ -1603,13 +1603,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     const result = await this.roomEffectsDialog(initial, false);
     await this.setRoomEffects(result.roomModifiers);
     await this.sendRoomEffectsToChat();
-    // const msg = this.roomEffectsMsg();
-    // const messageData: MessageData = {
-    //   speaker: {alias: 'Room Effects Update'},
-    //   content: msg,
-    //   style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-    // };
-    // await ChatMessage.create(messageData, {});
   }
 
   async sendRoomEffectsToChat() : Promise<void> {
