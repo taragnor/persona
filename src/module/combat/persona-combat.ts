@@ -299,21 +299,21 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     const PCsWin = this.didPCsWin();
     const combatOutcome = PCsWin ? "win" : "draw";
     const results = this.combatants
-    .filter (x=> x.actor != undefined)
-    .map( comb => {
-      const situation ={
-        trigger: 'on-combat-end-dual',
-        triggeringUser: game.user.id,
-        global: false,
-        result: PCsWin ? "hit" : "miss",
-        triggeringCharacter: comb.actor!.accessor,
-        user: comb.actor!.accessor,
-        combatOutcome,
-      } satisfies TriggeredSituation.TriggerSituation;
-      const CR =  TriggeredEffect.autoTriggerToCR(situation, comb.actor);
-      return CR ? CR : new CombatResult();
-      // return await CR?.toMessage('End Combat Triggered Effect', comb.actor);
-    });
+      .filter (x=> x.actor != undefined)
+      .map( comb => {
+        const situation ={
+          trigger: 'on-combat-end-dual',
+          triggeringUser: game.user.id,
+          global: false,
+          result: PCsWin ? "hit" : "miss",
+          triggeringCharacter: comb.actor!.accessor,
+          user: comb.actor!.accessor,
+          combatOutcome,
+        } satisfies TriggeredSituation.TriggerSituation;
+        const CR =  TriggeredEffect.autoTriggerToCR(situation, comb.actor);
+        return CR ? CR : new CombatResult();
+        // return await CR?.toMessage('End Combat Triggered Effect', comb.actor);
+      });
     const result = results.reduce( (acc, cr) => {
       acc.merge(cr);
       return acc;
@@ -1592,7 +1592,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   }
 
   async addRoomEffect(eff: UniversalModifier) : Promise<void> {
-    const effects= this.getRoomEffects();
+    const effects = this.getRoomEffects();
     effects.pushUnique(eff);
     await this.setRoomEffects(effects);
     await this.sendRoomEffectsToChat();

@@ -10,6 +10,7 @@ import {PersonaError} from "../persona-error.js";
 import {PersonaVariables} from "../persona-variables.js";
 import {SocialActionExecutor} from "../social/exec-social-action.js";
 import {TriggeredEffect} from "../triggered-effect.js";
+import {Logger} from "../utility/logger.js";
 import {EvaluatedDamage} from "./damage-calc.js";
 import {FinalizedCombatResult, ResolvedActorChange} from "./finalized-combat-result.js";
 import {PersonaAnimation} from "./persona-animations.js";
@@ -334,22 +335,8 @@ export class ConsequenceApplier {
       case "search-twice":
       case "ignore-surprise":
         return;
-      case "add-room-effect": {
-        const mod = PersonaDB.getRoomModifiers()
-        .find (eff=> eff.id == otherEffect.roomEffectId);
-        if (!mod) {
-          PersonaError.softFail(`Can't find room effect ${otherEffect.roomEffectId}`, otherEffect);
-          return;
-        }
-        if (Metaverse.getPhase() == "downtime") {
-          PersonaError.softFail("Can't add room traits while in downtime");
-          return;
-        }
-        await Metaverse.getRegion()?.addRoomModifier(mod);
-        if (PersonaCombat.combat) {
-          await PersonaCombat.combat.addRoomEffect(mod);
-        }
-      }
+      case "add-room-effect":
+        await this.addRoomEffect(otherEffect);
         return;
       case "teach-power": {
         if (!actor.isPC() && !actor.isNPCAlly()) {
@@ -445,13 +432,13 @@ export class ConsequenceApplier {
       case "dungeon-action":
         await Metaverse.executeDungeonAction(eff);
         break;
-      // case "play-sound": {
-      //   const promise  = PersonaSounds.playFile(eff.soundSrc, eff.volume ?? 1.0);
-      //   if (eff.waitUntilFinished) {
-      //     await promise;
-      //   }
-      //   break;
-      // }
+        // case "play-sound": {
+        //   const promise  = PersonaSounds.playFile(eff.soundSrc, eff.volume ?? 1.0);
+        //   if (eff.waitUntilFinished) {
+        //     await promise;
+        //   }
+        //   break;
+        // }
       case "display-msg": {
         if (!eff.newChatMsg) {break;}
         const html = eff.msg;
@@ -469,6 +456,41 @@ export class ConsequenceApplier {
         if (eff.sfxType == "play-sound") {
           PersonaAnimation.queue.addSound(eff);
         }
+        break;
+      case "other-effect":  {
+        if (eff.otherEffect == "add-room-effect") {
+          await this.addRoomEffect(eff);
+        }
+        break;
+      }
+
+    }
+  }
+
+  static async addRoomEffect( otherEffect: OtherEffect & {type: "other-effect", otherEffect: "add-room-effect"}) {
+    const mod = PersonaDB.getRoomModifiers()
+      .find (eff=> eff.id == otherEffect.roomEffectId);
+    if (!mod) {
+      PersonaError.softFail(`Can't find room effect ${otherEffect.roomEffectId}`, otherEffect);
+      return;
+    }
+    if (Metaverse.getPhase() == "downtime") {
+      PersonaError.softFail("Can't add room traits while in downtime");
+      return;
+    }
+    const region = Metaverse.getRegion();
+    if (!region) {
+      PersonaError.softFail("No region to add room effect to");
+      return;
+    }
+    try {
+      await Metaverse.getRegion()?.addRoomModifier(mod);
+      if (PersonaCombat.combat) {
+        await PersonaCombat.combat.addRoomEffect(mod);
+      }
+      await Logger.sendToChat(`${mod.name} added to ${region.name}`);
+    } catch (e) {
+      PersonaError.softFail(e as Error);
     }
   }
 

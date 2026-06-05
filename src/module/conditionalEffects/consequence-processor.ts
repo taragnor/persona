@@ -81,16 +81,31 @@ export class ConsequenceProcessor {
     return this.processConsequence_simple(cons, consTargets);
   }
 
+  static processConsequence_otherEfect( cons: SourcedConsequence<NonDeprecatedConsequence> & {type: "other-effect"}, targets: ValidAttackers[]): ConsequenceProcessed['consequences'] {
+    switch (cons.otherEffect) {
+      case "add-talent-to-list":
+      case "add-power-to-list":
+      case "add-creature-tag":
+      case "search-twice":
+      case "ignore-surprise":
+      case "teach-power":
+        return targets.map( applyTo => ({applyTo, cons}));
+      case "add-room-effect":
+        return [{applyTo: "global", cons}];
+      default:
+        cons satisfies never;
+        return [];
+    }
+  }
+
   static processConsequence_simple( cons: SourcedConsequence<NonDeprecatedConsequence>, targets: ValidAttackers[]) :ConsequenceProcessed['consequences'] {
     switch (cons.type) {
       case 'none':
       case 'modifier':
       case 'modifier-new':
-        // case 'add-creature-tag':
         break;
-        // case 'add-power-to-list':
-        // case 'add-talent-to-list':
       case 'other-effect':
+        return this.processConsequence_otherEfect(cons, targets);
       case 'set-flag':
       case "inventory-action":
         return targets.map( applyTo => ({applyTo, cons}));
@@ -115,8 +130,6 @@ export class ConsequenceProcessor {
       case 'alter-fatigue-lvl':
       case "gain-levels":
         return targets.map( applyTo => ({applyTo, cons}));
-      // case 'play-sound':
-      //   return [{applyTo: 'global', cons}];
       case 'display-msg':
         if (cons.newChatMsg) {
           return [{applyTo: 'global', cons}];
