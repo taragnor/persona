@@ -67,7 +67,6 @@ export abstract class CraftingPanel extends SubPanel {
     }
   }
 
-
   private async craftRecipe(recipe: CraftingRecipe) {
     if (recipe.products.length == 0 || recipe.components.length == 0) {
       Debug(recipe);

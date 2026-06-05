@@ -39,7 +39,9 @@ export class CardCraftingPanel extends CraftingPanel {
 
   override productSpecifierToString(spec: ItemSpecifier<Power>) : string {
     const item = spec.item;
-    if (!item) {throw  new PersonaError("Can't find crafting item ${spec.item}");}
+    if (!item) {
+      throw  new PersonaError("Can't find crafting item ${spec.item}");
+    }
     const amt = spec.amount > 1 ? ` (${spec.amount})` : "";
     return `${item.name}${amt} Velvet Card`;
   }

@@ -14,7 +14,7 @@ export class Tooltip { static init() {
       $tooltip.css({
         top: `${top}px`,
         left: `${left}px`,
-        transform: "translateX(-50%)"
+        // transform: "translateX(-50%)"
       });
       requestAnimationFrame(() => $tooltip.addClass("visible"));
     });
@@ -86,6 +86,8 @@ export class Tooltip { static init() {
         left: t.left - tt.width - margin,
         top: t.top,
       },
+
+
     ];
 
     for (const pos of candidates) {
@@ -94,11 +96,10 @@ export class Tooltip { static init() {
         pos.left >= 0 &&
         pos.top >= 0 &&
         pos.left + tt.width <= viewportWidth &&
-        pos.top + tt.height <= viewportHeight
-        && !this.rectanglesIntersect(pos, t);
-      ;
+        pos.top + tt.height <= viewportHeight ;
 
-      if (fitsViewport) {
+      if (fitsViewport &&
+      !this.rectanglesIntersect(pos, t)) {
         return pos;
       }
     }
@@ -118,21 +119,14 @@ export class Tooltip { static init() {
   }
 
   static rectanglesIntersect(
-    a: {
-      left: number;
-      top: number;
-      width: number;
-      height: number;
-    },
-    b: {
-      left: number;
-      top: number;
-      width: number;
-      height: number;
-    }
+    a: Rect,
+    b: Rect
   ): boolean {
     const ra = this.getRect(a);
     const rb = this.getRect(b);
+    //debug for finding that weird error
+    // console.log(ra);
+    // console.log(rb);
     return !(
       ra.right <= rb.left ||
       ra.left >= rb.right ||
@@ -142,13 +136,7 @@ export class Tooltip { static init() {
   }
 
   static getRect(
-    {left, top, width, height} :{
-      left: number,
-      top: number,
-      width: number,
-      height: number
-    }
-  ) {
+    {left, top, width, height} : Rect) {
     return {
       left,
       top,
@@ -164,5 +152,10 @@ interface TooltipPosition {
   top: number;
 }
 
-
+interface Rect {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
 
