@@ -340,10 +340,6 @@ export class CombatResult  {
       case "lower-resistance":
       case "raise-status-resistance":
         break;
-        // case "add-power-to-list":
-        // case "add-talent-to-list":
-        //   PersonaError.softFail(`Deprecated result type: ${cons.type}`)
-        //   break;
       case "other-effect":
         switch (cons.otherEffect) {
           case "add-room-effect":
