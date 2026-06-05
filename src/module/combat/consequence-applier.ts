@@ -488,7 +488,7 @@ export class ConsequenceApplier {
       if (PersonaCombat.combat) {
         await PersonaCombat.combat.addRoomEffect(mod);
       }
-      await Logger.sendToChat(`${mod.name} added to ${region.name}`);
+      await Logger.sendToChat(`${mod.name} added to ${region.name}: ${mod.description}`);
     } catch (e) {
       PersonaError.softFail(e as Error);
     }
