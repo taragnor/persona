@@ -1529,6 +1529,12 @@ function specialComparison(condition: SourcedPrecondition & {type: "boolean", bo
       if (!region) {return undefined;}
       return region.hasHazard();
     }
+    case "room-has-modifier":{
+      const region = Metaverse.getRegion();
+      if (!region) {return undefined;}
+      return region.allRoomEffects
+      .some (eff=> eff.id == condition.roomModifierId);
+    }
     default:
       condition satisfies never;
       return undefined;

@@ -1161,8 +1161,14 @@ export class PersonaHandleBarsHelpers {
   },
 
   "isSpecialPower": function (persona: Persona, power: Power) : boolean {
+    try {
     if (!persona.canUsePower(power, false)) {return false;}
     return power.hasTag("theurgy", null);
+    } catch (e) {
+      Debug(persona, power);
+      PersonaError.softFail("Problem with isSpecialPower", e);
+      return false;
+    }
   },
 
     "craftingList": function () {

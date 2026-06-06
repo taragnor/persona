@@ -312,5 +312,13 @@
 <select name="{{strcat namePrefix 'specialType'}}">
 	{{selectOptions POWERSTUFF.SPECIAL_BOOLEAN_SUBLIST localize=true selected=cond.specialType}}
 </select>
+
+{{#if (eq cond.specialType "room-has-modifier")}}
+<select name="{{strcat namePrefix 'roomModifierId'}}">
+	{{selectOptions POWERSTUFF.ROOMMODS localize=true selected=cond.roomModifierId}}
+</select>
+
+{{/if}}
+
 {{/if}}
 

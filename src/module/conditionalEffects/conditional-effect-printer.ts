@@ -408,6 +408,10 @@ export class ConditionalEffectPrinter {
           return "Room has secret";
         case "room-has-hazard":
           return "Room has Hazard";
+        case "room-has-modifier": {
+          const mod = PersonaDB.getSceneAndRoomModifiers().find(x=> x.id == cond.roomModifierId)?.displayedName ?? "ERROR" ;
+          return `Room Has Room Trait: ${mod}`;
+        }
         default:
           cond satisfies never;
           return "ERROR";

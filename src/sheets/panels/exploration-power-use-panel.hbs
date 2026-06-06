@@ -1,5 +1,8 @@
 {{> "systems/persona/parts/token-panel-header.hbs" CONST=CONST persona=persona}}
 
+  {{> "systems/persona/parts/bubble-power-list.hbs" CONST=CONST persona=persona powerList=persona.explorationPowers}}
+
+  {{#if false}}
 <div class="main-powers">
 	{{#each persona.explorationPowers as |power i|}}
 	<div class="main-power {{#if (not (canUsePower ../persona power))}} faded {{/if}} {{#if (isSpecialPower power)}} shimmer {{/if}}" data-power-id="{{power.id}}" title='{{> "systems/persona/parts/power-tooltip-lite.hbs" actor=../actor CONST=../CONST power=power persona=../persona}}' >
@@ -11,4 +14,4 @@
 	</div>
 	{{/each}}
 </div>
-
+{{/if}}

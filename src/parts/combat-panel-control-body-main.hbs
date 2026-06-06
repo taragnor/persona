@@ -22,18 +22,4 @@
 </section>
 
 
-{{#if false}}
-<div class="main-powers">
-  {{#each persona.activeCombatPowers as |power i|}}
-  <div class="main-power {{#if (not (canUsePower ../persona power))}} faded {{/if}} {{#if (isSpecialPower ../persona power)}} shimmer {{/if}}" data-power-id="{{power.id}}" >
-    <div class="power-name-block">
-      <div class="power-name-bubble-container">
-        {{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../persona}}
-      </div>
-    </div>
-  </div>
-  {{/each}}
-</div>
-{{/if}}
-
 <hr>

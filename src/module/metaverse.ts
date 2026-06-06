@@ -518,13 +518,12 @@ export class Metaverse {
           const arr = Array.from(region.tokens);
           return arr.some(token => token.actor?.isOwner);
         });
-      if (!region) {
-        return undefined;
-      }
+      ui.notifications.warn("Had to resort to general scene scan to find region");
+      if (!region) { return undefined; }
     }
     if ((region as PersonaRegion)?.regionData?.ignore == true) {
+      //this should never happen
       throw new PersonaError("Region is ignore!");
-
     }
     return region as PersonaRegion;
   }
