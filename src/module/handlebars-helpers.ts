@@ -46,6 +46,7 @@ import {PersonaAE} from "./persona-ae.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {testPreconditions} from "./conditionalEffects/preconditions.js";
 import {ConditionalEffectManager} from "./conditionalEffects/conditional-effect-manager.js";
+import {MainDamageSystem} from "./combat/damage-system-v1.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -932,10 +933,10 @@ export class PersonaHandleBarsHelpers {
     return source.hasTag("simulated");
   },
 
-  // "armorDR": function (item: InvItem) {
-  //   const DR = (PersonaSettings.getDamageSystem() as OriginalDamageSystem).armorDRByEquipment(item);
-  //   return DR;
-  // },
+  "armorDR": function (item: InvItem) {
+    const DS = (PersonaSettings.getDamageSystem() as MainDamageSystem);
+      return DS.armorDRByEquipment(item);
+  },
 
   "getModifierTypesByCategory": function (category: U<keyof typeof MODIFIER_CATEGORIES>) {
     if (!category || category.length == 0)
