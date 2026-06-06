@@ -1,18 +1,22 @@
 <section class="token-spends">
+
+  {{#if (eq item.system.cardType "job")}}
   <div class="flex-row">
     <div>
       <label>
         Job Base Pay
       </label>
-    <input class="short" type="number" name="system.jobPay.base" value="{{item.system.jobPay.base}}">
+      <input class="short" type="number" name="system.jobPay.base" value="{{item.system.jobPay.base}}">
     </div>
     <div>
       <label>
         Per token
       </label>
-    <input class="short" type="number" name="system.jobPay.token" value="{{item.system.jobPay.token}}">
+      <input class="short" type="number" name="system.jobPay.token" value="{{item.system.jobPay.token}}">
     </div>
   </div>
+  {{/if}}
+
   <div>
     <h3> Token Spends</h3>
     <a class="add-token-spend">

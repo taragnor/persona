@@ -233,7 +233,7 @@ export class SocialCardExecutor {
         giftStr += `However since there are multiple people in the scene...  ${SLCameos.map(x=> x.name).join(", ")}. Anyone who doesn't get a gift will lose a progress token if they are SL 4+ or higher. `;
       }
     }
-    const jobPay = cardData.card.system.cardType == "job" ? this.getJobPayHTML(cardData) : "";
+    const jobPay = await this.getJobPayHTML(cardData);
     const tokenSpends = (cardData.card.system.tokenSpends ?? [])
     .concat(cardData.activity != cardData.card ?  cardData.activity.system.tokenSpends ?? [] : [])
     .filter( spend => {
@@ -275,20 +275,28 @@ export class SocialCardExecutor {
     return msg;
   }
 
-  getJobPayHTML(cardData: CardData) : string {
+  async getJobPayHTML(cardData: CardData) : Promise<string> {
     try {
-    const card = cardData.card;
-    let base = card.system.jobPay.base;
-    if (!base) {return "JOB PAY DATA MISSING";}
-    let token = card.system.jobPay.token;
-    if (!token) {return "JOB PAY DATA MISSING";}
-    const jobmod = cardData.actor.getPersonalBonuses("pay").total(cardData.situation);
-    base = Math.round(jobmod * base);
-    token = Math.round(jobmod * token);
-    return `
+      if (cardData?.card?.system?.cardType != "job") {
+        return "";
+      }
+      const card = cardData.card;
+      let base = card.system.jobPay.base;
+      if (!base) {return "JOB PAY DATA MISSING";}
+      let token = card.system.jobPay.token;
+      if (!token) {return "JOB PAY DATA MISSING";}
+      const actor = cardData.actor;
+      const jobmod = actor.getPersonalBonuses("pay").total(cardData.situation, "percentage");
+      base = Math.round(jobmod * base);
+      token = Math.round(jobmod * token);
+      const tokens = actor.social.getSocialLinkProgress(cardData.card.id) ?? 0;
+      await actor.social.activityProgress(card.id, -999);
+      const total = base + token * tokens;
+      await actor.gainMoney(total, true, false);
+      return `
     <section class="job-pay-section" data-base-pay="${base}" data-per-token="${token}">
       <label>
-        Job Pay
+        Job Pay (total ${total})
       </label>
       <span class="jobpay" data-base-pay="${base}" data-per-token="${token}">
         Pay is ${base} with +${token} per token

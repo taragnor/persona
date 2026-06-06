@@ -327,8 +327,8 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
 			finale: new txt(),
 			globalModifiers: new arr(new embedded(ConditionalEffectDM)),
       jobPay: new sch( {
-        base: new num({initial: 15, integer: true}),
-        token: new num({initial: 10, integer:true})
+        base: new num({initial: 0, integer: true}),
+        token: new num({initial: 0, integer:true})
       }),
 			active: new bool({initial: false}),
 			tokenSpends:new arr(new obj<TokenSpend>()),
