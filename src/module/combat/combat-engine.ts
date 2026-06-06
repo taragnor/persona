@@ -786,14 +786,18 @@ export class CombatEngine {
         const over = diffPercent - 1;
         const mod = Math.floor(over * 100 / 25 * bonusMult); //each 25% over 100% counts as a +1 modifier;
         diffPercent = 1;
-        calc.add(0, mod * sign , `(Over 100%) stat diff ${attackStat} vs ${defenseStat}`);
+        if (mod != 0) {
+          calc.add(0, mod * sign , `(Over 100%) stat diff ${attackStat} vs ${defenseStat}`);
+        }
       }
         // eslint-disable-next-line no-fallthrough
-      case diffPercent >= 0.1: {
+      case diffPercent >= 0.15: {
         const over = diffPercent;
-        const mod = Math.floor(over * 100 / 10 * bonusMult); //each 10% counts as a +1 modifier up to 100%;
+        const mod = Math.floor(over * 100 / 15 * bonusMult); //each 15% counts as a +1 modifier up to 100%;
         diffPercent = 0.1;
-        calc.add(0, mod * sign, `(Under 100%) stat diff ${attackStat} vs ${defenseStat}`);
+        if (mod != 0) {
+          calc.add(0, mod * sign, `(Under 100%) stat diff ${attackStat} vs ${defenseStat}`);
+        }
       }
         // eslint-disable-next-line no-fallthrough
       case diffPercent > 0 : {

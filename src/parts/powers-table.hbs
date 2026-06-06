@@ -15,9 +15,16 @@
   </h2>
   {{> "systems/persona/parts/basic-powers-section.hbs" CONST=CONST persona=persona activePowersOnly=activePowersOnly canDelete=canDelete showSideboard=showSideboard usePowers=usePowers actor=actor}}
 
+  {{#if showBonusPowers}}
   <section class="main-powers">
     {{> "systems/persona/parts/power-table.hbs" CONST=CONST persona=persona powerList=persona.displayedMainSkills usePowers=usePowers}}
   </section>
+  {{else}}
+  <section class="main-powers">
+    {{> "systems/persona/parts/power-table.hbs" CONST=CONST persona=persona powerList=persona.mainPowers usePowers=usePowers}}
+  </section>
+
+  {{/if}}
 
   {{> "systems/persona/parts/next-learned-powers-section.hbs" CONST=CONST persona=persona actor=actor usePowers=usePowers showLearnedBuffer=showLearnedBuffer}}
 

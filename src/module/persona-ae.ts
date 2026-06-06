@@ -903,12 +903,10 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
       sourceActor = this.parent instanceof PersonaActor ? this.parent : sourceActor;
     }
     const actor = this.parent instanceof PersonaActor ? this.parent : null;
-    return this.getLinkedTags().flatMap( tag => tag.getEffects(sourceActor, options))
+    return this.getLinkedTags()
+      .flatMap( tag => tag.getEffects(sourceActor, options))
       .concat( this.getEmbeddedEffects(actor, options));
   }
-
-
-
 
   static async onPreDelete(this: never, effect: PersonaAE) {
     const flag = effect.linkedFlagId;
@@ -998,10 +996,11 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
   }
 
   getLinkedTags() : Tag[] {
-    const statusEffects = this.statuses.values().map( status =>  PersonaDB.allTagLinks().get(status) ?? PersonaDB.allTags().get(status as Tag["id"]))
+    const statusEffects = this.statuses.values()
+      .map( status =>  PersonaDB.allTagLinks().get(status) ?? PersonaDB.allTags().get(status as Tag["id"]))
       .filter( x=> x != undefined);
-
-    return Array.from(statusEffects);
+    const arr= Array.from(statusEffects);
+    return arr;
   }
 
 }

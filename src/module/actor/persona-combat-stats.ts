@@ -8,7 +8,7 @@ import {HTMLTools} from "../utility/HTMLTools.js";
 export class PersonaCombatStats {
 
   persona : Persona;
-  static PERCENT_PADDING = 15 as const; //padding onto stats when determining percentage difference;
+  static PERCENT_PADDING = 10 as const; //padding onto stats when determining percentage difference;
   static STAT_POINTS_PER_LEVEL = 3 as const;
   static INIT_DIVISOR = 3 as const;
   static MINIMUM_MAX_STAT_GAP = 10 as const;
