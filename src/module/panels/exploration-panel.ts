@@ -5,6 +5,7 @@ import {PersonaError} from "../persona-error.js";
 import {PersonaSockets} from "../persona.js";
 import {PersonaRegion} from "../region/persona-region.js";
 import {Helpers} from "../utility/helpers.js";
+import {HTMLTools} from "../utility/HTMLTools.js";
 import {DowntimePanel} from "./downtime-panel.js";
 import {ExplorationPowerPanel} from "./explorationPowerPanel.js";
 import {ItemUsePanel} from "./item-use-panel.js";
@@ -29,6 +30,7 @@ export class ExplorationPanel extends PersonaPanel {
 		super.activateListeners(html);
 		html.find(".search-button").on("click", (ev) => this.searchButton(ev));
 		html.find(".crunch-button").on("click", (_ev) => void Metaverse.toggleCrunchParty());
+    html.find(".room-mods .mod").on("click", ev => this._openRoomMod(ev));
 	}
 
   setRegion(region: PersonaRegion) {
@@ -62,13 +64,6 @@ export class ExplorationPanel extends PersonaPanel {
       enabled : () => this.region != undefined && this.region.isSearchable && !PersonaCombat.combat,
     },
       ...DowntimePanel.craftingButtons(myPC, this),
-      // {
-      //   label: "Crafting",
-      //   onPress: () => CraftingPanel.open(myPC as PC, this),
-      //   enabled: () => CraftingPanel.allowCrafting(),
-      //   visible: () => myPC != undefined && myPC.isRealPC(),
-      //   cssClasses : ["tall-button"]
-    // },
     ];
     buttons.push(...this.PowersAndItemsButtons());
     const NPCAlly = PersonaDB.activePCParty().find( x=> x.isNPCAlly());
@@ -127,6 +122,13 @@ export class ExplorationPanel extends PersonaPanel {
       () => PersonaDB.isLoaded
     ];
   }
+
+  private _openRoomMod(ev: JQuery.ClickEvent) {
+    const modId = HTMLTools.getClosestData<Item["id"]>(ev, "modId");
+    const item = PersonaDB.getItemById(modId);
+    if (item && item.isOwner) {item.sheet.render(true);}
+  }
+
 
   async _openUsePowerPanel (actor : ValidAttackers) {
     await this.push(new ExplorationPowerPanel(actor));

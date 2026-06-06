@@ -1,9 +1,9 @@
 {{#if roomModifiers}}
 <h4> Room Modifers</h4>
 <section class="room-modifiers">
-  <ul class="room-mods f-row">
+  <div class="room-mods f-row">
     {{#each roomModifiers as |mod|}}
-    <li class="mod">
+    <div class="mod" data-mod-id="{{mod.id}}">
       <span class="tooltip">
         {{#if mod.img}}
         <img class="mod-icon tooltip" src="{{mod.img}}">
@@ -11,11 +11,20 @@
         <span class="mod-name"> {{mod.displayedName}}</span>
         {{/if}}
         <div class="tooltiptext">
+          <h4>
+            {{mod.displayedName}}
+          {{#if mod.isSceneModifier}}
+          (Scene Mod)
+          {{/if}}
+          {{#if mod.isRoomModifier}}
+          (Room Mod)
+          {{/if}}
+          </h4>
           {{mod.descriptionHTML}}
         </div>
       </span>
-    </li>
+    </div>
     {{/each}}
-  </ul>
+  </div>
 </section>
 {{/if}}

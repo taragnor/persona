@@ -140,6 +140,7 @@ export class CombatPanel extends PersonaPanel {
     html.find(".control-panel button.no-opener").on("click", (ev) => void this._onReturnToMainButton(ev));
     html.find(".control-panel .follow-ups .follow-up").on("click", (ev) => void this._onSelectFollowUp(ev));
     html.find(".follow-ups button.act-again").on("click", (ev) => void this._onReturnToMainButton(ev));
+    html.find(".room-mods .mod").on("click", ev => this._openRoomMod(ev));
     if (this.combat) {
       this.combat.followUp.activateListeners(html);
     }
@@ -367,6 +368,12 @@ export class CombatPanel extends PersonaPanel {
     if (this.target) {
       await this.target.actor.switchPersona(personaId as ValidAttackers["id"]);
     }
+  }
+
+  private _openRoomMod(ev: JQuery.ClickEvent) {
+    const modId = HTMLTools.getClosestData<Item["id"]>(ev, "modId");
+    const item = PersonaDB.getItemById(modId);
+    if (item && item.isOwner) {item.sheet.render(true);}
   }
 
 

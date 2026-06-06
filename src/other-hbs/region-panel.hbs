@@ -52,7 +52,8 @@
 			{{data.treasures.found}}/ {{data.treasures.max}}
 		</div>
 
-		{{#if region.allRoomEffects}}
+    {{> "systems/persona/parts/room-modifiers-list.hbs" roomModifiers=region.allRoomEffects}}
+		{{#if (and region.allRoomEffects false)}}
 		<div class="room-effects">
 			<h3>
 				Room Modifiers

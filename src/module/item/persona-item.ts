@@ -1861,6 +1861,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.system.tagType == "enchantment";
   }
 
+  get isSceneModifier() : boolean {
+    return this.isUniversalModifier() && this.system.scope == "scene";
+  }
+
+  get isRoomModifier() : boolean {
+    return this.isUniversalModifier() && this.system.scope == "room";
+  }
+
   isCarryableType(): this is Carryable  {
     switch (this.system.type) {
       case "consumable":
