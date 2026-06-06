@@ -184,8 +184,8 @@ export class EnergyClassCalculator extends CostCalculator {
 
 	static AOE_COST_INCREASE: Readonly<EnergyCostBase> = new EnergyCostBase(32, 32);
 
-	static BASE_COST = 30;
-	static BASE_POWER_REQUIRED = 25;
+	static BASE_COST = 30 as const;
+	static BASE_POWER_REQUIRED = 25 as const;
 
 	static INSTANT_KILL_LEVELS_ENERGY_COST : Record<InstantKillLevel, number> = {
 		none: 0,

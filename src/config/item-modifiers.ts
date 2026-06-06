@@ -23,7 +23,6 @@ const DEPRECATED_TYPES = [
 	"wpnDmg_low",
 	"wpnDmg_high",
 	"weakestSlot",
-	"pay",
 	"mpCostMult",
 	"will",
 ] as const;
@@ -82,6 +81,7 @@ export const ACTOR_STATS_TYPES = [
 	"d-mon-storage",
 	"fusion-xp-boost-sl-percent",
 	"hpCostMult",
+	"pay",
 ] as const;
 
 export const SHADOW_STATS_TYPES = [

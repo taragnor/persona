@@ -317,7 +317,7 @@
 	"persona.modifier.socialRoll": "Student Skill Checks",
 	"persona.modifier.DCIncrease": "DC Increase (generic)",
 	"persona.modifier.weakestSlot": "Extra slots of weakest type",
-	"persona.modifier.pay": "Job Pay",
+	"persona.modifier.pay": "Job Pay Mult",
 	"persona.modifier.extraMaxPowers": "Extra Sideboard Powers",
 	"persona.modifier.persona-sideboard": "Extra Sideboard Personas",
 	"persona.modifier.inactive-persona-xp": "%XP for Inactive Personas (decimal%, additive)",

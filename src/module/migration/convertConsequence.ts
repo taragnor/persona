@@ -191,7 +191,6 @@ export class ConsequenceConverter {
       case "wpnDmg_low":
       case "wpnDmg_high":
       case "weakestSlot":
-      case "pay":
       case "will":
         return undefined;
       case "mpCostMult":

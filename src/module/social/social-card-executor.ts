@@ -233,6 +233,7 @@ export class SocialCardExecutor {
         giftStr += `However since there are multiple people in the scene...  ${SLCameos.map(x=> x.name).join(", ")}. Anyone who doesn't get a gift will lose a progress token if they are SL 4+ or higher. `;
       }
     }
+    const jobPay = cardData.card.system.cardType == "job" ? this.getJobPayHTML(cardData) : "";
     const tokenSpends = (cardData.card.system.tokenSpends ?? [])
     .concat(cardData.activity != cardData.card ?  cardData.activity.system.tokenSpends ?? [] : [])
     .filter( spend => {
@@ -247,6 +248,7 @@ export class SocialCardExecutor {
     <div class="gift">
     ${giftStr}
     </div>
+    ${jobPay}
     <span class="finale">
     ${cardData.card.system.finale.trim()}
     </span>
@@ -271,6 +273,31 @@ export class SocialCardExecutor {
     };
     const msg = await ChatMessage.create(msgData,{} );
     return msg;
+  }
+
+  getJobPayHTML(cardData: CardData) : string {
+    try {
+    const card = cardData.card;
+    let base = card.system.jobPay.base;
+    if (!base) {return "JOB PAY DATA MISSING";}
+    let token = card.system.jobPay.token;
+    if (!token) {return "JOB PAY DATA MISSING";}
+    const jobmod = cardData.actor.getPersonalBonuses("pay").total(cardData.situation);
+    base = Math.round(jobmod * base);
+    token = Math.round(jobmod * token);
+    return `
+    <section class="job-pay-section" data-base-pay="${base}" data-per-token="${token}">
+      <label>
+        Job Pay
+      </label>
+      <span class="jobpay" data-base-pay="${base}" data-per-token="${token}">
+        Pay is ${base} with +${token} per token
+      </span>
+    </section>`;
+    } catch (e) {
+      PersonaError.softFail(e as Error);
+      return "JOB PAY ERROR";
+    }
   }
 
   static validSocialCards(actor: PC, activity: SocialLink) : SocialEncounterCard[] {
