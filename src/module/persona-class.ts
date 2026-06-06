@@ -171,10 +171,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   get bonusPowers() : readonly Power [] {
     const bonusPowers : Power[] =
       this.mainModifiers({omitPowers: true, omitAuras: true})
-      // this.mainModifiers({omitPowers:true, omitTalents: true, omitAuras: true})
       .filter(trait => PersonaItem.grantsPowers(trait))
       .flatMap(powerGranter=> PersonaItem.getAllGrantedPowers(powerGranter, this.user))
-      // .filter( pwr=> !pwr.hasTag("opener", this))
       .sort ( (a,b)=> a.name.localeCompare(b.name)) ;
     return removeDuplicates(bonusPowers);
   }

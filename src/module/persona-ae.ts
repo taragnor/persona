@@ -918,11 +918,6 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     if (flag && effect.parent instanceof PersonaActor) {
       effect["_flaggedDeletion"] = true;
       await effect.parent.clearEffectFlag(flag);
-      // await effect.parent.setEffectFlag({
-      //   flagId: flag,
-      //   flagState: false,
-      //   type: "set-flag",
-      // });
     }
   }
 

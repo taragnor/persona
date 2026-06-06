@@ -51,7 +51,8 @@ export class EnergyClassCalculator extends CostCalculator {
 		const effectiveCost  = this.BASE_COST + energyCost + modifiers - shadow_lvl;
 		const effectiveER  = this.BASE_COST + energyRequired + modifiers - shadow_lvl;
 		energyCost  = Math.floor(Math.max(0, effectiveCost / 10));
-		const minReq = Math.max(0, energyCost-5);
+    const reqMod = shadow.getBonuses("power-energy-req").total(situation);
+		const minReq = Math.max(0, reqMod + energyCost - 5);
 		energyRequired  = Math.floor(Math.clamp(effectiveER / 10, minReq, shadow.maxEnergy));
 		 const cooldown = Math.clamp( effectiveER/10 - 50, 0, 3);
 		if (energyCost <= 0) {

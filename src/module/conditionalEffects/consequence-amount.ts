@@ -99,6 +99,8 @@ export class ConsequenceAmountResolver {
         case "theurgyVal":
         case "batonPassLevel":
         case "money":
+        case "energy":
+        case "maxEnergy":
           return target[amt.property];
         case "linkLevelWith": {
           const socialLink = getSocialLinkTarget(amt.socialLinkIdOrTarot, situation as Situation, null);

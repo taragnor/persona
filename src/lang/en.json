@@ -1384,6 +1384,8 @@
 	"persona.consequenceAmount.actorProperties.level": "Level",
 	"persona.consequenceAmount.actorProperties.statusPotency": "Status Potency",
 	"persona.consequenceAmount.actorProperties.money": "Resource Points",
+	"persona.consequenceAmount.actorProperties.energy": "Energy",
+	"persona.consequenceAmount.actorProperties.maxEnergy": "Max Energy",
 
 	"persona.consequenceAmount.sitProperties.damage-dealt": "Damage Dealt",
 	"persona.consequenceAmount.sitProperties.card-item-value": "Value of Card Item",

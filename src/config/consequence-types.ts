@@ -937,6 +937,8 @@ const CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST = [
 	"batonPassLevel",
   "statusPotency",
   "money",
+  "energy",
+  "maxEnergy",
 ] as const;
 
 type ConsAmountActorProperty = typeof CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST[number];
