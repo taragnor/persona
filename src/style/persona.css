@@ -310,6 +310,25 @@ section.powers-section {
   border-bottom: 1px dotted black;
 }
 
+.tooltip-box {
+  max-width: 400px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-wrap: break-word; /* older alias */
+  word-break: break-word;
+}
+
+.tooltiptext {
+  white-space: normal;
+  overflow-wrap: break-word;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-wrap: break-word; /* older alias */
+  word-break: break-word;
+}
+
 .tooltip .tooltiptext {
   visibility: hidden;
   width: 120px;
@@ -1723,7 +1742,7 @@ button.crunch-party-button {
   padding: 0.5em 0.75em;
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  white-space: nowrap;
+  /* white-space: nowrap; */
   font-size: 14px;
   opacity: 0;
   transition: opacity 0.15s ease;
@@ -2298,4 +2317,6 @@ img.mod-icon {
   max-height: 30px;
   max-width: 30px;
 }
+
+
 
