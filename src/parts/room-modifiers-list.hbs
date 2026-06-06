@@ -1,0 +1,21 @@
+{{#if roomModifiers}}
+<h4> Room Modifers</h4>
+<section class="room-modifiers">
+  <ul class="room-mods f-row">
+    {{#each roomModifiers as |mod|}}
+    <li class="mod">
+      <span class="tooltip">
+        {{#if mod.img}}
+        <img class="mod-icon tooltip" src="{{mod.img}}">
+        {{else}}
+        <span class="mod-name"> {{mod.displayedName}}</span>
+        {{/if}}
+        <div class="tooltiptext">
+          {{mod.descriptionHTML}}
+        </div>
+      </span>
+    </li>
+    {{/each}}
+  </ul>
+</section>
+{{/if}}

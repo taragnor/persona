@@ -7,14 +7,9 @@ export class Tooltip { static init() {
       const $tooltip = $content.clone().removeAttr("hidden").addClass("tooltip-box");
       $root.append($tooltip);
       const {left, top} = Tooltip.calculateTooltipPosition(target[0], $tooltip[0]);
-      // const rect = this.getBoundingClientRect();
-      // const top =  rect.top + window.scrollY - $tooltip.outerHeight()! - 8;
-      // const boundedTop = Math.max(top, 0); //bounds this so it oesn't go out of screen
-      // const left = rect.left + window.scrollX + rect.width / 2;
       $tooltip.css({
         top: `${top}px`,
         left: `${left}px`,
-        transform: "translateX(-50%)"
       });
       requestAnimationFrame(() => $tooltip.addClass("visible"));
     });
@@ -47,7 +42,7 @@ export class Tooltip { static init() {
   static calculateTooltipPosition(
     target: HTMLElement,
     tooltip: HTMLElement,
-    margin = 20
+    margin = 8
   ) : TooltipPosition {
     const t = target.getBoundingClientRect();
     const tt = tooltip.getBoundingClientRect();
@@ -63,27 +58,27 @@ export class Tooltip { static init() {
       // Below
       {
         ...ttstats,
-        left: t.left,
-        top: t.bottom + margin,
+        left: t.left - Math.floor(tt.width/2),
+        top: t.top + t.height + margin,
       },
 
       // Above
       {
         ...ttstats,
-        left: t.left,
-        top: t.top - tt.height - margin,
+        left: t.left - Math.floor(tt.width/2),
+        top: t.top - (tt.height + margin),
       },
       // Right
       {
         ...ttstats,
-        left: t.right + margin,
+        left: t.left + t.width + margin,
         top: t.top,
       },
 
       // Left
       {
         ...ttstats,
-        left: t.left - tt.width - margin,
+        left: t.left - (tt.width + margin),
         top: t.top,
       },
 
@@ -124,9 +119,6 @@ export class Tooltip { static init() {
   ): boolean {
     const ra = this.getRect(a);
     const rb = this.getRect(b);
-    //debug for finding that weird error
-    // console.log(ra);
-    // console.log(rb);
     return !(
       ra.right <= rb.left ||
       ra.left >= rb.right ||

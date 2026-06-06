@@ -11,13 +11,11 @@ import {PersonaError} from "../../persona-error.js";
 import {lockObject} from "../../utility/anti-loop.js";
 import {sleep} from "../../utility/async-wait.js";
 import {HTMLTools} from "../../utility/HTMLTools.js";
-import {OpenerOption} from "../openers.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "../persona-combat.js";
 
 export class CombatPanel extends PersonaPanel {
   private _target: U<PToken>;
   static _instance: U<CombatPanel>;
-  private _openers: OpenerOption[] = [];
   mode: "main" | "tactical";
   tacticalTarget: U<PToken>;
   deferUpdate = false;
@@ -209,6 +207,7 @@ export class CombatPanel extends PersonaPanel {
     const persona = actor?.persona();
     const token = this.target;
     if (!this.combat) {return {...data};}
+    const roomModifiers = this.combat.getRoomEffects();
     const combatant = this.combat?.getCombatantByActor(actor as ValidAttackers);
     let engagedList : PersonaCombatant[] = [];
     if (combatant && PersonaCombat.isPersonaCombatant(combatant))  {
@@ -224,8 +223,7 @@ export class CombatPanel extends PersonaPanel {
       persona,
       actor,
       token,
-      openers: this._openers ?? [],
-      // followUps: this._followUps,
+      roomModifiers,
     };
   }
 

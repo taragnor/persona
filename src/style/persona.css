@@ -322,6 +322,7 @@ section.powers-section {
   z-index: 1;
   /* right: 105%; */
   top: -200%;
+  max-width: 500px;
 }
 
 .social-link .name {
@@ -2292,3 +2293,9 @@ div.start-turn-header.pc h2 {
     opacity: 0;
   }
 }
+
+img.mod-icon {
+  max-height: 30px;
+  max-width: 30px;
+}
+

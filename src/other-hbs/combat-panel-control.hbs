@@ -16,19 +16,12 @@
 		</div>
 		{{/if}}
 		{{> "systems/persona/parts/vitals-section.hbs" CONST=CONST persona=persona}}
+    {{> "systems/persona/parts/room-modifiers-list.hbs" roomModifiers=roomModifiers}}
 	</header>
 	<hr>
 	<body>
 		{{#if (eq mode "main")}}
 		{{> "systems/persona/parts/combat-panel-control-body-main.hbs" CONST=CONST persona=persona actor=persona.user}}
 		{{/if}}
-		{{#if (eq mode "opener")}}
-		{{> "systems/persona/parts/combat-panel-opener-list.hbs" actor=persona.user CONST=CONST persona=selectedPersona openers=openers combatant=combatant}}
-		{{/if}}
-
-		{{#if (eq mode "followUp")}}
-		{{> "systems/persona/parts/combat-panel-follow-up-list.hbs" actor=persona.user CONST=CONST persona=selectedPersona followUps=followUps combatant=combatant}}
-		{{/if}}
-
 	</body>
 </div>
