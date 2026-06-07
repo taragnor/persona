@@ -450,6 +450,7 @@ export class ActorSocial <T extends PersonaActor> {
   }
 
   async spendInspiration(this: ActorSocial<ValidAttackers | NPC>, socialLinkOrId:SocialLink | SocialLink["id"], amt: number = 1, reciprocalSpending = true): Promise<void> {
+    if (amt == 0) {return;}
     let actor =this.actor;
     if (actor.isShadow()) {return;}
     let socialLink = socialLinkOrId instanceof PersonaActor ? socialLinkOrId : resolveActorIdOrTarot(socialLinkOrId); 
@@ -468,8 +469,6 @@ export class ActorSocial <T extends PersonaActor> {
       }
       return;
     }
-    // const id = typeof socialLinkOrId == "string" ? socialLinkOrId : socialLinkOrId.id;
-    // const link = this.actor.system.social.find( x=> x.linkId == id);
     const link = actor.system.social.find( x=> x.linkId == socialLink.id);
     if (!link) {
       throw new PersonaError("Trying to refresh social link you don't have");
