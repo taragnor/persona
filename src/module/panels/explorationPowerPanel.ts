@@ -19,7 +19,6 @@ export class ExplorationPowerPanel extends UsableListPanel {
       ...await super.getData(),
       persona: this.actor.persona(),
     };
-
   }
 
   override activateListeners(html: JQuery) {
