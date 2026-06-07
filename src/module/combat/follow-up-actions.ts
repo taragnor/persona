@@ -318,7 +318,10 @@ export class FollowUpManager {
     void PersonaSocial.characterDialog(initiator.actor, txt) ;
     if (!PersonaSettings.debugMode() && initiator.actor.isPCLike() && teammate.actor.isPCLike()) {
       if (initiator.actor.isPC()) {
+        try {
         await initiator.actor.social.addInspiration(teammate.actor, -1);
+        } catch {
+        }
       }
     }
   }
@@ -335,7 +338,9 @@ export class FollowUpManager {
       PersonaError.softFail("No leader specified for teamwork request");
     }
     if (!PersonaSettings.debugMode() && leader && actor.isPC() && leader.isPCLike()) {
+      try{ 
         await actor.social.addInspiration(leader, -1);
+      } catch { }
     }
     await actor.addStatus( status);
     const msg = `${actor.name} seizes the opportunity for a Teamwork move!`;
@@ -347,7 +352,7 @@ export class FollowUpManager {
   private getPowerTarget(ev: JQuery.Event) : PersonaCombatant {
     const targetId = HTMLTools.getClosestData(ev, "targetCombatantId");
     const combat = this.combat;
-    const target =combat?.combatants.find(c => c.id == targetId) as PersonaCombatant;
+    const target = combat?.combatants.find(c => c.id == targetId) as PersonaCombatant;
     if (!combat  || !target) {throw new PersonaError(`Can't find combatnat target ${targetId}`);}
     return target;
   }

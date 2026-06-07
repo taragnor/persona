@@ -5,14 +5,17 @@
     {{#each followUps as |followUp|}}
 
     {{#if (eq followUp.type "power")}}
-    <div class="follow-up target-select" data-power-id="{{followUp.power.id}}" data-combatant-id="{{followUp.combatant.id}}" title="{{> "systems/persona/parts/power-tooltip-lite.hbs" power=followUp.power persona=(persona followUp.combatant.actor)}}" >
+    <div class="follow-up target-select" data-power-id="{{followUp.power.id}}" data-combatant-id="{{followUp.combatant.id}}">
       <h4>
         {{followUp.name}}
       </h4>
       <div class="f-row">
         {{#each followUp.targetChoices as |target i|}}
-        <button class="target" data-target-combatant-id="{{target.id}}">
+        <button class="tooltip target" data-target-combatant-id="{{target.id}}">
           <img class="target-button-img" src="{{target.img}}" title="{{target.name}}">
+          <div class="tooltiptext">
+            {{> "systems/persona/parts/power-tooltip-lite.hbs" power=followUp.power persona=(persona followUp.combatant.actor)}}
+          </div>
         </button>
         {{/each}}
       </div>
@@ -20,20 +23,26 @@
     {{/if}}
 
     {{#if (eq followUp.type "area-power")}}
-    <div class="follow-up auto-target" data-power-id="{{followUp.power.id}}" data-combatant-id="{{followUp.combatant.id}}" title="{{> "systems/persona/parts/power-tooltip-lite.hbs" power=followUp.power persona=(persona followUp.combatant.actor)}}">
-      <button class="area-button">
+    <div class="follow-up auto-target" data-power-id="{{followUp.power.id}}" data-combatant-id="{{followUp.combatant.id}}">
+      <button class="area-button tooltip">
         {{followUp.name}}
+        <div class="tooltiptext">
+          {{> "systems/persona/parts/power-tooltip-lite.hbs" power=followUp.power persona=(persona followUp.combatant.actor)}}
+        </div>
       </button>
     </div>
     {{/if}}
 
     {{#if (eq followUp.type "teamwork")}}
     <div class="teamwork-follow-up" data-power-id="{{followUp.power.id}}" data-teammate-id="{{followUp.teammate.id}}" data-combatant-id="{{followUp.combatant.id}}">
-      <button class="teamwork" title="{{> "systems/persona/parts/power-tooltip-lite.hbs" power=followUp.power persona=(persona followUp.teammate.actor)}}">
+      <button class="tooltip teamwork">
         <span class="shimmer">
           <img class="target-button-img" src="{{followUp.teammate.img}}">
           {{followUp.name}}
         </span>
+        <div class="tooltiptext">
+          {{> "systems/persona/parts/power-tooltip-lite.hbs" power=followUp.power persona=(persona followUp.teammate.actor)}}
+        </div>
       </button>
     </div>
     {{/if}}

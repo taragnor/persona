@@ -12,16 +12,22 @@
 	{{#if (scanLevelgte persona 2)}}
 	<h3> Powers</h3>
 	<div class="main-powers">
-		{{#each persona.powers as |power i|}}
-		<div class="main-power" data-power-id="{{power.id}}">
-      <div class="power-name-block {{#if (lte ../actor.maxPowers i)}} over-max-power {{/if}} " title="{{> "systems/persona/parts/power-tooltip-lite.hbs" CONST=../CONST power=power persona=../persona}}">
-				<div class="power-name-bubble-container">
-					{{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../persona}}
-				</div>
-			</div>
-		</div>
-		{{/each}}
+  {{> "systems/persona/parts/bubble-power-list.hbs" CONST=CONST persona=persona powerList=persona.powers}}
+
+  {{#if false}}
+  {{#each persona.powers as |power i|}}
+  <div class="main-power" data-power-id="{{power.id}}">
+    <div class="power-name-block {{#if (lte ../actor.maxPowers i)}} over-max-power {{/if}} " title="{{> "systems/persona/parts/power-tooltip-lite.hbs" CONST=../CONST power=power persona=../persona}}">
+      <div class="power-name-bubble-container">
+        {{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../persona}}
+      </div>
+    </div>
+  </div>
+  {{/each}}
+  {{/if}}
+
 	</div>
+
 	{{/if}}
 	{{#if showTreasure}}
 	{{#if (scanLevelgte persona 2)}}

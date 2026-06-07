@@ -186,6 +186,7 @@ export class ConsequenceApplier {
         await actor.voicelines.onEvent("take-damage", {
           usedPower: power.isUsableType() ? power : undefined,
           hpChange: dmg.hpChange,
+          damageType: dmg.damageType,
         });
       }
     }

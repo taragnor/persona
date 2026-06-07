@@ -1,3 +1,4 @@
+import {RealDamageType} from "../../config/damage-types.js";
 import {PersonaSettings} from "../../config/persona-settings.js";import {StatusEffectId} from "../../config/status-effects.js";
 import {PersonaCombat} from "../combat/persona-combat.js";
 import {GENERAL_COMBATANT_VOICE_TRIGGERS} from "../navigator/nav-voice-lines.js";
@@ -162,6 +163,7 @@ export class ActorVoiceLines {
   }
 
   private async takeDamage(options : VoiceEventOptions = {})  : Promise<boolean> {
+    if (options.damageType == "none") {return false;}
     if ((options?.hpChange ?? 0) > 0) {return false;}
     let severity = 0;
     switch (true) {
@@ -187,12 +189,14 @@ export class ActorVoiceLines {
       const voice = await this.playVoice ("post-attack",
         {
           severity: 0, //when enemy killed
+          "percent": 0.75,
         });
       const voice2 = await this.enemiesRemaining(eventOptions);
       return voice || voice2;
     }
     return this.playVoice ( "post-attack", {
       severity: 1, //when enemy survived
+      "percent": 0.4
     });
 
   }
@@ -231,4 +235,5 @@ type VoiceEventOptions = {
   hpChange ?: number,
   statusAdded?: StatusEffectId,
   selfOnly ?: boolean,
+  damageType?: RealDamageType,
 }
