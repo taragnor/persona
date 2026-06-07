@@ -15,29 +15,29 @@ export class PCLikeSheet extends CombatantSheetBase {
 			weapons: Object.fromEntries(Array.from(this.actor.items)
         .filter( x=> x.isWeapon())
         .filter( x=> this.actor.canEquip(x))
-        .sort ( (a,b)=> a.name.localeCompare(b.name))
-        .map( x=>  [ x.id, x.name])
+        .sort ( (a,b)=> a.displayedName.localeCompare(b.displayedName))
+        .map( x=>  [ x.id, x.displayedName])
       ),
 			body: Object.fromEntries(Array.from(this.actor.items)
         .filter(x=> x.isInvItem())
         .filter( item=> item.system.slot == "body")
         .filter( item=> this.actor.canEquip(item))
-        .sort ( (a,b)=> a.name.localeCompare(b.name))
-        .map( x=> [ x.id, x.name])
+        .sort ( (a,b)=> a.displayedName.localeCompare(b.name))
+        .map( x=> [ x.id, x.displayedName])
 			),
 			accessory: Object.fromEntries(Array.from(this.actor.items)
         .filter(x=> x.isInvItem())
         .filter( item=> item.system.slot == "accessory")
         .filter( item=> this.actor.canEquip(item))
-        .sort ( (a,b)=> a.name.localeCompare(b.name))
-        .map( x=> [ x.id, x.name])
+        .sort ( (a,b)=> a.displayedName.localeCompare(b.name))
+        .map( x=> [ x.id, x.displayedName])
 			),
 			attachment: Object.fromEntries(Array.from(this.actor.items)
         .filter(x=> x.isInvItem())
         .filter( item=> item.system.slot == "weapon_crystal")
         .filter( item=> this.actor.canEquip(item))
-        .sort ( (a,b)=> a.name.localeCompare(b.name))
-        .map( x=> [ x.id, x.name])
+        .sort ( (a,b)=> a.displayedName.localeCompare(b.name))
+        .map( x=> [ x.id, x.displayedName])
 			),
 		};
 

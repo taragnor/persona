@@ -512,7 +512,8 @@ export class ActorSocial <T extends PersonaActor> {
     }
     const link = this.actor.system.social.find( x=> x.linkId == linkId);
     if (!link) {
-      throw new PersonaError("Trying to refresh social link you don't have");
+      PersonaError.softFail("Trying to refresh social link you don't have");
+      return;
     }
     link.inspiration += amt;
     link.inspiration = Math.min(link.linkLevel, link.inspiration);
@@ -643,6 +644,11 @@ export class ActorSocial <T extends PersonaActor> {
 
   async alterSocialLinkProgress(this: ActorSocial<PC>, linkId: string, progress: number) {
     return await this.socialLinkProgress(linkId, progress);
+  }
+
+  getActivityProgress(this: ActorSocial<PC>, activityId: string) : number {
+    const act = this.actor.system.activities.find(act=> act.linkId  == activityId);
+    return act?.currentProgress ?? 0;
   }
 
   async socialLinkProgress(this: ActorSocial<PC>, linkId: string, progress: number) {

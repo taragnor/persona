@@ -289,9 +289,9 @@ export class SocialCardExecutor {
       const jobmod = actor.getPersonalBonuses("pay").total(cardData.situation, "percentage");
       base = Math.round(jobmod * base);
       token = Math.round(jobmod * token);
-      const tokens = actor.social.getSocialLinkProgress(cardData.card.id) ?? 0;
+      const tokens = actor.social.getActivityProgress(cardData.card.id) ?? 0;
       await actor.social.activityProgress(card.id, -999);
-      const total = base + token * tokens;
+      const total = base + (token * tokens);
       await actor.gainMoney(total, true, false);
       return `
     <section class="job-pay-section" data-base-pay="${base}" data-per-token="${token}">
