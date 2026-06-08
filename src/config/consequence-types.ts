@@ -34,12 +34,6 @@ import {ModifierV2Target} from "../module/bonus-calc.js";
 export type OtherEffect = {__localEffect?: undefined} &
   ProcessedConsequenceToOtherEffect< ExpendItemConsequence | SetFlagConsequence | StatusResistanceAlterConsequence | InspirationChangeConsequence | DisplayMessageConsequence | UsePowerConsequence | DungeonActionConsequence | AlterMPConsequence |  OtherEffectConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence| GainLevelConsequence |  InventoryActionConsequence | TriggerEventModifierConsequence | SFXConsequence>;
 
-//removed : AddPowerConsequence
-// setRollResultConsequence 
-//CancelRequestConsequence
-//stripped
-//SocialCardActionConsequence
-
 export type LocalEffect =
   {
     __localEffect: true,
@@ -104,7 +98,6 @@ type NonGenericConsequences =
   | ModifierConsequence
   | ModifierV2Consequence
   | OldDamageConsequence
-// | OldModifier
   | DisplayMessageConsequence
   | ExpendItemConsequence
   | AlterMPConsequence
@@ -117,11 +110,8 @@ type NonGenericConsequences =
   | FatigueConsequence
   | AlterVariableConsequence
   | PermabuffConsequence
-  // | PlaySoundConsequence
   | GainLevelConsequence
   | TriggerEventModifierConsequence
-// | CancelRequestConsequence
-// | setRollResultConsequence
   | InventoryActionConsequence
   | SFXConsequence
 ;

@@ -117,7 +117,6 @@ export class ConsequenceProcessor {
       case 'use-power':
       case 'alter-mp':
         return targets.map( applyTo => ({applyTo, cons}));
-        // case 'teach-power':
       case 'social-card-action':
       case 'combat-effect':
         return targets.map( applyTo => ({applyTo, cons}));
