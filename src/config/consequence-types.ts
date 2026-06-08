@@ -27,6 +27,8 @@ import {AttackResult} from "../module/combat/combat-result.js";
 import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js";
 import {StatusDuration} from "../module/persona-ae.js";
 import {PowerTagOrId} from "./power-tags.js";
+import {CalculationOperation} from "../module/utility/calculation-v2.js";
+import {ModifierV2Target} from "../module/bonus-calc.js";
 
 
 export type OtherEffect = {__localEffect?: undefined} &
@@ -100,6 +102,7 @@ type NonGenericConsequences =
   | SocialCardActionConsequence
   | DungeonActionConsequence
   | ModifierConsequence
+  | ModifierV2Consequence
   | OldDamageConsequence
 // | OldModifier
   | DisplayMessageConsequence
@@ -524,7 +527,7 @@ export type NonDeprecatedConsequence = Prettify<ExcludeDeprecatedModifiers<Conse
 type ExcludeDeprecatedModifiers<T extends Consequence> = Exclude<T, DeprecatedMultiModifierConsequence | DeprecatedSingleModifierConsequence>
 
   type ExcludeDeprecatedTypes<T extends Consequence>  =
-  { type: Exclude<T["type"], DeprecatedConsequence["type"]> | NonDeprecatedMultiModifierConsequence["type"] | NonDeprecatedSingleModifierConsequence["type"] }
+  { type: Exclude<T["type"], DeprecatedConsequence["type"]> | NonDeprecatedMultiModifierConsequence["type"] | NonDeprecatedSingleModifierConsequence["type"]}
 
 type DeprecatedSimpleEffect = {
   type: "save-slot" | "half-hp-cost";
@@ -633,6 +636,16 @@ type ModifierConsequence =
   | DeprecatedMultiModifierConsequence
   | DeprecatedSingleModifierConsequence
   | NonDeprecatedSingleModifierConsequence;
+
+type ModifierV2Consequence = {
+  type: "modifier-v2";
+} & {
+  operation: CalculationOperation;
+  modTarget: ModifierV2Target;
+  priority: number;
+  amount: ConsequenceAmount;
+};
+
 
 type DeprecatedSingleModifierConsequence = {
 	type: "modifier",

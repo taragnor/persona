@@ -38,6 +38,7 @@ export const NON_DEPRECATED_CONSQUENCELIST = [
   "none",
   "modifier", //singular-mod
   "modifier-new", //multi-mod
+  "modifier-v2", //newest-type
   "combat-effect",
   "social-card-action",
   "inventory-action",

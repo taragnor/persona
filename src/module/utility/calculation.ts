@@ -62,8 +62,6 @@ export class Calculation {
 		return this;
 	}
 
-
-
 	/** merges another calculation into the current one*/
 	merge( other: Readonly<Calculation>) : this {
 		this.#priorityLevelsMax = Math.max(this.#priorityLevelsMax, other.maxPriorityLevels());

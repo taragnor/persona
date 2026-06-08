@@ -1262,7 +1262,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return new ModifierList(modifiers);
   }
 
-  static getModifier( effects: readonly SourcedConditionalEffect[], bonusTypes: MaybeArray<NonDeprecatedModifierType>) : ModifierListItem[] {
+  static getModifier( effects: readonly ConditionalEffectC[], bonusTypes: MaybeArray<NonDeprecatedModifierType>) : ModifierListItem[] {
     bonusTypes = Array.isArray(bonusTypes) ? bonusTypes : [bonusTypes];
     return bonusTypes.flatMap( btype => {
       return effects
@@ -1278,12 +1278,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
             : this.name;
           return ({
             name,
-            // name: eff.source?.name ?? "Unknown Source",
             source: eff.source,
             owner: eff.owner,
             realSource: eff.realSource,
-            conditions: ConditionalEffectManager.ArrayCorrector(eff.conditions),
-            modifier: ModifierList.getModifierAmount(eff.consequences, btype),
+            conditions: eff.conditions,
+            modifier: eff.getModifierAmount(btype),
           });
         });
     });
@@ -1329,8 +1328,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
           source: x.source,
           owner: x.owner,
           realSource: x.realSource,
-          conditions: ConditionalEffectManager.ArrayCorrector(x.conditions),
-          modifier: ModifierList.getModifierAmount(x.consequences, bonusTypes),
+          conditions: x.conditions,
+          modifier: x.getModifierAmount(bonusTypes),
         };
       }
       );

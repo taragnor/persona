@@ -18,6 +18,7 @@ import {TAROT_DECK} from "../../config/tarot.js";
 import {TRIGGERS} from "../../config/triggers.js";
 import {WEATHER_TYPES} from "../../config/weather-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
+import {MODIFIER_V2_TARGET} from "../bonus-calc.js";
 import {PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
@@ -586,6 +587,10 @@ export class ConditionalEffectPrinter {
           return "";
         case "modifier-new": {
           const modifiers = this.translate(cons.modifiedFields, MODIFIERS_TABLE);
+          return `${modifiers}: ${this.printConsequenceAmount(cons.amount)}`;
+        }
+        case "modifier-v2": {
+          const modifiers = this.translate(cons.modTarget, MODIFIER_V2_TARGET);
           return `${modifiers}: ${this.printConsequenceAmount(cons.amount)}`;
         }
         case "expend-item":

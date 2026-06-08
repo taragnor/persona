@@ -1,4 +1,5 @@
-import { EnhancedSourcedConsequence, NonDeprecatedConsequence } from "../../config/consequence-types.js";
+import { ConsequenceAmountV2, EnhancedSourcedConsequence, NonDeprecatedConsequence } from "../../config/consequence-types.js";
+import {NonDeprecatedModifierTarget} from "../../config/item-modifiers.js";
 import {NonDeprecatedPrecondition} from "../../config/precondition-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
@@ -7,6 +8,7 @@ import {PersonaDB} from "../persona-db.js";
 import {TimedCache} from "../utility/cache.js";
 import {CETypes, ConditionalEffectManager} from "./conditional-effect-manager.js";
 import {ConditionalEffectPrinter} from "./conditional-effect-printer.js";
+import {ConsequenceAmountResolver} from "./consequence-amount.js";
 import {testPrecondition} from "./preconditions.js";
 
 export class ConditionalEffectC {
@@ -165,6 +167,10 @@ export class ConditionalEffectC {
       && cons.eventMod == "cancel");
   }
 
+  getModifierAmount(targetMods: NonDeprecatedModifierTarget[] | NonDeprecatedModifierTarget) : (number | Sourced<ConsequenceAmountV2>)[] {
+    return ConditionalEffectC.getModifierAmount(this.consequences, targetMods);
+  }
+
   #determineConditionalType (ce: CondEffectObject, _conditions: SourcedConditionalEffect["conditions"], _consequences : SourcedConditionalEffect["consequences"], sourceItem: N<ConditonalEffectHolderItem> ) : this["_conditionalType"] {
     let condType : this["_conditionalType"] = "unknown";
     const forceDefensive = (sourceItem?.isDefensive)
@@ -222,6 +228,27 @@ export class ConditionalEffectC {
       applyTo: "user",
     } satisfies SourcedConditionalEffect["consequences"][number]
     ];
+  }
+
+    static getModifierAmount(consequences: ConditionalEffectC["consequences"], targetMods: NonDeprecatedModifierTarget[] | NonDeprecatedModifierTarget) : (number | Sourced<ConsequenceAmountV2>)[] {
+    targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
+    return consequences
+      .reduce( (acc,cons)=> {
+        if ("modifiedFields" in cons
+          && targetMods
+          .some( f => cons.modifiedFields[f] == true)
+        ) {
+          const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
+          acc.push(sourced);
+          return acc;
+        }
+        if ("modifiedField" in cons && cons.modifiedField && targetMods.includes(cons.modifiedField)) {
+          const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
+          acc.push(sourced);
+          return acc;
+        }
+        return acc;
+      }, [] as (number |Sourced<ConsequenceAmountV2>)[]);
   }
 
 }

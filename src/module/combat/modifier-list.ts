@@ -91,26 +91,26 @@ export class ModifierList {
     });
   }
 
-  static getModifierAmount(consequences: ConditionalEffectC["consequences"], targetMods: NonDeprecatedModifierTarget[] | NonDeprecatedModifierTarget) : (number | Sourced<ConsequenceAmountV2>)[] {
-    targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
-    return consequences
-      .reduce( (acc,cons)=> {
-        if ("modifiedFields" in cons
-          && targetMods
-          .some( f => cons.modifiedFields[f] == true)
-        ) {
-          const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
-          acc.push(sourced);
-          return acc;
-        }
-        if ("modifiedField" in cons && cons.modifiedField && targetMods.includes(cons.modifiedField)) {
-          const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
-          acc.push(sourced);
-          return acc;
-        }
-        return acc;
-      }, [] as (number |Sourced<ConsequenceAmountV2>)[]);
-  }
+  // static getModifierAmount(consequences: ConditionalEffectC["consequences"], targetMods: NonDeprecatedModifierTarget[] | NonDeprecatedModifierTarget) : (number | Sourced<ConsequenceAmountV2>)[] {
+  //   targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
+  //   return consequences
+  //     .reduce( (acc,cons)=> {
+  //       if ("modifiedFields" in cons
+  //         && targetMods
+  //         .some( f => cons.modifiedFields[f] == true)
+  //       ) {
+  //         const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
+  //         acc.push(sourced);
+  //         return acc;
+  //       }
+  //       if ("modifiedField" in cons && cons.modifiedField && targetMods.includes(cons.modifiedField)) {
+  //         const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
+  //         acc.push(sourced);
+  //         return acc;
+  //       }
+  //       return acc;
+  //     }, [] as (number |Sourced<ConsequenceAmountV2>)[]);
+  // }
 
   addConditionalEffects( effects: ConditionalEffectC[], bonusTypes: NonDeprecatedModifierTarget[]) : this {
     const stuff : ModifierListItem[] = (ConditionalEffectManager.ArrayCorrector(effects) ?? []).map( eff=>{
@@ -119,7 +119,7 @@ export class ModifierList {
         source: eff.source,
         owner: eff.owner,
         conditions: ConditionalEffectManager.ArrayCorrector(eff.conditions),
-        modifier: ModifierList.getModifierAmount(eff.consequences, bonusTypes),
+        modifier: eff.getModifierAmount(bonusTypes),
         realSource: eff.realSource,
       };
     });

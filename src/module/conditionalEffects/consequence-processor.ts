@@ -103,6 +103,7 @@ export class ConsequenceProcessor {
       case 'none':
       case 'modifier':
       case 'modifier-new':
+      case 'modifier-v2':
         break;
       case 'other-effect':
         return this.processConsequence_otherEfect(cons, targets);

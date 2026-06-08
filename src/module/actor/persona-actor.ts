@@ -1111,7 +1111,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return healing * rec_mult;
   }
 
-
   async spendRecovery(this: ValidAttackers, socialLinkId: null): Promise<void>;
   async spendRecovery(this: PC, socialLinkId: PersonaActor["id"]): Promise<void>;
   async spendRecovery(this: ValidAttackers, socialLinkId: PersonaActor["id"] | null) {
@@ -2910,7 +2909,7 @@ get XPForNextPersonalLevel() : number {
   if (this.isNPCAlly()) {
     return LevelUpCalculator.XPRequiredToAdvanceToLevel(this.basePersona.level + 1);
   }
-  return 99999999;
+  return Infinity;
 }
 
 async awardPersonalXP(this: ValidAttackers, amt: number, allowMult= true) : Promise<U<XPGainReport>> {

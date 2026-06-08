@@ -601,8 +601,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, usedPower: Usable) : ModifierList;
-  getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, sources?: readonly SourcedConditionalEffect[]): ModifierList;
-  getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, sources: (readonly SourcedConditionalEffect[] | Usable) = this.passiveModifiers()): ModifierList {
+  getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, sources?: readonly ConditionalEffectC[]): ModifierList;
+  getBonuses (modnames : MaybeArray<NonDeprecatedModifierType>, sources: (readonly ConditionalEffectC[] | Usable) = this.passiveModifiers()): ModifierList {
     if (sources instanceof PersonaItem) {
       const baseMods = this.getBonuses(modnames);
       const usable = sources;

@@ -336,6 +336,7 @@ export class CombatResult  {
       }
       case "modifier":
       case "modifier-new":
+      case "modifier-v2":
       case "raise-resistance":
       case "lower-resistance":
       case "raise-status-resistance":
