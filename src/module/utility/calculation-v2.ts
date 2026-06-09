@@ -3,7 +3,7 @@ import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amoun
 import {HTMLTools} from "./HTMLTools.js";
 
 export class CalculationV2 {
-	data : CalcList[] = [];
+	private data : CalcList[] = [];
 
 	constructor(initial = 0) {
     if (initial != 0) {
@@ -51,7 +51,7 @@ export class CalculationV2 {
 	}
 
 	/** merges another calculation into the current one*/
-	merge( other: Readonly<CalculationV2>) : this {
+	merge( other: CalculationV2) : this {
     this.data.push(...other.data);
     return this;
 	}

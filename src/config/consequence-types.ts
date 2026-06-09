@@ -91,8 +91,8 @@ type NullConsequence = {
 }
 
 type NonGenericConsequences =
-  NullConsequence |
-  UsePowerConsequence
+  NullConsequence
+  | UsePowerConsequence
   | SocialCardActionConsequence
   | DungeonActionConsequence
   | ModifierConsequence

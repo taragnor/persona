@@ -5,7 +5,7 @@ import {HTMLTools} from "./utility/HTMLTools.js";
 
 export class BonusCalculation extends CalculationV2 {
 
-  modNames : ModifierV2Target[] = [];
+  private modNames : readonly ModifierV2Target[] = [];
 
   constructor (bonusTypes: ModifierV2Target | ModifierV2Target[]) {
     //TODO: may have to get initial for each type here

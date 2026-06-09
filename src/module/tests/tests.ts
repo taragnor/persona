@@ -228,7 +228,7 @@ export class Tests {
     return true;
   }
 
-  static bonusCalcTest() : boolean {
+  static bonusCalcTest() : TestResult {
     const calc = new BonusCalculation(["attack-roll"]);
     calc
       .set(0, 5, "Initial")
@@ -237,24 +237,20 @@ export class Tests {
       .sub (1, 10, "minus 10")
       .div (1, 2, "div by 2")
       .add(0, 2, "Add 2");
-    let worked = this.testExpected(calc, 12);
+    let fail = this.testExpected(calc, 12);
     calc.set(2, 5, "override test");
-    worked = worked ?? this.testExpected(calc, 5);
-    const calc2= new BonusCalculation(["attack-roll"]);
-    calc2
+    fail ??= this.testExpected(calc, 5);
+    const calc2= new BonusCalculation(["attack-roll"])
       .add(0, 1, "initial")
       .setTerm(0, 2, "x2", "multiply", {"takeBest":2})
       .mult(0, 4, "x4")
       .mult(0, 5, "x5")
       .mult(0, 3, "x3");
-    worked = worked ?? this.testExpected(calc2, 20);
-    if (worked) {
-      return false;
-    }
-    return true;
+    fail ??= this.testExpected(calc2, 20);
+    return Promise.resolve( !fail);
   }
 
-  static testExpected(calc: BonusCalculation, expected: number) : N<string> {
+  private static testExpected(calc: BonusCalculation, expected: number) : N<string> {
     const {total, steps} = calc.eval();
     console.log(steps);
     if (total != expected) {
