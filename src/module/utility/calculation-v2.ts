@@ -17,22 +17,28 @@ export class CalculationV2 {
     }
 	}
 
-	/**@deprecated : DOn't need to specify operation, use mult instead */
-	add(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"], operation: CalcList["op"]) : this ;
-	add(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"], operation: CalcList["op"]) : this {
-		return this.setTerm(priority, amt, name, operation);
+	add(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"]) : this {
+		return this.setTerm(priority, amt, name, "add");
 	}
 
-		subtract(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"]) : this {
-		return this.setTerm(priority, amt, name, "add");
-		}
+  sub(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"]) : this {
+    return this.setTerm(priority, amt, name, "sub");
+  }
 
 
-  mult(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"]) {
+  div(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"]): this {
+    return this.setTerm(priority, amt, name, "divide");
+  }
+
+  set(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"]): this {
+    return this.setTerm(priority, amt, name, "set");
+  }
+
+  mult(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"]) : this {
     return this.setTerm(priority, amt, name, "multiply");
   }
 
-	protected setTerm(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"], operation: CalcList["op"], options : CalculationOptions = {}) : this {
+	setTerm(priority: number, amt: CalculationNumber["amt"], name: CalculationNumber["name"], operation: CalcList["op"], options : CalculationOptions = {}) : this {
     const item = {
       op: operation,
       priority,
@@ -80,6 +86,7 @@ export class CalculationV2 {
         total = this.applyCalcItem(total, item.op, item.amt);
         steps.push(this.getStepExplanation(total, item, item.amt));
       });
+      steps.push(`Subtotal: ${total}`);
     }
     return {
       steps: steps,
@@ -100,7 +107,7 @@ export class CalculationV2 {
       case "divide":
         return lastTotal / operand;
       case "multiply":
-        return lastTotal / operand;
+        return lastTotal * operand;
     }
 
   }

@@ -1,5 +1,6 @@
 import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
+import {BonusCalculation} from "../bonus-calc.js";
 import { ConsequenceApplier } from "../combat/consequence-applier.js";
 import {ResolvedActorChange} from "../combat/finalized-combat-result.js";
 import {StepsClock} from "../exploration/steps-clock.js";
@@ -226,6 +227,44 @@ export class Tests {
     }
     return true;
   }
+
+  static bonusCalcTest() : boolean {
+    const calc = new BonusCalculation(["attack-roll"]);
+    calc
+      .set(0, 5, "Initial")
+      .add(0, 10, "Add 10")
+      .mult(0, 2, "Times 2")
+      .sub (1, 10, "minus 10")
+      .div (1, 2, "div by 2")
+      .add(0, 2, "Add 2");
+    let worked = this.testExpected(calc, 12);
+    calc.set(2, 5, "override test");
+    worked = worked ?? this.testExpected(calc, 5);
+    const calc2= new BonusCalculation(["attack-roll"]);
+    calc2
+      .add(0, 1, "initial")
+      .setTerm(0, 2, "x2", "multiply", {"takeBest":2})
+      .mult(0, 4, "x4")
+      .mult(0, 5, "x5")
+      .mult(0, 3, "x3");
+    worked = worked ?? this.testExpected(calc2, 20);
+    if (worked) {
+      return false;
+    }
+    return true;
+  }
+
+  static testExpected(calc: BonusCalculation, expected: number) : N<string> {
+    const {total, steps} = calc.eval();
+    console.log(steps);
+    if (total != expected) {
+      const msg = `Test fail, expected ${expected}, but got ${total}`;
+      console.log(msg);
+      return msg;
+    }
+    return null;
+  }
+
 }
 
 //@ts-expect-error adding to global

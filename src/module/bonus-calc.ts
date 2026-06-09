@@ -22,7 +22,7 @@ export class BonusCalculation extends CalculationV2 {
           && this.modNames.includes(cons.modTarget)
         )
       );
-    for (const ce of bonusEffects) { 
+    for (const ce of bonusEffects) {
       const filteredCons = ce.consequences
         .filter( cons=> cons.type == "modifier-v2")
         .filter(cons =>this.modNames.includes(cons.modTarget));
