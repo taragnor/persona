@@ -1356,8 +1356,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   getBaseDamageType (this: Usable | Weapon) : DamageType {
+    if (this.isPower() && this.system.subtype == "passive") {
+      return "none";
+    }
     return this.itemBase.system.dmg_type;
   }
+
 
   getDamageType(this: Usable | Weapon, attacker: ValidAttackers | Persona): Exclude<DamageType, 'by-power'> {
     if (attacker instanceof Persona) {
@@ -1726,7 +1730,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     if (this.system.type == 'skillCard') {return false;}
     const item = this as Usable;
     return item.system.subtype == 'passive' ||
-      item.hasTag('passive', null);
+      item.hasTag('passive', null); //this seems to cause problems, do we want it?
   }
 
   canBeUsedInCombat () : boolean {

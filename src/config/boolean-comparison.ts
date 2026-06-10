@@ -3,7 +3,7 @@ import { CardTag } from "./card-tags.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { DeprecatedPrecondition, NonDeprecatedPrecondition, UserComparisonTarget } from "./precondition-types.js";
 import { PowerType } from "./effect-types.js";
-import { DamageType } from "./damage-types.js";
+import { DamageType, DamageTypesPlusAffinity } from "./damage-types.js";
 import { TarotCard } from "./tarot.js";
 import { PowerTag } from "./power-tags.js";
 import { StatusEffectId } from "./status-effects.js";
@@ -220,7 +220,7 @@ type PowerComparisonsSub = {
 	slotType: MultiCheck<string>,
 } | {
 	powerProp: "damage-type-is",
-	powerDamageType : (DamageType) | MultiCheck<DamageType>,
+	powerDamageType : (DamageTypesPlusAffinity) | MultiCheck<DamageTypesPlusAffinity>,
 } | {
 	powerProp: "has-tag",
 	powerTag: MultiCheckOrSingle<Exclude<PowerTag, Tag>>,

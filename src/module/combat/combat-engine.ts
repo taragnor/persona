@@ -293,7 +293,7 @@ export class CombatEngine {
     }
     const def = usableOrCard.system.defense;
     const defenseCalc = target.getDefense(def).eval(baseSituation);
-    const defenseVal = def != 'none' ? defenseCalc.total: 0;
+    const defenseVal = def != 'none' ? defenseCalc.total: -999;
     baseSituation.DC = defenseVal;
     return baseSituation;
   }
@@ -374,8 +374,9 @@ export class CombatEngine {
     roll: {rollTags: SituationTypes.Roll["rollTags"],
         naturalRoll : number}) : boolean {
           if (!range) {return false;}
+          if (roll.rollTags.includes("secondary-attack") && range.type != "evade") {return false;}
+
           return range.possible
-            && !roll.rollTags.includes("secondary-attack")
             && roll.naturalRoll >= range.low
             && roll.naturalRoll <= range.high;
         }
@@ -394,7 +395,7 @@ export class CombatEngine {
     const withinEvadeRange = CombatEngine.withinRange(evadeRange, partialSituation);
     const protoSituation = {
       ...partialSituation,
-      ailmentRange, instantKillRange, critRange,
+      ailmentRange, instantKillRange, critRange, evadeRange,
       withinAilmentRange,
       withinInstantKillRange,
       withinCritRange,
@@ -827,7 +828,7 @@ export class CombatEngine {
 
   getStatModifier (attacker: Persona, target: Persona, power: Usable) : Calculation {
     const attackStat = CombatEngine.getAttackStat(attacker, power);
-    const defenseStat =CombatEngine.getDefenseStat(target, power);
+    const defenseStat = CombatEngine.getDefenseStat(target, power);
     return CombatEngine.getStatModifier(attackStat, defenseStat);
   }
 

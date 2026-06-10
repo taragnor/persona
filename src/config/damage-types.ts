@@ -71,4 +71,11 @@ export type DamageLevel = typeof DAMAGE_LEVELS_LIST[number];
 
 export const DAMAGE_LEVELS = HTMLTools.createLocalizationObject(DAMAGE_LEVELS_LIST, "persona.damage.levels");
 
+const DAMAGE_TYPES_PLUS_AFFINITY_LIST = [
+  ...DAMAGE_TYPES_LIST,
+  "source-dtype",
+] as const;
 
+export const DAMAGE_TYPES_PLUS_AFFINITY = HTMLTools.createLocalizationObject(DAMAGE_TYPES_PLUS_AFFINITY_LIST, "persona.damage.types");
+
+export type DamageTypesPlusAffinity = keyof typeof DAMAGE_TYPES_PLUS_AFFINITY;

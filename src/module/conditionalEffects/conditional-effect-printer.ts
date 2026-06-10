@@ -1,6 +1,6 @@
 import {Consequence, CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES, ConsequenceAmount, ConsequenceAmountV2, LEVEL_GAIN_TARGETS, NonDeprecatedConsequence, SITUATION_PROPERTIES} from "../../config/consequence-types.js";
 import {CREATURE_TAGS} from "../../config/creature-tags.js";
-import {DAMAGETYPES, RESIST_STRENGTHS} from "../../config/damage-types.js";
+import {DAMAGE_TYPES_PLUS_AFFINITY, RESIST_STRENGTHS} from "../../config/damage-types.js";
 import {DAYS} from "../../config/days.js";
 import {DEFENSE_TYPES} from "../../config/defense-types.js";
 import {DAMAGE_SUBTYPES, POWERTYPES, TARGETING} from "../../config/effect-types.js";
@@ -121,7 +121,7 @@ export class ConditionalEffectPrinter {
         case "target-owner-comparison":
           return `${target1} is ${not} equal to ${target2}`;
         case "damage-type-is": {
-          const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
+          const damageType = this.translate(cond.powerDamageType, DAMAGE_TYPES_PLUS_AFFINITY);
           return `Power Damage Type is ${not} ${damageType}`;
         }
         case "power-type-is": {
@@ -135,7 +135,7 @@ export class ConditionalEffectPrinter {
         case "struck-weakness":
           return `attack ${not} targets a weakness`;
         case "is-resistant-to": {
-          const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
+          const damageType = this.translate(cond.powerDamageType, DAMAGE_TYPES_PLUS_AFFINITY);
           return `${target1} is ${not} resistant to ${damageType}`;
         }  case "is-same-arcana":
           return `${target1} is ${not} the same arcana as attacker`;
@@ -313,7 +313,7 @@ export class ConditionalEffectPrinter {
           return `used power ${not} has tag: ${tagName}`;
         }
         case "damage-type-is":{
-          const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
+          const damageType = this.translate(cond.powerDamageType, DAMAGE_TYPES_PLUS_AFFINITY);
           return `Power Damage Type is ${not} ${damageType}`;
         }
         case "power-type-is": {
@@ -389,7 +389,7 @@ export class ConditionalEffectPrinter {
         case "is-vulnerable-to":
         case "is-resistant-to": {
           const vulnOrResist = cond.combatProp == "is-resistant-to" ? "resistant" : "weak";
-          const damageType = this.translate(cond.powerDamageType, DAMAGETYPES);
+          const damageType = this.translate(cond.powerDamageType, DAMAGE_TYPES_PLUS_AFFINITY);
           return `${target1} is ${not} ${vulnOrResist} to ${damageType}`;
         }
         case "is-enemy":
@@ -503,7 +503,7 @@ export class ConditionalEffectPrinter {
           return `Resources ${endString(cond)}`;
         case "resistance-level": {
           const resist = this.translate(cond.resistLevel, RESIST_STRENGTHS);
-          const damage = this.translate(cond.element, DAMAGETYPES);
+          const damage = this.translate(cond.element, DAMAGE_TYPES_PLUS_AFFINITY);
           return `${damage} resistance ${endString(cond, resist)}`;
         }
         case "status-resistance-level": {
@@ -614,11 +614,11 @@ export class ConditionalEffectPrinter {
         case "dungeon-action":
           return this.#printDungeonAction(cons);
         case "raise-resistance": {
-          const resistType = this.translate(cons.resistType, DAMAGETYPES);
+          const resistType = this.translate(cons.resistType, DAMAGE_TYPES_PLUS_AFFINITY);
           const resistLevel = this.translate(cons.resistanceLevel, RESIST_STRENGTHS);;
           return `Raise ${resistType} Resistance ${resistLevel}` ; }
         case "lower-resistance" : {
-          const resistType =this.translate(cons.resistType, DAMAGETYPES);
+          const resistType =this.translate(cons.resistType, DAMAGE_TYPES_PLUS_AFFINITY);
           const resistLevel = this.translate(cons.resistanceLevel, RESIST_STRENGTHS);;
           return `Lower ${resistType} Resistance ${resistLevel}` ;
         } case "use-power": {

@@ -5,7 +5,7 @@ import { CONSUMABLE_SUBTYPE_LIST } from "../../config/equip-slots.js";
 import { ROLL_TAGS_AND_CARD_TAGS, RollTag } from "../../config/roll-tags.js";
 import { UNIVERSAL_MODIFIERS_TYPE_LIST } from "./universal-modifiers-types.js";
 import { FREQUENCY, frequencyConvert } from "../../config/frequency.js";
-import { REALDAMAGETYPESLIST } from "../../config/damage-types.js";
+import { DAMAGE_TYPES_LIST, REALDAMAGETYPESLIST } from "../../config/damage-types.js";
 import { CardRoll, Opportunity, SOCIAL_CARD_TYPES_LIST, ThresholdOrDC, TokenSpend } from "../../config/social-card-config.js";
 import { PersonaItem } from "../item/persona-item.js";
 import { Consequence } from "../../config/consequence-types.js";
@@ -138,7 +138,9 @@ class TagSchema extends foundry.abstract.TypeDataModel {
       treasure: itemTreasureStats(),
       tags: new arr( new txt<typeof POWER_TAGS_LIST[number] | Item["id"]>()),
       itemTags: new arr(new txt<typeof EQUIPMENT_TAGS_LIST[number] | Item["id"]>()),
-			creatureTags: new arr(new txt<InternalCreatureTag | Item["id"]>()),
+      creatureTags: new arr(new txt<InternalCreatureTag | Item["id"]>()),
+      /** used purely for derived effects, like a resistnace type of damage*/
+      dmg_type: new txt( {choices: DAMAGE_TYPES_LIST, initial:"none"}),
       ...effects (false),
     };
     return ret;

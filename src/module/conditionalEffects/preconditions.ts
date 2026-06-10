@@ -1299,8 +1299,13 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
       if (!attackerAcc) {return undefined;}
       const attacker = PersonaDB.findActor(attackerAcc);
       if (!attacker) {return undefined;}
-      const dtype = power.getDamageType(attacker);
-      return multiCheckContains(condition.powerDamageType, [dtype as string]);
+      const powerDType = power.getDamageType(attacker);
+      const condType = condition.powerDamageType;
+      if (condType == "source-dtype" || (typeof condType == "object" && condType["source-dtype"] == true)) {
+        const effectAffDType = getSourceDType(condition);
+        if (effectAffDType == powerDType) {return true;}
+      }
+      return multiCheckContains(condition.powerDamageType, [powerDType as string]);
     }
     case "power-type-is": {
       return power.system.type == "power" && power.system.subtype == condition.powerType;
@@ -1547,4 +1552,17 @@ function specialComparison(condition: SourcedPrecondition & {type: "boolean", bo
   }
 }
 
+function getSourceDType(condition: SourcedPrecondition) : N<DamageType> {
+  try {
+    if (condition.source == null) {return null;}
+    const source = PersonaDB.find(condition.source);
+    if (source instanceof PersonaItem) {
+      if ("dmg_type" in source.system) {
+        return source.system.dmg_type && source.system.dmg_type != "none" ? source.system.dmg_type : null;
+      }
+    }
+  } catch {
+  }
+  return null;
+}
 

@@ -19,7 +19,7 @@
 {{/if}}
 
 {{#if (eq cond.powerProp "damage-type-is") }}
-{{multicheck (strcat namePrefix 'powerDamageType') POWERSTUFF.DAMAGETYPES checked=cond.powerDamageType localize=true}}
+{{multicheck (strcat namePrefix 'powerDamageType') POWERSTUFF.DAMAGE_TYPES_PLUS_AFFINITY checked=cond.powerDamageType localize=true}}
 {{/if}}
 
 {{#if (eq (defVal cond.powerProp "has-tag") "has-tag") }}

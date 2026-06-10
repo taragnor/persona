@@ -53,6 +53,10 @@ export class PersonaAnimation {
 					await anim.onMiss();
 					await anim.play();
 					break;
+        case "evade":
+					await anim.onEvade();
+					await anim.play();
+          break;
 				case "reflect":
 				case "block":
 				case "absorb":
@@ -84,6 +88,13 @@ export class PersonaAnimation {
 			.delay(800)
 			.play();
 	}
+
+  private async onEvade() {
+		await PersonaAnimation.appendScrollingText(new Sequence(), "Evade", this.target)
+			.delay(800)
+			.play();
+
+  }
 
   private async onNullAttack() {
     switch (this.result) {
