@@ -14,33 +14,16 @@ export class BonusCalculation extends CalculationV2 {
   }
 
   addCE(...effects: ConditionalEffectC[]) : this {
-    //TODO: finish later
-    const bonusEffects= effects
-      .filter ( ce=> ce.consequences
-        .some( cons=>
-          cons.type == "modifier-v2"
-          && this.modNames.includes(cons.modTarget)
-        )
+    const bonusEffects = effects
+      .filter ( ce=> this.modNames
+        .some (mod => ce.grantsBonusType(mod))
       );
     for (const ce of bonusEffects) {
       const filteredCons = ce.consequences
-        .filter( cons=> cons.type == "modifier-v2")
-        .filter(cons =>this.modNames.includes(cons.modTarget));
+        .filter( cons => cons.type == "modifier-v2")
+        .filter( cons =>this.modNames.includes(cons.modTarget));
       for (const cons of filteredCons) {
-        const calculateable: Calculateable = {
-          eval (sit :Situation) {
-            if (sit == undefined) {return null;}
-            if (!ce.testPreconditions(sit))
-            {return null;}
-            const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
-            const res = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, sit);
-            if (res == undefined) {return null;}
-            return {
-              total: res,
-              steps: [ce.name],
-            } satisfies EvaluatedCalculation;
-          }
-        };
+        const calculateable = this._toCalculateable(ce, cons);
         this.setTerm(cons.priority ?? 10, calculateable,
           ce.name,  cons.operation);
       }
@@ -48,11 +31,30 @@ export class BonusCalculation extends CalculationV2 {
     return this;
   }
 
+  private _toCalculateable(ce: ConditionalEffectC, cons: ConditionalEffectC["consequences"][number] & {type : "modifier-v2"}) : Calculateable {
+    const calculateable: Calculateable = {
+      eval (sit :Situation) {
+        if (sit == undefined) {return null;}
+        if (!ce.testPreconditions(sit))
+        {return null;}
+        const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
+        const res = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, sit);
+        if (res == undefined) {return null;}
+        return {
+          total: res,
+          steps: [ce.name],
+        } satisfies EvaluatedCalculation;
+      }
+    };
+    return calculateable;
+  }
+
 }
 
 const MODIFIER_V2_TARGET_LIST = [
   "attack-roll",
 ] as const;
+
 
 export const MODIFIER_V2_TARGET = HTMLTools.createLocalizationObject(MODIFIER_V2_TARGET_LIST, "persona.modifier-v2");
 

@@ -12,6 +12,7 @@ import {PersonaSocial} from "../social/persona-social.js";
 import {SocialCardExecutor} from "../social/social-card-executor.js";
 import {sleep} from "../utility/async-wait.js";
 import {MultiTierCache, TimedCache} from "../utility/cache.js";
+import {Calculateable} from "../utility/calculation-v2.js";
 
 export class Tests {
 
@@ -217,7 +218,7 @@ export class Tests {
       console.warn("Anchored Status test failed: treated as nonachored");
       return false;
     }
-    for (let x=0 ; x < 10; x++) {
+    for (let x = 0; x < 10; x++) {
       await anya.onStartCombatTurn();
     }
     await sleep(500);
@@ -240,6 +241,15 @@ export class Tests {
     let fail = this.testExpected(calc, 12);
     calc.set(2, 5, "override test");
     fail ??= this.testExpected(calc, 5);
+    const calcable = {
+      eval(_situation: Situation, _options?: object) {
+        return {
+          total: 3,
+          steps: ["eval 3"],
+        }
+         ;
+      }
+    } satisfies Calculateable;
     const calc2= new BonusCalculation(["attack-roll"])
       .add(0, 1, "initial")
       .setTerm(0, 2, "x2", "multiply", {"takeBest":2})
@@ -247,6 +257,8 @@ export class Tests {
       .mult(0, 5, "x5")
       .mult(0, 3, "x3");
     fail ??= this.testExpected(calc2, 20);
+    calc2.mult(1, calcable, "calcable Test");
+    fail ??= this.testExpected(calc2, 60);
     return Promise.resolve( !fail);
   }
 

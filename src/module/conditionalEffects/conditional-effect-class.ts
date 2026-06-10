@@ -2,10 +2,11 @@ import { ConsequenceAmountV2, EnhancedSourcedConsequence, NonDeprecatedConsequen
 import {NonDeprecatedModifierTarget} from "../../config/item-modifiers.js";
 import {NonDeprecatedPrecondition} from "../../config/precondition-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
+import {ModifierV2Target} from "../bonus-calc.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
 import {PersonaAE} from "../persona-ae.js";
 import {PersonaDB} from "../persona-db.js";
-import {TimedCache} from "../utility/cache.js";
+import {MultiTierCache, TimedCache} from "../utility/cache.js";
 import {CETypes, ConditionalEffectManager} from "./conditional-effect-manager.js";
 import {ConditionalEffectPrinter} from "./conditional-effect-printer.js";
 import {ConsequenceAmountResolver} from "./consequence-amount.js";
@@ -28,7 +29,8 @@ export class ConditionalEffectC {
   _isAura: boolean;
 
   #cache = {
-    allowOpenersForPowers: new TimedCache( () => this._canAllowOpenersForPowers(), this.#CACHE_TIME)
+    allowOpenersForPowers: new TimedCache( () => this._canAllowOpenersForPowers(), this.#CACHE_TIME),
+    bonusTypes : new MultiTierCache( (bonusType: ModifierV2Target) => new TimedCache ( () => this._grantsBonusType(bonusType) , this.#CACHE_TIME)),
   };
 
   constructor (card: SkillCard);
@@ -94,6 +96,17 @@ export class ConditionalEffectC {
       consequences,
     };
     return ret;
+  }
+
+  grantsBonusType(btype: ModifierV2Target) {
+    return this.#cache.bonusTypes.get(btype);
+  }
+
+  _grantsBonusType( btype : ModifierV2Target) : boolean {
+    return this.consequences
+      .some(cons => cons.type == "modifier-v2"
+        && cons.modTarget== btype
+      );
   }
 
   private _conditionsRaw(): ConditionalEffect["conditions"] {

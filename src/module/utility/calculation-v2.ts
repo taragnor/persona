@@ -61,7 +61,7 @@ export class CalculationV2 {
     this.sortPriorities();
     this.propagateOptions();
     let total = 0;
-    const resolvedData= this.data.map ( entry => {
+    const resolvedData = this.data.map ( entry => {
       const resolved = this.resolveCalculationNumber(entry, situation);
       return {
         ...entry,
@@ -276,19 +276,20 @@ export class CalculationV2 {
 // }
 
   resolveCalculationNumber(entry : typeof this.data[number], situation ?: Situation) : N<ResolvedCalculationNumber> {
-    if (typeof entry.amt == "number") {
-      return { amt: entry.amt, name: entry.name};
+    const {amt} = entry;
+    if (typeof amt == "number") {
+      return { amt, name: entry.name};
     }
-    if ("type" in entry.amt) {
+    if ("type" in amt) {
       if (!situation) {
         throw new Error("No situation provided with Consequence Number");
       }
-      const amt = ConsequenceAmountResolver.resolveConsequenceAmount(entry.amt, situation);
-      if (!amt) {return null;}
-      return { amt, name: entry.name };
+      const resAmt = ConsequenceAmountResolver.resolveConsequenceAmount(amt, situation);
+      if (!resAmt) {return null;}
+      return { amt: resAmt, name: entry.name };
     }
-    if ("calc" in entry.amt) {
-      const evaluated = entry.amt.eval(situation, {
+    if ("eval" in amt) {
+      const evaluated = amt.eval(situation, {
         hideTotals: true
       });
       if (evaluated == null)  {
