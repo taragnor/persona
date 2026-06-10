@@ -1,3 +1,4 @@
+import { CalculatedRange } from "./combat-engine.js";
 import { DAMAGETYPES } from "../../config/damage-types.js";
 import { FinalizedCombatResult } from "./finalized-combat-result.js";
 import { ConsequenceProcessed } from "./persona-combat.js";
@@ -806,20 +807,21 @@ export interface ActorChange<T extends PersonaActor = PersonaActor> {
 
 
 export type AttackResult = {
-	result: keyof typeof ATTACK_RESULT,
-	defenseValue?: number,
-	hitWeakness?: boolean,
-	hitResistance?: boolean,
-	validAtkModifiers ?: string[],
-	validDefModifiers ?: string[],
-	target: N<UniversalTokenAccessor<PToken>>,
-	attacker: N<UniversalTokenAccessor<PToken>>,
-	power: UniversalItemAccessor<UsableAndCard>,
-	situation: HasKey<SituationComponent.Roll, "resisted">,
-	roll: ResolvedRollBundle | null ,
-	ailmentRange: U<{low: number, high: number}>
-	instantKillRange: U<{low: number, high:number}>;
-	critRange: U<{low: number, high:number}>;
+  result: keyof typeof ATTACK_RESULT,
+  defenseValue?: number,
+  hitWeakness?: boolean,
+  hitResistance?: boolean,
+  validAtkModifiers ?: string[],
+  validDefModifiers ?: string[],
+  target: N<UniversalTokenAccessor<PToken>>,
+  attacker: N<UniversalTokenAccessor<PToken>>,
+  power: UniversalItemAccessor<UsableAndCard>,
+  situation: HasKey<SituationComponent.Roll, "resisted">,
+  roll: ResolvedRollBundle | null ,
+  // ailmentRange: U<{low: number, high: number}>
+  // instantKillRange: U<{low: number, high:number}>;
+  // critRange: U<{low: number, high:number}>;
+  ranges: CalculatedRange[];
   activationRoll?: number;
 };
 

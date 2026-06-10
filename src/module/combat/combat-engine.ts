@@ -387,16 +387,18 @@ export class CombatEngine {
       naturalRoll: roll.natural,
       rollTotal: roll.total,
     } ;
-    const {ailmentRange, instantKillRange, critRange} = CombatEngine.calculateRanges(attacker, target, power, partialSituation);
+    const {ailmentRange, instantKillRange, critRange, evadeRange} = CombatEngine.calculateRanges(attacker, target, power, partialSituation);
     const withinAilmentRange = CombatEngine.withinRange(ailmentRange, partialSituation);
     const withinCritRange = CombatEngine.withinRange(critRange, partialSituation);
     const withinInstantKillRange = CombatEngine.withinRange(instantKillRange, partialSituation);
+    const withinEvadeRange = CombatEngine.withinRange(evadeRange, partialSituation);
     const protoSituation = {
       ...partialSituation,
       ailmentRange, instantKillRange, critRange,
       withinAilmentRange,
       withinInstantKillRange,
       withinCritRange,
+      withinEvadeRange,
     } satisfies ProtoResultAttackSituation;
     return protoSituation;
   }
@@ -441,10 +443,17 @@ export class CombatEngine {
   }
 
   private generateAttackResult(attacker: Persona, target: Persona, power: Usable, rollBundle: ResolvedRollBundle, situation: ProtoResultAttackSituation): AttackResult {
+    const ranges = [
+      situation.critRange,
+      situation.ailmentRange,
+      situation.instantKillRange,
+      situation.evadeRange,
+    ]. filter (x=> x != undefined);
     const addonAttackResultData = {
-      ailmentRange: situation.ailmentRange,
-      instantKillRange: situation.instantKillRange,
-      critRange: situation.critRange,
+      ranges,
+      // ailmentRange: situation.ailmentRange,
+      // instantKillRange: situation.instantKillRange,
+      // critRange: situation.critRange,
       situation,
     };
     const {result, resisted, struckWeakness} = this.determineAttackResult(attacker, target, power, rollBundle, situation);
@@ -517,7 +526,8 @@ export class CombatEngine {
   private rankAttackResult( this:void,  data: UN<{ result: AttackResultData["result"] , priority?: number}>) : number {
     const result = data?.result ?? null;
     switch (result) {
-      case "fumble": return -1;
+      case "fumble": return -2;
+      case "evade": return -1;
       case "miss": return 0;
       case "hit": return 1;
       case "crit": return 2;
@@ -554,6 +564,7 @@ export class CombatEngine {
       case "block":
       case "absorb":
         return {result, resisted: false, struckWeakness: false};
+      case "evade":
       case "miss":
         return {
           result,
@@ -590,6 +601,9 @@ export class CombatEngine {
     if (this.checkFumble(attacker, target, power, situation)) {
       return this.getWeaknessSitRep(attacker, target, power, "fumble", situation);
     }
+    if (this.checkEvade(attacker, target, power, situation)) {
+      return this.getWeaknessSitRep(attacker, target, power, "evade", situation);
+    }
     if (this.checkMiss(attacker, target, power, situation)) {
       return this.getWeaknessSitRep(attacker, target, power, "miss", situation);
     }
@@ -608,6 +622,11 @@ export class CombatEngine {
       && !power.hasTag('no-crit', attacker )
       && canCrit
     );
+  }
+
+  private checkEvade( _attacker: Persona, _target: Persona,  _power: Usable, situation: ProtoResultAttackSituation) : boolean {
+    if (situation.withinEvadeRange) {return true;}
+    return false;
   }
 
   private checkMiss( attacker: Persona, _target: Persona,  power: Usable, situation: ProtoResultAttackSituation) : boolean {
@@ -722,10 +741,11 @@ export class CombatEngine {
         const blockRes = new CombatResult(atkResult);
         CombatRes.merge(blockRes);
         return CombatRes; }
+      case 'evade':
       case 'hit':
       case 'miss':
       case 'crit':
-      case "fumble":
+      case 'fumble':
       case 'absorb':
         break;
       default:
@@ -753,22 +773,19 @@ export class CombatEngine {
       withinAilmentRange: false,
       withinCritRange: false,
       withinInstantKillRange: false,
+      withinEvadeRange: false,
       resisted: false,
       struckWeakness: false,
       DC: 0,
       result: "hit",
       addedTags: [],
-      // attackerPersona: attacker,
-      // targetPersona: attacker,
     } satisfies AttackResult["situation"];
     const res : AttackResult = {
       result: 'hit',
       target: target.token ? PersonaDB.getUniversalTokenAccessor(target.token): null,
       attacker: attacker.token ? PersonaDB.getUniversalTokenAccessor(attacker.token): null,
       power: usableOrCard.accessor,
-      critRange: undefined,
-      ailmentRange: undefined,
-      instantKillRange: undefined,
+      ranges: [],
       situation: combatRollSituation,
       roll,
       // printableModifiers: []
@@ -944,12 +961,14 @@ export class CombatEngine {
     const ailmentRangeRaw = CombatEngine.calculateAilmentRange(attackerPersona, targetPersona, power, situation);
     const instantKillRangeRaw = CombatEngine.calculateInstantDeathRange(attackerPersona, targetPersona, power, situation);
     const critRangeRaw = CombatEngine.calculateCriticalRange(attackerPersona, targetPersona, power, situation);
+    const evadeRangeRaw = CombatEngine.calculateEvadeRange(attackerPersona, targetPersona, power, situation);
     if (PersonaSettings.debugMode()) {
     }
     const ailmentRange = this.constrainRange(ailmentRangeRaw);
     const instantKillRange = this.constrainRange(instantKillRangeRaw);
     const critRange = this.constrainRange(critRangeRaw);
-    return {ailmentRange, instantKillRange, critRange};
+    const evadeRange = this.constrainRange(evadeRangeRaw);
+    return {ailmentRange, instantKillRange, critRange, evadeRange};
   }
 
   static rangesDebugStats( ranges : U<CalculatedRange>[]) {
@@ -960,6 +979,7 @@ export class CombatEngine {
 
   static constrainRange(range: U<CalculatedRange> ) {
     if (range == undefined) {return undefined;}
+    if (range.high < 1) {return undefined;}
     if (range.low > 23) {return undefined;}
     if (range.low > 20) {range.low = 20;}
     return {
@@ -1050,6 +1070,29 @@ export class CombatEngine {
       type: "critical",
       possible: total > -3,
     };
+  }
+
+  static calculateEvadeRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation?: N<Situation>): U<CalculatedRange> {
+    if (!situation) {
+      situation = this.defaultSituation(attackerPersona, targetPersona, power);
+    }
+    const mods = this.getAttackerAndDefenderModifiers("evade-range", attackerPersona, targetPersona, power);
+    // const resist = this.getAttackerAndDefenderModifiers("critResist", attackerPersona, targetPersona, power);
+    const calc = new Calculation(0, 3);
+    calc.add(1, mods, "Evade Modifiers");
+    // calc.subtract(1, resist, "Critical Resist");
+    // calc.add(1, luckDiff, "Luck Difference Mod");
+    const {total, steps} = calc.eval(situation);
+    const low = 1;
+    const high = 1 + total;
+    return {
+      high,
+      low: high >= low? low: high,
+      steps,
+      type: "evade",
+      possible: high > 0,
+    };
+
   }
 
   static calculateInstantDeathRange(  attackerPersona: Persona, targetPersona: Persona, power: Usable, situation?: N<Situation>) : U<CalculatedRange> {
@@ -1289,9 +1332,28 @@ export class CombatEngine {
     return false;
   }
 
+  static isAnyFullMiss(situation: Situation) : U<boolean> {
+    if (!("result" in situation)) {return undefined;}
+    const result = situation.result;
+      return result == "miss"
+        || result == "evade"
+        || result == "block"
+        || result == "reflect";
+  }
+
   static isFumble( situation: Situation) : U<boolean> {
     if (!("result" in situation)) {return undefined;}
     return situation.result == "fumble";
+  }
+
+  static isEvade(situation: Situation) : U<boolean> {
+    if (!("result" in situation)) {return undefined;}
+    return situation.result == "evade";
+  }
+
+  static isBasicMiss(situation: Situation) : U<boolean> {
+    if (!("result" in situation)) {return undefined;}
+    return situation.result == "miss";
   }
 
   static isMiss(situation: Situation) : U<boolean>{
@@ -1308,12 +1370,12 @@ export class CombatEngine {
 
 export type AttackRollType = 'activation' | 'standard' | 'reflect' | 'iterative' | number; //number is used for bonus attacks
 
-type CalculatedRange = {
+export type CalculatedRange = {
   high: number,
   low: number,
   steps: string[],
   possible: boolean,
-  type: "instantKill" | "ailment" | "critical",
+  type: "instantKill" | "ailment" | "critical" | "evade",
 }
 
 const INSTANT_KILL_RANGE_BY_POWER = {

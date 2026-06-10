@@ -357,6 +357,12 @@ export class ConditionalEffectPrinter {
           return `Attack roll hits and is ${not} within instant death range`;
         case "is-fumble":
           return `is ${not} Fumble`;
+        case "is-evade":
+          return `is ${not} Evaded`;
+        case "is-any-full-miss":
+          return `is ${not} a Full Miss`;
+        case "is-basic-miss":
+          return `is ${not} a Basic Miss`;
         default:
           cond.rollProp satisfies never;
           return "ERROR";

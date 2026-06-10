@@ -2,57 +2,29 @@
   <div class="roll-block">
     {{resolveTokenNameWithAccessor atk.attackResult.target}}
     {{> "systems/persona/parts/simple-roll.hbs" roll=atk.attackResult.roll }}
-    {{#if (and atk.attackResult.critRange atk.attackResult.critRange.possible)}}
-    <div class="crit-boost gm-only">
-      <div class="tooltip">
-        <span>
-          Critical Range:
-        </span>
-        <span >
-          {{atk.attackResult.critRange.low}}
-          -
-          {{atk.attackResult.critRange.high}}
-        </span>
-          <div class="tooltiptext">
-            {{joinStepsHTML atk.attackResult.critRange.steps}}
-          </div>
-      </div>
-    </div>
-    {{/if}}
-    {{#if atk.attackResult.instantKillRange}}
-    <div class="instant-kill">
-      <div class="tooltip">
-        <span>
-          Instant Kill Range:
-        </span>
-        <span >
-          {{atk.attackResult.instantKillRange.low}}
-          -
-          {{atk.attackResult.instantKillRange.high}}
-        </span>
-          <div class="tooltiptext">
-            {{joinStepsHTML atk.attackResult.instantKillRange.steps}}
-          </div>
-      </div>
-    </div>
-    {{/if}}
-    {{#if atk.attackResult.ailmentRange}}
-    <div class="ailment-range">
-      <div class="tooltip">
-        <span>
-          Ailment Range:
-        </span>
-        <span>
-          {{atk.attackResult.ailmentRange.low}}
-          -
-          {{atk.attackResult.ailmentRange.high}}
-        </span>
-        <div class="tooltiptext">
-          {{joinStepsHTML atk.attackResult.ailmentRange.steps}}
+    <div class="new-range-block">
+      {{#each atk.attackResult.ranges as |range|}}
+
+      {{#if (and range.possible)}}
+      <div class="range-{{range.type}} gm-only">
+        <div class="tooltip">
+          <span>
+            {{localize (strcat "persona.rangeType." range.type)}}:
+          </span>
+          <span >
+            {{range.low}}
+            -
+            {{range.high}}
+          </span>
+            <div class="tooltiptext">
+              {{joinStepsHTML range.steps}}
+            </div>
         </div>
       </div>
+      {{/if}}
+      {{/each}}
     </div>
-    {{/if}}
+
   </div>
   <div class="attack-result">
     <span class="simple-target">

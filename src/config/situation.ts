@@ -140,19 +140,21 @@ namespace SituationComponent {
       // rollType: AttackRollType,
     }
 
-
     type CombatPreRollPart = PowerUsePart & {
-      ailmentRange : AttackResult["ailmentRange"],
-      instantKillRange : AttackResult["instantKillRange"],
-      critRange : AttackResult["critRange"],
-      // attackerPersona: Persona,
-      // targetPersona: Persona,
+      ailmentRange : AttackResult["ranges"][number],
+      instantKillRange : AttackResult["ranges"][number],
+      critRange : AttackResult["ranges"][number],
+      evadeRange : AttackResult["ranges"][number],
+      // ailmentRange : AttackResult["ailmentRange"],
+      // instantKillRange : AttackResult["instantKillRange"],
+      // critRange : AttackResult["critRange"],
     }
 
     type CombatReportPart = Partial<CombatPreRollPart> & PowerUsePart & CompletedRollPart & {
       withinAilmentRange : boolean;
       withinInstantKillRange : boolean;
       withinCritRange : boolean;
+      withinEvadeRange: boolean;
       resisted : boolean;
       struckWeakness : boolean;
       // attackerPersona: Persona,

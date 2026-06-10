@@ -934,6 +934,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
         withinAilmentRange: false,
         withinInstantKillRange: false,
         withinCritRange: false,
+        withinEvadeRange: false,
         struckWeakness: false,
         resisted: false,
         // attackerPersona: attacker.actor.persona(),
@@ -942,7 +943,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     } else {
       situation = simSitOrNat;
     }
-    type maybeRange = U<AttackResult["ailmentRange"]>
+    type maybeRange = U<AttackResult["ranges"][number]>
       let ailmentRange : maybeRange, critRange: maybeRange, instantKillRange: maybeRange;
     if (!power.isSocialCard()) {
       const ranges= CombatEngine.calculateRanges(attacker.actor.persona(), target.actor.persona(), power as Usable, situation);
@@ -955,9 +956,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       target: PersonaDB.getUniversalTokenAccessor(target),
       attacker: PersonaDB.getUniversalTokenAccessor(attacker),
       power: PersonaDB.getUniversalItemAccessor(power),
-      ailmentRange,
-      instantKillRange,
-      critRange,
+      ranges: [ailmentRange, instantKillRange, critRange].filter(x=> x!= undefined),
       situation,
       roll: null,
     };

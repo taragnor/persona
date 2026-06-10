@@ -8,6 +8,7 @@ const ATTACK_RESULT_LIST = [
 	"reflect" ,
 	"block" ,
 	"absorb",
+  "evade",
 ] as const;
 
 export const ATTACK_RESULT = HTMLTools.createLocalizationObject(ATTACK_RESULT_LIST, "persona.attack.result");

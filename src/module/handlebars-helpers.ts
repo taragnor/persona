@@ -381,6 +381,8 @@ export class PersonaHandleBarsHelpers {
           return "ABSORB";
         case "fumble":
           return "FUMBLE";
+        case "evade":
+          return "EVADED";
         default:
           result.result satisfies never;
           return "ERROR";

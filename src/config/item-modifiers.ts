@@ -59,6 +59,7 @@ const DEFENSE_TYPES = [
 	"critResist",
 	"baleful-status-duration",
 	"save",
+  "evade-range",
 ] as const;
 
 export const ACTOR_STATS_TYPES = [

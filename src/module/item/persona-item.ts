@@ -1446,9 +1446,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       return undefined;
     }
     const damage = finalized.attacks[0]?.changes[0]?.damage[0];
-    const critRange = atkResult.critRange;
-    const instantKillChance = atkResult.instantKillRange;
-    const ailmentRange = atkResult.ailmentRange;
+    const critRange = atkResult.ranges.find( x=> x.type == "critical");
+    const instantKillChance = atkResult.ranges.find( x=> x.type == "instantKill");
+    const ailmentRange = atkResult.ranges.find( x=> x.type == "ailment");
+    // const critRange = atkResult.critRange;
+    // const instantKillChance = atkResult.instantKillRange;
+    // const ailmentRange = atkResult.ailmentRange;
     return {damage, critRange, instantKillChance, ailmentRange};
   }
 

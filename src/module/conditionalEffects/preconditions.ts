@@ -1322,7 +1322,7 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
       if (power.isSkillCard()) {
         return condition.defense == "none";
       }
-      return power.system.defense == condition.defense;
+      return multiCheckContains(condition.defense, power.system.defense);
     default:
       condition satisfies never;
       return undefined;
@@ -1343,6 +1343,12 @@ function rollPropertyIs(condition : SourcedPrecondition  & {type: "boolean"; boo
         : false;
     case "is-fumble":
         return CombatEngine.isFumble(situation);
+    case "is-evade":
+        return CombatEngine.isEvade(situation);
+    case "is-any-full-miss":
+        return CombatEngine.isAnyFullMiss(situation);
+    case "is-basic-miss":
+        return CombatEngine.isBasicMiss(situation);
     default:
         condition.rollProp satisfies never;
       return undefined;

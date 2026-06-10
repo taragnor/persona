@@ -33,7 +33,5 @@
 {{/if}}
 
 {{#if (eq cond.powerProp "power-targets-defense") }}
-<select name="{{strcat namePrefix 'defense'}}">
-	{{selectOptions POWERSTUFF.DEFENSE_TYPES localize=true selected=cond.defense}}
-</select>
+{{multicheck (strcat namePrefix 'defense') POWERSTUFF.DEFENSE_TYPES checked=cond.defense localize=true}}
 {{/if}}

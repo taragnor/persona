@@ -117,6 +117,7 @@ export class PersonaAnimation {
         break;
       }
       case "miss":
+      case "evade":
       case "hit":
       case "crit":
       case "fumble":

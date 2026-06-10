@@ -65,9 +65,10 @@ export class CalculationV2 {
       const resolved = this.resolveCalculationNumber(entry, situation);
       return {
         ...entry,
-        name: resolved ? resolved.name : `ERROR: ${entry.name}`,
-        amt: resolved ? resolved.amt: 0,
-        error: resolved == null,
+        name: resolved ? resolved.name : `ERROR: ${entry.name} `,
+        amt: resolved != null && resolved.amt != null ? resolved.amt: 0,
+        error: resolved == null ? false : resolved.error != undefined,
+        ignore : resolved == null || resolved.amt == null || resolved.error != undefined,
       };
     });
     const priorityGroups = this.divideIntoPriorityGroups(resolvedData);
@@ -76,8 +77,8 @@ export class CalculationV2 {
       group.forEach( (item, i) => {
         if (item.error) {
           steps.push(`ERROR on ${item.name} ${item.op}`);
-          return;
         }
+        if (item.ignore) { return; }
         if (item.calculationOptions.takeBest)  {
           if (i >= item.calculationOptions.takeBest) {
             return;
@@ -108,12 +109,15 @@ export class CalculationV2 {
         return lastTotal / operand;
       case "multiply":
         return lastTotal * operand;
+      default:
+        operation satisfies never;
+        console.error(`Illegal operation in applyCalcItem : ${operation as string}`);
+        return lastTotal;
     }
-
   }
 
   private getStepExplanation(_lastTotal: number, calc: typeof this.data[number], amt : number) : string {
-    const operand = amt;
+    const operand = signed(amt);
     switch (calc.op) {
       case "set":  {
         return `SET ${operand} (${calc.name})`;
@@ -126,6 +130,9 @@ export class CalculationV2 {
         return `/ ${operand} (${calc.name})`;
       case "multiply":
         return `* ${operand} (${calc.name})`;
+      default:
+        calc.op satisfies never;
+        return `ERROR BAD OP ${(calc as unknown as GenericObject).op as string}`;
     }
 
   }
@@ -196,11 +203,19 @@ export class CalculationV2 {
       return { amt: resAmt, name: entry.name };
     }
     if ("eval" in amt) {
+      //for calculateable types
       const evaluated = amt.eval(situation, {
         hideTotals: true
       });
       if (evaluated == null)  {
         return null;
+      }
+      if (typeof evaluated == "string") {
+        return {
+          name: `${entry.name}`,
+          amt: null,
+          error: evaluated,
+        };
       }
       const stepsStr = evaluated.steps
         .join (", ");
@@ -249,21 +264,26 @@ type CalculationNumber = {
 
 interface CalculationOptions {
     takeBest?: number,
-
 }
 
 export interface Calculateable {
-  eval(situation?: Situation, options?: object) : N<EvaluatedCalculation>;
+  eval(situation?: Situation, options?: object) : CalculateableReturn;
 }
+
+/** String type is an error, null type means a legit ignore this (for a failed conditioanl) step*/
+export type CalculateableReturn =
+  N<EvaluatedCalculation> | string ;
 
 type ResolvedCalculationNumber = {
 	name: string,
-	amt: number,
+	amt: N<number>,
+  error ?: string,
 }
 
 export type EvaluatedCalculation = {
 	total: number,
 	steps: string[],
+  error ?: string,
 }
 
 function signed(num: number) : string {

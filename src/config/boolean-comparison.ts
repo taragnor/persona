@@ -97,11 +97,14 @@ const POWER_COMPARISON_SUBLIST_LIST = [
 ] as const;
 
 const ROLL_COMPARISON_SUBLIST_LIST = [
-	 "is-hit",
-	 "is-fumble",
-	 "is-critical",
-	 "is-within-ailment-range",
-	 "is-within-instant-death-range",
+  "is-hit",
+  "is-evade",
+  "is-fumble",
+  "is-critical",
+  "is-within-ailment-range",
+  "is-within-instant-death-range",
+  "is-any-full-miss",
+  "is-basic-miss",
 ] as const;
 
 const COMBAT_COMPARISON_SUBLIST_LIST = [
@@ -203,7 +206,7 @@ type RollPropertyComparison = {
 
 type SimpleRollComparison = {
 	//simple Roll Comparisons
-	rollProp: Extract< typeof ROLL_COMPARISON_SUBLIST_LIST[number], "is-critical" | "is-hit" | "is-within-ailment-range" | "is-within-instant-death-range" | "is-fumble">;
+	rollProp: Extract< typeof ROLL_COMPARISON_SUBLIST_LIST[number], "is-critical" | "is-hit" | "is-within-ailment-range" | "is-within-instant-death-range" | "is-fumble" | "is-evade" | "is-any-full-miss" | "is-basic-miss">;
 };
 
 type PowerComparisonsSub = {
@@ -229,7 +232,7 @@ type PowerComparisonsSub = {
 
 } | {
 	powerProp: "power-targets-defense",
-	defense: Defense,
+	defense: MultiCheckOrSingle<Defense>,
 };
 
 type HasClassComparison = {

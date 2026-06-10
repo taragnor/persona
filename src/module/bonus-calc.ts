@@ -51,14 +51,29 @@ export class BonusCalculation extends CalculationV2 {
 
 }
 
-const MODIFIER_V2_TARGET_LIST = [
-  "attack-roll",
-] as const;
+export const MODV2_DETAILS = {
+  "attack-roll" : {
+    type: "offensive",
+    rounding: "floor",
+  },
+  "save" : {
+    type: "user",
+    rounding: "floor",
+  },
+} as const satisfies Record<string, ModV2Type>;
 
+const MODIFIER_V2_TARGET_LIST = Object.keys(MODV2_DETAILS) as (keyof typeof MODV2_DETAILS)[];
 
 export const MODIFIER_V2_TARGET = HTMLTools.createLocalizationObject(MODIFIER_V2_TARGET_LIST, "persona.modifier-v2");
 
 export type ModifierV2Target = keyof typeof MODIFIER_V2_TARGET;
+
+
+type ModV2Type = {
+  type: "offensive" | "defensive" | "user",
+  rounding: "floor" | "ceiling" | "round" | "none",
+  clamp ?: {min: number, max:number},
+}
 
 
 //TODO: do elaborate setup for each bopnus type with a starting value and then rounding rules
