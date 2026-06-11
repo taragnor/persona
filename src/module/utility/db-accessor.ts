@@ -293,6 +293,11 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		return (typeof x?.tokenId == "string");
 	}
 
+	tryFindItem<T extends Item<any>> (accessor: UniversalItemAccessor<T>): U<T> {
+    try{ return this.findItem(accessor); }
+    catch {return undefined;}
+  }
+
 	findItem<T extends Item<any>> ({actor, itemId}: UniversalItemAccessor<T>): T {
 		if (actor) {
 			const foundActor = this.findActor(actor);
@@ -305,6 +310,11 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		}
 		return this.getItemById(itemId) as unknown as T;
 	}
+
+	tryFindToken<X extends UniversalTokenAccessor | undefined>(acc: X) : X extends UniversalTokenAccessor<infer R> ? U<R> : undefined  {
+    try{ return this.findToken(acc); }
+    catch {return undefined as X extends UniversalTokenAccessor<infer R> ? U<R> : undefined;}
+  }
 
 	findToken<X extends UniversalTokenAccessor | undefined>(acc: X) : X extends UniversalTokenAccessor<infer R> ? R : undefined  {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -336,8 +346,13 @@ private allItemsMap : Map<string, ItemType> = new Map();
 		return tok as any;
 	}
 
+	tryfindActor<T extends Actor<any>>(accessor: UniversalActorAccessor<T>) : U<T> {
+    try{ return this.findActor(accessor); }
+    catch {return undefined;}
+  }
+
 	findActor<T extends Actor<any>>(accessor: UniversalActorAccessor<T>) : T {
-		if (accessor.token != undefined) {
+		if (accessor.token != undefined && accessor.token.actorLink == false) {
 			const token =  this.findToken(accessor.token);
 			return token.actor as T;
 		}
@@ -395,7 +410,7 @@ private allItemsMap : Map<string, ItemType> = new Map();
 	}
 
   getUniversalActorAccessor<T extends Actor<any>> (actor: T) : UniversalActorAccessor<T> {
-    if (actor.token && actor.token.object) {
+    if (actor.token && actor.token.object && actor.token.actorLink == false) {
       return {
         actorName: actor.name,
         actorId: actor.id,
@@ -438,13 +453,14 @@ private allItemsMap : Map<string, ItemType> = new Map();
 	getUniversalTokenAccessor<T extends Token<any>>(tok: T) : UniversalTokenAccessor<T["document"]> ;
 	getUniversalTokenAccessor<T extends TokenDocument<any>>(tok: T) : UniversalTokenAccessor<T>;
 	getUniversalTokenAccessor(tok: Token<any> | TokenDocument<any>) : UniversalTokenAccessor<any> {
-		const TokClass =foundry?.canvas?.placeables?.Token ? foundry.canvas.placeables.Token : Token;
+		const TokClass =foundry?.canvas?.placeables?.Token ? foundry.canvas.placeables.Token : foundry.canvas.placeables.Token;
 		if (tok instanceof TokClass) {
 			tok = tok.document;
 		}
 		return {
 			scene: tok.parent.id,
 			tokenId: tok.id,
+      actorLink: tok.actorLink,
 		};
 	}
 
@@ -480,6 +496,7 @@ declare global {
 type UniversalTokenAccessor<T extends TokenDocument<any> = TokenDocument<any>> = {
 	scene: Scene["id"],
 	tokenId : T["id"],
+  actorLink: boolean,
 };
 
 type UniversalActorAccessor<T extends Actor<any, any, any> = Actor<any, any, any>> = {

@@ -78,6 +78,15 @@
     </div>
   </header>
   <body>
+	<div class="dmg-type">
+		<label>
+			Damage Type
+		</label>
+		<select name="system.dmg_type">
+			{{selectOptions POWERSTUFF.DAMAGETYPES localize=true selected=item.system.dmg_type}}
+		</select>
+	</div>
+
     {{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
   </body>
   {{> "systems/persona/parts/itemTags.hbs" item=item POWERSTUFF=POWERSTUFF}}

@@ -204,8 +204,8 @@ export class EnergyClassCalculator extends CostCalculator {
 		light: 25,
 		medium: 50,
 		heavy: 75,
-		severe: 88,
-		colossal: 99,
+		severe: 95,
+		colossal: 120,
 	} as const;
 
 	static NULL_COST :Readonly<EnergyCostBase>=  new EnergyCostBase(0, 0);

@@ -45,8 +45,6 @@ export class CombatOutput {
           changes: attack.changes,
         };
       });
-      console.log(attacks);
-      Debug(attacks);
       const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-body.hbs", {attacks, escalation: 0, result: this, costs: this.result.costs});
       return html;
     } catch (e) {

@@ -13,7 +13,7 @@ import { ConditionTarget, MultiCheck, MultiCheckOrSingle, SocialLinkIdOrTarot } 
 import { AlterMPSubtype } from "./effect-types.js";
 import { ConsequenceTarget } from "./precondition-types.js";
 import { DamageSubtype } from "./effect-types.js";
-import { DamageType } from "./damage-types.js";
+import { DamageType, DamageTypesPlusAffinity } from "./damage-types.js";
 import { DungeonAction } from "./effect-types.js";
 import { CONDITION_TARGETS_LIST } from "./precondition-types.js";
 
@@ -503,11 +503,12 @@ type DamageConsequenceSubtypes = SimpleDamageCons
 	| DamageMultiplierCons
 
 type DamageConsequenceShared = {
+
 	damageSubtype: DamageSubtype,
 	amount ?: ConsequenceAmount; //only added later for effects
 	calc ?: unknown, //this is a DamageCalc but typescript doesn't like it
-	damageType: DamageType,
-	/** manually added as part of processing */
+	damageType : DamageTypesPlusAffinity,
+	// damageType: DamageType, //old style
 };
 
 export type NonDeprecatedConsequence = Prettify<ExcludeDeprecatedModifiers<Consequence>
@@ -528,8 +529,8 @@ type DeprecatedSimpleEffect = {
  };
 
 type OldDeprecatedStyle =
-	{ applyToSelf : boolean} |
-	{applyTo : U<ConsequenceTarget>}
+	{ applyToSelf : boolean } |
+	{ applyTo : U<ConsequenceTarget> }
 ;
 
 export type DeprecatedConsequence =

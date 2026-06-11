@@ -1,5 +1,5 @@
 import { CalculatedRange } from "./combat-engine.js";
-import { DAMAGETYPES } from "../../config/damage-types.js";
+import { DAMAGETYPES, RealDamageType } from "../../config/damage-types.js";
 import { FinalizedCombatResult } from "./finalized-combat-result.js";
 import { ConsequenceProcessed } from "./persona-combat.js";
 import { ConsequenceAmount, LocalEffect, NewDamageConsequence } from "../../config/consequence-types.js";
@@ -17,7 +17,7 @@ import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amoun
 import {ATTACK_RESULT} from "../../config/attack-result-config.js";
 import {PersonaAE, StatusDuration} from "../persona-ae.js";
 import {ResolvedRollBundle} from "../roll-bundle.js";
-import {getSocialLinkTarget, multiCheckToArray} from "../conditionalEffects/preconditions.js";
+import {getSocialLinkTarget, getSourceDType, multiCheckToArray} from "../conditionalEffects/preconditions.js";
 import {checkSituationProp} from "../../config/situation.js";
 
 declare global {
@@ -76,30 +76,31 @@ export class CombatResult  {
 		this.sounds.push({sound, timing});
 	}
 
-	#getDamageCalc(cons: NewDamageConsequence, situation: Situation, effect: U<ActorChange<ValidAttackers>>) : U<DamageCalculation> {
+	#getDamageCalc(cons: Sourced<NewDamageConsequence>, situation: Situation, effect: U<ActorChange<ValidAttackers>>) : U<DamageCalculation> {
 		if (!effect) {return undefined;}
-		let damageType = cons.damageType;
-		if (damageType == "by-power") {
-			if (!("usedPower" in situation) || !situation.usedPower) {
-				PersonaError.softFail("Can't get situation => Used Power for determining damage type", situation);
-				return undefined;
-			}
-			if (!("attacker" in situation) || !situation.attacker) {
-				PersonaError.softFail("Can't get situation => attacker for determining damage type");
-				return undefined;
-			}
-			const power = PersonaDB.findItem(situation.usedPower);
-			if (power.isSkillCard()) {
-				PersonaError.softFail("Skill Cards can't do damage");
-				return undefined;
-			}
-			const attacker = PersonaDB.findActor(situation.attacker);
-			if (!attacker) {
-				PersonaError.softFail("Can't get attacker");
-				return undefined;
-			}
-			damageType = power.getDamageType(attacker);
-		}
+    const damageType = CombatResult.getDamageTypeFromCons(cons, situation);
+		// let damageType = cons.damageType;
+		// if (damageType == "by-power") {
+		// 	if (!("usedPower" in situation) || !situation.usedPower) {
+		// 		PersonaError.softFail("Can't get situation => Used Power for determining damage type", situation);
+		// 		return undefined;
+		// 	}
+		// 	if (!("attacker" in situation) || !situation.attacker) {
+		// 		PersonaError.softFail("Can't get situation => attacker for determining damage type");
+		// 		return undefined;
+		// 	}
+		// 	const power = PersonaDB.findItem(situation.usedPower);
+		// 	if (power.isSkillCard()) {
+		// 		PersonaError.softFail("Skill Cards can't do damage");
+		// 		return undefined;
+		// 	}
+		// 	const attacker = PersonaDB.findActor(situation.attacker);
+		// 	if (!attacker) {
+		// 		PersonaError.softFail("Can't get attacker");
+		// 		return undefined;
+		// 	}
+		// 	damageType = power.getDamageType(attacker);
+		// }
 		let damageCalc : DamageCalculation;
 		if (damageType == undefined) {
 			// eslint-disable-next-line no-debugger
@@ -687,6 +688,42 @@ export class CombatResult  {
 			.flatMap( x=> x.otherEffects);
 	}
 
+  static getDamageTypeFromCons( cons: Sourced<NewDamageConsequence>, situation : Situation) : U<RealDamageType> {
+		let damageType = cons.damageType;
+    if (damageType == "source-dtype") {
+      const dtype =  getSourceDType(cons, "source");
+      if (dtype == null) {return undefined;}
+      damageType = dtype;
+    }
+    if (damageType == "realSource-dtype") {
+      const dtype = getSourceDType(cons, "realSource");
+      if (dtype == null) {return undefined;}
+      damageType = dtype;
+    }
+		if (damageType == "by-power") {
+			if (!("usedPower" in situation) || !situation.usedPower) {
+				PersonaError.softFail("Can't get situation => Used Power for determining damage type", situation);
+				return undefined;
+			}
+			if (!("attacker" in situation) || !situation.attacker) {
+				PersonaError.softFail("Can't get situation => attacker for determining damage type");
+				return undefined;
+			}
+			const power = PersonaDB.findItem(situation.usedPower);
+			if (power.isSkillCard()) {
+				PersonaError.softFail("Skill Cards can't do damage");
+				return undefined;
+			}
+			const attacker = PersonaDB.findActor(situation.attacker);
+			if (!attacker) {
+				PersonaError.softFail("Can't get attacker");
+				return undefined;
+			}
+			return power.getDamageType(attacker);
+		}
+    return damageType;
+  }
+
 
 	emptyCheck(debug = false) : CombatResult | undefined {
 		if (debug) {
@@ -898,47 +935,6 @@ function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-fl
         anchorHolder,
       };
     }
-      // if (atkResultOrActor instanceof PersonaActor) {
-      //   if (!cons.durationApplyTo) {
-      //     PersonaError.softFail(`No duration apply to provided for status`);
-      //     return {
-      //       dtype: dur,
-      //       anchorHolder,
-      //       // actorTurn: atkResultOrActor.accessor
-      //     };
-      //   }
-      //   const actor = PersonaCombat.solveEffectiveTargetsForce(cons.durationApplyTo, situation, cons).at(0);
-      //   if (!actor) {
-      //     PersonaError.softFail(`Can't find actor for actorTurn property in Status, defaulting to user`);
-      //     const actorTurn = "user" in situation
-      //       ? situation.user
-      //       : "triggeringCharacter" in situation
-      //       ? situation.triggeringCharacter
-      //       : undefined;
-      //     if (!actorTurn) {
-      //       PersonaError.softFail(`Can't find actor for actorTurn property in Status, defaulting to instant Status`);
-      //       return {
-      //         dtype: "instant",
-      //         anchorHolder: undefined,
-      //       };
-      //     }
-      // return {
-      //   dtype: dur,
-      //   // actorTurn: actorTurn,
-      //   anchorHolder,
-      // };
-      //TODO: need to bail here
-      // return {
-      //   dtype: dur,
-      //   actorTurn: actor.accessor,
-      // };
-      // PersonaError.softFail(`Can't coinvert consequence ${cons.type}`, atkResultOrActor);
-      // return {
-      //   dtype: "instant",
-      //   anchorHolder: undefined,
-      // };
-      // break;
-      // }
     case "anchored":
       PersonaError.softFail("Anchored shouldn't happen here");
       return {
@@ -959,6 +955,7 @@ function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-fl
     dtype: "instant",
     anchorHolder: undefined
   };
+
 }
 
 export type ResistResult =  {

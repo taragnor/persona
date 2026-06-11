@@ -42,6 +42,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     enchantments: new PermanentCache( () => this._enchantments()),
     personalSocialLink: new PermanentCache( () => this._personalSocialLink()),
     craftingItems: new PermanentCache( () => this._craftingItems()),
+    allCarryables: new PermanentCache( () => this._allCarryables()),
   };
 
   constructor() {
@@ -315,6 +316,20 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     return this.#cache.treasureItems;
   }
 
+  allCarryables() : readonly Carryable[] {
+    return this.permanentCaches.allCarryables.value;
+  }
+
+  private _allCarryables() : readonly Carryable[] {
+    const items = this.allItems()
+      .filter ( item =>
+        item.isWeapon()
+        || item.isConsumable()
+        || item.isInvItem()
+      );
+    return items;
+  }
+
   craftableItems() : readonly TreasureItem[] {
     return this.treasureItems()
       .filter (item => item.system.craftingRecipes
@@ -326,7 +341,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
   }
 
   _craftingItems() : readonly TreasureItem[] {
-    return this.treasureItems()
+    return this.allCarryables()
       .filter( item => item.isCraftingItem || item.isSecondaryCraftingItem)
       .sort( (a, b) => a.name.localeCompare(b.name));
   }

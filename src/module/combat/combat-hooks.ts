@@ -7,6 +7,7 @@ import { PersonaSockets } from "../persona.js";
 import {FlagChangeDiffObject} from "./openers.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {sleep} from "../utility/async-wait.js";
+import {PersonaActor} from "../actor/persona-actor.js";
 
 export class CombatHooks {
 
@@ -156,8 +157,10 @@ export class CombatHooks {
 			$(elem).find('.outer-roll-block').on('click', (ev) => void PersonaCombat._openRollBlock(ev));
 		});
 
-    Hooks.on("deleteToken", async tok => {
+    Hooks.on("deleteToken", async (tok: TokenDocument<PersonaActor>) => {
+      tok.actor?.clearCache();
       await sleep(1000); //wait a bit to see if something else deletes the combatant
+      tok.actor?.clearCache();
       const combatants = PersonaCombat.combat
         ?.combatants.contents
         .filter( comb => comb.token == tok);

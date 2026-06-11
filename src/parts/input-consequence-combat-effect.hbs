@@ -10,7 +10,7 @@
 
 {{#if (neq-m cons.damageSubtype "set-to-const" "set-to-percent")}}
 <select name="{{strcat namePrefix 'damageType'}}">
-	{{selectOptions POWERSTUFF.DAMAGETYPESPLUS localize=true selected=cons.damageType}}
+	{{selectOptions POWERSTUFF.DAMAGE_TYPES_PLUS_AFFINITY localize=true selected=cons.damageType}}
 </select>
 {{/if}}
 

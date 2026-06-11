@@ -1564,14 +1564,10 @@ function damageTypeComparison (condition: SourcedPrecondition, multiCheck : Mult
     if (effectAffDType != null
       && effectAffDType == powerDType) {return true;}
   }
-  // if (condType == "source-dtype" || (typeof condType == "object" && condType["source-dtype"] == true)) {
-  //   const effectAffDType = getSourceDType(condition, "source");
-  //   if (effectAffDType == powerDType) {return true;}
-  // }
   return multiCheckContains(multiCheck, [powerDType as string]);
 }
 
-function getSourceDType(condition: SourcedPrecondition, prop : "source" | "realSource") : N<DamageType> {
+export function getSourceDType(condition: Sourced<object>, prop : "source" | "realSource") : N<DamageType> {
   try {
     if (condition[prop] == null) {return null;}
     const source = PersonaDB.find(condition[prop]);
@@ -1583,12 +1579,12 @@ function getSourceDType(condition: SourcedPrecondition, prop : "source" | "realS
       Debug(condition);
       return null;
     } else {
-      PersonaError.softFail(`NonItemType in realSource Precondition`);
+      PersonaError.softFail(`NonItemType in ${prop} Precondition`);
       Debug(condition);
       return null;
     }
   } catch {
-    PersonaError.softFail(`Can't find realsource on Precondition`);
+    PersonaError.softFail(`Can't find ${prop} on Precondition`);
     Debug(condition);
   }
   return null;

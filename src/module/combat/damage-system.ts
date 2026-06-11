@@ -1,5 +1,6 @@
 import {NewDamageConsequence} from "../../config/consequence-types.js";
 import {DamageLevel, DamageType, RealDamageType, ResistStrength} from "../../config/damage-types.js";
+import {getSourceDType} from "../conditionalEffects/preconditions.js";
 import {ItemSubtype, ModifierContainer, PersonaItem} from "../item/persona-item.js";
 import {Persona} from "../persona-class.js";
 import {PersonaDB} from "../persona-db.js";
@@ -148,17 +149,35 @@ export abstract class DamageSystemBase implements DamageInterface {
         }];
       } return [];
     });
-
   }
 
   protected process_damageConsOnTarget( cons: SourcedConsequence<NewDamageConsequence>, target: ValidAttackers, attacker: Persona, powerUsed: U<ModifierContainer>, situation: SituationComponent.User & Situation) : N<ConsequenceProcessed['consequences'][number]["cons"]> {
     const damageOptions : GetDamageOptions= {};
     let dmgCalc: U<DamageCalculation>;
-    let damageType : U<RealDamageType> = cons.damageType != "by-power" ? cons.damageType : "none";
+    let tempDamageType : N<DamageType> = null;
     const power = powerUsed instanceof PersonaItem && powerUsed.isUsableType() ? powerUsed : undefined;
-    if (power && power.isUsableType()) {
-      damageType = cons.damageType != 'by-power' && cons.damageType != undefined ? cons.damageType : power.getDamageType(attacker);
+    if (cons.damageType == undefined) {
+      PersonaError.softFail(`Damage type is undefined for ${power?.name ?? "Undefined Power"}`, cons);
+      return null;
     }
+    switch (cons.damageType) {
+      case "source-dtype":
+        tempDamageType = getSourceDType(cons, "source");
+        break;
+      case "realSource-dtype":
+        tempDamageType = getSourceDType(cons, "realSource");
+        break;
+      default:
+        tempDamageType = cons.damageType;
+    }
+    if (tempDamageType == null) {
+      tempDamageType = "none";
+    }
+    if (power && power.isUsableType() && tempDamageType == "by-power") {
+      tempDamageType = tempDamageType != 'by-power' ? tempDamageType : power.getDamageType(attacker);
+    }
+    const damageType = tempDamageType as RealDamageType;
+    // let damageType : U<RealDamageType> = cons.damageType != "by-power" ? cons.damageType : "none";
     cons = {
       ...cons,
       damageType,
@@ -168,10 +187,6 @@ export abstract class DamageSystemBase implements DamageInterface {
       case "set-to-percent": {
         return cons;
       }
-    }
-    if (cons.damageType == undefined) {
-      PersonaError.softFail(`Damage type is undefined for ${power?.name ?? "Undefined Power"}`, cons);
-      return null;
     }
     switch (cons.damageSubtype) {
       case 'low':
@@ -183,7 +198,7 @@ export abstract class DamageSystemBase implements DamageInterface {
           return null;
         }
         if (cons.damageType != "by-power") {
-          damageOptions["overrideDamageType"] =  cons.damageType;
+          damageOptions["overrideDamageType"] = damageType;
         }
         dmgCalc = power.damage.getDamage(power, attacker, target.persona(), situation, damageOptions);
         const evenRoll = (situation.naturalRoll ?? 0) % 2 == 0;
