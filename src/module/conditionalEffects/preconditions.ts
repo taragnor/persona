@@ -737,8 +737,8 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
       const targets = getSubjectActors(condition, situation,  "conditionTarget");
       if (!targets) {return undefined;}
       const itemList = targets.flatMap( target=> condition.equipped
-      ? target.equippedItems()
-      : target.items.contents);
+        ? target.equippedItems()
+        : target.items.contents);
       switch (condition.itemCheck) {
         case undefined:
         case "specific-item": {
@@ -1022,7 +1022,7 @@ function resolveSocialNonIDTarget (
     }
     const ret =  targetIdOrTarot as Exclude<typeof targetIdOrTarot , testFilter>;
     return ret;
-};
+  };
 
 
 export function resolveActorIdOrTarot (targetIdOrTarot: PersonaActor["id"] | TarotCard)  {
@@ -1085,7 +1085,7 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
         return tok ? [tok] : [];
       }
     case "target": {
-        if (!checkSituationProp(situation, "target")) { return []; }
+      if (!checkSituationProp(situation, "target")) { return []; }
       if (situation.target?.token) {
         const tok = PersonaDB.findToken(situation.target.token) as PToken | undefined;
         return tok ? [tok] : [];
@@ -1095,7 +1095,7 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
       return actor ? [actor] : [];
     }
     case "user":
-        if (!checkSituationProp(situation, "user")) { return []; }
+      if (!checkSituationProp(situation, "user")) { return []; }
       if (!situation.user) {return [];}
       if (situation?.user?.token) {
         const tok =  PersonaDB.findToken(situation.user.token) as PToken | undefined;
@@ -1114,7 +1114,7 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
         return actor ? [actor] : [];
       }
     case "cameo":
-        if (!checkSituationProp(situation, "cameo")) { return []; }
+      if (!checkSituationProp(situation, "cameo")) { return []; }
       if (!situation.cameo) {return [];}
       if (situation.cameo.token) {
         const tok =  PersonaDB.findToken(situation.cameo.token) as PToken | undefined;
@@ -1155,7 +1155,7 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
         const tok = PersonaDB.findToken(situation.target.token) as PToken | undefined;
         return tok ? [tok] : [];
       }
-        if (!checkSituationProp(situation, "user")) { return []; }
+      if (!checkSituationProp(situation, "user")) { return []; }
       const actor=  PersonaDB.findActor(situation.user);
       return actor ? [actor] : [];
     }
@@ -1302,7 +1302,7 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
       const powerDType = power.getDamageType(attacker);
       const condType = condition.powerDamageType;
       if (condType == "source-dtype" || (typeof condType == "object" && condType["source-dtype"] == true)) {
-        const effectAffDType = getSourceDType(condition);
+        const effectAffDType = getRealSourceDType(condition);
         if (effectAffDType == powerDType) {return true;}
       }
       return multiCheckContains(condition.powerDamageType, [powerDType as string]);
@@ -1353,9 +1353,9 @@ function rollPropertyIs(condition : SourcedPrecondition  & {type: "boolean"; boo
     case "is-any-full-miss":
         return CombatEngine.isAnyFullMiss(situation);
     case "is-basic-miss":
-        return CombatEngine.isBasicMiss(situation);
+      return CombatEngine.isBasicMiss(situation);
     default:
-        condition.rollProp satisfies never;
+      condition.rollProp satisfies never;
       return undefined;
   }
 }
@@ -1552,16 +1552,25 @@ function specialComparison(condition: SourcedPrecondition & {type: "boolean", bo
   }
 }
 
-function getSourceDType(condition: SourcedPrecondition) : N<DamageType> {
+function getRealSourceDType(condition: SourcedPrecondition) : N<DamageType> {
   try {
-    if (condition.source == null) {return null;}
-    const source = PersonaDB.find(condition.source);
+    if (condition.realSource == null) {return null;}
+    const source = PersonaDB.find(condition.realSource);
     if (source instanceof PersonaItem) {
       if ("dmg_type" in source.system) {
         return source.system.dmg_type && source.system.dmg_type != "none" ? source.system.dmg_type : null;
       }
+      PersonaError.softFail(`No DamageType in ${source.type} from Precondition`);
+      Debug(condition);
+      return null;
+    } else {
+      PersonaError.softFail(`NonItemType in realSource Precondition`);
+      Debug(condition);
+      return null;
     }
   } catch {
+    PersonaError.softFail(`Can't find realsource on Precondition`);
+    Debug(condition);
   }
   return null;
 }
