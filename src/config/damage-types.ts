@@ -74,6 +74,7 @@ export const DAMAGE_LEVELS = HTMLTools.createLocalizationObject(DAMAGE_LEVELS_LI
 const DAMAGE_TYPES_PLUS_AFFINITY_LIST = [
   ...DAMAGE_TYPES_LIST,
   "source-dtype",
+  "realSource-dtype",
 ] as const;
 
 export const DAMAGE_TYPES_PLUS_AFFINITY = HTMLTools.createLocalizationObject(DAMAGE_TYPES_PLUS_AFFINITY_LIST, "persona.damage.types");

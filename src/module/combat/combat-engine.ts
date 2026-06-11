@@ -626,8 +626,9 @@ export class CombatEngine {
   }
 
   private checkEvade( _attacker: Persona, _target: Persona,  _power: Usable, situation: ProtoResultAttackSituation) : boolean {
-    if (situation.withinEvadeRange) {return true;}
-    return false;
+    return (situation.withinEvadeRange
+      && situation.rollTotal < (situation.DC ?? 0)
+    );
   }
 
   private checkMiss( attacker: Persona, _target: Persona,  power: Usable, situation: ProtoResultAttackSituation) : boolean {

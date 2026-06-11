@@ -220,7 +220,7 @@ type PowerComparisonsSub = {
 	slotType: MultiCheck<string>,
 } | {
 	powerProp: "damage-type-is",
-	powerDamageType : (DamageTypesPlusAffinity) | MultiCheck<DamageTypesPlusAffinity>,
+	powerDamageType : MultiCheckOrSingle<DamageTypesPlusAffinity>,
 } | {
 	powerProp: "has-tag",
 	powerTag: MultiCheckOrSingle<Exclude<PowerTag, Tag>>,

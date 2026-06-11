@@ -103,6 +103,7 @@
 	"persona.damage.types.all-out": "All-out attack",
 	"persona.damage.types.by-power": "By Power/Weapon",
 	"persona.damage.types.source-dtype": "Source DamageType",
+	"persona.damage.types.realSource-dtype": "Real Source DamageType",
 
 	"persona.damage.resist.weakness": "Weak",
 	"persona.damage.resist.normal": "Normal",

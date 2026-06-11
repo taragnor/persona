@@ -13,7 +13,7 @@ import { SocialLinkIdOrTarot } from "../../config/precondition-types.js";
 import { MultiCheck } from "../../config/precondition-types.js";
 import { UserComparisonTarget } from "../../config/precondition-types.js";
 import { ProgressClock } from "../utility/progress-clock.js";
-import { DamageType } from "../../config/damage-types.js";
+import { DamageType, DamageTypesPlusAffinity } from "../../config/damage-types.js";
 import { RESIST_STRENGTH_LIST } from "../../config/damage-types.js";
 import { PersonaCalendar } from "../social/persona-calendar.js";
 import { BooleanComparisonPC } from "../../config/boolean-comparison.js";
@@ -1172,7 +1172,7 @@ export function multiCheckToArray<
       .map( ([k,_v]) => k as T);
   }
 
-export function multiCheckContains<const T extends R, const R extends string>(multiCheck: MultiCheck<T> | T, arrOrSingle: readonly R[] | R) : boolean {
+export function multiCheckContains<T extends R, const R extends string>(multiCheck: MultiCheck<T> | T, arrOrSingle: readonly R[] | R) : boolean {
   const arr = Array.isArray(arrOrSingle)
     ? arrOrSingle
     : [arrOrSingle];
@@ -1300,12 +1300,13 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
       const attacker = PersonaDB.findActor(attackerAcc);
       if (!attacker) {return undefined;}
       const powerDType = power.getDamageType(attacker);
-      const condType = condition.powerDamageType;
-      if (condType == "source-dtype" || (typeof condType == "object" && condType["source-dtype"] == true)) {
-        const effectAffDType = getRealSourceDType(condition);
-        if (effectAffDType == powerDType) {return true;}
-      }
-      return multiCheckContains(condition.powerDamageType, [powerDType as string]);
+      return damageTypeComparison(condition, condition.powerDamageType, powerDType);
+      // const condType = condition.powerDamageType;
+      // if (condType == "source-dtype" || (typeof condType == "object" && condType["source-dtype"] == true)) {
+      //   const effectAffDType = getSourceDType(condition, "source");
+      //   if (effectAffDType == powerDType) {return true;}
+      // }
+      // return multiCheckContains(condition.powerDamageType, [powerDType as string]);
     }
     case "power-type-is": {
       return power.system.type == "power" && power.system.subtype == condition.powerType;
@@ -1552,10 +1553,28 @@ function specialComparison(condition: SourcedPrecondition & {type: "boolean", bo
   }
 }
 
-function getRealSourceDType(condition: SourcedPrecondition) : N<DamageType> {
+function damageTypeComparison (condition: SourcedPrecondition, multiCheck : MultiCheckOrSingle<DamageTypesPlusAffinity>, powerDType : Exclude<DamageType, "by-weapon">)  : U<boolean>{
+  if (multiCheckContains<DamageTypesPlusAffinity, DamageTypesPlusAffinity>(multiCheck, "source-dtype"))  {
+    const effectAffDType = getSourceDType(condition, "source");
+    if (effectAffDType != null
+      && effectAffDType == powerDType) {return true;}
+  }
+  if (multiCheckContains<DamageTypesPlusAffinity, DamageTypesPlusAffinity>(multiCheck, "realSource-dtype"))  {
+    const effectAffDType = getSourceDType(condition, "realSource");
+    if (effectAffDType != null
+      && effectAffDType == powerDType) {return true;}
+  }
+  // if (condType == "source-dtype" || (typeof condType == "object" && condType["source-dtype"] == true)) {
+  //   const effectAffDType = getSourceDType(condition, "source");
+  //   if (effectAffDType == powerDType) {return true;}
+  // }
+  return multiCheckContains(multiCheck, [powerDType as string]);
+}
+
+function getSourceDType(condition: SourcedPrecondition, prop : "source" | "realSource") : N<DamageType> {
   try {
-    if (condition.realSource == null) {return null;}
-    const source = PersonaDB.find(condition.realSource);
+    if (condition[prop] == null) {return null;}
+    const source = PersonaDB.find(condition[prop]);
     if (source instanceof PersonaItem) {
       if ("dmg_type" in source.system) {
         return source.system.dmg_type && source.system.dmg_type != "none" ? source.system.dmg_type : null;
