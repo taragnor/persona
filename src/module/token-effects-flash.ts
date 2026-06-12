@@ -11,7 +11,7 @@ export class TokenEffectsFlash {
       const sprite = await (oldDrawEffect.call(this, src, tint) as ReturnType<typeof oldDrawEffect>);
       if (!sprite) {return sprite;}
       const arr = flashMap.get(this) ?? [];
-      const effect = this.document.actor?.effects.find( eff=> eff.icon == src);
+      const effect = this.document.actor?.effects.find( eff=> eff.img == src);
       if (!effect) {return sprite;}
       arr.push( [sprite, effect]);
       flashMap.set(this, arr);

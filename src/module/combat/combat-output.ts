@@ -70,7 +70,7 @@ export class CombatOutput {
     const rolls : ResolvedRollBundle[] = this.result.attacks
     .flatMap( (attack) => attack.atkResult.roll? [attack.atkResult.roll] : []);
     const html = await this.generateHTML(effectNameOrHeader, initiator);
-    const errorMsg =     options?.error 
+    const errorMsg = options?.error
     ? ` <div class="error">
           <h3> ERROR DETECTED </h3>
         </div>`

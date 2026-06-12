@@ -142,14 +142,17 @@ type SFXConsList = {
   playbackRate?: number,
 	applyTo : ConsequenceTarget,
   scale ?: number,
+  aboveInterface ?: boolean;
   projectile: keyof typeof PROJECTILE_OPTIONS,
 
 } & AnimationOffset) | {
   sfxType: "floating-text",
   text: string,
 	applyTo : ConsequenceTarget,
-  fontFamily: string,
-  color: string,
+  fontFamily?: string,
+  color?: string, //default to white
+  strokeThickness?: number,
+  fontSize?: number,
 };
 
 type AnimationOffset = {

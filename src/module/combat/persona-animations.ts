@@ -9,11 +9,11 @@ export class PersonaAnimation {
 
   static queue: AnimationQueue = new AnimationQueue(PersonaAnimation);
 
-	usable: Usable;
-	damageType: RealDamageType;
-	targets: PToken[];
-	attacker: PToken;
-	result: AttackResult["result"];
+  usable: Usable;
+  damageType: RealDamageType;
+  targets: PToken[];
+  attacker: PToken;
+  result: AttackResult["result"];
 
   static ANIMATIONS =  {
     IMPACT : "jb2a.impact",
@@ -29,70 +29,269 @@ export class PersonaAnimation {
     },
   } as const;
 
-	constructor (usable: Usable, damageType: RealDamageType, attacker : PToken, target: PToken, result: AttackResult["result"] ) {
-		this.usable = usable;
-		this.damageType = damageType;
-		this.targets = [target];
-		this.attacker = attacker;
-		this.result = result;
-	}
+  constructor (usable: Usable, damageType: RealDamageType, attacker : PToken, target: PToken, result: AttackResult["result"] ) {
+    this.usable = usable;
+    this.damageType = damageType;
+    this.targets = [target];
+    this.attacker = attacker;
+    this.result = result;
+  }
 
-	static async onUsePower(usableOrCard: UsableAndCard, damageType: RealDamageType,attacker: PToken,  targets: PToken, result: AttackResult["result"]) : Promise<void> {
-		if (!this.sequencerIsLoaded()) {return;}
-		if (usableOrCard.isSkillCard()) {return;}
-		const anim = new PersonaAnimation(usableOrCard, damageType, attacker, targets, result);
-		//TODO: show icon on strike weakness
-		try {
-			switch(result) {
-				case "hit":
-				case "crit":
-					await anim.showWeakness();
-					await anim.play();
-					break;
-				case "miss":
-					await anim.onMiss();
-					await anim.play();
-					break;
-        case "evade":
-					await anim.onEvade();
-					await anim.play();
+  static onUsePower(_usableOrCard: UsableAndCard, damageType: RealDamageType,attacker: PToken,  target: PToken, result: AttackResult["result"]) : Promise<void> {
+    switch (result) {
+      case "fumble":
+        this.queue.quickScrollingText(target.actor, 2, "FUMBLE", "white", 300);
           break;
-				case "reflect":
-				case "block":
-				case "absorb":
-          await anim.play();
-					await anim.onNullAttack();
-			}
-		} catch(e) {
-			PersonaError.softFail(`problem with animation`, e);
-		}
-	}
+      case "hit":
+        this._weaknessMsg(target, damageType);
+        break;
+      case "miss":
+        this._addMissToQueue(target);
+        break;
+      case "reflect":
+      case "block":
+      case "absorb":
+        this._addNullAttackToQueue(target, attacker, result);
 
-	private async showWeakness() {
-		if (!this.target.actor.persona().isWeakTo(this.damageType)) { return;}
-		let seq: Sequence= new Sequence().effect()
-			.file(BROKEN_SHIELD)
-			.atLocation(this.target)
-			.delay(250)
-			.duration(4000)
-			.fadeOut(1000)
-			.scaleToObject(1.0);
-		seq = PersonaAnimation.appendScrollingText(seq, "WEAK", this.target)
-			.delay(100)
-			.duration(3000);
-		await seq.play({preload: true});
-	}
+        break;
+      case "evade":
+        this.queue.quickScrollingText(target.actor, 1, "EVADE", "white", 100);
+          break;
 
-	private async onMiss() {
-		await PersonaAnimation.appendScrollingText(new Sequence(), "Miss", this.target)
-			.delay(800)
-			.play();
-	}
+      case "crit":
+        this._addCritToQueue(target, attacker);
+        this._weaknessMsg(target, damageType);
+        break;
+      default:
+        result satisfies never;
+    }
+    return Promise.resolve();
+  }
+
+  private static _addNullAttackToQueue (target: PToken, attacker: PToken, result : AttackResult["result"])  {
+    switch (result) {
+      case "absorb":
+        this.queue.addAnimation(target.actor, attacker.actor, {
+          type: "sfx",
+          priority: 0,
+          sfxType: "play-animation",
+          actionType: "standard",
+          order: 2,
+          fileName: ABSORB,
+          applyTo: "target",
+          duration: 1000,
+          projectile: "none",
+          offType: "none",
+          source: undefined,
+          owner: undefined,
+          realSource: undefined
+        });
+        break;;
+      case "reflect":{
+        this.queue.addAnimation(target.actor, attacker.actor, {
+          type: "sfx",
+          priority: 0,
+          sfxType: "play-animation",
+          actionType: "standard",
+          order: 2,
+          fileName: REFLECT,
+          applyTo: "target",
+          duration: 2000,
+          projectile: "none",
+          scale: 1.25,
+          offType: "none",
+          source: undefined,
+          owner: undefined,
+          realSource: undefined
+        });
+        this.queue.addFloatingText(target.actor, {
+          type: "sfx",
+          priority: 0,
+          sfxType: "floating-text",
+          actionType: "standard",
+          order: 2,
+          text: "REFLECT",
+          applyTo: "target",
+          color: "white",
+          delay: 300,
+          source: undefined,
+          owner: undefined,
+          realSource: undefined
+        });
+        // const eff = new Sequence().effect()
+        // .file("jb2a.icon.shield.green")
+        // .duration(2000)
+        // .atLocation(this.target)
+        // .scaleToObject(1)
+        // .file(REFLECT)
+        // .atLocation(this.target)
+        // .scaleToObject(1.25);
+        // await PersonaAnimation.appendScrollingText(eff, "REFLECT", this.target).delay(300).play({preload: true});
+        break;
+      }
+      case "block": {
+        this.queue.addAnimation(target.actor, attacker.actor, {
+          type: "sfx",
+          priority: 0,
+          sfxType: "play-animation",
+          actionType: "standard",
+          order: 2,
+          fileName: "jb2a.icon.shield.green",
+          duration: 2000,
+          applyTo: "target",
+          projectile: "none",
+          offType: "none",
+          source: undefined,
+          owner: undefined,
+          realSource: undefined
+        });
+        this.queue.addFloatingText(target.actor, {
+          type: "sfx",
+          priority: 2,
+          sfxType: "floating-text",
+          actionType: "standard",
+          order: 2,
+          text: "BLOCK",
+          applyTo: "target",
+          color: "white",
+          delay: 300,
+          source: undefined,
+          owner: undefined,
+          realSource: undefined
+        });
+        // const eff= new Sequence().effect()
+        // .file("jb2a.icon.shield.green")
+        // await PersonaAnimation.appendScrollingText(eff, "BLOCK", this.target).delay(300).play({preload: true});
+        break;
+      }
+      case "miss":
+      case "evade":
+      case "hit":
+      case "crit":
+      case "fumble":
+        throw new PersonaError(`${result} shoiuldn't be called in the null attack context`);
+      default:
+        result satisfies never;
+    }
+  }
+
+  private static _weaknessMsg(target: PToken, damageType : RealDamageType ) {
+    if (!target.actor.persona().isWeakTo(damageType)) { return;}
+    this.queue.addAnimation(target.actor,null , {
+      type: "sfx",
+      priority: 0,
+      sfxType: "play-animation",
+      actionType: "standard",
+      order: 2,
+      fileName: BROKEN_SHIELD,
+      delay: 250,
+      fadeOut: 1000,
+      duration: 4000,
+      scale: 1,
+      applyTo: "target",
+      projectile: "none",
+      offType: "none",
+      source: undefined,
+      owner: undefined,
+      realSource: undefined
+    });
+    this.queue.quickScrollingText(target.actor, 2, "WEAK", "white", 100);
+    // let seq: Sequence= new Sequence().effect()
+    //   .file(BROKEN_SHIELD)
+    //   .atLocation(this.target)
+    //   .delay(250)
+    //   .duration(4000)
+    //   .fadeOut(1000)
+    //   .scaleToObject(1.0);
+    // seq = PersonaAnimation.appendScrollingText(seq, "WEAK", this.target)
+    //   .delay(100)
+    //   .duration(3000);
+    // await seq.play({preload: true});
+  }
+
+  private static _addMissToQueue(target: PToken) {
+    this.queue.quickScrollingText(target.actor, 2, "Miss",  "white", 800);
+  }
+
+private static _addCritToQueue(target: PToken, attacker: PToken) {
+  this.queue.addAnimation( target.actor, attacker.actor, {
+    type: "sfx",
+    priority: 0,
+    sfxType: "play-animation",
+    actionType: "standard",
+    order: 2,
+    fileName: PersonaAnimation.ANIMATIONS.CRITICAL_HIT,
+    applyTo: "target",
+    projectile: "none",
+    offType: "none",
+    playbackRate: 0.75,
+    delay: 750,
+    scale: 1.2,
+    aboveInterface: true,
+    source: undefined,
+    owner: undefined,
+    realSource: undefined
+  });
+
+}
+
+//old version trying to replace this
+//static async onUsePower(usableOrCard: UsableAndCard, damageType: RealDamageType,attacker: PToken,  targets: PToken, result: AttackResult["result"]) : Promise<void> {
+//  if (!this.sequencerIsLoaded()) {return;}
+//  if (usableOrCard.isSkillCard()) {return;}
+//  const anim = new PersonaAnimation(usableOrCard, damageType, attacker, targets, result);
+//  //TODO: show icon on strike weakness
+//  try {
+//    switch(result) {
+//      case "hit":
+//      case "crit":
+//        await anim.showWeakness();
+//        await anim.play();
+//        break;
+//      case "miss":
+//        await anim.onMiss();
+//        await anim.play();
+//        break;
+//      case "evade":
+//        await anim.onEvade();
+//        await anim.play();
+//        break;
+//      case "reflect":
+//      case "block":
+//      case "absorb":
+//        await anim.play();
+//        await anim.onNullAttack();
+//    }
+//  } catch(e) {
+//    PersonaError.softFail(`problem with animation`, e);
+//  }
+//}
+
+  private async showWeakness() {
+    if (!this.target.actor.persona().isWeakTo(this.damageType)) { return;}
+    let seq: Sequence= new Sequence().effect()
+      .file(BROKEN_SHIELD)
+      .atLocation(this.target)
+      .delay(250)
+      .duration(4000)
+      .fadeOut(1000)
+      .scaleToObject(1.0);
+    seq = PersonaAnimation.appendScrollingText(seq, "WEAK", this.target)
+      .delay(100)
+      .duration(3000);
+    await seq.play({preload: true});
+  }
+
+  private async onMiss() {
+    await PersonaAnimation.appendScrollingText(new Sequence(), "Miss", this.target)
+      .delay(800)
+      .play();
+  }
 
   private async onEvade() {
-		await PersonaAnimation.appendScrollingText(new Sequence(), "Evade", this.target)
-			.delay(800)
-			.play();
+    await PersonaAnimation.appendScrollingText(new Sequence(), "Evade", this.target)
+      .delay(800)
+      .play();
 
   }
 
@@ -138,410 +337,410 @@ export class PersonaAnimation {
     }
   }
 
-	protected get target() { return this.targets.at(0)!;}
+  protected get target() { return this.targets.at(0)!;}
 
-	protected get animData() : BasicAnimationData[] {
-		const x = BASE_VALUES[this.damageType];
-		if (Array.isArray(x)) {return x;}
-		return [x];
-	}
+  protected get animData() : BasicAnimationData[] {
+    const x = BASE_VALUES[this.damageType];
+    if (Array.isArray(x)) {return x;}
+    return [x];
+  }
 
-	private async play() {
-		if (this.damageType == "all-out") {
-			return this.allOutAttack();
-		}
-		if (this.damageType == "none" && !this.usable.isInstantDeathAttack()) {
-			return this.onSupportPower();
-		}
-		const promises = this.animData.flatMap( animData => {
-			if (animData.fileName == "") {return [];}
-			if (animData.hitOnly == true
-				&& this.result != "hit"
-				&& this.result != "crit"
-			) {
-				return [];
-			}
-			return this.targets.map( token=>
-				animData.isProjectile
-				? this.projectileAnimation(animData, this.attacker, token)
-				: this.basicAnimationOnTarget(animData, token)
-			)
-				.map( x=> this.result == "miss" ? this.appendMiss(x) : x)
-				.map( x=> this.result == "crit" ? this.appendCriticalHit(x) : x)
-				.map ( x=> x.delay(500))
-				.map( x=> x.play({preload: true}));
-			;
-		});
-		await Promise.allSettled(promises);
-	}
+  private async play() {
+    if (this.damageType == "all-out") {
+      return this.allOutAttack();
+    }
+    if (this.damageType == "none" && !this.usable.isInstantDeathAttack()) {
+      return this.onSupportPower();
+    }
+    const promises = this.animData.flatMap( animData => {
+      if (animData.fileName == "") {return [];}
+      if (animData.hitOnly == true
+        && this.result != "hit"
+        && this.result != "crit"
+      ) {
+        return [];
+      }
+      return this.targets.map( token=>
+        animData.isProjectile
+        ? this.projectileAnimation(animData, this.attacker, token)
+        : this.basicAnimationOnTarget(animData, token)
+      )
+        .map( x=> this.result == "miss" ? this.appendMiss(x) : x)
+        .map( x=> this.result == "crit" ? this.appendCriticalHit(x) : x)
+        .map ( x=> x.delay(500))
+        .map( x=> x.play({preload: true}));
+      ;
+    });
+    await Promise.allSettled(promises);
+  }
 
-	private appendCriticalHit<T extends Sequence>(seq: T) {
-		return seq.effect()
-			.file(PersonaAnimation.ANIMATIONS.CRITICAL_HIT)
-			.delay(750)
-			.atLocation(this.target)
-			.playbackRate(0.75)
-			.scaleToObject(1.2)
-			.aboveInterface();
-	}
+  private appendCriticalHit<T extends Sequence>(seq: T) {
+    return seq.effect()
+      .file(PersonaAnimation.ANIMATIONS.CRITICAL_HIT)
+      .delay(750)
+      .atLocation(this.target)
+      .playbackRate(0.75)
+      .scaleToObject(1.2)
+      .aboveInterface();
+  }
 
-	private appendMiss<T extends EffectProxy>(seq: T) {
-		return seq.missed()
-			.effect()
-			.file(PersonaAnimation.ANIMATIONS.MISS)
-			.atLocation(this.target)
-			.delay(750)
-			.playbackRate(0.75)
-			.scaleToObject(1.2)
-			.aboveInterface();
-	}
+  private appendMiss<T extends EffectProxy>(seq: T) {
+    return seq.missed()
+      .effect()
+      .file(PersonaAnimation.ANIMATIONS.MISS)
+      .atLocation(this.target)
+      .delay(750)
+      .playbackRate(0.75)
+      .scaleToObject(1.2)
+      .aboveInterface();
+  }
 
-	private async onSupportPower() {
-		const usable = this.usable;
-		if (this.result != "hit" && this.result != "miss") {
-			return;
-		}
-		switch (true) {
-			case usable.hasTag("status-removal", this.attacker.actor):
-				await new Sequence().effect()
-					.atLocation(this.target)
-					.file(SWIRLING_SPARKLES)
-					.scaleToObject(1.5)
-					.play({preload: true});
-				break;
-			case usable.hasTag("buff", this.attacker.actor):
-				await new Sequence().effect()
-					.atLocation(this.target)
-					.file(BUFF)
-					.scaleToObject(1)
-					.play({preload: true});
-				break;
-			case usable.hasTag("debuff", this.attacker.actor):
-				await new Sequence().effect()
-					.atLocation(this.target)
-					.file(DEBUFF)
-					.scaleToObject(1)
-					.play({preload: true});
-				break;
-		}
-	}
+  private async onSupportPower() {
+    const usable = this.usable;
+    if (this.result != "hit" && this.result != "miss") {
+      return;
+    }
+    switch (true) {
+      case usable.hasTag("status-removal", this.attacker.actor):
+        await new Sequence().effect()
+          .atLocation(this.target)
+          .file(SWIRLING_SPARKLES)
+          .scaleToObject(1.5)
+          .play({preload: true});
+        break;
+      case usable.hasTag("buff", this.attacker.actor):
+        await new Sequence().effect()
+          .atLocation(this.target)
+          .file(BUFF)
+          .scaleToObject(1)
+          .play({preload: true});
+        break;
+      case usable.hasTag("debuff", this.attacker.actor):
+        await new Sequence().effect()
+          .atLocation(this.target)
+          .file(DEBUFF)
+          .scaleToObject(1)
+          .play({preload: true});
+        break;
+    }
+  }
 
-	private async allOutAttack() {
-		const TOTAL_CYCLES = 5;
-		const sequences : EffectProxy[] = [];
-		for (let x = 0; x< TOTAL_CYCLES; ++x) {
-			const cycleSeq = this.targets.flatMap( target =>
-				ALL_OUT_ANIMATIONS
-				.map( component => this.fromAnimationData(component, target))
-				.map( anim => anim.randomSpriteRotation())
-			)
-				.map( seq => seq.delay(x * 900));
-			sequences.push(...cycleSeq);
-		}
-		const promises = sequences.map (x=> x.play({preload: true}));
-		await Promise.allSettled(promises);
-	}
+  private async allOutAttack() {
+    const TOTAL_CYCLES = 5;
+    const sequences : EffectProxy[] = [];
+    for (let x = 0; x< TOTAL_CYCLES; ++x) {
+      const cycleSeq = this.targets.flatMap( target =>
+        ALL_OUT_ANIMATIONS
+        .map( component => this.fromAnimationData(component, target))
+        .map( anim => anim.randomSpriteRotation())
+      )
+        .map( seq => seq.delay(x * 900));
+      sequences.push(...cycleSeq);
+    }
+    const promises = sequences.map (x=> x.play({preload: true}));
+    await Promise.allSettled(promises);
+  }
 
 
-	private fromAnimationData(data: BasicAnimationData, target: PToken) {
-		const locationData =  data.randomOffsetPercent
-			? {randomOffset: data.randomOffsetPercent}
-			: {};
-		return this.loadAnimationData(data)
-			.atLocation(target, locationData);
-	}
+  private fromAnimationData(data: BasicAnimationData, target: PToken) {
+    const locationData =  data.randomOffsetPercent
+      ? {randomOffset: data.randomOffsetPercent}
+      : {};
+    return this.loadAnimationData(data)
+      .atLocation(target, locationData);
+  }
 
-	private loadAnimationData (animData: BasicAnimationData, sequence : Sequence = new Sequence()) {
-		const scale = this.scale(animData);
-		let seq = sequence.effect();
-		const fileName : string =
-			typeof animData.fileName == "string"
-			? animData.fileName
-			: ( this.usable.isAoE() 
-				? animData.fileName.multi
-				: animData.fileName.single
-			);
-		seq = seq
-			.file(fileName)
-			.fadeOut(animData.fadeOut ?? 0)
-			.fadeIn(animData.fadeIn ?? 0)
-			.opacity(animData.opacity ?? 1)
-			.playbackRate(animData.playbackRate ?? 1);
-		if (animData.duration) {
-			seq = seq.duration(animData.duration);
-		}
-		if (animData.delay) {
-			seq = seq.delay(animData.delay);
-		}
-		if (scale) {
-			seq = seq.scale(scale);
-		}
-		if (animData.objectScale) {
-			seq = seq.scaleToObject(animData.objectScale);
-		}
-		return seq;
-	}
+  private loadAnimationData (animData: BasicAnimationData, sequence : Sequence = new Sequence()) {
+    const scale = this.scale(animData);
+    let seq = sequence.effect();
+    const fileName : string =
+      typeof animData.fileName == "string"
+      ? animData.fileName
+      : ( this.usable.isAoE() 
+        ? animData.fileName.multi
+        : animData.fileName.single
+      );
+    seq = seq
+      .file(fileName)
+      .fadeOut(animData.fadeOut ?? 0)
+      .fadeIn(animData.fadeIn ?? 0)
+      .opacity(animData.opacity ?? 1)
+      .playbackRate(animData.playbackRate ?? 1);
+    if (animData.duration) {
+      seq = seq.duration(animData.duration);
+    }
+    if (animData.delay) {
+      seq = seq.delay(animData.delay);
+    }
+    if (scale) {
+      seq = seq.scale(scale);
+    }
+    if (animData.objectScale) {
+      seq = seq.scaleToObject(animData.objectScale);
+    }
+    return seq;
+  }
 
-	private scale(animData : BasicAnimationData) : U<number>{
-		// const baseScale = BASE_VALUES[this.damageType].scale;
-		const baseScale = animData.scale;
-		if (!baseScale) {return undefined;}
-		const scaleMult = this.usable.isPower() ? SCALE_MULT[this.usable.system.damageLevel] : SCALE_MULT["light"];
-		return baseScale * scaleMult;
-	}
+  private scale(animData : BasicAnimationData) : U<number>{
+    // const baseScale = BASE_VALUES[this.damageType].scale;
+    const baseScale = animData.scale;
+    if (!baseScale) {return undefined;}
+    const scaleMult = this.usable.isPower() ? SCALE_MULT[this.usable.system.damageLevel] : SCALE_MULT["light"];
+    return baseScale * scaleMult;
+  }
 
-	private basicAnimationOnTarget(animData: BasicAnimationData, target: TokenDocument | Token) {
-		const locationData =  animData.randomOffsetPercent
-			? {randomOffset: animData.randomOffsetPercent}
-			: {};
-		return this.loadAnimationData(animData)
-			.atLocation(target, locationData);
-	}
+  private basicAnimationOnTarget(animData: BasicAnimationData, target: TokenDocument | Token) {
+    const locationData =  animData.randomOffsetPercent
+      ? {randomOffset: animData.randomOffsetPercent}
+      : {};
+    return this.loadAnimationData(animData)
+      .atLocation(target, locationData);
+  }
 
-	private projectileAnimation (animData: BasicAnimationData, source: TokenDocument | Token, target: TokenDocument | Token)  {
-		if (!this.usable.isAoE()) {
-		return this.basicAnimationOnTarget(animData, source)
-			.stretchTo(target);
-		} else {
-			return this.spreadFireProjectileAnimation(animData, source, target);
-		}
-	}
+  private projectileAnimation (animData: BasicAnimationData, source: TokenDocument | Token, target: TokenDocument | Token)  {
+    if (!this.usable.isAoE()) {
+      return this.basicAnimationOnTarget(animData, source)
+        .stretchTo(target);
+    } else {
+      return this.spreadFireProjectileAnimation(animData, source, target);
+    }
+  }
 
-	private spreadFireProjectileAnimation( animData: BasicAnimationData, source: TokenDocument | Token, target: TokenDocument | Token) {
-		let seq : U<EffectProxy> = undefined;
-		for (let i = 0; i< 7 ; ++i ) {
-			seq =  this.loadAnimationData(animData, seq);
-			seq = seq.atLocation(source)
-				.stretchTo(target, {randomOffset: 0.4})
-				.waitUntilFinished(-100);
-		}
-		return seq as EffectProxy;
-	}
+  private spreadFireProjectileAnimation( animData: BasicAnimationData, source: TokenDocument | Token, target: TokenDocument | Token) {
+    let seq : U<EffectProxy> = undefined;
+    for (let i = 0; i< 7 ; ++i ) {
+      seq =  this.loadAnimationData(animData, seq);
+      seq = seq.atLocation(source)
+        .stretchTo(target, {randomOffset: 0.4})
+        .waitUntilFinished(-100);
+    }
+    return seq as EffectProxy;
+  }
 
-	private static sequencerIsLoaded() : boolean {
-		if (Sequence == undefined || typeof Sequence != "function") {
-			return false;
-		}
-		return true;
-	}
-	static async floatingDamageNumbers(target: PToken, hp_change: number) {
-		if (!this.sequencerIsLoaded()) {return;}
-		if (hp_change == 0) {return;}
-		const color = hp_change > 0 ? "green" : "red";
-		const txt = String(Math.abs(hp_change));
-		await this.appendScrollingText(new Sequence(), txt, target, color)
-			.play();
-	}
+  private static sequencerIsLoaded() : boolean {
+    if (Sequence == undefined || typeof Sequence != "function") {
+      return false;
+    }
+    return true;
+  }
+  static async floatingDamageNumbers(target: PToken, hp_change: number) {
+    if (!this.sequencerIsLoaded()) {return;}
+    if (hp_change == 0) {return;}
+    const color = hp_change > 0 ? "green" : "red";
+    const txt = String(Math.abs(hp_change));
+    await this.appendScrollingText(new Sequence(), txt, target, color)
+      .play();
+  }
 
-	private static appendScrollingText<T extends Sequence>(seq: T, txt: string, location: PToken, color = "white") {
-		const style = {
-			fill: color,
-			// fontFamily: "Arial Black",
-			fontFamily: "Almendra",
-			fontSize: 38,
-			strokeThickness: 4,
-		};
-		return seq.scrollingText()
-			.atLocation(location)
-			.delay(300)
-			.text(txt, style);
-	}
+  private static appendScrollingText<T extends Sequence>(seq: T, txt: string, location: PToken, color = "white") {
+    const style = {
+      fill: color,
+      // fontFamily: "Arial Black",
+      fontFamily: "Almendra",
+      fontSize: 38,
+      strokeThickness: 4,
+    };
+    return seq.scrollingText()
+      .atLocation(location)
+      .delay(300)
+      .text(txt, style);
+  }
 
-	static test() {
-		const tokens = game.scenes.current.tokens.filter (x=> (x.actor as Shadow).isPC());
-		for (const token of tokens) {
-			void this.floatingDamageNumbers((token as PToken), 1);
-		}
-	}
+  static test() {
+    const tokens = game.scenes.current.tokens.filter (x=> (x.actor as Shadow).isPC());
+    for (const token of tokens) {
+      void this.floatingDamageNumbers((token as PToken), 1);
+    }
+  }
 
-	static async test2() {
-		const tokens = game.scenes.current.tokens.filter (x=> (x.actor as Shadow).isPC());
-		for (const token of tokens) {
-			void new Sequence().effect()
-			.file("jb2a.eruption.orange")
-			.atLocation(token)
-			.fadeOut(500)
-			.fadeIn(500)
-			.opacity(0.5)
-			.playbackRate(.9)
-			.play();
-		}
-		await sleep(200);
-	}
+  static async test2() {
+    const tokens = game.scenes.current.tokens.filter (x=> (x.actor as Shadow).isPC());
+    for (const token of tokens) {
+      void new Sequence().effect()
+        .file("jb2a.eruption.orange")
+        .atLocation(token)
+        .fadeOut(500)
+        .fadeIn(500)
+        .opacity(0.5)
+        .playbackRate(.9)
+        .play();
+    }
+    await sleep(200);
+  }
 
 }
 
 interface BasicAnimationData {
-	fileName: string | {single: string, multi: string};
-	duration?: number;
-	objectScale?: number;
-	scale?: number;
-	fadeOut?: number;
-	isProjectile?: boolean;
-	fadeIn?: number;
-	playbackRate?: number;
-	randomOffsetPercent ?: number;
-	opacity?: number;
-	hitOnly ?: boolean;
-	delay ?: number;
+  fileName: string | {single: string, multi: string};
+  duration?: number;
+  objectScale?: number;
+  scale?: number;
+  fadeOut?: number;
+  isProjectile?: boolean;
+  fadeIn?: number;
+  playbackRate?: number;
+  randomOffsetPercent ?: number;
+  opacity?: number;
+  hitOnly ?: boolean;
+  delay ?: number;
 }
 
 const BASE_VALUES : Record<RealDamageType, BasicAnimationData | BasicAnimationData[] > = {
-	physical: [{
-		fileName: "jb2a.melee_attack.01.magic_sword.yellow.01",
-		scale: 0.9,
-		duration: 1000,
-		fadeOut: 250,
-	}, {
-		fileName: "jb2a.impact",
-		objectScale: 0.8,
-		duration: 1000,
-		fadeOut: 250,
-		hitOnly: true,
-		delay: 300,
-	},
+  physical: [{
+    fileName: "jb2a.melee_attack.01.magic_sword.yellow.01",
+    scale: 0.9,
+    duration: 1000,
+    fadeOut: 250,
+  }, {
+    fileName: "jb2a.impact",
+    objectScale: 0.8,
+    duration: 1000,
+    fadeOut: 250,
+    hitOnly: true,
+    delay: 300,
+  },
 
-	],
-	gun: [{
-		fileName: "jb2a.ranged.01.projectile.01.dark_orange",
-		scale: 1,
-		duration: 500,
-		fadeOut: 100,
-		isProjectile: true,
-	}, {
-		fileName: "jb2a.impact",
-		objectScale: 0.8,
-		duration: 1000,
-		fadeOut: 250,
-		hitOnly: true,
-		delay: 300,
+  ],
+  gun: [{
+    fileName: "jb2a.ranged.01.projectile.01.dark_orange",
+    scale: 1,
+    duration: 500,
+    fadeOut: 100,
+    isProjectile: true,
+  }, {
+    fileName: "jb2a.impact",
+    objectScale: 0.8,
+    duration: 1000,
+    fadeOut: 250,
+    hitOnly: true,
+    delay: 300,
 
-	}],
-	fire: {
-		fileName: "jb2a.eruption.orange",
-		scale: 0.2,
-		duration: 1500,
-		fadeOut: 500,
-	},
-	cold: {
-		fileName: "jb2a.ice_spikes.radial.burst.white",
-		// fileName: "jb2a.aura_themed.01.inward.complete.cold.01.blue",
-		scale: 0.15,
-		duration: 2250,
-		fadeOut: 500,
-	},
-	wind: {
-		fileName: "jb2a.whirlwind.bluegrey",
-		scale: 0.2,
-		duration: 3500,
-		fadeOut: 750,
-	},
-	lightning: [{
-		fileName: "jb2a.lightning_strike",
-		scale: 0.3,
-		duration: 700,
-		fadeOut: 100,
-	}, {
-		fileName: "jb2a.static_electricity.01.blue",
-		scale: 0.4,
-		duration: 1000,
-		fadeIn: 250,
-		fadeOut: 100,
-		hitOnly: true,
-		delay: 250,
-	}],
-	light: {
-		fileName: "jb2a.sacred_flame.target.yellow",
-		scale: 0.6,
-		duration: 2500,
-		fadeOut: 1250,
-	},
-	dark: {
-		fileName: "jb2a.sphere_of_annihilation.600px.purple",
-		scale: 0.15,
-		duration: 1500,
-		fadeOut: 1750,
-	},
-	untyped: {
-		fileName: "jb2a.explosion.04.blue",
-		scale: 0.7,
-		duration: 1000,
-		fadeOut: 300,
-		fadeIn: 300,
-		playbackRate: 0.6,
-	},
-	healing: {
-		fileName: "jb2a.healing_generic.400px.green",
-		scale: 0.4,
-		duration: 2000,
-		fadeOut: 750,
-	},
-	"all-out": {
-		fileName: "",
-		scale: 0,
-		duration: 0,
-		fadeOut: 0,
-	},
-	none: {
-		fileName: "",
-		scale: 0,
-		duration: 0,
-		fadeOut: 0,
-	},
+  }],
+  fire: {
+    fileName: "jb2a.eruption.orange",
+    scale: 0.2,
+    duration: 1500,
+    fadeOut: 500,
+  },
+  cold: {
+    fileName: "jb2a.ice_spikes.radial.burst.white",
+    // fileName: "jb2a.aura_themed.01.inward.complete.cold.01.blue",
+    scale: 0.15,
+    duration: 2250,
+    fadeOut: 500,
+  },
+  wind: {
+    fileName: "jb2a.whirlwind.bluegrey",
+    scale: 0.2,
+    duration: 3500,
+    fadeOut: 750,
+  },
+  lightning: [{
+    fileName: "jb2a.lightning_strike",
+    scale: 0.3,
+    duration: 700,
+    fadeOut: 100,
+  }, {
+    fileName: "jb2a.static_electricity.01.blue",
+    scale: 0.4,
+    duration: 1000,
+    fadeIn: 250,
+    fadeOut: 100,
+    hitOnly: true,
+    delay: 250,
+  }],
+  light: {
+    fileName: "jb2a.sacred_flame.target.yellow",
+    scale: 0.6,
+    duration: 2500,
+    fadeOut: 1250,
+  },
+  dark: {
+    fileName: "jb2a.sphere_of_annihilation.600px.purple",
+    scale: 0.15,
+    duration: 1500,
+    fadeOut: 1750,
+  },
+  untyped: {
+    fileName: "jb2a.explosion.04.blue",
+    scale: 0.7,
+    duration: 1000,
+    fadeOut: 300,
+    fadeIn: 300,
+    playbackRate: 0.6,
+  },
+  healing: {
+    fileName: "jb2a.healing_generic.400px.green",
+    scale: 0.4,
+    duration: 2000,
+    fadeOut: 750,
+  },
+  "all-out": {
+    fileName: "",
+    scale: 0,
+    duration: 0,
+    fadeOut: 0,
+  },
+  none: {
+    fileName: "",
+    scale: 0,
+    duration: 0,
+    fadeOut: 0,
+  },
 };
 
 const ALL_OUT_ANIMATIONS : BasicAnimationData[] = [
-	{
-		fileName: "jb2a.flurry_of_blows.physical",
-		scale: 1.0,
-		duration: 1200,
-		fadeOut: 250,
-		randomOffsetPercent: 0.15,
-	}, {
-		fileName: "jb2a.impact.008.orange",
-		scale: .4,
-		duration: 500,
-		fadeOut: 250,
-		randomOffsetPercent: 0.15,
+  {
+    fileName: "jb2a.flurry_of_blows.physical",
+    scale: 1.0,
+    duration: 1200,
+    fadeOut: 250,
+    randomOffsetPercent: 0.15,
+  }, {
+    fileName: "jb2a.impact.008.orange",
+    scale: .4,
+    duration: 500,
+    fadeOut: 250,
+    randomOffsetPercent: 0.15,
 
-	}, {
-		fileName: "jb2a.flurry_of_blows.physical",
-		scale: 1.2,
-		duration: 1000,
-		fadeOut: 250,
-		randomOffsetPercent: 0.15,
-		playbackRate: 1.2,
-	}, {
-		fileName: "jb2a.flurry_of_blows.physical",
-		scale: 1.1,
-		duration: 1200,
-		fadeOut: 250,
-		randomOffsetPercent: 0.15,
-		playbackRate: 0.8,
-	}, {
-		fileName: "jb2a.ambient_fog.001.loop.small.white",
-		scale: 0.7,
-		duration: 2500,
-		fadeIn: 300,
-		fadeOut: 300,
-		randomOffsetPercent: 0.2,
-		playbackRate: 1.0,
-		opacity: 0.6,
-	}
+  }, {
+    fileName: "jb2a.flurry_of_blows.physical",
+    scale: 1.2,
+    duration: 1000,
+    fadeOut: 250,
+    randomOffsetPercent: 0.15,
+    playbackRate: 1.2,
+  }, {
+    fileName: "jb2a.flurry_of_blows.physical",
+    scale: 1.1,
+    duration: 1200,
+    fadeOut: 250,
+    randomOffsetPercent: 0.15,
+    playbackRate: 0.8,
+  }, {
+    fileName: "jb2a.ambient_fog.001.loop.small.white",
+    scale: 0.7,
+    duration: 2500,
+    fadeIn: 300,
+    fadeOut: 300,
+    randomOffsetPercent: 0.2,
+    playbackRate: 1.0,
+    opacity: 0.6,
+  }
 
 ];
 
 const SCALE_MULT : Record<keyof typeof DAMAGE_LEVELS, number> = {
-	light: 0.75,
-	none: 0,
-	"-": 0,
-	fixed: 1,
-	miniscule: 0.5,
-	basic: 0.6,
-	medium: 1,
-	heavy: 1.25,
-	severe: 1.5,
-	colossal: 1.8,
+  light: 0.75,
+  none: 0,
+  "-": 0,
+  fixed: 1,
+  miniscule: 0.5,
+  basic: 0.6,
+  medium: 1,
+  heavy: 1.25,
+  severe: 1.5,
+  colossal: 1.8,
 };
 
 const BUFF = "jb2a.healing_generic.03.burst.bluegreen";

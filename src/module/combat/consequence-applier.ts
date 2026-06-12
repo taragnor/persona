@@ -181,6 +181,7 @@ export class ConsequenceApplier {
       }
     }
     if (power) {
+      void this.floatingDamageNumbers(actor, dmg.hpChange);
       PersonaSFX.onDamage(token, dmg.hpChange, dmg.damageType, power);
       if (dmg.hpChange < 0) {
         await actor.voicelines.onEvent("take-damage", {
@@ -201,6 +202,26 @@ export class ConsequenceApplier {
       ret.push(... await this.#onDefeatOpponent(token, attackerToken));
     }
     return ret;
+  }
+
+  static floatingDamageNumbers(actor: ValidAttackers, hpChange: number)  {
+    const color = hpChange > 0 ? "green" : "red";
+    PersonaAnimation.queue.addFloatingText(actor, {
+      type: "sfx",
+      priority: 0,
+      sfxType: "floating-text",
+      actionType: "standard",
+      order: 3,
+      text: String(Math.abs(hpChange)),
+      applyTo: "target",
+      fontFamily: "Almendra",
+      fontSize: 38,
+      strokeThickness: 4,
+      color,
+      source: undefined,
+      owner: undefined,
+      realSource: undefined
+    } satisfies Sourced<OtherEffect> & {type: "sfx", sfxType: "floating-text"});
   }
 
   static async _applyOtherEffect(actor: ValidAttackers, _token: PToken | undefined, otherEffect: Sourced<OtherEffect>, attacker : U<UniversalTokenAccessor<PToken>>, mutableState: MutableActorState): Promise<void> {
@@ -273,9 +294,9 @@ export class ConsequenceApplier {
       case "perma-buff":
         await actor.addPermaBuff(otherEffect.buffType, otherEffect.value ?? 0);
         break;
-      // case "play-sound":
-      //     await PersonaSounds.playFile(otherEffect.soundSrc);
-      //   break;
+        // case "play-sound":
+        //     await PersonaSounds.playFile(otherEffect.soundSrc);
+        //   break;
       case "gain-levels": {
         const {gainTarget, value}=  otherEffect;
         if (!value) {
@@ -292,7 +313,7 @@ export class ConsequenceApplier {
         break;
       }
       case "inventory-action":
-        await this.resolveInventoryAction(actor, otherEffect);
+          await this.resolveInventoryAction(actor, otherEffect);
         break;
       case "trigger-event-cons":
       case "raise-status-resistance":
@@ -325,8 +346,6 @@ export class ConsequenceApplier {
         Debug(otherEffect);
     }
   }
-
-
 
   private static async _applyExoticOtherEffect(actor: ValidAttackers, otherEffect: Sourced<OtherEffect> & {type: "other-effect"}) : Promise<void> {
     switch (otherEffect.otherEffect) {

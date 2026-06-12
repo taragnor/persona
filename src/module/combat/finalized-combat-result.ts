@@ -30,8 +30,8 @@ const DELAY_FOR_UPDATES_TO_GET_THERE_FIRST = 25 as const;
 export class FinalizedCombatResult {
   static pendingPromises: Map< CombatResult["id"], (val: unknown) => void> = new Map();
   tokenFlags: {
-    actor: UniversalActorAccessor<PersonaActor>,
-      effects: OtherEffect[]
+    actor: UniversalActorAccessor<PersonaActor>;
+    effects: OtherEffect[];
   }[] = [] ;
   id : number;
   attacks: ResolvedAttackResult[] = [];
@@ -306,9 +306,9 @@ export class FinalizedCombatResult {
     const power = this.power;
     const attacker = this.attacker;
     try {
-      if (power && attacker) {
-        void PersonaSFX.onUsePowerStart(this.power, attacker);
-      }
+      // if (power && attacker) {
+      //   void PersonaSFX.onUsePowerStart(this.power, attacker);
+      // }
       await this.#apply();
       if (this.options.printData) {
         const {effectNameOrHeader, initiator} = this.options.printData;
@@ -384,7 +384,6 @@ export class FinalizedCombatResult {
     for (const {atkResult, changes} of this.attacks ) {
       const {attacker, target, power}  = this.getAttackData(atkResult);
       await PersonaSFX.onUsePowerOn(power, attacker, target, atkResult.result);
-      // TimeLog.log(`Finished Executing Special Effect for ${power.name} on ${target.name}`);
       for (const change of changes) {
         const chained = await ConsequenceApplier.applyActorChange(change, power, atkResult.attacker!);
         this.addChained(...chained);

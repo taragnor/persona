@@ -22,7 +22,9 @@ namespace Foundry {
 		parent:A | I;
 		origin: Option<unknown>;
 		apply (actor: Actor,  change: AEChange): Record<string, unknown>;
+    /** @deprecated use img instead*/
 		icon: string;
+    img: string;
 		changes: AEChange[];
 		description: string;
 		duration: EffectDuration;

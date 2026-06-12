@@ -1,4 +1,5 @@
 import {OtherEffect} from "../../config/consequence-types.js";
+import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaAnimation} from "../combat/persona-animations.js";
 import {PersonaCombat} from "../combat/persona-combat.js";
 import {PersonaError} from "../persona-error.js";
@@ -42,6 +43,23 @@ export class AnimationQueue {
     this.filterQueue();
   }
 
+  quickScrollingText(target: ValidAttackers, order: number, text: string, color: string = "white", delay = 0) {
+    this.addFloatingText(target, {
+      type: "sfx",
+      priority: 0,
+      sfxType: "floating-text",
+      actionType: "standard",
+      order: order,
+      text: text,
+      applyTo: "target",
+      color: color,
+      delay: delay,
+      source: undefined,
+      owner: undefined,
+      realSource: undefined
+    });
+  }
+
   addAnimation(actor: ValidAttackers, attacker: N<ValidAttackers>, otherEffect: Sourced<OtherEffect> & {type: "sfx", sfxType: "play-animation"}) : void {
     const token = this.getToken(actor);
     if (!token) {
@@ -59,7 +77,7 @@ export class AnimationQueue {
     this.filterQueue();
   }
 
-  addFloatingText(actor: ValidAttackers, otherEffect: Sourced<OtherEffect> & {type: "sfx", sfxType: "floating-text"}) : void {
+  addFloatingText(actor: ValidAttackers, otherEffect: Sourced<OtherEffect> & {type: "sfx"; sfxType: "floating-text";}) : void {
     const token = this.getToken(actor);
     if (!token) {
       PersonaError.softFail(`Couldnt' find ${actor.name}'s token for animation`);
@@ -91,7 +109,6 @@ export class AnimationQueue {
     if (activeTok) {return activeTok as TokenDocument<ValidAttackers>;}
   }
 
-
   async play() : Promise<void> {
     let queue = this.queue;
     this.clearQueue();
@@ -102,12 +119,12 @@ export class AnimationQueue {
       const seq =  playable
         .reduce ( (seq, anim) => this.convertToSequence(anim, seq)
           , new Sequence());
-      await seq.play({preload: true});
+      try {
+        await seq.play({preload: true});
+      } catch (e) {
+        PersonaError.softFail(e as Error, playable);
+      }
     }
-    // const seq=  queue
-    // .reduce ( (seq, anim) => this.convertToSequence(anim, seq)
-    //   , new Sequence());
-    // await seq.play({preload: true});
   }
 
   private convertToSequence(anim: typeof this.queue[number], seq: Sequence = new Sequence() ): Sequence {
@@ -128,8 +145,9 @@ export class AnimationQueue {
     }
   }
 
-  private handleFloating(_anim: typeof this.queue[number], _orig_sequence: Sequence): Sequence {
-    throw new Error("Not yet implemented");
+  private handleFloating(anim: typeof this.queue[number], orig_sequence: Sequence): Sequence {
+    const seq = this.buildBasicSequence(anim, orig_sequence);
+    return seq;
   }
 
   private buildBasicSequence(anim: typeof this.queue[number], orig_sequence: Sequence) {
@@ -156,6 +174,10 @@ export class AnimationQueue {
         let seq = orig_sequence.effect()
         .file(anim.fileName);
         seq = this.setGenericSequenceParams(anim, seq);
+        if (PersonaSettings.debugMode()) {
+          Debug(anim);
+          console.log(anim);
+        }
         if (anim.fadeIn) {
           seq = seq.fadeIn(anim.fadeIn);
         }
@@ -168,6 +190,12 @@ export class AnimationQueue {
         if (anim.opacity && anim.opacity != 1) {
           seq = seq.opacity(anim.opacity);
         }
+        if (anim.playbackRate) {
+          seq = seq.playbackRate(anim.playbackRate);
+        }
+        if (anim.aboveInterface) {
+          seq = seq.aboveInterface();
+        }
         return seq;
       }
       case "floating-text": {
@@ -177,7 +205,8 @@ export class AnimationQueue {
         }
         let seq = orig_sequence.scrollingText();
         seq = this.setGenericSequenceParams(anim, seq);
-        return seq;
+        const textSeq = AnimationQueue.appendScrollingText(seq, anim, anim.target);
+        return textSeq;
       }
       default:
         anim satisfies never;
@@ -185,6 +214,20 @@ export class AnimationQueue {
     }
     return orig_sequence;
   }
+
+  private static appendScrollingText<T extends Sequence>(seq: T, anim: AnimationQueue["queue"][number] & {sfxType: "floating-text"} , location: Token | TokenDocument) {
+    const style = {
+      fill: anim.color ?? "white",
+      fontFamily: anim.fontFamily ?? "Almendra",
+      fontSize: anim.fontSize ?? 38,
+      strokeThickness: anim.strokeThickness ?? 4,
+    };
+    return seq.scrollingText()
+      .atLocation(location)
+      .delay(300)
+      .text(anim.text, style);
+  }
+
 
   private handleTargetted(anim: typeof this.queue[number] & {sfxType : "play-animation"}, orig_seq: Sequence) : EffectProxy {
     if (anim.target == "global") {
@@ -270,3 +313,10 @@ export class AnimationQueue {
   }
 }
 
+
+export const ORDER_PHASES = {
+  "power-use" : 0,
+  "attack" : 1,
+  "hit": 2,
+  "aftereffect": 3,
+} as const;

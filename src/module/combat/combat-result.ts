@@ -76,60 +76,34 @@ export class CombatResult  {
 		this.sounds.push({sound, timing});
 	}
 
-	#getDamageCalc(cons: Sourced<NewDamageConsequence>, situation: Situation, effect: U<ActorChange<ValidAttackers>>) : U<DamageCalculation> {
-		if (!effect) {return undefined;}
+  #getDamageCalc(cons: Sourced<NewDamageConsequence>, situation: Situation, effect: U<ActorChange<ValidAttackers>>) : U<DamageCalculation> {
+    if (!effect) {return undefined;}
     const damageType = CombatResult.getDamageTypeFromCons(cons, situation);
-		// let damageType = cons.damageType;
-		// if (damageType == "by-power") {
-		// 	if (!("usedPower" in situation) || !situation.usedPower) {
-		// 		PersonaError.softFail("Can't get situation => Used Power for determining damage type", situation);
-		// 		return undefined;
-		// 	}
-		// 	if (!("attacker" in situation) || !situation.attacker) {
-		// 		PersonaError.softFail("Can't get situation => attacker for determining damage type");
-		// 		return undefined;
-		// 	}
-		// 	const power = PersonaDB.findItem(situation.usedPower);
-		// 	if (power.isSkillCard()) {
-		// 		PersonaError.softFail("Skill Cards can't do damage");
-		// 		return undefined;
-		// 	}
-		// 	const attacker = PersonaDB.findActor(situation.attacker);
-		// 	if (!attacker) {
-		// 		PersonaError.softFail("Can't get attacker");
-		// 		return undefined;
-		// 	}
-		// 	damageType = power.getDamageType(attacker);
-		// }
-		let damageCalc : DamageCalculation;
-		if (damageType == undefined) {
-			// eslint-disable-next-line no-debugger
-			debugger;
-			PersonaError.softFail("Damage Type is undefined on this consequence", cons, effect, situation);
-			return undefined;
-		}
-		if (effect.damage[damageType]) {
-			damageCalc = effect.damage[damageType]!;
-		} else {
-			damageCalc =  new DamageCalculation(damageType);
-			effect.damage[damageType] = damageCalc;
-		}
-		return damageCalc;
-	}
+    if (damageType == undefined) {
+      // eslint-disable-next-line no-debugger
+      debugger;
+      PersonaError.softFail("Damage Type is undefined on this consequence", cons, effect, situation);
+      return undefined;
+    }
+    if (effect.damage[damageType]) {
+      return effect.damage[damageType];
+    }
+    const damageCalc =  new DamageCalculation(damageType);
+    effect.damage[damageType] = damageCalc;
+    return damageCalc;
+  }
 
-	#getEffect(target: ValidAttackers | undefined) : U<ActorChange<ValidAttackers>> {
-		if (target) {
-			return {
-				actor: target.accessor,
-				otherEffects: [],
-				damage: {},
-				addStatus: [],
-				removeStatus: [],
-        localEffects: []
-			};
-		}
-		return undefined;
-	}
+  #getEffect(target: ValidAttackers | undefined) : U<ActorChange<ValidAttackers>> {
+    if (!target) {return undefined;}
+    return {
+      actor: target.accessor,
+      otherEffects: [],
+      damage: {},
+      addStatus: [],
+      removeStatus: [],
+      localEffects: []
+    };
+  }
 
 	private addEffect_damage(
 		cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type : "combat-effect", combatEffect:"damage"},

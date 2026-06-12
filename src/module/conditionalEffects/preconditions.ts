@@ -92,7 +92,6 @@ export function testPrecondition (condition: SourcedPrecondition, situation: Sit
   }
 }
 
-
 function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, situation: Situation) : boolean {
   let target: number;
   let testCase = ("num" in condition) ? condition.num : 0;
