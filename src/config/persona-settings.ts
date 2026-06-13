@@ -28,6 +28,7 @@ export class PersonaSettings {
 			debugMode: undefined as U<boolean>,
 			aggressiveCaching: undefined as U<boolean>,
       aurasEnabled: undefined as U<boolean>,
+      attackStatScaler: undefined as U<number>,
 		};
 		this.cache = cache;
 		return cache;
@@ -131,6 +132,13 @@ export class PersonaSettings {
 		return this.cache.aggressiveCaching;
 	}
 
+  static attackStatScaler() : number {
+    if (this.cache.attackStatScaler == undefined) {
+      this.cache.attackStatScaler = this.get("attackStatScaler") ?? 0.75;
+    }
+    return this.cache.attackStatScaler;
+  }
+
 	static getDamageSystem() : DamageInterface {
 		return DAMAGE_SYSTEM_V1;
 	}
@@ -149,6 +157,7 @@ const SETTINGS = {
 		type : Boolean,
 		default: true,
 	},
+
 	"navigatorVoiceLines": {
 		name: "persona.settings.navigator-voice.name",
 		hint: "persona.settings.navigator-voice.hint",
@@ -191,6 +200,16 @@ const SETTINGS = {
 		default: false,
 	},
 
+	"attackStatScaler" : {
+		name: "Attack Stat Scaler",
+		hint: "Percent modifier to attack stat difference",
+		scope: "world",
+		restricted: true,
+		config: true,
+		type: Number,
+		default: 0.75,
+		onChange: (_newVal) => {PersonaSettings.resetCache();}
+	},
 	"autoApplyCombatResults" : {
 		name: "Auto Apply Combat Results",
 		hint: "Auto apply combat results?",

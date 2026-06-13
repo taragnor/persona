@@ -1,4 +1,5 @@
 import {DAMAGE_LEVELS, RealDamageType} from "../../config/damage-types.js";
+import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaCombatStats} from "../actor/persona-combat-stats.js";
 import {ItemSubtype} from "../item/persona-item.js";
 import {Persona} from "../persona-class.js";
@@ -132,7 +133,8 @@ export class MainDamageSystem extends DamageSystemBase {
   protected getPercentModifier(attackStat: number, endurance: number) : number {
     const PERCENT_PADDING = PersonaCombatStats.PERCENT_PADDING;
     let percent = (PERCENT_PADDING + attackStat) / (PERCENT_PADDING + endurance);
-    percent = Math.scalePercentage(percent, this.DAMAGE_STAT_DIFF_PERCENT_SCALER);
+    const scaler = PersonaSettings.attackStatScaler();
+    percent = Math.scalePercentage(percent, scaler);
     percent = Math.clamp(percent, 0.1, 5);
     percent = Math.round(percent * 100) / 100;
     return percent;

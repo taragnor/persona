@@ -440,7 +440,7 @@
 
 	{{/if}}
 
-  {{#if (eqAny cons.type "trigger-event-cons")}} 
+  {{#if (eqAny cons.type "trigger-event-cons")}}
 	<select name="{{strcat namePrefix 'eventMod'}}">
 		{{selectOptions POWERSTUFF.TRIGGER_EVENT_CONS localize=true selected=(defVal cons.eventMod "cancel")}}
 	</select>

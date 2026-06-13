@@ -51,18 +51,18 @@ export class PersonaSFX {
 	}
 
   static async onSingleTargetDamage( token: PToken | undefined, hpchange: number, damageType: RealDamageType, power ?: UsableAndCard) {
-    if (hpchange == 0) {return;}
-    if (hpchange > 0) {
-      if (power?.hasTag("resurrection", null)) {
-        await this.#play("raise");
-        return;
-      }
-      if (damageType == "healing") {
-        await this.#play("heal");
-      }
-      return;
-    }
     return;
+    // if (hpchange == 0) {return;}
+    // if (hpchange > 0) {
+    //   if (power?.hasTag("resurrection", null)) {
+    //     await this.#play("raise");
+    //     return;
+    //   }
+    //   if (damageType == "healing") {
+    //     await this.#play("heal");
+    //   }
+    //   return;
+    // }
     // switch (damageType) {
     // 	case "lightning":
     // 	case "physical":

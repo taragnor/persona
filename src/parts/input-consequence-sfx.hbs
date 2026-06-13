@@ -18,7 +18,12 @@
       <label>
         Order
       </label>
+      <select name="{{strcat namePrefix 'order'}}">
+        {{selectOptions POWERSTUFF.ORDER_PHASES localize=false selected=cons.order}}
+      </select>
+      {{#if false}}
       <input class="short" type=number name="{{strcat namePrefix 'order'}}" value="{{defVal cons.order 0}}">
+      {{/if}}
     </div>
 
     <div>
@@ -137,6 +142,9 @@
   </div>
 
   {{#if (eqAny cons.offType "random")}}
+  <label>
+  Offset Percent
+  </label>
   <input class="short" type=number name="{{strcat namePrefix 'offsetPercent'}}" value="{{defVal cons.offsetPercent 1}}">
   {{/if}}
 

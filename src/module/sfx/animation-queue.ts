@@ -116,26 +116,27 @@ export class AnimationQueue {
       const order = queue.at(0)?.order ?? 0;
       const playable = queue.filter( x=> (x.order ?? 0) == order);
       queue = queue.filter(x=> (x.order ?? 0) != order);
+      let delay = 0;
       const seq =  playable
-        .reduce ( (seq, anim) => this.convertToSequence(anim, seq)
+        .reduce ( (seq, anim) => this.convertToSequence(anim, seq, delay += anim.sfxType == "floating-text" ? 250 : 50)
           , new Sequence());
       try {
-        await seq.play({preload: true});
+        await seq.play( {preload: true} );
       } catch (e) {
         PersonaError.softFail(e as Error, playable);
       }
     }
   }
 
-  private convertToSequence(anim: typeof this.queue[number], seq: Sequence = new Sequence() ): Sequence {
+  private convertToSequence(anim: typeof this.queue[number], seq: Sequence = new Sequence(), innateDelay: number): Sequence {
     try {
     switch(anim.sfxType) {
       case "play-sound":
-        return this.buildBasicSequence(anim, seq);
+        return this.buildBasicSequence(anim, seq, innateDelay);
       case "play-animation":
-        return this.handleTargetted(anim, seq);
+        return this.handleTargetted(anim, seq, innateDelay);
       case "floating-text":
-        return this.handleFloating(anim, seq);
+        return this.handleFloating(anim, seq, innateDelay);
       default:
         anim satisfies never;
         return seq; }
@@ -145,16 +146,16 @@ export class AnimationQueue {
     }
   }
 
-  private handleFloating(anim: typeof this.queue[number], orig_sequence: Sequence): Sequence {
-    const seq = this.buildBasicSequence(anim, orig_sequence);
+  private handleFloating(anim: typeof this.queue[number], orig_sequence: Sequence, innateDelay: number): Sequence {
+    const seq = this.buildBasicSequence(anim, orig_sequence, innateDelay);
     return seq;
   }
 
-  private buildBasicSequence(anim: typeof this.queue[number], orig_sequence: Sequence) {
+  private buildBasicSequence(anim: typeof this.queue[number], orig_sequence: Sequence, innateDelay: number) {
     switch(anim.sfxType) {
       case "play-sound": {
         let seq = orig_sequence.sound();
-        seq = this.setGenericSequenceParams(anim, seq);
+        seq = this.setGenericSequenceParams(anim, seq, innateDelay);
         seq = seq
         .file(anim.fileName)
         .volume(anim.volume ?? 1);
@@ -173,7 +174,7 @@ export class AnimationQueue {
         }
         let seq = orig_sequence.effect()
         .file(anim.fileName);
-        seq = this.setGenericSequenceParams(anim, seq);
+        seq = this.setGenericSequenceParams(anim, seq, innateDelay);
         if (PersonaSettings.debugMode()) {
           Debug(anim);
           console.log(anim);
@@ -185,7 +186,11 @@ export class AnimationQueue {
           seq = seq.fadeOut(anim.fadeOut);
         }
         if (anim.scale) {
-          seq = seq.scaleToObject(anim.scale);
+          if (anim.projectile == "none") {
+            seq = seq.scaleToObject(anim.scale);
+          } else {
+            seq = seq.scale(anim.scale);
+          }
         }
         if (anim.opacity && anim.opacity != 1) {
           seq = seq.opacity(anim.opacity);
@@ -204,7 +209,7 @@ export class AnimationQueue {
           return orig_sequence;
         }
         let seq = orig_sequence.scrollingText();
-        seq = this.setGenericSequenceParams(anim, seq);
+        seq = this.setGenericSequenceParams(anim, seq, innateDelay);
         const textSeq = AnimationQueue.appendScrollingText(seq, anim, anim.target);
         return textSeq;
       }
@@ -228,14 +233,17 @@ export class AnimationQueue {
       .text(anim.text, style);
   }
 
-
-  private handleTargetted(anim: typeof this.queue[number] & {sfxType : "play-animation"}, orig_seq: Sequence) : EffectProxy {
+  private handleTargetted(anim: typeof this.queue[number] & {sfxType : "play-animation"}, orig_seq: Sequence, innateDelay: number) : EffectProxy {
     if (anim.target == "global") {
       PersonaError.softFail("Target cannot be global on anim", anim);
       return orig_seq.effect();
     }
     if (anim.projectile  == "none") {
-      let seq = this.buildBasicSequence(anim, orig_seq) as EffectProxy;
+      let seq = this.buildBasicSequence(anim, orig_seq, innateDelay) as EffectProxy;
+      if (anim.target.x == undefined || anim.target.y == undefined || Number.isNaN(anim.target.x) || Number.isNaN(anim.target.y)) {
+        console.error("X or Y is undefined on anim Target");
+        Debug(anim);
+      }
       switch (anim.offType) {
         case "none":
           seq = seq.atLocation(anim.target);
@@ -258,7 +266,7 @@ export class AnimationQueue {
     }
     switch (anim.projectile) {
       case "single-shot": {
-        let seq = this.buildBasicSequence(anim, orig_seq) as EffectProxy;
+        let seq = this.buildBasicSequence(anim, orig_seq, innateDelay) as EffectProxy;
         seq = seq.atLocation(anim.attacker)
         .stretchTo(anim.target);
         return seq;
@@ -266,20 +274,18 @@ export class AnimationQueue {
       case "burst": {
         let seq : EffectProxy = orig_seq.effect();
         for (let i = 0; i< 4 ; ++i ) {
-          seq = this.buildBasicSequence(anim, orig_seq) as EffectProxy;
+          seq = this.buildBasicSequence(anim, orig_seq, innateDelay + (i * 100)) as EffectProxy;
           seq = seq.atLocation(anim.attacker)
-            .stretchTo(anim.target, {randomOffset: 0.4})
-          .waitUntilFinished(-100);
+            .stretchTo(anim.target, {randomOffset: 0.4});
         }
         return seq;
       }
       case "barrage": {
         let seq : EffectProxy = orig_seq.effect();
         for (let i = 0; i< 10 ; ++i ) {
-          seq = this.buildBasicSequence(anim, orig_seq) as EffectProxy;
+          seq = this.buildBasicSequence(anim, orig_seq, innateDelay + (i * 75)) as EffectProxy;
           seq = seq.atLocation(anim.attacker)
-            .stretchTo(anim.target, {randomOffset: 0.4})
-          .waitUntilFinished(-200);
+            .stretchTo(anim.target, {randomOffset: 0.4});
         }
         return seq;
       }
@@ -291,12 +297,13 @@ export class AnimationQueue {
   }
 
 
-  private setGenericSequenceParams<S extends Sequence>(anim: typeof this.queue[number], seq: S) : S {
+  private setGenericSequenceParams<S extends Sequence>(anim: typeof this.queue[number], seq: S, innateDelay: number) : S {
     if (anim.duration) {
       seq = seq.duration(anim.duration);
     }
-    if (anim.delay && anim.delay > 0) {
-      seq = seq.delay(anim.delay);
+    const delay = (anim.delay ?? 0) + innateDelay;
+    if (delay != 0) {
+      seq = seq.delay(delay);
     }
     if (anim.waitUntilFinished) {
       seq = seq.waitUntilFinished(0);
@@ -313,10 +320,9 @@ export class AnimationQueue {
   }
 }
 
-
 export const ORDER_PHASES = {
-  "power-use" : 0,
-  "attack" : 1,
-  "hit": 2,
-  "aftereffect": 3,
+  0 : "power-use",
+  1 : "attack",
+  2 : "hit",
+  3 : "aftereffect",
 } as const;

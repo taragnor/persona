@@ -35,6 +35,7 @@ import {PROBABILITIES, PROBABILITIES_POWER_RARITY} from "./probability.js";
 import {HTMLTools} from "../module/utility/HTMLTools.js";
 import { ATTACK_RESULT } from "./attack-result-config.js";
 import {COMBAT_OUTCOME} from "../module/combat/persona-combat.js";
+import {ORDER_PHASES} from "../module/sfx/animation-queue.js";
 
 export class PowerStuff {
 private static _powerStuffBase: Record<string, unknown>;
@@ -64,6 +65,7 @@ private static _powerStuffBase: Record<string, unknown>;
       ...DAMAGETYPES,
     };
     this._powerStuffBase = {
+      ORDER_PHASES,
       INSTANT_KILL_LEVELS,
       DAMAGE_TYPES_PLUS_AFFINITY,
       CONSUMABLE_SUBTYPES,
