@@ -518,7 +518,12 @@ export class Metaverse {
           const arr = Array.from(region.tokens);
           return arr.some(token => token.actor?.isOwner);
         });
-      ui.notifications.warn("Had to resort to general scene scan to find region");
+      const msg = "Had to resort to general scene scan to find region" as const;
+      if (PersonaSettings.debugMode()) {
+        ui.notifications.warn(msg);
+      } else {
+        console.warn(msg);
+      }
       if (!region) { return undefined; }
     }
     if ((region as PersonaRegion)?.regionData?.ignore == true) {

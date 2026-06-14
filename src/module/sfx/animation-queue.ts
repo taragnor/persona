@@ -110,8 +110,20 @@ export class AnimationQueue {
   }
 
   async play() : Promise<void> {
+    try {
+      await this._play();
+    } catch (e) {
+      PersonaError.softFail(e as Error);
+    }
+  }
+
+  private async _play() : Promise<void> {
     let queue = this.queue;
     this.clearQueue();
+    if (Sequence == undefined) {
+      console.warn("Sequencer not found, can't use specail effects");
+      return;
+    }
     while (queue.length > 0) {
       const order = queue.at(0)?.order ?? 0;
       const playable = queue.filter( x=> (x.order ?? 0) == order);
@@ -128,7 +140,7 @@ export class AnimationQueue {
     }
   }
 
-  private convertToSequence(anim: typeof this.queue[number], seq: Sequence = new Sequence(), innateDelay: number): Sequence {
+  private convertToSequence(anim: typeof this.queue[number], seq: Sequence, innateDelay: number): Sequence {
     try {
     switch(anim.sfxType) {
       case "play-sound":

@@ -210,6 +210,7 @@ const SETTINGS = {
 		default: 0.75,
 		onChange: (_newVal) => {PersonaSettings.resetCache();}
 	},
+
 	"autoApplyCombatResults" : {
 		name: "Auto Apply Combat Results",
 		hint: "Auto apply combat results?",

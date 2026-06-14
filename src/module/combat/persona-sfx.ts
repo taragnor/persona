@@ -50,41 +50,41 @@ export class PersonaSFX {
 		}
 	}
 
+  /** @deprecated this was removed in favor of new SFX system */
   static async onSingleTargetDamage( token: PToken | undefined, hpchange: number, damageType: RealDamageType, power ?: UsableAndCard) {
-    return;
-    // if (hpchange == 0) {return;}
-    // if (hpchange > 0) {
-    //   if (power?.hasTag("resurrection", null)) {
-    //     await this.#play("raise");
-    //     return;
-    //   }
-    //   if (damageType == "healing") {
-    //     await this.#play("heal");
-    //   }
-    //   return;
-    // }
-    // switch (damageType) {
-    // 	case "lightning":
-    // 	case "physical":
-    // 	case "fire":
-    // 	case "cold":
-    // 	case "wind":
-    // 	case "light":
-    // 	case "dark":
-    // 	case "untyped":
-    // 		await this.#play(damageType);
-    // 		break;
-    // 	case "gun":
-    // 		await this.#play("gun-single");
-    // 		break;
-    // 	case "healing":
-    // 		return;
-    // 	case "all-out": //silent since AoA plays earlier
-    // 	case "none":
-    // 		return;
-    // 	default:
-    // 		damageType satisfies never;
-    // }
+    if (hpchange == 0) {return;}
+    if (hpchange > 0) {
+      if (power?.hasTag("resurrection", null)) {
+        await this.#play("raise");
+        return;
+      }
+      if (damageType == "healing") {
+        await this.#play("heal");
+      }
+      return;
+    }
+    switch (damageType) {
+    	case "lightning":
+    	case "physical":
+    	case "fire":
+    	case "cold":
+    	case "wind":
+    	case "light":
+    	case "dark":
+    	case "untyped":
+    		await this.#play(damageType);
+    		break;
+    	case "gun":
+    		await this.#play("gun-single");
+    		break;
+    	case "healing":
+    		return;
+    	case "all-out": //silent since AoA plays earlier
+    	case "none":
+    		return;
+    	default:
+    		damageType satisfies never;
+    }
   }
 
 	static async onUsePowerStart(usableOrCard: UsableAndCard, attacker: PToken) {

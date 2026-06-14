@@ -128,7 +128,7 @@ export class PersonaCompendium {
 	}
 
 	static canUseCompendium() : boolean {
-		if (game.user.isGM && PersonaSettings.debugMode()) {return true;}
+		if (game.user.isGM || PersonaSettings.debugMode()) {return true;}
 		const combat = PersonaCombat.combat;
 		const metaverseReq = (combat == undefined && Metaverse.getRegion()?.regionData.specialMods.includes("compendium-access")) ?? false;
 		const nonMetaverseReq =	combat != undefined && combat.isSocial;
