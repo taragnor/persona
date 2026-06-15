@@ -7,6 +7,7 @@ export abstract class SidePanel {
   panelName: string;
   iterations : number = 0;
   private _ready : boolean = false;
+  _buttonData : SidePanel.ButtonConfig[] = [];
 
   protected get CSSClassName() : string {
     return `.${this.panelName} side-panel`;
@@ -122,7 +123,8 @@ export abstract class SidePanel {
   }
 
   private async _renderButtons() : Promise<string> {
-    const buttonData = await this.resolveButtonData();
+    this._buttonData = await this.getButtons();
+    const buttonData = await this.resolveButtonData(this._buttonData);
     const buttonHTML = buttonData
     .map( (button) => {
       const tooltip = button.tooltip
@@ -154,13 +156,14 @@ export abstract class SidePanel {
 
   private async _onPressButton(ev: JQuery.ClickEvent) {
     const index = HTMLTools.getClosestDataNumber(ev, "buttonIndex");
-    const buttons = await this.getButtons();
+    // const buttons = await this.getButtons();
+    const buttons = this._buttonData;
     const button = buttons[index];
     if (!button) {
       throw new Error(`No Button Data at index ${index}`);
     }
     ev.stopPropagation();
-    button.onPress();
+    await button.onPress();
   }
 
 
@@ -171,8 +174,8 @@ export abstract class SidePanel {
     return {};
   }
 
-  private async resolveButtonData() : Promise<SidePanel.ResolvedButtonData[]> {
-    const buttons= await this.getButtons();
+  private async resolveButtonData(buttons: SidePanel.ButtonConfig[]) : Promise<SidePanel.ResolvedButtonData[]> {
+    // const buttons= await this.getButtons();
     const promises = buttons
     .map( async (button, i) => {
       if (button.visible != undefined) {

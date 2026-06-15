@@ -1149,9 +1149,12 @@ export class PersonaHandleBarsHelpers {
     return PersonaCompendium.convertToNormalName(shadow.name);
   },
 
-  "showPersonaImage" : function (persona: Persona): boolean {
-    return persona.img != persona.user.img;
-  },
+    "showPersonaImage" : function (persona: Persona): boolean {
+      if (persona && persona instanceof Persona) {
+        return persona.img != persona.user.img;
+      }
+      return false;
+    },
 
   "isCombatPanelActive" : function () {
     return CombatPanel.isActiveControl();

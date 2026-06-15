@@ -1943,7 +1943,6 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
 } // end of class
 
-
 export type PToken = TokenDocument<ValidAttackers> & {get actor(): ValidAttackers};
 
 CONFIG.Combat.initiative = {

@@ -185,7 +185,8 @@ export class CombatHooks {
       if (combatant.id  == combatantId
         && combatant.actor.hasPlayerOwner
         // && !game.user.isGM
-        && combatant.actor.isOwner) {
+        && combatant.actor.isOwner
+        && !game.user.isGM) {
         console.log(`Adding flash to ${combatant.name} msg`);
         header.addClass("flashing");
         return;

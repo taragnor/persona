@@ -10,7 +10,6 @@ export const SYSTEMPATH = `systems/${SYSTEMNAME}` as const;
 export const HBS_TEMPLATES_DIR = `${SYSTEMPATH}/sheets` as const;
 export const HANDLEBARS_TEMPLATE_DIR = `${SYSTEMPATH}/parts` as const;
 
-
 const DAMAGE_SYSTEM_V1= new MainDamageSystem();
 
 export class PersonaSettings {
@@ -144,7 +143,6 @@ export class PersonaSettings {
 	}
 
 }
-
 
 const SETTINGS = {
 
