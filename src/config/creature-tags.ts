@@ -28,6 +28,7 @@ export const TRAIT_TAG_LIST = [
 	"enigmatic",
 	"no-xp",
 	"no-rand",
+  "inverted-resistances",
 ] as const;
 
 export const AI_TAGS = [

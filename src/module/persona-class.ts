@@ -881,7 +881,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       case "healing":
         return "absorb";
     }
-    const baseResist = this.resists[type] ?? "normal";
+    let baseResist = this.resists[type] ?? "normal";
+    if (this.user.hasTag("inverted-resistances") && baseResist != "normal") {
+      baseResist = baseResist == "weakness" ? "reflect": "weakness";
+    }
     const modifiers = [
       // ...this.defensiveModifiers(),
       ...this.mainModifiers(),
@@ -903,7 +906,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       switch (cons.type) {
         case "raise-resistance": {
           const isSameType = multiCheckContains(cons.resistType, [type]);
-          // if (cons.resistType == type &&
           if (isSameType &&
             resval(cons.resistanceLevel) > resval(baseResist)) {
             resBonus = Math.max(resBonus, resval(cons.resistanceLevel) - resval(baseResist));
@@ -936,14 +938,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   get printableResistanceString() : string {
-    // const resists = this.statusResists;
     const retdata = CONFIG.statusEffects
-    // const retdata = Object.entries(resists)
-    // .filter ( ({id}) => CONFIG.statusEffects.some(st=> st.id == statusId))
-    // .filter ( ([statusId, _y]) => CONFIG.statusEffects.some(st=> st.id == statusId))
       .map ( st => st.id)
       .map(statusRaw => {
-        // .map(([statusRaw, _level]) => {
         const actual = this.statusResist(statusRaw as StatusEffectId);
         const statusTrans = localize(STATUS_EFFECT_TRANSLATION_TABLE[statusRaw as StatusEffectId]);
         if (statusTrans == undefined) {
