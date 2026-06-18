@@ -367,43 +367,70 @@ export class PersonaScene extends Scene {
 		await sleep(250);
 	}
 
-	_addExtraSheetHTML(html: JQuery) : void {
-		html.find("nav.sheet-tabs").append(`
-<a data-action="tab" data-group="sheet" data-tab="encounter">
-			<span>Encounter</span>
-	 </a>
-`);
-		const listElements = this.encounterData.monsters
-		.sort ( (a,b) => {
-			const shadow1 = PersonaDB.getActorById(a.id);
-			const shadow2 = PersonaDB.getActorById(b.id);
-			return shadow1!.level  - shadow2!.level;
-		})
-		.map( entry=> {
-			const shadow = PersonaDB.getActorById(entry.id);
-			if (!shadow) {return $("");}
-			const div = $(`<div class="encounter" data-shadow-id="${shadow.id}"></div>`);
-			div.append( $(`<span class="shadow-name">
-							L${shadow.level} ${shadow.name} (${shadow.roleString.toString()}) [${entry.frequency}] ${shadow.hasNoTreasure ? "(missing treasure)" : ""}
-				</span>
-`).on("click", (ev) => {
-	const id = HTMLTools.getClosestData(ev, "shadowId");
-	const shadow = PersonaDB.getActorById(id);
-	if (!shadow) {return;}
-	void shadow.sheet.render(true);
-})
-			);
-			return div;
-		});
-		const tab = $(`<div class="tab scrollable" data-group="sheet" data-tab="encounter" data-application-part="encounter"> </div>`);
-		tab.append($(`<div> Treasure Level: ${this.treasureLevel}</div>`));
-		tab.append($("<h2> Encounters </h2>"));
-		for (const jq of listElements) {
-			tab.append(jq);
-		}
 
-html.find("section.window-content").children().last().before(tab);
-}
+  private _banList() : Shadow["id"][] {
+    return this.getFlag("persona", "encounterBanList") ?? [];
+  }
+
+  async toggleBanList(shadow: Shadow) {
+    let list = this._banList();
+    if (list.includes(shadow.id)) {
+      list = list.filter ( x=> x != shadow.id);
+    } else {
+      list.push(shadow.id);
+    }
+    await this.setFlag("persona", "encounterBanList", list);
+  }
+
+  isOnBanList(shadow: Shadow) : boolean {
+    return this._banList().includes(shadow.id);
+  }
+
+  _addExtraSheetHTML(html: JQuery, app : foundryApps.ApplicationV2) : void {
+    html.find("nav.sheet-tabs").append(`
+<a data-action="tab" data-group="sheet" data-tab="encounter">
+      <span>Encounter</span>
+   </a>
+`);
+    const listElements = this.encounterData.monsters
+    .sort ( (a,b) => {
+      const shadow1 = PersonaDB.getActorById(a.id);
+      const shadow2 = PersonaDB.getActorById(b.id);
+      return shadow1!.level  - shadow2!.level;
+    })
+    .map( entry=> {
+      const shadow = PersonaDB.getActorById(entry.id) as Shadow;
+      if (!shadow) {return $("");}
+      const toggle = this.isOnBanList(shadow) ? $(`<i class="fa-solid fa-toggle-off"></i>`) : $(`<i class="fa-solid fa-toggle-on"></i>`);
+      toggle.on("click", (ev) => {
+        ev.stopPropagation();
+        void this.toggleBanList(shadow)
+          .then(_x=> app.render());
+      });
+      const div = $(`<div class="encounter" data-shadow-id="${shadow.id}"></div>`);
+      div.append( $(`<span class="shadow-name">
+        L${shadow.level} ${shadow.name} (${shadow.roleString.toString()}) [${entry.frequency}] ${shadow.hasNoTreasure ? "(missing treasure)" : ""}
+        <span class="shadow-ban-toggle"></span>
+        </span>
+      `).on("click", (ev) => {
+          const id = HTMLTools.getClosestData(ev, "shadowId");
+          const shadow = PersonaDB.getActorById(id);
+          if (!shadow) {return;}
+          void shadow.sheet.render(true);
+        })
+      );
+      div.find(".shadow-ban-toggle").append(toggle);
+      return div;
+    });
+    const tab = $(`<div class="tab scrollable encounter-tab" data-group="sheet" data-tab="encounter" data-application-part="encounter"> </div>`);
+    tab.append($(`<div> Treasure Level: ${this.treasureLevel}</div>`));
+    tab.append($("<h2> Encounters </h2>"));
+    for (const jq of listElements) {
+      tab.append(jq);
+    }
+    html.find("div.encounter-tab").remove();
+    html.find("section.window-content").children().last().before(tab);
+  }
 
 get treasureLevel() : number {
   if (this.difficultyLevel > 0) {return this.difficultyLevel;}
@@ -500,7 +527,7 @@ Hooks.on("updateScene", async (_scene: PersonaScene, diff) => {
 Hooks.on("renderHandlebarsApplication", (app, html) => {
   const htm = $(html);
   if (app.document instanceof PersonaScene) {
-    app.document._addExtraSheetHTML(htm);
+    app.document._addExtraSheetHTML(htm, app);
   }
 
 });

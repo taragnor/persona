@@ -50,8 +50,8 @@ export abstract class SidePanel {
       ( !SidePanelManager.isActive(this) &&
         !SidePanelManager.isOnPanelStack(this))
     ) {
-        await SidePanelManager.activate(this);
-      }
+      await SidePanelManager.activate(this);
+    }
   }
 
   protected prereqs() : (() => boolean)[] {
@@ -128,7 +128,7 @@ export abstract class SidePanel {
     const buttonHTML = buttonData
     .map( (button) => {
       const tooltip = button.tooltip
-      ? ` <div class="tooltiptext">
+        ? ` <div class="tooltiptext">
       ${button.tooltip}
         </div>`
         : "";
@@ -149,7 +149,7 @@ export abstract class SidePanel {
     html.find(".side-panel-button").on("click", ev => void this._onPressButton(ev));
   }
 
-   _activateListeners(html: JQuery<HTMLElement>) {
+  _activateListeners(html: JQuery<HTMLElement>) {
     this._activateButtonListeners(html);
     this.activateListeners(html);
   }

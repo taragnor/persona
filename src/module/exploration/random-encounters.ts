@@ -149,7 +149,8 @@ export class RandomEncounter {
 
   static getEncounterList(sceneOrRegion: PersonaScene | PersonaRegion, shadowType ?: Shadow["system"]["creatureType"]): Shadow[] {
     return sceneOrRegion.encounterList()
-      .filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true);
+      .filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true)
+    .filter (shadow => !(sceneOrRegion instanceof PersonaScene) || !sceneOrRegion.isOnBanList(shadow));
   }
 
   /** queries player to determine if they will ambush, fight , etc.*/

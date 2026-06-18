@@ -128,6 +128,10 @@ export class PersonaRegion extends RegionDocument {
 			});
 	}
 
+  get ignoreRegion() : boolean {
+    return this.regionData.ignore ?? true;
+  }
+
 	get regionData(): RegionData {
 		const regionData = this.getFlag("persona", "RegionData");
 		const defaultRegion = this.defaultRegionData();

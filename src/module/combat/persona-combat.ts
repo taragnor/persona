@@ -61,7 +61,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   static WAIT_FOR_FOUNRY_DELAY = 750 as const;
   _resolvingAttack: boolean = false;
   _engagedList: EngagementList;
-  consecutiveCombat: number =0;
+  consecutiveCombat: number = 0;
   defeatedFoes : ValidAttackers[] = [];
   combatEngine: CombatEngine;
   openers: OpenerManager;
@@ -115,7 +115,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       .filter( res=> res != undefined);
     if (results.length > 0) {
       const CR = results.reduce ( (acc, res) => acc.addChained(res));
-      const header = `<h3> Start Combat Triggers</h3>`;
+      const header = `<h3> Start Combat Triggers </h3>`;
       await CR.toMessage(header);
     }
   }
