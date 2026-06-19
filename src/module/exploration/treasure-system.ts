@@ -144,14 +144,23 @@ export class TreasureSystem {
 		if (list.length == 0) {return undefined;}
 		const weights = list
 		.map( item=> {
-			const rarity = item.system.treasure[table].rarity;
-			const possessionMult = this.possessionWeightMod(item);
-			const baseWeight = ENCOUNTER_RATE_PROBABILITY[rarity];
-			const weight = baseWeight * possessionMult;
+			// const rarity = item.system.treasure[table].rarity;
+			// const possessionMult = this.possessionWeightMod(item);
+			// const baseWeight = ENCOUNTER_RATE_PROBABILITY[rarity];
+			// const weight = baseWeight * possessionMult;
+      const weight = this.generateWeight(item, table, true);
 			return { item, weight };
 		});
 		return weightedChoice(weights);
 	}
+
+  static generateWeight(item: TreasureItem | Tag, table: Exclude<TreasureTable, "none"> , applyPossessionMult: boolean) : number {
+			const rarity = item.system.treasure[table].rarity;
+			const possessionMult = applyPossessionMult && item.isCarryableType() ? this.possessionWeightMod(item): 1;
+			const baseWeight = ENCOUNTER_RATE_PROBABILITY[rarity];
+			const weight = baseWeight * possessionMult;
+			return weight;
+  }
 
 	static amountOfItemOwnedByParty(item : TreasureItem) : number {
 		const pcsAndAllies = game.actors.filter( (act:PersonaActor) => act.isPC() || act.isNPCAlly()) as PersonaActor[];

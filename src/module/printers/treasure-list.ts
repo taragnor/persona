@@ -1,3 +1,4 @@
+import {TreasureSystem} from "../exploration/treasure-system.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
@@ -23,18 +24,23 @@ export class TreasureList extends Application {
       trinkets: this.genCategory("trinkets"),
       lesser: this.genCategory("lesser"),
       greater: this.genCategory("greater"),
-      royal:this.genCategory("royal"),
+      royal: this.genCategory("royal"),
     };
     const treasureLists = Object.entries(lists)
       .map( ([k,v]) => ({
-        category: k,
+        category: k as keyof TreasureItem["system"]["treasure"],
         list:v,
+        totalProbability: v.reduce(
+          (acc, item) => acc
+          + TreasureSystem.generateWeight(item, k as keyof TreasureItem["system"]["treasure"], false)
+          , 0),
       }));
     return {
       ...data,
       treasureLists,
     };
   }
+
 
   genCategory(key: keyof TreasureItem["system"]["treasure"]) : TreasureItem[] {
     const treasures = PersonaDB.treasureItems();

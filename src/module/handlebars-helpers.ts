@@ -46,6 +46,7 @@ import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.
 import {testPreconditions} from "./conditionalEffects/preconditions.js";
 import {ConditionalEffectManager} from "./conditionalEffects/conditional-effect-manager.js";
 import {MainDamageSystem} from "./combat/damage-system-v1.js";
+import {TreasureSystem} from "./exploration/treasure-system.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -774,6 +775,12 @@ export class PersonaHandleBarsHelpers {
       const x=  treasure.system.treasure[category];
       return localize(PROBABILITIES[x.rarity]);
     },
+
+    "getTrueTreasurePercent" : function (treasure: TreasureItem, category: keyof TreasureItem["system"]["treasure"],  totalProbability: number) {
+      const weight = TreasureSystem.generateWeight(treasure, category, false) / totalProbability;
+      return Math.round(weight * 1000) / 10;
+    },
+
     "getTreasureLevelRangeByCategory" : function (treasure: TreasureItem, category: keyof TreasureItem["system"]["treasure"]) : string {
       const x =  treasure.system.treasure[category];
       return `${x.minLevel} - ${x.maxLevel}`;
@@ -810,6 +817,7 @@ export class PersonaHandleBarsHelpers {
           return "????";
       }
     },
+
 
     "usingBasePersona": function (actor: ValidAttackers) : boolean {
       return actor.isUsingBasePersona();
