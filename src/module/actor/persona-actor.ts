@@ -3951,7 +3951,16 @@ private async _trySwapPersona(this: PC, p1: Persona, p2: Persona)  : Promise<boo
   return false;
 }
 
-get hasVelvetRoomAccess() : boolean{
+get isPartyTokenActor(): boolean {
+  return PersonaDB.partyTokenActor() == this;
+}
+
+get hasVelvetRoomAccess() : boolean {
+  if (game.user.isGM && PersonaSettings.debugMode()) {return true;}
+  if (this.isPartyTokenActor && !game.user.isGM) {
+    const myPC =  PersonaDB.PCs().find( actor => actor.isTrueOwner);
+    if (myPC) {return myPC.hasVelvetRoomAccess;}
+  }
   if (!this.isPCLike()){ return false;}
   return this.getVariable("VELVET") > 0;
 }

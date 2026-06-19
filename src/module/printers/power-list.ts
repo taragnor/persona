@@ -400,7 +400,6 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
     this.render(false);
   }
 
-
 }
 
 Hooks.on("DBrefresh", function () {
@@ -414,7 +413,6 @@ async function powerPrinter() {
   await PowerPrinter.open();
   return PowerPrinter.instance;
 }
-
 
 //@ts-expect-error adding to global scope
 window.powerList = powerPrinter;

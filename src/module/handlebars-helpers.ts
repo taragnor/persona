@@ -36,7 +36,7 @@ import {PCSheet} from "./actor/sheets/pc-sheet.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaCompendium} from "./persona-compendium.js";
 import { CombatPanel } from "./combat/panels/combat-panel.js";
-import {PROBABILITIES_POWER_RARITY, ProbabilityRate} from "../config/probability.js";
+import {PROBABILITIES, PROBABILITIES_POWER_RARITY, ProbabilityRate} from "../config/probability.js";
 import {CardData} from "./social/social-card-executor.js";
 import {ConditionalEffectPrinter} from "./conditionalEffects/conditional-effect-printer.js";
 import {PowerLearningSystem} from "./power-learning.js";
@@ -768,6 +768,47 @@ export class PersonaHandleBarsHelpers {
       }
       if (game.user.isGM) {return true;}
       return persona.effectiveScanLevel >= val;
+    },
+
+    "getTreasureRarityByCategory" : function (treasure: TreasureItem, category: keyof TreasureItem["system"]["treasure"]) : string {
+      const x=  treasure.system.treasure[category];
+      return localize(PROBABILITIES[x.rarity]);
+    },
+    "getTreasureLevelRangeByCategory" : function (treasure: TreasureItem, category: keyof TreasureItem["system"]["treasure"]) : string {
+      const x =  treasure.system.treasure[category];
+      return `${x.minLevel} - ${x.maxLevel}`;
+    },
+
+    "getItemSubtype": function (treasure: TreasureItem) : string {
+      switch (treasure.system.type) {
+        case "weapon":
+          return "Weapon";
+        case "item":
+          switch (treasure.system.slot) {
+            case "key-item":
+              return "key";
+            case "body":
+              return "outfit";
+            case "accessory":
+              return "accessory";
+            case "weapon_crystal":
+              return "Weapon Attachment";
+            case "crafting":
+              return "Crafting";
+            case "none":
+              return "None";
+            default:
+              treasure.system.slot satisfies never;
+              return "???";
+          }
+        case "consumable":
+          return "Consumable";
+        case "skillCard":
+          return "Skill Card";
+        default:
+          treasure.system satisfies never;
+          return "????";
+      }
     },
 
     "usingBasePersona": function (actor: ValidAttackers) : boolean {

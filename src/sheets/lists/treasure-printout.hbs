@@ -1,0 +1,40 @@
+<form class="print-out">
+  {{#each treasureLists as |list i|}}
+  <h3> {{list.category}} </h3>
+  <table class="treasure-table">
+    <tr>
+      <th>Name</th>
+      <th>Category</th>
+      <th> Subtype</th>
+      <th>Rarity</th>
+      <th>Item Level</th>
+      <th>level range</th>
+    </tr>
+
+  {{#each list.list as |treasure j|}}
+    <tr data-treasure-id="{{treasure.id}}">
+      <td class="treasure-name">
+        {{treasure.name}}
+      </td>
+      <td class="category">
+        {{list.category}}
+      </td>
+      <td class="subtype">
+        {{getItemSubtype treasure}}
+      </td>
+      <td class="rarity">
+        {{getTreasureRarityByCategory treasure list.category}}
+      </td>
+      <td class="itemLevel">
+        {{treasure.itemLevel}}
+      </td>
+      <td class="level-range">
+        {{getTreasureLevelRangeByCategory treasure list.category}}
+      </td>
+    </tr>
+  {{/each}}
+
+  </table>
+  {{/each}}
+</form>
+

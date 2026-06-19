@@ -108,6 +108,9 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     this.#resetCache();
   }
 
+  onUpdateItem(item: PersonaItem) {
+  }
+
   getClassById(id: CClass["id"]): Option<CClass> {
     const item = this.getItemById(id);
     if (!item) {return null;}
@@ -721,6 +724,11 @@ Hooks.on("createItem", (item: PersonaItem) => {
 Hooks.on("createActor", (actor : PersonaActor) => {
   PersonaDB.onCreateActor(actor);
 });
+
+Hooks.on("updateItem", (item: PersonaItem) => {
+  PersonaDB.onUpdateItem(item);
+});
+
 
 type PersonaDBCache =	{
   powers: Map<Power["id"], Power> | undefined,

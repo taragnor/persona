@@ -10,7 +10,6 @@ input.short{
 input.long-number {
   width: 5em;
   max-width: 5em;
-
 }
 
 input.short-text {
@@ -298,11 +297,13 @@ section.powers-section {
   font-weight: bold;
 }
 
+.treasure-table th,
 .powers-table th {
   text-align: left;
   justify-content: left;
-
 }
+
+
 
 .tooltip {
   position: relative;

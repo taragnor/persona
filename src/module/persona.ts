@@ -60,6 +60,7 @@ import {CraftingPrinter} from "./printers/crafting-list.js";
 import {PostCombatPanel} from "./panels/post-combat-panel.js";
 import {TokenEffectsFlash} from "./token-effects-flash.js";
 import {MathUtilityFunctions} from "./utility/math.js";
+import {TreasureList} from "./printers/treasure-list.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -136,6 +137,7 @@ Hooks.once("init", function() {
   Tests.init();
   TokenEffectsFlash.init();
   MathUtilityFunctions.init();
+  TreasureList.init();
 });
 
 function registerHandlebarsHelpers() {
