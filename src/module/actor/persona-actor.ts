@@ -289,6 +289,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     await this.refreshMaxMP(persona);
   }
 
+  get actor() { return this;} //mostly used for handlebars to use tokens or actors in some places
+
   async #refreshHpTracker(this:ValidAttackers, persona: Persona)  : Promise<void> {
     if (!game.user.isGM) {return;}
     //anti-loop
@@ -1168,7 +1170,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return false;
   }
 
-  get mainPowers() : Power[] {
+  get mainPowers() : readonly Power[] {
     switch (this.system.type) {
       case "npc": case "tarot": return [];
       case "pc":

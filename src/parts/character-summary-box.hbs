@@ -1,0 +1,35 @@
+<div class="character-card" data-target-id="{{character.id}}">
+
+  <div class="portrait">
+    <img src="{{character.img}}" alt="Character Portrait">
+  </div>
+  <div class="character-info">
+    <div class="character-name">
+      {{character.name}}
+    </div>
+
+    <div class="resource-bar hp">
+      <div class="fill" style="width: {{divideTracker character.actor.system.combat.hpTracker}}%;"></div>
+      {{#if (scanLevelgte character.actor 2)}}
+      <span class="label">HP {{character.actor.system.combat.hpTracker.value}} / {{character.actor.system.combat.hpTracker.max}}</span>
+      {{/if}}
+    </div>
+
+        {{#if character.actor.system.combat.mp.max}}
+        <div class="resource-bar mp">
+          <div class="fill" style="width: {{divideTracker character.actor.system.combat.mp}}%;"></div>
+          <span class="label">MP {{character.actor.system.combat.mp.value}} / {{character.actor.system.combat.mp.max}}</span>
+        </div>
+        {{/if}}
+
+        {{#if character.actor.energy}}
+        <div class="resource-bar mp">
+          <div class="fill" style="width: {{divideTracker character.actor.system.combat.energy}}%;"></div>
+          {{#if (isGM)}}
+          <span class="label">En {{character.actor.energy}} / {{character.actor.maxEnergy}}</span>
+          {{/if}}
+        </div>
+        {{/if}}
+  </div>
+
+</div>

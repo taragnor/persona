@@ -7,7 +7,7 @@ export abstract class SidePanel {
   panelName: string;
   iterations : number = 0;
   private _ready : boolean = false;
-  _buttonData : SidePanel.ButtonConfig[] = [];
+  _buttonData : readonly SidePanel.ButtonConfig[] = [];
 
   protected get CSSClassName() : string {
     return `.${this.panelName} side-panel`;
@@ -104,7 +104,7 @@ export abstract class SidePanel {
     let html = await this.renderPanelBody();
     const buttons = await this.getButtons();
     if (buttons.length) {
-      html  += await this._renderButtons();
+      html += await this._renderButtons();
     }
     this.iterations++;
     return `
@@ -174,7 +174,7 @@ export abstract class SidePanel {
     return {};
   }
 
-  private async resolveButtonData(buttons: SidePanel.ButtonConfig[]) : Promise<SidePanel.ResolvedButtonData[]> {
+  private async resolveButtonData(buttons: readonly SidePanel.ButtonConfig[]) : Promise<SidePanel.ResolvedButtonData[]> {
     // const buttons= await this.getButtons();
     const promises = buttons
     .map( async (button, i) => {

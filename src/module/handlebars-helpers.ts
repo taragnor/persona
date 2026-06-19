@@ -1,5 +1,4 @@
-import { PersonaStat } from "../config/persona-stats.js"; import { MODIFIER_CATEGORIES, MODIFIERS_TABLE } from "../config/item-modifiers.js";
-import { ConsequenceAmount, OtherEffect } from "../config/consequence-types.js";
+import { PersonaStat } from "../config/persona-stats.js"; import { MODIFIER_CATEGORIES, MODIFIERS_TABLE } from "../config/item-modifiers.js"; import { ConsequenceAmount, OtherEffect } from "../config/consequence-types.js";
 import { DAMAGE_LEVELS } from "../config/damage-types.js";
 import { DAMAGE_ICONS } from "../config/icons.js";
 import { StatusEffectId } from "../config/status-effects.js";
@@ -763,7 +762,10 @@ export class PersonaHandleBarsHelpers {
       return persona.effectiveScanLevel;
     },
 
-    "scanLevelgte": function (persona: Persona, val: number) : boolean {
+    "scanLevelgte": function (persona: Persona | ValidAttackers, val: number) : boolean {
+      if (persona instanceof PersonaActor) {
+        persona = persona.persona();
+      }
       if (game.user.isGM) {return true;}
       return persona.effectiveScanLevel >= val;
     },
@@ -779,10 +781,10 @@ export class PersonaHandleBarsHelpers {
     "canDeletePowers": function (persona: Persona, power?: Power): boolean {
       try {
         return persona.canDeletePower(power);
-      // const base= persona.user.isOwner && persona.source.isOwner && !persona.isHypothetical;
-      // if (!power || !(power instanceof PersonaItem)) {return base;}
-      // if (persona.bonusPowers.includes(power)) {return false;}
-      // return true;
+        // const base= persona.user.isOwner && persona.source.isOwner && !persona.isHypothetical;
+        // if (!power || !(power instanceof PersonaItem)) {return base;}
+        // if (persona.bonusPowers.includes(power)) {return false;}
+        // return true;
       } catch (e) {
         PersonaError.softFail("Error on canDeletePowers", e);
         Debug(persona, power);
@@ -884,143 +886,143 @@ export class PersonaHandleBarsHelpers {
       return persona.printableResistanceString;
     },
 
-  "hpBreakdown": function (persona: Persona) {
-    return new Handlebars.SafeString(
-      persona.combatStats.mhpCalculation().steps.join("\n")
-    );
-  },
+    "hpBreakdown": function (persona: Persona) {
+      return new Handlebars.SafeString(
+        persona.combatStats.mhpCalculation().steps.join("\n")
+      );
+    },
 
-  "personasThatKnow" : function (power: Power) : string {
-    const personas= PowerLearningSystem.PersonasThatKnowPower(power);
-    const tooltip = personas.map( x=> x.name).join(", ");
-    return `<span title='${tooltip}'> ${personas.length} </title>`;
-  },
+    "personasThatKnow" : function (power: Power) : string {
+      const personas= PowerLearningSystem.PersonasThatKnowPower(power);
+      const tooltip = personas.map( x=> x.name).join(", ");
+      return `<span title='${tooltip}'> ${personas.length} </title>`;
+    },
 
-  "mpBreakdown": function (persona: Persona) {
-    return new Handlebars.SafeString(
-      persona.combatStats.mmpCalculation().steps.join("\n")
-    );
-  },
-  "localizeDefenseTarget": function (power:Power ) : string {
-    const defense = power.system.defense;
-    return game.i18n.localize(DEFENSE_TYPES[defense]);
-  },
-  "powerTargetsAbbrev": function (power: Power) : string {
-    let retstr = "";
-    if (power.system.attacksMax > 1) {
-      retstr += `(${power.system.attacksMin}-${power.system.attacksMax})`;
-    }
-    if (power.isMultiTarget())
-    {retstr+= "M";} else  {
-      retstr += "S";
-    }
-    if (power.targets().includes("random"))
-    { retstr+= "R"; }
-    return retstr;
-  },
+    "mpBreakdown": function (persona: Persona) {
+      return new Handlebars.SafeString(
+        persona.combatStats.mmpCalculation().steps.join("\n")
+      );
+    },
+    "localizeDefenseTarget": function (power:Power ) : string {
+      const defense = power.system.defense;
+      return game.i18n.localize(DEFENSE_TYPES[defense]);
+    },
+    "powerTargetsAbbrev": function (power: Power) : string {
+      let retstr = "";
+      if (power.system.attacksMax > 1) {
+        retstr += `(${power.system.attacksMin}-${power.system.attacksMax})`;
+      }
+      if (power.isMultiTarget())
+      {retstr+= "M";} else  {
+        retstr += "S";
+      }
+      if (power.targets().includes("random"))
+      { retstr+= "R"; }
+      return retstr;
+    },
 
-  "iff": function (cond: boolean, choice1: unknown, choice2: unknown) : unknown {
-    return cond ? choice1 : choice2;
-  },
+    "iff": function (cond: boolean, choice1: unknown, choice2: unknown) : unknown {
+      return cond ? choice1 : choice2;
+    },
 
-  "disableHPMPChange": function () : boolean {
-    if (game.user.isGM) {return false;}
-    const combat = game.combat as U<PersonaCombat>;
-    return (combat != undefined && !combat.isSocial);
-  },
+    "disableHPMPChange": function () : boolean {
+      if (game.user.isGM) {return false;}
+      const combat = game.combat as U<PersonaCombat>;
+      return (combat != undefined && !combat.isSocial);
+    },
 
-  "isSimulated": function (persona: Persona) : boolean {
-    const source = persona.source;
-    if (source.isShadow() && source.system.creatureType == "daemon") {return true;}
-    return source.hasTag("simulated");
-  },
+    "isSimulated": function (persona: Persona) : boolean {
+      const source = persona.source;
+      if (source.isShadow() && source.system.creatureType == "daemon") {return true;}
+      return source.hasTag("simulated");
+    },
 
-  "armorDR": function (item: InvItem) {
-    const DS = (PersonaSettings.getDamageSystem() as MainDamageSystem);
+    "armorDR": function (item: InvItem) {
+      const DS = (PersonaSettings.getDamageSystem() as MainDamageSystem);
       return DS.armorDRByEquipment(item);
-  },
+    },
 
-  "getModifierTypesByCategory": function (category: U<keyof typeof MODIFIER_CATEGORIES>) {
-    if (!category || category.length == 0)
-    {return MODIFIERS_TABLE;}
-    if (!(category in MODIFIER_CATEGORIES)) {return {};}
-    const baseObject = MODIFIER_CATEGORIES[category] ?? {};
-    return HTMLTools.createLocalizationObject(baseObject, "persona.modifier");
-  },
-  "levelSampleArray" : function () : number[] {
-    return [1,10,20,30,40,50,60,70,80,90,100];
-  },
-  "HPAtLevel": function (cl:CClass, lvl: number) : number{
-    return cl.getClassMHP(lvl);
-  },
-  "MPAtLevel": function (cl:CClass, lvl: number) : number{
-    return cl.getClassMMP(lvl);
-  },
+    "getModifierTypesByCategory": function (category: U<keyof typeof MODIFIER_CATEGORIES>) {
+      if (!category || category.length == 0)
+      {return MODIFIERS_TABLE;}
+      if (!(category in MODIFIER_CATEGORIES)) {return {};}
+      const baseObject = MODIFIER_CATEGORIES[category] ?? {};
+      return HTMLTools.createLocalizationObject(baseObject, "persona.modifier");
+    },
+    "levelSampleArray" : function () : number[] {
+      return [1,10,20,30,40,50,60,70,80,90,100];
+    },
+    "HPAtLevel": function (cl:CClass, lvl: number) : number{
+      return cl.getClassMHP(lvl);
+    },
+    "MPAtLevel": function (cl:CClass, lvl: number) : number{
+      return cl.getClassMMP(lvl);
+    },
 
-  "canChangePodStatus": function (_actor: PersonaActor)  : boolean {
-    if (game.user.isGM) {return true;}
-    const combat =  game.combat as PersonaCombat;
-    return (combat != undefined && combat.isSocial);
+    "canChangePodStatus": function (_actor: PersonaActor)  : boolean {
+      if (game.user.isGM) {return true;}
+      const combat =  game.combat as PersonaCombat;
+      return (combat != undefined && combat.isSocial);
 
-  },
-  "tarotFocii": function (actor: PersonaActor) : Focus[] {
-    const sortFn = function (a: Focus, b: Focus) {
-      return a.requiredLinkLevel() - b.requiredLinkLevel();
-    };
-    return actor.focii
-      .sort( sortFn) ;
-  },
-  "hasDescriptionText": function(power:Power) : boolean{
-    return (power.system.description ?? "").length > 0;
-  },
+    },
+    "tarotFocii": function (actor: PersonaActor) : Focus[] {
+      const sortFn = function (a: Focus, b: Focus) {
+        return a.requiredLinkLevel() - b.requiredLinkLevel();
+      };
+      return actor.focii
+        .sort( sortFn) ;
+    },
+    "hasDescriptionText": function(power:Power) : boolean{
+      return (power.system.description ?? "").length > 0;
+    },
 
-  "baseShadowCostString": function (power: Power) : string {
-    if (!power.isPower()) {return "";}
-    if (power.isPassive()) {return "-";}
-    const cost = EnergyClassCalculator.calcBaseEnergyCost(power);
-    return `${Math.round(cost.energyCost)}R${Math.round(cost.energyRequired)}`;
+    "baseShadowCostString": function (power: Power) : string {
+      if (!power.isPower()) {return "";}
+      if (power.isPassive()) {return "-";}
+      const cost = EnergyClassCalculator.calcBaseEnergyCost(power);
+      return `${Math.round(cost.energyCost)}R${Math.round(cost.energyRequired)}`;
 
-  },
+    },
 
-  "canEditBasePersona": function (actor: PersonaActor) : boolean {
-    if (game.user.isGM) {return true;}
-    if (!actor.isOwner) {return false;}
-    if (actor.isPC()) {return true;}
-    if (actor.isShadow()) {
-      if (actor.isCustomPersona())  {return true;}
-    }
-    return false;
-  },
+    "canEditBasePersona": function (actor: PersonaActor) : boolean {
+      if (game.user.isGM) {return true;}
+      if (!actor.isOwner) {return false;}
+      if (actor.isPC()) {return true;}
+      if (actor.isShadow()) {
+        if (actor.isCustomPersona())  {return true;}
+      }
+      return false;
+    },
 
-  "XPRequiredForLevelUp": function (persona: Persona) {
-    const level = persona.level;
-    return LevelUpCalculator.minXPForEffectiveLevel(level +1);
-  },
+    "XPRequiredForLevelUp": function (persona: Persona) {
+      const level = persona.level;
+      return LevelUpCalculator.minXPForEffectiveLevel(level +1);
+    },
 
-  "hasMultiplePersonas": function (actor: PersonaActor) : boolean {
-    return !actor.hasSoloPersona;
-  },
+    "hasMultiplePersonas": function (actor: PersonaActor) : boolean {
+      return !actor.hasSoloPersona;
+    },
 
-  "PersonaListContainsBasePersona": function (actor: PersonaActor): boolean {
-    const basePersona = actor.basePersona;
-    return actor.personaList.some( persona=> persona.equals (basePersona));
-  },
+    "PersonaListContainsBasePersona": function (actor: PersonaActor): boolean {
+      const basePersona = actor.basePersona;
+      return actor.personaList.some( persona=> persona.equals (basePersona));
+    },
 
-  "isPersona": function (actor: PersonaActor) : boolean {
-    return actor.isShadow() && actor.isPersona();
-  },
+    "isPersona": function (actor: PersonaActor) : boolean {
+      return actor.isShadow() && actor.isPersona();
+    },
 
-  "isOwner": function (actor: PersonaActor) : boolean {
-    return actor.isOwner;
-  },
+    "isOwner": function (actor: PersonaActor) : boolean {
+      return actor.isOwner;
+    },
 
-  "debugMode": function() : boolean {
-    return PersonaSettings.debugMode();
-  },
+    "debugMode": function() : boolean {
+      return PersonaSettings.debugMode();
+    },
 
-  "canUseSideboard": function (persona: Persona) : boolean {
-    return persona.user.canUseSideboard();
-  },
+    "canUseSideboard": function (persona: Persona) : boolean {
+      return persona.user.canUseSideboard();
+    },
 
     "allowManualOpeners": function () : boolean {
       return PersonaSettings.get("allowManualOpeners") ?? false;
@@ -1030,124 +1032,124 @@ export class PersonaHandleBarsHelpers {
       return persona.canMoveToSideboard(power);
     },
 
-  "resolvedPowerTagList": function (item: Power | Consumable) : string[]{
-    return item.system.tags
-      .map( tagString =>  {
-        const tag = PersonaDB.allTagLinks().get(tagString);
-        return tag ? tag.id : tagString;
-      });
-  },
+    "resolvedPowerTagList": function (item: Power | Consumable) : string[]{
+      return item.system.tags
+        .map( tagString =>  {
+          const tag = PersonaDB.allTagLinks().get(tagString);
+          return tag ? tag.id : tagString;
+        });
+    },
 
-  "canAccessCompendium": function () {
-    return PersonaCompendium.canUseCompendium();
-  },
+    "canAccessCompendium": function () {
+      return PersonaCompendium.canUseCompendium();
+    },
 
-  "isCopyableToCompendium": function (persona: Persona): boolean {
-    return persona.user.isPC()
-      && PersonaCompendium.canUseCompendium()
-      && PersonaCompendium.isCopyableToCompendium(persona);
-  },
+    "isCopyableToCompendium": function (persona: Persona): boolean {
+      return persona.user.isPC()
+        && PersonaCompendium.canUseCompendium()
+        && PersonaCompendium.isCopyableToCompendium(persona);
+    },
 
-  "canSummon": function (persona: Persona) : boolean {
-    const cost = persona.user.summoningCost;
-    return persona.isCompendiumEntry
-      && persona.user.isPC()
-      && persona.user.system.money >= cost
-      && PersonaCompendium.canUseCompendium()
-      && persona.user.canAddNewPersona();
-  },
-  "fusionResult": function (s1: Shadow, s2: Shadow) : U<Shadow> {
+    "canSummon": function (persona: Persona) : boolean {
+      const cost = persona.user.summoningCost;
+      return persona.isCompendiumEntry
+        && persona.user.isPC()
+        && persona.user.system.money >= cost
+        && PersonaCompendium.canUseCompendium()
+        && persona.user.canAddNewPersona();
+    },
+    "fusionResult": function (s1: Shadow, s2: Shadow) : U<Shadow> {
 
-    return FusionTable.fusionResult(s1, s2);
-  },
+      return FusionTable.fusionResult(s1, s2);
+    },
 
-  "isFoe": function (actor: PersonaActor) : boolean {
-    return actor.isShadow() && !actor.hasPlayerOwner && !actor.isPersona() && !actor.isDMon();
-  },
+    "isFoe": function (actor: PersonaActor) : boolean {
+      return actor.isShadow() && !actor.hasPlayerOwner && !actor.isPersona() && !actor.isDMon();
+    },
 
-  "deprecationList" : function<T extends string | number, L extends T[] | Record<T, unknown>>(listElement: T, nonDepList: L, fullList: L): L {
-    if (!listElement) {return nonDepList;}
-    if (Array.isArray(nonDepList)) {
-      if (nonDepList.includes(listElement)) {
-        return nonDepList;
+    "deprecationList" : function<T extends string | number, L extends T[] | Record<T, unknown>>(listElement: T, nonDepList: L, fullList: L): L {
+      if (!listElement) {return nonDepList;}
+      if (Array.isArray(nonDepList)) {
+        if (nonDepList.includes(listElement)) {
+          return nonDepList;
+        }
+        return fullList;
+      } else {
+        if ((nonDepList as Record<T, unknown>)[listElement] != undefined) {
+          return nonDepList;
+        }
+        return fullList;
       }
-      return fullList;
-    } else {
-      if ((nonDepList as Record<T, unknown>)[listElement] != undefined) {
-        return nonDepList;
-      }
-      return fullList;
-    }
-  },
+    },
 
-  "isSwapSelected" : function(actor: PC, persona: Persona) : boolean {
-    const sheet = actor.sheet as PCSheet;
-    return sheet.personaMoveSelector?.equals( persona) ?? false;
-  },
+    "isSwapSelected" : function(actor: PC, persona: Persona) : boolean {
+      const sheet = actor.sheet as PCSheet;
+      return sheet.personaMoveSelector?.equals( persona) ?? false;
+    },
 
-  "isActivePersona": function (actor: PersonaActor, p2: Persona) : boolean {
-    if (!actor.isValidCombatant()) {return false;}
-    return actor.persona().equals(p2);
-  },
+    "isActivePersona": function (actor: PersonaActor, p2: Persona) : boolean {
+      if (!actor.isValidCombatant()) {return false;}
+      return actor.persona().equals(p2);
+    },
 
-  "fusionsInto" : function (shadow: Shadow) {
-    const fusionsInto = shadow.fusionsInto();
-    const fusionList = fusionsInto
-      .map( ([a, b])=> `${a.name}, ${b.name}`)
-      .join("\n");
-    const tooltip = fusionList;
-    const html = `
+    "fusionsInto" : function (shadow: Shadow) {
+      const fusionsInto = shadow.fusionsInto();
+      const fusionList = fusionsInto
+        .map( ([a, b])=> `${a.name}, ${b.name}`)
+        .join("\n");
+      const tooltip = fusionList;
+      const html = `
       <span title="${tooltip}">
         ${fusionsInto.length}
 </span>
 `;
-    return new Handlebars.SafeString(html);
-  },
+      return new Handlebars.SafeString(html);
+    },
 
-  "fusionsIntoL" : function (shadow: Shadow) {
-    const fusionsInto = shadow.fusionsInto(2, 99, true);
-    const fusionList = fusionsInto
-      .map( ([a, b])=> `${a.name}, ${b.name}`)
-      .join("\n");
-    const tooltip = fusionList;
-    const html = `
+    "fusionsIntoL" : function (shadow: Shadow) {
+      const fusionsInto = shadow.fusionsInto(2, 99, true);
+      const fusionList = fusionsInto
+        .map( ([a, b])=> `${a.name}, ${b.name}`)
+        .join("\n");
+      const tooltip = fusionList;
+      const html = `
       <span title="${tooltip}">
         ${fusionsInto.length}
 </span>
 `;
-    return new Handlebars.SafeString(html);
-  },
+      return new Handlebars.SafeString(html);
+    },
 
-  fusableCombinations( fusor: PC) : FusionCombination[]  {
-    return fusor.fusionCombinations
-      .filter (comb=> comb.result != undefined)
-      .filter (comb=> FusionTable.meetsConditionsToFuse(comb.result!, fusor));
-  },
+    fusableCombinations( fusor: PC) : FusionCombination[]  {
+      return fusor.fusionCombinations
+        .filter (comb=> comb.result != undefined)
+        .filter (comb=> FusionTable.meetsConditionsToFuse(comb.result!, fusor));
+    },
 
-  "joinSteps": function (steps: string[]) : string {
-    if (!steps || !Array.isArray(steps)) {return "ERROR";}
-    return steps.join("\n");
-  },
+    "joinSteps": function (steps: string[]) : string {
+      if (!steps || !Array.isArray(steps)) {return "ERROR";}
+      return steps.join("\n");
+    },
 
-  "joinStepsHTML" : function (steps: string[]) : SafeString {
-    return new Handlebars.SafeString(
-      steps
-      .map(x => `<div>${x}</div>`)
-      .join("")
-    );
-  },
+    "joinStepsHTML" : function (steps: string[]) : SafeString {
+      return new Handlebars.SafeString(
+        steps
+        .map(x => `<div>${x}</div>`)
+        .join("")
+      );
+    },
 
-  "compendium" : function () : readonly Shadow[] {
-    return PersonaDB.personaCompendium();
-  },
+    "compendium" : function () : readonly Shadow[] {
+      return PersonaDB.personaCompendium();
+    },
 
-  "getPersona": function (actor: ValidAttackers) : Persona {
-    return actor.persona();
-  },
+    "getPersona": function (actor: ValidAttackers) : Persona {
+      return actor.persona();
+    },
 
-  "deCompendiumName": function (shadow: PersonaActor) : string {
-    return PersonaCompendium.convertToNormalName(shadow.name);
-  },
+    "deCompendiumName": function (shadow: PersonaActor) : string {
+      return PersonaCompendium.convertToNormalName(shadow.name);
+    },
 
     "showPersonaImage" : function (persona: Persona): boolean {
       if (persona && persona instanceof Persona) {
@@ -1156,25 +1158,33 @@ export class PersonaHandleBarsHelpers {
       return false;
     },
 
-  "isCombatPanelActive" : function () {
-    return CombatPanel.isActiveControl();
-  },
+    "isCombatPanelActive" : function () {
+      return CombatPanel.isActiveControl();
+    },
 
-  "theurgyPercent": function (actor: ValidAttackers) : string {
-    if (actor.theurgyMax == 0) {return String(0);}
-    return String(Math.round(100 * actor.theurgyVal / actor.theurgyMax));
-  },
+    "divideTracker": function (op1:{value: number, max: number}) : string{
+      try {
+        return String(op1.value / op1.max * 100) ;
+      } catch {
+        return "ERROR";
+      }
+    },
 
-  "isSpecialPower": function (persona: Persona, power: Power) : boolean {
-    try {
-    if (!persona.canUsePower(power, false)) {return false;}
-    return power.hasTag("theurgy", null);
-    } catch (e) {
-      Debug(persona, power);
-      PersonaError.softFail("Problem with isSpecialPower", e);
-      return false;
-    }
-  },
+    "theurgyPercent": function (actor: ValidAttackers) : string {
+      if (actor.theurgyMax == 0) {return String(0);}
+      return String(Math.round(100 * actor.theurgyVal / actor.theurgyMax));
+    },
+
+    "isSpecialPower": function (persona: Persona, power: Power) : boolean {
+      try {
+        if (!persona.canUsePower(power, false)) {return false;}
+        return power.hasTag("theurgy", null);
+      } catch (e) {
+        Debug(persona, power);
+        PersonaError.softFail("Problem with isSpecialPower", e);
+        return false;
+      }
+    },
 
     "craftingList": function () {
       const CRAFTING_TREASURE_LIST = Object.fromEntries(
@@ -1197,12 +1207,12 @@ export class PersonaHandleBarsHelpers {
       return CARD_CRAFTING_LIST;
     },
 
-  "ownsOwnEffects": function (owner: PersonaItem | PersonaActor) {
-    if (owner instanceof PersonaItem) {
-      return owner.itemBase == owner;
-    }
-    return true;
-  },
+    "ownsOwnEffects": function (owner: PersonaItem | PersonaActor) {
+      if (owner instanceof PersonaItem) {
+        return owner.itemBase == owner;
+      }
+      return true;
+    },
 
     "getBaseItem": function<T extends PersonaItem | PersonaActor | PersonaAE> (owner: T) :T  {
       if (owner instanceof PersonaItem) {
@@ -1213,7 +1223,7 @@ export class PersonaHandleBarsHelpers {
       return owner;
     }
 
-};
+  };
 
 
 } //end of class

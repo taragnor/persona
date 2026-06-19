@@ -16,14 +16,14 @@ export class PowerTargetSelectionPanel extends SubPanel {
   }
 
   constructor (actor: ValidAttackers, power: Usable) {
-    super( "exploration-power-panel");
+    super( "target-selection-panel");
     this.actor = actor;
     this.power = power;
   }
 
   override activateListeners(html: JQuery) {
     super.activateListeners(html);
-    html.find("button.target").on("click", ev => void this._onTargetSelect(ev));
+    html.find(".character-card").on("click", ev => void this._onTargetSelect(ev));
   }
 
   targetList() :readonly (ValidAttackers | PToken)[] {

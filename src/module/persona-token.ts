@@ -29,7 +29,12 @@ export class PersonaToken extends TokenDocument<PersonaActor> {
     }
     this._oldAlpha = val;
   }
+
+  get img(): string {
+    return this.texture.src;
+  }
 }
+
 
 Hooks.on( "updateActor", (actor : PersonaActor, diff) => {
 	 if (!actor.isValidCombatant()) {return;}

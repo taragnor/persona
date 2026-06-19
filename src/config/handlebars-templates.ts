@@ -110,6 +110,7 @@ const templateFileNames : string[] =[
   "input-consequence-sfx.hbs",
   "bubble-power-list.hbs",
   "room-modifiers-list.hbs",
+  "character-summary-box.hbs",
 ];
 
 export const templatePaths = templateFileNames.

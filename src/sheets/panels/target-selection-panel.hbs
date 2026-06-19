@@ -2,8 +2,14 @@
 
 <section class="target-list">
   {{#each targets as |target i|}}
+
+  {{> "systems/persona/parts/character-summary-box.hbs" character=target}}
+
+  {{#if false}}
   <button class="target" data-target-id="{{target.id}}">
     {{target.name}}
   </button>
+  {{/if}}
+
   {{/each}}
 </section>

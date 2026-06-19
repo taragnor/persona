@@ -1,44 +1,49 @@
 <div class="scan-dialog">
-	<header>
-		{{> "systems/persona/parts/scan-sheet-header.hbs" persona=persona}}
-	</header>
-	<hr>
-	{{#if (scanLevelgte persona 1)}}
-	{{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=persona}}
+  <header>
+    {{> "systems/persona/parts/scan-sheet-header.hbs" persona=persona}}
+  </header>
+  <hr>
+  {{#if (scanLevelgte persona 1)}}
+  {{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=persona}}
 
-	{{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=persona hideNormal=hideNormal}}
-	{{/if}}
-
-	{{#if (scanLevelgte persona 2)}}
-	<h3> Powers</h3>
-	<div class="main-powers">
-  {{> "systems/persona/parts/bubble-power-list.hbs" CONST=CONST persona=persona powerList=persona.powers}}
-
-  {{#if false}}
-  {{#each persona.powers as |power i|}}
-  <div class="main-power" data-power-id="{{power.id}}">
-    <div class="power-name-block {{#if (lte ../actor.maxPowers i)}} over-max-power {{/if}} " title="{{> "systems/persona/parts/power-tooltip-lite.hbs" CONST=../CONST power=power persona=../persona}}">
-      <div class="power-name-bubble-container">
-        {{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../persona}}
-      </div>
-    </div>
-  </div>
-  {{/each}}
+  {{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=persona hideNormal=hideNormal}}
   {{/if}}
 
-	</div>
+  {{#if (scanLevelgte persona 2)}}
+  <h3> Powers</h3>
+  <div class="main-powers">
+    {{> "systems/persona/parts/bubble-power-list.hbs" CONST=CONST persona=persona powerList=persona.mainPowers}}
 
-	{{/if}}
-	{{#if showTreasure}}
-	{{#if (scanLevelgte persona 2)}}
-	{{#if (isShadow persona.user)}}
-	<div class="treasure">
-		<span><b> Treasure: </b></span>
-		<span>
-			{{actor.treasureString}}
-		</span>
-	</div>
-	{{/if}}
-	{{/if}}
-	{{/if}}
+    <h3>Openers</h3>
+    <div class="openers">
+      {{> "systems/persona/parts/bubble-power-list.hbs" CONST=CONST persona=persona powerList=persona.openers}}
+    </div>
+
+    {{#if false}}
+    {{#each persona.powers as |power i|}}
+    <div class="main-power" data-power-id="{{power.id}}">
+      <div class="power-name-block {{#if (lte ../actor.maxPowers i)}} over-max-power {{/if}} " title="{{> "systems/persona/parts/power-tooltip-lite.hbs" CONST=../CONST power=power persona=../persona}}">
+        <div class="power-name-bubble-container">
+          {{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../persona}}
+        </div>
+      </div>
+    </div>
+    {{/each}}
+    {{/if}}
+
+  </div>
+
+  {{/if}}
+  {{#if showTreasure}}
+  {{#if (scanLevelgte persona 2)}}
+  {{#if (isShadow persona.user)}}
+  <div class="treasure">
+    <span><b> Treasure: </b></span>
+    <span>
+      {{actor.treasureString}}
+    </span>
+  </div>
+  {{/if}}
+  {{/if}}
+  {{/if}}
 </div>

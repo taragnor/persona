@@ -1,6 +1,7 @@
 import {PersonaActorSheetBase} from "../actor/sheets/actor-sheet-base.js";
 import {PersonaDB} from "../persona-db.js";
 import { SidePanel } from "../side-panel/side-panel.js";
+import {Tooltip} from "../tooltip.js";
 
 
 export abstract class PersonaPanel extends SidePanel {
@@ -19,6 +20,17 @@ export abstract class PersonaPanel extends SidePanel {
     };
   }
 
+  override async push(panel: SidePanel) {
+    Tooltip.closeAll();
+    await super.push(panel);
+  }
+
+  override async pop() {
+    Tooltip.closeAll();
+    const val = super.pop();
+    return await val;
+  }
+
 }
 
 export abstract class SubPanel extends PersonaPanel {
@@ -32,7 +44,6 @@ export abstract class SubPanel extends PersonaPanel {
     if (this.allowRightClickPop()) {
       html.rightclick( (ev) => this._onReturnToMainButton(ev));
     }
-
   }
 
   protected async _onReturnToMainButton(ev ?: U<JQuery.Event>) {

@@ -203,7 +203,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.user.basicPowers;
   }
 
-  get mainPowers(): Power[] {
+  get mainPowers(): readonly Power[] {
     return this._powers;
   }
 

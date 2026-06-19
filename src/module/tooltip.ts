@@ -1,4 +1,6 @@
-export class Tooltip { static init() {
+export class Tooltip {
+
+  static init() {
     $(document).on("mouseenter", ".tooltip", ev => {
       const target= $(ev.currentTarget) as JQuery<HTMLElement>;
       const $root = Tooltip.ensureTooltipRoot();
@@ -19,7 +21,7 @@ export class Tooltip { static init() {
         $(this).remove();
       });
     });
-    console.log("Tooltip listeners added");
+    // console.log("Tooltip listeners added");
   }
 
   static ensureTooltipRoot(): JQuery<HTMLElement> {
@@ -37,6 +39,12 @@ export class Tooltip { static init() {
       });
     }
     return $root;
+  }
+
+  static closeAll() {
+    $(document).find("#tooltip-root .tooltip-box").each(function () {
+      $(this).remove();
+    });
   }
 
   static calculateTooltipPosition(
