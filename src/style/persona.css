@@ -304,7 +304,6 @@ section.powers-section {
 }
 
 
-
 .tooltip {
   position: relative;
   display: inline-block;
@@ -1244,6 +1243,7 @@ a.add-five-to-all:hover {
 a.add-five-to-all:active {
   background-color: #111;     /* darker when clicked */
 }
+
 .power-type-icon img {
   height: 1em;          /* scale image to text size */
   width: auto;          /* preserve aspect ratio */
@@ -2316,6 +2316,7 @@ div.start-turn-header.pc h2 {
 img.mod-icon {
   max-height: 30px;
   max-width: 30px;
+  background-color: #51EEFC;    /* soft, glowy cyan */
 }
 
 .character-card {
@@ -2326,12 +2327,6 @@ img.mod-icon {
   width: 100%;
   max-width: 400px;
   min-width: 250px;
-
-  width: 100%;
-  max-width: 400px;
-  min-width: 250px;
-
-  padding: 8px;
 
   transition:
   border-color 0.2s ease,

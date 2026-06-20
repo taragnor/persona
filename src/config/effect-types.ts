@@ -66,7 +66,6 @@ export const CONSQUENCELIST = [
   ...DEPRECATED_CONSEQUENCE_TYPES,
 ] as const;
 
-
 export type ConsequenceType = typeof CONSQUENCELIST[number];
 
 export  const MODIFIER_VARIABLE_LIST= [
@@ -187,6 +186,7 @@ export const DUNGEON_ACTION_LIST = [
   "close-all-doors",
   "change-scene-weather",
   "disable-region",
+  "remove-all-room-modifiers",
 ] as const;
 
 export type DungeonAction = typeof DUNGEON_ACTION_LIST[number];

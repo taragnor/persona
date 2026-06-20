@@ -309,8 +309,6 @@ export class Metaverse {
     switch (action.dungeonAction) {
       case "roll-tension-pool":
         PersonaError.softFail("Rolling the tension pool is no longer a supported action");
-        // await TensionPool
-        // 	.instance.rollAuto();
         break;
       case "modify-tension-pool":
         await TensionPool.instance.add(action.amount);
@@ -362,6 +360,9 @@ export class Metaverse {
       }
       case "disable-region":
         break; // handled in persona-region class
+      case "remove-all-room-modifiers":
+        await this.getRegion()?.removeAllRoomModifiers();
+        break;
       default:
         action satisfies never;
     }

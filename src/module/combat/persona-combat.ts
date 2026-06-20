@@ -39,6 +39,7 @@ import {ConditionalEffectPrinter} from '../conditionalEffects/conditional-effect
 import {PersonaSockets} from '../persona.js';
 import {ResolvedRollBundle, RollBundle} from '../roll-bundle.js';
 import {checkSituationProp} from '../../config/situation.js';
+import {DebugTools} from '../utility/debug.js';
 
 declare global {
   interface SocketMessage {
@@ -1144,6 +1145,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
           console.warn(msg);
           if (PersonaSettings.debugMode()) {
             ui.notifications.notify(msg);
+            Debug(situation);
+            DebugTools.printStackTrace();
           }
           Debug(cons);
         }

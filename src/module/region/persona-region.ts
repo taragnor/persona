@@ -357,6 +357,11 @@ export class PersonaRegion extends RegionDocument {
 		return true;
 	}
 
+  async removeAllRoomModifiers() {
+		const data = this.regionData;
+    data.roomEffects = [];
+		await this.setRegionData(data);
+  }
 
 	async presenceCheck(battleType: PresenceRollData["encounterType"], modifier = 0) : Promise<boolean> {
 		const presence = await RandomEncounter.presenceCheck(battleType, this, undefined, modifier);

@@ -776,7 +776,13 @@ export type DungeonActionConsequence = {
 	| ClockDungeonActionCons
 	| WeatherChangeDungeonEvent
 	| AlterSceneClockProperties
+  | removeRoomModifiers
 );
+
+type removeRoomModifiers = {
+	dungeonAction: Extract<DungeonAction, "remove-all-room-modifiers">;
+
+}
 
 type GenericDungeonAction = {
 	amount: number,

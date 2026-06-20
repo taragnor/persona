@@ -922,6 +922,9 @@ export class ConditionalEffectPrinter {
         case "disable-region": {
           return `Render Region Inactive`;
         }
+        case "remove-all-room-modifiers": {
+          return "Remove All Room Modifiers";
+        }
         default:
           cons satisfies never;
           return "ERROR";
@@ -930,7 +933,6 @@ export class ConditionalEffectPrinter {
 
     static #printMPAlter(cons: Consequence & {type: "alter-mp"}): string {
       const signedAmount = this.printConsequenceAmount(cons.amount);
-      // const signedAmount = this.signedAmount(cons.amount);
       switch (cons.subtype) {
         case "direct":
           return `MP ${signedAmount}`;

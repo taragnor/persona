@@ -1399,7 +1399,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     const POWER_MAX = 3 as const;
     if (this.user.isShadow()) {return POWER_MAX;}
     const level = Math.floor(this.user.level / 10) +1;
-    const CAP = this.user.system.combat.usingMetaPod ? 2 : POWER_MAX;
+    const CAP = POWER_MAX;
+    // const CAP = this.user.system.combat.usingMetaPod ? 2 : POWER_MAX;
     const maxLevel = this.source.isShadow() && !this.source.isCustomPersona() ? POWER_MAX : this.#powerSlotMaxByLevel(level);
     return Math.min(CAP, maxLevel) as 0 | 1 | 2 | 3;
   }
