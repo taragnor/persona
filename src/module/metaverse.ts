@@ -564,7 +564,7 @@ export class Metaverse {
     }
   }
 
-  static activeRoomModifiers() : UniversalModifier[] {
+  static activeRoomModifiers() : readonly UniversalModifier[] {
     if (PersonaCombat.combat) {
       return PersonaCombat.combat.getRoomEffects();
     } else {

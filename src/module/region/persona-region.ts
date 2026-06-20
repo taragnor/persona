@@ -15,6 +15,7 @@ import {EncounterOptions, RandomEncounter} from "../exploration/random-encounter
 import {randomSelect, removeDuplicates} from "../utility/array-tools.js";
 import {RegionPanel} from "../exploration/region-panel.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
+import {Logger} from "../utility/logger.js";
 
 declare global {
 	interface SocketMessage {
@@ -263,11 +264,11 @@ export class PersonaRegion extends RegionDocument {
 		return t.max - t.found;
 	}
 
-	get allRoomEffects() : UniversalModifier[] {
+	get allRoomEffects() : readonly UniversalModifier[] {
 		return this.parent.sceneEffects.concat(this.personalRoomEffectsOnly());
 	}
 
-	personalRoomEffectsOnly(): UniversalModifier[] {
+	personalRoomEffectsOnly(): readonly UniversalModifier[] {
 		return this.regionData.roomEffects.flatMap ( id=> {
 			if (!id) {return [];}
 			const mod = PersonaDB.getRoomModifiers().find(x=> x.id == id);
@@ -358,9 +359,13 @@ export class PersonaRegion extends RegionDocument {
 	}
 
   async removeAllRoomModifiers() {
-		const data = this.regionData;
+    const data = this.regionData;
+    const effectsRemoved = this.personalRoomEffectsOnly()
+      .map (x=> x.displayedName)
+      .join(", ");
     data.roomEffects = [];
-		await this.setRegionData(data);
+    await this.setRegionData(data);
+    await Logger.sendToChat(`${this.name} cleared of all Room Effects: ${effectsRemoved}`);
   }
 
 	async presenceCheck(battleType: PresenceRollData["encounterType"], modifier = 0) : Promise<boolean> {

@@ -1583,7 +1583,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     return undefined;
   }
 
-  getRoomEffects() : UniversalModifier[] {
+  getRoomEffects() : readonly UniversalModifier[] {
     const effectIds= this.getFlag<string[]>('persona', 'roomEffects');
     const allRoomEffects = PersonaDB.getSceneAndRoomModifiers();
     if (!effectIds) {return [];}
@@ -1594,7 +1594,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   }
 
   async addRoomEffect(eff: UniversalModifier) : Promise<void> {
-    const effects = this.getRoomEffects();
+    const effects = this.getRoomEffects().slice();
     effects.pushUnique(eff);
     await this.setRoomEffects(effects);
     await this.sendRoomEffectsToChat();
