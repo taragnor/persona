@@ -48,7 +48,8 @@ export class TriggeredEffect {
       triggeringUser: game.user.id,
     } satisfies TriggeredSituation.TriggerSituation;
     const triggers = this.getTriggerList(situationCopy.trigger, actor, situationCopy);
-    return triggers.some( trig=> trig.checkForCancelEffect(situationCopy));
+    const relevant = triggers.filter( trig => trig.testPreconditions(situationCopy));
+    return relevant.some( trig=> trig.checkForCancelEffect(situationCopy));
   }
 
   private static _getTriggerConsequences ( triggers: ConditionalEffectC[], situation: Situation) {
