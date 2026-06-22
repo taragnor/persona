@@ -990,6 +990,7 @@
 	"persona.triggers.on-search-end": "On End of Search",
 	"persona.triggers.on-presence-check": "On Presence Check",
 	"persona.triggers.on-enter-region": "On Enter Region",
+	"persona.triggers.on-enter-region-dual": "On Enter Region (Dual)",
 	"persona.triggers.on-active-effect-time-out": "On Active Effect Timeout",
 	"persona.triggers.on-active-effect-end": "On Active Effect End",
 	"persona.triggers.on-social-turn-start": "Social Turn (start)",

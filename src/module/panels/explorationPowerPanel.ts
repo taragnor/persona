@@ -28,6 +28,7 @@ export class ExplorationPowerPanel extends UsableListPanel {
   }
 
   private async _onClickPower(ev: JQuery.ClickEvent) {
+    void this.pop();
     ev.stopPropagation();
     if (!this.actor) {return;}
     const powerId = HTMLTools.getClosestData(ev, "powerId");

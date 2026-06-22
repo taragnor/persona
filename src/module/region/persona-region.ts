@@ -116,7 +116,8 @@ export class PersonaRegion extends RegionDocument {
 
 	get disabled() : boolean {
 		const situation : Situation = {
-			trigger: "on-enter-region",
+			trigger: "on-enter-region-dual",
+      global: true,
 			triggeringRegionId: this.id,
 			triggeringUser: game.user.id,
 		};
@@ -303,25 +304,43 @@ export class PersonaRegion extends RegionDocument {
 		};
 	}
 
-	async onEnterRegion(token: TokenDocument<PersonaActor>) {
-		if (PersonaSettings.debugMode()) {
-			console.debug(`Region Entered: ${this.name}`);
-		}
-		if (!token.actor?.isPC()) {return;}
-		const tokens = Array.from(this.tokens);
-		const situation : Situation = {
-			trigger: "on-enter-region",
-			triggeringRegionId: this.id,
-			triggeringCharacter: token.actor.accessor,
-			triggeringUser: game.user.id,
-		};
-		if (!this.disabled) {
-			await TriggeredEffect.autoApplyTrigger(situation, token.actor);
-			if (!tokens.some(t => t.actor?.isShadow() && !t.hidden) )
-			{ await this.presenceCheck("wandering"); }
-			await Metaverse.passMetaverseTurn();
-		}
-	}
+  private async _onPCEnterRegion(actor: PC) {
+    const situation : Situation = {
+      trigger: "on-enter-region-dual",
+      global: true,
+      triggeringRegionId: this.id,
+      triggeringCharacter: actor.accessor,
+      triggeringUser: game.user.id,
+    };
+    if (!this.disabled) {
+      if (actor == PersonaDB.partyTokenActor()) {
+        for (const member of PersonaDB.activePCParty()) {
+          const sitCopy = {
+            ...situation,
+            global: false,
+            user: member.accessor,
+            triggeringCharacter: member.accessor,
+          } satisfies Situation;
+          await TriggeredEffect.autoApplyTrigger(sitCopy, member);
+        }
+      }
+      await TriggeredEffect.autoApplyTrigger(situation, actor);
+      const tokens = Array.from(this.tokens);
+      if (!tokens.some(t => t.actor?.isShadow() && !t.hidden) )
+      { await this.presenceCheck("wandering"); }
+      await Metaverse.passMetaverseTurn();
+    }
+
+  }
+
+  async onEnterRegion(token: TokenDocument<PersonaActor>) {
+    if (PersonaSettings.debugMode()) {
+      console.debug(`Region Entered: ${this.name}`);
+    }
+    if (token.actor?.isPC()) {
+      await this._onPCEnterRegion(token.actor);
+    }
+  }
 
 	/** for batch_adding */
 	async addRoomModifier(mod: UniversalModifier | string) {

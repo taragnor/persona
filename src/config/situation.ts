@@ -376,9 +376,9 @@ type CombatStartTrigger = {
 
   type EnterRegionTrigger =
     Partial<SituationComponent.TriggeringCharacter> & {
-      trigger: "on-enter-region",
+      trigger: "on-enter-region-dual",
       triggeringRegionId : string,
-    }
+    } & GlobalSplit;
 
 }
 

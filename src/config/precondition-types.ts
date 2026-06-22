@@ -78,9 +78,10 @@ type AdvancedTrigger =
 
 type GlobalToggleTriggers = GlobalToggleTrigger<
   "on-combat-end-dual"
-| "on-combat-start-dual"
-| "on-metaverse-turn-dual"
->;
+  | "on-combat-start-dual"
+  | "on-metaverse-turn-dual"
+  | "on-enter-region-dual"
+  >;
 
 type DeprecatedTriggers = DeprecatedPrecondition<
   {

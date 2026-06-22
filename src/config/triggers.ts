@@ -18,7 +18,7 @@ export const COMBAT_TRIGGER_LIST = [
 
 export const NONCOMBAT_TRIGGER_LIST = [
 	"on-attain-tarot-perk",
-	"on-enter-region",
+	"on-enter-region-dual",
 	"on-search-end",
 	"on-presence-check",
 	"on-clock-tick",
@@ -39,6 +39,7 @@ export const DEPRECATED_TRIGGERS = [
 	"on-combat-end-global",
 	"on-combat-start",
 	"on-combat-start-global",
+  "on-enter-region",
 ] as const;
 
 export const SHARED_TRIGGERS = [

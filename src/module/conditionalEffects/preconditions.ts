@@ -564,6 +564,7 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
       return true;
     case "on-combat-end-dual":
     case "on-combat-start-dual":
+    case "on-enter-region-dual":
     case "on-metaverse-turn-dual": {
       //differentiate global situations from nonglobal
       const globalSit = "global" in situation? situation.global : false;
@@ -594,7 +595,7 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
         return false;
       }
       return situation.triggeringClockId == condition.triggeringClockId;
-    case "on-enter-region":
+    // case "on-enter-region":
     case "on-presence-check":
       if (!("triggeringRegionId" in situation)) {
         return false;

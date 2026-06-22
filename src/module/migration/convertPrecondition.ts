@@ -40,6 +40,12 @@ export class PreconditionConverter {
           trigger: "on-metaverse-turn-dual",
           global: true,
         };
+      case "on-enter-region":
+        return {
+          ...head,
+          trigger: "on-enter-region-dual",
+          global: true,
+        };
       default:
         return cond;
     }
