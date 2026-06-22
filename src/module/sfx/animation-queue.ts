@@ -220,10 +220,9 @@ export class AnimationQueue {
           PersonaError.softFail("Global target not allowed in Floating Text");
           return orig_sequence;
         }
-        let seq = orig_sequence.scrollingText();
+        let seq = AnimationQueue.appendScrollingText(orig_sequence, anim, anim.target);
         seq = this.setGenericSequenceParams(anim, seq, innateDelay);
-        const textSeq = AnimationQueue.appendScrollingText(seq, anim, anim.target);
-        return textSeq;
+        return seq;
       }
       default:
         anim satisfies never;

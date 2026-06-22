@@ -11,6 +11,7 @@ import {CombatEngine} from "./combat/combat-engine.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {PersonaTargetting} from "./combat/persona-targetting.js";
 import {checkSituationProp} from "../config/situation.js";
+import {ConditionalEffectPrinter} from "./conditionalEffects/conditional-effect-printer.js";
 
 type TriggerParam<T extends Trigger=Trigger> = PartialKeys<TriggeredSituation.TriggerSituation, "triggeringUser"> & {trigger: T};
 
@@ -42,14 +43,36 @@ export class TriggeredEffect {
     return consequences;
   }
 
-  static onTrigger_cancelCheck<const T extends Trigger>(situation: TriggerParam<T>, actor : U<ValidAttackers>) : boolean {
+  private static _cancelCheckCEs<const T extends Trigger>(situation: TriggerParam<T>, actor : U<ValidAttackers>) : ConditionalEffectC[] {
     const situationCopy = {
       ...(situation satisfies TriggerParam<T>),
       triggeringUser: game.user.id,
     } satisfies TriggeredSituation.TriggerSituation;
     const triggers = this.getTriggerList(situationCopy.trigger, actor, situationCopy);
-    const relevant = triggers.filter( trig => trig.testPreconditions(situationCopy));
-    return relevant.some( trig=> trig.checkForCancelEffect(situationCopy));
+    return triggers
+      .filter( trig => trig.canCancel());
+  }
+
+  static onTrigger_cancelCheck<const T extends Trigger>(situation: TriggerParam<T>, actor : U<ValidAttackers>) : boolean {
+    const situationCopy = {
+      ...(situation satisfies TriggerParam<T>),
+      triggeringUser: game.user.id,
+    } satisfies TriggeredSituation.TriggerSituation;
+    const triggers= this._cancelCheckCEs(situation, actor);
+    return triggers.some( trig=> trig.checkForCancelEffect(situationCopy));
+  }
+
+  static onTrigger_cancelCheck_getReasons<const T extends Trigger>(situation: TriggerParam<T>, actor: U<ValidAttackers>) : string[] {
+    const situationCopy = {
+      ...(situation satisfies TriggerParam<T>),
+      triggeringUser: game.user.id,
+    } satisfies TriggeredSituation.TriggerSituation;
+    const triggers= this._cancelCheckCEs(situation, actor);
+    const failedCond = triggers
+      .map (trig => {
+        return trig.toFailReasonString(situationCopy);
+      });
+    return failedCond;
   }
 
   private static _getTriggerConsequences ( triggers: ConditionalEffectC[], situation: Situation) {
@@ -91,9 +114,6 @@ export class TriggeredEffect {
         && x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == trigger)
       )
     );
-    // if (game.user.isGM && PersonaSettings.debugMode()) {
-    //   console.debug( `${actor?.name ?? "void actor"} triggerList (${trigger}) : \n${triggers.map( trig=> trig.toString()).join("\n")}`);
-    // }
     return filteredEffects;
   }
 
@@ -140,3 +160,4 @@ export class TriggeredEffect {
   }
 
 }
+

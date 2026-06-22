@@ -1,5 +1,6 @@
 import { PersonaActor } from "../actor/persona-actor.js";
-import {testPreconditions} from "../conditionalEffects/preconditions.js";
+import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
+import {ConditionalEffectPrinter} from "../conditionalEffects/conditional-effect-printer.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {TriggeredEffect} from "../triggered-effect.js";
@@ -39,9 +40,6 @@ export class PersonaTargetting {
 
 	static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[]): PToken[] {
     const baseTargets = altTargets != undefined ? altTargets : this.getDefaultPowerTargets(attacker.actor, power);
-		// const selected = altTargets != undefined
-		// 	? altTargets
-		// 	: this.targettedPTokens();
     const filteredTargets = baseTargets
     .filter( target => {
 			const situation : Situation = {
@@ -54,49 +52,117 @@ export class PersonaTargetting {
     });
 
     if (filteredTargets.length == 0) {
-      throw new TargettingError("No valid targets");
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      const reasons = baseTargets
+        .map( target => {
+          const situation : Situation = {
+            user: attacker.actor.accessor,
+            attacker: attacker.actor.accessor,
+            target: target.actor.accessor,
+            usedPower: power.accessor,
+          };
+          const reasons = power.targeting().targetMeetsTargettingConditions_getReasons(attacker.actor, target.actor, situation);
+          return [target.name, reasons];
+        }) as [string, string[]][];
+      const reasonsObj : Record<string, string[]> = Object.fromEntries(reasons);
+      throw new TargettingError("No valid targets", reasonsObj);
     }
-
     const challengeFilter = filteredTargets
     .filter( target => this.challengeFilter(attacker, target));
     if (challengeFilter.length == 0) {
-      throw new TargettingError("No valid targets");
+      throw new TargettingError("No valid targets: Challenge Filter");
     }
     return challengeFilter;
-
   }
 
+  // targetMeetsTargettingConditions(user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
+  //   if (target.hasStatus('protected') && user != target) {return false;}
+  //   const usable = this.power;
+  //   if (usable.isSkillCard()) {
+  //     return target.persona().powerLearning.canLearnNewSkill();
+  //   }
+  //   if (!usable.system.validTargetConditions) {return true;}
+  //   const conditions  = usable.validTargetConditions(user);
+  //   const sit = situation ? situation : {
+  //     attacker : user.accessor,
+  //     user: user.accessor,
+  //     target: target.accessor,
+  //     usedPower: usable.accessor,
+  //   } as const;
+  //   const precond= testPreconditions(conditions, sit);
+  //   if (!precond) {return false;}
+  //   const triggerSit = {
+  //     ...sit,
+  //     trigger: "check-legal-target",
+  //     triggeringUser: game.user.id,
+  //     triggeringCharacter: user.accessor,
+  //     addedTags: "addedTags" in sit && sit.addedTags ? sit.addedTags : [],
+  //     usedPower: usable.accessor,
+  //     user: user.accessor,
+  //     target: target.accessor,
+  //     attacker : user.accessor,
+  //   } satisfies Situation;
+  //   const triggerCheck = TriggeredEffect.onTrigger_cancelCheck(triggerSit, user);
+  //   if (triggerCheck) {return false;}
+  //   return true;
+  // }
+
   targetMeetsTargettingConditions(user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
-    if (target.hasStatus('protected') && user != target) {return false;}
+    return this.targetMeetsTargettingConditions_getReasons(user, target, situation).length == 0;
+  }
+
+  targetMeetsTargettingConditions_getReasons(user: ValidAttackers, target: ValidAttackers, sit ?: Situation): FailReason[] {
+    const reasons = [
+      ...this.targetPassesPowerTargettingConditions_getReasons(user, target, sit),
+      ...this.targetPassesTargetCheckTrigger_getReasons(user, target, sit),
+    ];
+    return reasons;
+  }
+
+  private targetPassesPowerTargettingConditions_getReasons(user: ValidAttackers, target: ValidAttackers, situation?: Situation) : FailReason[] {
     const usable = this.power;
     if (usable.isSkillCard()) {
-      return target.persona().powerLearning.canLearnNewSkill();
+      if(!target.persona().powerLearning.canLearnNewSkill()) {
+        return [`${target.name} can't learn new skill`];
+      }
+      return [];
     }
-    if (!usable.system.validTargetConditions) {return true;}
+    if (!usable.system.validTargetConditions) {return [];}
     const conditions  = usable.validTargetConditions(user);
+    const retArr = [];
     const sit = situation ? situation : {
       attacker : user.accessor,
       user: user.accessor,
       target: target.accessor,
       usedPower: usable.accessor,
     } as const;
-    const precond= testPreconditions(conditions, sit);
-    if (!precond) {return false;}
+    const failed = ConditionalEffectC.failedPreconditions(conditions, sit);
+    for (const cond of failed) {
+      retArr.push( `Target Condition Fail: ${ConditionalEffectPrinter.printConditional(cond)}`);
+    }
+    return retArr;
+  }
+
+  // private targetPassesTargetCheckTrigger(user: ValidAttackers, target: ValidAttackers, situation?: Situation): boolean {
+  //   return this.targetPassesTargetCheckTrigger_getReasons(user, target,situation).length == 0;
+  // }
+
+  private targetPassesTargetCheckTrigger_getReasons(user: ValidAttackers, target: ValidAttackers, sit ?: Situation) : FailReason[] {
     const triggerSit = {
       ...sit,
       trigger: "check-legal-target",
       triggeringUser: game.user.id,
       triggeringCharacter: user.accessor,
-      addedTags: "addedTags" in sit && sit.addedTags ? sit.addedTags : [],
-      usedPower: usable.accessor,
+      addedTags: sit && "addedTags" in sit && sit.addedTags ? sit.addedTags : [],
+      usedPower: this.power.accessor,
       user: user.accessor,
       target: target.accessor,
       attacker : user.accessor,
     } satisfies Situation;
-    const triggerCheck = TriggeredEffect.onTrigger_cancelCheck(triggerSit, user);
-    if (triggerCheck) {return false;}
-    return true;
+    const triggerCheck = TriggeredEffect.onTrigger_cancelCheck_getReasons(triggerSit, user);
+    return triggerCheck;
   }
+
 
   static getDefaultPowerTargets(attacker: ValidAttackers, power: UsableAndCard): PToken[] {
     const targets = power.targets();
@@ -322,9 +388,21 @@ export class PersonaTargetting {
 }
 
 export class TargettingError extends Error {
-	constructor (errormsg: string) {
+
+  reasons: Record<string,string[]>;
+
+	constructor (errormsg: string, reasons: Record<string,string[]> = {}) {
 		super(errormsg);
 		ui.notifications.warn(errormsg);
+    this.reasons = reasons;
 	}
+
+  reasonsStr() : string {
+    return Object.entries(this.reasons)
+      .map( ([actorName, reasons]) => `${actorName}: ${reasons.join(", ")}`)
+      .join("\n");
+  }
+
 }
 
+type FailReason = string;

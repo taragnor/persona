@@ -1,4 +1,4 @@
-import { ConsequenceAmountV2, EnhancedSourcedConsequence, NonDeprecatedConsequence } from "../../config/consequence-types.js";
+import { ConsequenceAmountV2, NonDeprecatedConsequence } from "../../config/consequence-types.js";
 import {NonDeprecatedModifierTarget} from "../../config/item-modifiers.js";
 import {NonDeprecatedPrecondition} from "../../config/precondition-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
@@ -6,7 +6,7 @@ import {ModifierV2Target} from "../bonus-calc.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
 import {PersonaAE} from "../persona-ae.js";
 import {PersonaDB} from "../persona-db.js";
-import {MultiTierCache, TimedCache} from "../utility/cache.js";
+import {MultiTierCache, PermanentCache, TimedCache} from "../utility/cache.js";
 import {CETypes, ConditionalEffectManager} from "./conditional-effect-manager.js";
 import {ConditionalEffectPrinter} from "./conditional-effect-printer.js";
 import {ConsequenceAmountResolver} from "./consequence-amount.js";
@@ -29,6 +29,7 @@ export class ConditionalEffectC {
   _isAura: boolean;
 
   #cache = {
+    cancelEffects: new PermanentCache( () => this._hasCancelEffects()),
     allowOpenersForPowers: new TimedCache( () => this._canAllowOpenersForPowers(), this.#CACHE_TIME),
     bonusTypes : new MultiTierCache( (bonusType: ModifierV2Target) => new TimedCache ( () => this._grantsBonusType(bonusType) , this.#CACHE_TIME)),
   };
@@ -162,22 +163,65 @@ export class ConditionalEffectC {
     return true;
   }
 
-  getActiveConsequences(situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {
-    const source = this.source;
+  getFailedPreconditions(situation: Situation) : ConditionalEffectC["conditions"] {
+    return this.conditions
+      .filter( cond => testPrecondition(cond, situation) == false);
+  }
+
+
+  canCancel(): boolean {
+    return this.#cache.cancelEffects.value;
+  }
+
+  private _hasCancelEffects() : boolean {
+    return this.consequences.some(cons => cons.type == "trigger-event-cons"
+      && cons.eventMod == "cancel");
+  }
+
+  getActiveConsequences(situation: Situation) : ConditionalEffectC["consequences"] {
+    // const source = this.source;
     if (!this.conditions
       .every( cond=>testPrecondition(cond, situation))
     ) {return [];}
-    return this.consequences.map( cons => ({
-      ...cons,
-      source,
-      owner: this.owner,
-    }));
+    return this.consequences;
+    // return this.consequences.map( cons => ({
+    //   ...cons,
+    //   source,
+    //   owner: this.owner,
+    // }));
+  }
+
+  static failedPreconditions(conditions: SourcedPrecondition[], situation: Situation) {
+    return conditions
+      .filter( cond=>testPrecondition(cond, situation) == false);
+  }
+
+  failedPreconditions(situation: Situation) : ConditionalEffectC["conditions"] {
+    return ConditionalEffectC.failedPreconditions(this.conditions, situation);
+  }
+
+  toFailReasonString(situation ?: Situation) : string {
+    const conditions = situation? this.failedPreconditions(situation) : this.conditions;
+    return `${this.name}: ${ConditionalEffectPrinter.printConditions(conditions)}`;
+  }
+
+  getCancelEffectReason(situation: Situation) : ConditionalEffectC["conditions"] {
+    if (!this.canCancel()) {return [];}
+    if (! this.testPreconditions(situation)) {return [];}
+    return this.conditions;
+    // const activeCons = this.getActiveConsequences(situation);
+    // if (activeCons.some(cons => cons.type == "trigger-event-cons"
+    //   && cons.eventMod == "cancel")) {
+    //   return this.conditions;
+    // }
   }
 
   checkForCancelEffect(situation: Situation) : boolean {
-    const cons = this.getActiveConsequences(situation);
-    return cons.some(cons => cons.type == "trigger-event-cons"
-      && cons.eventMod == "cancel");
+    return this.canCancel() && this.testPreconditions(situation);
+    // if (!this.canCancel()) { return false;}
+    // const activeCons = this.getActiveConsequences(situation);
+    // return activeCons.some(cons => cons.type == "trigger-event-cons"
+    //   && cons.eventMod == "cancel");
   }
 
   getModifierAmount(targetMods: NonDeprecatedModifierTarget[] | NonDeprecatedModifierTarget) : (number | Sourced<ConsequenceAmountV2>)[] {

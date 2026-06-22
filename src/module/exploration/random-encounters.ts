@@ -429,12 +429,12 @@ export class RandomEncounter {
         bailout++; //escape hatch for if it keeps screwing up
         continue;
       }
-      let amt = this.getSubgroupAmt(pick);
+      const sizeVal = pick.encounterSizeValue();
+      let amt = this.getSubgroupAmt(pick, sizeVal);
       if (minSize > encounterSizeRemaining) {
         break;
       }
       while (amt > 0) {
-        const sizeVal = pick.encounterSizeValue();
         if (encounterSizeRemaining < 3 && minSize >= 3) {break;} //don't swamp them with solos
         if (sizeVal > encounterSizeRemaining) {
           break;
@@ -542,7 +542,8 @@ export class RandomEncounter {
 
   }
 
-  private static getSubgroupAmt(pick: Shadow) : number {
+  private static getSubgroupAmt(pick: Shadow, sizeVal: number) : number {
+    if (sizeVal> 1.333) {return 1;}
     switch (true) {
       case pick.hasRole("minion"):
         return Math.floor(Math.random() * 3 + 3);

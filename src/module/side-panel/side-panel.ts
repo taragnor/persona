@@ -94,7 +94,17 @@ export abstract class SidePanel {
         ...await this.getData(),
         _iteration : this.iterations,
       };
-      return await foundry.applications.handlebars.renderTemplate(this.templatePath, templateData);
+      try {
+        return await foundry.applications.handlebars.renderTemplate(this.templatePath, templateData);
+      } catch (e) {
+        if (e instanceof Error) {
+          if (!game.user.isGM) {
+            return `ERROR: ${e.message}`;
+          }
+          return `ERROR: ${e.message} \n ${e.stack}`;
+        }
+        return String(e);
+      }
     }
     return await this.staticHTML();
   }
