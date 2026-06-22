@@ -15,7 +15,7 @@ import {PersonaCombat, PersonaCombatant, PToken} from "../persona-combat.js";
 
 export class CombatPanel extends PersonaPanel {
   private _target: U<PToken>;
-  static _instance: U<CombatPanel>;
+  private static _instance: U<CombatPanel>;
   mode: "main" | "tactical";
   tacticalTarget: U<PToken>;
   deferUpdate = false;

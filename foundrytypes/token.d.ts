@@ -60,7 +60,7 @@ const Token : typeof Foundry.Token;
 
 //this is canvas stuff so I've ignored it for now
 namespace Foundry {
-  class Token<Act extends Actor = Actor> extends PlaceableObject {
+  class Token<Act extends Foundry.Actor = Foundry.Actor> extends PlaceableObject {
     get actor(): U<Act>;
     document: TokenDocument<Act>;
     get scene(): Scene;
@@ -79,8 +79,14 @@ namespace Foundry {
     /** sets token to be redrawn on next animation frame */
     refresh(): void;
     async _drawEffect(src: string, tint: N<PIXI.ColorSource>): Promise<U<PIXI.Sprite>>;
+    /** double click handler*/
+    _onClickLeft2(event: CanvasEvent): void;
+    /** single click handler?*/
+    _onClickLeft1(event: CanvasEvent): void;
   }
 }
+
+type CanvasEvent = TypeGuess<JQuery.Event>;
 
 
 //this is canvas stuff so I've ignored it for now

@@ -1,56 +1,57 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 declare interface CONFIG {
-	Actor: {
-		dataModels: Record<string, typeof foundry.abstract.DataModel>;
-		documentClass: typeof Actor<any, any, any>;
-	};
-	Item: {
-		dataModels: Record<string, typeof foundry.abstract.DataModel>;
-		documentClass: typeof Item<any, any, any>;
-	};
-	 Token: {
-			documentClass: typeof TokenDocument<any>;
-	 }
-	statusEffects: StatusEffectObject[];
-	ActiveEffect: {
-		documentClass: typeof ActiveEffect<any>;
-		legacyTransferral: boolean;
-	};
-	sounds: {
-		dice: string
-	};
-	Dice: {
-		rolls: (typeof Roll)[];
-	};
-	Region: {
-		documentClass: typeof RegionDocument;
-	};
-	Combat: {
-		documentClass: typeof Combat<any>;
-		initiative: {
-			formula: string;
-			decimals: number;
-		},
-	};
-	ChatMessage : {
-		template: string;
-		/** default "fas fa-comments" */
-		sidebar: string;
-		documentClass: typeof ChatMessage;
-	};
-	Scene: {
-		documentClass: typeof Scene;
-	}
-	weatherEffects: {
-		"blizzard": WeatherEffectData;
-		"fog": WeatherEffectData;
-		"leaves": WeatherEffectData;
-		"rain": WeatherEffectData;
-		"rainstorm": WeatherEffectData;
-		"snow": WeatherEffectData;
-	}
-	Wall: {
-		doorSounds: Record<string, DoorSound>;
+  Actor: {
+    dataModels: Record<string, typeof foundry.abstract.DataModel>;
+    documentClass: typeof Actor<any, any, any>;
+  };
+  Item: {
+    dataModels: Record<string, typeof foundry.abstract.DataModel>;
+    documentClass: typeof Item<any, any, any>;
+  };
+  Token: {
+    documentClass: typeof TokenDocument<any>;
+    objectClass: typeof Token<any>;
+  }
+  statusEffects: StatusEffectObject[];
+  ActiveEffect: {
+    documentClass: typeof ActiveEffect<any>;
+    legacyTransferral: boolean;
+  };
+  sounds: {
+    dice: string
+  };
+  Dice: {
+    rolls: (typeof Roll)[];
+  };
+  Region: {
+    documentClass: typeof RegionDocument;
+  };
+  Combat: {
+    documentClass: typeof Combat<any>;
+    initiative: {
+      formula: string;
+      decimals: number;
+    },
+  };
+  ChatMessage : {
+    template: string;
+    /** default "fas fa-comments" */
+    sidebar: string;
+    documentClass: typeof ChatMessage;
+  };
+  Scene: {
+    documentClass: typeof Scene;
+  }
+  weatherEffects: {
+    "blizzard": WeatherEffectData;
+    "fog": WeatherEffectData;
+    "leaves": WeatherEffectData;
+    "rain": WeatherEffectData;
+    "rainstorm": WeatherEffectData;
+    "snow": WeatherEffectData;
+  }
+  Wall: {
+    doorSounds: Record<string, DoorSound>;
 
 
 	}

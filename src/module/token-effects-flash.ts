@@ -7,7 +7,7 @@ export class TokenEffectsFlash {
   static init() {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     const oldDrawEffect = Token.prototype._drawEffect;
-    Token.prototype._drawEffect = async function (this: Token<PersonaActor>, src: string, tint: N<PIXI.ColorSource>) : Promise<U<PIXI.Sprite>> {
+    foundry.canvas.placeables.Token.prototype._drawEffect = async function (this: Token<PersonaActor>, src: string, tint: N<PIXI.ColorSource>) : Promise<U<PIXI.Sprite>> {
       const sprite = await (oldDrawEffect.call(this, src, tint) as ReturnType<typeof oldDrawEffect>);
       if (!sprite) {return sprite;}
       const arr = flashMap.get(this) ?? [];

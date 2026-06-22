@@ -44,7 +44,7 @@ export abstract class SidePanel {
     return false;
   }
 
-  //** if conditional activaiton is selected it will only activate if it's not currently active or part of the panel stack
+  /** if conditional activaiton is selected it will only activate if it's not currently active or part of the panel stack */
   async activate(conditional: boolean = false) {
     if (!conditional ||
       ( !SidePanelManager.isActive(this) &&

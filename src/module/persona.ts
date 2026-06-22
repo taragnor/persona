@@ -61,6 +61,7 @@ import {PostCombatPanel} from "./panels/post-combat-panel.js";
 import {TokenEffectsFlash} from "./token-effects-flash.js";
 import {MathUtilityFunctions} from "./utility/math.js";
 import {TreasureList} from "./printers/treasure-list.js";
+import {PersonaTokenObject} from "./canvas/persona-token-object.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -70,16 +71,18 @@ function registerDataModels() {
 }
 
 function registerDocumentClasses() {
-	 CONFIG.Actor.documentClass = PersonaActor;
-	 CONFIG.Item.documentClass = PersonaItem;
-	 CONFIG.Token.documentClass = PersonaToken;
-	 CONFIG.ActiveEffect.documentClass = PersonaAE;
-	 CONFIG.Combat.documentClass = PersonaCombat;
-	 CONFIG.Region.documentClass = PersonaRegion;
-	 CONFIG.Scene.documentClass = PersonaScene;
+  CONFIG.Actor.documentClass = PersonaActor;
+  CONFIG.Item.documentClass = PersonaItem;
+  CONFIG.Token.documentClass = PersonaToken;
+  CONFIG.ActiveEffect.documentClass = PersonaAE;
+  CONFIG.Combat.documentClass = PersonaCombat;
+  CONFIG.Region.documentClass = PersonaRegion;
+  CONFIG.Scene.documentClass = PersonaScene;
+  CONFIG.Token.objectClass = PersonaTokenObject;
 }
 
 function registerSheetApplications() {
+  const {Actors, Items} = foundry.documents.collections;
 	Actors.unregisterSheet("core", foundry.appv1.sheets.ActorSheet);
 	Items.unregisterSheet("core", foundry.appv1.sheets.ItemSheet);
 	//custom sheets
