@@ -382,7 +382,6 @@ export class PersonaTargetting {
         targets satisfies never;
     }
     return this.targetMeetsTargettingConditions(user, target, situation);
-    // return testPreconditions(power.validTargetConditions(user), situation);
   }
 
 }

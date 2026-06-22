@@ -63,14 +63,14 @@ export class TriggeredEffect {
   }
 
   static onTrigger_cancelCheck_getReasons<const T extends Trigger>(situation: TriggerParam<T>, actor: U<ValidAttackers>) : string[] {
-    const situationCopy = {
-      ...(situation satisfies TriggerParam<T>),
-      triggeringUser: game.user.id,
-    } satisfies TriggeredSituation.TriggerSituation;
+    // const situationCopy = {
+    //   ...(situation satisfies TriggerParam<T>),
+    //   triggeringUser: game.user.id,
+    // } satisfies TriggeredSituation.TriggerSituation;
     const triggers= this._cancelCheckCEs(situation, actor);
     const failedCond = triggers
       .map (trig => {
-        return trig.toFailReasonString(situationCopy);
+        return ConditionalEffectPrinter.printConditions(trig.conditions);
       });
     return failedCond;
   }

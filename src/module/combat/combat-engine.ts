@@ -134,12 +134,15 @@ export class CombatEngine {
       await this.postActionCleanup(attacker, finalizedResult);
       return finalizedResult;
     } catch(e) {
+      this.clearPendingResult();
       if (e instanceof CanceledDialogError) {
-        this.clearPendingResult();
+        throw e;
+      }
+      if (e instanceof TargettingError) {
+        console.log(e.reasonsStr());
         throw e;
       }
       console.log(e);
-      this.clearPendingResult();
       throw e;
     }
   }

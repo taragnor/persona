@@ -151,9 +151,6 @@ export class ConditionalEffectC {
 
   equals( other: ConditionalEffectC) : boolean {
     return this._original == other._original;
-    // &&
-    // PersonaDB.accessorEq(this._realSource,other._realSource);
-    // && PersonaDB.accessorEq(this._source, other._source);
   }
 
   testPreconditions(situation: Situation) : boolean {
@@ -179,16 +176,10 @@ export class ConditionalEffectC {
   }
 
   getActiveConsequences(situation: Situation) : ConditionalEffectC["consequences"] {
-    // const source = this.source;
     if (!this.conditions
       .every( cond=>testPrecondition(cond, situation))
     ) {return [];}
     return this.consequences;
-    // return this.consequences.map( cons => ({
-    //   ...cons,
-    //   source,
-    //   owner: this.owner,
-    // }));
   }
 
   static failedPreconditions(conditions: SourcedPrecondition[], situation: Situation) {
@@ -209,19 +200,10 @@ export class ConditionalEffectC {
     if (!this.canCancel()) {return [];}
     if (! this.testPreconditions(situation)) {return [];}
     return this.conditions;
-    // const activeCons = this.getActiveConsequences(situation);
-    // if (activeCons.some(cons => cons.type == "trigger-event-cons"
-    //   && cons.eventMod == "cancel")) {
-    //   return this.conditions;
-    // }
   }
 
   checkForCancelEffect(situation: Situation) : boolean {
     return this.canCancel() && this.testPreconditions(situation);
-    // if (!this.canCancel()) { return false;}
-    // const activeCons = this.getActiveConsequences(situation);
-    // return activeCons.some(cons => cons.type == "trigger-event-cons"
-    //   && cons.eventMod == "cancel");
   }
 
   getModifierAmount(targetMods: NonDeprecatedModifierTarget[] | NonDeprecatedModifierTarget) : (number | Sourced<ConsequenceAmountV2>)[] {
