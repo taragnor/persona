@@ -125,7 +125,7 @@ export class RandomEncounter {
       speaker: speaker,
       content: text,
       whisper: game.users.filter(usr => usr.isGM),
-      style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
     };
     const msg = await ChatMessage.create(messageData, {});
     await msg.setFlag("persona", "randomEncData", encounter.enemies.map(shadow=> shadow.accessor));
@@ -581,11 +581,12 @@ export class RandomEncounter {
 
   static weightedEncounterList(arr: Shadow[], scene: PersonaScene = game.scenes.current as PersonaScene) {
     return arr
-      .map (shadow => {
-        const encounterWeight = shadow.getEncounterWeight(scene);
-        const weight = encounterWeight;
-        return { item: shadow, weight, };
-      });
+      .map (shadow => (
+        {
+          item: shadow,
+          weight: shadow.encounterWeight(scene),
+        })
+      );
   }
 
   static async testVote() {

@@ -115,7 +115,7 @@ export class PersonaScene extends Scene {
     let encounterList =
       this.allFoes()
       .filter( shadow => !disAllowedRoles.includes(shadow.system.role)
-        && shadow.getEncounterWeight(this) > 0
+        && shadow.encounterWeight(this) > 0
       )
       .filter( shadow => {
         const situation = {
@@ -409,7 +409,7 @@ export class PersonaScene extends Scene {
       });
       const div = $(`<div class="encounter" data-shadow-id="${shadow.id}"></div>`);
       div.append( $(`<span class="shadow-name">
-        L${shadow.level} ${shadow.name} (${shadow.roleString.toString()}) [${entry.frequency}] ${shadow.hasNoTreasure ? "(missing treasure)" : ""}
+        L${shadow.level} ${shadow.name} (${shadow.roleString.toString()}) [${shadow.encounterWeight(this)}] ${shadow.hasNoTreasure ? "(missing treasure)" : ""}
         <span class="shadow-ban-toggle"></span>
         </span>
       `).on("click", (ev) => {
@@ -437,9 +437,9 @@ get treasureLevel() : number {
   const list = this.encounterList()
     .filter( x=> !x.hasRole("treasure-shadow"));
   if (list.length ==0) {return 0;}
-  const totalWeight = list.reduce( (a,s) => a + s.getEncounterWeight(this), 0);
+  const totalWeight = list.reduce( (a,s) => a + s.encounterWeight(this), 0);
   return Math.round( list
-    .reduce( (a,s) => a + (s.level * s.getEncounterWeight(this)) , 0)
+    .reduce( (a,s) => a + (s.level * s.encounterWeight(this)) , 0)
     / totalWeight
   );
 }
@@ -464,7 +464,7 @@ async setEncounterData(data: SceneEncounterData) : Promise<PersonaScene>{
 get encounterData() : SceneEncounterData {
 	const monsterList = this.encounterList().map (shadow=> ({
 		id: shadow.id,
-		frequency: shadow.getEncounterWeight(this),
+		frequency: shadow.encounterWeight(this),
 	})
 	);
 	const data =
