@@ -348,8 +348,13 @@ section.powers-section {
   cursor: pointer;
 }
 
-.faded {
+.faded,
+.unusable {
   opacity: 0.5;
+}
+
+.non-owner .unusable {
+  opacity: 1.0; /* removes opacity shift from normal unusuable  */
 }
 
 input.flag-id {

@@ -1,4 +1,4 @@
-<div class="scan-dialog">
+<div class="scan-dialog {{#if (not persona.user.isOwner)}} non-owner {{/if}}">
   <header>
     {{> "systems/persona/parts/scan-sheet-header.hbs" persona=persona}}
   </header>
@@ -18,18 +18,6 @@
     <div class="openers">
       {{> "systems/persona/parts/bubble-power-list.hbs" CONST=CONST persona=persona powerList=persona.openers}}
     </div>
-
-    {{#if false}}
-    {{#each persona.powers as |power i|}}
-    <div class="main-power" data-power-id="{{power.id}}">
-      <div class="power-name-block {{#if (lte ../actor.maxPowers i)}} over-max-power {{/if}} " title="{{> "systems/persona/parts/power-tooltip-lite.hbs" CONST=../CONST power=power persona=../persona}}">
-        <div class="power-name-bubble-container">
-          {{> "systems/persona/parts/pretty-power-name.hbs" CONST=../CONST power=power user=../persona}}
-        </div>
-      </div>
-    </div>
-    {{/each}}
-    {{/if}}
 
   </div>
 

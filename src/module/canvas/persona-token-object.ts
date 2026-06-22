@@ -25,7 +25,14 @@ export class PersonaTokenObject extends CONFIG.Token.objectClass {
     const token = PersonaCombat.combat?.getCombatantByActor(actor)?.token;
     if (!token) {return;}
     await CombatPanel.instance.activate();
-    await CombatPanel.instance.setTarget(token as PToken);
+    await CombatPanel.instance.setMode("tactical");
+    await CombatPanel.instance.setTacticalTarget(token as PToken);
   }
 
 }
+
+
+// FUTURE: for changing left click to allow on nonowners,
+// MouseInteractionManager._canView(user, event)
+
+

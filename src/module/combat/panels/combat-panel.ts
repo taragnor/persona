@@ -82,7 +82,7 @@ export class CombatPanel extends PersonaPanel {
   }
 
   get target() {
-    if (this.mode =="tactical") {return this.tacticalTarget ?? this._target;}
+    if (this.mode == "tactical") {return this.tacticalTarget ?? this._target;}
     return this._target;
   }
 
@@ -451,7 +451,7 @@ export class CombatPanel extends PersonaPanel {
       if (isSelecting) {
         void panel.setTacticalTarget(token.document as PToken);
       } else {
-        void panel.setTacticalTarget(null);
+        // void panel.setTacticalTarget(null);
       }
 
     });
