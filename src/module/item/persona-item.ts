@@ -1,7 +1,6 @@
 import { checkSituationProp } from '../../config/situation.js';
 import { GrowthCalculator } from '../utility/growth-calculator.js';
 import { STATUS_AILMENT_SET } from '../../config/status-effects.js';
-import { NewDamageParams } from '../combat/damage-calc.js';
 import { PowerCostCalculator } from '../power-cost-calculator.js';
 import { StatusEffectId } from '../../config/status-effects.js';
 import { CATEGORY_SORT_ORDER, DAMAGE_ICONS, ITEM_ICONS, ItemCategory } from '../../config/icons.js';
@@ -1007,6 +1006,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   powerCostString_PC(this: Power, persona: Persona) : string {
+    if (this.hasTag("theurgy", null)) {
+      return "Theurgy";
+    }
     switch (this.system.subtype) {
       case 'weapon': {
         const hpCost = this.hpCost();
@@ -1036,9 +1038,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         break;
       default:
         this.system.subtype satisfies never;
-    }
-    if (this.hasTag("theurgy", null)) {
-      return "Expends Theurgy Energy";
     }
     return 'free';
   }
@@ -1896,6 +1895,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   get armorLevel() : number {
     if (!this.isInvItem()) {return 0;}
+    if (this.itemBase != this) {return this.itemBase.armorLevel;}
     if (this.system.slot != "body") {return 0;}
     if (this.system.armorLevel > 0) {return this.system.armorLevel;}
     if (this.system.itemLevel > 0) { return this.system.itemLevel;}
@@ -1904,6 +1904,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   get weaponLevel() : number {
     if (!this.isWeapon()) {return 0;}
+    if (this.itemBase != this) {return this.itemBase.weaponLevel;}
     if (this.system.damageNew.weaponLevel > 0) { return this.system.damageNew.weaponLevel;}
     if (this.system.itemLevel > 0) { return this.system.itemLevel;}
     return 0;

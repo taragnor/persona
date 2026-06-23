@@ -855,6 +855,7 @@
 	"persona.preconditions.comparison.status-resistance-level": "Status Resistance Level",
 	"persona.preconditions.comparison.scan-level": "Scan Level",
 	"persona.preconditions.comparison.health-percentage": "Health Percentage (0-100)",
+	"persona.preconditions.comparison.magic-percentage": "MP Percentage (0-100)",
 	"persona.preconditions.comparison.clock-comparison": "Clock Value",
 	"persona.preconditions.comparison.student-skill": "Rank in Student Skill",
 	"persona.preconditions.comparison.actor-exists": "Character Exists",

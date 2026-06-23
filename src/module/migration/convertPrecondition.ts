@@ -1,4 +1,6 @@
-import {NonDeprecatedPrecondition} from "../../config/precondition-types.js";
+import {VariableTypeSpecifier} from "../../config/consequence-types.js";
+import {NumericComparator} from "../../config/numeric-comparison.js";
+import {DeprecatedPrecondition, NonDeprecatedPrecondition} from "../../config/precondition-types.js";
 
 export class PreconditionConverter {
 
@@ -7,13 +9,77 @@ export class PreconditionConverter {
 			case "boolean":
 				return this.convertBoolean (cond);
 			case "numeric":
-				return cond;
+				return this.convertNumeric(cond);
       case "on-trigger":
         return this.convertTriggered(cond);
 			default:
 				return cond;
 		}
 	}
+
+  static convertNumeric (cond: Precondition & {type: "numeric"}): NonDeprecatedPrecondition<Precondition> {
+    const dep = cond as DeprecatedPrecondition<typeof cond>;
+    switch (dep.comparisonTarget) {
+      case "percentage-of-hp":
+      case "percentage-of-mp": {
+        const comparator = this.convertNumericComparator(dep, 100);
+        const comparisonTarget = dep.comparisonTarget == "percentage-of-hp" ? "health-percentage" : "magic-percentage";
+        return {
+          type: "numeric",
+          comparisonTarget,
+          conditionTarget: dep.conditionTarget!,
+          ...comparator,
+        } satisfies NonDeprecatedPrecondition;
+      }
+      case "escalation":
+        return {type: "never"};
+      case "social-variable": {
+        const comparator = this.convertNumericComparator(dep);
+        return {
+          ...dep as VariableTypeSpecifier,
+          type: "numeric",
+          comparisonTarget: "variable-value",
+          ...comparator,
+        } satisfies NonDeprecatedPrecondition;
+      }
+      default:
+        dep.comparisonTarget satisfies never;
+        return cond as NonDeprecatedPrecondition<Precondition>;
+    }
+  }
+
+
+  private static convertNumericComparator(comp: NumericComparator, mult : number = 1) : NumericComparator {
+    switch (comp.comparator)  {
+      case "odd": case "even":
+        return {
+          comparator: comp.comparator,
+        };
+      case "range": {
+        const num = typeof comp.num == "number" ? comp.num * mult : comp.num;
+        if (typeof num != "number" && mult != 1 ) {
+          console.warn(`Consequence amount can't be multiplied by ${mult}`);
+          Debug(comp);
+        }
+        return {
+          comparator: comp.comparator,
+          high: comp.high * mult,
+          num,
+        };
+      }
+      default: {
+        const num = typeof comp.num == "number" ? comp.num * mult : comp.num;
+        if (typeof num != "number" && mult != 1 ) {
+          console.warn(`Consequence amount can't be multiplied by ${mult}`);
+          Debug(comp);
+        }
+        return {
+          comparator: comp.comparator,
+          num,
+        };
+      }
+    }
+  }
 
   static convertTriggered( cond: Precondition & {type: "on-trigger"}) : NonDeprecatedPrecondition<Precondition> {
     const head= {

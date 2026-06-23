@@ -1,7 +1,7 @@
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import { ConsequenceAmount, ConsequenceAmountV2, VariableTypeSpecifier } from "./consequence-types.js";
 import { VariableType } from "../module/persona-variables.js";
-import { SocialLinkIdOrTarot } from "./precondition-types.js";
+import { DeprecatedPrecondition, NonDeprecatedPrecondition, SocialLinkIdOrTarot } from "./precondition-types.js";
 import { ConditionTarget } from "./precondition-types.js";
 import { ResistType } from "../config/damage-types.js";
 import { ResistStrength } from "../config/damage-types.js";
@@ -12,6 +12,8 @@ import {StatusEffectPlus} from "./status-effects.js";
 const DEPRECATED_OPERANDS = [
 	"escalation",
 	"social-variable",
+	"percentage-of-mp",
+	"percentage-of-hp",
 ] as const;
 
 const COMMON_COMPARISON_TARGET_LIST = [
@@ -36,8 +38,6 @@ const ACTOR_STAT_LIST = [
 	"itemCount",
 	"links-dating",
 	"energy",
-	"percentage-of-mp",
-	"percentage-of-hp",
 	"student-skill",
 	"character-level",
 	"talent-level",
@@ -46,6 +46,7 @@ const ACTOR_STAT_LIST = [
 	"progress-tokens-with",
 	"has-resources",
 	"health-percentage",
+  "magic-percentage",
 	"resistance-level",
   "status-resistance-level",
 	"scan-level",
@@ -129,7 +130,7 @@ type NumericComparisonBase = NumericComparator & {
 }
 
 export type NumericComparisonPC =
-	NumericComparisonOld | NumericComparisonV2;
+	NumericComparisonOld;
 
 export type NumericComparisonOld =
 	{
@@ -142,34 +143,40 @@ export type NumericComparisonOld =
 type NonGenericNumericComparison =
 	(DerivedComparator & DerivedNumericComparisons) | (BaseNumericComparisons & NumericComparator);
 
-type DerivedNumericComparisons =
-	ResistanceComparison
-| StatusResistanceComparion
+type DerivedNumericComparisons = 
+  {___deprecated ?: false} & (
+  ResistanceComparison
+  | StatusResistanceComparion
+  );
+
+type NonDeprecatedNumericComparisons=
+  {___deprecated ?: false} & (
+    ConstantComparison
+    | OddEvenComparison
+    | SimpleComparison
+    | TargettedNumericComparison
+    | ClockNumericComparison
+    | EnergyComparison
+    | InspirationNumericComparison
+    | AmountOfItemComparison
+    | SocialLinkLevelComparison
+    | ProgressTokensComparison
+    | SocialVariableComparison
+    | totalSLComparison
+    | CombatResultComparison
+    | NumberOfOthersWithComparison
+    | VariableComparison
+    | RollComparison
+    | StudentSkillComparison
+    | ScanLevelComparison
+    | AdvancedNumberComparison
+  )
 ;
 
+
 type BaseNumericComparisons =
-	ConstantComparison
-	| OddEvenComparison
-	| SimpleComparison
-	// | ResistanceLevelConstant
-	| TargettedNumericComparison
-	| ClockNumericComparison
-	| HPMPComparison
-	| EnergyComparison
-	| InspirationNumericComparison
-	| AmountOfItemComparison
-	| SocialLinkLevelComparison
-	| ProgressTokensComparison
-	| SocialVariableComparison
-	| totalSLComparison
-	| CombatResultComparison
-	| NumberOfOthersWithComparison
-	| VariableComparison
-	| RollComparison
-	| StudentSkillComparison
-	| DeprecatedComparison
-	| ScanLevelComparison
-	| AdvancedNumberComparison
+  NonDeprecatedPrecondition<NonDeprecatedNumericComparisons>
+	| DeprecatedPrecondition<DeprecatedNumericComparison>
 ;
 
 type AdvancedNumberComparison = {
@@ -192,10 +199,13 @@ type StudentSkillComparison = {
 	studentSkill ?: SocialStat;
 }
 
-type DeprecatedComparison = {
-	comparisonTarget: "deprecated",
-	deprecatedType : typeof DEPRECATED_OPERANDS[number];
+type DeprecatedNumericComparison = {
+	__deprecatedType : typeof DEPRECATED_OPERANDS[number];
 	variableId ?: string,
+	comparisonTarget : typeof DEPRECATED_OPERANDS[number];
+	conditionTarget ?: ConditionTarget;
+  ___deprecated: true;
+	varType: VariableType,
 }
 
 type ConstantComparison = {
@@ -250,6 +260,7 @@ type EnergyComparison =  {
 
 type GenericNumericComparison =  NumericComparisonBase & {
 	comparisonTarget : Exclude<NumericComparisonTarget, NonGenericNumericComparison["comparisonTarget"] | "">,
+  ___deprecated ?: false,
 }
 
 type SocialLinkLevelComparison =  {
@@ -286,11 +297,11 @@ type StatusResistanceComparion = {
 };
 
 type TargettedNumericComparison =  {
-	comparisonTarget: "health-percentage",
+	comparisonTarget: "health-percentage" | "magic-percentage",
 	conditionTarget: ConditionTarget,
 }
 
-type HPMPComparison =  {
+type HPMPComparison_Old =  {
 	comparisonTarget: "percentage-of-mp" | "percentage-of-hp",
 	conditionTarget: ConditionTarget,
 }

@@ -109,13 +109,13 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       {return false;}
       target = situation.naturalRoll;
       break;
-    case "escalation": {
-      const combat = game.combat as PersonaCombat | undefined;
-      if (!combat) {return false;}
-      const die = combat.getEscalationDie();
-      target = die;
-      break;
-    }
+    // case "escalation": {
+    //   const combat = game.combat as PersonaCombat | undefined;
+    //   if (!combat) {return false;}
+    //   const die = combat.getEscalationDie();
+    //   target = die;
+    //   break;
+    // }
     case "total-roll":
       if (!checkSituationProp(situation, "rollTotal")) {
         return false; };
@@ -228,24 +228,30 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       target = (subject.hp / subject.mhpEstimate) * 100;
       break;
     }
+    case "magic-percentage": {
+      const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
+      if (!subject) {return false;}
+      target = (subject.hp / subject.mmp) * 100;
+      break;
+    }
     case "clock-comparison": {
       const clock = ProgressClock.getClock(condition.clockId);
       if (!clock) {return false;}
       target = clock.amt;
       break;
     }
-    case "percentage-of-hp": {
-      const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
-      if (!subject) {return false;}
-      target = subject.hp / subject.mhpEstimate;
-      break;
-    }
-    case "percentage-of-mp": {
-      const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
-      if (!subject) {return false;}
-      target = subject.mp / subject.mmp;
-      break;
-    }
+    // case "percentage-of-hp": {
+    //   const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
+    //   if (!subject) {return false;}
+    //   target = subject.hp / subject.mhpEstimate;
+    //   break;
+    // }
+    // case "percentage-of-mp": {
+    //   const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
+    //   if (!subject) {return false;}
+    //   target = subject.mp / subject.mmp;
+    //   break;
+    // }
     case "energy": {
       const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
       if (!subject) {return false;}

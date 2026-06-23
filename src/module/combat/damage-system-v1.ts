@@ -169,7 +169,7 @@ export class MainDamageSystem extends DamageSystemBase {
     const calc = new DamageCalculation(null);
     const armor = targetPersona.user.armor;
     const weapon = attackerPersona.user.weapon;
-    const weaponValue = attackerPersona.user.isPCLike() 
+    const weaponValue = attackerPersona.user.isPCLike()
       ? this.getWeaponRatingByWpnLevel(weapon?.weaponLevel ?? 0)
       : this.getWeaponRatingByWpnLevel(this.getShadowEffectiveEquipmentLevel(targetPersona.user as Shadow));
     ;

@@ -9,7 +9,6 @@ export const PRECONDITIONLIST = [
 	"always",
 	"is-hit",
 	"numeric",
-	// "numeric-v2",
 	"boolean",
 	"miss-all-targets",
 	"save-versus",
@@ -39,12 +38,12 @@ type RollSuccessShortcutComparison = {
 	booleanState: boolean;
 }
 
-export type DeprecatedPrecondition<T extends object> = T & {
-	___deprecated: true;
+export type DeprecatedPrecondition<T extends object= Precondition> = T & {
+  ___deprecated: true;
 }
 
 export type NonDeprecatedPrecondition<T extends object = Precondition> = T & {
-	___deprecated ?: never;
+	___deprecated ?: false;
 }
 
 type GenericPC = {

@@ -445,7 +445,7 @@ export class ConditionalEffectPrinter {
       }
     }
 
-    private static printNumericCond(cond: Precondition & {type: "numeric"}) : string {
+    private static printNumericCond(cond: NonDeprecatedPrecondition & {type: "numeric"}) : string {
       const endString = (cond: Precondition & {type: "numeric"} , derivedVar?: string) => {
         if (!("comparator" in cond)) { return "ERROR"; }
         switch (cond.comparator) {
@@ -476,8 +476,8 @@ export class ConditionalEffectPrinter {
           return `natural roll ${endString(cond)}`;
         case "activation-roll":
           return `activation Roll ${endString(cond)}`;
-        case "escalation":
-          return `Escalation Die ${endString(cond)}`;
+        // case "escalation":
+        //   return `Escalation Die ${endString(cond)}`;
         case "total-roll":
           return `Roll Total ${endString(cond)}`;
         case "talent-level":
@@ -516,12 +516,14 @@ export class ConditionalEffectPrinter {
         }
         case "health-percentage":
           return `Health Percentage ${endString(cond)}`;
+        case "magic-percentage":
+          return `Magic Percentage ${endString(cond)}`;
         case "clock-comparison":
           return `Clock ${cond.clockId} ${endString(cond)}`;
-        case "percentage-of-mp":
-          return `Percentage of MP ${endString(cond)}`;
-        case "percentage-of-hp":
-          return `Percentage of MP ${endString(cond)}`;
+        // case "percentage-of-mp":
+        //   return `Percentage of MP ${endString(cond)}`;
+        // case "percentage-of-hp":
+        //   return `Percentage of MP ${endString(cond)}`;
         case "energy":
           return `Shadow Energy ${endString(cond)}`;
 
