@@ -1433,6 +1433,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   get armorRating() : number {
+    if (this.isShadow()) {
+      const dsys = PersonaSettings.getDamageSystem();
+      const shadowLevel = dsys.getShadowEffectiveEquipmentLevel(this);
+      return dsys.getArmorRatingByItemLvl(shadowLevel);
+    }
     return this.armor?.armorRating ?? 0;
   }
 

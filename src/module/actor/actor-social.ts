@@ -705,7 +705,7 @@ export class ActorSocial <T extends PersonaActor> {
       throw new PersonaError(`Trying to refresh social link ${this.actor.name} doesn't have: ${npc.name} `);
     }
     link.inspiration = link.linkLevel;
-    await this.update({"system.social": this.actor.system.social});
+    await this.update({"system.social": this.actor.system.social.slice()});
   }
 
   get minorActions() : number {

@@ -4,6 +4,7 @@ import {PersonaAnimation} from "../combat/persona-animations.js";
 import {PersonaCombat} from "../combat/persona-combat.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaSounds} from "../persona-sounds.js";
+import {sleep} from "../utility/async-wait.js";
 
 export class AnimationQueue {
 
@@ -109,9 +110,11 @@ export class AnimationQueue {
     if (activeTok) {return activeTok as TokenDocument<ValidAttackers>;}
   }
 
-  async play() : Promise<void> {
+  async play(timeOut : number) : Promise<void> {
     try {
-      await this._play();
+      if (!timeOut) { await this._play();}
+      const timeOutPromise= sleep(timeOut);
+      await Promise.race([ this._play(), timeOutPromise]);
     } catch (e) {
       PersonaError.softFail(e as Error);
     }
@@ -133,7 +136,8 @@ export class AnimationQueue {
         .reduce ( (seq, anim) => this.convertToSequence(anim, seq, delay += anim.sfxType == "floating-text" ? 250 : 50)
           , new Sequence());
       try {
-        await seq.play( {preload: true} );
+        await seq.play( );
+        // await seq.play( {preload: true} );
       } catch (e) {
         PersonaError.softFail(e as Error, playable);
       }

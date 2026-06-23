@@ -28,6 +28,8 @@ const SAFETY_SLEEP_DURATION = 250 as const;
 const DELAY_FOR_UPDATES_TO_GET_THERE_FIRST = 25 as const;
 
 export class FinalizedCombatResult {
+  private ANIMATION_TIMEOUT = 15000;
+
   static pendingPromises: Map< CombatResult["id"], (val: unknown) => void> = new Map();
   tokenFlags: {
     actor: UniversalActorAccessor<PersonaActor>;
@@ -342,7 +344,7 @@ export class FinalizedCombatResult {
       await this.#applyGlobalOtherEffects();
       this.#onUsePowerTriggered();
       await this.#applyChained();
-      await PersonaAnimation.queue.play();
+      await PersonaAnimation.queue.play(this.ANIMATION_TIMEOUT);
     } catch (e) {
       PersonaError.softFail("Trouble executing combat result", e, this);
     }
