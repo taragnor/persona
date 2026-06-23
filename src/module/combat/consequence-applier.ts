@@ -418,8 +418,9 @@ export class ConsequenceApplier {
         break;
       }
       case "add-treasure": {
+        if (!actor.isPCLike()) {break;}
         const treasureLevel = typeof otherEffect.treasureLevel == "number" ? otherEffect.treasureLevel ?? 0 : 0;
-        const treasures = TreasureSystem.generate(treasureLevel, otherEffect.treasureModifier ?? 0, otherEffect.minLevel ?? 0);
+        const treasures = TreasureSystem.generate(treasureLevel, actor, otherEffect.treasureModifier ?? 0, otherEffect.minLevel ?? 0);
         for (const treasure of treasures) {
           await actor.addTreasureItem(treasure);
         }

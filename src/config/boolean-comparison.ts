@@ -423,6 +423,7 @@ const TAG_COMPARISON_TYPE_LIST = [
 	"roll",
 	"weapon",
   "item-used-consumable",
+  "considered-item",
 ] as const;
 
 type TagComparisonType = typeof TAG_COMPARISON_TYPE_LIST[number];
@@ -450,6 +451,9 @@ type GeneralTagComparison = {
 	tagComparisonType: "weapon",
 	rollTag: MultiCheckOrSingle<Tag["id"]>,
 	conditionTarget : ConditionTarget,
+} | {
+  tagComparisonType: "considered-item",
+	itemTag: MultiCheckOrSingle<Tag["id"]>,
 }
 );
 

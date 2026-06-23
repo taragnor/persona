@@ -892,6 +892,13 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
       const tagIds = unifiedTagList(target.weapon.tagList(target));
       return multiCheckContains(tagCheck, tagIds);
     }
+    case "considered-item": {
+      const item = "item" in situation ? PersonaDB.findItem(situation.item) : null;
+      if (!item) {return undefined;}
+      const tagCheck = condition.itemTag;
+      const tagIds = unifiedTagList(item.tagList(null));
+      return multiCheckContains(tagCheck, tagIds);
+    }
     default:  {
       condition satisfies never;
       PersonaError.softFail(`Can't run hasTagConditional becuase tagComparionType is invalid (${(condition as Record<string,string>)["tagComparisonType"]})`);

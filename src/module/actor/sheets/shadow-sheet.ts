@@ -125,7 +125,7 @@ export class ShadowSheet extends CombatantSheetBase {
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
 		html.find('.addShadowPower').on("click", this.onAddPower.bind(this));
-		html.find('.addShadowFocus').on("click", this.onAddFocus.bind(this));
+		// html.find('.addShadowFocus').on("click", this.onAddFocus.bind(this));
 		html.find(".recost-power").on("click", this.onRecostPower.bind(this));
 		html.find(".add-dungeon").on("click", this.addDungeon.bind(this));
 		html.find(".del-dungeon").on("click", this.deleteDungeon.bind(this));
@@ -141,12 +141,12 @@ export class ShadowSheet extends CombatantSheetBase {
 		}]);
 	}
 
-	override async onAddFocus(_ev: JQuery.ClickEvent) {
-		await this.actor.createEmbeddedDocuments( "Item", [{
-			name: "New Focus",
-			type: "focus",
-		}]);
-	}
+	// override async onAddFocus(_ev: JQuery.ClickEvent) {
+	// 	await this.actor.createEmbeddedDocuments( "Item", [{
+	// 		name: "New Focus",
+	// 		type: "focus",
+	// 	}]);
+	// }
 
 	async onRecostPower(event: JQuery.ClickEvent) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");

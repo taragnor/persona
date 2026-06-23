@@ -227,7 +227,7 @@ private static _powerStuffBase: Record<string, unknown>;
 	};
 		 const TAGS = {
 				"": "-",
-				...PersonaDB.createMergedTagLocList( ["power", "equipment"], POWER_TAGS)
+				...PersonaDB.createMergedTagLocList( ["power", "equipment"], {...POWER_TAGS, ...EQUIPMENT_TAGS})
 		 };
     const ROOMMODS = Object.fromEntries(PersonaDB.getSceneAndRoomModifiers().map( mod => [mod.id, mod.name]));
 

@@ -776,7 +776,7 @@ export class PersonaHandleBarsHelpers {
     },
 
     "getTrueTreasurePercent" : function (treasure: TreasureItem, category: keyof TreasureItem["system"]["treasure"],  totalProbability: number) {
-      const weight = TreasureSystem.generateWeight(treasure, category, false) / totalProbability;
+      const weight = TreasureSystem.generateWeight(treasure, category, false, null) / totalProbability;
       return Math.round(weight * 1000) / 10;
     },
 

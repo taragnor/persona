@@ -1281,6 +1281,7 @@
 	"persona.comparison.tagType.roll": "Roll Tag",
 	"persona.comparison.tagType.weapon": "Weapon Tag",
 	"persona.comparison.tagType.item-used-consumable": "Item Tag (of used consumable)",
+	"persona.comparison.tagType.considered-item": "Item being considered (Treasure)",
 
 	"persona.permabuff.max-hp": "Max HP",
 	"persona.permabuff.max-mp": "Max MP",

@@ -65,11 +65,19 @@ export class BonusCalculation extends CalculationV2 {
   }
 
 
-  override eval(situation ?: Situation, options= {hideTotals: false}) {
+  override eval(situation ?: Situation, options= {hideTotals: false}) : EvaluatedCalculation {
+    try {
     this.situationSafetyCheck(situation);
     const data = super.eval(situation, options);
     data.total = this.applyFinalStep(data.total);
     return data;
+    } catch (e) {
+      PersonaError.softFail(e as Error, this, situation, options);
+      return {
+        total: this._typeData.initial,
+        steps: ["ERROR"],
+      };
+    }
   }
 
   private static safetyCheck(data: ModV2Type[]) {

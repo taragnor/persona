@@ -2766,7 +2766,7 @@ static resolveItemSelector(selector: ItemSelector, situation: Situation): Enchan
       if (!checkSituationProp(situation, "user")) {return [];}
       const user = PersonaDB.findActor(situation.user);
       const lvlMod = selector.treasureLevelModifier ?? 0;
-      return TreasureSystem.generate(user.level + lvlMod, selector.rollModifier ?? 0, selector.minValue ?? 0);
+      return TreasureSystem.generate(user.level + lvlMod, user.isPCLike() ? user: null, selector.rollModifier ?? 0, selector.minValue ?? 0);
     }
     default :
       selector satisfies never;

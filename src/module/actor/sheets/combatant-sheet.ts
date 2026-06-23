@@ -55,6 +55,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		super.activateListeners(html);
 		html.find(".levelUp").on("click", this.levelUp.bind(this));
 		html.find(".delPower").on("click", this.deletePower.bind(this));
+		html.find('.addShadowFocus').on("click", (ev) => void this.onAddPersonalFocus(ev) );
 		html.find(".delFocus").on("click", this.deleteFocus.bind(this));
 		html.find(".delPersona").on("click", this.deletePersona.bind(this));
 		html.find(".delTalent").on("click", this.deleteTalent.bind(this));
@@ -63,10 +64,8 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		html.find(".inventory-item").on("click", this.useItem.bind(this));
 		html.find(".powerName").on("click", this.openPower.bind(this));
 		html.find(".powerName").on("contextmenu", ev=>  this.powerMenu(ev));
-		// html.find(".powerName").rightclick(this.openPower.bind(this));
 		html.find(".talentName").on("click", this.openTalent.bind(this));
 		html.find(".focusName").on("click", this.openFocus.bind(this));
-		// html.find(".itemName").rightclick(this.openItem.bind(this));
 		html.find(".rollSave").on("click", this.rollSave.bind(this));
 		html.find(".powerName").on("mouseover", this.createDamageEstimate.bind(this));
 		html.find(".power-img").on("mouseover", this.createDamageEstimate.bind(this));
@@ -585,6 +584,14 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		// }
 		// return undefined;
 	}
+
+  async onAddPersonalFocus(_ev: JQuery.ClickEvent) {
+    await this.actor.createEmbeddedDocuments( "Item", [{
+      name: "New Focus",
+      type: "focus",
+    }]);
+  }
+
 
 	async removeStatus(event: JQuery.ClickEvent) {
 		if (!game.user.isGM) {return;}

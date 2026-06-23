@@ -8,11 +8,11 @@ import {PersonaItem} from "../item/persona-item.js";
 import {Metaverse} from "../metaverse.js";
 
 export class TreasureSystem {
-  static generate(treasureLevel: number, modifier : number = 0, treasureMin = 1) : EnchantedTreasureFormat[] {
+  static generate(treasureLevel: number, searcher: N<PCLike>, modifier : number = 0, treasureMin = 1) : EnchantedTreasureFormat[] {
     const treasureRoll = this.treasureRoll(modifier, treasureMin);
     const table = this.convertRollToTreasureTable(treasureRoll);
-    const item = this.generateFromTable(table, treasureLevel);
-    const otherTreasure = this.moreTreasure(treasureRoll) ? this.generate(treasureLevel, modifier, treasureMin) : [];
+    const item = this.generateFromTable(table, treasureLevel, searcher);
+    const otherTreasure = this.moreTreasure(treasureRoll) ? this.generate(treasureLevel, searcher, modifier, treasureMin) : [];
     if (!item) {return otherTreasure;}
     if (item.isEnchantable()) {
       const enchantments = this.generateEnchantments(item, treasureLevel, modifier, treasureMin);
@@ -139,26 +139,28 @@ export class TreasureSystem {
 			);
 	}
 
-	static generateFromTable(table: Exclude<TreasureTable, "none">, treasureLevel: number) : U<TreasureItem> {
+	static generateFromTable(table: Exclude<TreasureTable, "none">, treasureLevel: number, searcher : N<PCLike>) : U<TreasureItem> {
 		const list = this.treasureList(table, treasureLevel);
 		if (list.length == 0) {return undefined;}
 		const weights = list
 		.map( item=> {
-			// const rarity = item.system.treasure[table].rarity;
-			// const possessionMult = this.possessionWeightMod(item);
-			// const baseWeight = ENCOUNTER_RATE_PROBABILITY[rarity];
-			// const weight = baseWeight * possessionMult;
-      const weight = this.generateWeight(item, table, true);
+      const weight = this.generateWeight(item, table, true, searcher);
 			return { item, weight };
 		});
 		return weightedChoice(weights);
 	}
 
-  static generateWeight(item: TreasureItem | Tag, table: Exclude<TreasureTable, "none"> , applyPossessionMult: boolean) : number {
+  static generateWeight(item: TreasureItem | Tag, table: Exclude<TreasureTable, "none"> , applyPossessionMult: boolean, searcher: N<PCLike>) : number {
 			const rarity = item.system.treasure[table].rarity;
 			const possessionMult = applyPossessionMult && item.isCarryableType() ? this.possessionWeightMod(item): 1;
 			const baseWeight = ENCOUNTER_RATE_PROBABILITY[rarity];
-			const weight = baseWeight * possessionMult;
+    const searcherMult = !searcher || !item.isCarryableType()
+      ? 1
+      : searcher.persona().getBonusesV2("treasure-weight").eval({
+      item: item.accessor,
+      user: searcher.accessor
+    } satisfies Situation).total;
+			const weight = baseWeight * possessionMult * searcherMult;
 			return weight;
   }
 
@@ -214,10 +216,10 @@ export class TreasureSystem {
 	}
 
   /**prints out 100 treasure items*/
-	static async test(treasureLevel: number, modifier: number = 0, minLevel: number = 1) {
+	static async test(searcher: N<PCLike>, treasureLevel: number, modifier: number = 0, minLevel: number = 1) {
 		const arr : EnchantedTreasureFormat[] = [];
 		for (let i = 0; i <100; i++ ) {
-			const treasure = this.generate(treasureLevel, modifier, minLevel);
+			const treasure = this.generate(treasureLevel, searcher, modifier, minLevel);
 			if (treasure) { arr.push(...treasure); }
 		}
 		await this.handleTreasureRolls(arr);

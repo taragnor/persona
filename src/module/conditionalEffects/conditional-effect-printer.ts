@@ -294,6 +294,8 @@ export class ConditionalEffectPrinter {
           return `weapon ${not} has Tag: ${tagName}`;
         case "item-used-consumable":
           return `used consumable ${not} has Equipment Tag: ${tagName}`;
+        case "considered-item":
+          return `possible treasure item ${not} has Tag: ${tagName}`;
         default:
           cond satisfies never;
           return "ERROR";
@@ -439,6 +441,8 @@ export class ConditionalEffectPrinter {
           return this.translate (cond.rollTag, WEAPON_TAGS);
         case "item-used-consumable":
           return this.translate(cond.powerTag as keyof typeof EQUIPMENT_TAGS, EQUIPMENT_TAGS);
+        case "considered-item":
+          return this.translate(cond.itemTag as keyof typeof EQUIPMENT_TAGS, EQUIPMENT_TAGS);
         default:
           cond satisfies never;
           return "ERROR";

@@ -164,7 +164,7 @@ export class Tests {
     return true;
   }
 
-  static async treasureTest(roomType: "treasure-poor" | "treasure-rich" | "treasure-ultra" | "standard" = "standard") {
+  static async treasureTest(searcher: N<PCLike>= this.kim, roomType: "treasure-poor" | "treasure-rich" | "treasure-ultra" | "standard" = "standard") {
     const scene = game.scenes.current as PersonaScene;
     let mod = 0, min = 0;
     switch (roomType) {
@@ -184,7 +184,7 @@ export class Tests {
       default:
         throw new PersonaError("Invalid roomType");
     }
-    await TreasureSystem.test(scene.treasureLevel, mod, min);
+    await TreasureSystem.test(searcher, scene.treasureLevel, mod, min);
   }
 
   static async testAnchoredStatus () : TestResult {

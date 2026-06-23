@@ -562,8 +562,7 @@ private region_hazard(sq: DungeonSquare["group"]) : {status: RegionData["hazard"
 		}
     let amt = sq.numOfTreasures ?? 0;
 		while (amt -- > 0) {
-			const treasure = this.treasureSystem.generate(this.difficultyLevel, modifier, minLevel);
-			// const treasure = TreasureSystem.generate(this.difficultyLevel, modifier);
+			const treasure = this.treasureSystem.generate(this.difficultyLevel, null, modifier, minLevel);
 			arr.push(...treasure);
 		}
     return arr;
@@ -576,6 +575,6 @@ type RegionData = PersonaRegion["regionData"];
 type RegionBaseData = Pick<RegionDocument, "name" | "shapes">;
 
 interface TreasureGenerator<T>  {
-  generate (diffLevel: number, modifier?: number, minLevel?: number): T[];
+  generate (diffLevel: number, actor: null,  modifier?: number, minLevel?: number): T[];
 }
 

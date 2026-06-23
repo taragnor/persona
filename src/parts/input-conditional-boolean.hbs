@@ -79,6 +79,11 @@
 </select>
 {{multicheck (strcat namePrefix 'rollTag') POWERSTUFF.WEAPON_TAGS checked=cond.rollTag localize=true}}
 {{/if}}
+
+{{#if (eqAny cond.tagComparisonType "considered-item")}}
+{{multicheck (strcat namePrefix 'itemTag') POWERSTUFF.TAGS checked=cond.itemTag localize=true}}
+{{/if}}
+
 {{/if}}
 
 {{#if (eqAny cond.boolComparisonTarget "has-creature-tag")}}

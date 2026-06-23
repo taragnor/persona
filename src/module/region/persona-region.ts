@@ -213,7 +213,7 @@ export class PersonaRegion extends RegionDocument {
     await this.setRegionData(regionData);
   }
 
-  async treasureFound( searcher: ValidAttackers, searchRoll: number, ): Promise<EnchantedTreasureFormat[]> {
+  async treasureFound( searcher: PCLike, searchRoll: number, ): Promise<EnchantedTreasureFormat[]> {
     const regionData = this.regionData;
     const searchBonus = searcher.getPersonalBonuses("treasure-roll-bonus").total( {user: searcher.accessor});
     if (this.treasuresRemaining <= 0) {
@@ -222,10 +222,10 @@ export class PersonaRegion extends RegionDocument {
     }
     regionData.treasures.found += 1;
     await this.setRegionData(regionData);
-    return this.#treasureRoll(searchRoll, searchBonus);
+    return this.#treasureRoll(searcher, searchRoll, searchBonus);
   }
 
-  #treasureRoll(searchRoll: number, personalModifier : number = 0) : EnchantedTreasureFormat[] {
+  #treasureRoll(searcher: PCLike, searchRoll: number, personalModifier : number = 0) : EnchantedTreasureFormat[] {
     const treasureLevel = this.parent.treasureLevel;
     if (treasureLevel <= 0) {return [];}
     const mods = this.regionData.specialMods;
@@ -251,7 +251,7 @@ export class PersonaRegion extends RegionDocument {
       default:
         break;
     }
-    return TreasureSystem.generate(treasureLevel, treasureMod, treasureMin);
+    return TreasureSystem.generate(treasureLevel, searcher, treasureMod, treasureMin);
   }
 
   get treasuresRemaining(): number {

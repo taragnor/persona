@@ -32,7 +32,7 @@ export class TreasureList extends Application {
         list:v,
         totalProbability: v.reduce(
           (acc, item) => acc
-          + TreasureSystem.generateWeight(item, k as keyof TreasureItem["system"]["treasure"], false)
+          + TreasureSystem.generateWeight(item, k as keyof TreasureItem["system"]["treasure"], false, null)
           , 0),
       }));
     return {
