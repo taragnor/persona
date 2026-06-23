@@ -135,9 +135,9 @@ export abstract class DamageSystemBase implements DamageInterface {
     return calc;
   }
 
-  convertFromOldLowDamageToNewBase(low: number) : number {
-    return this.getWeaponDamageByWpnLevel(low-1);
-  }
+  // convertFromOldLowDamageToNewBase(low: number) : number {
+  //   return this.getWeaponDamageByWpnLevel(low-1);
+  // }
 
   processConsequence_damage( consequence: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: Persona, powerUsed: U<ModifierContainer>, situation: DamageSystemSituation) : ConsequenceProcessed['consequences'] {
     return targets.flatMap( target => {
@@ -261,17 +261,21 @@ export abstract class DamageSystemBase implements DamageInterface {
 
   }
 
-  abstract getWeaponDamageByWpnLevel(lvl: number) : number;
-  abstract getArmorDRByArmorLevel(lvl: number) : number;
+  abstract getWeaponRatingByWpnLevel(lvl: number): number ;
+  abstract getArmorRatingByItemLvl(lvl: number): number;
+  // abstract getWeaponDamageByWpnLevel(lvl: number) : number;
+  // abstract getArmorDRByArmorLevel(lvl: number) : number;
 }
 
 
 export interface DamageInterface {
   getBurnDamage(power: Usable, attackerPersona: Persona, targetPersona: Persona) : number;
   getDamage(power: Usable,attackerPersona: Persona, targetPersona: Persona, situation ?: Situation, options?: GetDamageOptions) : DamageCalculation;
-  convertFromOldLowDamageToNewBase(lowDmg: number): number;
-  getWeaponDamageByWpnLevel(lvl: number) : number;
-  getArmorDRByArmorLevel(lvl: number) : number;
+  // convertFromOldLowDamageToNewBase(lowDmg: number): number;
+  getWeaponRatingByWpnLevel(lvl: number): number;
+  getArmorRatingByItemLvl(lvl: number) : number;
+  // getWeaponDamageByWpnLevel(lvl: number) : number;
+  // getArmorDRByArmorLevel(lvl: number) : number;
   processConsequence_damage( cons: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: Persona, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'];
 
 }
@@ -296,4 +300,4 @@ interface GetDamageOptions {
   ignoreResistance ?: boolean;
 }
 
-type DamageSystemSituation = Situation & SituationComponent.User;
+export type DamageSystemSituation = Situation & SituationComponent.User;

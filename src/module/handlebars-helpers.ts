@@ -45,7 +45,6 @@ import {PersonaAE} from "./persona-ae.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {testPreconditions} from "./conditionalEffects/preconditions.js";
 import {ConditionalEffectManager} from "./conditionalEffects/conditional-effect-manager.js";
-import {MainDamageSystem} from "./combat/damage-system-v1.js";
 import {TreasureSystem} from "./exploration/treasure-system.js";
 
 
@@ -927,10 +926,6 @@ export class PersonaHandleBarsHelpers {
       return persona.combatStats.canRaiseStat(stat);
     },
 
-    "getWeaponDamageAmt": function (weapon: Weapon) {
-      return weapon.baseDamage().baseAmt;
-    },
-
     "resistStr": function (persona: Persona) {
       return persona.printableResistanceString;
     },
@@ -986,10 +981,14 @@ export class PersonaHandleBarsHelpers {
       return source.hasTag("simulated");
     },
 
-    "armorDR": function (item: InvItem) {
-      const DS = (PersonaSettings.getDamageSystem() as MainDamageSystem);
-      return DS.armorDRByEquipment(item);
-    },
+    // "armorDR": function (item: InvItem) {
+    //   const DS = (PersonaSettings.getDamageSystem() as MainDamageSystem);
+    //   return DS.armorDRByEquipment(item);
+    // },
+
+    // "armorRating": function (item: InvItem) {
+    //   return MainDamageSystem.armor(item);
+    // },
 
     "getModifierTypesByCategory": function (category: U<keyof typeof MODIFIER_CATEGORIES>) {
       if (!category || category.length == 0)

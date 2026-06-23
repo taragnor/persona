@@ -1393,6 +1393,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     // ].flat();
   }
 
+
   get displayedBonusPowers() : Power[] {
     if (!this.isValidCombatant()) {return [];}
     return this.persona().displayedBonusPowers;
@@ -1421,6 +1422,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     const dbitem = PersonaDB.getItemById(id);
     if (dbitem) {return dbitem as Weapon;}
     return null;
+  }
+
+  get armor() : U<InvItem> {
+    for (const x of this.equippedItems()) {
+      if (x.isInvItem() && x.system.slot == "body") {
+        return x;
+      }
+    }
+  }
+
+  get armorRating() : number {
+    return this.armor?.armorRating ?? 0;
   }
 
   unarmedTagList() : readonly PowerTag[] {

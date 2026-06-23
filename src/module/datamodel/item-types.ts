@@ -21,7 +21,6 @@ import { PROBABILITIES } from "../../config/probability.js";
 import {TAG_TYPES} from "../../config/tags-general.js";
 import {PreconditionConverter} from "../migration/convertPrecondition.js";
 import {ConsequenceConverter} from "../migration/convertConsequence.js";
-import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaError} from "../persona-error.js";
 import {CardEventSheet} from "../item/sheets/card-event-sheet.js";
 import {SocialCardEventHandler} from "../social/card-event-handler.js";
@@ -98,7 +97,7 @@ class WeaponDM extends foundry.abstract.TypeDataModel {
 		if (data?.damageNew == undefined && data?.damage?.low > 0) {
 			data.damageNew = {
 				weaponLevel: data.damage.low -1,
-				baseAmt: PersonaSettings.getDamageSystem().convertFromOldLowDamageToNewBase(data?.damage?.low ?? 0),
+				// baseAmt: PersonaSettings.getDamageSystem().convertFromOldLowDamageToNewBase(data?.damage?.low ?? 0),
 				extraVariance: 0,
 			};
 			data.itemLevel = data.damage.low - 1;
@@ -259,7 +258,7 @@ class InventoryItemSchema extends foundry.abstract.TypeDataModel {
 			...itemBase(),
 			slot: new txt<typeof EQUIP_SLOTS_LIST[number]>({choices: EQUIP_SLOTS_LIST}),
 			armorHPBoost: new num( {initial: 0, integer: true}),
-			armorLevel: new num( {initial: 0, integer: true}),
+			armorLevel: new num( {initial: 0}),
 			armorDR : new num( {initial: 0, integer:true}),
 			...effects(false),
 			...triEffects(),

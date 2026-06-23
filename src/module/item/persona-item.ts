@@ -1391,41 +1391,48 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
   }
 
-  baseDamage(this: Weapon) : Readonly<NewDamageParams> {
-    if (this.system.damageNew)  {
-      if (this.system.damageNew.baseAmt > 0) {return this.system.damageNew;}
-      if (this.system.damageNew.weaponLevel > 0) {
-        return {
-          baseAmt: this.damage.getWeaponDamageByWpnLevel(this.system.damageNew.weaponLevel),
-          extraVariance: this.system.damageNew.extraVariance ?? 0,
-        };
-      }
-      if (this.itemLevel() > 0) {
-        return {
-          baseAmt: this.damage.getWeaponDamageByWpnLevel(this.itemLevel()),
-          extraVariance: this.system.damageNew.extraVariance ?? 0,
-        };
-      }
-    }
-    if (this.system.damage.high >0) {
-      return PersonaItem.convertOldDamageToNew(this.system.damage);
-    }
-    return {
-      baseAmt: 0,
-      extraVariance: 0
-    };
+  varianceBoost(this: Weapon): number {
+    return this.system.damageNew.extraVariance;
   }
 
-  static convertOldDamageToNew (oldDmg : Weapon['system']['damage']): Readonly<NewDamageParams> {
-    const {high, low} = oldDmg;
-    const diff = high-low;
-    let extraVariance = 0;
-    if (diff >=4) { extraVariance= 1;}
-    return {
-      extraVariance,
-      baseAmt: PersonaSettings.getDamageSystem().convertFromOldLowDamageToNewBase(low),
-    };
-  }
+
+  // baseDamage(this: Weapon) : Readonly<NewDamageParams> {
+  //   if (this.system.damageNew)  {
+  //     return {baseAmt: 0,
+  //       extraVariance: this.system.damageNew.extraVariance};
+  //     if (this.system.damageNew.baseAmt > 0) {return this.system.damageNew;}
+  //     if (this.system.damageNew.weaponLevel > 0) {
+  //       return {
+  //         baseAmt: this.damage.getWeaponDamageByWpnLevel(this.system.damageNew.weaponLevel),
+  //         extraVariance: this.system.damageNew.extraVariance ?? 0,
+  //       };
+  //     }
+  //     if (this.itemLevel() > 0) {
+  //       return {
+  //         baseAmt: this.damage.getWeaponDamageByWpnLevel(this.itemLevel()),
+  //         extraVariance: this.system.damageNew.extraVariance ?? 0,
+  //       };
+  //     }
+  //   }
+  //   if (this.system.damage.high >0) {
+  //     return PersonaItem.convertOldDamageToNew(this.system.damage);
+  //   }
+  //   return {
+  //     baseAmt: 0,
+  //     extraVariance: 0
+  //   };
+  // }
+
+  // static convertOldDamageToNew (oldDmg : Weapon['system']['damage']): Readonly<NewDamageParams> {
+  //   const {high, low} = oldDmg;
+  //   const diff = high-low;
+  //   let extraVariance = 0;
+  //   if (diff >=4) { extraVariance= 1;}
+  //   return {
+  //     extraVariance,
+  //     baseAmt: PersonaSettings.getDamageSystem().convertFromOldLowDamageToNewBase(low),
+  //   };
+  // }
 
   /** used for damage calculation estaimate for char sheet*/
   generateSimulatedResult(this: Usable, user: ValidAttackers, target: N<PToken>, situation: AttackResult['situation']) : CombatResult | undefined;
@@ -1887,11 +1894,37 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return false;
   }
 
+  get armorLevel() : number {
+    if (!this.isInvItem()) {return 0;}
+    if (this.system.slot != "body") {return 0;}
+    if (this.system.armorLevel > 0) {return this.system.armorLevel;}
+    if (this.system.itemLevel > 0) { return this.system.itemLevel;}
+    return 0;
+  }
+
+  get weaponLevel() : number {
+    if (!this.isWeapon()) {return 0;}
+    if (this.system.damageNew.weaponLevel > 0) { return this.system.damageNew.weaponLevel;}
+    if (this.system.itemLevel > 0) { return this.system.itemLevel;}
+    return 0;
+  }
+
   get armorHPBoost() : number {
     if (!this.isInvItem()
       || this.system.slot != "body"
     ) {return 0;}
     return Math.round(this.system.armorHPBoost / 2);
+  }
+
+  get armorRating() : number {
+    const amt = PersonaSettings.getDamageSystem().getArmorRatingByItemLvl(this.armorLevel);
+    return amt;
+  }
+
+  get weaponRating(): number {
+    const amt = PersonaSettings.getDamageSystem()
+      .getWeaponRatingByWpnLevel(this.weaponLevel);
+    return amt;
   }
 
   isInvItem(): this is InvItem {

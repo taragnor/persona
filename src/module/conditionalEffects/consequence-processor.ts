@@ -1,6 +1,7 @@
 import {NewDamageConsequence, NonDeprecatedConsequence} from "../../config/consequence-types.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {AttackResult, CombatResult} from "../combat/combat-result.js";
+import {DamageSystemSituation} from "../combat/damage-system.js";
 import {ConsequenceProcessed, PersonaCombat} from "../combat/persona-combat.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
 import {Persona} from "../persona-class.js";
@@ -180,7 +181,7 @@ export class ConsequenceProcessor {
   }
 
   static processConsequence_damage( cons: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attackerPersona: Persona, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'] {
-    return PersonaSettings.getDamageSystem().processConsequence_damage(cons, targets, attackerPersona, powerUsed, situation);
+    return PersonaSettings.getDamageSystem().processConsequence_damage(cons, targets, attackerPersona, powerUsed, situation as DamageSystemSituation);
   }
 
   static getCombatResultFromConsequences(consList: ConsequenceProcessed['consequences'], situation: Situation, atkResult ?: AttackResult | null ) : CombatResult {

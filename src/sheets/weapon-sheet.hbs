@@ -33,12 +33,12 @@
 			{{#if (isGM)}}
 			<div class="new-dmg">
 				<label> Weapon Level </label>
-				{{numberInput item.system.damageNew.weaponLevel class="short" name="system.damageNew.weaponLevel" step=1 min=0 max=11}}
+				{{numberInput item.system.damageNew.weaponLevel class="short" name="system.damageNew.weaponLevel" step=0.1 min=0 max=11}}
 			</div>
 			{{/if}}
 			<div>
-				<label> Damage Amt </label>
-				{{getWeaponDamageAmt item}}
+				<label> Weapon Power </label>
+				{{item.weaponRating}}
 			</div>
 			<div>
 				<label>Extra Variance</label>

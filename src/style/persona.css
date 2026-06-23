@@ -774,6 +774,13 @@ div.power-operations {
   width: 120px;
 }
 
+.DR-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
 .scan-dialog .defenses {
   display: flex;
   flex-direction: row;

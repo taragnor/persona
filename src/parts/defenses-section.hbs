@@ -1,19 +1,27 @@
 {{#if (gte (scanLevel persona) 2)}}
+<div class="DR-section">
+  <div>
+    <label>
+      Armor Rating:
+    </label>
+    {{persona.user.armorRating}}
+  </div>
+</div>
 <div class="defenses">
-	{{#each CONST.REAL_DEFENSE_TYPES as |locName systemName|}}
-	<div class="defense" title="{{defenseBreakdown ../persona systemName}}">
-		<label>
-			{{localize locName}}
-		</label>
-		{{getDefense ../persona systemName}}
-	</div>
-	{{/each}}
-	<div class="initiative" title="{{getInitBreakdown persona}}">
-		<label>
-			Initiative
-		</label>
-		{{getInit persona}}
-	</div>
+  {{#each CONST.REAL_DEFENSE_TYPES as |locName systemName|}}
+  <div class="defense" title="{{defenseBreakdown ../persona systemName}}">
+    <label>
+      {{localize locName}}
+    </label>
+    {{getDefense ../persona systemName}}
+  </div>
+  {{/each}}
+  <div class="initiative" title="{{getInitBreakdown persona}}">
+    <label>
+      Initiative
+    </label>
+    {{getInit persona}}
+  </div>
 </div>
 {{/if}}
 

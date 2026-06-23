@@ -20,9 +20,9 @@ export  const damage = function() {
 
 export const damageNew = function () {
 	return new sch( {
-		baseAmt: new num( {integer:true, min: 0, initial:0}),
+		// baseAmt: new num( {integer:true, min: 0, initial:0}),
 		extraVariance: new num( {integer:true, min: 0, initial: 0}),
-		weaponLevel: new num( {integer: true, min: 0, initial: 0}),
+		weaponLevel: new num( {min: 0, initial: 0}),
 	});
 
 };

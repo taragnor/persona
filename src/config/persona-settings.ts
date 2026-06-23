@@ -138,7 +138,7 @@ export class PersonaSettings {
     return this.cache.attackStatScaler;
   }
 
-	static getDamageSystem() : DamageInterface {
+	static getDamageSystem() : MainDamageSystem {
 		return DAMAGE_SYSTEM_V1;
 	}
 
