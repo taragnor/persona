@@ -497,6 +497,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
   async startCombatantTurn( combatant: Combatant<PersonaActor>){
     if (!PersonaCombat.isPersonaCombatant(combatant)) {return;}
+    if (!combatant.defeated) {
+      void canvas.animatePan( {...combatant.token, duration: 750});
+    }
     const actor = combatant.actor;
     await actor.voicelines.onEvent( "on-turn-start");
     if (!game.user.isGM && actor.isOwner) {

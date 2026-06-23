@@ -36,25 +36,25 @@ export class CombatScene {
 		return game.scenes.get(this._previous) as PersonaScene;
 	}
 
-	async resolve(options :CombatSetupOptions = {}) : Promise<EncounterResult> {
-		await this.scene.setFlag("persona", "previousScene", this._previous);
-		await this.setupCombat();
-		const promise = new Promise( (res, rej) => {
-			this.promiseData = {resolve: res, reject: rej};
-			setTimeout( () => this.checkCombatOver(), 1000);
-		});
-		if (!PersonaCombat.combat) {
-			throw new PersonaError("Couldn't find Combat");
-		}
-		const combatOptions = this.getCombatOptions(options);
-		await PersonaCombat.combat.startCombat(combatOptions);
-		try {
-			await promise;
-		} catch  {
-			return false;
-		}
-		return true;
-	}
+  async resolve(options :CombatSetupOptions = {}) : Promise<EncounterResult> {
+    await this.scene.setFlag("persona", "previousScene", this._previous);
+    await this.setupCombat();
+    const promise = new Promise( (res, rej) => {
+      this.promiseData = {resolve: res, reject: rej};
+      setTimeout( () => this.checkCombatOver(), 1000);
+    });
+    if (!PersonaCombat.combat) {
+      throw new PersonaError("Couldn't find Combat");
+    }
+    const combatOptions = this.getCombatOptions(options);
+    await PersonaCombat.combat.startCombat(combatOptions);
+    try {
+      await promise;
+    } catch  {
+      return false;
+    }
+    return true;
+  }
 
 	getCombatOptions(options: CombatSetupOptions) : StartCombatOptions {
 		const combatOptions :StartCombatOptions = {
@@ -96,8 +96,8 @@ export class CombatScene {
 	}
 
   private async setupShadows() : Promise<Token<PersonaActor>[]> {
-		const INITIAL_OFFSET = { x: 6, y: 6} as const;
-		const SPACING_BLOCKS = 4 as const;
+		const INITIAL_OFFSET = { x: 5, y: 5} as const;
+		const SPACING_BLOCKS = 3 as const;
 		const gridsize = this.scene.grid.size;
 		let x = INITIAL_OFFSET.x * gridsize;
 		const y = INITIAL_OFFSET.y * gridsize;
@@ -183,7 +183,7 @@ export class CombatScene {
 	}
 
 	static get scene() : PersonaScene {
-		const combatScene= game.scenes.getName("Combat") as PersonaScene;
+		const combatScene = game.scenes.getName("Combat") as PersonaScene;
 		if (!combatScene) {
 			throw new PersonaError("Can't find Combat scene!");
 		}
@@ -208,6 +208,11 @@ export class CombatScene {
   static async returnToPreviousScene(scene: Scene) {
 		await scene.activate();
 		await scene.view();
+    const partyToken = scene.tokens
+      .find( x=> x.actor == PersonaDB.partyTokenActor());
+    if (partyToken && !partyToken.hidden) {
+      await canvas.animatePan( {...partyToken, duration: 1000});
+    }
   }
 
 	async addTokensToCombat(tokens: Token<PersonaActor>[], allowDuplicates = false) {

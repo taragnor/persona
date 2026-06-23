@@ -9,6 +9,7 @@ import {VotingDialog} from "../utility/shared-dialog.js";
 import {ExplorationPowerPanel} from "./explorationPowerPanel.js";
 import {ItemUsePanel} from "./item-use-panel.js";
 import {PersonaPanel} from "./sub-panel.js";
+import {PersonaScene} from "../persona-scene.js";
 
 export class PostCombatPanel extends PersonaPanel {
   static instance = new PostCombatPanel();
@@ -89,7 +90,12 @@ export class PostCombatPanel extends PersonaPanel {
     const vote = await dialog.majorityVote();
     if (vote != "Continue Exploring") {return;}
     if (!CombatScene.instance) {
-      throw new PersonaError("No Active Combat Scene, must return manually");
+      const region = Metaverse.getRegion();
+      if (!region || !(region.parent instanceof PersonaScene)) {
+        throw new PersonaError("No Active Combat Scene, must return manually");
+      }
+      await CombatScene.returnToPreviousScene(region.parent)
+      return;
     }
     CombatScene.instance.onReturnToExploringVote();
   }

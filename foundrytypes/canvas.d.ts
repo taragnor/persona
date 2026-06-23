@@ -6,7 +6,7 @@ declare const canvas : Canvas;
 class Canvas {
 	scene: Scene;
 	grid : Grid;
-	animatePan(data: {x: number, y: number, scale:number, duration?: number, speed: number}): Promise<Animation>;
+	animatePan(data: {x: number, y: number, scale?:number, duration?: number, speed?: number}): Promise<Animation>;
 	get tokens(): TokenLayer;
 	get stage(): Stage;
 	dimensions: CanvasDimensions;

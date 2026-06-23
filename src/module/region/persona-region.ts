@@ -18,33 +18,33 @@ import {HTMLTools} from "../utility/HTMLTools.js";
 import {Logger} from "../utility/logger.js";
 
 declare global {
-	interface SocketMessage {
+  interface SocketMessage {
 "SEARCH_REQUEST" : {regionId: string};
-	}
+  }
 }
 
 const PLAYER_VISIBLE_MOD_LIST = [
-	"treasure-poor", //1d10 treasure
-	"treasure-rich", //1d20+5 treasure
-	"treasure-ultra", //1d10+15 treasure
-	"hazard-on-2",
-	// "no-tension-roll",// don't roll tension after
-	"safe",//can't search and no random encounter rolls
-	"bonus-on-6", //+5 treasure on 6 search
-	"fixed-treasure", // Treasure is static
-	"treasure-refresh", // Treasure refreshes on enter metaverse
-	"no-tension-increase", //no tension increase after search
-	"compendium-access", //can access persona compendium
+  "treasure-poor", //1d10 treasure
+  "treasure-rich", //1d20+5 treasure
+  "treasure-ultra", //1d10+15 treasure
+  "hazard-on-2",
+  // "no-tension-roll",// don't roll tension after
+  "safe",//can't search and no random encounter rolls
+  "bonus-on-6", //+5 treasure on 6 search
+  "fixed-treasure", // Treasure is static
+  "treasure-refresh", // Treasure refreshes on enter metaverse
+  "no-tension-increase", //no tension increase after search
+  "compendium-access", //can access persona compendium
 
 ] as const;
 
 const PLAYER_HIDDEN_MOD_LIST = [
-	"stop-on-hazard",
+  "stop-on-hazard",
 ] as const;
 
 const SPECIAL_MOD_LIST = [
-	...PLAYER_VISIBLE_MOD_LIST,
-	...PLAYER_HIDDEN_MOD_LIST,
+  ...PLAYER_VISIBLE_MOD_LIST,
+  ...PLAYER_HIDDEN_MOD_LIST,
 ] as const;
 
 type SpecialMod = typeof SPECIAL_MOD_LIST[number];
@@ -52,117 +52,111 @@ type SpecialMod = typeof SPECIAL_MOD_LIST[number];
 const SPECIAL_MODS = HTMLTools.createLocalizationObject(SPECIAL_MOD_LIST, "persona.specialRoomMods");
 
 const SECRET_CHOICES_LIST = [
-	"found",
-	"none",
-	"hidden",
-	"found-repeatable",
-	"hidden-repeatable",
+  "found",
+  "none",
+  "hidden",
+  "found-repeatable",
+  "hidden-repeatable",
 ] as const;
 
 type SecretChoice = typeof SECRET_CHOICES_LIST[number];
 
-// const SECRET_CHOICES = Object.fromEntries(
-// 	SECRET_CHOICES_LIST.map( x=> [x, `persona.secretChoices.${x}`])
-// );
 const SECRET_CHOICES = HTMLTools.createLocalizationObject( SECRET_CHOICES_LIST , "persona.secretChoices");
 
-
 type RegionData = {
-	ignore: boolean,
-	secret: SecretChoice,
-	hazard: SecretChoice,
-	secretDetails: string,
-	hazardDetails: string,
-	treasures: {
-		found: number,
-		max: number,
-	},
-	roomEffects: Item["id"][],
-	pointsOfInterest: string[],
-	specialMods: SpecialMod[],
-	// concordiaPresence: number,
-	shadowPresence: number,
-	secretNotes: string,
-	challengeLevel: number,
+  ignore: boolean,
+  secret: SecretChoice,
+  hazard: SecretChoice,
+  secretDetails: string,
+  hazardDetails: string,
+  treasures: {
+    found: number,
+    max: number,
+  },
+  roomEffects: Item["id"][],
+  pointsOfInterest: string[],
+  specialMods: SpecialMod[],
+  shadowPresence: number,
+  secretNotes: string,
+  challengeLevel: number,
 }
 
 export class PersonaRegion extends RegionDocument {
 
-	declare parent: PersonaScene;
+  declare parent: PersonaScene;
 
-	#changeBuffer : RegionData | undefined = undefined;
-	declare tokens: Set<TokenDocument<PersonaActor>>;
+  #changeBuffer : RegionData | undefined = undefined;
+  declare tokens: Set<TokenDocument<PersonaActor>>;
 
-	defaultRegionData() : RegionData {
-		return {
-			ignore: false,
-			secret: "none",
-			hazard: "none",
-			secretDetails: "",
-			hazardDetails: "",
-			treasures : {
-				found: 0,
-				max: 0,
-			},
-			roomEffects: [],
-			pointsOfInterest: [],
-			specialMods: [],
-			// concordiaPresence: 0,
-			shadowPresence: 0,
-			secretNotes: "",
-			challengeLevel: 1,
-		} as const;
-	}
+  defaultRegionData() : RegionData {
+    return {
+      ignore: false,
+      secret: "none",
+      hazard: "none",
+      secretDetails: "",
+      hazardDetails: "",
+      treasures : {
+        found: 0,
+        max: 0,
+      },
+      roomEffects: [],
+      pointsOfInterest: [],
+      specialMods: [],
+      shadowPresence: 0,
+      secretNotes: "",
+      challengeLevel: 1,
+    } as const;
+  }
 
-	get disabled() : boolean {
-		const situation : Situation = {
-			trigger: "on-enter-region-dual",
+  get disabled() : boolean {
+    const situation : Situation = {
+      trigger: "on-enter-region-dual",
       global: true,
-			triggeringRegionId: this.id,
-			triggeringUser: game.user.id,
-		};
-		return this.allRoomEffects
-			.flatMap( eff=> eff.getPassiveEffects(null))
-			.some( CE=> {
-				const cons = CE.getActiveConsequences(situation);
-				return cons.some( cons =>
-					cons.type == "dungeon-action" && cons.dungeonAction == "disable-region");
-			});
-	}
+      triggeringRegionId: this.id,
+      triggeringUser: game.user.id,
+    };
+    return this.allRoomEffects
+      .flatMap( eff=> eff.getPassiveEffects(null))
+      .some( CE=> {
+        const cons = CE.getActiveConsequences(situation);
+        return cons.some( cons =>
+          cons.type == "dungeon-action" && cons.dungeonAction == "disable-region");
+      });
+  }
 
   get ignoreRegion() : boolean {
     return this.regionData.ignore ?? true;
   }
 
-	get regionData(): RegionData {
-		const regionData = this.getFlag("persona", "RegionData");
-		const defaultRegion = this.defaultRegionData();
-		if (!regionData) {return defaultRegion;}
-		foundry.utils.mergeObject(regionData, defaultRegion, {insertKeys: true, overwrite: false});
-		return regionData as RegionData;
-	}
+  get regionData(): RegionData {
+    const regionData = this.getFlag("persona", "RegionData");
+    const defaultRegion = this.defaultRegionData();
+    if (!regionData) {return defaultRegion;}
+    foundry.utils.mergeObject(regionData, defaultRegion, {insertKeys: true, overwrite: false});
+    return regionData as RegionData;
+  }
 
 
-	get challengeLevel(): number {
-		return this.regionData.challengeLevel ?? 1;
+  get challengeLevel(): number {
+    return this.regionData.challengeLevel ?? 1;
 
-	}
+  }
 
-	hasModifier(mod: SpecialMod) : boolean {
-		return this.regionData.specialMods.includes(mod);
-	}
+  hasModifier(mod: SpecialMod) : boolean {
+    return this.regionData.specialMods.includes(mod);
+  }
 
-	get secret(): string {
-		return localize(
-			SECRET_CHOICES[ this.regionData.secret ?? "none"]
-		);
-	}
+  get secret(): string {
+    return localize(
+      SECRET_CHOICES[ this.regionData.secret ?? "none"]
+    );
+  }
 
-	get hazard(): string {
-		return localize(
-			SECRET_CHOICES[ this.regionData.hazard ?? "none"]
-		);
-	}
+  get hazard(): string {
+    return localize(
+      SECRET_CHOICES[ this.regionData.hazard ?? "none"]
+    );
+  }
 
   get shadowPresence(): number {
     if (this.regionData.shadowPresence) {
@@ -171,21 +165,21 @@ export class PersonaRegion extends RegionDocument {
     else {return 0;}
   }
 
-	get isSafe() : boolean {
-		return this.hasModifier("safe");
-	}
+  get isSafe() : boolean {
+    return this.hasModifier("safe");
+  }
 
   get isSearchable() : boolean {
     return !this.isSafe;
   }
 
-	async secretFound() {
-		return await this.secretHazardFound("secret");
-	}
+  async secretFound() {
+    return await this.secretHazardFound("secret");
+  }
 
-	async hazardFound() {
-		return await this.secretHazardFound("hazard");
-	}
+  async hazardFound() {
+    return await this.secretHazardFound("hazard");
+  }
 
   hasSecret() : boolean {
     return this.regionData.secret != "none";
@@ -195,114 +189,114 @@ export class PersonaRegion extends RegionDocument {
     return this.regionData.hazard != "none";
   }
 
-	async secretHazardFound(field: "secret" | "hazard") {
-		const regionData = this.regionData;
-		const fieldValue = regionData[field];
-		switch (fieldValue) {
-			case "found":
-				return;
-			case "hidden":
-				regionData[field] = "found";
-				break;
-			case "none":
-				PersonaError.softFail("Found hazard but there is none to find?");
-				return;
-			case "found-repeatable":
-				break;
-			case "hidden-repeatable":
-				regionData[field] = "found-repeatable";
-				break;
-			default:
-				fieldValue satisfies never;
-				return;
-		}
-		await this.setRegionData(regionData);
-	}
+  async secretHazardFound(field: "secret" | "hazard") {
+    const regionData = this.regionData;
+    const fieldValue = regionData[field];
+    switch (fieldValue) {
+      case "found":
+        return;
+      case "hidden":
+        regionData[field] = "found";
+        break;
+      case "none":
+        PersonaError.softFail("Found hazard but there is none to find?");
+        return;
+      case "found-repeatable":
+        break;
+      case "hidden-repeatable":
+        regionData[field] = "found-repeatable";
+        break;
+      default:
+        fieldValue satisfies never;
+        return;
+    }
+    await this.setRegionData(regionData);
+  }
 
-	async treasureFound( searcher: ValidAttackers, searchRoll: number, ): Promise<EnchantedTreasureFormat[]> {
-		const regionData = this.regionData;
-		const searchBonus = searcher.getPersonalBonuses("treasure-roll-bonus").total( {user: searcher.accessor});
-		if (this.treasuresRemaining <= 0) {
-			PersonaError.softFail("Can't find a treasure in room with no treasure left");
-			return [];
-		}
-		regionData.treasures.found += 1;
-		await this.setRegionData(regionData);
-		return this.#treasureRoll(searchRoll, searchBonus);
-	}
+  async treasureFound( searcher: ValidAttackers, searchRoll: number, ): Promise<EnchantedTreasureFormat[]> {
+    const regionData = this.regionData;
+    const searchBonus = searcher.getPersonalBonuses("treasure-roll-bonus").total( {user: searcher.accessor});
+    if (this.treasuresRemaining <= 0) {
+      PersonaError.softFail("Can't find a treasure in room with no treasure left");
+      return [];
+    }
+    regionData.treasures.found += 1;
+    await this.setRegionData(regionData);
+    return this.#treasureRoll(searchRoll, searchBonus);
+  }
 
-	#treasureRoll(searchRoll: number, personalModifier : number = 0) : EnchantedTreasureFormat[] {
-		const treasureLevel = this.parent.treasureLevel;
-		if (treasureLevel <= 0) {return [];}
-		const mods = this.regionData.specialMods;
-		let treasureMod = personalModifier ?? 0;
-		let treasureMin = 1;
+  #treasureRoll(searchRoll: number, personalModifier : number = 0) : EnchantedTreasureFormat[] {
+    const treasureLevel = this.parent.treasureLevel;
+    if (treasureLevel <= 0) {return [];}
+    const mods = this.regionData.specialMods;
+    let treasureMod = personalModifier ?? 0;
+    let treasureMin = 1;
 
-		switch (true) {
-			case mods.includes("treasure-poor"):
-				treasureMod = -50;
-				break;
-			case mods.includes("treasure-rich"):
-				treasureMod = +10;
-				treasureMin = 25;
-				break;
-			case mods.includes("treasure-ultra"):
-				treasureMod = 25;
-				treasureMin = 50;
-				break;
-			case mods.includes("bonus-on-6") && searchRoll == 6:
-				treasureMod += 10;
-				treasureMin += 50;
-				break;
-			default:
-				break;
-		}
-		return TreasureSystem.generate(treasureLevel, treasureMod, treasureMin);
-	}
+    switch (true) {
+      case mods.includes("treasure-poor"):
+        treasureMod = -50;
+        break;
+      case mods.includes("treasure-rich"):
+        treasureMod = +10;
+        treasureMin = 25;
+        break;
+      case mods.includes("treasure-ultra"):
+        treasureMod = 25;
+        treasureMin = 50;
+        break;
+      case mods.includes("bonus-on-6") && searchRoll == 6:
+        treasureMod += 10;
+        treasureMin += 50;
+        break;
+      default:
+        break;
+    }
+    return TreasureSystem.generate(treasureLevel, treasureMod, treasureMin);
+  }
 
-	get treasuresRemaining(): number {
-		const t= this.regionData.treasures;
-		return t.max - t.found;
-	}
+  get treasuresRemaining(): number {
+    const t= this.regionData.treasures;
+    return t.max - t.found;
+  }
 
-	get allRoomEffects() : readonly UniversalModifier[] {
-		return this.parent.sceneEffects.concat(this.personalRoomEffectsOnly());
-	}
+  get allRoomEffects() : readonly UniversalModifier[] {
+    return this.parent.sceneEffects.concat(this.personalRoomEffectsOnly());
+  }
 
-	personalRoomEffectsOnly(): readonly UniversalModifier[] {
-		return this.regionData.roomEffects.flatMap ( id=> {
-			if (!id) {return [];}
-			const mod = PersonaDB.getRoomModifiers().find(x=> x.id == id);
-			if (mod) {return [mod];}
-			else {return [];}
-		});
-	}
+  personalRoomEffectsOnly(): readonly UniversalModifier[] {
+    return this.regionData.roomEffects.flatMap ( id=> {
+      if (!id) {return [];}
+      const mod = PersonaDB.getRoomModifiers().find(x=> x.id == id);
+      if (mod) {return [mod];}
+      else {return [];}
+    });
+  }
 
-	get specialMods() : string[] {
-		return this.regionData.specialMods
-			.filter( x=> x && (game.user.isGM || PLAYER_VISIBLE_MOD_LIST.includes(x as typeof PLAYER_VISIBLE_MOD_LIST[number])))
-			.map( x=> game.i18n.localize(SPECIAL_MODS[x]));
-	}
+  get specialMods() : string[] {
+    return this.regionData.specialMods
+      .filter( x=> x && (game.user.isGM || PLAYER_VISIBLE_MOD_LIST.includes(x as typeof PLAYER_VISIBLE_MOD_LIST[number])))
+      .map( x=> game.i18n.localize(SPECIAL_MODS[x]));
+  }
 
-	get pointsOfInterest(): string[] {
-		return this.regionData.pointsOfInterest
-			.filter(x=> x);
-	}
+  get pointsOfInterest(): string[] {
+    return this.regionData.pointsOfInterest
+      .filter(x=> x);
+  }
 
-	encounterList(): Shadow[] {
-		const baseList = this.parent.encounterList();
-		return baseList;
-	}
+  encounterList(): Shadow[] {
+    const baseList = this.parent.encounterList();
+    return baseList;
+  }
 
-	get EnemyDifficultyRange(): {low:number, high:number} {
-		const diffLevel = this.regionData.challengeLevel + this.parent.challengeLevel;
-		//TODO: replace with real range after difficult is properly set in scene
-		const diffRange = 9999;
-		return {
-			low:	diffLevel - diffRange,
-			high: diffLevel + diffRange,
-		};
-	}
+  get enemyDifficultyRange(): {low:number, high:number} {
+    const diffLevel = this.regionData.challengeLevel + this.parent.challengeLevel;
+    //TODO: replace with real range after difficult is properly set in scene
+    const diffRange = 9999;
+    return {
+      low:	diffLevel - diffRange,
+      high: diffLevel + diffRange,
+    };
+  }
 
   private async _onPCEnterRegion(actor: PC) {
     const situation : Situation = {
@@ -342,40 +336,40 @@ export class PersonaRegion extends RegionDocument {
     }
   }
 
-	/** for batch_adding */
-	async addRoomModifier(mod: UniversalModifier | string) {
-		if (typeof mod == "string") {
-			const item = PersonaDB.allItems().find( x=> x.name == mod);
-			if (!mod) {throw new Error("Modifier Not found");}
-			mod = item as UniversalModifier;
-		}
-		if (mod?.system?.type != "universalModifier") {throw new PersonaError("Not a modifier");}
-		if (mod.system.scope != "room")  {throw new PersonaError("Not a Room Effect");}
-		const data = this.regionData;
-		if (data.roomEffects.includes( mod.id)) {
-			return false;
-		}
-		data.roomEffects = data.roomEffects.filter(x=> x);
-		if (data.roomEffects.length >= 4) {
-			ui.notifications.warn("${this.name} ${this.id} Effects full");
-			return false;
-		}
-		data.roomEffects.pushUnique(mod.id);
-		await this.setRegionData(data);
-		return true;
-	}
+  /** for batch_adding */
+  async addRoomModifier(mod: UniversalModifier | string) {
+    if (typeof mod == "string") {
+      const item = PersonaDB.allItems().find( x=> x.name == mod);
+      if (!mod) {throw new Error("Modifier Not found");}
+      mod = item as UniversalModifier;
+    }
+    if (mod?.system?.type != "universalModifier") {throw new PersonaError("Not a modifier");}
+    if (mod.system.scope != "room")  {throw new PersonaError("Not a Room Effect");}
+    const data = this.regionData;
+    if (data.roomEffects.includes( mod.id)) {
+      return false;
+    }
+    data.roomEffects = data.roomEffects.filter(x=> x);
+    if (data.roomEffects.length >= 4) {
+      ui.notifications.warn("${this.name} ${this.id} Effects full");
+      return false;
+    }
+    data.roomEffects.pushUnique(mod.id);
+    await this.setRegionData(data);
+    return true;
+  }
 
-	async removeRoomModifier(mod: UniversalModifier) {
-		if (mod?.system?.type != "universalModifier") {throw new PersonaError("Not a modifier");}
-		if (mod.system.scope != "room")  {throw new PersonaError("Not a Room Effect");}
-		const data = this.regionData;
-		if (!data.roomEffects.includes( mod.id)) {
-			return false;
-		}
-		data.roomEffects = data.roomEffects.filter(x=> x != mod.id);
-		await this.setRegionData(data);
-		return true;
-	}
+  async removeRoomModifier(mod: UniversalModifier) {
+    if (mod?.system?.type != "universalModifier") {throw new PersonaError("Not a modifier");}
+    if (mod.system.scope != "room")  {throw new PersonaError("Not a Room Effect");}
+    const data = this.regionData;
+    if (!data.roomEffects.includes( mod.id)) {
+      return false;
+    }
+    data.roomEffects = data.roomEffects.filter(x=> x != mod.id);
+    await this.setRegionData(data);
+    return true;
+  }
 
   async removeAllRoomModifiers() {
     const data = this.regionData;
@@ -387,331 +381,331 @@ export class PersonaRegion extends RegionDocument {
     await Logger.sendToChat(`${this.name} cleared of all Room Effects: ${effectsRemoved}`);
   }
 
-	async presenceCheck(battleType: PresenceRollData["encounterType"], modifier = 0) : Promise<boolean> {
-		const presence = await RandomEncounter.presenceCheck(battleType, this, undefined, modifier);
-		if (!presence) {return false;}
-		const shadowTypes =this.encounterList().map(x=> x.system.creatureType);
-		const shadowType = randomSelect(removeDuplicates(shadowTypes));
-		const situation : Situation = {
-			trigger: "on-presence-check",
-			triggeringUser: game.user.id,
-			triggeringRegionId : this.id,
-		};
-		const modifiers = [
-			...PersonaDB.getGlobalModifiers(),
-			...this.allRoomEffects,
-		];
-		const sizeMod = new ModifierList(
-			modifiers.flatMap( x=> x.getModifier("encounterSize", null))
-		).total(situation);
-		const hardMod = new ModifierList(
-			modifiers.flatMap( x=> x.getModifier("hardMod", null))
-		).total(situation);
-		const treasureMod = new ModifierList(
-			modifiers.flatMap( x=> x.getModifier("treasureMod", null))
-		).total(situation);
-		const mixedMod = new ModifierList(
-			modifiers.flatMap( x=> x.getModifier("mixedMod", null))
-		).total(situation);
-		let encounterType : EncounterOptions["encounterType"] = undefined;
-		switch (battleType) {
-			case "secondary":
-				encounterType = "standard";
-				break;
-		}
-		const options : EncounterOptions = {
-			sizeMod,
-			encounterType,
-			frequencies: {
-				hard: hardMod,
-				mixed: mixedMod,
-				treasure: treasureMod,
-				normal: 0,
-			},
-		};
-		void RandomEncounter.encounterProcess(battleType, shadowType, options);
-		return true;
-	}
+  async presenceCheck(battleType: PresenceRollData["encounterType"], modifier = 0) : Promise<boolean> {
+    const presence = await RandomEncounter.presenceCheck(battleType, this, undefined, modifier);
+    if (!presence) {return false;}
+    const shadowTypes =this.encounterList().map(x=> x.system.creatureType);
+    const shadowType = randomSelect(removeDuplicates(shadowTypes));
+    const situation : Situation = {
+      trigger: "on-presence-check",
+      triggeringUser: game.user.id,
+      triggeringRegionId : this.id,
+    };
+    const modifiers = [
+      ...PersonaDB.getGlobalModifiers(),
+      ...this.allRoomEffects,
+    ];
+    const sizeMod = new ModifierList(
+      modifiers.flatMap( x=> x.getModifier("encounterSize", null))
+    ).total(situation);
+    const hardMod = new ModifierList(
+      modifiers.flatMap( x=> x.getModifier("hardMod", null))
+    ).total(situation);
+    const treasureMod = new ModifierList(
+      modifiers.flatMap( x=> x.getModifier("treasureMod", null))
+    ).total(situation);
+    const mixedMod = new ModifierList(
+      modifiers.flatMap( x=> x.getModifier("mixedMod", null))
+    ).total(situation);
+    let encounterType : EncounterOptions["encounterType"] = undefined;
+    switch (battleType) {
+      case "secondary":
+        encounterType = "standard";
+        break;
+    }
+    const options : EncounterOptions = {
+      sizeMod,
+      encounterType,
+      frequencies: {
+        hard: hardMod,
+        mixed: mixedMod,
+        treasure: treasureMod,
+        normal: 0,
+      },
+    };
+    void RandomEncounter.encounterProcess(battleType, shadowType, options);
+    return true;
+  }
 
-	async setRegionData(data: RegionData) {
-		if (!this.isOwner) {return;}
-		await this.setFlag("persona", "RegionData", data);
-	}
+  async setRegionData(data: RegionData) {
+    if (!this.isOwner) {return;}
+    await this.setFlag("persona", "RegionData", data);
+  }
 
-	async setShadowPresence(newPresence: number) {
-		const rdata = this.regionData;
-		rdata.shadowPresence = newPresence;
-		await this.setRegionData(rdata);
-	}
+  async setShadowPresence(newPresence: number) {
+    const rdata = this.regionData;
+    rdata.shadowPresence = newPresence;
+    await this.setRegionData(rdata);
+  }
 
-	formEntryField(field: keyof RegionData) {
-		const element = $("<div>");
-		element.append($("<label>").text(
-			game.i18n.localize(`persona.roomAttribute.${field}` as LocalizationString)
-		));
-		const fieldClass = `field-${field}`;
-		switch (field) {
-			case "ignore": {
-				const val = this.regionData[field];
-				const check = $(`<input type="checkbox">`)
-				.prop("checked", val)
-				.addClass(fieldClass)
-				.on("change", this.#refreshRegionData.bind(this));
-				element.append(check);
-				break;
-			}
-			case "secretDetails":
-			case "hazardDetails": {
-				const val = this.regionData[field];
-				const input = $(`<input type="text">`).val(val ?? "").addClass(fieldClass)
-				.on("change", this.#refreshRegionData.bind(this));
-				element.append(input);
-				break;
-			}
-			case "secret":
-			case "hazard": {
-				const val = this.regionData[field];
-				const select = $("<select>")
-				.addClass(fieldClass)
-				.on("change", this.#refreshRegionData.bind(this))
-				;
-				const options = Object.entries(SECRET_CHOICES)
-				.map( ([k,v]) => {
-					const item = $("<option>").val(k).text(game.i18n.localize(v));
-					if (k == val) {
-						item.prop("selected", true);
-					}
-					return item;
-				});
-				for (const i of options) {
-					select.append(i);
-				}
-				element.append(select);
-				break;
-			}
-			case "treasures": {
-				const val = this.regionData[field];
-				const subdiv = $("<div>");
-				subdiv.append($("<label>").text("Found"));
-				subdiv.append(
-					$(`<input type="number">`).addClass(`${fieldClass}-found`).val(val.found ?? 0)
-					.on("change", this.#refreshRegionData.bind(this))
+  formEntryField(field: keyof RegionData) {
+    const element = $("<div>");
+    element.append($("<label>").text(
+      game.i18n.localize(`persona.roomAttribute.${field}` as LocalizationString)
+    ));
+    const fieldClass = `field-${field}`;
+    switch (field) {
+      case "ignore": {
+        const val = this.regionData[field];
+        const check = $(`<input type="checkbox">`)
+        .prop("checked", val)
+        .addClass(fieldClass)
+        .on("change", this.#refreshRegionData.bind(this));
+        element.append(check);
+        break;
+      }
+      case "secretDetails":
+      case "hazardDetails": {
+        const val = this.regionData[field];
+        const input = $(`<input type="text">`).val(val ?? "").addClass(fieldClass)
+        .on("change", this.#refreshRegionData.bind(this));
+        element.append(input);
+        break;
+      }
+      case "secret":
+      case "hazard": {
+        const val = this.regionData[field];
+        const select = $("<select>")
+        .addClass(fieldClass)
+        .on("change", this.#refreshRegionData.bind(this))
+        ;
+        const options = Object.entries(SECRET_CHOICES)
+        .map( ([k,v]) => {
+          const item = $("<option>").val(k).text(game.i18n.localize(v));
+          if (k == val) {
+            item.prop("selected", true);
+          }
+          return item;
+        });
+        for (const i of options) {
+          select.append(i);
+        }
+        element.append(select);
+        break;
+      }
+      case "treasures": {
+        const val = this.regionData[field];
+        const subdiv = $("<div>");
+        subdiv.append($("<label>").text("Found"));
+        subdiv.append(
+          $(`<input type="number">`).addClass(`${fieldClass}-found`).val(val.found ?? 0)
+          .on("change", this.#refreshRegionData.bind(this))
 
-				);
-				subdiv.append($("<label>").text("Max"));
-				subdiv.append(
-					$(`<input type="number">`).addClass(`${fieldClass}-max`).val(val.max ?? 0)
-					.on("change", this.#refreshRegionData.bind(this))
-				);
-				element.append(subdiv);
-				break;
-			}
-			case "roomEffects": {
-				const val = this.regionData[field];
-				for (const i of [0,1,2,3]) {
-					element.append(this.#roomEffectSelector(val.at(i), fieldClass));
-				}
-				break;
-			}
-			case "pointsOfInterest": {
-				const val = this.regionData[field];
-				for (const i of [0,1,2,3]) {
-					element.append(
-						$(`<input type="text">`).val(val.at(i) ?? "").addClass(fieldClass)
-						.on("change", this.#refreshRegionData.bind(this))
+        );
+        subdiv.append($("<label>").text("Max"));
+        subdiv.append(
+          $(`<input type="number">`).addClass(`${fieldClass}-max`).val(val.max ?? 0)
+          .on("change", this.#refreshRegionData.bind(this))
+        );
+        element.append(subdiv);
+        break;
+      }
+      case "roomEffects": {
+        const val = this.regionData[field];
+        for (const i of [0,1,2,3]) {
+          element.append(this.#roomEffectSelector(val.at(i), fieldClass));
+        }
+        break;
+      }
+      case "pointsOfInterest": {
+        const val = this.regionData[field];
+        for (const i of [0,1,2,3]) {
+          element.append(
+            $(`<input type="text">`).val(val.at(i) ?? "").addClass(fieldClass)
+            .on("change", this.#refreshRegionData.bind(this))
 
-					);
-				}
-				break;
-			}
-			case "specialMods": {
-				const val = this.regionData[field];
-				for (const i of [0,1,2,3]) {
-					const select = $("<select>")
-						.addClass(fieldClass)
-						.on("change", this.#refreshRegionData.bind(this))
-					;
-					const emptyOption = $("<option>").val("").text("-");
-					select.append(emptyOption);
-					for (const [k,v] of Object.entries(SPECIAL_MODS)) {
-						const mod = $("<option>").val(k).text(localize(v)).prop("selected", val.at(i) == k);
-						select.append(mod);
-					}
-					element.append(select);
-				}
-				break;
-			}
-			// case "concordiaPresence": {
-			// 	const val = this.regionData[field];
-			// 	element.append(
-			// 		$(`<input type="number">`).addClass(`${fieldClass}`).val(val ?? 0)
-			// 		.on("change", this.#refreshRegionData.bind(this))
-			// 	);
-			// 	break;
-			// }
-			case "shadowPresence": {
-				const val = this.regionData[field];
-				element.append(
-					$(`<input type="number">`).addClass(`${fieldClass}`).val(val ?? 0)
-					.on("change", this.#refreshRegionData.bind(this))
-				);
-				break;
-			}
-			case "challengeLevel": {
-				const val = this.regionData[field];
-				element.append(
-					$(`<input type="number">`).addClass(`${fieldClass}`).val(val ?? 0)
-					.on("change", this.#refreshRegionData.bind(this))
-				);
-				break;
-			}
-			case "secretNotes": {
-				const val = this.regionData[field];
-				element.append(
-					$(`<textarea>`).addClass(`${fieldClass}`)
-					.val(val ?? "")
-					.on("change", this.#refreshRegionData.bind(this))
-				);
-				break;
-			}
-			default:
-				field satisfies never;
-				return $("<div>").text("ERROR");
-		}
-		return element;
-	}
+          );
+        }
+        break;
+      }
+      case "specialMods": {
+        const val = this.regionData[field];
+        for (const i of [0,1,2,3]) {
+          const select = $("<select>")
+            .addClass(fieldClass)
+            .on("change", this.#refreshRegionData.bind(this))
+          ;
+          const emptyOption = $("<option>").val("").text("-");
+          select.append(emptyOption);
+          for (const [k,v] of Object.entries(SPECIAL_MODS)) {
+            const mod = $("<option>").val(k).text(localize(v)).prop("selected", val.at(i) == k);
+            select.append(mod);
+          }
+          element.append(select);
+        }
+        break;
+      }
+        // case "concordiaPresence": {
+        // 	const val = this.regionData[field];
+        // 	element.append(
+        // 		$(`<input type="number">`).addClass(`${fieldClass}`).val(val ?? 0)
+        // 		.on("change", this.#refreshRegionData.bind(this))
+        // 	);
+        // 	break;
+        // }
+      case "shadowPresence": {
+        const val = this.regionData[field];
+        element.append(
+          $(`<input type="number">`).addClass(`${fieldClass}`).val(val ?? 0)
+          .on("change", this.#refreshRegionData.bind(this))
+        );
+        break;
+      }
+      case "challengeLevel": {
+        const val = this.regionData[field];
+        element.append(
+          $(`<input type="number">`).addClass(`${fieldClass}`).val(val ?? 0)
+          .on("change", this.#refreshRegionData.bind(this))
+        );
+        break;
+      }
+      case "secretNotes": {
+        const val = this.regionData[field];
+        element.append(
+          $(`<textarea>`).addClass(`${fieldClass}`)
+          .val(val ?? "")
+          .on("change", this.#refreshRegionData.bind(this))
+        );
+        break;
+      }
+      default:
+        field satisfies never;
+        return $("<div>").text("ERROR");
+    }
+    return element;
+  }
 
-	#roomEffectSelector(selected : string | undefined, classString: string) {
-		const select = $("<select>").addClass(classString)
-			.on("change", this.#refreshRegionData.bind(this))
-		;
-		const emptyOption = $("<option>").val("").text("-");
-		select.append(emptyOption);
-		const options = PersonaDB.getRoomModifiers().map(
-			item => $("<option>").val(item.id).text(item.name).prop("selected", item.id == selected)
-		);
-		for (const i of options) {
-			select.append(i);
-		}
-		return select;
-	}
+  #roomEffectSelector(selected : string | undefined, classString: string) {
+    const select = $("<select>").addClass(classString)
+      .on("change", this.#refreshRegionData.bind(this))
+    ;
+    const emptyOption = $("<option>").val("").text("-");
+    select.append(emptyOption);
+    const options = PersonaDB.getRoomModifiers().map(
+      item => $("<option>").val(item.id).text(item.name).prop("selected", item.id == selected)
+    );
+    for (const i of options) {
+      select.append(i);
+    }
+    return select;
+  }
 
-	#refreshRegionData(event: JQuery.ChangeEvent) {
-		const topLevel  = $(event.currentTarget).closest(".tab.region-identity");
-		const data = this.regionData;
-		for( const key of Object.keys(data)) {
-			const k = key as keyof RegionData;
-			const fieldClass = `field-${k}`;
-			switch (k) {
-				case "ignore": {
-					const input = topLevel.find(`.${fieldClass}`).prop("checked");
-					(data[k] as unknown) = input;
-					break;
-				}
-				case "secretDetails":
-				case "hazardDetails":
-				case "secret":
-				case "hazard":
-				case "secretNotes":{
-					const input = topLevel.find(`.${fieldClass}`).val();
-					if (input != undefined) {
-						(data[k] as unknown) = input;
-					}
-					break;
-				}
-				// case "concordiaPresence": {
-				case "challengeLevel":
-				case "shadowPresence": {
-					const input = topLevel.find(`.${fieldClass}`).val();
-					if (input != undefined) {
-						(data[k] as unknown) = Number(input ?? 0);
-					}
-					break;
-				}
-				case "roomEffects":
-				case "pointsOfInterest":
-				case "specialMods": {
-					const inputs = topLevel.find(`.${fieldClass}`)
-					.map( function () {
-						return $(this).val();
-					})
-					.toArray();
-					if (inputs != undefined) {
-						(data[k] as unknown) = inputs;
-					}
-					break;
-				}
-				case "treasures": {
-					const max = Number(topLevel.find(`.${fieldClass}-max`).val());
-					const found = Number(topLevel.find(`.${fieldClass}-found`).val());
-					data[k]= {
-						found,
-						max
-					};
-					break;
-				}
-				default:
-					k satisfies never;
-			}
-		}
-		this.#changeBuffer = data;
-		// this.setRegionData(data);
-	}
+  #refreshRegionData(event: JQuery.ChangeEvent) {
+    const topLevel  = $(event.currentTarget).closest(".tab.region-identity");
+    const data = this.regionData;
+    for( const key of Object.keys(data)) {
+      const k = key as keyof RegionData;
+      const fieldClass = `field-${k}`;
+      switch (k) {
+        case "ignore": {
+          const input = topLevel.find(`.${fieldClass}`).prop("checked");
+          (data[k] as unknown) = input;
+          break;
+        }
+        case "secretDetails":
+        case "hazardDetails":
+        case "secret":
+        case "hazard":
+        case "secretNotes":{
+          const input = topLevel.find(`.${fieldClass}`).val();
+          if (input != undefined) {
+            (data[k] as unknown) = input;
+          }
+          break;
+        }
+          // case "concordiaPresence": {
+        case "challengeLevel":
+        case "shadowPresence": {
+          const input = topLevel.find(`.${fieldClass}`).val();
+          if (input != undefined) {
+            (data[k] as unknown) = Number(input ?? 0);
+          }
+          break;
+        }
+        case "roomEffects":
+        case "pointsOfInterest":
+        case "specialMods": {
+          const inputs = topLevel.find(`.${fieldClass}`)
+          .map( function () {
+            return $(this).val();
+          })
+          .toArray();
+          if (inputs != undefined) {
+            (data[k] as unknown) = inputs;
+          }
+          break;
+        }
+        case "treasures": {
+          const max = Number(topLevel.find(`.${fieldClass}-max`).val());
+          const found = Number(topLevel.find(`.${fieldClass}-found`).val());
+          data[k]= {
+            found,
+            max
+          };
+          break;
+        }
+        default:
+          k satisfies never;
+      }
+    }
+    this.#changeBuffer = data;
+    // this.setRegionData(data);
+  }
 
-	async processInputBuffer() : Promise<void> {
-		const buffer = this.#changeBuffer;
-		if (buffer == undefined) {return;}
-		await this.setRegionData(buffer);
-		this.#changeBuffer = undefined;
-	}
+  async processInputBuffer() : Promise<void> {
+    const buffer = this.#changeBuffer;
+    if (buffer == undefined) {return;}
+    await this.setRegionData(buffer);
+    this.#changeBuffer = undefined;
+  }
 
-	formFields() {
-		const data = this.regionData;
-		const div = $("<div>");
-		const fields= Object.keys(data).map( k=> this.formEntryField(k as keyof RegionData));
-		for (const f of fields) {
-			div.append(f);
-		}
-		return div;
-	}
+  formFields() {
+    const data = this.regionData;
+    const div = $("<div>");
+    const fields= Object.keys(data).map( k=> this.formEntryField(k as keyof RegionData));
+    for (const f of fields) {
+      div.append(f);
+    }
+    return div;
+  }
 
-	async onEnterMetaverse() : Promise<void> {
-		const data = this.regionData;
-		const refresh = data.specialMods.includes("treasure-refresh");
-		if (refresh) {
-			if (data.treasures.found > 0) {
-				data.treasures.found = 0;
-				await this.setRegionData(data);
-				console.debug(`Refreshing Treasures for : ${this.name}`);
-			}
-		}
-	}
+  async onEnterMetaverse() : Promise<void> {
+    const data = this.regionData;
+    const refresh = data.specialMods.includes("treasure-refresh");
+    if (refresh) {
+      if (data.treasures.found > 0) {
+        data.treasures.found = 0;
+        await this.setRegionData(data);
+        console.debug(`Refreshing Treasures for : ${this.name}`);
+      }
+    }
+  }
 
-	async onExitMetaverse() : Promise<void> {
-	}
+  async onExitMetaverse() : Promise<void> {
+  }
 
 } //end of class
 
 
 Hooks.on("closeRegionConfig", async (app) => {
-	const region = app.document as PersonaRegion;
-	await region.processInputBuffer();
+  const region = app.document as PersonaRegion;
+  await region.processInputBuffer();
 });
 
 //Append Region Configuraton dialog
 Hooks.on("renderRegionConfig", async (app, html) => {
-	const appendPoint = $(html).find(".tab.region-identity");
-	if (appendPoint.length != 1) {
-		throw new Error(`Append Point Length equals ${appendPoint.length}`);
-	}
-	const region = app.document as PersonaRegion;
-	await region.processInputBuffer();
-	appendPoint.append($("<hr>"))
-		.append(region.formFields());
+  const appendPoint = $(html).find(".tab.region-identity");
+  if (appendPoint.length != 1) {
+    throw new Error(`Append Point Length equals ${appendPoint.length}`);
+  }
+  const region = app.document as PersonaRegion;
+  await region.processInputBuffer();
+  appendPoint.append($("<hr>"))
+    .append(region.formFields());
 
-	//@ts-expect-error not in foundrytypes
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-	app.setPosition({ height: 'auto' });
+  //@ts-expect-error not in foundrytypes
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  app.setPosition({ height: 'auto' });
 });
 
 RegionPanel.init();

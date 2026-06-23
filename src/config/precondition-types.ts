@@ -171,8 +171,8 @@ export const CONDITION_DICE = Object.fromEntries(
 
 
 const USER_COMPARISON_TARGET_LIST = [
-	"triggering-user",
-	"current-user",
+  "triggering-user",
+  "current-user",
 ] as const;
 
 export type UserComparisonTarget = typeof USER_COMPARISON_TARGET_LIST[number];
