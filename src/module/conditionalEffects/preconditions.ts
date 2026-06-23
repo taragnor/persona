@@ -109,13 +109,6 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       {return false;}
       target = situation.naturalRoll;
       break;
-    // case "escalation": {
-    //   const combat = game.combat as PersonaCombat | undefined;
-    //   if (!combat) {return false;}
-    //   const die = combat.getEscalationDie();
-    //   target = die;
-    //   break;
-    // }
     case "total-roll":
       if (!checkSituationProp(situation, "rollTotal")) {
         return false; };
@@ -152,14 +145,6 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       }
       target = actor.social.getSocialSLWith(socialLink);
       break;
-      // const link = actor.system.social.find(data=> data.linkId == socialLink.id);
-      // if (link) {
-      //   target = link.linkLevel;
-      //   break;
-      // } else {
-      //   target = 0;
-      //   break;
-      // }
     }
     case "student-skill": {
       if (!checkSituationProp(situation, "user")) { return false; };

@@ -476,8 +476,6 @@ export class ConditionalEffectPrinter {
           return `natural roll ${endString(cond)}`;
         case "activation-roll":
           return `activation Roll ${endString(cond)}`;
-        // case "escalation":
-        //   return `Escalation Die ${endString(cond)}`;
         case "total-roll":
           return `Roll Total ${endString(cond)}`;
         case "talent-level":
@@ -520,10 +518,6 @@ export class ConditionalEffectPrinter {
           return `Magic Percentage ${endString(cond)}`;
         case "clock-comparison":
           return `Clock ${cond.clockId} ${endString(cond)}`;
-        // case "percentage-of-mp":
-        //   return `Percentage of MP ${endString(cond)}`;
-        // case "percentage-of-hp":
-        //   return `Percentage of MP ${endString(cond)}`;
         case "energy":
           return `Shadow Energy ${endString(cond)}`;
 

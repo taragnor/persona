@@ -301,10 +301,10 @@ type TargettedNumericComparison =  {
 	conditionTarget: ConditionTarget,
 }
 
-type HPMPComparison_Old =  {
-	comparisonTarget: "percentage-of-mp" | "percentage-of-hp",
-	conditionTarget: ConditionTarget,
-}
+// type HPMPComparison_Old =  {
+// 	comparisonTarget: "percentage-of-mp" | "percentage-of-hp",
+// 	conditionTarget: ConditionTarget,
+// }
 
 type ClockNumericComparison =  {
 	comparisonTarget: "clock-comparison",

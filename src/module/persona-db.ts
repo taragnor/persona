@@ -108,7 +108,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     this.#resetCache();
   }
 
-  onUpdateItem(item: PersonaItem) {
+  onUpdateItem(_item: PersonaItem) {
   }
 
   getClassById(id: CClass["id"]): Option<CClass> {

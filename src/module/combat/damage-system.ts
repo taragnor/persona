@@ -11,7 +11,6 @@ import {DamageCalculation, EvaluatedDamage} from "./damage-calc.js";
 import {ConsequenceProcessed, PersonaCombat} from "./persona-combat.js";
 
 export abstract class DamageSystemBase implements DamageInterface {
-
   BURN_PERCENT = 0.15 as const; //percentage damage of burn damage
 
   getDamage(power: Usable, attackerPersona: Persona, targetPersona: Persona, situation ?: Situation & SituationComponent.User, options : GetDamageOptions = {}) : DamageCalculation {
@@ -263,20 +262,17 @@ export abstract class DamageSystemBase implements DamageInterface {
 
   abstract getWeaponRatingByWpnLevel(lvl: number): number ;
   abstract getArmorRatingByItemLvl(lvl: number): number;
-  // abstract getWeaponDamageByWpnLevel(lvl: number) : number;
-  // abstract getArmorDRByArmorLevel(lvl: number) : number;
+  abstract getShadowEffectiveEquipmentLevel(shadow: Shadow): number;
 }
 
 
 export interface DamageInterface {
   getBurnDamage(power: Usable, attackerPersona: Persona, targetPersona: Persona) : number;
   getDamage(power: Usable,attackerPersona: Persona, targetPersona: Persona, situation ?: Situation, options?: GetDamageOptions) : DamageCalculation;
-  // convertFromOldLowDamageToNewBase(lowDmg: number): number;
   getWeaponRatingByWpnLevel(lvl: number): number;
   getArmorRatingByItemLvl(lvl: number) : number;
-  // getWeaponDamageByWpnLevel(lvl: number) : number;
-  // getArmorDRByArmorLevel(lvl: number) : number;
   processConsequence_damage( cons: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: Persona, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'];
+  getShadowEffectiveEquipmentLevel(shadow: Shadow) : number;
 
 }
 

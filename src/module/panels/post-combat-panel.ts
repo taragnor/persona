@@ -94,7 +94,7 @@ export class PostCombatPanel extends PersonaPanel {
       if (!region || !(region.parent instanceof PersonaScene)) {
         throw new PersonaError("No Active Combat Scene, must return manually");
       }
-      await CombatScene.returnToPreviousScene(region.parent)
+      await CombatScene.returnToPreviousScene(region.parent);
       return;
     }
     CombatScene.instance.onReturnToExploringVote();
