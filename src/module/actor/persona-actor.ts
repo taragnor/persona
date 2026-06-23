@@ -2214,7 +2214,7 @@ get printableActiveStatuses(): {name: string, description: string, id: PersonaAE
     .filter( eff=> eff.isStatus)
     .flatMap (eff => {
       return eff.statusTags.map( stTag=> ({
-        name: stTag.name,
+        name: stTag.displayedName,
         description: stTag.description.toString() + "\n" + eff.statusDurationString(),
         id: eff.id,
       }));
@@ -2222,7 +2222,7 @@ get printableActiveStatuses(): {name: string, description: string, id: PersonaAE
   const flags = effects
     .filter( eff=> eff.isFlag() && eff.statusDuration.dtype != "permanent")
     .map (eff => ({
-      name: eff.name,
+      name: eff.displayedName,
       description: eff.statusDurationString(),
       id: eff.id,
     }));

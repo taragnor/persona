@@ -33,12 +33,16 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
   };
 
   static async applyHook (this: never, _actor: PersonaActor, _change: Foundry.AEChange, _current: unknown, _delta: unknown, _changes: Record<string, unknown> ) {
-    //*changes object is a record of valeus taht may get changed by applying the AE;
+    //*changes object is a record of values taht may get changed by applying the AE;
     // example: changes["system.hp"] = 25
   }
 
   get displayedName() {
-    return game.i18n.localize(this.name as LocalizationString);
+    const linked = this.getLinkedTags();
+    if (linked.length != 1) {
+      return game.i18n.localize(this.name as LocalizationString);
+    }
+    return linked[0].displayedName;
   }
 
   override apply( actor: Actor, change: Foundry.AEChange) {
@@ -355,8 +359,12 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
   }
 
   getAuraEffects(sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
-    return this.getEmbeddedEffects(sourceActor, options).filter( x=> x.isAura)
-      .map( x=> new ConditionalEffectC(x, this, sourceActor, this));
+    return [
+      ...this.getEmbeddedEffects(sourceActor, options).filter( x=> x.isAura)
+      .map( x=> new ConditionalEffectC(x, this, sourceActor, this)),
+      ...this.getLinkedTags()
+      .flatMap( tag => tag.getAuraEffects(sourceActor, options)),
+    ];
   }
 
   get accessor() : UniversalAEAccessor<this> {
