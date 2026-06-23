@@ -29,6 +29,7 @@ import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaTagManager} from "./persona-tags.js";
 import {TimedCache} from "./utility/cache.js";
 import {multiCheckContains, multiCheckToArray} from "./conditionalEffects/preconditions.js";
+import {BonusCalculation, ModifierV2Target} from "./bonus-calc.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidAttackers = ValidAttackers> implements PersonaI {
   #combatStats: U<PersonaCombatStats>;
@@ -613,6 +614,32 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     }
     const mods = PersonaItem.getModifier(sources, modnames);
     return new ModifierList(mods);
+  }
+
+  getBonusesV2(modNames: ModifierV2Target | ModifierV2Target[], item?: N<Usable>, sources ?: readonly ConditionalEffectC[]) : BonusCalculation {
+    const calc = new BonusCalculation(modNames);
+    if (sources == undefined) {
+      if (item) {
+        const bonuses= item.getBonusesV2(modNames, this.user);
+        calc.merge(bonuses);
+      }
+      switch (calc.category) {
+        case "offensive":
+          sources= this.passiveModifiers();
+          break;
+        case "defensive":
+          sources= this.defensiveModifiers();
+          break;
+        case "user":
+          sources= this.passiveModifiers();
+          break;
+        default:
+          calc.category satisfies never;
+          throw new PersonaError(`Illegal calc Type ${calc.category as string}`);
+      }
+    }
+    calc.addCE(...sources);
+    return calc;
   }
 
   openerElevatingModifiers() : readonly ConditionalEffectC[]{

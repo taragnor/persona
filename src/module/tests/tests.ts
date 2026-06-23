@@ -1,6 +1,6 @@
 import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
-import {BonusCalculation} from "../bonus-calc.js";
+import {BonusCalculation, ModifierV2Target} from "../bonus-calc.js";
 import { ConsequenceApplier } from "../combat/consequence-applier.js";
 import {ResolvedActorChange} from "../combat/finalized-combat-result.js";
 import {StepsClock} from "../exploration/steps-clock.js";
@@ -260,6 +260,17 @@ export class Tests {
     calc2.mult(1, calcable, "calcable Test");
     fail ??= this.testExpected(calc2, 60);
     return Promise.resolve( !fail);
+  }
+
+  static kimBonusTest(key: ModifierV2Target) : number {
+    const bonuses = this.kim.persona().getBonusesV2(key);
+    const evalBonus= bonuses.eval({
+      attacker: this.kim.accessor,
+      user: this.kim.accessor,
+      target: this.kim.accessor,
+    });
+    console.log(evalBonus.steps);
+    return evalBonus.total;
   }
 
   private static testExpected(calc: BonusCalculation, expected: number) : N<string> {

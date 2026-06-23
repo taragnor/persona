@@ -50,6 +50,7 @@ import {ItemHooks} from './item-hooks.js';
 import {TimedCache} from '../utility/cache.js';
 import {ConditionalEffectManager} from '../conditionalEffects/conditional-effect-manager.js';
 import {multiCheckToArray, testPreconditions} from '../conditionalEffects/preconditions.js';
+import {BonusCalculation, ModifierV2Target} from '../bonus-calc.js';
 
 declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -1113,6 +1114,27 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const modList = new ModifierList(mods);
     return modList;
   }
+
+  getBonusesV2(this: ItemModifierContainer & PersonaItem, modNames: MaybeArray<ModifierV2Target>, user: N<PersonaActor>, options: GetEffectsOptions = {}) : BonusCalculation {
+    let sources : readonly ConditionalEffectC[];
+    const calc = new BonusCalculation(modNames);
+    switch (calc.category) {
+      case "offensive":
+        sources= this.getPassiveEffects(user, options);
+        break;
+      case "defensive":
+        sources= this.getDefensiveEffects(user, options);
+        break;
+      case "user":
+        sources= this.getPassiveEffects(user, options);
+        break;
+      default:
+        calc.category satisfies never;
+        throw new PersonaError(`Illegal calc Type ${calc.category as string}`);
+    }
+  calc.addCE(...sources);
+  return calc;
+}
 
   static getSlotName(num : number) {
     return game.i18n.localize(SLOTTYPES[num]);
@@ -2947,7 +2969,6 @@ export interface GetEffectsOptions {
   CETypes ?: TypedConditionalEffect['conditionalType'][];
   triggerType ?: Trigger
 }
-
 
 type TagBearingItem = Talent | Focus | UsableAndCard | InvItem | Weapon;
 

@@ -73,3 +73,5 @@ type GenericObject = {
 };
 
 type MaybePromise<T> = Promise<T> | T;
+
+type ValueOf<T extends object> = T[keyof T];

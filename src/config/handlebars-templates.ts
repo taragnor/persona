@@ -73,6 +73,7 @@ const templateFileNames : string[] =[
 	"inventory-list.hbs",
 	"input-modifier-new.hbs",
 	"input-modifier.hbs",
+	"input-modifier-v2.hbs",
 	"persona-list.hbs",
 	"persona-list-list.hbs",
 	"persona-viewer.hbs",

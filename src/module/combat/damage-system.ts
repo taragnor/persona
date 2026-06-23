@@ -265,7 +265,6 @@ export abstract class DamageSystemBase implements DamageInterface {
   abstract getShadowEffectiveEquipmentLevel(shadow: Shadow): number;
 }
 
-
 export interface DamageInterface {
   getBurnDamage(power: Usable, attackerPersona: Persona, targetPersona: Persona) : number;
   getDamage(power: Usable,attackerPersona: Persona, targetPersona: Persona, situation ?: Situation, options?: GetDamageOptions) : DamageCalculation;
@@ -273,7 +272,6 @@ export interface DamageInterface {
   getArmorRatingByItemLvl(lvl: number) : number;
   processConsequence_damage( cons: SourcedConsequence<NewDamageConsequence>, targets: ValidAttackers[], attacker: Persona, powerUsed: U<ModifierContainer>, situation: Situation) : ConsequenceProcessed['consequences'];
   getShadowEffectiveEquipmentLevel(shadow: Shadow) : number;
-
 }
 
 export type ConvertableDamageLevel = Exclude<DamageLevel, "-" | "fixed">;

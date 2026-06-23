@@ -251,7 +251,7 @@ const OPERATION_TYPE_LIST = [
   "set",
 ] as const;
 
-export const CALCULATION_OPERATION = HTMLTools.createLocalizationObject(OPERATION_TYPE_LIST, "persona.calculation.operation");
+export const CALCULATION_OPERATION_V2 = HTMLTools.createLocalizationObject(OPERATION_TYPE_LIST, "persona.calculation.operation");
 
 export type CalculationOperation = typeof OPERATION_TYPE_LIST[number];
 

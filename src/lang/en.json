@@ -658,6 +658,7 @@
 	"persona.effecttypes.extraAttack": "Extra Attack",
 	"persona.effecttypes.modifier-new": "Apply Modifier (multi)",
 	"persona.effecttypes.modifier": "Apply Modifier (singular)",
+	"persona.effecttypes.modifier-v2": "Modifier (New)",
 	"persona.effecttypes.card-action-response": "Card Action Response",
 	"persona.effecttypes.add-escalation": "(Deprecated) Add escalation die",
 	"persona.effecttypes.save-slot": "(Deprecated) Don't expend slot",
@@ -1375,6 +1376,9 @@
 
 	"persona.calculation.operation.multiply": "Multiply",
 	"persona.calculation.operation.add": "Add",
+	"persona.calculation.operation.sub": "Subtract",
+	"persona.calculation.operation.divide": "Divide",
+	"persona.calculation.operation.set": "Set",
 	"persona.calculation.operation.noStackMultiply": "Multiply (no stacking)",
 
 	"persona.tag.tagtype.persona": "Persona Tag",
@@ -1405,6 +1409,10 @@
   "persona.combat.outcome.win" : "PCs Win",
   "persona.combat.outcome.draw" : "Draw",
   "persona.combat.outcome.lose" : "PCs Lose",
+
+  "persona.modifier-v2.attack-roll": "Attack Roll",
+  "persona.modifier-v2.save": "Save",
+  "persona.modifier-v2.treasure-weight": "Treasure Weight",
 
 	"persona.attack.result.hit": "Hit",
 	"persona.attack.result.miss": "Miss",

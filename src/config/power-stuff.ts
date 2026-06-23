@@ -36,6 +36,8 @@ import {HTMLTools} from "../module/utility/HTMLTools.js";
 import { ATTACK_RESULT } from "./attack-result-config.js";
 import {COMBAT_OUTCOME} from "../module/combat/persona-combat.js";
 import {ORDER_PHASES} from "../module/sfx/animation-queue.js";
+import {MODIFIER_V2_TARGET} from "../module/bonus-calc.js";
+import {CALCULATION_OPERATION_V2} from "../module/utility/calculation-v2.js";
 
 export class PowerStuff {
 private static _powerStuffBase: Record<string, unknown>;
@@ -65,6 +67,8 @@ private static _powerStuffBase: Record<string, unknown>;
       ...DAMAGETYPES,
     };
     this._powerStuffBase = {
+      CALCULATION_OPERATION_V2,
+      MODIFIER_V2_TARGET,
       ORDER_PHASES,
       INSTANT_KILL_LEVELS,
       DAMAGE_TYPES_PLUS_AFFINITY,

@@ -19,20 +19,18 @@ export class ConsequenceProcessor {
     }
     catch (e) {
       PersonaError.softFail("Error turning consequence into Result", e, cons);
-
     }
     return CombatRes;
   }
 
   static processConsequences_simple(consequence_list: SourcedConsequence<NonDeprecatedConsequence>[], situation: Situation): ConsequenceProcessed {
     let consequences : ConsequenceProcessed['consequences'] = [];
-    for (const cons of consequence_list) { const applyTo = "applyTo" in cons ? cons.applyTo ?? "target": "target";
+    for (const cons of consequence_list) {
+      const applyTo = "applyTo" in cons ? cons.applyTo ?? "target": "target";
       const consTargets = PersonaCombat.solveEffectiveTargets(applyTo, situation, cons) as ValidAttackers[];
       consequences= consequences.concat(this.processConsequence_simple(cons, consTargets));
     }
-    return {
-      consequences
-    };
+    return { consequences };
   }
 
   static ProcessConsequences(power: U<ModifierContainer>, situation: Situation, relevantConsequences: SourcedConsequence<NonDeprecatedConsequence>[], attackerPersona: U<Persona>, atkresult : Partial<AttackResult> | null)

@@ -1,0 +1,24 @@
+
+<div>
+  <select name="{{strcat namePrefix 'modTarget'}}">
+    {{selectOptions POWERSTUFF.MODIFIER_V2_TARGET localize=true selected=cons.modTarget}}
+  </select>
+</div>
+<div class="f-row">
+  <div>
+    <label>
+      Priority
+    </label>
+    <input class="short" type=number name="{{strcat namePrefix 'priority'}}" value="{{cons.priority}}">
+  </div>
+  <div>
+    <select name="{{strcat namePrefix 'operation'}}">
+      {{selectOptions POWERSTUFF.CALCULATION_OPERATION_V2 localize=true selected=cons.operation}}
+    </select>
+  </div>
+</div>
+<div>
+  {{> "systems/persona/parts/advanced-numeric-value.hbs" namePrefix=(strcat namePrefix 'amount.') cons=cons.amount POWERSTUFF=POWERSTUFF owner=owner}}
+</div>
+
+
