@@ -21,8 +21,10 @@ declare global{
 namespace SituationTypes {
 
 export type AllSituations =
-  TriggerSituation  | MinorSituation | SocialCardSituation | AllRollSituations | BonusQuerySituation | PowerPricing
+  TriggerSituation  | MinorSituation | SocialCardSituation | AllRollSituations | BonusQuerySituation | PowerPricing | TreasureWeightScenario
   ;
+
+  type TreasureWeightScenario = SituationComponent.Item;
 
   export type MinorSituation = MinorPowerUseSituation
     | UserOnlySituation;
@@ -70,7 +72,7 @@ namespace SituationComponent {
   };
 
   export type Item =  {
-    item: UniversalItemAccessor<Carryable>,
+      item: UniversalItemAccessor<Carryable>,
   };
 
   export type TriggeringCharacter = SituationComponent.User & {

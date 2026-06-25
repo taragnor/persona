@@ -397,6 +397,7 @@ export class ConditionalEffectManager {
   static isBonusConsequence(cons: ConditionalEffect["consequences"][number]) : boolean {
     return (cons.type == "modifier-new"
       || cons.type =="modifier"
+      || cons.type == "modifier-v2"
     );
   }
 

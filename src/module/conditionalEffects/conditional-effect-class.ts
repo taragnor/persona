@@ -219,6 +219,7 @@ export class ConditionalEffectC {
       case forceDefensive || ce.isDefensive:
         return "defensive";
       default:
+        // if (sourceItem!.name == "Soma") {debugger;}
         condType = !forceDefensive ? ConditionalEffectManager.getConditionalType(ce, sourceItem): "defensive";
         if (condType == "unknown" && sourceItem) {
           return (sourceItem.defaultConditionalEffectType) ? sourceItem.defaultConditionalEffectType() : "passive";

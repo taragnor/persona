@@ -151,17 +151,26 @@ export class TreasureSystem {
 	}
 
   static generateWeight(item: TreasureItem | Tag, table: Exclude<TreasureTable, "none"> , applyPossessionMult: boolean, searcher: N<PCLike>) : number {
-			const rarity = item.system.treasure[table].rarity;
-			const possessionMult = applyPossessionMult && item.isCarryableType() ? this.possessionWeightMod(item): 1;
-			const baseWeight = ENCOUNTER_RATE_PROBABILITY[rarity];
+    const rarity = item.system.treasure[table].rarity;
+    const possessionMult = applyPossessionMult && item.isCarryableType() ? this.possessionWeightMod(item): 1;
+    const baseWeight = ENCOUNTER_RATE_PROBABILITY[rarity];
+    const mods = !item.isTag() ? this.getWeightMods(item, searcher): 1;
+    const weight = baseWeight * possessionMult * mods;
+    return weight;
+  }
+
+  static getWeightMods(item: TreasureItem, searcher: N<PCLike>) : number {
+    const itemMod = item
+      .getBonusesV2("treasure-weight", null)
+      .eval( {item: item.accessor})
+      .total;
     const searcherMult = !searcher || !item.isCarryableType()
       ? 1
       : searcher.persona().getBonusesV2("treasure-weight").eval({
-      item: item.accessor,
-      user: searcher.accessor
-    } satisfies Situation).total;
-			const weight = baseWeight * possessionMult * searcherMult;
-			return weight;
+        item: item.accessor,
+        user: searcher.accessor
+      } satisfies Situation).total;
+    return itemMod * searcherMult;
   }
 
 	static amountOfItemOwnedByParty(item : TreasureItem) : number {

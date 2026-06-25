@@ -1129,13 +1129,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case "user":
         sources= this.getPassiveEffects(user, options);
         break;
+      case "item":
+        sources= this.getPassiveEffects(user, options);
+        break;
       default:
         calc.category satisfies never;
         throw new PersonaError(`Illegal calc Type ${calc.category as string}`);
     }
-  calc.addCE(...sources);
-  return calc;
-}
+    calc.addCE(...sources);
+    return calc;
+  }
 
   static getSlotName(num : number) {
     return game.i18n.localize(SLOTTYPES[num]);
