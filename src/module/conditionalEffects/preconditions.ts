@@ -1359,15 +1359,41 @@ function rollPropertyIs(condition : SourcedPrecondition  & {type: "boolean"; boo
   }
 }
 
-function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "combat-comparison"}, situation: Situation)  : U<boolean> {
-  if (condition.combatProp == "in-combat") {
-    return Metaverse.getPhase() == "combat";
-  }
-  if (condition.combatProp == "combat-result-is") {
-    if ("combatOutcome" in situation) {
-      return situation.combatOutcome == condition.combatOutcome;
+function simpleCombatComparison(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "combat-comparison", conditionTarget?: undefined}, situation: Situation) : U<boolean> {
+  switch (condition.combatProp) {
+    case "in-combat":
+      return Metaverse.getPhase() == "combat";
+    case "combat-result-is":
+      if ("combatOutcome" in situation) {
+        return situation.combatOutcome == condition.combatOutcome;
+      }
+      return false;
+    case "struck-weakness": {
+      if (!("usedPower" in situation) || !situation.usedPower) { return undefined; }
+      if (!checkSituationProp( situation, "target")) {
+        return undefined;
+      }
+      const target = PersonaDB.findActor(situation.target);
+      const power = PersonaDB.findItem(situation.usedPower);
+      if (power.isSkillCard()) {return undefined;}
+      if (!checkSituationProp(situation, "attacker")) {return undefined;}
+      const attacker = PersonaDB.findActor(situation.attacker);
+      if (!attacker.isValidCombatant()) {return undefined;}
+      // const pierce = CombatEngine.hasPierce(attacker.persona(), power, situation);
+      const resist = target.persona().elemResist(power.getDamageType(attacker));
+      if (resist == "weakness") {return true;}
+      return false;
     }
-    return false;
+  }
+
+}
+
+function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "combat-comparison"}, situation: Situation)  : U<boolean> {
+  switch (condition.combatProp) {
+    case "in-combat":
+    case "combat-result-is":
+    case "struck-weakness":
+      return simpleCombatComparison(condition, situation);
   }
   const subjects = getSubjectPersonas(condition, situation, "conditionTarget");
   if (!subjects || !subjects.at(0)) {return undefined;}
@@ -1387,20 +1413,6 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
       return subjects.some( target => {
         return target.hp <= 0;
       });
-    }
-    case "struck-weakness": {
-      if (!("usedPower" in situation) || !situation.usedPower) { return undefined; }
-      for (const target of subjects) {
-        const power = PersonaDB.findItem(situation.usedPower);
-        if (power.isSkillCard()) {continue;}
-        if (!checkSituationProp(situation, "attacker")) {continue;}
-        const attacker = PersonaDB.findActor(situation?.attacker);
-        if (!attacker.isValidCombatant()) {return undefined;}
-        const pierce = CombatEngine.hasPierce(attacker.persona(), power, situation);
-        const resist = target.elemResist(power.getDamageType(attacker));
-        if (resist == "weakness" && !pierce) {return true;}
-      }
-      return false;
     }
     case "is-distracted": {
       const target = subjects.at(0);

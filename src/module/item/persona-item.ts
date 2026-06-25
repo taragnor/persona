@@ -1007,6 +1007,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   powerCostString_PC(this: Power, persona: Persona) : string {
+    const FREE = '';
     if (this.hasTag("theurgy", null)) {
       return "Theurgy";
     }
@@ -1019,7 +1020,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
           return `${modCost} HP ${hpCostPercent}`;
         }
 
-        else {return 'free';}
+        else {return FREE;}
       }
       case 'magic': {
         const mpcost = this.mpCost(persona);
@@ -1040,7 +1041,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       default:
         this.system.subtype satisfies never;
     }
-    return 'free';
+    return FREE;
   }
 
   isCombatPower(this: Usable): boolean {

@@ -287,7 +287,7 @@
 	{{selectOptions POWERSTUFF.COMBAT_COMPARISON_SUBLIST localize=true selected=cond.combatProp}}
 </select>
 
-{{#if (eqAny cond.combatProp "engaged" "is-dead" "struck-weakness" "is-distracted" "is-resistant-to" "engaged-with" "is-enemy" "in-melee-with")}}
+{{#if (eqAny cond.combatProp "engaged" "is-dead" "is-distracted" "is-resistant-to" "engaged-with" "is-enemy" "in-melee-with")}}
 	<select name="{{strcat namePrefix 'conditionTarget'}}">
 		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
 	</select>

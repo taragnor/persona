@@ -179,10 +179,10 @@ type CombatComparisonSub = {
 	conditionTarget : ConditionTarget,
 	conditionTarget2: ConditionTarget,
 } | {
-	combatProp: "engaged" | "is-dead" | "struck-weakness" | "is-distracted";
+	combatProp: "engaged" | "is-dead" | "is-distracted";
 	conditionTarget : ConditionTarget,
 } |  {
-	combatProp: "in-combat",
+	combatProp: "in-combat" | "struck-weakness",
 } | {
 	combatProp:  "is-resistant-to",
 	powerDamageType : MultiCheckOrSingle<DamageType>,
