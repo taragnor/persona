@@ -243,10 +243,21 @@ type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
     trigger: "on-roll",
   } & SituationComponent.RollParts.CompletedRoll;
 
-  type ClockTrigger = {
-    trigger: "on-clock-tick" | "on-clock-change" | "on-clock-overflow",
-    triggeringClockId: string,
+type ClockTriggerBase = {
+  triggeringClockId: string,
+};
+
+  type ClockTrigger = ClockTriggerBase & (
+  {
+    trigger: "on-clock-tick" | "on-clock-change",
   }
+    | ClockTriggerOverflow
+  );
+
+type ClockTriggerOverflow = {
+  trigger: "on-clock-overflow-dual",
+  triggeringClockId: string,
+} & GlobalSplit;
 
   type StartSocialTurnTrigger =SituationComponent.TriggeringCharacter  & {
     trigger: "on-social-turn-start",

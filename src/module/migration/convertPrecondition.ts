@@ -1,6 +1,7 @@
 import {VariableTypeSpecifier} from "../../config/consequence-types.js";
 import {NumericComparator} from "../../config/numeric-comparison.js";
 import {DeprecatedPrecondition, NonDeprecatedPrecondition} from "../../config/precondition-types.js";
+import {PersonaError} from "../persona-error.js";
 
 export class PreconditionConverter {
 
@@ -110,6 +111,22 @@ export class PreconditionConverter {
         return {
           ...head,
           trigger: "on-enter-region-dual",
+          global: true,
+        };
+      case "on-clock-overflow":
+        if (!("triggeringClockId" in cond) || typeof cond.triggeringClockId != "string") {
+          PersonaError.softFail(`Trouble converting precondtion ${cond.trigger}, no triggering clock Id`);
+          return  {
+            ...head,
+            triggeringClockId: "",
+            trigger: "on-clock-overflow-dual",
+            global: true,
+          };
+        }
+        return {
+          ...head,
+          triggeringClockId: cond.triggeringClockId,
+          trigger: "on-clock-overflow-dual",
           global: true,
         };
       default:

@@ -166,13 +166,14 @@ export class PersonaSocial {
       return;
     }
     await PersonaCalendar.nextDay(extraMsgs);
-    try {
-      const party = (PersonaDB.realPCs() as (PC | NPCAlly)[]).concat(PersonaDB.NPCAllies());
-      const promises = party.map( actor => actor.onStartDay());
-      await Promise.allSettled(promises);
-    } catch (e) {
-      PersonaError.softFail("Error trying to execute onStartDay for PC or NPCAlly", e);
-    }
+    // try {
+      //start day now handled in calendar advance
+      // const party = (PersonaDB.realPCs() as (PC | NPCAlly)[]).concat(PersonaDB.NPCAllies());
+      // const promises = party.map( actor => actor.onStartDay());
+      // await Promise.allSettled(promises);
+    // } catch (e) {
+    //   PersonaError.softFail("Error trying to execute onStartDay for PC or NPCAlly", e);
+    // }
 	}
 
 	static async updateLinkAvailability(day: SimpleCalendar.WeekdayName) {

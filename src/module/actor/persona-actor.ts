@@ -69,6 +69,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   DOWNED_OPACITY = 0.5 as const;
   FULL_FADE_OPACITY = 0.2 as const;
 
+  NPC_FATIGUE = {
+    TURN: 1,
+    BATTLE: 3,
+    EXIT_MV : 20,
+    KO: 5,
+  } as const;
+
   social = new ActorSocial<typeof this>(this);
 
   #powerLearning : PowerLearningSystem<ValidAttackers>;
@@ -1972,7 +1979,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return eff?.getFatigueStatus();
   }
 
-  get fatigueLevel() : number {
+  get fatigueLevel() : ReturnType<typeof statusToFatigueLevel> {
     if (!this.isPCLike()) {return 0;}
     const st = this.getFatigueStatus();
     return statusToFatigueLevel(st);
@@ -1981,6 +1988,51 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   async resetFatigueRecovery() {
     await this.setFlag("persona", "fatigueRecovery", 0);
   }
+
+  /** NPC Fatigue tracking */
+  async alterNPCFatigueTracker(this: NPCAlly, amt: number) {
+    const NPC_FATIGUE_THRESHOLD = this.npcFatigueThreshold;
+    const oldVal = this.system.fatigueTracker ?? 0;
+    let newVal = Math.max(0, amt+oldVal);
+    while (newVal > NPC_FATIGUE_THRESHOLD) {
+      newVal -= NPC_FATIGUE_THRESHOLD;
+      await this.alterFatigueLevel(-1);
+      void PersonaSocial.characterDialog(this, this._fatigueMsg(this.fatigueLevel));
+    }
+    await this.update({"system.fatigueTracker": newVal});
+  }
+
+  get npcFatigueThreshold() : number {
+    return 40 as const;
+  }
+
+  private _fatigueMsg(newLevel: PersonaActor["fatigueLevel"]) : string {
+    switch (newLevel) {
+      case 2:
+        return `Error with fatigue: This shouldn't happen`;
+      case 1:
+        return `I no longer feeling well-rested`;
+      case 0:
+        return `I feel a little tired...`;
+      case -1:
+        return `I'm Really feeling tired now`;
+      case -2:
+        return `I'm Feeling Exhausted`;
+      default:
+        newLevel satisfies never;
+        return `ERROR`;
+    }
+  }
+
+  async resetNPCFatigueTracker(this: NPCAlly) {
+    await this.update({"system.fatigueTracker": 0});
+  }
+
+  get NPCFatigueTracker(): number {
+    if (!this.isNPCAlly()) {return 0;}
+    return this.system.fatigueTracker ?? 0;
+  }
+
 
   /** Auto NPC recovery for fatigue to be run each calendar day*/
   async recoverFatigue(this: NPCAlly) : Promise<number>{
@@ -2531,8 +2583,11 @@ async endEffectsOfDurationOrLess( duration: StatusDuration) : Promise<ActiveEffe
 }
 
 async onEnterMetaverse()  : Promise<void> {
+  if (this.isNPCAlly()) {
+    void this.resetNPCFatigueTracker();
+  }
   if (!this.isValidCombatant()) {return;}
-  if (this.system.type == "pc" && !this.hasPlayerOwner) {return;} //deal with removing item piles and such
+  if (this.isPC() && !this.hasPlayerOwner) {return;} //deal with removing item piles and such
   try {
     await this.resetTheurgy();
     await this.fullHeal();
@@ -2555,6 +2610,10 @@ async onEnterMetaverse()  : Promise<void> {
 async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
   try {
     if (this.isNPCAlly()) {
+      await this.alterNPCFatigueTracker(this.NPC_FATIGUE.EXIT_MV);
+      await this.resetNPCFatigueTracker();
+    }
+    if (this.isNPCAlly()) {
       await this.resetFatigueRecovery();
     }
     await this.resetTheurgy();
@@ -2571,7 +2630,7 @@ async onExitMetaverse(this: ValidAttackers ) : Promise<void> {
     }
     if (this.isNPCAlly()) {
       await this.setFlag("persona", "fatigueRecovery", 0);
-      await this.resetMetaverseActivity();
+      // await this.resetMetaverseActivity();
     }
     await this.fullHeal();
     await this.endEffectsOfDurationOrLess( {dtype :"expedition", anchorHolder: undefined});
@@ -3214,7 +3273,7 @@ get canSwitchPersonas() : boolean {
 /** should get called after a search action or after entering a new region*/
 async onMetaverseTimeAdvance(): Promise<string[]> {
   if (this.isNPCAlly()) {
-    void this.incrementMetaverseActivity();
+    void this.incrementMetaverseActivity_passTurn();
   }
   const ret: string[] = [];
   for (const eff of this.effects) {
@@ -3225,19 +3284,24 @@ async onMetaverseTimeAdvance(): Promise<string[]> {
   return ret;
 }
 
-async resetMetaverseActivity(this: NPCAlly): Promise<void> {
-  const activity = this.system.metaverseActivityRounds ?? 0;
-  await this.update({"system.metaverseActivityRounds" : 0});
-  const fatigue = this.hasStatus("full-fade")
-  || activity > 80 ? -2
-  : activity > 20 ? -1
-  : 0;
-  await this.alterFatigueLevel(fatigue);
+// async resetMetaverseActivity(this: NPCAlly): Promise<void> {
+//   const activity = this.system.metaverseActivityRounds ?? 0;
+//   await this.update({"system.metaverseActivityRounds" : 0});
+//   const fatigue = this.hasStatus("full-fade")
+//   || activity > 80 ? -2
+//   : activity > 20 ? -1
+//   : 0;
+//   await this.alterFatigueLevel(fatigue);
+// }
+
+async incrementMetaverseActivity_passTurn(this: NPCAlly) : Promise<void> {
+  await this.alterNPCFatigueTracker(this.NPC_FATIGUE.TURN);
+  // const activity = this.system.metaverseActivityRounds ?? 0;
+  // await this.update({"system.metaverseActivityRounds" : activity + 1});
 }
 
-async incrementMetaverseActivity(this: NPCAlly) : Promise<void> {
-  const activity = this.system.metaverseActivityRounds ?? 0;
-  await this.update({"system.metaverseActivityRounds" : activity + 1});
+async incrementMetaverseActivity_endBattle(this: NPCAlly) : Promise<void> {
+  await this.alterNPCFatigueTracker(this.NPC_FATIGUE.BATTLE);
 }
 
 async resetFatigueChecks(this: PC) {
@@ -3257,8 +3321,20 @@ async onEndDay(this:  PC | NPCAlly): Promise<string[]> {
   return ret;
 }
 
-async onStartDay(this: PC | NPCAlly) : Promise<string[]> {
-  return this.checkEffectExpire( eff => eff.onStartDay());
+async onStartDay() : Promise<string[]> {
+  const arr : string [] = [];
+  const PCCheck =  this.isNPCAlly() || this.isPC();
+  if (!PCCheck) {return [];}
+  arr.push(
+    ...await this.checkEffectExpire( eff => eff.onStartDay()),
+  );
+  if (this.isPC() && this.farming) {
+    arr.push(...await this.farming.advanceCrops(1));
+  }
+  if (this.isNPCAlly()) {
+    await this.recoverFatigue();
+  }
+  return arr;
 }
 
 async onEndSocialTurn(this: PC) : Promise<string[]> {
@@ -3266,6 +3342,9 @@ async onEndSocialTurn(this: PC) : Promise<string[]> {
 }
 
 async onEndCombat(this: ValidAttackers) : Promise<string[]> {
+  if (this.isNPCAlly()) {
+    await this.incrementMetaverseActivity_endBattle();
+  }
   return this.checkEffectExpire( eff => eff.onEndCombat());
 }
 
@@ -3571,23 +3650,12 @@ async onRoll(situation: SituationTypes.Roll) {
 async onCombatStart() {
 }
 
-async onCalendarAdvance() : Promise<string[]> {
-  const arr : string [] = [];
-  const PCCheck =  this.isNPCAlly() || this.isPC();
-  if (!PCCheck) {return [];}
-  arr.push(
-    ...await this.checkEffectExpire( eff => eff.onCalendarAdvance()),
-  );
-  if (this.isPC() && this.farming) {
-    arr.push(...await this.farming.advanceCrops(1));
-  }
-  if (this.isNPCAlly()) {
-    await this.recoverFatigue();
-  }
-  return arr;
-}
 
 async onKO() : Promise<void> {
+  if (this.isNPCAlly()) {
+    await this.alterNPCFatigueTracker(this.NPC_FATIGUE.KO);
+
+  }
   if (this.isPCLike() && this.theurgyVal > 0 && !PersonaSettings.debugMode()) {
     await this.resetTheurgy();
   }

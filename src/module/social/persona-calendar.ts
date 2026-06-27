@@ -209,7 +209,7 @@ export class PersonaCalendar {
     .concat( PersonaDB.NPCAllies() )
     .concat( PersonaDB.allNPCs() )
     ;
-    const promises = actorPool.map ( async (actor) => ([actor, await actor.onCalendarAdvance()]) );
+    const promises = actorPool.map ( async (actor) => ([actor, await actor.onStartDay()]) );
     const settled = await Promise.allSettled(promises);
     Hooks.callAll("personaCalendarAdvance");
     const report = settled

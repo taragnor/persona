@@ -581,11 +581,18 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
       return true;
     case "on-clock-change":
     case "on-clock-tick":
-    case "on-clock-overflow":
       if (!("triggeringClockId" in situation)) {
         return false;
       }
       return situation.triggeringClockId == condition.triggeringClockId;
+    case "on-clock-overflow-dual": {
+      if (!("triggeringClockId" in situation)
+        ||  situation.triggeringClockId != condition.triggeringClockId) {
+        return false;
+      }
+      const globalSit = "global" in situation? situation.global : false;
+      return (globalSit == condition.global);
+    }
     // case "on-enter-region":
     case "on-presence-check":
       if (!("triggeringRegionId" in situation)) {

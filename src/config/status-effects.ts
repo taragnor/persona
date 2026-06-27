@@ -324,7 +324,7 @@ Hooks.on("ready", () => {
 //  return oldSort.call(this, compareFn) as number;
 //};
 
-export function statusToFatigueLevel(id: FatigueStatusId | undefined) :number {
+export function statusToFatigueLevel(id: FatigueStatusId | undefined) {
 	switch (id) {
 		case "rested": return 2;
 		case undefined:return 1;

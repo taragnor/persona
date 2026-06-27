@@ -665,28 +665,21 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 
   async onStartDay() : Promise<boolean> {
     const duration = this.statusDuration;
-    switch (duration.dtype) {
-      case "X-days":
-        return false;
-      case "anchored":
-      case "permanent":
-        return false;
-      case "expedition":
-      case "combat":
-      case "X-rounds":
-      case "X-exploration-turns":
-      case "USoNT":
-      case "save":
-      case "UEoNT":
-      case "UEoT":
-      case "instant":
-      case "3-rounds":
+    if (duration.dtype == "X-days") {
+      if (duration.amount <= 0) {
         await this.delete();
         return true;
-      default:
-        duration satisfies never;
-        return false;
+      }
+      duration.amount -= 1;
+      await this.setDuration(duration);
+      return false;
+      ;
     }
+    if (this.durationLessThanOrEqualTo({dtype: "X-days", amount: 0})) {
+      await this.delete();
+      return true;
+    }
+    return false;
   }
 
   async onEndDay(): Promise<boolean> {
@@ -790,24 +783,6 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     }
   }
 
-  async onCalendarAdvance() : Promise<boolean> {
-    const duration = this.statusDuration;
-    if (duration.dtype == "X-days") {
-      if (duration.amount <= 0) {
-        await this.delete();
-        return true;
-      }
-      duration.amount -= 1;
-      await this.setDuration(duration);
-      return false;
-      ;
-    }
-    if (this.durationLessThanOrEqualTo({dtype: "X-days", amount: 0})) {
-      await this.delete();
-      return true;
-    }
-    return false;
-  }
 
   get isFatigueStatus(): boolean {
     return this.getFatigueStatus() != undefined;

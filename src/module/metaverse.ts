@@ -396,7 +396,9 @@ export class Metaverse {
   }
 
   static async #passMetaverseTurn() {
-    console.log("Trying to pass MV turn");
+    if (PersonaSettings.debugMode()) {
+      console.debug("Trying to pass MV turn");
+    }
     const pcs = game.scenes.active.tokens.contents.filter( tok => tok.actor && (tok.actor as PersonaActor).isPC());
     const ret : string[] = [];
     for (const pc of pcs) {
@@ -427,7 +429,7 @@ export class Metaverse {
         user: member.accessor,
         triggeringCharacter : member.accessor,
       } as const satisfies TriggeredSituation.Select<"on-metaverse-turn-dual">;
-      await TriggeredEffect.autoApplyTrigger(indiv_sit, undefined);
+      await TriggeredEffect.autoApplyTrigger(indiv_sit, member);
     }
     ui.notifications.notify("Passing Metaverse turn");
   }
@@ -626,12 +628,30 @@ Hooks.on("clockTick", async function (clock: ProgressClock, _newAmt: number) {
 });
 
 Hooks.on("clockOverflow", async function (clock: ProgressClock) {
-  const situation : Situation = {
-    trigger: "on-clock-overflow",
+  const promises : Promise<unknown>[] = [];
+  const globalSit = {
+    trigger: "on-clock-overflow-dual",
+    global: true,
     triggeringClockId: clock.id,
     triggeringUser: game.user.id,
-  };
-  await TriggeredEffect.autoApplyTrigger(situation, undefined);
+  } satisfies Situation;
+  promises.push(TriggeredEffect.autoApplyTrigger(globalSit, undefined));
+  for (const pc of PersonaDB.activePCParty()) {
+    const nonGlobalSit = {
+      trigger: "on-clock-overflow-dual",
+      global: false,
+      triggeringClockId: clock.id,
+      user: pc.accessor,
+      triggeringUser: game.user.id,
+      triggeringCharacter: pc.accessor,
+    } satisfies Situation;
+    promises.push(TriggeredEffect.autoApplyTrigger(nonGlobalSit, undefined));
+  }
+  try {
+    await Promise.allSettled(promises);
+  } catch(e) {
+    PersonaError.softFail("Error on Clock Overlfow triggers", e);
+  }
 });
 
 Hooks.on("updateClock", async function (clock: ProgressClock, _newAmt: number, _delta: number) {

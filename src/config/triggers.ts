@@ -23,7 +23,7 @@ export const NONCOMBAT_TRIGGER_LIST = [
 	"on-presence-check",
 	"on-clock-tick",
 	"on-clock-change",
-  "on-clock-overflow",
+  "on-clock-overflow-dual",
 	"on-open-door",
 	"enter-metaverse",
 	"exit-metaverse",
@@ -40,6 +40,7 @@ export const DEPRECATED_TRIGGERS = [
 	"on-combat-start",
 	"on-combat-start-global",
   "on-enter-region",
+  "on-clock-overflow",
 ] as const;
 
 export const SHARED_TRIGGERS = [

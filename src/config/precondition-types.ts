@@ -80,7 +80,10 @@ type GlobalToggleTriggers = GlobalToggleTrigger<
   | "on-combat-start-dual"
   | "on-metaverse-turn-dual"
   | "on-enter-region-dual"
-  >;
+  > | (
+    GlobalToggleTrigger<"on-clock-overflow-dual"> & {
+    triggeringClockId: string;
+  });
 
 type DeprecatedTriggers = DeprecatedPrecondition<
   {
@@ -130,9 +133,13 @@ type onTarotPerk = {
 }
 
 type ClockTickTrigger = {
-	trigger: "on-clock-tick" | "on-clock-change" | "on-clock-overflow";
+	trigger: "on-clock-tick" | "on-clock-change";
 	triggeringClockId: string;
 }
+
+// type ClockOverflowTrigger = {
+// 	triggeringClockId: string;
+// }
 
 export const CONDITION_TARGETS_LIST = [
 	"target",
