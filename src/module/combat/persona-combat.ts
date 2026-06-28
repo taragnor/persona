@@ -892,7 +892,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     const boldName = `<b>${token.name}</b>`;
     let content = `<div>${boldName} has run out of actions.</div>`;
     const pushMsg = `<div> ${boldName} can take an additional action by pushing themself, but this inflicts 1 fatigue level`;
-    if (actor.fatigueLevel > 0 && actor.isPC() ) {
+    if (actor.fatigueLevel >= 0 && actor.isPC() ) {
       content = content  + pushMsg;
     }
     if (actor.canEngage() && !this.isEngagedByAnyFoe(PersonaDB.getUniversalTokenAccessor(token))) {
