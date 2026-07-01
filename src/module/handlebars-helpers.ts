@@ -46,6 +46,7 @@ import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.
 import {testPreconditions} from "./conditionalEffects/preconditions.js";
 import {ConditionalEffectManager} from "./conditionalEffects/conditional-effect-manager.js";
 import {TreasureSystem} from "./exploration/treasure-system.js";
+import {HypotheticalPersona} from "./pre-fusion-persona.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -1168,8 +1169,19 @@ export class PersonaHandleBarsHelpers {
       return new Handlebars.SafeString(html);
     },
 
-    fusableCombinations( fusor: PC) : FusionCombination[]  {
+    "showBonusPowers" : function (persona: Persona) : boolean{
+      if (persona instanceof HypotheticalPersona) {return false;}
+      return true;
+    },
+
+    "fusionableCombinations" : function ( fusor: PC) : FusionCombination[]  {
       return fusor.fusionCombinations
+        .filter (comb=> comb.result != undefined)
+        .filter (comb=> FusionTable.meetsConditionsToFuse(comb.result!, fusor));
+    },
+
+    "compendiumFusionOptions" : function ( fusor: PC) : FusionCombination[]  {
+      return fusor.compendiumFusionCombinations()
         .filter (comb=> comb.result != undefined)
         .filter (comb=> FusionTable.meetsConditionsToFuse(comb.result!, fusor));
     },

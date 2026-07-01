@@ -1,25 +1,20 @@
-<section class="fusions-list">
-	{{#if (not actor.sheet.selectedFusion)}}
-	<h2> Fusions</h2>
-	<ul class="fusion-options">
-		{{#each (fusableCombinations actor) as |fusion i|}}
-		<li class="fusion-option {{#if (gt fusion.result.startingLevel ../actor.level)}} disabled {{/if}}" data-shadow-id="{{fusion.result.id}}">
-			<span class="name">
-				{{fusion.result.name}}
-				- {{fusion.result.startingLevel}} {{fusion.result.tarot.displayedName}}
-			</span>
-			(
-			{{#each fusion.components as |comp j|}}
-			<span data-shadow-component-id="{{comp.id}}">{{comp.displayedName}} </span>
-			{{/each}}
-			)
-			<span class="inherited-skills">
-				{{fusion.inheritedSkills}} Skills Inherited
-			</span>
-		</li>
-		{{/each}}
-	</ul>
-	{{else}}
-	{{> "systems/persona/parts/persona-viewer.hbs" actor=actor CONST=CONST persona=actor.sheet.selectedFusion partial=true}}
-	{{/if}}
+<section class="fusions-list"> {{#if (not actor.sheet.selectedFusion)}}
+  <section class="fusion-list">
+    <div>
+      <label>
+        Compendium Fusion
+      </label>
+      <input class ="comp-fusion-selector" type="checkbox" {{checked actor.sheet.compFusionCheck}}>
+    </div>
+    <h2> Fusions</h2>
+    {{#if actor.sheet.compFusionCheck}}
+    {{> "systems/persona/parts/fusion-combination-list.hbs" actor=actor CONST=CONST list=(compendiumFusionOptions actor)}}
+    {{else}}
+    {{> "systems/persona/parts/fusion-combination-list.hbs" actor=actor CONST=CONST list=(fusionableCombinations actor)}}
+    {{/if}}
+  </section>
+
+  {{else}}
+  {{> "systems/persona/parts/persona-viewer.hbs" actor=actor CONST=CONST persona=actor.sheet.selectedFusion partial=true}}
+  {{/if}}
 </section>

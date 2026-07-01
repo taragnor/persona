@@ -1,0 +1,18 @@
+<ul class="fusion-options">
+  {{#each list as |fusion i|}}
+  <li class="fusion-option {{#if (gt fusion.result.startingLevel ../actor.level)}} disabled {{/if}}" data-shadow-id="{{fusion.result.id}}">
+    <span class="name">
+      {{fusion.result.name}}
+      - {{fusion.result.startingLevel}} {{fusion.result.tarot.displayedName}}
+    </span>
+    (
+    {{#each fusion.components as |comp j|}}
+    <span data-shadow-component-id="{{comp.id}}">{{comp.displayedName}} </span>
+    {{/each}}
+    )
+    <span class="inherited-skills">
+      {{fusion.inheritedSkills}} Skills Inherited
+    </span>
+  </li>
+  {{/each}}
+</ul>

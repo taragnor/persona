@@ -72,6 +72,11 @@ export class ExplorationPanel extends PersonaPanel {
       onPress: () => void Metaverse.chooseAlly(),
       enabled: () => !PersonaCombat.combat,
     });
+    // buttons.push( {
+    //   label: `Velvet Room`,
+    //   onPress: () => void this._onVelvetRoomButton(),
+    //   enabled: () => !PersonaCompendium.canUseCompendium(),
+    // });
     return buttons;
   }
 
@@ -102,6 +107,10 @@ export class ExplorationPanel extends PersonaPanel {
   async _openInventoryPanel(member: PC | NPCAlly) {
     await this.push(new ItemUsePanel(member, (item:Usable) => item.canBeUsedInExploration()));
   }
+
+  // async _onVelvetRoomButton() {
+  //   await this.push(new VelvetRoomPanel());
+  // }
 
 	searchButton(_ev ?: JQuery.ClickEvent) {
 		if (game.user.isGM) {

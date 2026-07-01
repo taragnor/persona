@@ -747,6 +747,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return Math.max( 0, maxCustomPersonas -1) + wildPersonas;
   }
 
+  get canUseWildPersonas() : boolean {
+    return this.class.system.maxPersonas > 0;
+  }
+
   get personaList(): Persona[] {
     if (!this.isValidCombatant()) {return [];}
     const maxCustomPersonas = this.class.system.uniquePersonas;
@@ -3859,6 +3863,17 @@ fusionCombinationsRaw() {
   const arr = this.personaList
     .concat(this.sideboardPersonas);
   return FusionTable.fusionCombinationsOutOf(arr, true);
+}
+
+compendiumFusionCombinations(this: PC) : FusionCombination[] {
+  const arr = this.personaList
+    .concat(this.sideboardPersonas);
+  const additional = PersonaCompendium.allCompendiumPersonas()
+    .filter( compPer=> !arr
+      .some(shadow => shadow.compendiumEntry == compPer)
+    ).map( shadow => new Persona(shadow, this));
+  arr.push(...additional);
+  return FusionTable.fusionCombinationsOutOf(arr);
 }
 
 getPrimaryPlayerOwner() : typeof game.users.contents[number] | undefined {

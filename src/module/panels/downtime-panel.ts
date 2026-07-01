@@ -138,13 +138,14 @@ export class DowntimePanel extends PersonaPanel {
       enabled: () => ItemCraftingPanel.allowCrafting(),
       visible: () => actor != undefined,
       cssClasses : ["tall-button"]
-    }, {
-      label: "Create Cards (Velvet Room)",
-      onPress: () => CardCraftingPanel.open(actor, thisPanel),
-      enabled: () => CardCraftingPanel.allowCrafting(),
-      visible: () => actor != undefined && actor.hasVelvetRoomAccess,
-      cssClasses : ["tall-button"]
-    } ];
+    },
+      {
+        label: "Create Cards (Velvet Room)",
+        onPress: () => CardCraftingPanel.open(actor, thisPanel),
+        enabled: () => CardCraftingPanel.allowCrafting(),
+        visible: () => actor != undefined && actor.hasVelvetRoomAccess,
+        cssClasses : ["tall-button"]
+      } ];
   }
 
   private GMButtons() : SidePanel.ButtonConfig[] {

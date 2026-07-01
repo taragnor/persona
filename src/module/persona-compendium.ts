@@ -127,12 +127,22 @@ export class PersonaCompendium {
 			&& !actor.isCompendiumEntry;
 	}
 
-	static canUseCompendium() : boolean {
-		if (game.user.isGM || PersonaSettings.debugMode()) {return true;}
-		const combat = PersonaCombat.combat;
-		const metaverseReq = (combat == undefined && Metaverse.getRegion()?.regionData.specialMods.includes("compendium-access")) ?? false;
-		const nonMetaverseReq =	combat != undefined && combat.isSocial;
-		return  metaverseReq || nonMetaverseReq;
+  static canUseCompendium() : boolean {
+    if (game.user.isGM && PersonaSettings.debugMode()) {return true;}
+    const phase = Metaverse.getPhase();
+    switch (phase) {
+      case "downtime": return true;
+      case "postcombat": return false;
+      case "combat": return false;
+      case "exploration":
+        return Metaverse.getRegion()?.regionData.specialMods.includes("compendium-access") ?? false;
+      default: phase satisfies never;
+        return false;
+    }
+		// const combat = PersonaCombat.combat;
+		// const metaverseReq = (combat == undefined && Metaverse.getRegion()?.regionData.specialMods.includes("compendium-access")) ?? false;
+		// const nonMetaverseReq =	combat != undefined && combat.isSocial;
+		// return  metaverseReq || nonMetaverseReq;
 	}
 
 	static convertToNormalName(compName: string) {
@@ -166,5 +176,11 @@ export class PersonaCompendium {
 		await summoned.update( {"system.personaConversion.compendiumId": compEntry.id});
 		return summoned;
 	}
+
+  static allCompendiumPersonas(): readonly Shadow[]{
+    return PersonaDB.personaCompendium();
+  }
+
+
 }
 

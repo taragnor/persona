@@ -11,6 +11,7 @@ export class HypotheticalPersona extends Persona<PC> {
 	declare source: Shadow;
 	components: Shadow[];
 	inherited: Power[] = [];
+
 	constructor(result: Shadow, user :PC, components: Shadow[]) {
 		super(result, user, result.startingPowers);
 		this.components = components;
@@ -26,6 +27,7 @@ export class HypotheticalPersona extends Persona<PC> {
 	}
 
 	get canInitiateFusion() : boolean {
+    if (this.components.some( shadow => shadow.isCompendiumEntry)) {return false;}
 		if (!this.isHypothetical) { return false;}
 		if (!this.user.isPC()) {return false;}
 		return this.level <= this.user.level;
@@ -149,6 +151,25 @@ export class HypotheticalPersona extends Persona<PC> {
 		return chosenPower ?? null;
 	}
 
+  override get theurgies() {
+    //may nbeed to change this later for WC therugies
+    return [];
+  }
 
+  override get bonusPowers() {
+    return [];
+  }
+
+  override get navigatorSkills() {
+    return [];
+  }
+
+  override get openers() {
+    return [];
+  }
+
+  override get followUpMoves() {
+    return [];
+  }
 
 }

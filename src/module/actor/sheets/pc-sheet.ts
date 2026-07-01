@@ -25,6 +25,7 @@ export class PCSheet extends PCLikeSheet {
 	personaMoveSelector : U<Persona> = undefined;
 	selectedFusion:  U<HypotheticalPersona> = undefined;
 	selectedCompendium: U<Persona> = undefined;
+  compFusionCheck : boolean = false;
 
 	static override get defaultOptions() {
 		const def = super.defaultOptions;
@@ -109,6 +110,7 @@ export class PCSheet extends PCLikeSheet {
 		html.find(".persona-viewer .summon-persona").on("click", ev => void this._summonPersona(ev));
 		html.find(".persona-compendium .persona-viewer .back").on("click", ev => void this.clearCompendiumSelect(ev));
     html.find(".powerName").middleclick(ev=> void this.swapPower(ev));
+    html.find("input.comp-fusion-selector").on("click", _ev => this._onClickCompFusionCheckbox());
 	}
 
 	async rollSocial (ev: JQuery.Event) {
@@ -475,6 +477,11 @@ export class PCSheet extends PCLikeSheet {
       throw new PersonaError("Can't swap powers now");
     }
     PowerPrinter.openSwap(power, this.actor.persona());
+  }
+
+  _onClickCompFusionCheckbox() {
+    this.compFusionCheck = !this.compFusionCheck;
+    this.render(false);
   }
 
 }
