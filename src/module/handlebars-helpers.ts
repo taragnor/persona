@@ -1177,13 +1177,15 @@ export class PersonaHandleBarsHelpers {
     "fusionableCombinations" : function ( fusor: PC) : FusionCombination[]  {
       return fusor.fusionCombinations
         .filter (comb=> comb.result != undefined)
-        .filter (comb=> FusionTable.meetsConditionsToFuse(comb.result!, fusor));
+        .filter (comb=> FusionTable.meetsConditionsToFuse(comb.result!, fusor))
+        .sort( (a,b) => a.result!.name.localeCompare(b.result!.name));
     },
 
     "compendiumFusionOptions" : function ( fusor: PC) : FusionCombination[]  {
       return fusor.compendiumFusionCombinations()
         .filter (comb=> comb.result != undefined)
-        .filter (comb=> FusionTable.meetsConditionsToFuse(comb.result!, fusor));
+        .filter (comb=> FusionTable.meetsConditionsToFuse(comb.result!, fusor))
+        .sort( (a,b) => a.result!.name.localeCompare(b.result!.name));
     },
 
     "joinSteps": function (steps: string[]) : string {
