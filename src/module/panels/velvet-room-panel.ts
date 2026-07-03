@@ -36,10 +36,11 @@ export class VelvetRoomPanel extends SubPanel {
     }
     ];
 
-  } ;
+  };
 }
 
 export class FusionPanel extends SubPanel {
+
   actor: PC;
   compendiumFusion: boolean;
 
@@ -55,9 +56,9 @@ export class FusionPanel extends SubPanel {
 
   override staticHTML() {
     if (this.compendiumFusion) {
-      return "<h2> Compendium Fusion</h2>";
+      return "<h2>Compendium Fusion</h2>";
     }
-    return "<h2> Persona Fusion</h2>";
+    return "<h2>Persona Fusion</h2>";
   }
 
 }

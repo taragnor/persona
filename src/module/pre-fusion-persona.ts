@@ -8,6 +8,7 @@ import {removeDuplicates} from "./utility/array-tools.js";
 import {HTMLTools} from "./utility/HTMLTools.js";
 
 export class HypotheticalPersona extends Persona<PC> {
+
 	declare source: Shadow;
 	components: Shadow[];
 	inherited: Power[] = [];
@@ -16,7 +17,6 @@ export class HypotheticalPersona extends Persona<PC> {
 		super(result, user, result.startingPowers);
 		this.components = components;
 	}
-
 
 	skillsToInherit(): number {
 		return FusionTable.numOfInheritedSkills(this.components, this.source);
@@ -156,20 +156,9 @@ export class HypotheticalPersona extends Persona<PC> {
     return [];
   }
 
-  override get bonusPowers() {
-    return [];
-  }
-
-  override get navigatorSkills() {
-    return [];
-  }
-
-  override get openers() {
-    return [];
-  }
-
-  override get followUpMoves() {
-    return [];
-  }
+  override get bonusPowers() { return []; }
+  override get navigatorSkills() { return []; }
+  override get openers() { return []; }
+  override get followUpMoves() { return []; }
 
 }
