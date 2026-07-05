@@ -82,11 +82,11 @@ export class PersonaItemSheetBase extends foundry.appv1.sheets.ItemSheet<Persona
         action: () => ({
           type: "combat-effect",
           combatEffect:"addStatus",
-          "applyTo" : "target",
-          "potency": 1,
-          "statusDuration": "3-rounds",
-          "durationApplyTo": "target",
-          "statusName": "burn",
+          applyTo : "target",
+          potency: 1,
+          statusDuration: "3-rounds",
+          durationApplyTo: "target",
+          statusName: "burn",
         } satisfies NonDeprecatedConsequence),
       },
       {

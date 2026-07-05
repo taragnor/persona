@@ -86,7 +86,6 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
     html.find(".copy-choice").on("click", ev => this.copyChoice(ev));
   }
 
-
   get eventIndex() {
     const index=  this.event.parentIndex();
     if (index == undefined)  {
@@ -102,7 +101,6 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
     );
     this.render(false);
   }
-
 
   async #refreshEventTag<T, F extends (() => T)>( fn: F) : Promise<T> {
     const index = this.eventIndex;
@@ -146,7 +144,6 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
       await this.#refreshEventTag( () =>
         this.event.update(formData)
       );
-      // await this._card.sheet.render(false);
     } catch (e) {
       console.log("Form Data");
       console.log(formData);
@@ -286,6 +283,7 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
         }
       }
     ] satisfies ContextMenu["options"];
+
     return options;
   }
 
