@@ -51,7 +51,18 @@ export class PersonaItemSheetBase extends foundry.appv1.sheets.ItemSheet<Persona
   }
 
   newConditionalMenu() : ContextMenuOptions<NonDeprecatedPrecondition>[]  {
-    return [];
+    return [
+      {
+        label: "Power Has Tag",
+        action: () => ({
+          type : "boolean",
+          boolComparisonTarget: "power-has",
+          booleanState: true,
+          "powerProp" :"has-tag",
+          "powerTag" : {},
+        } satisfies NonDeprecatedPrecondition),
+      },
+    ];
   }
 
   newConsequenceMenu() : ContextMenuOptions<NonDeprecatedConsequence>[]  {

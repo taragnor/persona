@@ -18,10 +18,12 @@ export class VelvetRoomPanel extends SubPanel {
     return "<h2> Velvet Room </h2>";
   }
 
-  protected override buttonConfig() : SidePanel.ButtonConfig[] {
+  protected override async buttonConfig() : Promise<SidePanel.ButtonConfig[]> {
     const velvetAccess : boolean = this.actor != undefined
       && this.actor.hasVelvetRoomAccess;
-    return [ {
+    return [
+      ...await super.buttonConfig(),
+      {
       label: "Create Cards (Velvet Room)",
       onPress: () => CardCraftingPanel.open(this.actor, this),
       enabled: () => CardCraftingPanel.allowCrafting(),

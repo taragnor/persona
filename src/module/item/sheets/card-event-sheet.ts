@@ -272,6 +272,18 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
             applyTo: "user",
           } satisfies NonDeprecatedConsequence;
         }
+      } , {
+        label: "Set Temp Variable",
+        action: (_ev: JQuery.ClickEvent) => {
+          return {
+            type: "alter-variable",
+            __localEffect: true,
+            varType: "social-temp",
+            operator: "add",
+            value : ConsequenceAmountResolver.constant(1),
+            variableId: "",
+          } satisfies NonDeprecatedConsequence;
+        }
       }
     ] satisfies ContextMenu["options"];
     return options;

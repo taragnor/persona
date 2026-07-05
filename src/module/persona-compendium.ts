@@ -49,7 +49,6 @@ export class PersonaCompendium {
 
 	static convertToCompendiumName(actorName: string) : string {
 		return  `${actorName}${this.COMPENDIUM_NAME_SUFFIX}`;
-		// return  `${actorName} (Compendium)`;
 	}
 
 	private static async createNewCompendiumEntry(actor: Shadow): Promise<Shadow> {
@@ -58,7 +57,6 @@ export class PersonaCompendium {
 			system: (actor.system.toJSON() as Shadow["system"]),
 			type: "shadow",
 			name,
-			// name: `${actor.name} (Compendium)`,
 			img: actor.img,
 			prototypeToken: actor.prototypeToken,
 			ownership: actor.ownership,
@@ -138,10 +136,6 @@ export class PersonaCompendium {
       default: phase satisfies never;
         return false;
     }
-		// const combat = PersonaCombat.combat;
-		// const metaverseReq = (combat == undefined && Metaverse.getRegion()?.regionData.specialMods.includes("compendium-access")) ?? false;
-		// const nonMetaverseReq =	combat != undefined && combat.isSocial;
-		// return  metaverseReq || nonMetaverseReq;
 	}
 
 	static convertToNormalName(compName: string) {
@@ -179,7 +173,6 @@ export class PersonaCompendium {
   static allCompendiumPersonas(): readonly Shadow[]{
     return PersonaDB.personaCompendium();
   }
-
 
 }
 
