@@ -341,6 +341,7 @@ export class SocialCardEventHandler {
 					case "normal": return 11;
 					case "easy": return 6;
 					case "hard": return 16;
+          case undefined: return cardRoll.baseDC;
 					default: cardRoll.saveType satisfies never;
 						throw new PersonaError("Should be unreachable");
 				}
@@ -599,7 +600,7 @@ export class SocialCardEventHandler {
     }
     switch (cardChoice.roll.rollType) {
       case "save" :
-        rollTags.pushUnique("save");
+        // rollTags.pushUnique("save");
         break;
       case "studentSkillCheck": {
         const skill = cardChoice.roll.studentSkill;

@@ -4,6 +4,7 @@ import { StudentSkillExt } from "./student-skills.js";
 import { SaveType } from "./save-types.js";
 import { SocialStat } from "./student-skills.js";
 import { WeatherType } from "./weather-types.js";
+import {HTMLTools} from "../module/utility/HTMLTools.js";
 
 export const SOCIAL_CARD_TYPES_LIST = [
 	"social",
@@ -29,13 +30,19 @@ export const SOCIAL_CARD_ROLL_TYPES_LIST = [
 ] as const;
 
 
-export const SOCIAL_CARD_ROLL_TYPES = Object.fromEntries(
-	SOCIAL_CARD_ROLL_TYPES_LIST.map(a=> [a, `persona.social.card.rolls.types.${a}`])
-);
+// export const SOCIAL_CARD_ROLL_TYPES = Object.fromEntries(
+// 	SOCIAL_CARD_ROLL_TYPES_LIST.map(a=> [a, `persona.social.card.rolls.types.${a}`])
+// );
 
-export const SIMPLE_SOCIAL_CARD_ROLL_TYPES = Object.fromEntries(
-	SIMPLE_SOCIAL_CARD_ROLL_TYPES_LIST.map(a=> [a, `persona.social.card.rolls.types.${a}`])
-);
+export const SOCIAL_CARD_ROLL_TYPES = HTMLTools.createLocalizationObject(
+	SOCIAL_CARD_ROLL_TYPES_LIST, `persona.social.card.rolls.types`);
+
+export const SIMPLE_SOCIAL_CARD_ROLL_TYPES = HTMLTools.createLocalizationObject(
+	SIMPLE_SOCIAL_CARD_ROLL_TYPES_LIST, `persona.social.card.rolls.types`);
+
+// export const SIMPLE_SOCIAL_CARD_ROLL_TYPES = Object.fromEntries(
+// 	SIMPLE_SOCIAL_CARD_ROLL_TYPES_LIST.map(a=> [a, `persona.social.card.rolls.types.${a}`])
+// );
 
 	export type SocialCardType = keyof typeof SOCIAL_CARD_TYPES_LIST;
 
@@ -101,7 +108,8 @@ type CardRollList = {
 	"save" : {
 		rollType: "save",
 		simpleRoll: boolean,
-		saveType: SaveType,
+		saveType?: SaveType,
+    baseDC : number,
 		modifier: number,
 		disallow_other_modifiers: boolean,
 		DCVal ?: number,

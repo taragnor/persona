@@ -561,6 +561,21 @@ class CardChoiceDM extends foundry.abstract.DataModel {
 
 	static override migrateData(source: Record<string, any>) : typeof source {
 		const  data = source as Foundry.SystemDataObjectFromDM<typeof CardChoiceDM>;
+    if (data?.roll?.rollType == "save" && data?.roll?.baseDC == undefined) {
+      switch (data?.roll?.saveType) {
+        case "normal":
+          data.roll.baseDC = 10;
+          break;
+        case "easy":
+          data.roll.saveType = undefined;
+          data.roll.baseDC = 5;
+        break;
+        case "hard":
+          data.roll.saveType = undefined;
+          data.roll.baseDC = 15;
+        break;
+      }
+    }
 		if (data.conditions == undefined) {
 			data.conditions = [];
 		}

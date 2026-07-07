@@ -591,11 +591,6 @@ export class PersonaSocial {
     const seed = `${dateSeed}-${link.name}`;
     const rng = new SeededRandom(seed);
     const weightedList = this.getWeightedCardList(link, actor);
-    // const weightedList = undrawn.map( card=> ({
-    //   item: card,
-    //   weight: this.getCardWeight(card, link, actor),
-    // }));
-    // const chosenCard = weightedChoice(weightedList);
     const chosenCard = rng.weightedChoice(weightedList);
     if (!chosenCard) {
       throw new PersonaError(`Can't find valid social card for ${link.name} on PC : ${actor.name}!`);

@@ -39,9 +39,13 @@
 	{{/if}}
 	{{#if (eq roll.rollType "save")}}
 	<div>
+    {{#if false}}
 		<select name='{{strcat namePrefix "saveType"}}'>
 			{{selectOptions CONST.SAVE_DIFFICULTY localize=true selected=roll.saveType}}
 		</select>
+    {{/if}}
+    <label> DC </label>
+		<input class="short" type=number name='{{strcat namePrefix "baseDC"}}' value="{{defVal roll.baseDC 10}}">
 		<label> Disallow Other Modifiers</label>
 		<input type="checkbox" id="flagState" name="{{strcat namePrefix 'disallow_other_modifiers'}}" {{checked roll.disallow_other_modifiers}}>
 	</div>

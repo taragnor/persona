@@ -12,7 +12,10 @@
       {{/if}}
       {{replace label cardData.replaceSet}}
       {{#if (eq roll.rollType "save")}}
+      {{#if false}}
       . Roll {{roll.saveType}} Save
+      {{/if}}
+      . Flat Roll
       <span class="dc">
         {{#if roll.DCVal}}
         (DC {{roll.DCVal}})
