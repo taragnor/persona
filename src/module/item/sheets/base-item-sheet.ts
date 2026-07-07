@@ -51,59 +51,53 @@ export class PersonaItemSheetBase extends foundry.appv1.sheets.ItemSheet<Persona
   }
 
   newConditionalMenu() : ContextMenuOptions<NonDeprecatedPrecondition>[]  {
-    return [
-      {
-        label: "Power Has Tag",
-        action: () => ({
-          type : "boolean",
-          boolComparisonTarget: "power-has",
-          booleanState: true,
-          "powerProp" :"has-tag",
-          "powerTag" : {},
-        } satisfies NonDeprecatedPrecondition),
-      },
-    ];
+    return [ {
+      label: "Power Has Tag",
+      action: () => ({
+        type : "boolean",
+        boolComparisonTarget: "power-has",
+        booleanState: true,
+        "powerProp" :"has-tag",
+        "powerTag" : {},
+      } satisfies NonDeprecatedPrecondition),
+    } ];
   }
 
   newConsequenceMenu() : ContextMenuOptions<NonDeprecatedConsequence>[]  {
-    return [
-      {
-        label: "Damage",
-        action: () => ({
-          type: "combat-effect",
-          combatEffect:"damage",
-          applyTo: "target",
-          damageSubtype: "odd-even",
-          damageType :"by-power",
-        } satisfies NonDeprecatedConsequence),
-      },
-      {
-        label: "Add Status",
-        action: () => ({
-          type: "combat-effect",
-          combatEffect:"addStatus",
-          applyTo : "target",
-          potency: 1,
-          statusDuration: "3-rounds",
-          durationApplyTo: "target",
-          statusName: "burn",
-        } satisfies NonDeprecatedConsequence),
-      },
-      {
-        label: "SFX",
-        action: () => ({
-          type :"sfx",
-          sfxType: "play-animation",
-          actionType: "standard",
-          applyTo: "target",
-          fileName : "",
-          offType : "none",
-          priority : 0,
-          order: 0,
-          projectile : "none",
-        } satisfies NonDeprecatedConsequence),
-      },
-    ];
+    return [ {
+      label: "Damage",
+      action: () => ({
+        type: "combat-effect",
+        combatEffect:"damage",
+        applyTo: "target",
+        damageSubtype: "odd-even",
+        damageType :"by-power",
+      } satisfies NonDeprecatedConsequence),
+    }, {
+      label: "Add Status",
+      action: () => ({
+        type: "combat-effect",
+        combatEffect:"addStatus",
+        applyTo : "target",
+        potency: 1,
+        statusDuration: "3-rounds",
+        durationApplyTo: "target",
+        statusName: "burn",
+      } satisfies NonDeprecatedConsequence),
+    }, {
+      label: "SFX",
+      action: () => ({
+        type :"sfx",
+        sfxType: "play-animation",
+        actionType: "standard",
+        applyTo: "target",
+        fileName : "",
+        offType : "none",
+        priority : 0,
+        order: 0,
+        projectile : "none",
+      } satisfies NonDeprecatedConsequence),
+    } ];
   }
 
   defaultConditionalEffect(_ev: JQuery.ClickEvent): ConditionalEffect {

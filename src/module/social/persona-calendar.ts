@@ -263,9 +263,16 @@ export class PersonaCalendar {
 		return doomsdayMsg;
 	}
 
-	static determineWeather( date: Readonly<CalendarDate>) : WeatherType {
+  static dateSeedString(date = this.getCurrentDate() ): string {
 		const {day, month, year} = date;
 		const str = `${year}-${day}-${month}`;
+    return str;
+  }
+
+	static determineWeather( date: Readonly<CalendarDate>) : WeatherType {
+		// const {day, month, year} = date;
+		// const str = `${year}-${day}-${month}`;
+    const str = this.dateSeedString(date);
 		const rng = new SeededRandom(str);
 		const rand = rng.die(2,6);
 		let prevWeather :WeatherType = "cloudy";

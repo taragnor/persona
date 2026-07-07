@@ -132,7 +132,8 @@ export class PersonaCompendium {
       case "postcombat": return false;
       case "combat": return false;
       case "exploration":
-        return Metaverse.getRegion()?.regionData.specialMods.includes("compendium-access") ?? false;
+        return Metaverse.getRegion()?.regionData
+          .specialMods.includes("compendium-access") ?? false;
       default: phase satisfies never;
         return false;
     }
@@ -170,7 +171,7 @@ export class PersonaCompendium {
 		return summoned;
 	}
 
-  static allCompendiumPersonas(): readonly Shadow[]{
+  static allCompendiumPersonas(): readonly Shadow[] {
     return PersonaDB.personaCompendium();
   }
 

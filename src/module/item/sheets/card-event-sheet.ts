@@ -31,7 +31,6 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
       this._collectDebugInfo();
       throw new PersonaError("Something bad happened with getting the index of  event");
     }
-    Debug(this);
   }
 
   private _collectDebugInfo() {
@@ -39,7 +38,6 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
     Debug(this._event);
     console.log(this._event);
     console.log(this._card);
-
   }
 
   static override get defaultOptions() {
@@ -55,13 +53,8 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
     });
   }
 
-  get card() {
-    return this._card;
-  }
-
-  get item() {
-    return this._card;
-  }
+  get card() { return this._card; }
+  get item() { return this._card; }
 
   get event() : SocialCardEventDM & SocialCard["system"]["events"][number] {
     if (this._event instanceof SocialCardEventDM) {
@@ -170,7 +163,6 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
 
   async pasteChoice(_ev: JQuery.ClickEvent) {
     const eventIndex = this.eventIndex;
-    // const eventIndex = Number(HTMLTools.getClosestData(ev, "eventIndex"));
     const choice = PersonaSocialCardSheet.clipboard.choice;
     if (!choice) {
       ui.notifications.warn("No choice stored in clipboard, nothing to paste");
@@ -190,100 +182,95 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
   }
 
   newConditionalMenu() : ContextMenuOptions<NonDeprecatedPrecondition>[] {
-    const options = [
-      {
-        label : "Social Link Required",
-        action: (_ev: JQuery.ClickEvent) => ({
-          "type": "numeric",
-          "comparisonTarget": "social-link-level",
-          "comparator": ">=",
-          "num": ConsequenceAmountResolver.constant(10),
-          "socialLinkIdOrTarot": "target",
-        } satisfies NonDeprecatedPrecondition),
-      }, {
-        label : "Has Cameo",
-        action : () => ({
-          type: "boolean",
-          booleanState: true,
-          boolComparisonTarget: "actor-exists",
-          "conditionTarget": "cameo",
-        }),
-      }, {
-        label: "temp Social Variable",
-        action : () => ({
-          type: "numeric",
-          "comparisonTarget": "variable-value",
-          "varType" :"social-temp",
-          comparator: "==",
-          "num": ConsequenceAmountResolver.constant(1),
-          "variableId": "",
-          __localEffect: true,
-        } satisfies NonDeprecatedPrecondition),
-      }
-    ] satisfies ContextMenuOptions<NonDeprecatedPrecondition>[];
+    const options = [ {
+      label : "Social Link Required",
+      action: (_ev: JQuery.ClickEvent) => ({
+        "type": "numeric",
+        "comparisonTarget": "social-link-level",
+        "comparator": ">=",
+        "num": ConsequenceAmountResolver.constant(10),
+        "socialLinkIdOrTarot": "target",
+      } satisfies NonDeprecatedPrecondition),
+    }, {
+      label : "Has Cameo",
+      action : () => ({
+        type: "boolean",
+        booleanState: true,
+        boolComparisonTarget: "actor-exists",
+        "conditionTarget": "cameo",
+      }),
+    }, {
+      label: "temp Social Variable",
+      action : () => ({
+        type: "numeric",
+        "comparisonTarget": "variable-value",
+        "varType" :"social-temp",
+        comparator: "==",
+        "num": ConsequenceAmountResolver.constant(1),
+        "variableId": "",
+        __localEffect: true,
+      } satisfies NonDeprecatedPrecondition),
+    } ] satisfies ContextMenuOptions<NonDeprecatedPrecondition>[];
     return options;
   }
 
   newConsequenceMenu() {
-    const options = [
-      {
-        label: "Modify Student Stat",
-        action: (_ev: JQuery.ClickEvent) => {
-          return {
-            type: "social-card-action",
-            cardAction: "alter-student-skill",
-            studentSkill : "diligence",
-            amount: {
-              type: "constant",
-              val: 1,
-            } satisfies ConsequenceAmountV2
-            ,
-          } satisfies NonDeprecatedConsequence;
-        },
-      }, {
-        label: "Modify Progress Tokens",
-        action: (_ev: JQuery.ClickEvent) => {
-          return {
-            type: "social-card-action",
-            cardAction: "modify-progress-tokens",
-            socialLinkIdOrTarot: "target",
-            amount: ConsequenceAmountResolver.constant(1),
-          } satisfies NonDeprecatedConsequence;
-        },
-      }, {
-        label: "Add Item",
-        action: (_ev: JQuery.ClickEvent) => {
-          return {
-            type: "inventory-action",
-            invAction: "add-item",
-            itemId: "" as PersonaItem["id"],
-            amount: ConsequenceAmountResolver.constant(1),
-          } satisfies NonDeprecatedConsequence;
-        }
-      }, {
-        label: "Fatigue",
-        action: (_ev: JQuery.ClickEvent) => {
-          return {
-            type: "alter-fatigue-lvl",
-            "amount": -1,
-            applyTo: "user",
-          } satisfies NonDeprecatedConsequence;
-        }
-      } , {
-        label: "Set Temp Variable",
-        action: (_ev: JQuery.ClickEvent) => {
-          return {
-            type: "alter-variable",
-            __localEffect: true,
-            varType: "social-temp",
-            operator: "add",
-            value : ConsequenceAmountResolver.constant(1),
-            variableId: "",
-          } satisfies NonDeprecatedConsequence;
-        }
+    const options = [ {
+      label: "Modify Student Stat",
+      action: (_ev: JQuery.ClickEvent) => {
+        return {
+          type: "social-card-action",
+          cardAction: "alter-student-skill",
+          studentSkill : "diligence",
+          amount: {
+            type: "constant",
+            val: 1,
+          } satisfies ConsequenceAmountV2
+          ,
+        } satisfies NonDeprecatedConsequence;
+      },
+    }, {
+      label: "Modify Progress Tokens",
+      action: (_ev: JQuery.ClickEvent) => {
+        return {
+          type: "social-card-action",
+          cardAction: "modify-progress-tokens",
+          socialLinkIdOrTarot: "target",
+          amount: ConsequenceAmountResolver.constant(1),
+        } satisfies NonDeprecatedConsequence;
+      },
+    }, {
+      label: "Add Item",
+      action: (_ev: JQuery.ClickEvent) => {
+        return {
+          type: "inventory-action",
+          invAction: "add-item",
+          itemId: "" as PersonaItem["id"],
+          amount: ConsequenceAmountResolver.constant(1),
+        } satisfies NonDeprecatedConsequence;
       }
-    ] satisfies ContextMenu["options"];
-
+    }, {
+      label: "Fatigue",
+      action: (_ev: JQuery.ClickEvent) => {
+        return {
+          type: "alter-fatigue-lvl",
+          "amount": -1,
+          applyTo: "user",
+        } satisfies NonDeprecatedConsequence;
+      }
+    } , {
+      label: "Set Temp Variable",
+      action: (_ev: JQuery.ClickEvent) => {
+        return {
+          type: "alter-variable",
+          __localEffect: true,
+          varType: "social-temp",
+          operator: "add",
+          value : ConsequenceAmountResolver.constant(1),
+          variableId: "",
+        } satisfies NonDeprecatedConsequence;
+      }
+    } ] satisfies ContextMenu["options"];
     return options;
   }
 

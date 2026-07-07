@@ -24,12 +24,12 @@ import {PreconditionConverter} from "../migration/convertPrecondition.js";
 import {ConsequenceProcessor} from "../conditionalEffects/consequence-processor.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 import {SocialCardExecutor} from "./social-card-executor.js";
-import {weightedChoice} from "../utility/array-tools.js";
 import {ConditionalEffectPrinter} from "../conditionalEffects/conditional-effect-printer.js";
 import {DowntimePanel} from "../panels/downtime-panel.js";
 import {Helpers} from "../utility/helpers.js";
 import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
 import {testPreconditions} from "../conditionalEffects/preconditions.js";
+import {SeededRandom} from "../utility/seededRandom.js";
 
 export class PersonaSocial {
 	static allowMetaverse: boolean = true;
@@ -578,22 +578,34 @@ export class PersonaSocial {
 		PersonaSockets.simpleSend("CARD_REPLY", {cardId: card.id}, sendBack);
 	}
 
-	static _drawSocialCard(actor: PC, link : SocialLink | Activity) : SocialCard {
-		if (link instanceof PersonaItem) {
-			return link;
-		}
-		const cards = SocialCardExecutor.validSocialCards(actor, link);
-		const undrawn = cards;
-		const weightedList = undrawn.map( card=> ({
-			item: card,
-			weight: Number(card.system.frequency ?? 1),
-		}));
-		const chosenCard = weightedChoice(weightedList);
-		if (!chosenCard) {
-			throw new PersonaError(`Can't find valid social card for ${link.name} on PC : ${actor.name}!`);
-		}
-		return chosenCard;
-	}
+  static _drawSocialCard(actor: PC, link : SocialLink | Activity) : SocialCard {
+    if (link instanceof PersonaItem) {
+      //if link isn't a social link but rather some misc activity just use that card
+      return link;
+    }
+    if (actor.social.getSocialSLWith(link) == 0) {
+      throw new InitialLinkError("Can't get card for initial link");
+    }
+    const cards = SocialCardExecutor.validSocialCards(actor, link);
+    const undrawn = cards;
+    const dateSeed = PersonaCalendar.dateSeedString();
+    const seed = `${dateSeed}-${link.name}`;
+    const rng = new SeededRandom(seed);
+    const weightedList = undrawn.map( card=> ({
+      item: card,
+      weight: this.getCardWeight(card),
+    }));
+    // const chosenCard = weightedChoice(weightedList);
+    const chosenCard = rng.weightedChoice(weightedList);
+    if (!chosenCard) {
+      throw new PersonaError(`Can't find valid social card for ${link.name} on PC : ${actor.name}!`);
+    }
+    return chosenCard;
+  }
+
+  static getCardWeight(card: SocialCard) : number {
+			return Number(card.system.frequency ?? 1);
+  }
 
 	static getCardReply(req: SocketMessage["CARD_REPLY"]) {
 		if (PersonaSettings.debugMode()) {
@@ -875,5 +887,4 @@ Hooks.on("renderChatMessageHTML", (message: ChatMessage, htm: HTMLElement ) => {
 	}
 });
 
-
-
+export class InitialLinkError extends Error {}

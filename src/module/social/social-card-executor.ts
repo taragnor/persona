@@ -129,7 +129,7 @@ export class SocialCardExecutor {
 
   private async _preExec() {
     const continuation = this._nullContinuation;
-    const cardData= await this.generateCardData();
+    const cardData = await this.generateCardData();
     this.rollState = {
       cardData,
       continuation,

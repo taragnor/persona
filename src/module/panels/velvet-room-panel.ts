@@ -20,25 +20,25 @@ export class VelvetRoomPanel extends SubPanel {
 
   protected override async buttonConfig() : Promise<SidePanel.ButtonConfig[]> {
     const velvetAccess : boolean = this.actor != undefined
-      && this.actor.hasVelvetRoomAccess;
+    && this.actor.hasVelvetRoomAccess;
     return [
       ...await super.buttonConfig(),
       {
-      label: "Create Cards (Velvet Room)",
-      onPress: () => CardCraftingPanel.open(this.actor, this),
-      enabled: () => CardCraftingPanel.allowCrafting(),
-      visible: () => velvetAccess,
-      cssClasses : ["tall-button"]
-    }, {
-      label: "Compendium Fusion",
-      onPress: () => this.push( new FusionPanel(this.actor, true)),
-      enabled: () => this.actor.canUseWildPersonas,
-      visible: () => velvetAccess,
-      cssClasses : ["tall-button"]
-    }
+        label: "Create Cards (Velvet Room)",
+        onPress: () => CardCraftingPanel.open(this.actor, this),
+        enabled: () => CardCraftingPanel.allowCrafting(),
+        visible: () => velvetAccess,
+        cssClasses : ["tall-button"]
+      }, {
+        label: "Compendium Fusion",
+        onPress: () => this.push( new FusionPanel(this.actor, true)),
+        enabled: () => this.actor.canUseWildPersonas,
+        visible: () => velvetAccess,
+        cssClasses : ["tall-button"]
+      }
     ];
+  }
 
-  };
 }
 
 export class FusionPanel extends SubPanel {
