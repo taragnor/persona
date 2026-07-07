@@ -6,13 +6,16 @@ import {ResolvedActorChange} from "../combat/finalized-combat-result.js";
 import {StepsClock} from "../exploration/steps-clock.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
 import {StatusDuration} from "../persona-ae.js";
+import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {SocialCardExecutor} from "../social/social-card-executor.js";
+import {convertToPercentages} from "../utility/array-tools.js";
 import {sleep} from "../utility/async-wait.js";
 import {MultiTierCache, TimedCache} from "../utility/cache.js";
 import {Calculateable} from "../utility/calculation-v2.js";
+import {NumberTools} from "../utility/numberTools.js";
 
 export class Tests {
 
@@ -33,6 +36,10 @@ export class Tests {
 
   static get kim() : PC {
     return this.getPC("Kimberly Newton");
+  }
+
+  static get tori() : PC {
+    return this.getPC("Toir MacCarrick");
   }
 
   static multiTierCacheTest () {
@@ -185,6 +192,20 @@ export class Tests {
         throw new PersonaError("Invalid roomType");
     }
     await TreasureSystem.test(searcher, scene.treasureLevel, mod, min);
+  }
+
+  static printValidCards( link: SocialLink | SocialLink["name"], actor = this.kim) {
+    if (typeof link == "string") {
+      const actor= PersonaDB.socialLinks().find( x=>x.name == link  || x.id == link);
+      if (!actor) {return false;}
+      link = actor;
+    }
+    const cards = PersonaSocial.getWeightedCardList(link, actor);
+    const percentages = convertToPercentages(cards);
+    for (const data of percentages) {
+      console.log( `${data.item.name} : ${NumberTools.percentToDecimalPlaces(data.percent, 2)}`);
+    }
+    return true;
   }
 
   static async testAnchoredStatus () : TestResult {

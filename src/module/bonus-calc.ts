@@ -161,6 +161,11 @@ export const MODV2_DETAILS = {
     rounding: "none",
     initial: 1,
     clamp: {min: 0, max: 100},
+  },
+  "social-card-weight": {
+    type: "defensive",
+    rounding: "none",
+    initial: 0,
   }
 } as const satisfies Record<string, ModV2Type>;
 

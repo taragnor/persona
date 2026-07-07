@@ -29,6 +29,15 @@ export function weightedChoice<T>( array: readonly WeightedChoiceItem<T>[]) : T 
 	return array[array.length-1].item;
 }
 
+export function convertToPercentages<T>(array: readonly WeightedChoiceItem<T>[]) {
+  const totalProbability = array.reduce(
+          (acc, item) => acc + (item.weight ?? 1)
+          , 0);
+  return array.map( ({item, weight}) => ({
+    item, weight , percent: weight / totalProbability,
+  }));
+}
+
 export function randomSelect<T>(arr: T[]) : T {
 	return arr[Math.floor(Math.random() * arr.length)];
 }

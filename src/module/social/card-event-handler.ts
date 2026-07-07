@@ -146,7 +146,6 @@ export class SocialCardEventHandler {
 					DC: 0,
 					DCMods,
           situation: rollSituation,
-					// situation: cardData.situation,
 					label: `Card Roll (${skill} ${cardRoll.modifier || ""})`,
 				});
 				await roll.toModifiedMessage(true);
@@ -172,7 +171,6 @@ export class SocialCardEventHandler {
 					label: "Card Roll (Saving Throw)",
 					rollTags,
 					situation: rollSituation,
-					// situation: cardData.situation,
 				});
 				await saveResult.toModifiedMessage(true);
 				const situation = saveResult.resultSituation;

@@ -618,28 +618,30 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   getBonusesV2(modNames: ModifierV2Target | ModifierV2Target[], item?: N<Usable>, sources ?: readonly ConditionalEffectC[]) : BonusCalculation {
     const calc = new BonusCalculation(modNames);
-    if (sources == undefined) {
-      if (item) {
-        const bonuses= item.getBonusesV2(modNames, this.user);
-        calc.merge(bonuses);
-      }
-      switch (calc.category) {
-        case "offensive":
-          sources= this.passiveModifiers();
-          break;
-        case "defensive":
-          sources= this.defensiveModifiers();
-          break;
-        case "user":
-          sources= this.passiveModifiers();
-          break;
-        case "item":
-          sources= this.passiveModifiers();
-          break;
-        default:
-          calc.category satisfies never;
-          throw new PersonaError(`Illegal calc Type ${calc.category as string}`);
-      }
+    if (sources != undefined) {
+      calc.addCE(...sources);
+      return calc;
+    }
+    if (item) {
+      const bonuses= item.getBonusesV2(modNames, this.user);
+      calc.merge(bonuses);
+    }
+    switch (calc.category) {
+      case "offensive":
+        sources= this.passiveModifiers();
+        break;
+      case "defensive":
+        sources= this.defensiveModifiers();
+        break;
+      case "user":
+        sources= this.passiveModifiers();
+        break;
+      case "item":
+        sources= this.passiveModifiers();
+        break;
+      default:
+        calc.category satisfies never;
+        throw new PersonaError(`Illegal calc Type ${calc.category as string}`);
     }
     calc.addCE(...sources);
     return calc;

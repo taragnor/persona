@@ -38,8 +38,12 @@ export type AllSituations =
 
   export type TriggerSituation = TriggeredSituation.TriggerSituation;
 
-  export type BonusQuerySituation = (OffensiveBonusSituation | DefensiveBonusSituation | PowerPricing | UserOnlyBonusSituation)
+  export type BonusQuerySituation = (OffensiveBonusSituation | DefensiveBonusSituation | PowerPricing | UserOnlyBonusSituation | SocialCardWeightQuery)
     &  Partial<BonusQueryAdds>;
+
+  type SocialCardWeightQuery = SituationComponent.SocialTarget & SituationComponent.User & {
+    rollTags : ( CardTag | Tag)[],
+  }
 
   type MinorPowerUseSituation = SituationComponent.PowerUse & Partial<SituationComponent.User>;
 
@@ -79,10 +83,13 @@ namespace SituationComponent {
     triggeringCharacter:  UniversalActorAccessor<ValidAttackers>;
   }
 
-  export type SocialCard = AddedTags & SituationComponent.User & {
+  export type SocialCard = AddedTags & SituationComponent.SocialTarget & SituationComponent.User & {
     socialRandom: number;
     cameo : U<UniversalActorAccessor<ValidSocialTarget>>;
     cardEventItem ?: U<EnchantedTreasureFormat>,
+  }
+
+  export type SocialTarget = {
     target : U<UniversalActorAccessor<ValidSocialTarget>>;
   }
 
