@@ -47,6 +47,8 @@ import {testPreconditions} from "./conditionalEffects/preconditions.js";
 import {ConditionalEffectManager} from "./conditionalEffects/conditional-effect-manager.js";
 import {TreasureSystem} from "./exploration/treasure-system.js";
 import {HypotheticalPersona} from "./pre-fusion-persona.js";
+import {convertToPercentages} from "./utility/array-tools.js";
+import {NumberTools} from "./utility/numberTools.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -1274,6 +1276,35 @@ export class PersonaHandleBarsHelpers {
         return owner.itemBase == owner;
       }
       return true;
+    },
+
+    "PCs": function () : readonly PC[] {
+      return PersonaDB.realPCs();
+    },
+
+    "SLWith": function (pc: PC, link: SocialLink) : number {
+      return pc.social.getSocialSLWith(link);
+    },
+
+    "isDating":  function (pc: PC, link: SocialLink) : boolean {
+      return pc.social.isDating(link);
+    },
+    "cardsFor": function( pc: PC, link: NPC) {
+      if (pc == undefined || link  == undefined) {
+        PersonaError.softFail("pc or link is null in cardsFor");
+        return [];
+      }
+      try {
+      const cards = PersonaSocial.getWeightedCardList(link, pc);
+      const percentages = convertToPercentages(cards);
+      return percentages;
+      } catch {
+        return [];
+      }
+    },
+
+    "percentFormat" : function (num: number) {
+      return NumberTools.percentToDecimalPlaces(num, 2);
     },
 
     "getBaseItem": function<T extends PersonaItem | PersonaActor | PersonaAE> (owner: T) :T  {

@@ -41,7 +41,6 @@ export class TreasureList extends Application {
     };
   }
 
-
   genCategory(key: keyof TreasureItem["system"]["treasure"]) : TreasureItem[] {
     const treasures = PersonaDB.treasureItems();
     return treasures.filter( treasure => {

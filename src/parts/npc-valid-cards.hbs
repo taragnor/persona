@@ -1,0 +1,25 @@
+{{#each (PCs) as |pc i|}}
+<div class="pc cards">
+  <h2>
+    {{pc.name}}
+    (SL {{SLWith pc ../actor}})
+    {{#if (isDating pc ../actor)}}
+    <span class="relationshipType" title="Dating">
+      <i class="fa fa-heart red" aria-hidden="true"></i>
+    </span>
+    {{/if}}
+  </h2>
+  <ul>
+  {{#each (cardsFor pc ../actor) as |cardItem i|}}
+  <li>
+  <label>
+    {{cardItem.item.name}}:
+  </label>
+  <span>
+    {{percentFormat cardItem.percent}}%
+  </span>
+  </li>
+  {{/each}}
+  </ul>
+</div>
+{{/each}}
