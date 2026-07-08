@@ -601,10 +601,12 @@ export class SocialCardEventHandler {
     switch (cardChoice.roll.rollType) {
       case "save" :
         // rollTags.pushUnique("save");
+        rollTags.pushUnique("flat-roll");
         break;
       case "studentSkillCheck": {
         const skill = cardChoice.roll.studentSkill;
         rollTags.push(skill as StudentSkill );
+        rollTags.push("social-check");
         break;
       }
     }
@@ -724,7 +726,7 @@ export class SocialCardEventHandler {
 		};
 		const html = await foundry.applications.handlebars.renderTemplate(`${HBS_TEMPLATES_DIR}/chat/social-card-response.hbs`, templateData);
 		const messageData = {
-			speaker: {alias: "Question Response"},
+			speaker: {alias: "Response"},
 			content: html,
 			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 		};

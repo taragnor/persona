@@ -301,7 +301,7 @@ export class PersonaSocial {
   static lookupSocialLink(actor: PC, linkId: string) :SocialLinkData {
     const link = actor.socialLinks.find(link => link.actor.id == linkId);
     if (!link)
-    {throw new PersonaError(`Can't find link ${linkId}`);}
+    {throw new LinkNotFoundError(`Can't find link ${linkId}`);}
     return link;
   }
 
@@ -903,3 +903,5 @@ Hooks.on("renderChatMessageHTML", (message: ChatMessage, htm: HTMLElement ) => {
 });
 
 export class InitialLinkError extends Error {}
+
+export class LinkNotFoundError extends Error {}

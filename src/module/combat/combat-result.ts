@@ -38,7 +38,6 @@ export class CombatResult  {
   globalLocalEffects: Sourced<LocalEffect>[] = [];
   activationRoll: U<number>;
 
-
   constructor(atkResult ?: AttackResult | null) {
     this.id = ++CombatResult.lastId;
     if (atkResult) {

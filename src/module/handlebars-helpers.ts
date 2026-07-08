@@ -1289,15 +1289,16 @@ export class PersonaHandleBarsHelpers {
     "isDating":  function (pc: PC, link: SocialLink) : boolean {
       return pc.social.isDating(link);
     },
+
     "cardsFor": function( pc: PC, link: NPC) {
       if (pc == undefined || link  == undefined) {
         PersonaError.softFail("pc or link is null in cardsFor");
         return [];
       }
       try {
-      const cards = PersonaSocial.getWeightedCardList(link, pc);
-      const percentages = convertToPercentages(cards);
-      return percentages;
+        const cards = PersonaSocial.getWeightedCardList(link, pc);
+        const percentages = convertToPercentages(cards);
+        return percentages;
       } catch {
         return [];
       }

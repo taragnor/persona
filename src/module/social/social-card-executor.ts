@@ -342,13 +342,14 @@ export class SocialCardExecutor {
 
   #getCameos(card: SocialCard, actor: PC, linkId: string) : SocialLink[] {
     let targets : (SocialLink)[] = [];
+    const target = PersonaDB.socialLinks().find(link => link.id == linkId) as SocialLink | undefined;
     const testCameo = (cameo: SocialLink) => {
       if (cameo.id == actor.id) {return false;}
       if (cameo.id == linkId) {return false;}
       const acc = cameo.accessor;
       if (PersonaSocial.isDisabled(cameo)) {return false;}
       if (cameo.hasCreatureTag("stuck-in-metaverse")) {return false;}
-      const target = PersonaDB.socialLinks().find(link => link.id == linkId) as SocialLink | undefined;
+      // const target = PersonaDB.socialLinks().find(link => link.id == linkId) as SocialLink | undefined;
       const targetAcc = target?.accessor;
       const situation: Situation = {
         cameo: acc,
@@ -364,7 +365,17 @@ export class SocialCardExecutor {
     const allCameos = PersonaDB.socialLinks().
       filter (link => testCameo(link));
     switch (card.system.cameoType) {
-      case "none": return [];
+      case "none":
+        if (target && actor.social.isDating(target) && actor.social.getSocialSLWithTarot("Devil") >= 8) {
+          const dates =
+            PersonaDB.socialLinks()
+            .filter (sl => actor.social.isDating(sl) && sl != target);
+          targets = dates.filter( x=> testCameo(x));
+          if (targets.length > 1) {
+            targets = [randomSelect(dates)];
+          }
+        }
+        break;
       case "any-pc": {
         targets = allCameos.filter(
           x=> testCameo(x) && x.isPC()
