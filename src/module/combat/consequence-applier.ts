@@ -5,6 +5,7 @@ import {PersonaItem} from "../item/persona-item.js";
 import {Metaverse} from "../metaverse.js";
 import {NavigatorVoiceLines} from "../navigator/nav-voice-lines.js";
 import {StatusDuration} from "../persona-ae.js";
+import {Persona} from "../persona-class.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaVariables} from "../persona-variables.js";
@@ -298,16 +299,16 @@ export class ConsequenceApplier {
         //     await PersonaSounds.playFile(otherEffect.soundSrc);
         //   break;
       case "gain-levels": {
-        const {gainTarget, value}=  otherEffect;
-        if (!value) {
-          PersonaError.softFail(`can't award level, value is ${value}`, otherEffect) ;
+        const {gainTarget, amount}=  otherEffect;
+        if (!amount) {
+          PersonaError.softFail(`can't award level, value is ${amount}`, otherEffect) ;
           break;
         }
         if (gainTarget == "persona" || gainTarget == "both") {
-          await actor.persona().gainLevel(value);
+          await actor.persona().gainLevel(amount);
         }
         if (gainTarget == "actor" || gainTarget == "both") {
-          await actor.gainLevel(value);
+          await actor.gainLevel(amount);
         }
         void PersonaSFX.onLevelUp();
         break;
@@ -369,23 +370,45 @@ export class ConsequenceApplier {
             await persona.learnPower(power);
           }
         } else {
-          const highest = persona.highestPowerSlotUsable();
-          let safetyBreak = 0;
-          while (true) {
-            const power = TreasureSystem.randomPower(highest);
-            if (!power) {break;}
-            if (!persona.knowsPowerInnately(power)) {
-              await persona.learnPower(power);
-              break;
-            }
-            if (++safetyBreak > 100) {
-              PersonaError.softFail("Error trying to add random Power, couldn't find candidate");
-              break;
-            }
-          }
+          await this.teachRandomPower(persona, otherEffect);
         }
       }
     }
+  }
+
+  private static async teachRandomPower(persona: Persona, otherEffect: Sourced<OtherEffect> & {type: "other-effect", otherEffect: "teach-power", randomPower: true}) : Promise<void> {
+    let condition : SourcedPrecondition = {
+      type: "always",
+      source: otherEffect.source,
+      owner: otherEffect.owner,
+      realSource: otherEffect.realSource,
+    } satisfies SourcedPrecondition;
+    if (otherEffect.criteria) {
+      condition = {
+        ...otherEffect.criteria,
+        source: otherEffect.source,
+        owner: otherEffect.owner,
+        realSource: otherEffect.realSource,
+      };
+    }
+    const highest = persona.highestPowerSlotUsable();
+    let safetyBreak = 0;
+    while (true) {
+      const power = TreasureSystem.randomPower({slot: highest}, condition, {user: persona.source.accessor});
+      if (!power) {
+        PersonaError.softFail("Error trying to add random Power, couldn't find candidate (null result)");
+        break;
+      }
+      if (!persona.knowsPowerInnately(power)) {
+        await persona.learnPower(power);
+        break;
+      }
+      if (++safetyBreak > 100) {
+        PersonaError.softFail("Error trying to add random Power, couldn't find candidate (safety break)");
+        break;
+      }
+    }
+
   }
 
   private static async resolveInventoryAction( actor: PersonaActor,  otherEffect: OtherEffect & {type: "inventory-action"}) : Promise<void> {

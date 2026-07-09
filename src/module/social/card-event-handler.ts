@@ -702,7 +702,7 @@ export class SocialCardEventHandler {
 			PersonaError.softFail("Event Chain doesn't exist to be modified");
 			return -1;
 		}
-		this.cardData.forceEventChain.chainCount+= delta;
+		this.cardData.forceEventChain.chainCount += delta;
 		this.addExtraEvent(1);
 		return this.cardData.forceEventChain.chainCount;
 	}
@@ -718,7 +718,7 @@ export class SocialCardEventHandler {
 			PersonaError.softFail(`Can't get link for apply Card Response ${cardData.linkId}`, cardData.linkId);
 		}
 		const linkImg = link?.img ?? "";
-		const templateData= {
+		const templateData = {
 			item: cardData.card,
 			cardData,
 			text,
@@ -730,7 +730,7 @@ export class SocialCardEventHandler {
 			content: html,
 			style: CONST.CHAT_MESSAGE_STYLES.OTHER,
 		};
-		await ChatMessage.create( messageData);
+		await ChatMessage.create( messageData );
 	}
 
 	public addCardEvents(cardId: string) {

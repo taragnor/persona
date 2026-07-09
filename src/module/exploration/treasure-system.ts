@@ -6,6 +6,7 @@ import { TreasureTable } from "../../config/treasure-tables.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaItem} from "../item/persona-item.js";
 import {Metaverse} from "../metaverse.js";
+import {testPrecondition} from "../conditionalEffects/preconditions.js";
 
 export class TreasureSystem {
   static generate(treasureLevel: number, searcher: N<PCLike>, modifier : number = 0, treasureMin = 1) : EnchantedTreasureFormat[] {
@@ -271,11 +272,21 @@ export class TreasureSystem {
 		});
 	}
 
-	static randomPower(slot?:0 | 1 | 2 | 3, forbidExotic : boolean= false) {
+	static randomPower(
+    baseCriteria: { slot?:0 | 1 | 2 | 3, forbidExotic?: boolean} = {}, condition ?: SourcedPrecondition, situation ?: Situation ) {
+    const {forbidExotic, slot} = baseCriteria;
 		const powers = PersonaDB.allPowersArr()
 			.filter ( pwr => pwr.isInheritable())
 			.filter ( pwr => slot != undefined ? pwr.system.slot == slot : true)
-			.filter ( pwr => forbidExotic ? !pwr.isExotic() : true);
+			.filter ( pwr => forbidExotic ? !pwr.isExotic() : true)
+			.filter ( pwr => {
+        if (!condition) {return true;}
+        const sit = {
+          ...situation,
+          usedPower: pwr.accessor,
+        };
+        return testPrecondition(condition, sit);
+      });
 		const weightedPowers = powers.map ( pwr =>
 			({
 				item: pwr,

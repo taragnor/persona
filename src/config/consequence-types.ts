@@ -9,7 +9,7 @@ import { ConsequenceType } from "./effect-types.js";
 import { InternalCreatureTag } from "./creature-tags.js";
 import { SaveType } from "./save-types.js";
 import { StatusDurationType } from "./status-effects.js";
-import { ConditionTarget, MultiCheck, MultiCheckOrSingle, SocialLinkIdOrTarot } from "./precondition-types.js";
+import { ConditionTarget, MultiCheck, MultiCheckOrSingle, NonDeprecatedPrecondition, SocialLinkIdOrTarot } from "./precondition-types.js";
 import { AlterMPSubtype } from "./effect-types.js";
 import { ConsequenceTarget } from "./precondition-types.js";
 import { DamageSubtype } from "./effect-types.js";
@@ -20,7 +20,7 @@ import { CONDITION_TARGETS_LIST } from "./precondition-types.js";
 import { StudentSkill } from "./student-skills.js";
 import { ResistType } from "./damage-types.js";
 import { ResistStrength } from "./damage-types.js";
-import { OtherConsequence } from "../module/datamodel/other-effects.js";
+import { OtherConsequenceType } from "../module/datamodel/other-effects.js";
 import { StatusEffectId } from "./status-effects.js";
 import { DeprecatedModifierTarget, ItemProperty, ModifierCategory, NonDeprecatedModifierType } from "./item-modifiers.js";
 import {AttackResult} from "../module/combat/combat-result.js";
@@ -32,7 +32,7 @@ import {ModifierV2Target} from "../module/bonus-calc.js";
 
 
 export type OtherEffect = {__localEffect?: undefined} &
-  ProcessedConsequenceToOtherEffect< ExpendItemConsequence | SetFlagConsequence | StatusResistanceAlterConsequence | InspirationChangeConsequence | DisplayMessageConsequence | UsePowerConsequence | DungeonActionConsequence | AlterMPConsequence |  OtherEffectConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence| GainLevelConsequence |  InventoryActionConsequence | TriggerEventModifierConsequence | SFXConsequence>;
+  ProcessedConsequenceToOtherEffect< ExpendItemConsequence | SetFlagConsequence | StatusResistanceAlterConsequence | InspirationChangeConsequence | DisplayMessageConsequence | UsePowerConsequence | DungeonActionConsequence | AlterMPConsequence |  OtherConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence| GainLevelConsequence |  InventoryActionConsequence | TriggerEventModifierConsequence | SFXConsequence>;
 
 export type LocalEffect =
   {
@@ -103,7 +103,7 @@ type NonGenericConsequences =
   | AlterMPConsequence
   | ElementalResistanceAlterConsequence
   | StatusResistanceAlterConsequence
-  | OtherEffectConsequence
+  | OtherConsequence
   | InspirationChangeConsequence
   | SetFlagConsequence
   | CombatEffectConsequence
@@ -242,7 +242,7 @@ type Dep_ExtraAttackConsequence = {
 
 type GainLevelConsequence = {
 	type: "gain-levels",
-	value: number,
+	amount: number,
 	gainTarget: LevelGainTarget,
 }
 
@@ -447,9 +447,9 @@ type AddTalentConsequence = {
 	id: Talent["id"], //id of talent
 }
 
-type OtherEffectConsequence = {
+type OtherConsequence = {
 	type: "other-effect",
-	otherEffect : OtherConsequence,
+	otherEffect : OtherConsequenceType,
 } & OtherConsequences;
 
 type OtherConsequences = {
@@ -466,6 +466,7 @@ type OtherConsequences = {
 } | {
 	otherEffect:  "teach-power"
 	randomPower: true,
+  criteria: NonDeprecatedPrecondition,
 } | {
   otherEffect: "add-creature-tag",
 	creatureTag: InternalCreatureTag | Tag["id"];
@@ -639,7 +640,6 @@ type ModifierV2Consequence = {
   priority: number;
   amount: ConsequenceAmount;
 };
-
 
 type DeprecatedSingleModifierConsequence = {
 	type: "modifier",

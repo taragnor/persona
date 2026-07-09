@@ -30,19 +30,11 @@ export const SOCIAL_CARD_ROLL_TYPES_LIST = [
 ] as const;
 
 
-// export const SOCIAL_CARD_ROLL_TYPES = Object.fromEntries(
-// 	SOCIAL_CARD_ROLL_TYPES_LIST.map(a=> [a, `persona.social.card.rolls.types.${a}`])
-// );
-
 export const SOCIAL_CARD_ROLL_TYPES = HTMLTools.createLocalizationObject(
 	SOCIAL_CARD_ROLL_TYPES_LIST, `persona.social.card.rolls.types`);
 
 export const SIMPLE_SOCIAL_CARD_ROLL_TYPES = HTMLTools.createLocalizationObject(
 	SIMPLE_SOCIAL_CARD_ROLL_TYPES_LIST, `persona.social.card.rolls.types`);
-
-// export const SIMPLE_SOCIAL_CARD_ROLL_TYPES = Object.fromEntries(
-// 	SIMPLE_SOCIAL_CARD_ROLL_TYPES_LIST.map(a=> [a, `persona.social.card.rolls.types.${a}`])
-// );
 
 	export type SocialCardType = keyof typeof SOCIAL_CARD_TYPES_LIST;
 

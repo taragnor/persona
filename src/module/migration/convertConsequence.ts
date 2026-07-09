@@ -125,6 +125,9 @@ export class ConsequenceConverter {
           return {
             ...base,
             randomPower: true,
+            criteria: {
+              type: "always",
+            },
           };
         } else {
           return {
@@ -265,6 +268,7 @@ export class ConsequenceConverter {
       switch (cons.type) {
         case "modifier":
         case "modifier-new":
+        case "modifier-v2":
         case "none":
           break;
         case "alter-variable":

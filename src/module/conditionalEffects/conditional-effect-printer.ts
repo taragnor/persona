@@ -646,7 +646,7 @@ export class ConditionalEffectPrinter {
           return `Add Permabuff ${cons.buffType} :${cons.value}`;
         case "gain-levels": {
           const gainTarget =this.translate(cons.gainTarget, LEVEL_GAIN_TARGETS);
-          return `Gain ${cons.value} Levels for ${gainTarget}`;
+          return `Gain ${cons.amount} Levels for ${gainTarget}`;
         }
         case "trigger-event-cons":
           return this._printTriggerEventCons(cons);
