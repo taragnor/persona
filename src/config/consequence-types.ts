@@ -464,6 +464,7 @@ type OtherConsequences = {
 	id: Power["id"], // id of power
 	randomPower: false,
 } | {
+  applyTo : ConsequenceTarget,
 	otherEffect:  "teach-power"
 	randomPower: true,
   criteria: NonDeprecatedPrecondition,

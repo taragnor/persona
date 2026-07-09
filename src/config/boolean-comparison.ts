@@ -233,7 +233,7 @@ type PowerComparisonsSub = {
 } | {
 	powerProp: "power-targets-defense",
 	defense: MultiCheckOrSingle<Defense>,
-};
+} ;
 
 type HasClassComparison = {
 	boolComparisonTarget: "has-class",

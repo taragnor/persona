@@ -270,7 +270,57 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
           variableId: "",
         } satisfies NonDeprecatedConsequence;
       }
-    } ] satisfies ContextMenu["options"];
+    } , {
+      label: "Learn Power",
+      action: (_ev: JQuery.ClickEvent) => {
+        return {
+          applyTo: "user",
+          type: "other-effect",
+          otherEffect: "teach-power",
+          randomPower: true,
+          criteria: {
+            type: "boolean",
+            booleanState: true,
+            boolComparisonTarget: "logical-and",
+            comparison1: {
+              type: "boolean",
+              booleanState: true,
+              boolComparisonTarget: "logical-and",
+              comparison1: {
+                type: "boolean",
+                booleanState: true,
+                boolComparisonTarget: "power-has",
+                powerProp:"has-tag",
+                "powerTag": {},
+              } satisfies NonDeprecatedPrecondition,
+              comparison2: {
+                type: "boolean",
+                booleanState: false,
+                boolComparisonTarget: "power-has",
+                powerProp:"has-tag",
+                "powerTag": {}
+              } satisfies NonDeprecatedPrecondition,
+            } satisfies NonDeprecatedPrecondition,
+            comparison2: {
+              type: "boolean",
+              booleanState: true,
+              boolComparisonTarget: "logical-and",
+              comparison1: {
+                type: "boolean",
+                booleanState: true,
+                boolComparisonTarget: "power-has",
+                powerProp: "power-slot-is",
+                "slotType": {},
+              } satisfies NonDeprecatedPrecondition,
+              comparison2: {
+                type: "always",
+              },
+            }
+          } satisfies NonDeprecatedPrecondition,
+        } satisfies NonDeprecatedConsequence;
+      }
+    },
+    ] satisfies ContextMenu["options"];
     return options;
   }
 

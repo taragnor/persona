@@ -392,9 +392,10 @@ export class ConsequenceApplier {
       };
     }
     const highest = persona.highestPowerSlotUsable();
+    const slot = condition != undefined ? undefined: highest;
     let safetyBreak = 0;
     while (true) {
-      const power = TreasureSystem.randomPower({slot: highest}, condition, {user: persona.source.accessor});
+      const power = TreasureSystem.randomPower({slot}, condition, {user: persona.source.accessor});
       if (!power) {
         PersonaError.softFail("Error trying to add random Power, couldn't find candidate (null result)");
         break;
