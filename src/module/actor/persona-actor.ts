@@ -3645,7 +3645,6 @@ async onCombatStart() {
 async onKO() : Promise<void> {
   if (this.isNPCAlly()) {
     await this.alterNPCFatigueTracker(this.NPC_FATIGUE.KO);
-
   }
   if (this.isPCLike() && this.theurgyVal > 0 && !PersonaSettings.debugMode()) {
     await this.resetTheurgy();

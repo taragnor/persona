@@ -146,7 +146,7 @@
     <input type="checkbox" name="{{strcat namePrefix 'randomPower'}}" {{checked (defVal cons.randomPower false)}}>
     {{/if}}
 
-    {{#if (eqAny cons.otherEffect	"add-power-to-list" "teach-power")}}
+    {{#if (eqAny cons.otherEffect	"teach-power")}}
     {{#if (not cons.randomPower)}}
     <select name="{{strcat namePrefix 'id'}}">
       {{selectOptions POWERSTUFF.COMPENDIUM_POWERS localize=false selected=cons.id}}
