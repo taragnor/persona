@@ -109,6 +109,24 @@ export class PersonaRoller {
     return bundle;
   }
 
+  static async rollFlat (actor: ValidAttackers, options: RollOptions): Promise<ResolvedRollBundle> {
+    const situation =  options.situation ? options.situation: {
+      user: actor.accessor,
+      DC: undefined,
+      rollTags: [],
+      addedTags: [],
+      "rollType": "standard",
+    } satisfies Situation;
+    // const {label} = options;
+    const rollTags = options.rollTags == undefined ? [] : options.rollTags.slice();
+    situation.rollTags.pushUnique(...rollTags);
+    rollTags.pushUnique("flat-roll");
+    const mods = await this.#compileModifiers(options);
+    const DC = this.#getDC(situation, options);
+    const bundle = await this.#makeRoll("Flat Roll", mods, situation, DC);
+    return bundle;
+  }
+
   static async rollSave (actor: ValidAttackers, options: SaveOptions): Promise<ResolvedRollBundle> {
     const {saveVersus, label} = options;
     const rollTags = options.rollTags == undefined ? [] : options.rollTags.slice();

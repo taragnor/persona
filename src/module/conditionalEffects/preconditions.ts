@@ -1488,7 +1488,9 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
 
 export function unifiedTagList<T extends string>(tagList?: readonly (Tag | T)[]) : string[]{
   if (tagList == undefined) {return [];}
-  return tagList.flatMap (tag => typeof tag == "string"? [tag] : [tag.id, tag.system.linkedInternalTag]);
+  return tagList
+    .filter (tag=> typeof tag == "string" || tag instanceof PersonaItem)
+    .flatMap (tag => typeof tag == "string"? [tag] : [tag.id, tag.system.linkedInternalTag]);
 }
 
 function resolveSocialAvailabilityCheck(condition: SourcedPrecondition & {type: "boolean", boolComparisonTarget: "social-availability" }, situation: Situation) :U<boolean>{

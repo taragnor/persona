@@ -3621,7 +3621,7 @@ async alterEnergy(this: Shadow, amt: number) {
 
 async onRoll(situation: SituationTypes.Roll) {
   console.log(`${this.name} is making a roll with tags: ${situation.rollTags
-      .map( tag => typeof tag == "string" ? tag : tag.name)
+      .map( tag => typeof tag == "string" ? tag : tag?.name)
       .join(", ")}`);
   if (!this.isValidCombatant()) {return;}
   if (this.isPC() ) {

@@ -24,6 +24,7 @@ export class SocialCardEventHandler {
 	owner: SocialCardExecutor;
 
   CARD_EVENT_DELAY = 500 as const;
+  POST_EVENT_DELAY = 2000 as const;
 
 	constructor (exec: SocialCardExecutor) {
 		this.owner = exec;
@@ -32,29 +33,34 @@ export class SocialCardEventHandler {
 	get cardData() : CardData { return this.owner.cardData; }
 	get earlyAbort() : boolean {return this.owner.abort;}
 
-	async cardEventLoop() : Promise<ChatMessage<Roll>[]> {
-		const chatMessages : ChatMessage<Roll>[] = [];
-		const cardData = this.cardData;
-		while (cardData.eventsRemaining > 0) {
-			if (this.earlyAbort) { return chatMessages;}
-			if (PersonaSettings.debugMode()) {
-				console.debug(`Events Remaining ${this.cardData.eventsRemaining}`);
-			}
-			const ev = this.#getCardEvent(cardData);
-			if (!ev) {
-				cardData.currentEvent = null;
-				PersonaError.softFail(`Missing Event choice for events remaining: ${this.cardData.eventsRemaining} on card ${this.cardData.card.name}`);
-				cardData.eventsRemaining--;
-				continue;
-			}
-			cardData.eventsChosen.push(ev);
-			cardData.currentEvent = ev;
-			cardData.eventsRemaining--;
-			const msg = await this.#execEvent(ev, this.cardData);
-			chatMessages.push(msg as ChatMessage);
-		}
-		return chatMessages;
-	}
+  async cardEventLoop() : Promise<ChatMessage<Roll>[]> {
+    const chatMessages : ChatMessage<Roll>[] = [];
+    const cardData = this.cardData;
+    while (cardData.eventsRemaining > 0) {
+      if (this.earlyAbort) { return chatMessages;}
+      if (PersonaSettings.debugMode()) {
+        console.debug(`Events Remaining ${this.cardData.eventsRemaining}`);
+      }
+      const ev = this.#getCardEvent(cardData);
+      if (!ev) {
+        cardData.currentEvent = null;
+        PersonaError.softFail(`Missing Event choice for events remaining: ${this.cardData.eventsRemaining} on card ${this.cardData.card.name}`);
+        cardData.eventsRemaining--;
+        continue;
+      }
+      cardData.eventsChosen.push(ev);
+      cardData.currentEvent = ev;
+      cardData.eventsRemaining--;
+      try {
+        const msg = await this.#execEvent(ev, this.cardData);
+        chatMessages.push(msg as ChatMessage);
+      } catch (e) {
+        PersonaError.softFail(e as Error, this);
+      }
+      await sleep(this.POST_EVENT_DELAY);
+    }
+    return chatMessages;
+  }
 
   private async startCardSound(event :CardEvent, cardData: CardData) {
 			if (cardData.sound) {cardData.sound.stop();}
@@ -164,11 +170,12 @@ export class SocialCardEventHandler {
           rollTags: [],
           DC: undefined,
         } satisfies SituationTypes.PreRoll;
-				const saveResult = await PersonaRoller.rollSave(cardData.actor,  {
+				const saveResult = await PersonaRoller.rollFlat(cardData.actor,  {
+				// const saveResult = await PersonaRoller.rollSave(cardData.actor,  {
 					askForModifier: true,
 					DC: 0,
 					DCMods,
-					label: "Card Roll (Saving Throw)",
+					label: "Card Roll (Flat Roll)",
 					rollTags,
 					situation: rollSituation,
 				});
@@ -396,69 +403,86 @@ export class SocialCardEventHandler {
 		return modifiers;
 	}
 
-	private getCardModifiers(cardData: CardData, baseRollTags: (RollTag | CardTag | Tag)[] ) : ModifierList {
-		const card = cardData.card;
-		const effects : ConditionalEffectC[] = [];
-		const globalMods = ConditionalEffectManager.getEffects(card.system.globalModifiers, null, null);
-		effects.push(...globalMods);
+  private filterInvalidTags(baseRollTags: (Tag | RollTag | CardTag)[]) {
+    const invalidMods = baseRollTags
+      .filter( tag => !(
+        typeof tag == "string"
+        || tag instanceof PersonaItem));
+    if (invalidMods.length > 0) {
+      if (PersonaSettings.debugMode()) {
+        Debug("invalid mods in card tag", invalidMods, this);
+        console.warn("Invalid Mods in Card Modifiers", invalidMods, this);
+      }
+    }
+    return baseRollTags.filter(tag=>  !invalidMods.includes(tag as unknown as typeof invalidMods[number]));
+  }
+
+  private getCardModifiers(cardData: CardData, baseRollTags: (RollTag | CardTag | Tag)[] ) : ModifierList {
+    const card = cardData.card;
+    const effects : ConditionalEffectC[] = [];
+    const globalMods = ConditionalEffectManager.getEffects(card.system.globalModifiers, null, null);
+    effects.push(...globalMods);
+    baseRollTags =  this.filterInvalidTags(baseRollTags);
     const rollTags = unifiedTagList(baseRollTags);
-		const universal = PersonaDB.getGlobalModifiers().flatMap(x => x.getEffects(null));
-		effects.push(...universal);
-		if (cardData.activity instanceof PersonaActor) {
-			const link = cardData.activity;
-			if (!rollTags.includes("on-cameo") && !rollTags.includes("on-other") && link instanceof PersonaActor) {
-				effects.push(...link.social.socialEffects());
-			}
-		}
-		if (rollTags.includes("on-cameo") && cardData.cameos) {
-			const cameoEffects = cardData.cameos.flatMap(
+    const universal = PersonaDB.getGlobalModifiers().flatMap(x => x.getEffects(null));
+    effects.push(...universal);
+    if (cardData.activity instanceof PersonaActor) {
+      const link = cardData.activity;
+      if (!rollTags.includes("on-cameo") && !rollTags.includes("on-other") && link instanceof PersonaActor) {
+        effects.push(...link.social.socialEffects());
+      }
+    }
+    if (rollTags.includes("on-cameo") && cardData.cameos) {
+      const cameoEffects = cardData.cameos.flatMap(
         x=> x.social.socialEffects()
       );
-			effects.push(...cameoEffects);
-		}
-		const retList = new ModifierList();
-		retList.addConditionalEffects(effects, ["DCIncrease"]);
-		return retList;
-	}
+      effects.push(...cameoEffects);
+    }
+    const retList = new ModifierList();
+    retList.addConditionalEffects(effects, ["DCIncrease"]);
+    return retList;
+  }
 
 
-	checkForcedEvents() : N<CardEvent> {
-		const cardData = this.cardData;
-		const cardEventList = this.eventList();
-		if (cardData.forceEventLabel) {
-			const gotoEvent = cardEventList
-				.filter( x=> x.label  == cardData.forceEventLabel)
-			;
-			cardData.forceEventLabel = null;
-			if (gotoEvent.length > 0) {
-				const ev= weightedChoice(gotoEvent.map( event => ({
-					item: event,
-					weight: Number(event.frequency) > 0 ? Number(event.frequency ?? 1) : 1,
-				})));
-				if (ev) {return ev;}
-			}
-			PersonaError.softFail (`Can't find event label ${cardData.forceEventLabel} on card ${cardData.card.name}`);
-		}
-		if (cardData.forceEventChain && cardData.forceEventChain.chainLabel.length > 0) {
-			const forcedLabel = cardData.forceEventChain.chainLabel;
-			const gotoEvent = cardEventList
-				.filter( x=> x.chainLabel  == forcedLabel)
-				.filter( x=> (x.chainCount || 0) == cardData.forceEventChain?.chainCount)
-			;
-			if (gotoEvent.length >0) {
-				const ev= weightedChoice(gotoEvent.map( event => ({
-					item: event,
-					weight: Number(event.frequency) > 0 ? Number(event.frequency ?? 1) : 1,
-				})));
-				if (ev) {
-					this.modifyEventChainCount(1);
-					return ev;
-				}
-			}
-			PersonaError.softFail (`Can't find event for chain ${cardData.forceEventChain?.chainLabel}-${cardData.forceEventChain?.chainCount} on card ${cardData.card.name}`);
-		}
-		return null;
-	}
+  checkForcedEvents() : N<CardEvent> {
+    const cardData = this.cardData;
+    const cardEventList = this.eventList();
+    if (cardData.forceEventLabel) {
+      const gotoEvent = cardEventList
+        .filter( x=> x.label  == cardData.forceEventLabel)
+      ;
+      cardData.forceEventLabel = null;
+      if (gotoEvent.length > 0) {
+        const ev= weightedChoice(gotoEvent.map( event => ({
+          item: event,
+          weight: Number(event.frequency) > 0 ? Number(event.frequency ?? 1) : 1,
+        })));
+        if (ev) {return ev;}
+      }
+      PersonaError.softFail (`Can't find event label ${cardData.forceEventLabel} on card ${cardData.card.name}`);
+    }
+    if (cardData.forceEventChain && cardData.forceEventChain.chainLabel.length > 0) {
+      const forcedLabel = cardData.forceEventChain.chainLabel;
+      const gotoEvent = cardEventList
+        .filter( x=> x.chainLabel  == forcedLabel)
+        .filter( x=> (x.chainCount || 0) == cardData.forceEventChain?.chainCount)
+      ;
+      if (gotoEvent.length >0) {
+        const ev = weightedChoice(gotoEvent.map( event => ({
+          item: event,
+          weight: Number(event.frequency) > 0 ? Number(event.frequency ?? 1) : 1,
+        })));
+        if (ev) {
+          if (cardData.forceEventChain?.autoIncrementChainCount) {
+            this.modifyEventChainCount(1);
+          }
+          return ev;
+        }
+      }
+      PersonaError.softFail (`Can't find event for chain ${cardData.forceEventChain?.chainLabel}-${cardData.forceEventChain?.chainCount} on card ${cardData.card.name}`);
+    }
+    return null;
+  }
 
 	eventList() : CardData["eventList"] {
 		const cardData = this.cardData;
@@ -613,11 +637,11 @@ export class SocialCardEventHandler {
     const filtered = rollTags.filter (x=> x != undefined);
     if (filtered
       .some( tag=> typeof tag != "string"
-        && typeof tag.id == "undefined")
+        && typeof tag?.id == "undefined")
     ) {
       PersonaError.softFail(`Bad Tag:`, filtered);
       return filtered
-        .filter(tag=> !(typeof tag != "string" && typeof tag.id == "undefined" ));
+        .filter(tag=> typeof tag == "string" || tag instanceof PersonaItem);
     }
     return filtered;
   }
@@ -688,10 +712,11 @@ export class SocialCardEventHandler {
 		this.cardData.forceEventLabel = evLabel;
 	}
 
-	forceEventChain(evLabel : string) {
+	forceEventChain(evLabel : string, autoIncrementChain: boolean) {
 		this.cardData.forceEventChain = {
 			chainLabel: evLabel,
 			chainCount: 0,
+      autoIncrementChainCount: autoIncrementChain,
 		};
 		this.addExtraEvent(1);
 		console.log(`Forcing Event Chain: ${evLabel}`);
@@ -760,7 +785,8 @@ export class SocialCardEventHandler {
 		}
 		cardData.eventsChosen = [];
 		cardData.eventList = newCard.cardEvents().slice();
-		cardData.extraCardTags = newCard.cardTags.slice();
+		cardData.extraCardTags = newCard.cardTags.slice()
+      .filter (x=> x!= undefined);
 	}
 
 	choiceMeetsConditions(choice: SocialCard["system"]["events"][number]["choices"][number] ) : boolean {

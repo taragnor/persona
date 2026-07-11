@@ -167,7 +167,7 @@ export class SocialActionExecutor {
 	static executeEventChainAction(eff:  SocialCardActionConsequence & {cardAction:"event-chain"}) {
 		switch (eff.chainAction) {
 			case "start-chain":
-				this.handler.forceEventChain(eff.chainId);
+				this.handler.forceEventChain(eff.chainId, eff.autoInc ?? true);
 				break;
 				case "clear-chain":
 				this.handler.clearEventChain();

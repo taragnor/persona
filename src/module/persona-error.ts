@@ -71,22 +71,25 @@ export class PersonaError extends Error {
 			}
 	 }
 
-	 private static toText( x: unknown) : string {
-			if (typeof x == "string" || typeof x == "boolean" || typeof x =="number") {return x.toString();}
-			if (Array.isArray(x)) {
-				 return x.flatMap( y => this.toText(y))
-						.join ("\n");
-			}
-			if (typeof x == "object") {
-				 if (x instanceof Error) {
-						return `${x.message}: \n${x.stack}`;
-				 }
-				 return JSON.stringify(x);}
-			// eslint-disable-next-line @typescript-eslint/no-base-to-string
-			return x?.toString() ?? "undefined";
-
-
-	 }
+  private static toText( x: unknown) : string {
+    if (typeof x == "string" || typeof x == "boolean" || typeof x =="number") {return x.toString();}
+    if (Array.isArray(x)) {
+      return x.flatMap( y => this.toText(y))
+        .join ("\n");
+    }
+    if (typeof x == "object") {
+      if (x instanceof Error) {
+        return `${x.message}: \n${x.stack}`;
+      }
+      try { return JSON.stringify(x);}
+      catch {
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+        return x?.toString() ?? "non-JSONable Object";
+      }
+    }
+    if (typeof x== "undefined") {return "undefined";}
+    return "unknown type";
+  }
 
 	 static notifyGM(errorMsg: string, stack ?: string, ...debugArgs : unknown[]) {
 

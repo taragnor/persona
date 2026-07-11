@@ -727,6 +727,8 @@ type EventChainModification = {
 	{
 		chainAction: "start-chain",
 		chainId: string,
+    autoInc: boolean, //automatically increment chain
+
 	} | {
 		chainAction: "clear-chain",
 	} | {

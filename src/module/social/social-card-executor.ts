@@ -645,6 +645,7 @@ export type CardData = {
   forceEventChain ?: {
     chainLabel: string,
     chainCount: number,
+    autoIncrementChainCount: boolean,
   };
   forceEventLabel: null | string,
   eventList: SocialCard["system"]["events"];
