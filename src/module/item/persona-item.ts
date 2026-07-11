@@ -2890,6 +2890,7 @@ declare global {
   type Tag = Subtype<PersonaItem, "tag">;
   type CraftingMaterial = CraftingInventoryItem | Consumable;
   type UniversalModifier = Subtype<PersonaItem, 'universalModifier'>;
+  type RoomEffect = UniversalModifier & {system: {scope: "room"}};
   type PersonaEvent =  UniversalModifier & {system: {scope:"event"}};
   type ItemContainers = Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier | SkillCard | Tag;
   type Usable = Power | Consumable ;

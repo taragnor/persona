@@ -210,7 +210,18 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
         "variableId": "",
         __localEffect: true,
       } satisfies NonDeprecatedPrecondition),
-    } ] satisfies ContextMenuOptions<NonDeprecatedPrecondition>[];
+    }, {
+      label: "Is Dating",
+      action : () => ({
+        type: "boolean",
+        boolComparisonTarget: "social-availability",
+        booleanState: true,
+        "socialTypeCheck" :"is-dating",
+        conditionTarget: "user",
+        "socialLinkIdOrTarot": "target",
+      } satisfies NonDeprecatedPrecondition),
+    }
+    ] satisfies ContextMenuOptions<NonDeprecatedPrecondition>[];
     return options;
   }
 

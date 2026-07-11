@@ -360,9 +360,20 @@ export class Metaverse {
       }
       case "disable-region":
         break; // handled in persona-region class
-      case "remove-all-room-modifiers":
-        await this.getRegion()?.removeAllRoomModifiers();
+      case "remove-all-room-modifiers": {
+        const region = this.getRegion();
+        if (!region) {
+          PersonaError.softFail("NO region, can't remove modifiers");
+          return;
+        }
+        const mods = region.personalRoomEffectsOnly();
+        await region.removeAllRoomModifiers();
+        if (Metaverse.getPhase() == "combat") {
+          const combat = PersonaCombat.combat;
+          await combat?.removeRoomEffect(...mods);
+        }
         break;
+      }
       default:
         action satisfies never;
     }

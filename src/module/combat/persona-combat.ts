@@ -1596,11 +1596,19 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     });
   }
 
-  async addRoomEffect(eff: UniversalModifier) : Promise<void> {
+  async addRoomEffect(...eff: UniversalModifier[]) : Promise<void> {
     const effects = this.getRoomEffects().slice();
-    effects.pushUnique(eff);
+    effects.pushUnique(...eff);
     await this.setRoomEffects(effects);
-    await this.sendRoomEffectsToChat();
+    void this.sendRoomEffectsToChat();
+  }
+
+  async removeRoomEffect(...effectsToRemove: UniversalModifier[]) : Promise<void> {
+    const effects=  this.getRoomEffects();
+    const filteredEffects = effects
+    .filter (eff => !effectsToRemove.includes(eff));
+    await this.setRoomEffects(filteredEffects);
+    void this.sendRoomEffectsToChat();
   }
 
   async alterRoomEffects() {
@@ -1630,7 +1638,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     return msg;
   }
 
-  async setRoomEffects(effects: ModifierContainer[]) {
+  async setRoomEffects(effects: UniversalModifier[]) {
     await this.setFlag('persona', 'roomEffects', effects.map(eff=> eff.id));
   }
 
