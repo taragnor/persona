@@ -2691,7 +2691,6 @@ isFullyFaded(this: ValidAttackers) : boolean {
     case "pc":
     case "npcAlly":
       return this.hasStatus("full-fade");
-      // return this.system.combat.fadingState >= 2;
     default:
       this.system satisfies never;
       return true;
