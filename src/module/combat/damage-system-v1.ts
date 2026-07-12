@@ -333,10 +333,10 @@ const DAMAGE_LEVEL_NEW = {
   "miniscule": {extraVariance: 0, baseAmt: 0, mult: 0.333, healMult: 0.25},
   "basic": {extraVariance: 0, baseAmt: 8, mult: 1, healMult: 0.5},
   "light": {extraVariance: 0, baseAmt: 15, mult: 1.2, healMult: 1.25},
-  "medium": {extraVariance: 0, baseAmt: 25, mult: 1.4, healMult: 2},
-  "heavy": {extraVariance: 0, baseAmt: 30, mult: 1.75, healMult: 2.75},
-  "severe": {extraVariance: 0, baseAmt: 40, mult: 2, healMult: 3.5},
-  "colossal": {extraVariance: 0, baseAmt: 50, mult: 2.333, healMult :4.5},
+  "medium": {extraVariance: 0, baseAmt: 20, mult: 1.4, healMult: 2},
+  "heavy": {extraVariance: 0, baseAmt: 25, mult: 1.75, healMult: 2.75},
+  "severe": {extraVariance: 0, baseAmt: 30, mult: 2, healMult: 3.5},
+  "colossal": {extraVariance: 0, baseAmt: 30, mult: 2.333, healMult :4.5},
 } as const satisfies Readonly<Record< ConvertableDamageLevel, ExtraDamageParams>>;
 
 type ExtraDamageParams = {

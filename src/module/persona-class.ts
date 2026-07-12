@@ -185,12 +185,12 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
         && !power.isFollowUpMove()
         && !power.isMinorActionItem()
         && !power.isTheurgy()
-        && !this.displayedMainSkills.includes(power)
+        //was prevengin bonus powers from showing combat skills
+        // && !this.displayedMainSkills.includes(power)
     );
   }
 
   get displayedMainSkills() : Power [] {
-
     const bonusCombatSkills = this.bonusPowers;
     return [
       ...this.mainPowers,

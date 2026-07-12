@@ -2686,7 +2686,8 @@ meetsSLRequirement (this: PC, focus: Focus) {
 isFullyFaded(this: ValidAttackers) : boolean {
   switch (this.system.type) {
     case "shadow":
-      return (this.hp) <= 0;
+      return false;
+      // return (this.hp) <= 0;
     case "pc":
     case "npcAlly":
       return this.hasStatus("full-fade");

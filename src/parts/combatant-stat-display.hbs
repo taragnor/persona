@@ -11,13 +11,27 @@
 
   {{#if (scanLevelgte persona 2)}}
   <h3> Powers</h3>
-  <div class="main-powers">
-    {{> "systems/persona/parts/bubble-power-list.hbs" CONST=CONST persona=persona powerList=persona.mainPowers}}
+  <div>
+    {{#if persona.user.isOwner}}
+    <div class="main-powers">
+      {{> "systems/persona/parts/bubble-power-list.hbs" CONST=CONST persona=persona powerList=persona.displayedMainSkills}}
+    </div>
+    {{else}}
+    <div class="main-powers">
+      {{> "systems/persona/parts/bubble-power-list.hbs" CONST=CONST persona=persona powerList=persona.mainPowers}}
+    </div>
+    {{/if}}
 
     <h3>Openers</h3>
     <div class="openers">
       {{> "systems/persona/parts/bubble-power-list.hbs" CONST=CONST persona=persona powerList=persona.openers}}
     </div>
+
+    <h3> Bonus Powers</h3>
+    <div class="bonus-powers">
+      {{> "systems/persona/parts/bubble-power-list.hbs" CONST=CONST persona=persona powerList=persona.bonusPowers}}
+    </div>
+
 
   </div>
 
