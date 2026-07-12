@@ -1967,6 +1967,17 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.hasTag("key-item", null);
   }
 
+  isFullCraftingMaterial() : boolean {
+    if (!this.isCarryableType()) {return false;}
+    if (this.isInvItem()) {
+      return this.system.slot == "crafting";
+    }
+    if (this.isConsumable()) {
+      return this.hasTag(["crafting"], null);
+    }
+    return false;
+  }
+
   isCraftingMaterial(): boolean {
     if (!this.isCarryableType()) {return false;}
     if (this.isInvItem()) {

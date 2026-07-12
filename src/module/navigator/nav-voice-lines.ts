@@ -171,9 +171,12 @@ export class NavigatorVoiceLines {
     }
 	}
 
-  static async onTargetHeal(target: ValidAttackers, combat: PersonaCombat) {
+  static async onTargetHeal(target: ValidAttackers, combat: PersonaCombat, amt: number) {
     if (target.isNPCAlly() || target.isPC() || combat.isSocial) {return;}
-    if (Math.random() < 0.5) {
+    if (amt < target.mhp * 0.1) {
+      return;
+    }
+    if (Math.random() < 0.3) {
 			await this.playVoice({
 				type: "enemy-healing",
 			});

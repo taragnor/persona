@@ -178,7 +178,7 @@ export class ConsequenceApplier {
     if (dmg.hpChange > 0) {
       const combat = PersonaCombat.combat;
       if (combat && !combat.isSocial) {
-        await NavigatorVoiceLines.onTargetHeal(actor, combat);
+        await NavigatorVoiceLines.onTargetHeal(actor, combat, dmg.hpChange);
       }
     }
     if (power) {

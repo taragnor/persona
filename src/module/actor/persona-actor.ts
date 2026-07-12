@@ -456,7 +456,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   get trueConsumables(): Consumable[] {
-    const items = this.consumables.filter( x=> !x.isCraftingMaterial() && !x.isSkillCard());
+    const items = this.consumables
+      .filter( c=> !c.isFullCraftingMaterial() && !c.isSkillCard());
     return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
   }
 
@@ -487,6 +488,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return items.sort((a,b) => PersonaItem.sortInventoryItems(a,b));
   }
 
+  /** used for the inventory section on the sheet to get crafting materials*/
   get craftingMaterials() : CraftingMaterial[] {
     const items= this.items
       .filter( item => item.isCraftingMaterial()) as CraftingMaterial[];

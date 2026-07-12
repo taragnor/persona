@@ -673,7 +673,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
   printVariables() : void {
     if (!game.user.isGM) {return;}
-    const variables = this.getFlag<Record<string, number>>("persona",this.VAR_FLAG_NAME) ?? {};
+    const variables = this.getFlag<Record<string, number>>("persona", this.VAR_FLAG_NAME) ?? {};
     const txt = Object.entries(variables)
       .map( ([k, v]) => `${k}: ${v}`)
       .join("\n");
