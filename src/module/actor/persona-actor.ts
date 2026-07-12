@@ -3641,7 +3641,6 @@ async onRoll(situation: SituationTypes.Roll) {
 async onCombatStart() {
 }
 
-
 async onKO() : Promise<void> {
   if (this.isNPCAlly()) {
     await this.alterNPCFatigueTracker(this.NPC_FATIGUE.KO);

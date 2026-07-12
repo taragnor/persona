@@ -671,6 +671,15 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     return variables[id] ?? 0;
   }
 
+  printVariables() : void {
+    if (!game.user.isGM) {return;}
+    const variables = this.getFlag<Record<string, number>>("persona",this.VAR_FLAG_NAME) ?? {};
+    const txt = Object.entries(variables)
+      .map( ([k, v]) => `${k}: ${v}`)
+      .join("\n");
+    console.log(txt);
+  }
+
   isInChallengeWith(user: Combatant<ValidAttackers>, target: Combatant<ValidAttackers>) : boolean {
     const userActor = user.token.actor;
     const targetActor = target.token.actor;
