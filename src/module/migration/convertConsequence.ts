@@ -276,9 +276,10 @@ export class ConsequenceConverter {
             case "global":
             case "social-temp":
             case "scene":
+            case "combat":
               break;
             default:
-              console.debug(`Applying default applyTo of 'target' for other effect ${cons.varType}`);
+              console.debug(`Applying default applyTo of 'target' for other effect ${(cons as Record<string, string>)?.varType}`);
               Debug(cons);
           }
           break;

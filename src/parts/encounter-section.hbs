@@ -29,12 +29,6 @@
 			</div>
 			{{/each}}
 		</div>
-		<div>
-			<label>
-				CR
-			</label>
-			{{rangePicker name="system.encounter.CR" value=actor.system.encounter.CR min=1 max=10 step=1}}
-		</div>
 		<div data-top-path="system.encounter.conditions" data-path="system.encounter.conditions">
 			{{> "systems/persona/parts/conditions-section.hbs" namePrefix="system.encounter.conditions." POWERSTUFF=POWERSTUFF owner=actor}}
 		</div>
