@@ -75,38 +75,6 @@ export class PersonaTargetting {
     return challengeFilter;
   }
 
-  // targetMeetsTargettingConditions(user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
-  //   if (target.hasStatus('protected') && user != target) {return false;}
-  //   const usable = this.power;
-  //   if (usable.isSkillCard()) {
-  //     return target.persona().powerLearning.canLearnNewSkill();
-  //   }
-  //   if (!usable.system.validTargetConditions) {return true;}
-  //   const conditions  = usable.validTargetConditions(user);
-  //   const sit = situation ? situation : {
-  //     attacker : user.accessor,
-  //     user: user.accessor,
-  //     target: target.accessor,
-  //     usedPower: usable.accessor,
-  //   } as const;
-  //   const precond= testPreconditions(conditions, sit);
-  //   if (!precond) {return false;}
-  //   const triggerSit = {
-  //     ...sit,
-  //     trigger: "check-legal-target",
-  //     triggeringUser: game.user.id,
-  //     triggeringCharacter: user.accessor,
-  //     addedTags: "addedTags" in sit && sit.addedTags ? sit.addedTags : [],
-  //     usedPower: usable.accessor,
-  //     user: user.accessor,
-  //     target: target.accessor,
-  //     attacker : user.accessor,
-  //   } satisfies Situation;
-  //   const triggerCheck = TriggeredEffect.onTrigger_cancelCheck(triggerSit, user);
-  //   if (triggerCheck) {return false;}
-  //   return true;
-  // }
-
   targetMeetsTargettingConditions(user: ValidAttackers, target: ValidAttackers, situation?: Situation) : boolean {
     return this.targetMeetsTargettingConditions_getReasons(user, target, situation).length == 0;
   }
@@ -142,10 +110,6 @@ export class PersonaTargetting {
     }
     return retArr;
   }
-
-  // private targetPassesTargetCheckTrigger(user: ValidAttackers, target: ValidAttackers, situation?: Situation): boolean {
-  //   return this.targetPassesTargetCheckTrigger_getReasons(user, target,situation).length == 0;
-  // }
 
   private targetPassesTargetCheckTrigger_getReasons(user: ValidAttackers, target: ValidAttackers, sit ?: Situation) : FailReason[] {
     const triggerSit = {

@@ -519,8 +519,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     const pc = actor.isPCLike() ? "pc" : "enemy";
     let startTurnMsg = [ `
       <div class="start-turn-header ${pc}" data-combatant-id="${combatant.id}">
-      <u><h2> ${combatant.token.name}'s turn</h2></u>
-      </div> `];
+      <u><h2> ${combatant.token.name}'s turn ${this.ownerAwayCheckMsg(actor)}</h2></u>
+      </div> `,
+    ];
     const engaged = this.getAllEngagedEnemies(combatant);
     if (engaged.length > 0) {
       const engagedMsg  = `<div> <b>Engaged By:</b> ${engaged.map(x=> x.name).join(', ')}</div>`;
@@ -538,6 +539,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       startTurnMsg.push(openerMsg);
     }
     const speaker = {alias: 'Combat Turn Start'};
+    startTurnMsg = startTurnMsg
+        .filter(txt=> txt.length > 0);
     const messageData = {
       speaker: speaker,
       content: startTurnMsg.join('<br>'),
@@ -553,6 +556,13 @@ export class PersonaCombat extends Combat<ValidAttackers> {
       await msg.update({'author': actorOwner});
     }
   }
+
+  ownerAwayCheckMsg(actor: ValidAttackers) : string {
+    if (!actor.hasPlayerOwner) {return "";}
+    if (!actor.ownersAreAFK()) {return "";}
+    return `<span class="combat-away"> (Away)</span>`;
+  }
+
 
   override get combatant() : U<PersonaCombatant> {
     const comb = super.combatant;

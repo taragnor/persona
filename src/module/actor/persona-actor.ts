@@ -59,6 +59,7 @@ import {ActorSocial} from "./actor-social.js";
 import {MultiTierCache, PermanentCache, TimedCache} from "../utility/cache.js";
 import {ActorVoiceLines} from "./actor-voicelines.js";
 import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
+import {PersonaFoundryUser} from "../persona-foundry-user.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -3311,6 +3312,17 @@ async onEndDay(this:  PC | NPCAlly): Promise<string[]> {
     await this.resetFatigueChecks();
   }
   return ret;
+}
+
+ownersAreAFK() : boolean {
+  if (!this.hasPlayerOwner) {return false;}
+  const activeOwners = (game.users as Collection<PersonaFoundryUser>)
+    .filter( user =>
+      user.active && !user.isGM && !user.isAFK
+      && this.testUserPermission(user, "OWNER")
+    );
+  if (activeOwners.length > 0) {return false;}
+  return true;
 }
 
 async onStartDay() : Promise<string[]> {
