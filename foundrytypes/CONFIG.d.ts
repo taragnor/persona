@@ -52,9 +52,11 @@ declare interface CONFIG {
   }
   Wall: {
     doorSounds: Record<string, DoorSound>;
-
-
 	}
+
+  User: {
+    documentClass: Foundry.FoundryUserConstructor;
+  }
 }
 
 interface StatusEffectObject {

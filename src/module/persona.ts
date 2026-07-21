@@ -62,6 +62,7 @@ import {TokenEffectsFlash} from "./token-effects-flash.js";
 import {MathUtilityFunctions} from "./utility/math.js";
 import {TreasureList} from "./printers/treasure-list.js";
 import {PersonaTokenObject} from "./canvas/persona-token-object.js";
+import { PersonaFoundryUser } from "./persona-foundry-user.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -79,6 +80,7 @@ function registerDocumentClasses() {
   CONFIG.Region.documentClass = PersonaRegion;
   CONFIG.Scene.documentClass = PersonaScene;
   CONFIG.Token.objectClass = PersonaTokenObject;
+  CONFIG.User.documentClass = PersonaFoundryUser;
 }
 
 function registerSheetApplications() {

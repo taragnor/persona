@@ -11,7 +11,6 @@ import { ConsTarget } from '../../config/consequence-types.js';
 import { PersonaSocial } from '../social/persona-social.js';
 import { PersonaSFX } from './persona-sfx.js';
 import { PersonaSettings } from '../../config/persona-settings.js';
-import { ModifierContainer } from '../item/persona-item.js';
 import { TurnAlert } from '../utility/turnAlert.js';
 import { EngagementChecker } from './engageChecker.js';
 import { Metaverse } from '../metaverse.js';
