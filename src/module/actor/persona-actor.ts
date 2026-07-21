@@ -3292,6 +3292,7 @@ async incrementMetaverseActivity_passTurn(this: NPCAlly) : Promise<void> {
 }
 
 async incrementMetaverseActivity_endBattle(this: NPCAlly) : Promise<void> {
+  if (PersonaSettings.debugMode()) {return;}
   await this.alterNPCFatigueTracker(this.NPC_FATIGUE.BATTLE);
 }
 
