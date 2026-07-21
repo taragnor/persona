@@ -410,9 +410,8 @@ export class Metaverse {
     if (PersonaSettings.debugMode()) {
       console.debug("Trying to pass MV turn");
     }
-    const pcs = game.scenes.active.tokens.contents.filter( tok => tok.actor && (tok.actor as PersonaActor).isPC());
     const ret : string[] = [];
-    for (const pc of pcs) {
+    for (const pc of PersonaDB.activePCParty()) {
       ret.push(...await (pc.actor as PersonaActor).onMetaverseTimeAdvance());
     }
     if (ret.length > 0) {

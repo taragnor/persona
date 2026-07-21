@@ -84,9 +84,7 @@ export class ActorVoiceLines {
       }
       if (lines.length == 0) {return false;}
       const line = randomSelect(lines);
-      this.nowPlaying = true;
       await this._playVoice(line.fileName, options.selfOnly);
-      this.nowPlaying = false;
       return true;
     } catch (e) {
       Debug(e);
@@ -96,7 +94,7 @@ export class ActorVoiceLines {
     }
   }
 
-  async _playVoice(fileName: string, selfOnly: boolean = false) : Promise<void> { 
+  private async _playVoice(fileName: string, selfOnly: boolean = false) : Promise<void> {
     try {
       this.nowPlaying = true;
       await ActorVoiceLines.playVoice(fileName, selfOnly);

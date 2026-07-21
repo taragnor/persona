@@ -76,7 +76,7 @@ export class SocialCardEventHandler {
     event.choices.forEach( ch => {
       const roll : CardRoll = ch.roll;
       const rollTags = this.getRollTags(cardData, ch);
-      const {DC, modifiers}  = this.getCardRollDC(cardData, ch.roll, rollTags);
+      const {DC, modifiers} = this.getCardRollDC(cardData, ch.roll, rollTags);
       DC satisfies number; //check to enforce some typesafety after guardrails taken off below.
       //@ts-expect-error forcing this on there
       roll.DCVal = DC; roll.printableMods = modifiers;
@@ -399,7 +399,9 @@ export class SocialCardEventHandler {
 		if ("modifier" in cardRoll) {
 			modifiers.add("Roll Modifier Reversed", cardRoll.modifier * -1);
 		}
-		modifiers = modifiers.concat(this.getCardModifiers(cardData, rollTags));
+		modifiers = modifiers.concat(
+      this.getCardModifiers(cardData, rollTags)
+    );
 		return modifiers;
 	}
 
@@ -407,7 +409,8 @@ export class SocialCardEventHandler {
     const invalidMods = baseRollTags
       .filter( tag => !(
         typeof tag == "string"
-        || tag instanceof PersonaItem));
+        || tag instanceof PersonaItem)
+      );
     if (invalidMods.length > 0) {
       if (PersonaSettings.debugMode()) {
         Debug("invalid mods in card tag", invalidMods, this);
@@ -418,29 +421,40 @@ export class SocialCardEventHandler {
   }
 
   private getCardModifiers(cardData: CardData, baseRollTags: (RollTag | CardTag | Tag)[] ) : ModifierList {
-    const card = cardData.card;
-    const effects : ConditionalEffectC[] = [];
-    const globalMods = ConditionalEffectManager.getEffects(card.system.globalModifiers, null, null);
-    effects.push(...globalMods);
-    baseRollTags =  this.filterInvalidTags(baseRollTags);
-    const rollTags = unifiedTagList(baseRollTags);
-    const universal = PersonaDB.getGlobalModifiers().flatMap(x => x.getEffects(null));
-    effects.push(...universal);
-    if (cardData.activity instanceof PersonaActor) {
-      const link = cardData.activity;
-      if (!rollTags.includes("on-cameo") && !rollTags.includes("on-other") && link instanceof PersonaActor) {
-        effects.push(...link.social.socialEffects());
+    try {
+      const {card, actor} = cardData;
+      // const effects : ConditionalEffectC[] = [];
+      const globalMods = ConditionalEffectManager.getEffects(card.system.globalModifiers, null, null);
+      const effects : ConditionalEffectC[] = [
+        ...actor.persona().passiveModifiers(),
+        ...globalMods,
+      ];
+      // effects.push(...globalMods);
+      baseRollTags = this.filterInvalidTags(baseRollTags);
+      const rollTags = unifiedTagList(baseRollTags);
+      // const universal = PersonaDB.getGlobalModifiers().flatMap(x => x.getEffects(null));
+      // effects.push(...universal);
+      if (cardData.activity instanceof PersonaActor) {
+        const link = cardData.activity;
+        if (!rollTags.includes("on-cameo") && !rollTags.includes("on-other") && link instanceof PersonaActor) {
+          effects.push(...link.social.socialEffects());
+        }
       }
+      if (rollTags.includes("on-cameo") && cardData.cameos) {
+        const cameoEffects = cardData.cameos.flatMap(
+          x=> x.social.socialEffects()
+        );
+        effects.push(...cameoEffects);
+      }
+      const retList = new ModifierList();
+      retList.addConditionalEffects(effects, ["DCIncrease"]);
+      return retList;
+    } catch (e) {
+      if (e instanceof Error) {
+        PersonaError.softFail (e);
+      }
+      return new ModifierList();
     }
-    if (rollTags.includes("on-cameo") && cardData.cameos) {
-      const cameoEffects = cardData.cameos.flatMap(
-        x=> x.social.socialEffects()
-      );
-      effects.push(...cameoEffects);
-    }
-    const retList = new ModifierList();
-    retList.addConditionalEffects(effects, ["DCIncrease"]);
-    return retList;
   }
 
 

@@ -63,9 +63,6 @@ export class PersonaSocial {
     "injured",
   ] as const;
 
-  static #drawnCardIds: string[] = [];
-
-
   static async startSocialCombatRound(disallowMetaverse = false, advanceCalendar = true) {
     if (!game.user.isGM) {
       ui.notifications.error("Only GM can start new social combat turn");
@@ -349,16 +346,9 @@ export class PersonaSocial {
       ui.notifications.warn("This action isn't enabled in your current condition");
       return;
     }
-    if (!this.turnCheck(actor, true)) {
-      return;
-    }
+    if (!this.turnCheck(actor, true)) { return; }
     Helpers.pauseCheck();
     await this.#socialEncounter(actor, activity);
-  }
-
-  static drawnCards() : string[] {
-    //NOTE: Only a debug function
-    return this.#drawnCardIds;
   }
 
   static async execTrigger( situation: SituationTypes.TriggerSituation, actor: PC, msg = "Triggered Effect"): Promise<void> {

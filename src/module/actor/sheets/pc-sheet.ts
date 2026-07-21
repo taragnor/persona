@@ -284,8 +284,6 @@ export class PCSheet extends PCLikeSheet {
 		await this.actor.setRelationshipType(linkId, String(newval));
 	}
 
-
-
 	openSL(ev: Event) {
 		const linkId= String(HTMLTools.getClosestData(ev, "linkId"));
 		const link = this.actor.socialLinks.find( link=> link.actor.id == linkId);
@@ -295,9 +293,9 @@ export class PCSheet extends PCLikeSheet {
 	}
 
 	openJob(ev: Event) {
-		const jobId= String(HTMLTools.getClosestData(ev, "activityId"));
+		const jobId = String(HTMLTools.getClosestData(ev, "activityId"));
 		const job = PersonaDB.allActivities().find(x=> x.id == jobId);
-		if (job){
+		if (job) {
 			job.sheet.render(true);
 		}
 	}

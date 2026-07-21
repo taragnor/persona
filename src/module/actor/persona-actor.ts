@@ -3164,12 +3164,10 @@ canUseOpener(): boolean {
 isBossOrMiniBossType() : boolean {
   if (this.system.type != "shadow") {return false;}
   const bossRoles : Shadow["system"]["role"][] = [
-    "miniboss", "boss", "solo",
+    "miniboss", "boss", "solo", "boss-minion",
   ];
   return bossRoles.some( role => this.hasRole(role));
 }
-
-
 
 async onStartCombatTurn(this: ValidAttackers): Promise<string[]> {
   return this.checkEffectExpire( eff => eff.onStartCombatTurn());

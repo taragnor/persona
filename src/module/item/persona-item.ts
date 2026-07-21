@@ -810,11 +810,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.hasTag("secondary-crafting", null);
   }
 
-  /**@deprecated */
-  costString() : string {
-    return 'ERROR';
-  }
-
   costString1(persona: Persona) : string {
     switch (this.system.type) {
       case 'power':

@@ -11,6 +11,8 @@ import {DEFENSE_TYPES} from "../../config/defense-types.js";
 import {INSTANT_KILL_LEVELS} from "../combat/damage-calc.js";
 import {PROBABILITIES} from "../../config/probability.js";
 
+const MAX_ENERGY_COST = 50 as const;
+
 export  const damage = function() {
 	return new sch( {
 		low: new num( {integer:true, min: 0, initial:1}),
@@ -40,10 +42,10 @@ export function powerCost() {
 	return {
 		mpcost: new num( {initial: -1, integer:true}),
 		hpcost: new num( {min: 0,  integer:true}),
-		slot: new num( {integer: true, min:0, max:20, initial: 0}),
+		slot: new num( {integer: true, min:0, max:10, initial: 0}),
 		energy: new sch({
-			required: new num({initial: 0, min:0, max:20, integer: true}),
-			cost: new num({initial: 0, min:0, max:20, integer: true}),
+			required: new num({initial: 0, min:0, max:MAX_ENERGY_COST, integer: true}),
+			cost: new num({initial: 0, min:0, max:MAX_ENERGY_COST, integer: true}),
 			newForm: new bool(),
 		}),
 		reqCharge: new txt( {choices: SHADOW_CHANGE_REQ_LIST_FULL , initial: "none"}),
