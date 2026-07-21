@@ -1,4 +1,5 @@
 import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
+import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
 import {PersonaItem} from "../item/persona-item.js";
@@ -497,6 +498,15 @@ export class ConsequenceApplier {
         });
         break;
       }
+      case "alter-variable": {
+        const varCons = eff;
+        if (varCons.situation == undefined) {
+          PersonaError.softFail("No situation present in variable alteration", varCons);
+          break;
+        }
+        await PersonaVariables.alterVariable(varCons, varCons.situation);
+        break;
+      }
       case "sfx":
         if (eff.sfxType == "play-sound") {
           PersonaAnimation.queue.addSound(eff);
@@ -507,6 +517,15 @@ export class ConsequenceApplier {
           await this.addRoomEffect(eff);
         }
         break;
+      }
+      default: {
+        const msg = `Unhandled Global Effect ${eff.type}`;
+        if (PersonaSettings.debugMode()) {
+          PersonaError.softFail(msg, eff);
+        } else {
+          console.warn(msg);
+          Debug(eff);
+        }
       }
 
     }

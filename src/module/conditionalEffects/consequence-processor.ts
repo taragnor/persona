@@ -184,10 +184,10 @@ export class ConsequenceProcessor {
   static getCombatResultFromConsequences(consList: ConsequenceProcessed['consequences'], situation: Situation, atkResult ?: AttackResult | null ) : CombatResult {
     const result = new CombatResult(atkResult);
     for (const cons of consList) {
-      if (cons.applyTo == 'global') {
-        result.addEffect(atkResult, undefined, cons.cons, situation);
-        continue;
-      }
+      // if (cons.applyTo == 'global') {
+      //   result.addEffect(atkResult, , cons.cons, situation);
+      //   continue;
+      // }
       result.addEffect(atkResult, cons.applyTo, cons.cons, situation);
     }
     return result;

@@ -19,6 +19,7 @@ import {PersonaAE, StatusDuration} from "../persona-ae.js";
 import {ResolvedRollBundle} from "../roll-bundle.js";
 import {getSocialLinkTarget, getSourceDType, multiCheckToArray} from "../conditionalEffects/preconditions.js";
 import {checkSituationProp} from "../../config/situation.js";
+import {PersonaSettings} from "../../config/persona-settings.js";
 
 declare global {
 	interface SocketMessage {
@@ -278,14 +279,12 @@ export class CombatResult  {
     this.costs.push(change);
   }
 
-  addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | SocialLink | undefined, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
-    if (target == undefined && checkSituationProp(situation, "target")) {
-      target = PersonaDB.findActor<ValidAttackers | SocialLink>(situation.target);
+  addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | SocialLink | "global", cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
+    //TODO: fix it so alter-variable goes to globalOtherEFfect instead of an actor OtherEffect.
+    if (target == undefined) {
+      target = this.secondaryTargetChecks(situation, cons);
     }
-    if (target == undefined && checkSituationProp(situation, "user")) {
-      target = PersonaDB.findActor<ValidAttackers | SocialLink>(situation.user);
-    }
-    const effect = target && target.isValidCombatant() ? this.#getEffect(target): undefined;
+    const effect = target && target != "global" && target.isValidCombatant() ? this.#getEffect(target): undefined;
     switch (cons.type) {
       case "none":
         break;
@@ -339,7 +338,7 @@ export class CombatResult  {
         }
         break;
       case "set-flag": {
-        if (!effect || !target || !target.isValidCombatant()) {break;}
+        if (!effect || !target || target == "global" || !target.isValidCombatant()) {break;}
         try {
           if (cons.flagState) {
             const duration = convertConsToStatusDuration(cons, target, situation);
@@ -437,16 +436,8 @@ export class CombatResult  {
         });
         break;
       }
-      // case "teach-power":
-      //   if (!effect) {break;}
-      //   effect.otherEffects.push( {
-      //     ...cons
-      //   });
-      //   break;
-      // case "add-creature-tag":
-      //   break;
       case "combat-effect":
-        if (!effect || !target || !target.isValidCombatant()) {break;}
+        if (!effect || !target || target == "global" || !target.isValidCombatant()) {break;}
         this.addEffect_combatEffect(cons, effect, target, situation);
         break;
       case "alter-fatigue-lvl":
@@ -459,34 +450,13 @@ export class CombatResult  {
           situation: situation,
         };
         if (alterVarCons.varType == "social-temp") {
-          //social stuff must be executed player side
-          if (cons.operator == "set-range") {
-            const localEffect : Sourced<LocalEffect> & {cardAction: "set-temporary-variable"} = {
-              ...cons,
-              __localEffect : true,
-              type: "social-card-action",
-              cardAction: "set-temporary-variable",
-            };
-            this.globalLocalEffects.push( localEffect);
-          } else {
-            const amount = this.resolveConsequenceAmount(cons, situation, "value");
-            const localEffect : Sourced<LocalEffect> & {cardAction: "set-temporary-variable"} = {
-              ...cons,
-              __localEffect: true,
-              type: "social-card-action",
-              cardAction: "set-temporary-variable",
-              variableId: cons.variableId,
-              operator: cons.operator,
-              value: amount,
-            };
-            this.globalLocalEffects.push(localEffect);
-          }
+          this.addResult_LocalVariable(alterVarCons, situation);
           break;
         }
         if ("value" in alterVarCons) {
           const value = this.resolveConsequenceAmount(alterVarCons, situation, "value");
-          if (target) {
-            effect?.otherEffects.push({
+          if (effect) {
+            effect.otherEffects.push({
               ...alterVarCons,
               value,
             });
@@ -804,6 +774,46 @@ export class CombatResult  {
     }
 
   }
+
+  private addResult_LocalVariable( cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "alter-variable", varType: "social-temp"}, situation: Situation) {
+    if (cons.operator == "set-range") {
+      const localEffect : Sourced<LocalEffect> & {cardAction: "set-temporary-variable"} = {
+        ...cons,
+        __localEffect : true,
+        type: "social-card-action",
+        cardAction: "set-temporary-variable",
+      };
+      this.globalLocalEffects.push( localEffect);
+    } else {
+      const amount = this.resolveConsequenceAmount(cons, situation, "value");
+      const localEffect : Sourced<LocalEffect> & {cardAction: "set-temporary-variable"} = {
+        ...cons,
+        __localEffect: true,
+        type: "social-card-action",
+        cardAction: "set-temporary-variable",
+        variableId: cons.variableId,
+        operator: cons.operator,
+        value: amount,
+      };
+      this.globalLocalEffects.push(localEffect);
+    }
+  }
+
+  private secondaryTargetChecks(situation: Situation, cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> ) {
+    if (checkSituationProp(situation, "target")) {
+      return PersonaDB.findActor<ValidAttackers | SocialLink>(situation.target);
+    }
+    if (checkSituationProp(situation, "user")) {
+      return PersonaDB.findActor<ValidAttackers | SocialLink>(situation.user);
+    }
+      if (PersonaSettings.debugMode()) {
+        const msg = `Unexpected global target on consequence`;
+        console.warn(msg);
+        Debug(msg, cons);
+      }
+    return "global";
+  }
+
 }
 
 export interface ActorChange<T extends PersonaActor = PersonaActor> {
@@ -928,6 +938,7 @@ function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-fl
     dtype: "instant",
     anchorHolder: undefined
   };
+
 
 }
 

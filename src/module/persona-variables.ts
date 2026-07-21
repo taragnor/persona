@@ -72,6 +72,15 @@ export class PersonaVariables {
 					varType,
 					variableId,
 				};
+      case "combat":
+        return {
+          varType,
+          variableId
+        };
+      default:
+        varType satisfies never;
+        PersonaError.softFail(`Unknown var type ${varType as string}`);
+        return undefined;
 		}
 	}
 
