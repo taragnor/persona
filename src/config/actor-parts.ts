@@ -347,7 +347,6 @@ class EncounterDataDM extends foundry.abstract.DataModel {
 	static override defineSchema() {
 		return {
 			dungeonId: new txt(),
-			// frequency: new num({initial: 1}),
 			frequencyNew: new txt( {choices: PROBABILITY_LIST, initial: "normal"}),
 		};
 	}

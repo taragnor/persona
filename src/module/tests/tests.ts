@@ -38,7 +38,7 @@ export class Tests {
     return this.getPC("Kimberly Newton");
   }
 
-  static get tori() : PC {
+  static get toir() : PC {
     return this.getPC("Toir MacCarrick");
   }
 

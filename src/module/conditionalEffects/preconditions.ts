@@ -137,7 +137,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       if (condition.socialLinkIdOrTarot == "SLSource"){
         return true;
       }
-      if (!actor  || !actor.isRealPC()) {return false;}
+      if (!actor  || actor.isShadow()) {return false;}
       const socialLink = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, condition.source);
       if (!socialLink) {
         target = 0;
