@@ -279,8 +279,15 @@ export class CombatResult  {
     this.costs.push(change);
   }
 
-  addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | SocialLink | "global", cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) {
-    //TODO: fix it so alter-variable goes to globalOtherEFfect instead of an actor OtherEffect.
+  addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | SocialLink | "global", cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) : void {
+    try {
+      this._addEffect(atkResult, target, cons, situation);
+    } catch (e) {
+      PersonaError.softFail(e as Error, `Error Resolving CombatResult addEffect for ${cons.type}`, target, cons);
+    }
+  }
+
+  private _addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | SocialLink | "global", cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) : void {
     if (target == undefined) {
       target = this.secondaryTargetChecks(situation, cons);
     }
@@ -334,7 +341,6 @@ export class CombatResult  {
             return;
           default:
             cons satisfies never;
-
         }
         break;
       case "set-flag": {

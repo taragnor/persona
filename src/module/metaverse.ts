@@ -71,6 +71,67 @@ export class Metaverse {
     return gen;
   }
 
+  static async generateTower(lvl : number, squares ?: number, stepDebug =false) {
+    if (!game.user.isGM) {return;}
+    await PersonaDB.waitUntilLoaded();
+    if (lvl < 0) {
+      return;
+    }
+    if (!game.user.isGM) {return;}
+    const scene = game.scenes.current as PersonaScene;
+    if (!scene.allowsRandomGenerator()) {
+      ui.notifications.warn(`${scene.name} doesn't support random generation`);
+      return;
+    }
+    const dimensions = {height: 12, width: 12};
+    const options :DungeonGeneratorOptions = {
+      depth: lvl,
+      sceneModifiers: MEMENTOS_SCENE_MODS,
+      questSpecials : [],
+    };
+    const gen = new RandomDungeonGenerator(dimensions, options);
+    gen.stepDebug = stepDebug;
+    try {
+      if (!squares) {
+        squares = Math.floor(15 + (Math.random() * 30));
+      }
+      gen.generate(squares, `${lvl}WYVVD` + String(Date.now()));
+    } catch (e) {
+      if (e instanceof Error) {
+        throw new PersonaError(e);
+      }
+    }
+    for (const err of gen.errorLog) {
+      PersonaError.softFail(err);
+    }
+    return gen;
+  }
+
+  static async randomizeTower(lvl ?: number) {
+    if (!game.user.isGM) {return;}
+    if (!(await HTMLTools.confirmBox("reset Tower?", "Reset Tower?"))) {
+      return;
+    }
+    if (lvl == undefined) {
+      lvl = await HTMLTools.getNumber("Level of Dungeon to set", 1);
+    }
+    if (lvl < 1) {
+      throw new PersonaError("Can't generate dungeon with a level less than 1");
+    }
+    const gen = await this.generateTower(lvl-1);
+    const scene = game.scenes.current as PersonaScene;
+    if (gen) {
+      await RandomDungeonOutput.outputToScene(gen, scene, TreasureSystem, "Tower", 75);
+      await TensionPool._instance.clear();
+      if (gen.sceneModifiers.length > 0) {
+        void NavigatorVoiceLines.navigatorTalk("This level has some interesting properties.");
+      }
+      if (gen.hasActiveQuest()) {
+        void NavigatorVoiceLines.navigatorTalk("There looks like there's something interesting on this level");
+      }
+    }
+
+  }
   static async randomizeMementos (lvl?: number) {
     if (!game.user.isGM) {return;}
     if (!(await HTMLTools.confirmBox("reset Mementos?", "Reset Mementos dungeon?"))) {

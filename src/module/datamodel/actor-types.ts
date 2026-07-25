@@ -143,7 +143,6 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
 
   static reviseTreasure(treasure: Shadow["system"]["encounter"]["treasure"]) {
     if (treasure.item0prob_v == undefined) {
-      // treasure.cardProb_v = this.probConvert(treasure.cardProb);
       treasure.item0prob_v = this.probConvert(treasure.item0prob);
       treasure.item1prob_v = this.probConvert(treasure.item1prob);
       treasure.item2prob_v = this.probConvert(treasure.item2prob);
@@ -156,6 +155,9 @@ export class ShadowSchema extends foundry.abstract.TypeDataModel {
   static override migrateData(data: any) {
     const system = data as Shadow["system"];
     try {
+      if (system.role as string == "boss-lord") {
+        (system as DeepWriteable<Shadow["system"]>).role = "boss";
+      }
       const treasure= system?.encounter?.treasure;
       if (treasure != undefined) {
         this.reviseTreasure(treasure);
@@ -289,4 +291,5 @@ export const ACTORMODELS = {
 
 // type test = Foundry.TCSplit<typeof ACTORMODELS>;
 
+type DeepWriteable<T> = { -readonly [P in keyof T]: DeepWriteable<T[P]> };
 

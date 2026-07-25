@@ -22,6 +22,8 @@ export class PersonaScene extends Scene {
 	declare regions: Collection<PersonaRegion>;
 	declare tokens: Collection<TokenDocument<PersonaActor>>;
 
+  randomGenFlag =  "MEMENTOS" as const;
+
 	get challengeLevel(): number {
 		//TODO: placeholder
 		return 0;
@@ -466,7 +468,8 @@ get encounterData() : SceneEncounterData {
 		id: shadow.id,
 		frequency: shadow.encounterWeight(this),
 	})
-	);
+	)
+    .filter(x=> x.frequency > 0);
 	const data =
 		foundry.utils.mergeObject(
 			PersonaScene.defaultSceneEncounterData(),
@@ -476,14 +479,15 @@ get encounterData() : SceneEncounterData {
 		{monsters: monsterList});
 }
 
-async setAsMementosScene() {
-	if (await HTMLTools.confirmBox("Mementos Confirm", `Really set ${this.name} as a Mementos scene?`)) {
-		await this.setFlag("persona", "MEMENTOS", 1);
+async setAsRandomlyGenerated() {
+	if (await HTMLTools.confirmBox("Mementos Confirm", `Really set ${this.name} as a randomly generated scene?`)) {
+		await this.setFlag("persona", this.randomGenFlag, 1);
+    ui.notifications.notify(`${this.name} set for random generation`);
 	}
 }
 
 	allowsRandomGenerator(): boolean {
-		if (this.getFlag("persona", "MEMENTOS") == 1) {return true;}
+		if (this.getFlag("persona", this.randomGenFlag) == 1) {return true;}
 		return false;
 	}
 
