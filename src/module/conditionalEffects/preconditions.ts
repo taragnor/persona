@@ -684,7 +684,7 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
       const weather = PersonaCalendar.getWeather();
       const comparison = condition.weatherComparison;
       if (typeof comparison == "string") {
-        return condition.weatherComparison == weather;
+        return comparison == weather;
       }
       return comparison[weather] ?? false; 
     }

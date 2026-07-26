@@ -15,7 +15,10 @@ export class PersonaError extends Error {
      }
      const errortxt = error;
 			super(errortxt);
-			PersonaError.notifyGM(errortxt, this.stack, debugArgs);
+			PersonaError.notifyGM({
+        "errorMsg": errortxt, stack: this.stack
+      }
+        , debugArgs);
 			ui.notifications.error(errortxt);
 			console.error(errortxt);
 			debugArgs.forEach(x=> Debug(x));
@@ -24,7 +27,10 @@ export class PersonaError extends Error {
   static softFail(error: string | Error, ...debugArgs: unknown[]) : void {
     try {
       if (error instanceof Error) {
-        this.notifyGM(error.message, error.stack, debugArgs);
+        this.notifyGM({
+          "errorMsg": error.toString(), 
+          stack: error.stack}
+          , debugArgs);
         ui.notifications.error(error.message);
         console.error(`${error.message} \n ${error.stack}`);
         return;
@@ -32,20 +38,18 @@ export class PersonaError extends Error {
       const errortxt = error;
       ui.notifications.error(errortxt);
       const trace = this.getTrace();
-      this.notifyGM(errortxt, trace, debugArgs);
+      this.notifyGM( {
+        "errorMsg":errortxt, 
+        "stack": trace
+      }, debugArgs);
       console.error(`${errortxt} \n ${trace}`);
-    } catch (e) {
+    } catch (newErr) {
       if (debugArgs) {
         debugArgs.forEach( arg=> Debug(arg));
       }
-      this.notifyGM(error instanceof Error ? error.message : error, undefined, debugArgs);
+      this.notifyGM({"errorMsg": this.toText(newErr)}, debugArgs);
       PersonaError.softFail("Error with softFail error reporting");
-      if (e instanceof Error)
-      {throw e;}
     }
-    // if (debugArgs) {
-    //   debugArgs.forEach( arg=> Debug(arg));
-    // }
   }
 
   static async asyncErrorWrapper(fn: () => Promise<void | undefined>, ...args: unknown[]): Promise<void> {
@@ -79,7 +83,7 @@ export class PersonaError extends Error {
     }
     if (typeof x == "object") {
       if (x instanceof Error) {
-        return `${x.message}: \n${x.stack}`;
+        return `${x.toString()}: \n${x.stack}`;
       }
       try { return JSON.stringify(x);}
       catch {
@@ -91,12 +95,13 @@ export class PersonaError extends Error {
     return "unknown type";
   }
 
-	 static notifyGM(errorMsg: string, stack ?: string, ...debugArgs : unknown[]) {
+	 static notifyGM(data: {errorMsg: string, stack ?: string}, ...debugArgs : unknown[]) {
 
      if (!game || !game.user) {return;}
      if (game.user.isGM) {
        Debug(...debugArgs);
      }
+     const {errorMsg, stack} = data;
      const trace = stack ? stack : this.getTrace();
      const userId = game.user.id;
      const gmIds = game.users

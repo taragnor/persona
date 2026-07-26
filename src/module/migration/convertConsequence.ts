@@ -286,9 +286,7 @@ export class ConsequenceConverter {
         case "other-effect":
           switch (cons.otherEffect) {
             case "add-power-to-list":
-              break;
             case "add-talent-to-list":
-              break;
             case "add-creature-tag":
               break;
             default:

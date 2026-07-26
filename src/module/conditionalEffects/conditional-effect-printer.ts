@@ -487,6 +487,7 @@ export class ConditionalEffectPrinter {
         case "social-link-level": {
           try {
           const situation = PersonaSocial.currentSocialCardExecutor?.cardData?.situation;
+            if (!situation) {return "ERROR";}
           const socialTarget = getSocialLinkTarget (cond.socialLinkIdOrTarot, situation, null);
           const name = socialTarget ? socialTarget.displayedName : cond.socialLinkIdOrTarot;
           return `${name} SL ${endString(cond)}`;

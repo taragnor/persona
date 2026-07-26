@@ -77,9 +77,15 @@ export class PersonaVariables {
           varType,
           variableId
         };
+      case undefined:
+        PersonaError.softFail(`Undefined Var Type, pretending its a social var`, cons);
+				return {
+          varType: "social-temp",
+					variableId,
+				};
       default:
         varType satisfies never;
-        PersonaError.softFail(`Unknown var type ${varType as string}`);
+        PersonaError.softFail(`Unknown var type ${varType as string}`, varType ?? "undefined", cons);
         return undefined;
 		}
 	}
