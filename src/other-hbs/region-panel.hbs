@@ -36,20 +36,12 @@
 			{{region.concordiaPresence}}
 		</div>
 		{{/if}}
-		{{#if (isGM)}}
-		{{#if (or region.concordiaPresence region.shadowPresence)}}
-		<div class="challenge-Level">
-			<label>Challenge Level: </label>
-			{{region.challengeLevel}}
-		</div>
-		{{/if}}
-		{{/if}}
 
 		<div class="treasures">
 			<label>
 				Treasures Found
 			</label>
-			{{data.treasures.found}}/ {{data.treasures.max}}
+			{{data.treasures.found}} / {{data.treasures.max}}
 		</div>
 
     {{> "systems/persona/parts/room-modifiers-list.hbs" roomModifiers=region.allRoomEffects}}
