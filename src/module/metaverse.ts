@@ -122,16 +122,11 @@ export class Metaverse {
     const scene = game.scenes.current as PersonaScene;
     if (gen) {
       await RandomDungeonOutput.outputToScene(gen, scene, TreasureSystem, "Tower", 75);
-      await TensionPool._instance.clear();
-      if (gen.sceneModifiers.length > 0) {
-        void NavigatorVoiceLines.navigatorTalk("This level has some interesting properties.");
-      }
-      if (gen.hasActiveQuest()) {
-        void NavigatorVoiceLines.navigatorTalk("There looks like there's something interesting on this level");
-      }
+      await this.onEnterRandomLevel(gen);
     }
-
   }
+
+
   static async randomizeMementos (lvl?: number) {
     if (!game.user.isGM) {return;}
     if (!(await HTMLTools.confirmBox("reset Mementos?", "Reset Mementos dungeon?"))) {
@@ -147,13 +142,17 @@ export class Metaverse {
     const scene = game.scenes.current as PersonaScene;
     if (gen) {
       await RandomDungeonOutput.outputToScene(gen, scene, TreasureSystem, "WonderLand Depths");
-      await TensionPool._instance.clear();
-      if (gen.sceneModifiers.length > 0) {
-        void NavigatorVoiceLines.navigatorTalk("This level has some interesting properties.");
-      }
-      if (gen.hasActiveQuest()) {
-        void NavigatorVoiceLines.navigatorTalk("There looks like there's something interesting on this level");
-      }
+      await this.onEnterRandomLevel(gen);
+    }
+  }
+
+  static async onEnterRandomLevel(gen: RandomDungeonGenerator) {
+    await TensionPool._instance.clear();
+    if (gen.sceneModifiers.length > 0) {
+      void NavigatorVoiceLines.navigatorTalk("This level has some interesting properties.");
+    }
+    if (gen.hasActiveQuest()) {
+      void NavigatorVoiceLines.navigatorTalk("There looks like there's something interesting on this level");
     }
   }
 
