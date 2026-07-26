@@ -842,7 +842,7 @@ export class SocialCardEventHandler {
 			case "save": {
 				const modifier = 0;
 				if (roll.progressSuccess) {
-					starterTxt += `${roll.saveType} Save Success ${modifier ? modifier : ""} (${roll.progressSuccess} + ${roll.progressCrit}).`;
+					starterTxt += `Flat Roll Success ${modifier ? modifier : ""} (${roll.progressSuccess} + ${roll.progressCrit}).`;
 				}
 			}
 				break;

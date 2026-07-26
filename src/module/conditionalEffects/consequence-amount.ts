@@ -92,6 +92,8 @@ export class ConsequenceAmountResolver {
     const returns = targets
     .map( target => {
       switch (amt.property) {
+        case "mmp":
+        case "mp":
         case "mhp":
         case "baseClassHP":
         case "level":

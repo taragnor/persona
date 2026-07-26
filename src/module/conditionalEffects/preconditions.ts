@@ -371,6 +371,10 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
         };
         val = PersonaVariables.getVariable(reqCondition, situation);
       } else {
+        if (condition["varType"] == undefined) {
+          //@ts-expect-error error fixing
+          condition.varType = "social-temp";
+        }
         val = PersonaVariables.getVariable(condition,{});
       }
       if (val == undefined) {return false;}

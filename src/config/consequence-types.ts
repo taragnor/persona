@@ -955,6 +955,8 @@ const CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST = [
   "money",
   "energy",
   "maxEnergy",
+  "mmp",
+  "mp",
 ] as const;
 
 type ConsAmountActorProperty = typeof CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES_LIST[number];

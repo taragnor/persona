@@ -1397,6 +1397,8 @@
 
 	"persona.consequenceAmount.actorProperties.hp": "HP",
 	"persona.consequenceAmount.actorProperties.mhp": "MHP",
+	"persona.consequenceAmount.actorProperties.mp": "MP",
+	"persona.consequenceAmount.actorProperties.mmp": "MMP",
 	"persona.consequenceAmount.actorProperties.baseClassHP": "Base Class HP",
 	"persona.consequenceAmount.actorProperties.linkLevelWith": "SL Level with",
 	"persona.consequenceAmount.actorProperties.theurgyVal": "Current Theurgy Level",
