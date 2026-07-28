@@ -1,5 +1,7 @@
 import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
+import {FusionTable} from "../../config/fusion-table.js";
 import {PersonaActor} from "../actor/persona-actor.js";
+import {FusionAnimation} from "../animation/persona-merge.js";
 import {BonusCalculation, ModifierV2Target} from "../bonus-calc.js";
 import { ConsequenceApplier } from "../combat/consequence-applier.js";
 import {ResolvedActorChange} from "../combat/finalized-combat-result.js";
@@ -66,6 +68,26 @@ export class Tests {
       return false;
     }
     return true;
+  }
+
+  static resolveShadow(shadow: string | Shadow): U<Shadow> {
+    if (typeof shadow == "object" && shadow?.isShadow()) {return shadow;}
+    if (typeof shadow == "string") {
+      const actor= game.actors.getName(shadow) as U<PersonaActor>;
+      if (actor?.isShadow()) {return actor;}
+      return undefined;
+    }
+    return undefined;
+  }
+
+  static fusionAnimation(shadow1 : Shadow | string, shadow2: Shadow | string, duration ?: number) {
+    const s1 = this.resolveShadow(shadow1);
+    const s2 = this.resolveShadow(shadow2);
+    if (!s1 || !s2) {return "Can't find both shadows";}
+    const result = FusionTable.fusionResult(s1, s2);
+    if (!result) {return "Can't fuse, null result";}
+    void FusionAnimation.fuse(s1, s2, result, duration);
+    return result.name;
   }
 
   static async theurgyTest(amt = 10) {

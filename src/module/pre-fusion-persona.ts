@@ -1,9 +1,12 @@
 import {FusionTable} from "../config/fusion-table.js";
 import {LevelUpCalculator} from "../config/level-up-calculator.js";
+import {PersonaSettings} from "../config/persona-settings.js";
 import {PCSheet} from "./actor/sheets/pc-sheet.js";
+import {FusionAnimation} from "./animation/persona-merge.js";
 import {ActorConverters} from "./converters/actorConverters.js";
 import {Persona} from "./persona-class.js";
 import {PersonaDB} from "./persona-db.js";
+import {PersonaError} from "./persona-error.js";
 import {removeDuplicates} from "./utility/array-tools.js";
 import {HTMLTools} from "./utility/HTMLTools.js";
 
@@ -12,6 +15,8 @@ export class HypotheticalPersona extends Persona<PC> {
 	declare source: Shadow;
 	components: Shadow[];
 	inherited: Power[] = [];
+
+  MERGE_SFX_TIME = 6000 as const;
 
 	constructor(result: Shadow, user :PC, components: Shadow[]) {
 		super(result, user, result.startingPowers);
@@ -82,6 +87,7 @@ export class HypotheticalPersona extends Persona<PC> {
 
 	private async completeFusion() : Promise<Shadow> {
 		const shadow = await this.createNewFusedPersona();
+    void this.mergeSFX(shadow);
 		await this.destroyComponents();
 		await this.user.addPersona(shadow);
 		await this.fusionMsg(shadow);
@@ -99,14 +105,35 @@ export class HypotheticalPersona extends Persona<PC> {
 		return persona;
 	}
 
-	// eslint-disable-next-line @typescript-eslint/require-await
-	private async destroyComponents() {
-		this.components
-			.filter( x=> x.isPersona()) //want to prevent any chance of deleting a base shadow
-			.forEach( x =>
-				console.log(`Simulated Delete of ${x.name}`)
-			);
-	}
+  private async mergeSFX(result: Shadow) {
+    try {
+      await FusionAnimation.fuse(this.components[0], this.components[1], result, this.MERGE_SFX_TIME);
+    } catch (e) {
+      PersonaError.softFail(e as Error);
+    }
+  }
+
+  private async destroyComponents() {
+    const compList = this.components
+      .filter( x=> x.isPersona() && !x.isCompendiumEntry); //want to prevent any chance of deleting a base shadow
+    for (const personaShadow of compList) {
+      try {
+        if (!personaShadow.isPersona()
+          || !personaShadow.isOwner
+          || personaShadow.isCompendiumEntry
+        ) {
+          throw new Error(`Invalid Shadow Type to delete for persona merge ${personaShadow.name} ${personaShadow.id}`);
+        }
+        if (PersonaSettings.debugMode()) {
+          console.log(`Simulated Delete of ${personaShadow.name}`);
+          return;
+        }
+        await personaShadow.delete();
+      } catch (e) {
+        PersonaError.softFail(e as Error, `Error in deleting Persona ${personaShadow.name} ${personaShadow.id}`);
+      }
+    }
+  }
 
 	async fusionMsg(newPersona : Shadow) {
 		const componentNames = this.components.map( x=> x.name).join(" ,");
@@ -114,9 +141,8 @@ export class HypotheticalPersona extends Persona<PC> {
 		<h2> Fusion </h2>
 		<div>Fused Personas: ${componentNames}</div>
 		<div>Result: ${newPersona.name}</div>
-		<div>Powers: ${newPersona.basePersona.mainPowers.map(x=> x.name).join (", ")} </div>
-		<div> NOTE: GM must manually delete component personas</div>
-		`;
+		<div>Powers: ${newPersona.basePersona.mainPowers.map(x=> x.name).join (", ")} </div>`;
+		// <div> NOTE: GM must manually delete component personas</div> `;
 		const data : MessageData = {
 			speaker: {
 				scene: game.scenes.current.id,
