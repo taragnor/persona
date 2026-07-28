@@ -1,7 +1,5 @@
 
-type ImageContainer = {
-  img: string;
-};
+type ImageContainer = { img: string; };
 
 export class FusionAnimation {
 
