@@ -421,30 +421,6 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
   if (resolvedNum == null) {return false;}
   testCase = resolvedNum;
 
-  // if (typeof testCase != "number") {
-  //   const source = condition.source ? PersonaDB.find(condition.source): undefined;
-  //   const owner = condition.owner ? PersonaDB.find(condition.owner) : undefined;
-  //   const ownersList = owner
-  //     ? [owner]
-  //     : source?.parent instanceof PersonaActor
-  //     && source.parent.isValidCombatant()
-  //     ? [source.parent.accessor]
-  //     : [];
-  //   const sourced = {
-  //     source: condition.source,
-  //     owner: condition.owner,
-  //     realSource: condition.realSource,
-  //     ...testCase,
-  //   };
-  //   const situationN = {
-  //     actorOwner: ownersList.at(0),
-  //     ...situation,
-  //   };
-  //   const resolvedCA = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situationN);
-  //   if (resolvedCA == undefined) {return false;}
-  //   testCase = resolvedCA;
-  // }
-
   switch (condition.comparator) {
     case "!=" : return target != testCase;
     case "==" : return target == testCase;
