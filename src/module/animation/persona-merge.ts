@@ -7,6 +7,58 @@ export class FusionAnimation {
     return this.playCardFusionAnimation(persona1.img, persona2.img, targetPersona.img, duration);
   }
 
+  private static createParticleAnimation(overlay: HTMLElement) {
+    const particles = overlay.querySelectorAll(".fusion-particles .particle");
+    particles.forEach((particle : HTMLElement) => {
+      particle.style.setProperty("--x", (35 + Math.random() * 30).toString());
+      particle.style.setProperty("--y", (55 + Math.random() * 25).toString());
+      particle.style.setProperty("--delay", Math.random().toString());
+      particle.style.setProperty("--speed", Math.random().toString());
+      particle.style.setProperty(
+        "--drift",
+        (Math.random() * 2 - 1).toFixed(2)
+      );
+      const x = 35 + Math.random() * 30;
+      const y = 55 + Math.random() * 25;
+
+      particle.style.setProperty("--x", x.toString());
+      particle.style.setProperty("--y", y.toString());
+
+      // Distance from particle to screen center (50%,50%)
+      particle.style.setProperty("--targetX", (50 - x).toFixed(2));
+      particle.style.setProperty("--targetY", (50 - y).toFixed(2));
+    });
+
+    setTimeout(() => {
+      overlay.classList.add("fusion-active");
+    }, 1800);
+  }
+
+  private static createInnerHTML(
+    leftImage: string,
+    rightImage: string,
+    resultImage: string,
+  ) {
+      return `
+          <div class="fusion-card left">
+              <img src="${leftImage}">
+          </div>
+
+          <div class="fusion-card right">
+              <img src="${rightImage}">
+          </div>
+
+          <div class="fusion-flash"></div>
+
+          <div class="fusion-card result">
+            <img src="${resultImage}">
+          </div>
+          <div class="fusion-particles">
+              ${Array.from({ length: 32 }, () => "<div class='particle'> <span></span> </div>").join("")}
+          </div>
+        `;
+
+  }
 
   private static playCardFusionAnimation(
     leftImage: string,
@@ -22,40 +74,9 @@ export class FusionAnimation {
       const overlay = document.createElement("div");
       overlay.className = "fusion-overlay";
 
-      overlay.innerHTML = `
-            <div class="fusion-card left">
-                <img src="${leftImage}">
-            </div>
-
-            <div class="fusion-card right">
-                <img src="${rightImage}">
-            </div>
-
-            <div class="fusion-flash"></div>
-
-            <div class="fusion-card result">
-                <img src="${resultImage}">
-            </div>
-            <div class="fusion-particles">
-              ${Array.from({ length: 32 }, () => "<span></span>").join("")}
-            </div>
-        `;
-
-                const particles = overlay.querySelectorAll(".fusion-particles span");
-
-                particles.forEach((particle : HTMLElement) => {
-
-                  particle.style.setProperty("--x", (35 + Math.random() * 30).toString());
-                  particle.style.setProperty("--y", (55 + Math.random() * 25).toString());
-
-                  particle.style.setProperty("--delay", Math.random().toString());
-                  particle.style.setProperty("--speed", Math.random().toString());
-                  particle.style.setProperty(
-                    "--drift",
-                    (Math.random() * 2 - 1).toFixed(2)
-                  );
-                });
-                document.body.appendChild(overlay);
+      overlay.innerHTML = this.createInnerHTML(leftImage, rightImage, resultImage);
+      this.createParticleAnimation(overlay);
+      document.body.appendChild(overlay);
 
       requestAnimationFrame(() => {
         overlay.classList.add("play");
@@ -68,7 +89,7 @@ export class FusionAnimation {
     });
   }
 
-}
+  }
 
   let stylesInjected = false;
 
@@ -100,7 +121,7 @@ export class FusionAnimation {
 
     opacity:0;
 
-    border:4px solid #d9d2a8;
+    border:4px solid #d9f7ff;
     border-radius:12px;
 
     background:#111;
@@ -110,6 +131,10 @@ export class FusionAnimation {
         inset 0 0 0 2px rgba(255,255,255,.15);
 
     overflow:hidden;
+}
+
+.fusion-card.result {
+    border-color:#bdefff;
 }
 
 .fusion-card::before{
@@ -150,13 +175,11 @@ export class FusionAnimation {
 
 
 .play .left{
-
-    animation:leftCard 2.2s forwards;
+    animation:leftCard 3.5s forwards;
 }
 
 .play .right{
-
-    animation:rightCard 2.2s forwards;
+    animation:rightCard 3.5s forwards;
 }
 
 .play .fusion-flash{
@@ -166,7 +189,10 @@ export class FusionAnimation {
 
 .play .result{
 
-    animation:resultCard 1.4s 2.3s forwards;
+    animation:
+        resultCard 1.8s 3.6s forwards,
+        resultGlow 2s 5.0s infinite alternate;
+
 }
 
 .fusion-flash{
@@ -330,32 +356,26 @@ scale(1);
     pointer-events: none;
 }
 
-.fusion-particles span {
-    position: absolute;
+.fusion-particles .particle span{
 
-    width: 14px;
-    height: 32px;
+    display:block;
 
-    left: calc(var(--x) * 1%);
-    top: calc(var(--y) * 1%);
+    width:14px;
+    height:32px;
 
-    border-radius: 50% 50% 45% 45%;
+    border-radius:50% 50% 45% 45%;
 
     background:
         radial-gradient(circle at 50% 70%,
-            #dffbff 0%,
-            #86eaff 35%,
-            #2bbcff 70%,
+            #ffffff 0%,
+            #86eaff 30%,
+            #2bbcff 60%,
             rgba(0,160,255,0) 100%);
 
     filter:
         blur(2px)
         drop-shadow(0 0 8px #59d7ff)
         drop-shadow(0 0 18px #28a7ff);
-
-    opacity: 0;
-
-    transform-origin: center bottom;
 
     animation:
         blueFlameRise
@@ -367,7 +387,16 @@ scale(1);
         calc(var(--delay) * -2s);
 }
 
-.play .fusion-particles span {
+.particle{
+
+    position:absolute;
+
+    left:calc(var(--x) * 1%);
+    top:calc(var(--y) * 1%);
+
+    pointer-events:none;
+}
+.play .fusion-particles .particle {
     opacity: 1;
 }
 
@@ -395,18 +424,118 @@ scale(1);
             rotate(4deg);
     }
 
-    100%{
-        transform:
-            translate(
-                calc(var(--drift) * 24px),
-                -140px)
-            scale(1.8)
-            rotate(8deg);
+  70%{
+    opacity:.9;
 
-        opacity:0;
+    transform:
+        translate(
+            calc(var(--drift) * 12px),
+            -70px)
+        scale(1);
+}
+
+100%{
+    opacity:0;
+
+    transform:
+        translate(
+            calc(var(--targetX) * 1vw),
+            calc(var(--targetY) * 1vh))
+        scale(.1)
+        rotate(180deg);
+
+  filter:
+  blur(8px)
+  drop-shadow(0 0 20px #9beeff);
+}
+}
+
+
+@keyframes particleMerge{
+
+0%{
+
+    transform:
+        translate(0,0)
+        scale(1);
+}
+
+100%{
+
+    transform:
+        translate(
+            calc(var(--targetX) * 1vw),
+            calc(var(--targetY) * 1vh)
+        )
+        scale(.15);
+
+    opacity:0;
+}
+}
+
+.fusion-active .particle{
+
+    animation:
+        particleMerge
+        .7s
+        ease-in
+        forwards;
+}
+
+@keyframes resultGlow {
+
+    0% {
+        box-shadow:
+            0 0 20px rgba(80,200,255,.3),
+            0 0 40px rgba(80,200,255,.2);
+    }
+
+    50% {
+        box-shadow:
+            0 0 35px rgba(120,220,255,.9),
+            0 0 80px rgba(80,180,255,.7),
+            0 0 120px rgba(50,150,255,.4);
+    }
+
+    100% {
+        box-shadow:
+            0 0 20px rgba(80,200,255,.4),
+            0 0 50px rgba(80,180,255,.3);
+    }
+}
+
+.fusion-card.result::after {
+
+    content:"";
+
+    position:absolute;
+    inset:-50%;
+
+    background:
+        linear-gradient(
+            120deg,
+            transparent 40%,
+            rgba(255,255,255,.7),
+            transparent 60%
+        );
+
+    transform:translateX(-100%) rotate(20deg);
+
+    animation:
+        cardShimmer
+        1.2s
+        5.2s
+        forwards;
+}
+
+@keyframes cardShimmer {
+
+    to {
+        transform:translateX(100%) rotate(20deg);
     }
 }
 `;
-  document.head.appendChild(style);
-}
+
+    document.head.appendChild(style);
+  }
 
