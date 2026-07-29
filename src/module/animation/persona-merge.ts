@@ -36,9 +36,26 @@ export class FusionAnimation {
             <div class="fusion-card result">
                 <img src="${resultImage}">
             </div>
+            <div class="fusion-particles">
+              ${Array.from({ length: 32 }, () => "<span></span>").join("")}
+            </div>
         `;
 
-      document.body.appendChild(overlay);
+                const particles = overlay.querySelectorAll(".fusion-particles span");
+
+                particles.forEach((particle : HTMLElement) => {
+
+                  particle.style.setProperty("--x", (35 + Math.random() * 30).toString());
+                  particle.style.setProperty("--y", (55 + Math.random() * 25).toString());
+
+                  particle.style.setProperty("--delay", Math.random().toString());
+                  particle.style.setProperty("--speed", Math.random().toString());
+                  particle.style.setProperty(
+                    "--drift",
+                    (Math.random() * 2 - 1).toFixed(2)
+                  );
+                });
+                document.body.appendChild(overlay);
 
       requestAnimationFrame(() => {
         overlay.classList.add("play");
@@ -304,6 +321,90 @@ transform:
 translate(-50%,-50%)
 scale(1);
 }
+}
+
+.fusion-particles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.fusion-particles span {
+    position: absolute;
+
+    width: 14px;
+    height: 32px;
+
+    left: calc(var(--x) * 1%);
+    top: calc(var(--y) * 1%);
+
+    border-radius: 50% 50% 45% 45%;
+
+    background:
+        radial-gradient(circle at 50% 70%,
+            #dffbff 0%,
+            #86eaff 35%,
+            #2bbcff 70%,
+            rgba(0,160,255,0) 100%);
+
+    filter:
+        blur(2px)
+        drop-shadow(0 0 8px #59d7ff)
+        drop-shadow(0 0 18px #28a7ff);
+
+    opacity: 0;
+
+    transform-origin: center bottom;
+
+    animation:
+        blueFlameRise
+        calc(1.8s + var(--speed) * 1s)
+        linear
+        infinite;
+
+    animation-delay:
+        calc(var(--delay) * -2s);
+}
+
+.play .fusion-particles span {
+    opacity: 1;
+}
+
+@keyframes blueFlameRise {
+
+    0%{
+        transform:
+            translate(0,0)
+            scale(.3)
+            rotate(-6deg);
+
+        opacity:0;
+    }
+
+    15%{
+        opacity:.9;
+    }
+
+    50%{
+        transform:
+            translate(
+                calc(var(--drift) * 8px),
+                -60px)
+            scale(.9)
+            rotate(4deg);
+    }
+
+    100%{
+        transform:
+            translate(
+                calc(var(--drift) * 24px),
+                -140px)
+            scale(1.8)
+            rotate(8deg);
+
+        opacity:0;
+    }
 }
 `;
   document.head.appendChild(style);
