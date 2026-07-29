@@ -1,0 +1,21 @@
+<div class="shuffle-overlay">
+  <div class="shuffle-title">
+    SHUFFLE TIME
+  </div>
+  <div class="shuffle-cards">
+    {{#each cards}}
+    <div class="shuffle-card"
+         data-action="chooseCard"
+         data-index="{{@index}}">
+      <div class="card-inner">
+        <div class="card-front">
+          <img src="{{imgPath}}">
+        </div>
+        <div class="card-back">
+          ✦
+        </div>
+      </div>
+    </div>
+    {{/each}}
+  </div>
+</div>

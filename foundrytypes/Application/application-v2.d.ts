@@ -15,8 +15,7 @@ namespace foundryApps {
     }
     sidebar: foundryApps.Sidebar
     apps: foundryApps.Apps;
-
-	}
+  }
 
 
 	interface Sidebar {
@@ -49,8 +48,6 @@ namespace foundryApps {
 		ApplicationV2: typeof ApplicationV2;
 		HandlebarsApplicationMixin<T extends mixin.Constructor<t> & typeof ApplicationV2>(appClass: T) : mixin.Mixin<T, HandlebarsMxObject>;
 
-
-
 	}
 
 	type HandlebarsMixingFn<T extends mixin.Constructor<t> & typeof ApplicationV2> = (appClass: T) => mixin.Mixin<T, HandlebarsMxObject>;
@@ -70,14 +67,19 @@ namespace foundryApps {
 			RENDERING: 1,
 			RENDERED: 2,
 		} as const;
+    element: HTMLElement;
 		static emittedEvents: readonly string[];
 		static DEFAULT_OPTIONS: Configuration;
 		position: ApplicationPosition;
 		tabGroups: Record<string, string>;
 		options: Configuration;
+    _prepareContext() : MaybePromise<object>;
+    _onRender(): Promise<void>;
+
+    close(options?: Record<string, unknown>): Promise<this>;
 
 		static stat(): number;
-		render(): Promise<this>;
+		render(force ?: boolean): Promise<this>;
 		setPosition(position: Partial<ApplicationPosition>): ApplicationPosition;
 		toggleControls(expanded?: boolean) : void;
 		maximize(): Promise<void>;
@@ -158,13 +160,11 @@ namespace foundryApps {
 }
 
 namespace mixin {
-
-	interface Constructor<T = {}> {
-		new (...args: unknown[]): T;
-	}
-
-	type Mixin<T extends Constructor<T>, G ={}> = T & Constructor<InstanceType<T> & G>;
+  type Constructor<T = object> = abstract new (...args: unknown[]) => T;
+  type Mixin<T extends Constructor, G = object> =
+  Omit<T, "prototype"> & Constructor<InstanceType<T> & G>;
 }
+
 
 type ApplicationTab = {
 	/** tab id*/

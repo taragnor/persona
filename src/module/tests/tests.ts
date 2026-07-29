@@ -11,9 +11,10 @@ import {StatusDuration} from "../persona-ae.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
+import {ShuffleTimeApplication} from "../shuffleTime/shuffle-time.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {SocialCardExecutor} from "../social/social-card-executor.js";
-import {convertToPercentages} from "../utility/array-tools.js";
+import {convertToPercentages, shuffle} from "../utility/array-tools.js";
 import {sleep} from "../utility/async-wait.js";
 import {MultiTierCache, TimedCache} from "../utility/cache.js";
 import {Calculateable} from "../utility/calculation-v2.js";
@@ -88,6 +89,20 @@ export class Tests {
     if (!result) {return "Can't fuse, null result";}
     void FusionAnimation.fuse(s1, s2, result, duration);
     return result.name;
+  }
+
+  static async testShuffle() {
+    const randomPersonas = shuffle(game.actors.contents)
+    .slice(0,5)
+    .map( actor=> ({
+      imgPath: actor.img,
+      actor: actor,
+      effect: () => ui.notifications.notify(`${actor.name} selected`),
+    }));
+    ;
+
+    const ret= await ShuffleTimeApplication.run( randomPersonas);
+    return ret?.actor?.name;
   }
 
   static async theurgyTest(amt = 10) {

@@ -21,7 +21,8 @@
 		"module/persona.js"
 	],
 	"styles": [
-		"style/persona.css"
+		"style/persona.css",
+    "style/shuffle.css"
 	],
 	"languages": [
 		{

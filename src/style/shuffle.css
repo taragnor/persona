@@ -1,0 +1,50 @@
+.shuffle-card {
+
+    width:220px;
+    height:340px;
+
+    perspective:1000px;
+
+    transition:
+        transform .25s ease;
+}
+
+
+.card-inner {
+
+    width:100%;
+    height:100%;
+
+    transform-style:preserve-3d;
+
+    transition:
+        transform .8s;
+}
+
+
+.shuffle-card.flipped .card-inner {
+
+    transform:
+        rotateY(180deg);
+
+}
+
+
+.card-front,
+.card-back {
+
+    position:absolute;
+
+    inset:0;
+
+    backface-visibility:hidden;
+
+}
+
+
+.card-back {
+
+    transform:
+        rotateY(180deg);
+
+}
