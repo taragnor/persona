@@ -1,4 +1,3 @@
-import {VariableTypeSpecifier} from "../../config/consequence-types.js";
 import {NumericComparator} from "../../config/numeric-comparison.js";
 import {DeprecatedPrecondition, NonDeprecatedPrecondition} from "../../config/precondition-types.js";
 import {PersonaError} from "../persona-error.js";
