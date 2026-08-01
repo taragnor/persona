@@ -538,8 +538,6 @@ export class ConditionalEffectPrinter {
           return `Opening Roll natural value ${endString(cond)}`;
         case "links-dating":
           return `Amount of people being dated ${endString(cond)}`;
-        case "social-variable":
-          return `Value of Social variable ${cond.variableId} ${endString(cond)}`;
         case "round-count":
           return `Round Count ${endString(cond)}`;
         case "total-SL-levels":

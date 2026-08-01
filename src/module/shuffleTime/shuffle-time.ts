@@ -185,32 +185,14 @@ export class ShuffleTimeApplication extends foundry.applications.api.HandlebarsA
     b:HTMLElement
   ){
 
-    const aRect =
-      a.getBoundingClientRect();
-
-    const bRect =
-      b.getBoundingClientRect();
-
-
-    const ax =
-      bRect.left-aRect.left;
-
-    const ay =
-      bRect.top-aRect.top;
-
-
-    const bx =
-      aRect.left-bRect.left;
-
-    const by =
-      aRect.top-bRect.top;
-
-
-    a.style.transform =
-      `translate(${ax}px,${ay}px)`;
-
-    b.style.transform =
-      `translate(${bx}px,${by}px)`;
+    const aRect = a.getBoundingClientRect();
+    const bRect = b.getBoundingClientRect();
+    const ax = bRect.left-aRect.left;
+    const ay = bRect.top-aRect.top;
+    const bx = aRect.left-bRect.left;
+    const by = aRect.top-bRect.top;
+    a.style.transform = `translate(${ax}px,${ay}px)`;
+    b.style.transform = `translate(${bx}px,${by}px)`;
 
 
     setTimeout(()=>{
@@ -246,46 +228,30 @@ export class ShuffleTimeApplication extends foundry.applications.api.HandlebarsA
     _event:PointerEvent,
     target:HTMLElement
   ){
-
-    if(
-      !this.element.classList.contains(
-        "choose"
-      )
-    )
+    if ( !this.element.classList.contains( "choose"))
     {return;}
-
-
     const card =
       target.closest(
         ".shuffle-card"
       ) as HTMLElement;
-
-
-    if(!card)
+    if (!card)
     {return;}
-
     card.classList.add(
       "selected"
     );
-
     await this.sleep(800);
-
     card.classList.remove(
       "flipped"
     );
-
     await this.sleep(1200);
-
     const index =
       Number(
         card.dataset.index
       );
-
     const chosen = this.cards[index];
     await chosen.effect();
     this.resolve?.(chosen);
     await this.close();
-
   }
 
 

@@ -99,8 +99,6 @@ export class Tests {
       actor: actor,
       effect: () => ui.notifications.notify(`${actor.name} selected`),
     }));
-    ;
-
     const ret= await ShuffleTimeApplication.run( randomPersonas);
     return ret?.actor?.name;
   }

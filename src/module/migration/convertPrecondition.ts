@@ -36,12 +36,19 @@ export class PreconditionConverter {
         return {type: "never"};
       case "social-variable": {
         const comparator = this.convertNumericComparator(dep);
+        if (dep.variableId != undefined) {
+          return {
+            type: "numeric",
+            ...comparator,
+            comparisonTarget: "variable-value",
+            variableId : dep.variableId,
+            varType: "social-temp",
+            __localEffect: true,
+          } satisfies NonDeprecatedPrecondition;
+        }
         return {
-          ...dep as VariableTypeSpecifier,
-          type: "numeric",
-          comparisonTarget: "variable-value",
-          ...comparator,
-        } satisfies NonDeprecatedPrecondition;
+          type: "always"
+        };
       }
       default:
         dep.comparisonTarget satisfies never;

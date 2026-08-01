@@ -249,6 +249,7 @@ type VariableComparison =  {
 } & VariableTypeSpecifier;
 
 type SocialVariableComparison =  {
+  ___deprecated: true,
 	comparisonTarget:	"social-variable",
 	variableId: string,
 }
