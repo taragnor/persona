@@ -67,6 +67,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   declare statuses: Set<StatusEffectId>;
   declare sheet: PersonaActorSheetBase<this>;
 
+  _pendingRefresh= false;
+
   DOWNED_OPACITY = 0.5 as const;
   FULL_FADE_OPACITY = 0.2 as const;
 
@@ -317,7 +319,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
             "system.combat.hpTracker.max": mhp
           });
       }
-    }, {inUseMsg: `trying to refresh HP but ${this.name} is locked`}) ;
+    }, {
+      inUseMsg: `trying to refresh HP but ${this.name} is locked`,
+      suppressMessages: !PersonaSettings.debugMode(),
+    }) ;
   }
 
   async treasureRoll(this: Shadow) : Promise<TreasureItem[]> {
@@ -1495,14 +1500,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   //** changed to use setHP instead of newval functionality */
-  async refreshHpStatus(this: ValidAttackers, persona ?: Persona) : Promise<void> {
-    // if (this._antiloop) {return;}
+  refreshHpStatus(this: ValidAttackers, persona ?: Persona) : Promise<void> {
+    if (this._pendingRefresh) {return Promise.resolve();}
+    this._pendingRefresh = true;
+    setTimeout( () => this._refreshHpStatus(persona), 500);
+    this._pendingRefresh = false;
+    return Promise.resolve();
+  }
+
+    private async _refreshHpStatus(this: ValidAttackers, persona ?: Persona) {
     await antiLoop( this, async() => {
-      // this._antiloop = true;
       const hp = this.system.combat.hp;
       const mhp = persona ?.mhp ?? this.mhp;
       try {
-        // console.debug(`Refreshing HP status on ${this.name}`);
         if (hp > 0) {
           await this.clearFadingState();
         }
@@ -1516,12 +1526,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
         if (this.hasStatus("full-fade") && hp != 0) {
           await this.update( {"system.combat.hp": 0});
         }
-        // void this.updateOpacity(hp);
       } catch (e) {
         PersonaError.softFail(`Error on Refresh HP Status for ${this.name}, ${this.id}, hp: ${hp}, mhp: ${mhp}`, e);
       }
-    }, {inUseMsg : `Aboring Refreshing HP Status for ${this.name} (anti-loop)`, maxDepth : 3});
-    // this._antiloop = false;
+    }, {
+      inUseMsg : `Aboring Refreshing HP Status for ${this.name} (anti-loop)`, maxDepth : 3,
+      suppressMessages: !PersonaSettings.debugMode(),
+    });
   }
 
   async resetTheurgy() {
@@ -1740,6 +1751,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   hasStatus (id: StatusEffectId) : boolean {
+    if (this.isNPC() && this.getNPCAllyProxy()) {
+      if (this.getNPCAllyProxy()?.hasStatus(id)){
+        return false;
+      }
+    }
     return this.effects.contents.some( eff => eff.statuses.has(id));
 
   }

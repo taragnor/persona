@@ -180,9 +180,9 @@ export class CombatPanel extends PersonaPanel {
     if (token.actor.isPC() && !token.actor.isRealPC()) {
       return;
     }
-    this._target = token;
-    await this.setMode("main");
     try {
+      this._target = token;
+      await this.setMode("main");
       await this.setTacticalTarget(null);
       await this.updatePanelDeferred();
     } catch (e) {

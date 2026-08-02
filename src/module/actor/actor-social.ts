@@ -1,3 +1,4 @@
+import {StatusEffectId} from "../../config/status-effects.js";
 import {TarotCard} from "../../config/tarot.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
@@ -303,80 +304,6 @@ export class ActorSocial <T extends PersonaActor> {
       .sort((a, b) => (a.actor.tarot?.system.sortOrder ?? 99) - (b.actor.tarot?.system.sortOrder ?? 99));
   }
 
-  // private _refreshSocialLinkData() : readonly SocialLinkData[] {
-  //   if (!this.actor.isPC() || !PersonaDB.isLoaded) {return [] as SocialLinkData[];}
-  //   function meetsSL(linkLevel: number, focus:Focus) {
-  //     return linkLevel >= focus.requiredLinkLevel();
-  //   };
-  //   const PersonaCaching = PersonaSettings.agressiveCaching();
-  //   if (!PersonaCaching || this.cache.socialData == undefined) {
-  //     this.cache.socialData = this.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
-  //       const npc = PersonaDB.getActor(linkId);
-  //       if (!npc) {return [];}
-  //       const isDating = relationshipType == "DATE";
-  //       relationshipType = relationshipType ? relationshipType : npc.baseRelationship;
-  //       if (npc.isNPC()) {
-  //         const allFocii = (npc).getSocialFocii_NPC(npc);
-  //         const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
-  //         return [{
-  //           currentProgress,
-  //           linkLevel,
-  //           inspiration,
-  //           relationshipType,
-  //           actor:npc,
-  //           linkBenefits: npc,
-  //           allFocii,
-  //           available: PersonaSocial.isAvailable(npc, this),
-  //           focii: qualifiedFocii,
-  //           isDating,
-  //         }];
-  //       } else {
-  //         if (npc == this) {
-  //           const personalLink = PersonaDB.personalSocialLink();
-  //           if (!personalLink)  {
-  //             return [];
-  //           }
-  //           const allFocii = personalLink.getSocialFocii_PC(personalLink, npc as PC);
-  //           const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
-  //           return [{
-  //             currentProgress,
-  //             linkLevel,
-  //             inspiration,
-  //             relationshipType,
-  //             actor:npc as SocialLink,
-  //             linkBenefits: personalLink,
-  //             allFocii: allFocii,
-  //             focii: qualifiedFocii,
-  //             available: PersonaSocial.isAvailable(npc as PC, this),
-  //             isDating,
-  //           }];
-  //         } else {
-  //           const teammate = PersonaDB.teammateSocialLink();
-  //           if (!teammate)  {
-  //             return [];
-  //           }
-  //           const allFocii = teammate.getSocialFocii_PC(teammate, npc as PC);
-  //           const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
-  //           return [{
-  //             currentProgress,
-  //             linkLevel,
-  //             inspiration,
-  //             relationshipType,
-  //             actor:npc as SocialLink,
-  //             linkBenefits: teammate,
-  //             allFocii: allFocii,
-  //             focii: qualifiedFocii,
-  //             available: PersonaSocial.isAvailable(npc as PC, this),
-  //             isDating,
-  //           }];
-  //         }
-  //       }
-  //     })
-  //       .sort((a, b) => (a.actor.tarot?.system.sortOrder ?? 99) - (b.actor.tarot?.system.sortOrder ?? 99));
-  //   }
-  //   return this.cache.socialData;
-  // }
-
   get unrealizedSocialLinks() : (NPC | PC)[] {
     if (!this.actor.isPC()) {return [];}
     const currentLinks = this.actor.system.social.map(x=> x.linkId);
@@ -388,6 +315,12 @@ export class ActorSocial <T extends PersonaActor> {
   }
 
   isAvailable(this: ActorSocial<SocialLink>, pc: PC): boolean {
+    if (this.actor.system.weeklyAvailability.disabled) {
+      return false;
+    }
+    if (!this.canBeSocialTargetOrCameo()) {
+      return false;
+    }
     const sl = this.actor;
     const sit: Situation = {
       user: pc.accessor,
@@ -398,11 +331,16 @@ export class ActorSocial <T extends PersonaActor> {
     }
     if (PersonaSocial.availabilityDisqualifierStatuses.some (st=> sl.hasStatus(st))) {return false;}
     const availability = sl.system.weeklyAvailability;
-    if (!pc.canTakeNormalDowntimeActions()) {
-      // 		ui.notifications.warn("You're currently unable to take this action, you must recover first");
+    return availability?.available ?? false;
+  }
+
+  canBeSocialTargetOrCameo() : boolean {
+    const actor =this.actor;
+    const statuses : StatusEffectId[] = ["jailed", "exhausted", "crippled", "injured"];
+    if ( statuses.some( x=> actor.hasStatus(x))) {
       return false;
     }
-    return availability?.available ?? false;
+    return true;
   }
 
   async refreshSocialActions( this: ActorSocial<PC>) {

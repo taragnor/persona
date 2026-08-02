@@ -343,7 +343,9 @@ export class PersonaSocial {
   static async chooseActivity(actor: PC, activity: SocialLink | Activity, _options: ActivityOptions = {}) {
     await PersonaDB.waitUntilLoaded();
     if (!this.isAvailable(activity, actor)) {
-      ui.notifications.warn("This action isn't enabled in your current condition");
+      const msg = "This action isn't enabled in your current condition";
+      console.log(msg);
+      ui.notifications.warn(msg);
       return;
     }
     if (!this.turnCheck(actor, true)) { return; }
@@ -717,6 +719,9 @@ export class PersonaSocial {
 
   static isAvailable(activity: Activity | SocialLink, pc : PC) : boolean {
     if (this.isDisabled(activity)) {return false;}
+    if (!pc.canTakeNormalDowntimeActions()) {
+      return false;
+    }
     if (activity instanceof PersonaItem) {
       return this._isAvailable_Activity(activity, pc);
     }

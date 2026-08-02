@@ -154,7 +154,9 @@ export class SocialCardExecutor {
     await PersonaSocial.applyEffects(effectList, cardData.situation, cardData.actor);
     const msgs = await this.handler!.cardEventLoop();
     chatMessages.push(...msgs);
-    if (this.abort) { return chatMessages;}
+    if (this.abort) {
+      return chatMessages.concat(await this.earlyAbort());
+    }
     const opp = await this.#execOpportunity(cardData);
     if (opp) {
       chatMessages.push(opp as ChatMessage);
@@ -165,6 +167,25 @@ export class SocialCardExecutor {
     this.stopCardExecution();
     return chatMessages;
   }
+
+  async earlyAbort() : Promise<ChatMessage[]> {
+    try {
+      this.stopCardExecution();
+      const html = `<h2> Card Execution stopped </h2`;
+      const speaker = ChatMessage.getSpeaker();
+      const msgData : MessageData = {
+        speaker,
+        content: html,
+        style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+      };
+      const msg = await ChatMessage.create(msgData,{} );
+      return [msg];
+    } catch (e) {
+      PersonaError.softFail(e as Error);
+      return [];
+    }
+  }
+
 
   async expendSocialAction(cardData: CardData) {
     const type = this.getTypeOfActivity(cardData.activity);
@@ -513,7 +534,6 @@ export class SocialCardExecutor {
     if (this.sound) {this.sound.stop();}
     this.sound = null;
     this._abort = true;
-    // this.cardDrawPromise= null;
   }
 
   defaultDatePerk() : string {

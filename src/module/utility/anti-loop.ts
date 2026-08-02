@@ -12,7 +12,7 @@ export async function antiLoop(lockObj: object,  fn: () => Promise<unknown>, opt
   const usage = lockedObjects.get(lockObj) ?? 0;
   const usageLimit = options.maxDepth ?? 1;
   if (usage >= usageLimit ) {
-    if (options.inUseMsg) {
+    if (options.inUseMsg && !options.suppressMessages) {
       ui.notifications.notify(options.inUseMsg);
       console.log(options.inUseMsg);
       if (PersonaSettings.debugMode()) {
@@ -41,7 +41,8 @@ export async function antiLoop(lockObj: object,  fn: () => Promise<unknown>, opt
 }
 
 interface LockObjectOptions {
-	 timeoutMs?: number;
-	 inUseMsg?: string;
-	 maxDepth?: number;
+  timeoutMs?: number;
+  inUseMsg?: string;
+  maxDepth?: number;
+  suppressMessages?: boolean;
 };
