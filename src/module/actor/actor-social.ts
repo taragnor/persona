@@ -255,7 +255,6 @@ export class ActorSocial <T extends PersonaActor> {
           linkBenefits: npc,
           allFocii,
           available: npc.social.isAvailable(this.actor as PC),
-          // available: PersonaSocial.isAvailable(npc, this),
           focii: qualifiedFocii,
           isDating,
         }];

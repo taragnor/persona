@@ -742,11 +742,9 @@ export class PersonaSocial {
     const sourcedConditions = ConditionalEffectManager.getConditionals(activity.system.conditions, null, null, null );
     if(!testPreconditions(sourcedConditions, sit)) {return false;}
     if (pc.hasStatus("exhausted") && activity.system.cardType == "training") {
-      // ui.notifications.warn("You're currently unable to take this action, you must recover first");
       return false;
     }
     if (!pc.canTakeNormalDowntimeActions() && activity.system.cardType != "recovery") {
-      // 	ui.notifications.warn("You're currently unable to take this action, you must recover first");
       return false;
     }
     return activity.system.weeklyAvailability.available;

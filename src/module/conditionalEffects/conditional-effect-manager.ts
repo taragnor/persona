@@ -327,7 +327,6 @@ export class ConditionalEffectManager {
     html.find("div.multi-check .selected").on("click", (ev) => void this.handler_clickMCSelector(ev, doc));
     html.find(".MC-selectors").on("click", (ev) => void this.handler_clickMCSelected(ev, doc));
     if (contextMenu != undefined && game.user.isGM) {
-      console.log("Setting context menu handlers");
       html.find("section.conditions-section").on("contextmenu", ev => void this.openConditionsMenu(ev, doc, contextMenu));
       html.find("section.consequences-section").on("contextmenu", ev => void this.openConsequencesMenu(ev, doc, contextMenu));
     }
