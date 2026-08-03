@@ -14,6 +14,8 @@ import {ItemSelector} from "../../config/consequence-types.js";
 import {DowntimeActionData} from "../actor/actor-social.js";
 import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
 import {testPreconditions} from "../conditionalEffects/preconditions.js";
+import {TriggeredEffect} from "../triggered-effect.js";
+import {Trigger} from "../../config/triggers.js";
 
 export class SocialCardExecutor {
   _handler : U<SocialCardEventHandler>;
@@ -141,14 +143,27 @@ export class SocialCardExecutor {
     return await this.#execCardSequence();
   }
 
+  async socialTrigger<T extends TriggeredSituation.SocialTrigger["trigger"]>(trigger: T) {
+    const situation = {
+      trigger: trigger,
+      triggeringCharacter: this.cardData.actor.accessor,
+      ...this.cardData.situation,
+    } satisfies Situation;
+    await TriggeredEffect
+      .onTrigger(situation, this.cardData.actor)
+      .emptyCheck()
+      ?.autoApplyResult();
+  }
+
   async #execCardSequence(): Promise<ChatMessage[]> {
+    await this.socialTrigger("on-start-social-card");
     const cardData = this.cardData;
     const chatMessages: ChatMessage[] = [];
     this._handler = new SocialCardEventHandler(this);
     await this.#printCardIntro(cardData);
     this.rollState = {
       continuation: () => {},
-      cardData
+      cardData,
     };
     const effectList = ConditionalEffectManager.getEffects(cardData.card.system.immediateEffects ?? [], null, null);
     await PersonaSocial.applyEffects(effectList, cardData.situation, cardData.actor);
@@ -161,6 +176,7 @@ export class SocialCardExecutor {
     if (opp) {
       chatMessages.push(opp as ChatMessage);
     }
+    await this.socialTrigger("on-end-social-card");
     const finale = await this.#printCardFinale(cardData);
     chatMessages.push(finale);
     await this.expendSocialAction(cardData);

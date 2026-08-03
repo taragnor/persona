@@ -557,6 +557,8 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
     case "on-power-usage-check":
     case "get-added-power-tags":
     case "on-social-turn-start":
+    case "on-start-social-card":
+    case "on-end-social-card":
     case "check-legal-target":
       return true;
     case "on-clock-change":

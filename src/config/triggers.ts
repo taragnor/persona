@@ -31,6 +31,8 @@ export const NONCOMBAT_TRIGGER_LIST = [
 	"on-roll",
 	"on-active-scene-change",
   "on-social-turn-start",
+  "on-start-social-card",
+  "on-end-social-card",
 ] as const;
 
 export const DEPRECATED_TRIGGERS = [

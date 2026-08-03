@@ -184,9 +184,14 @@ namespace TriggeredSituation {
   type TriggerTypes = ExplorationTrigger
     | OnRollTrigger
     | ClockTrigger
-    | StartSocialTurnTrigger
+    | SocialTrigger
     | CombatTrigger
     | Checks;
+
+  type SocialTrigger = 
+    StartSocialTurnTrigger
+    | StartSocialCardTrigger
+    | EndSocialCardTrigger
 
   type Checks =
     OnPowerUsageCheckTrigger
@@ -209,6 +214,18 @@ type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
     {
     trigger: "on-equip-check",
   }
+
+  type StartSocialCardTrigger =
+    {trigger: "on-start-social-card"} &
+    SituationComponent.TriggeringCharacter &
+    SituationComponent.User
+
+
+    type EndSocialCardTrigger =
+    { trigger: "on-end-social-card", } &
+    SituationComponent.TriggeringCharacter &
+    SituationComponent.User
+
 
   type LegalTargetCheck = SituationComponent.PowerUse &
     SituationComponent.TriggeringCharacter &
