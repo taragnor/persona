@@ -44,22 +44,19 @@ export class SocialActionExecutor {
 	private static async _execSocialCardAction(eff: Sourced<LocalEffect> & {type : "social-card-action"}) : Promise<void> {
 		switch (eff.cardAction) {
 			case "stop-execution":
-				this.cardExecutor.stopCardExecution();
-				// ui.notifications.notify("Card Execution stopped by event");
+				this.cardExecutor.setEarlyAbort();
 				break;
 			case "exec-event":
 				this.handler.forceEvent(eff.eventLabel);
 				this.handler.addExtraEvent(1);
 				break;
 			case "inc-events": {
-				// const amount = this.resolveConsAmount(eff, situation);
 				if (!eff.amount) {return;}
 				this.handler.addExtraEvent(eff.amount ?? 0);
 				break;
 			}
 			case "gain-money": {
         const amount = eff.amount;
-				// const amount = this.resolveConsAmount(eff, situation);
 				if (!amount) {return;}
 				await PersonaSocial.gainMoney(this.cardData.actor, amount?? 0);
 				break;
@@ -74,13 +71,11 @@ export class SocialActionExecutor {
 						break;
 					}
         const amount = eff.amount;
-				// const amount = this.resolveConsAmount(eff, situation);
 				if (!amount) {return;}
 				await PersonaSocial.alterStudentSkill( this.mainActor, eff.studentSkill, amount ?? 0);
 				break;
 			}
 			case "modify-progress-tokens-cameo": {
-				// const amount = this.resolveConsAmount(eff, situation);
 				const amount = eff.amount;
 				if (!amount) {return;}
 				await this.modifyCameoProgress(amount);

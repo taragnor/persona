@@ -18,12 +18,12 @@ import {TriggeredEffect} from "../triggered-effect.js";
 import {sleep} from "../utility/async-wait.js";
 
 export class SocialCardExecutor {
-  _handler : U<SocialCardEventHandler>;
+  private _handler : U<SocialCardEventHandler>;
   sound: FOUNDRY.AUDIO.Sound | null = null;
 
   mainActor: PC;
   activity: SocialLink | Activity;
-  _abort: boolean = false;
+  private _abort: boolean = false;
 
   private rollState: RollState;
 
@@ -60,6 +60,10 @@ export class SocialCardExecutor {
 
   get link() : Promise<ActivityLink | SocialLinkData> {
     return this.lookupLink();
+  }
+
+  setEarlyAbort() {
+    this._abort = true;
   }
 
   setContinuation(promiseResolvefn: (...args : unknown[]) => void ){
@@ -180,13 +184,13 @@ export class SocialCardExecutor {
     const finale = await this.#printCardFinale(cardData);
     chatMessages.push(finale);
     await this.expendSocialAction(cardData);
-    await this.stopCardExecution();
+    await this._stopCardExecution();
     return chatMessages;
   }
 
   async earlyAbort() : Promise<ChatMessage[]> {
     try {
-      await this.stopCardExecution();
+      await this._stopCardExecution();
       const html = `<h2> Card Execution stopped </h2`;
       const speaker = ChatMessage.getSpeaker();
       const msgData : MessageData = {
@@ -545,7 +549,8 @@ export class SocialCardExecutor {
     }
   }
 
-  async stopCardExecution() {
+
+  private async _stopCardExecution() {
     if (this.sound) {this.sound.stop();}
     this.sound = null;
     this._abort = true;
