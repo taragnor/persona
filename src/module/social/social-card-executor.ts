@@ -15,7 +15,7 @@ import {DowntimeActionData} from "../actor/actor-social.js";
 import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
 import {testPreconditions} from "../conditionalEffects/preconditions.js";
 import {TriggeredEffect} from "../triggered-effect.js";
-import {Trigger} from "../../config/triggers.js";
+import {sleep} from "../utility/async-wait.js";
 
 export class SocialCardExecutor {
   _handler : U<SocialCardEventHandler>;
@@ -180,13 +180,13 @@ export class SocialCardExecutor {
     const finale = await this.#printCardFinale(cardData);
     chatMessages.push(finale);
     await this.expendSocialAction(cardData);
-    this.stopCardExecution();
+    await this.stopCardExecution();
     return chatMessages;
   }
 
   async earlyAbort() : Promise<ChatMessage[]> {
     try {
-      this.stopCardExecution();
+      await this.stopCardExecution();
       const html = `<h2> Card Execution stopped </h2`;
       const speaker = ChatMessage.getSpeaker();
       const msgData : MessageData = {
@@ -201,7 +201,6 @@ export class SocialCardExecutor {
       return [];
     }
   }
-
 
   async expendSocialAction(cardData: CardData) {
     const type = this.getTypeOfActivity(cardData.activity);
@@ -546,10 +545,11 @@ export class SocialCardExecutor {
     }
   }
 
-  stopCardExecution() {
+  async stopCardExecution() {
     if (this.sound) {this.sound.stop();}
     this.sound = null;
     this._abort = true;
+    await sleep(1000); //baseline sleep to not rush foundry updates
   }
 
   defaultDatePerk() : string {

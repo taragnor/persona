@@ -423,17 +423,13 @@ export class SocialCardEventHandler {
   private getCardModifiers(cardData: CardData, baseRollTags: (RollTag | CardTag | Tag)[] ) : ModifierList {
     try {
       const {card, actor} = cardData;
-      // const effects : ConditionalEffectC[] = [];
       const globalMods = ConditionalEffectManager.getEffects(card.system.globalModifiers, null, null);
       const effects : ConditionalEffectC[] = [
         ...actor.persona().passiveModifiers(),
         ...globalMods,
       ];
-      // effects.push(...globalMods);
       baseRollTags = this.filterInvalidTags(baseRollTags);
       const rollTags = unifiedTagList(baseRollTags);
-      // const universal = PersonaDB.getGlobalModifiers().flatMap(x => x.getEffects(null));
-      // effects.push(...universal);
       if (cardData.activity instanceof PersonaActor) {
         const link = cardData.activity;
         if (!rollTags.includes("on-cameo") && !rollTags.includes("on-other") && link instanceof PersonaActor) {
