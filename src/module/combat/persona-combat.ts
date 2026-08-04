@@ -39,6 +39,7 @@ import {PersonaSockets} from '../persona.js';
 import {ResolvedRollBundle, RollBundle} from '../roll-bundle.js';
 import {checkSituationProp} from '../../config/situation.js';
 import {DebugTools} from '../utility/debug.js';
+import {ConditionalEffectC} from '../conditionalEffects/conditional-effect-class.js';
 
 declare global {
   interface SocketMessage {
@@ -2002,7 +2003,8 @@ export type SaveOptions = {
 export type ConsequenceProcessed = {
   consequences: {
     applyTo: 'global' | ValidAttackers,
-    cons: EnhancedSourcedConsequence<NonDeprecatedConsequence>,
+    // cons: EnhancedSourcedConsequence<NonDeprecatedConsequence>,
+    cons: ConditionalEffectC["consequences"][number],
   }[],
 }
 

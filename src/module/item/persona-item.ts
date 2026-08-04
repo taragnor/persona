@@ -23,7 +23,7 @@ import { PowerTag } from '../../config/power-tags.js';
 import { localize } from '../persona.js';
 import { POWER_TAGS } from '../../config/power-tags.js';
 import { ModifierList, ModifierListItem } from '../combat/modifier-list.js';
-import { CardChoice, CardEvent, CardRoll } from '../../config/social-card-config.js';
+import { CardChoice, CardChoiceData, CardEvent, CardRoll } from '../../config/social-card-config.js';
 import { BASIC_PC_POWER_NAMES } from '../../config/basic-powers.js';
 import { BASIC_SHADOW_POWER_NAMES } from '../../config/basic-powers.js';
 import { PersonaError } from '../persona-error.js';
@@ -56,7 +56,7 @@ declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
 }
 
-export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE> {
+export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE> implements ModifierContainer<PersonaItem> {
 
   private _tags = new ItemTagManager(this);
 
@@ -2105,7 +2105,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
     const {CETypes} = options;
     if (this.isSkillCard()) {
-      return [new ConditionalEffectC(this)];
+      return [ConditionalEffectC.fromSkillCard(this)];
     }
     const deepTags = options.deepTags ?? true;
     const tagEffects = deepTags ? this._getLinkedEffects(sourceActor, CETypes) : [];
@@ -2351,9 +2351,9 @@ async deleteCardEvent(this: SocialCard, eventIndex: number) {
   await this.update({'system.events': this.system.events});
 }
 
-async addEventChoice(this: SocialCard, eventIndex: number, newChoice ?: CardChoice ) {
+async addEventChoice(this: SocialCard, eventIndex: number, newChoice ?: CardChoiceData ) {
   const event = this.system.events[eventIndex];
-  const arr = ConditionalEffectManager.ArrayCorrector(event.choices) as CardChoice[];
+  const arr = ConditionalEffectManager.ArrayCorrector(event.choices) as CardChoiceData[];
   if (newChoice == undefined) {
     const roll: CardRoll = {
       rollType: 'none',
@@ -2364,7 +2364,7 @@ async addEventChoice(this: SocialCard, eventIndex: number, newChoice ?: CardChoi
       rollTag2: '',
       rollTag3: '',
     };
-    const choice: CardChoice = {
+    const choice: CardChoiceData = {
       name: 'Unnamed Choice',
       conditions: [],
       text: '',
@@ -2373,7 +2373,7 @@ async addEventChoice(this: SocialCard, eventIndex: number, newChoice ?: CardChoi
       resourceCost: 0,
     };
     newChoice = choice;
-  }
+  };
   arr.push( newChoice);
   event.choices = arr;
   await event.update!({choices: arr});
@@ -2911,17 +2911,34 @@ export type ItemModifierContainer = ItemContainers;
 
 export type ContainerTypes = ItemContainers | PersonaAE;
 
-export interface ModifierContainer <T extends Actor | TokenDocument | Item | ActiveEffect = ContainerTypes> {
-  getEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions) : readonly ConditionalEffectC[];
-  getAuraEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions): readonly ConditionalEffectC[];
-  getEmbeddedEffects ?: (sourceActor : PersonaActor | null, options ?: GetEffectsOptions) => readonly SourcedConditionalEffect[];
-  parent: T["parent"];
-  name: string;
-  id: T["id"];
-  displayedName: string;
-  accessor : UniversalAccessor<T>,
-  getModifier(bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null): ModifierListItem[];
+export interface Accessible<T extends UniversalAccessorTypes> {
+  accessor: UniversalAccessor<T>;
+  parent?: FoundryDocument | DataModelClass;
 }
+
+export interface EffectCarrier {
+  getEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions) : readonly ConditionalEffectC[];
+  getAuraEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions) : readonly ConditionalEffectC[];
+  // getEmbeddedEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions) : readonly ConditionalEffectC[];
+  getModifier(bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null): readonly ModifierListItem[];
+  name: string;
+  displayedName: string;
+}
+
+// export interface ModifierContainer <T extends Actor | TokenDocument | Item | ActiveEffect = ContainerTypes> {
+export interface ModifierContainer<T extends UniversalAccessorTypes & EffectCarrier = UniversalAccessorTypes & EffectCarrier> extends Accessible<T>, EffectCarrier {
+  // getEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions) : readonly ConditionalEffectC[];
+  // getAuraEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions) : readonly ConditionalEffectC[];
+  // getEmbeddedEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions) : readonly SourcedConditionalEffect[];
+  // parent: T["parent"];
+  // name: string;
+  // id: T["id"];
+  // displayedName: string;
+  // accessor : UniversalAccessor<this>;
+  // getModifier(bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null): ModifierListItem[];
+}
+
+
 
 Hooks.on('updateItem', (item :PersonaItem, _diff: DeepPartial<typeof item>) => {
   item.clearCache();

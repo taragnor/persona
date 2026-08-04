@@ -66,7 +66,7 @@ export class SocialCardExecutor {
     this._abort = true;
   }
 
-  setContinuation(promiseResolvefn: (...args : unknown[]) => void ){
+  setContinuation(promiseResolvefn: (...args : unknown[]) => void ) {
     if (this.rollState == null) {
       throw new PersonaError("No roll state, can't set confirmation");
     }

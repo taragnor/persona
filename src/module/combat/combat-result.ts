@@ -20,6 +20,7 @@ import {ResolvedRollBundle} from "../roll-bundle.js";
 import {getSocialLinkTarget, getSourceDType, multiCheckToArray} from "../conditionalEffects/preconditions.js";
 import {checkSituationProp} from "../../config/situation.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
+import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 
 declare global {
 	interface SocketMessage {
@@ -106,7 +107,7 @@ export class CombatResult  {
   }
 
 	private addEffect_damage(
-		cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type : "combat-effect", combatEffect:"damage"},
+		cons: Readonly<Cons> & {type : "combat-effect", combatEffect:"damage"},
 		situation: Situation,
 		effect: ActorChange<ValidAttackers>,
 		target: ValidAttackers,
@@ -287,7 +288,7 @@ export class CombatResult  {
     }
   }
 
-  private _addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | SocialLink | "global", cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]>, situation : Readonly<Situation>) : void {
+  private _addEffect(atkResult: AttackResult | null | undefined, target: ValidAttackers | SocialLink | "global", cons: Readonly<Cons>, situation : Readonly<Situation>) : void {
     if (target == undefined) {
       target = this.secondaryTargetChecks(situation, cons);
     }
@@ -348,13 +349,16 @@ export class CombatResult  {
         try {
           if (cons.flagState) {
             const duration = convertConsToStatusDuration(cons, target, situation);
+            const embeddedEffects = cons.applyEmbedded ? ConditionalEffectC.getParent(cons)?.getEmbeddedEffects() ?? []: [];
             effect.otherEffects.push( {
               ...cons,
+              embeddedEffects,
               duration,
             });
           } else {
             effect.otherEffects.push( {
               ...cons,
+              embeddedEffects: [],
             });
           }
         } catch (e) {
@@ -953,3 +957,5 @@ export type ResistResult =  {
 	absorb: boolean,
 	block: boolean,
 }
+
+type Cons = ConsequenceProcessed["consequences"][number]["cons"]

@@ -134,7 +134,7 @@ export class FinalizedCombatResult {
       actor: change.actor,
       damage : damage,
       addStatus: change.addStatus,
-      otherEffects: change.otherEffects,
+      otherEffects: this.finalizeOtherEffects(change.otherEffects),
       removeStatus: change.removeStatus,
       localEffects: change.localEffects,
     };
@@ -161,12 +161,19 @@ export class FinalizedCombatResult {
     this.costs = cr.costs
     .map( cost=> this.#resolveActorChange(cost))
     .filter( cost => !FinalizedCombatResult.changeIsEmpty(cost));
-    this.globalOtherEffects = cr.globalOtherEffects;
+    this.globalOtherEffects = this.finalizeOtherEffects(cr.globalOtherEffects);
     this.globalLocalEffects = cr.globalLocalEffects;
     this.sounds = cr.sounds;
     this.options = {
       activationRoll: cr.activationRoll ?? -1,
     };
+  }
+
+  finalizeOtherEffects(effects: CombatResult["globalOtherEffects"]) : CombatResult["globalOtherEffects"] {
+    return effects.map( effect=> ({
+      ...effect,
+        parent: undefined
+    }));
   }
 
   addFlag(actor: PersonaActor, flag: OtherEffect) {
@@ -239,7 +246,6 @@ export class FinalizedCombatResult {
       style: CONST.CHAT_MESSAGE_STYLES.OTHER,
     }, {});
     return false;
-
   }
 
   async autoApplyResult() : Promise<boolean> {

@@ -1,7 +1,7 @@
 import {CardTag} from "../../config/card-tags.js";
 import {HBS_TEMPLATES_DIR, PersonaSettings} from "../../config/persona-settings.js";
 import {RollTag} from "../../config/roll-tags.js";
-import {CardChoice, CardEvent, CardRoll} from "../../config/social-card-config.js";
+import {CardChoice, CardChoiceData, CardEvent, CardRoll} from "../../config/social-card-config.js";
 import {StudentSkill, StudentSkillExt} from "../../config/student-skills.js";
 import { PersonaActor} from "../actor/persona-actor.js";
 import {ModifierList} from "../combat/modifier-list.js";
@@ -105,7 +105,7 @@ export class SocialCardEventHandler {
     return msg;
   }
 
-	async handleCardChoice(cardData: CardData, cardChoice: DeepNoArray<CardChoice>) {
+	async handleCardChoice(cardData: CardData, cardChoice: CardChoiceData) {
 		const cardRoll = cardChoice.roll;
     const rollTagsBase = cardData.extraCardTags.slice();
 		if (cardData.currentEvent) {
@@ -117,7 +117,7 @@ export class SocialCardEventHandler {
     const rollTags = rollTagsBase
 			.map (t => PersonaItem.resolveTag(t))
     .concat (this.getCardRollTags(cardRoll));
-		const effectList = ConditionalEffectManager.getEffects(cardChoice?.postEffects?.effects ?? [], null, null);
+		const effectList = ConditionalEffectManager.getEffects(cardChoice?.postEffects?.effects ?? [], null, null);//change this to card choice eventually
 		if (cardChoice.resourceCost > 0) {
 			await cardData.actor.spendMoney(Math.abs(cardChoice.resourceCost ?? 0));
 		}

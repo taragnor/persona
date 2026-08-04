@@ -8,7 +8,7 @@
 
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { NonDeprecatedModifierTarget } from "../../config/item-modifiers.js";
-import { ModifierContainer, PersonaItem} from "../item/persona-item.js";
+import { ModifierContainer} from "../item/persona-item.js";
 import { Helpers } from "../utility/helpers.js";
 import { Consequence, NonDeprecatedConsequence } from "../../config/consequence-types.js";
 import { PersonaActor } from "../actor/persona-actor.js";
@@ -22,8 +22,7 @@ import { PRECONDITIONLIST } from "../../config/precondition-types.js";
 import { PersonaDB } from "../persona-db.js";
 import {ConsequenceConverter} from "../migration/convertConsequence.js";
 import {PreconditionConverter} from "../migration/convertPrecondition.js";
-import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
-import {PersonaAE} from "../persona-ae.js";
+import {ConditionalEffectC, ConditonalEffectHolderItem} from "../conditionalEffects/conditional-effect-class.js";
 import {ContextMenu, ContextMenuOptions} from "../utility/context-menu.js";
 
 type MenuHolder<D extends FoundryDocument> = D & {
@@ -333,10 +332,11 @@ export class ConditionalEffectManager {
     html.find(".sfx-consequence .play-sound"). on("click", ev => void this.handler_playSound(ev));
   }
 
-  static getEffects<T extends PersonaActor, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: I | null, sourceActor: T | null, realSource ?: ConditonalEffectHolderItem) : ConditionalEffectC[] {
+  static getEffects<T extends PersonaActor, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: N<I>, sourceActor: T | null, realSource ?: ConditonalEffectHolderItem) : ConditionalEffectC[] {
     const conditionalEffects = Array.isArray(CEObject) ? CEObject : (this.ArrayCorrector(CEObject, realSource ?? sourceItem) as ConditionalEffect[]);
-    return conditionalEffects
-      .map( ce=> new ConditionalEffectC(ce, sourceItem, sourceActor, realSource)) satisfies SourcedConditionalEffect[];
+    return ConditionalEffectC.convertBatch(conditionalEffects, sourceItem, sourceActor, realSource);
+    // return conditionalEffects
+    //   .map( ce=> new ConditionalEffectC(ce, sourceItem, sourceActor, realSource)) satisfies SourcedConditionalEffect[];
   }
 
   static getConditionalType<I extends ConditonalEffectHolderItem>( ce: ConditionalEffect, sourceItem ?: I | null ) : TypedConditionalEffect["conditionalType"] {
@@ -404,7 +404,7 @@ export class ConditionalEffectManager {
     return (cond.type == "on-trigger");
   }
 
-  static getConditionals<T extends PersonaActor, I extends ModifierContainer & (Item | ActiveEffect)>
+  static getConditionals<T extends PersonaActor, I extends ModifierContainer>
     (
       condObject: DeepNoArray<ConditionalEffect["conditions"]>,
       sourceItem: I | null,
@@ -438,7 +438,7 @@ export class ConditionalEffectManager {
     return data;
   }
 
-  static getUnsourcedConsequences<I extends (ModifierContainer & (PersonaItem | PersonaAE))>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null): NonDeprecatedConsequence[] {
+  static getUnsourcedConsequences<I extends (ModifierContainer)>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null): NonDeprecatedConsequence[] {
     const cached = this.cache.consequences.get(consObject);
     if (cached) {
       ++this.cache.hits;
@@ -455,13 +455,13 @@ export class ConditionalEffectManager {
   }
 
 
-  static getConsequences<T extends PersonaActor, I extends (ModifierContainer & (PersonaItem | PersonaAE))>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null, realSource: null | U<ModifierContainer>): SourcedConditionalEffect["consequences"] {
+  static getConsequences<T extends PersonaActor, I extends (ModifierContainer)>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null, realSource: null | U<ModifierContainer>): SourcedConditionalEffect["consequences"] {
     return this.getUnsourcedConsequences(consObject, sourceItem)
       .map(cons=> this.applySourceInformation(cons, sourceItem, sourceActor, realSource));
   }
 
 
-  static applySourceInformation <T extends object, ActorType extends PersonaActor, ItemType extends ModifierContainer & (Item | ActiveEffect)>( obj: T, sourceItem: N<ItemType>, sourceActor: N<ActorType>, realSource: UN<ModifierContainer>) : Sourced<T> {
+  static applySourceInformation <T extends object, ActorType extends PersonaActor, ItemType extends ModifierContainer >( obj: T, sourceItem: N<ItemType>, sourceActor: N<ActorType>, realSource: UN<ModifierContainer>) : Sourced<T> {
     return {
       ...obj,
       owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : undefined),
@@ -821,10 +821,16 @@ export const CETypes = [
 //@ts-expect-error added to window objects
 window.CEManager = ConditionalEffectManager;
 
-type ConditonalEffectHolderItem = ModifierContainer & (PersonaItem | PersonaAE) & Partial<{isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]}> ;
+// type ConditonalEffectHolderItem = ModifierContainer & (PersonaItem | PersonaAE) & Partial<{isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]}> ;
 
+// type ConditonalEffectHolderItem = ModifierContainer & CEItemData;
 
-declare global{
+// type CEItemData =
+//   Partial< {
+//     isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]
+//   } > ;
+
+declare global {
 
   interface ConditionalEffect {
     isDefensive: boolean;

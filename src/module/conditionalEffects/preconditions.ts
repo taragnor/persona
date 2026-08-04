@@ -29,7 +29,7 @@ import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amoun
 import {PreconditionConverter} from "../migration/convertPrecondition.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 import {ResolvedActorChange} from "../combat/finalized-combat-result.js";
-import {ContainerTypes, PersonaItem} from "../item/persona-item.js";
+import {PersonaItem} from "../item/persona-item.js";
 import {CombatEngine} from "../combat/combat-engine.js";
 import {PersonaAE} from "../persona-ae.js";
 import {Persona} from "../persona-class.js";
@@ -442,7 +442,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
 
 function resolveTestCase(testCase: ConsequenceAmount , condition: Sourced<NonDeprecatedPrecondition>, situation: Situation) : N<number> {
   if (typeof testCase != "number") {
-    let source : U<ContainerTypes> = undefined;
+    let source : U<UniversalAccessorTypes> = undefined;
     let owner : U<PersonaActor> = undefined;
     try {
       source = condition.source ? PersonaDB.find(condition.source): undefined;

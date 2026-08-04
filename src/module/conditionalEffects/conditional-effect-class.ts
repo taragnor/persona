@@ -4,7 +4,6 @@ import {NonDeprecatedPrecondition} from "../../config/precondition-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {ModifierV2Target} from "../bonus-calc.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
-import {PersonaAE} from "../persona-ae.js";
 import {PersonaDB} from "../persona-db.js";
 import {MultiTierCache, PermanentCache, TimedCache} from "../utility/cache.js";
 import {CETypes, ConditionalEffectManager} from "./conditional-effect-manager.js";
@@ -27,6 +26,9 @@ export class ConditionalEffectC {
   _isDefensiveRaw: boolean;
   _isMainModifier: boolean;
   _isAura: boolean;
+  _embeddedEffects : ConditionalEffectC[] = [];
+
+  static parents : Map<object, ConditionalEffectC> = new Map();
 
   #cache = {
     cancelEffects: new PermanentCache( () => this._hasCancelEffects()),
@@ -34,9 +36,9 @@ export class ConditionalEffectC {
     bonusTypes : new MultiTierCache( (bonusType: ModifierV2Target) => new TimedCache ( () => this._grantsBonusType(bonusType) , this.#CACHE_TIME)),
   };
 
-  constructor (card: SkillCard);
-  constructor (ce: CondEffectObject, sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem);
-  constructor (ce: CondEffectObject | SkillCard, sourceItem?: N<ConditonalEffectHolderItem> , sourceActor?: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem) {
+  private constructor (card: SkillCard);
+  private constructor (ce: CondEffectObject, sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem);
+  private constructor (ce: CondEffectObject | SkillCard, sourceItem?: N<ConditonalEffectHolderItem> , sourceActor?: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem) {
     if (ce instanceof PersonaItem)  {
       this._generateSkillCardTeachEffect(ce);
       return;
@@ -44,6 +46,12 @@ export class ConditionalEffectC {
     this._original = ce;
     this._preconditions = ConditionalEffectManager.getConditionals(ce.conditions, sourceItem!, sourceActor!, realSource);
     this._consequences = ConditionalEffectManager.getConsequences(ce.consequences, sourceItem!, sourceActor!, realSource);
+    for (const pre of this._preconditions) {
+      ConditionalEffectC.parents.set(pre, this);
+    }
+    for (const con of this._consequences) {
+      ConditionalEffectC.parents.set(con, this);
+    }
     this._isEmbedded = ce.isEmbedded ?? false;
     this._isAura = ce.isAura ?? false;
     this._conditionalType = this.#determineConditionalType(ce, this._preconditions, this._consequences, sourceItem!);
@@ -52,6 +60,34 @@ export class ConditionalEffectC {
     this._realSource= realSource? realSource.accessor: undefined;
     this._isDefensiveRaw = ce.isDefensive ?? false;
     this._isMainModifier = !this._isEmbedded && !this._isAura;
+  }
+
+  static convertBatch(ceArr: CondEffectObject[], sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem) : ConditionalEffectC[] {
+    const arr  = ceArr
+      .map( x=> new ConditionalEffectC(x, sourceItem, sourceActor, realSource) );
+    if (arr.some(x=> x._isEmbedded)) {
+      const embedded= arr.filter(x=> x._isEmbedded);
+      for (const ce of arr) {
+        if (!ce._isEmbedded) {
+          ce._embeddedEffects = embedded;
+        }
+      }
+    }
+    return arr;
+  }
+
+  static getParent(consOrCond: ConditionalEffectC["_preconditions"][number]): U<ConditionalEffectC>;
+  static getParent(consOrCond: ConditionalEffectC["_consequences"][number]): U<ConditionalEffectC>;
+  static getParent(consOrCond: object) {
+    return ConditionalEffectC.parents.get(consOrCond);
+  }
+
+  static fromSkillCard( card: SkillCard) {
+    return new ConditionalEffectC(card);
+  }
+
+  getEmbeddedEffects() {
+    return this._embeddedEffects;
   }
 
   get conditionalType () {
@@ -295,4 +331,13 @@ export class ConditionalEffectC {
 
 type CondEffectObject = ConditionalEffect;
 
-type ConditonalEffectHolderItem = ModifierContainer & (PersonaItem | PersonaAE) & Partial<{isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]}> ;
+// export type ConditonalEffectHolderItem = ModifierContainer & (PersonaItem | PersonaAE) & Partial<{isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]}> ;
+
+
+export type ConditonalEffectHolderItem = ModifierContainer & CEItemData;
+
+type CEItemData =
+  Partial< {
+    isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]
+  } > ;
+

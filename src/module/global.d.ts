@@ -75,3 +75,6 @@ type GenericObject = {
 type MaybePromise<T> = Promise<T> | T;
 
 type ValueOf<T extends object> = T[keyof T];
+
+type DistributedOmit<T, K extends PropertyKey> =
+    T extends unknown ? Omit<T, K> : never;

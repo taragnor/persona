@@ -330,6 +330,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
   async setEmbeddedEffects( effects: readonly ConditionalEffectC[])  : Promise<this> {
     const effectsJSON = JSON.stringify(effects.map( eff=> eff.toJSON()));
     await this.setFlag("persona", "embeddedEffects", effectsJSON);
+    this.cache.embeddedEffects.clear();
     return this;
   }
 
@@ -344,7 +345,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     const effects = this.getFlag("persona", "embeddedEffects") as string;
     if (!effects) { return []; }
     const effectsArr = JSON.parse(effects) as ConditionalEffect[];
-    return effectsArr.map( x=> new ConditionalEffectC(x, this, sourceActor, this));
+    return ConditionalEffectC.convertBatch(effectsArr, this, sourceActor, this);
+    // return effectsArr.map( x=> new ConditionalEffectC(x, this, sourceActor, this));
   }
 
   getEmbeddedEffects(sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
@@ -353,15 +355,18 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     if (CETypes == undefined || CETypes.length == 0){
       return base;
     }
-    return base
-      .filter( x=> CETypes.includes(x.conditionalType))
-      .map( x=> new ConditionalEffectC(x, this, sourceActor, this));
+    const arr=  base
+      .filter( x=> CETypes.includes(x.conditionalType));
+      // .map( x=> new ConditionalEffectC(x, this, sourceActor, this));
+    return ConditionalEffectC.convertBatch(arr, this, sourceActor, this);
   }
 
   getAuraEffects(sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
     return [
-      ...this.getEmbeddedEffects(sourceActor, options).filter( x=> x.isAura)
-      .map( x=> new ConditionalEffectC(x, this, sourceActor, this)),
+      ...ConditionalEffectC.convertBatch(
+        this.getEmbeddedEffects(sourceActor, options).filter( x=> x.isAura),
+        this, sourceActor, this
+      ),
       ...this.getLinkedTags()
       .flatMap( tag => tag.getAuraEffects(sourceActor, options)),
     ];

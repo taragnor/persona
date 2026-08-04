@@ -5,6 +5,8 @@ import { SaveType } from "./save-types.js";
 import { SocialStat } from "./student-skills.js";
 import { WeatherType } from "./weather-types.js";
 import {HTMLTools} from "../module/utility/HTMLTools.js";
+import {CardChoiceDM} from "../module/datamodel/item-types.js";
+import {Accessible, EffectCarrier} from "../module/item/persona-item.js";
 
 export const SOCIAL_CARD_TYPES_LIST = [
 	"social",
@@ -42,14 +44,18 @@ export const SOCIAL_CARD_TYPES = Object.fromEntries(
 	SOCIAL_CARD_TYPES_LIST.map(a=> [a, `persona.social.card.types.${a}`])
 );
 
-export type CardChoice = {
-	name: string,
-	conditions: Precondition[],
-	text: string,
-	roll: CardRoll, //defaults to "none"
-	postEffects: { effects: ConditionalEffect[]},
-	resourceCost: number,
+export interface CardChoiceData {
+  name: string;
+  conditions: Precondition[];
+  text: string;
+  roll: CardRoll; //defaults to "none"
+  postEffects: { effects: ConditionalEffect[]};
+  resourceCost: number;
+}
 
+export interface CardChoice extends CardChoiceData {
+  parent ?: CardChoiceDM;
+  // accessor : CardChoiceAccessor;
 };
 
 export type CardEvent = SocialCard["system"]["events"][number];
@@ -131,7 +137,7 @@ type CardRollDC = {
 
 export type Opportunity = {
 	choices: number, //amount of choice points this option takes,
-} & CardChoice;
+} & CardChoiceData;
 
 export type CardPrereq = CardPrereqList[keyof CardPrereqList];
 

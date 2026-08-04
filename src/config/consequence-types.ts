@@ -31,8 +31,12 @@ import {CalculationOperation} from "../module/utility/calculation-v2.js";
 import {ModifierV2Target} from "../module/bonus-calc.js";
 
 
-export type OtherEffect = {__localEffect?: undefined} &
-  ProcessedConsequenceToOtherEffect< ExpendItemConsequence | SetFlagConsequence | StatusResistanceAlterConsequence | InspirationChangeConsequence | DisplayMessageConsequence | UsePowerConsequence | DungeonActionConsequence | AlterMPConsequence |  OtherConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence| GainLevelConsequence |  InventoryActionConsequence | TriggerEventModifierConsequence | SFXConsequence>;
+export type OtherEffect = {__localEffect?: undefined; } &
+  ProcessedConsequenceToOtherEffect< ExpendItemConsequence | SetFlagOtherEffect | StatusResistanceAlterConsequence | InspirationChangeConsequence | DisplayMessageConsequence | UsePowerConsequence | DungeonActionConsequence | AlterMPConsequence |  OtherConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence| GainLevelConsequence |  InventoryActionConsequence | TriggerEventModifierConsequence | SFXConsequence>;
+
+type SetFlagOtherEffect = SetFlagConsequence & {
+  embeddedEffects: ConditionalEffect[],
+}
 
 export type LocalEffect =
   {
@@ -399,6 +403,7 @@ type SetFlagConsequence = {
 		flagState : true,
 		flagName : string,
 		applyEmbedded: boolean,
+    // embeddedEffects: ConditionalEffect[],
 		clearOnDeath: boolean,
 		statusTagId: Tag["id"] | "",
 	} & DurationComponent)

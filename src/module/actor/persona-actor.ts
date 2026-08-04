@@ -2530,7 +2530,7 @@ async expendItem(item: Carryable, amountUsed = 1) {
   return this.removeItem(item, amountUsed);
 }
 
-roomModifiers() : ModifierContainer[] {
+roomModifiers() : UniversalModifier[] {
   return (game.combats.contents as PersonaCombat[])
     .filter(combat => combat.combatants.contents
       .some( comb => comb.actor == this)
@@ -3412,13 +3412,17 @@ async setEffectFlag(effect: Sourced<OtherEffect> & {type: "set-flag"}) {
   const flag = await this.createEffectFlag(effect.flagId, effect.flagName, effect.duration, effect.clearOnDeath);
   const owner = effect.owner ? PersonaDB.findActor(effect.owner) : null;
   const source = effect.source ? PersonaDB.find(effect.source) : undefined;
+  const realSource = effect.realSource ? PersonaDB.find(effect.realSource): undefined;
   //TODO: handle embedded effects for social card CEs
-  const embeddedEffects = (effect.applyEmbedded
-    && source != undefined
-    && owner
-  )
-    ? (source instanceof PersonaAE ? source.getEmbeddedEffects(owner) : source.getEmbeddedEffects(owner))
-    : [];
+
+  const embeddedEffects = ConditionalEffectC.convertBatch(effect.embeddedEffects, source as unknown as ModifierContainer ?? null, owner, realSource as unknown as ModifierContainer);
+  // const embeddedEffects = (effect.applyEmbedded
+  //   && source != undefined
+  //   // && owner //testing by removing this for card embedded
+  // )
+  // ? source.getEmbeddedEffects(owner)
+  //   // ? (source instanceof PersonaAE ? source.getEmbeddedEffects(owner) : source.getEmbeddedEffects(owner))
+  //   : [];
   if (embeddedEffects.length> 0) {
     await flag.setEmbeddedEffects(embeddedEffects);
   }
