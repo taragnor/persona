@@ -51,7 +51,7 @@ export class SocialCardExecutor {
     this.sound = null;
   }
 
-  activateContinuation(x: unknown) {
+  activateContinuation(x: SocialEncounterChoice) {
     if (this.abort) {
       throw new PersonaError("Card execution has aborted this shouldn't get called");
     }
@@ -705,9 +705,11 @@ export type CardData = {
 export type SocialEncounterCard = SocialCard & {system: {cardType: "social"}};
 
 type RollState = {
-  continuation: ((...args: unknown[]) => void);
+  continuation: ((choice: SocialEncounterChoice) => void);
   cardData: CardData;
 };
+
+type SocialEncounterChoice = SocialCard["system"]["events"][number]["choices"][number];
 
 
 Hooks.on("socketsReady", () => {
