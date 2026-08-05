@@ -28,7 +28,7 @@ export class ConditionalEffectC {
   _isAura: boolean;
   _embeddedEffects : ConditionalEffectC[] = [];
 
-  static parents : Map<object, ConditionalEffectC> = new Map();
+  static parents : WeakMap<object, ConditionalEffectC> = new WeakMap();
 
   #cache = {
     cancelEffects: new PermanentCache( () => this._hasCancelEffects()),

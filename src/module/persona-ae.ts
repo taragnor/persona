@@ -346,7 +346,6 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     if (!effects) { return []; }
     const effectsArr = JSON.parse(effects) as ConditionalEffect[];
     return ConditionalEffectC.convertBatch(effectsArr, this, sourceActor, this);
-    // return effectsArr.map( x=> new ConditionalEffectC(x, this, sourceActor, this));
   }
 
   getEmbeddedEffects(sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
@@ -357,7 +356,6 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     }
     const arr=  base
       .filter( x=> CETypes.includes(x.conditionalType));
-      // .map( x=> new ConditionalEffectC(x, this, sourceActor, this));
     return ConditionalEffectC.convertBatch(arr, this, sourceActor, this);
   }
 

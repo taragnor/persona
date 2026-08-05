@@ -3416,13 +3416,6 @@ async setEffectFlag(effect: Sourced<OtherEffect> & {type: "set-flag"}) {
   //TODO: handle embedded effects for social card CEs
 
   const embeddedEffects = ConditionalEffectC.convertBatch(effect.embeddedEffects, source as unknown as ModifierContainer ?? null, owner, realSource as unknown as ModifierContainer);
-  // const embeddedEffects = (effect.applyEmbedded
-  //   && source != undefined
-  //   // && owner //testing by removing this for card embedded
-  // )
-  // ? source.getEmbeddedEffects(owner)
-  //   // ? (source instanceof PersonaAE ? source.getEmbeddedEffects(owner) : source.getEmbeddedEffects(owner))
-  //   : [];
   if (embeddedEffects.length> 0) {
     await flag.setEmbeddedEffects(embeddedEffects);
   }
