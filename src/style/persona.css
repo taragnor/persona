@@ -2246,7 +2246,7 @@ span.sl-level {
 .easy-poll {
   label.results {
     display: block;
-    height: 2em;
+    height: auto;
   }
 
   .message-content.answers .results {
@@ -2264,6 +2264,7 @@ span.sl-level {
   button.toggle {
     margin-top: 20px;
   }
+
 }
 
 .log-record {
