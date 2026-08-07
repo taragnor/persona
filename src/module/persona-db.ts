@@ -668,6 +668,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     .sort( (a,b) => (b.tarot?.displayedName ?? "").localeCompare(a.tarot?.displayedName ?? ""));
     const tarotList = {} as Partial<Record<TarotCard, Shadow[]>>;
     for (const tarot of Object.keys(TAROT_DECK)) {
+      if (tarot.length == 0) {continue;}
       tarotList[tarot as TarotCard] = shadows.filter(sh => sh.isShadow() && sh.tarot?.name == tarot);
     }
     return tarotList;
@@ -702,7 +703,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
   }
 
   async recalcShadowStatMods() {
-    const promises= [...this.shadows(), ...this.NPCAllies()]
+    const promises = [...this.shadows(), ...this.NPCAllies()]
       .map (x=> x.basePersona)
       .filter( p=> p.canAutoSpendStatPoints())
       .map( p=> p.resetCombatStats(true));

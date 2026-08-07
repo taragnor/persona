@@ -1,6 +1,7 @@
 import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaActor} from "../actor/persona-actor.js";
+import {ActorConverters} from "../converters/actorConverters.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
 import {PersonaItem} from "../item/persona-item.js";
 import {Metaverse} from "../metaverse.js";
@@ -373,7 +374,41 @@ export class ConsequenceApplier {
         } else {
           await this.teachRandomPower(persona, otherEffect);
         }
+        break;
       }
+      case "grant-persona": {
+        const shadow = PersonaDB.getActor(otherEffect.id);
+        if (!shadow) {
+          PersonaError.softFail(`Can't find shadow Id: ${otherEffect.id}`);
+          break;
+        }
+        await this.grantPersona(actor, shadow);
+        break;
+      }
+      default:
+        otherEffect satisfies never;
+    }
+  }
+
+  private static async grantPersona(actor: ValidAttackers, shadow: PersonaActor) {
+    if (!shadow.isShadow()) {
+      PersonaError.softFail("Can't execute on non-shadows");
+      return;
+    }
+    if (shadow.isPersona() || shadow.isCompendiumEntry) {
+      PersonaError.softFail("Can't execute on Personas or compendium entries", shadow.id);
+      return;
+    }
+    if (!actor.isPC()) {
+      PersonaError.softFail("Can't execute on non-PCs", actor.id);
+      return;
+    }
+    const persona = await ActorConverters.toPersona(shadow, actor);
+    if (persona) {
+      if (await actor.addPersona(persona)) {
+        return;
+      }
+      await persona.delete();
     }
   }
 

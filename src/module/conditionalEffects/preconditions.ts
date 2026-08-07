@@ -179,7 +179,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       let element : DamageType = condition.element;
       if (element == "by-power") {
         const power = PersonaDB.findItem(situation.usedPower);
-        if (power.isSkillCard()) {return false;}
+        if (power.isCardItem()) {return false;}
         const attacker = PersonaDB.findActor(situation.attacker);
         if (!attacker.isValidCombatant()){ return false;}
         element = power.getDamageType(attacker);
@@ -1277,7 +1277,7 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
       return hasTagConditional(conditionMod, situation);
     }
     case "damage-type-is": {
-      if (!power || power.isSkillCard()) {return undefined;}
+      if (!power || power.isCardItem()) {return undefined;}
       const attackerAcc = checkSituationProp(situation, "attacker")
       ? situation.attacker
       : checkSituationProp(situation, "user")
@@ -1288,12 +1288,6 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
       if (!attacker) {return undefined;}
       const powerDType = power.getDamageType(attacker);
       return damageTypeComparison(condition, condition.powerDamageType, powerDType);
-      // const condType = condition.powerDamageType;
-      // if (condType == "source-dtype" || (typeof condType == "object" && condType["source-dtype"] == true)) {
-      //   const effectAffDType = getSourceDType(condition, "source");
-      //   if (effectAffDType == powerDType) {return true;}
-      // }
-      // return multiCheckContains(condition.powerDamageType, [powerDType as string]);
     }
     case "power-type-is": {
       return power.system.type == "power" && power.system.subtype == condition.powerType;
@@ -1312,7 +1306,7 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
       return power.isConsumable();
     }
     case "power-targets-defense":
-      if (power.isSkillCard()) {
+      if (power.isCardItem()) {
         return condition.defense == "none";
       }
       return multiCheckContains(condition.defense, power.system.defense);
@@ -1364,11 +1358,10 @@ function simpleCombatComparison(condition : SourcedPrecondition  & {type: "boole
       }
       const target = PersonaDB.findActor(situation.target);
       const power = PersonaDB.findItem(situation.usedPower);
-      if (power.isSkillCard()) {return undefined;}
+      if (power.isCardItem()) {return undefined;}
       if (!checkSituationProp(situation, "attacker")) {return undefined;}
       const attacker = PersonaDB.findActor(situation.attacker);
       if (!attacker.isValidCombatant()) {return undefined;}
-      // const pierce = CombatEngine.hasPierce(attacker.persona(), power, situation);
       const resist = target.persona().elemResist(power.getDamageType(attacker));
       if (resist == "weakness") {return true;}
       return false;
@@ -1435,7 +1428,7 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
             if (!checkSituationProp(situation, "usedPower")) { return undefined; }
             if (!checkSituationProp(situation, "attacker")) { return undefined; }
             const power = PersonaDB.findItem(situation.usedPower);
-            if (power.isSkillCard()) {return undefined;}
+            if (power.isCardItem()) {return undefined;}
             const attacker = PersonaDB.findActor(situation?.attacker);
             dtype = power.getDamageType(attacker);
           }

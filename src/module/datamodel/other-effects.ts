@@ -6,6 +6,7 @@ export const OTHER_CONSEQUENCE_LIST= [
 	"add-creature-tag",
   "teach-power",
   "add-room-effect",
+  "grant-persona",
 ] as const;
 
 	export const OTHER_CONSEQUENCES = Object.fromEntries (

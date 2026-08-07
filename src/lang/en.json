@@ -1006,6 +1006,7 @@
 	"persona.othereffect.add-power-to-list": "Add a power to the list",
 	"persona.othereffect.add-creature-tag": "Add a creature tag",
 	"persona.othereffect.teach-power": "Permanently Teach power",
+	"persona.othereffect.grant-persona": "Grant Persona",
 	"persona.othereffect.add-room-effect": "Add Effect to Room (Permanent)",
 
 	"persona.search.actions.undecided": "Undecided",
@@ -1037,6 +1038,10 @@
 	"persona.social.cameo-type.date-default": "Cameo as in any date card",
 	"persona.social.cameo-type.cockblocker": "Any other date (blocker)",
 
+  "persona.skillcards.types.skill":"Skill",
+  "persona.skillcards.types.velvet-skill": "Skill (Velvet)",
+  "persona.skillcards.types.persona":"Persona",
+
 	"persona.social.card.types.social": "Social Card",
 	"persona.social.card.types.job": "Job Card",
 	"persona.social.card.types.training": "Training Card",
@@ -1044,6 +1049,7 @@
 	"persona.social.card.types.mixin": "Supplemental / Mixin",
 	"persona.social.card.types.minor": "Minor Action Card",
 	"persona.social.card.types.other": "Other Card",
+
 
 	"persona.social.card.rolls.types.none": "None",
 	"persona.social.card.rolls.types.studentSkillCheck": "Student Skill Check",

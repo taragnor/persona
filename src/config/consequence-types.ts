@@ -481,6 +481,10 @@ type OtherConsequences = {
 } | {
   otherEffect: "add-room-effect",
   roomEffectId: UniversalModifier["id"],
+} | {
+  applyTo : ConsequenceTarget,
+	otherEffect:  "grant-persona"
+	id: Shadow["id"], // id of power
 };
 
 type ElementalResistanceAlterConsequence = {

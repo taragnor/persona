@@ -86,6 +86,7 @@ export class ConsequenceProcessor {
       case "add-creature-tag":
       case "search-twice":
       case "ignore-surprise":
+      case "grant-persona":
       case "teach-power":
         return targets.map( applyTo => ({applyTo, cons}));
       case "add-room-effect":

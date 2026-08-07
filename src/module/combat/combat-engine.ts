@@ -291,7 +291,7 @@ export class CombatEngine {
       rollType: rollData.rollType,
       DC: undefined as U<number>,
     } satisfies SituationComponent.RollParts.PreRoll;
-    if (usableOrCard.isSkillCard()) {
+    if (usableOrCard.isCardItem()) {
       return baseSituation;
     }
     const def = usableOrCard.system.defense;
@@ -437,8 +437,8 @@ export class CombatEngine {
     const attacker = attackerToken.actor.persona();
     const target = targetToken.actor.persona();
     const rollData = await this.makeAttackRoll(rollType, options);
-    if (power.isSkillCard()) {
-      return this.processSkillCard(attacker, power, target, rollData);
+    if (power.isCardItem()) {
+      return this.processItemCard(attacker, power, target, rollData);
     }
     const baseSituation = this.getBaseSituation(attacker, target, power, rollData);
     const rollBundle = this.makeRollBundle(rollData, attacker, target, power, baseSituation, options );
@@ -682,7 +682,7 @@ export class CombatEngine {
   }
 
   canBeReflectedByPhysicalShield(power: UsableAndCard, attacker: Persona): boolean {
-    if (power.isSkillCard()) {return false;}
+    if (power.isCardItem()) {return false;}
     const dtype = power.getDamageType(attacker);
     switch (dtype) {
       case 'physical':
@@ -694,7 +694,7 @@ export class CombatEngine {
   }
 
   canBeReflectedByMagicShield(power: UsableAndCard, attacker: Persona) : boolean {
-    if (power.isSkillCard()) {return false;}
+    if (power.isCardItem()) {return false;}
     const dtype = power.getDamageType(attacker);
     const reflectable : DamageType[] = ["fire", "wind", "light", "dark", "cold", "lightning"];
     if (reflectable.includes(dtype)) {
@@ -762,8 +762,8 @@ export class CombatEngine {
     return CombatRes;
   }
 
-  async processSkillCard( attacker: Persona, usableOrCard: UsableAndCard, target: Persona, rollData: AttackRollData) : Promise<AttackResult> {
-    const situation = this.getBaseSituation(attacker, target, usableOrCard, rollData);
+  async processItemCard( attacker: Persona, card: CardItem, target: Persona, rollData: AttackRollData) : Promise<AttackResult> {
+    const situation = this.getBaseSituation(attacker, target, card, rollData);
     const r = await new Roll('1d20').roll();
     const emptyList = new ModifierList();
     const roll = (new RollBundle('Activation Roll Skill Card', r, attacker.user.isPC(), emptyList, situation, 0))
@@ -789,7 +789,7 @@ export class CombatEngine {
       result: 'hit',
       target: target.token ? PersonaDB.getUniversalTokenAccessor(target.token): null,
       attacker: attacker.token ? PersonaDB.getUniversalTokenAccessor(attacker.token): null,
-      power: usableOrCard.accessor,
+      power: card.accessor,
       ranges: [],
       situation: combatRollSituation,
       roll,

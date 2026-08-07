@@ -303,7 +303,7 @@ export class CombatResult  {
           PersonaError.softFail(msg, item, cons);
           break;
         }
-        if( !(item.isConsumable() || item.isSkillCard())) {
+        if( !(item.isConsumable() || item.isCardItem())) {
           const msg = "Illegal target for expend item";
           PersonaError.softFail(msg, item, cons);
           break;
@@ -332,6 +332,12 @@ export class CombatResult  {
             if (!effect) {break;}
             effect.otherEffects.push( {
               ...cons
+            });
+            break;
+          case "grant-persona":
+            if (!effect) {break;}
+            effect.otherEffects.push( {
+              ...cons,
             });
             break;
           case "add-talent-to-list":
@@ -663,8 +669,8 @@ export class CombatResult  {
 				return undefined;
 			}
 			const power = PersonaDB.findItem(situation.usedPower);
-			if (power.isSkillCard()) {
-				PersonaError.softFail("Skill Cards can't do damage");
+			if (power.isCardItem()) {
+				PersonaError.softFail("Card Items can't do damage");
 				return undefined;
 			}
 			const attacker = PersonaDB.findActor(situation.attacker);
@@ -753,8 +759,8 @@ export class CombatResult  {
     let status_damage : number | undefined = undefined;
     if ("attacker" in situation && "usedPower" in situation && situation.attacker && situation.usedPower &&  cons.statusName == "burn") {
       const power = PersonaDB.findItem(situation.usedPower);
-      if (power.isSkillCard()) {
-        PersonaError.softFail("Skill Card shouldn't be here");
+      if (power.isCardItem()) {
+        PersonaError.softFail("Cards shouldn't be here");
         return;
       }
       const attacker = PersonaDB.findActor(situation.attacker);

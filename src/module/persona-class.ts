@@ -1149,7 +1149,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   private _velvetCardCheck(usable: UsableAndCard) : N<FailReason> {
     if (!usable.isSkillCard()) {return null;}
-    if (!usable.system.velvetCard){ return null;}
+    if (usable.system.subtype != "velvet-skill"){ return null;}
     if (!this.user.hasVelvetRoomAccess) {
       return "Only guests of the velvet room can use Velvet Cards";
     }

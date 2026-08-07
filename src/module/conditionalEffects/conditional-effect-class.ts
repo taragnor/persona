@@ -5,6 +5,7 @@ import {PersonaActor} from "../actor/persona-actor.js";
 import {ModifierV2Target} from "../bonus-calc.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
+import {PersonaError} from "../persona-error.js";
 import {MultiTierCache, PermanentCache, TimedCache} from "../utility/cache.js";
 import {CETypes, ConditionalEffectManager} from "./conditional-effect-manager.js";
 import {ConditionalEffectPrinter} from "./conditional-effect-printer.js";
@@ -21,7 +22,7 @@ export class ConditionalEffectC {
   _source: U<ModifierContainer["accessor"]>;
   _owner: U<UniversalActorAccessor<PersonaActor>>;
   _realSource: U<ModifierContainer["accessor"]>;
-  _original : CondEffectObject | SkillCard;
+  _original : CondEffectObject | CardItem;
   _conditionalType: typeof CETypes[number];
   _isDefensiveRaw: boolean;
   _isMainModifier: boolean;
@@ -36,11 +37,11 @@ export class ConditionalEffectC {
     bonusTypes : new MultiTierCache( (bonusType: ModifierV2Target) => new TimedCache ( () => this._grantsBonusType(bonusType) , this.#CACHE_TIME)),
   };
 
-  private constructor (card: SkillCard);
+  private constructor (card: CardItem);
   private constructor (ce: CondEffectObject, sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem);
-  private constructor (ce: CondEffectObject | SkillCard, sourceItem?: N<ConditonalEffectHolderItem> , sourceActor?: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem) {
+  private constructor (ce: CondEffectObject | CardItem, sourceItem?: N<ConditonalEffectHolderItem> , sourceActor?: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem) {
     if (ce instanceof PersonaItem)  {
-      this._generateSkillCardTeachEffect(ce);
+      this._generateCardEffects(ce);
       return;
     }
     this._original = ce;
@@ -83,7 +84,7 @@ export class ConditionalEffectC {
     return ConditionalEffectC.parents.get(consOrCond);
   }
 
-  static fromSkillCard( card: SkillCard) {
+  static fromCard( card: CardItem) {
     return new ConditionalEffectC(card);
   }
 
@@ -276,13 +277,23 @@ export class ConditionalEffectC {
         && cons.eventMod == "allow-as-opener");
   }
 
-  private _generateSkillCardTeachEffect(card: SkillCard) {
+  private _generateCardEffects(card: CardItem) {
     this._original = card;
     this._source = card.accessor;
     this._owner = card.parent?.accessor;
     this._isEmbedded = false;
     this._conditionalType = "on-use";
     this._realSource = undefined;
+    if (card.isSkillCard()) {
+      return this._generateSkillCardTeachEffect(card);
+    }
+    if (card.isPersonaCard()) {
+      return this._generatePersonaCardEffect(card);
+    }
+    PersonaError.softFail(`Unhandled card type ${card.system.subtype}`, card);
+  }
+
+  private _generateSkillCardTeachEffect(card: SkillCard) {
     if (!card.system.skillId) {
       this._preconditions = [];
       this._consequences = [];
@@ -304,6 +315,30 @@ export class ConditionalEffectC {
       realSource: undefined,
       applyTo: "user",
     } satisfies SourcedConditionalEffect["consequences"][number]
+    ];
+  }
+
+  private _generatePersonaCardEffect(card: PersonaCard) {
+    if (!card.system.shadowId) {
+      this._preconditions = [];
+      this._consequences = [];
+      return;
+    }
+    this._preconditions = [ {
+      type: 'always',
+      source: card.accessor,
+      owner: card.parent?.accessor,
+      realSource: undefined,
+    } as const ];
+    this._consequences= [ {
+      type: 'other-effect',
+      otherEffect: "grant-persona",
+      id: card.system.shadowId,
+      source: card.accessor,
+      owner: card.parent?.accessor,
+      realSource: undefined,
+      applyTo: "user",
+    } satisfies SourcedConditionalEffect["consequences"][number],
     ];
   }
 

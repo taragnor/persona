@@ -835,6 +835,10 @@ export class ConditionalEffectPrinter {
           }
           return `add ${RE.name} to Room`;
         }
+        case "grant-persona":{
+          const personaName = PersonaDB.getActor(cons.id)?.name || "ERROR";
+          return `grant Persona: ${personaName}`;
+        }
         default:
           cons satisfies never;
           return "ERROR";

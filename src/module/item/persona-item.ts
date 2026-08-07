@@ -545,8 +545,18 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.system.type == 'item' && this.system.slot == 'accessory';
   }
 
-  isSkillCard(): this is SkillCard {
+  isCardItem() : this is CardItem {
     return this.system.type == 'skillCard';
+  }
+
+  isSkillCard(): this is SkillCard {
+    return this.isCardItem()
+      && (this.system.subtype == "skill" || this.system.subtype == "velvet-skill");
+  }
+
+  isPersonaCard(): this is PersonaCard {
+    return this.isCardItem()
+      && (this.system.subtype == "persona");
   }
 
   isFollowUpMove(this: UsableAndCard): boolean {
@@ -906,7 +916,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   testOpenerPrereqs (this: UsableAndCard, situation: SituationComponent.PowerUse & SituationComponent.RollParts.CompletedRollPart, user: ValidAttackers) : boolean {
-    if (this.isSkillCard()) {return false;}
+    if (this.isCardItem()) {return false;}
     if (this.hasTag(["opener", "optional-opener"], user.persona())) {
       const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this, user , this);
       return testPreconditions(conditions, situation);
@@ -1141,7 +1151,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   targets(this: UsableAndCard): Power['system']['targets'] {
     const base = this.itemBase;
-    if (base.isSkillCard()) {return 'self';}
+    if (base.isCardItem()) {return 'self';}
     return base.system.targets;
   }
 
@@ -1162,13 +1172,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       PersonaError.softFail(`Conversion o Power ${power.name} to skill card Failed`, e);
       throw e;
     }
-    // return await PersonaItem.create<SkillCard>( {
-    //   name: `${power.name} card`,
-    //   type: 'skillCard',
-    //   system: {
-    //     skillId: power.id,
-    //   }
-    // });
   }
 
   static getSkillCardDataFromPower(power: Power, options: SkillCardCreationOptions) {
@@ -1178,7 +1181,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       type: 'skillCard',
       system: {
         skillId: power.id,
-        velvetCard : options.velvetCard ?? false,
+        subtype: options.velvetCard ? "velvet-skill" : "skill",
       }
     } satisfies Foundry.CreationData<SkillCard>;
   }
@@ -2104,8 +2107,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       throw new PersonaError("DB not loaded yet");
     }
     const {CETypes} = options;
-    if (this.isSkillCard()) {
-      return [ConditionalEffectC.fromSkillCard(this)];
+    if (this.isCardItem()) {
+      return [ConditionalEffectC.fromCard(this)];
     }
     const deepTags = options.deepTags ?? true;
     const tagEffects = deepTags ? this._getLinkedEffects(sourceActor, CETypes) : [];
@@ -2147,7 +2150,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options: GetEffectsOptions = {}) : readonly ConditionalEffectC[] {
-    if (this.isSkillCard()) { return []; }
+    if (this.isCardItem()) { return []; }
     const effects = this.itemBase.system.effects;
     const effectsGetterFn = () => {
       const proxyItem = options.proxyItem ?? this;
@@ -2162,7 +2165,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   getAuraEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options: GetEffectsOptions = {}) : readonly ConditionalEffectC[] {
-    if (this.isSkillCard()) { return []; }
+    if (this.isCardItem()) { return []; }
     const effects = this.itemBase.system.effects;
     const effectsGetterFn = () => {
       const proxyItem = options.proxyItem ?? this;
@@ -2891,16 +2894,18 @@ declare global {
   type Consumable = Subtype<PersonaItem, 'consumable'>;
   type Activity = SocialCard;
   type SocialCard = Subtype<PersonaItem, 'socialCard'>;
-  type SkillCard = Subtype<PersonaItem, 'skillCard'>;
+  type CardItem = Subtype<PersonaItem, 'skillCard'>;
+  type SkillCard = CardItem & {system: {subtype: "skill" | "velvet-skill"}};
+  type PersonaCard = CardItem & {system: {subtype: "persona"}};
   type Carryable = InvItem | Weapon | Consumable | SkillCard;
   type Tag = Subtype<PersonaItem, "tag">;
   type CraftingMaterial = CraftingInventoryItem | Consumable;
   type UniversalModifier = Subtype<PersonaItem, 'universalModifier'>;
   type RoomEffect = UniversalModifier & {system: {scope: "room"}};
   type PersonaEvent =  UniversalModifier & {system: {scope:"event"}};
-  type ItemContainers = Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier | SkillCard | Tag;
+  type ItemContainers = Weapon | InvItem | Focus | Talent | Power | Consumable | UniversalModifier | CardItem | Tag;
   type Usable = Power | Consumable ;
-  type UsableAndCard = Usable | SkillCard;
+  type UsableAndCard = Usable | CardItem;
   type TreasureItem = Weapon | InvItem | Consumable | SkillCard;
   type PowerContainer = Consumable | Power | ItemModifierContainer;
 

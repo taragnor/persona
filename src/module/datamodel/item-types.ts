@@ -28,6 +28,7 @@ import {CardTag} from "../../config/card-tags.js";
 import {POWER_TAGS_LIST} from "../../config/power-tags.js";
 import {InternalCreatureTag} from "../../config/creature-tags.js";
 import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
+import {SKILL_CARD_TYPES} from "../../config/skill-card-types.js";
 
 function itemBase() {
   return {
@@ -168,10 +169,20 @@ class SkillCardSchema extends foundry.abstract.TypeDataModel {
   static override defineSchema() {
     return {
       ...itemBase(),
+      shadowId: new id<Actor>(),
       skillId: new id<Item>(),
-      velvetCard: new bool(),
+      subtype: new txt({choices: SKILL_CARD_TYPES, initial: "skill"}),
     };
   }
+
+  static override migrateData(data: unknown) {
+    const system = data as SkillCard["system"];
+    if (system.subtype == undefined) {
+      system.subtype = "skill";
+    }
+    return system;
+  }
+
 }
 
 class PowerSchema extends foundry.abstract.TypeDataModel {

@@ -51,7 +51,7 @@ export class PersonaSFX {
 	}
 
   /** @deprecated this was removed in favor of new SFX system */
-  static async onSingleTargetDamage( token: PToken | undefined, hpchange: number, damageType: RealDamageType, power ?: UsableAndCard) {
+  static async onSingleTargetDamage( _token: PToken | undefined, hpchange: number, damageType: RealDamageType, power ?: UsableAndCard) {
     if (hpchange == 0) {return;}
     if (hpchange > 0) {
       if (power?.hasTag("resurrection", null)) {
@@ -88,7 +88,7 @@ export class PersonaSFX {
   }
 
 	static async onUsePowerStart(usableOrCard: UsableAndCard, attacker: PToken) {
-		if (usableOrCard.isSkillCard()) {
+		if (usableOrCard.isCardItem()) {
 			return;
 		}
 		if (usableOrCard.getBaseDamageType() == "all-out" ) {
@@ -130,7 +130,7 @@ export class PersonaSFX {
 	}
 
 	static async onUsePowerOn(usableOrCard: UsableAndCard,attacker: PToken, target: PToken, result: AttackResult["result"]) : Promise<void> {
-		if (usableOrCard.isSkillCard()) {
+		if (usableOrCard.isCardItem()) {
 			return;
 		}
 		const damageType = usableOrCard.getDamageType(attacker.actor);

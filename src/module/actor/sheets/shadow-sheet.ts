@@ -125,13 +125,12 @@ export class ShadowSheet extends CombatantSheetBase {
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
 		html.find('.addShadowPower').on("click", this.onAddPower.bind(this));
-		// html.find('.addShadowFocus').on("click", this.onAddFocus.bind(this));
 		html.find(".recost-power").on("click", this.onRecostPower.bind(this));
 		html.find(".add-dungeon").on("click", this.addDungeon.bind(this));
 		html.find(".del-dungeon").on("click", this.deleteDungeon.bind(this));
 		html.find(".dmon-convert").on("click", this.convertToDMon.bind(this));
 		html.find(".persona-convert").on("click", this.convertToPersona.bind(this));
-		// html.find(".copy-to-compendium").on("click", this.copyToCompendium.bind(this));
+		html.find(".persona-card-convert").on("click", this.convertToPersonaCard.bind(this));
 	}
 
 	async onAddPower( _ev: Event) {
@@ -140,13 +139,6 @@ export class ShadowSheet extends CombatantSheetBase {
 			type: "power",
 		}]);
 	}
-
-	// override async onAddFocus(_ev: JQuery.ClickEvent) {
-	// 	await this.actor.createEmbeddedDocuments( "Item", [{
-	// 		name: "New Focus",
-	// 		type: "focus",
-	// 	}]);
-	// }
 
 	async onRecostPower(event: JQuery.ClickEvent) {
 		const powerId = HTMLTools.getClosestData(event, "powerId");
@@ -159,7 +151,6 @@ export class ShadowSheet extends CombatantSheetBase {
 		const arr= this.actor.system.encounter.dungeonEncounters;
 		arr.push({
 			dungeonId: game.scenes.current.id,
-			// frequency: 1,
 			frequencyNew: "normal",
 		});
 		await this.actor.update({"system.encounter.dungeonEncounters": arr});
@@ -180,9 +171,10 @@ export class ShadowSheet extends CombatantSheetBase {
 		await this.actor.toPersona();
 	}
 
-	// async copyToCompendium() {
-	// 	await this.actor.copyToCompendium();
-	// }
+  async convertToPersonaCard() {
+    await this.actor.toPersonaCard();
+  }
+
 }
 
 

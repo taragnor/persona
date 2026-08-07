@@ -89,7 +89,7 @@ export class PersonaTargetting {
 
   private targetPassesPowerTargettingConditions_getReasons(user: ValidAttackers, target: ValidAttackers, situation?: Situation) : FailReason[] {
     const usable = this.power;
-    if (usable.isSkillCard()) {
+    if (usable.isCardItem()) {
       if(!target.persona().powerLearning.canLearnNewSkill()) {
         return [`${target.name} can't learn new skill`];
       }

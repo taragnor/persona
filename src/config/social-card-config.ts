@@ -68,7 +68,7 @@ export type EventPlacement = {
 };
 
 export type CardRoll = {
-	rollType: typeof SOCIAL_CARD_ROLL_TYPES_LIST[number]} 
+	rollType: typeof SOCIAL_CARD_ROLL_TYPES_LIST[number]}
 	& CardRollList[keyof CardRollList]
 	& RollProgress
 	& RollTags

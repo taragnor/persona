@@ -897,10 +897,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return this.persona().combatInit.eval(situation).total;
   }
 
-  // get accessor() : UniversalActorAccessor<typeof this> {
-  //   return this.cache2.accessor.value;
-  // }
-
   get accessor() : UniversalActorAccessor<this> {
     //cannot cache this due to tokens screwing it up
     return PersonaDB.getUniversalActorAccessor(this);
@@ -908,6 +904,20 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   async toPersona(this: Shadow, newOwner ?: PC) : Promise<Shadow> {
     return ActorConverters.toPersona(this, newOwner);
+  }
+
+  async toPersonaCard(this: Shadow) : Promise<PersonaCard> {
+    const rawData = {
+      name: `${this.name} (Persona Card)`,
+      type: "skillCard",
+      system: {
+        "shadowId": this.id,
+        subtype: "persona",
+      }
+    } satisfies Foundry.CreationData<PersonaCard>;
+    return await PersonaItem.create<PersonaCard>(
+      rawData
+    );
   }
 
   get compendiumEntry() : U<Shadow> {
@@ -3857,6 +3867,12 @@ get isTrueOwner() : boolean {
     case "pc":
       return game.user.isGM || game.user.id == this.system.trueOwner;
   }
+}
+
+get trueOwner() : U<FoundryUser> {
+  if (!this.isPC()) {return undefined;}
+  if (!this.system.trueOwner) {return undefined;}
+  return game.users.get(this.system.trueOwner);
 }
 
 get fusionCombinations() : FusionCombination[] {
