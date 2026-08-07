@@ -3413,8 +3413,6 @@ async setEffectFlag(effect: Sourced<OtherEffect> & {type: "set-flag"}) {
   const owner = effect.owner ? PersonaDB.findActor(effect.owner) : null;
   const source = effect.source ? PersonaDB.find(effect.source) : undefined;
   const realSource = effect.realSource ? PersonaDB.find(effect.realSource): undefined;
-  //TODO: handle embedded effects for social card CEs
-
   const embeddedEffects = ConditionalEffectC.convertBatch(effect.embeddedEffects, source as unknown as ModifierContainer ?? null, owner, realSource as unknown as ModifierContainer);
   if (embeddedEffects.length> 0) {
     await flag.setEmbeddedEffects(embeddedEffects);
@@ -3444,9 +3442,7 @@ clearCooldown(power: Power) : void {
 }
 
 async addPowerCooldown(power : Power, duration: StatusDuration) {
-  const newAE = {
-    name: `${power.name} cooldown`,
-  };
+  const newAE = { name: `${power.name} cooldown` };
   const cooldownEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newAE]))[0] as PersonaAE;
   await cooldownEffect.setCooldown(power, duration);
 }

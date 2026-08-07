@@ -4,8 +4,6 @@ type filterFN<I> = (item: I) => boolean;
 
 type ValidDBTypes = "Actor" | "Item";
 
-import {CardChoice} from "../../config/social-card-config.js";
-import {PersonaItem} from "../item/persona-item.js";
 import { sleep } from "./async-wait.js";
 
 export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extends Item<any>> {

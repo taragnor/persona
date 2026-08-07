@@ -6,7 +6,6 @@ import { SocialStat } from "./student-skills.js";
 import { WeatherType } from "./weather-types.js";
 import {HTMLTools} from "../module/utility/HTMLTools.js";
 import {CardChoiceDM} from "../module/datamodel/item-types.js";
-import {Accessible, EffectCarrier} from "../module/item/persona-item.js";
 
 export const SOCIAL_CARD_TYPES_LIST = [
 	"social",
@@ -55,7 +54,6 @@ export interface CardChoiceData {
 
 export interface CardChoice extends CardChoiceData {
   parent ?: CardChoiceDM;
-  // accessor : CardChoiceAccessor;
 };
 
 export type CardEvent = SocialCard["system"]["events"][number];

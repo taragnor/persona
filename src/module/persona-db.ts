@@ -7,7 +7,6 @@ import { BASIC_PC_POWER_NAMES } from "../config/basic-powers.js";
 import { BASIC_SHADOW_POWER_NAMES } from "../config/basic-powers.js";
 import {SocialEncounterCard} from "./social/social-card-executor.js";
 import {PermanentCache, TimedCache} from "./utility/cache.js";
-import {CardChoice, CardEvent} from "../config/social-card-config.js";
 
 const STORES_CACHE_DURATION = 60000 as const;
 
@@ -710,10 +709,6 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     return await Promise.allSettled(promises);
   }
 
-  override find<const T extends UniversalAccessorTypes>( accessor: UniversalAccessor<T>) : T extends infer R ? R : undefined {
-    type retType =T extends infer R ? R : undefined;
-    return super.find(accessor) as retType;
-  }
 }
 
 export const PersonaDB = new PersonaDatabase();
@@ -732,27 +727,6 @@ Hooks.on("createActor", (actor : PersonaActor) => {
 Hooks.on("updateItem", (item: PersonaItem) => {
   PersonaDB.onUpdateItem(item);
 });
-
-
-
-declare global {
-  // interface AccessorTypes {
-    // "cardChoice" : CardChoice;
-  // }
-
-  // interface AccessorList {
-    // "cardChoice" : CardChoiceAccessor;
-  // }
-
-  type CardChoiceAccessor = {
-    choiceIndex: number,
-    event: {
-      index: number;
-      card:UniversalItemAccessor<SocialCard>;
-    };
-  };
-
-}
 
 type PersonaDBCache =	{
   powers: Map<Power["id"], Power> | undefined,

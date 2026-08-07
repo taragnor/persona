@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { EnhancedSourcedConsequence, NonDeprecatedConsequence} from '../../config/consequence-types.js';
+import {  NonDeprecatedConsequence} from '../../config/consequence-types.js';
 import { sleep, waitUntilTrue } from '../utility/async-wait.js';
 import { CardTag } from '../../config/card-tags.js';
 import { RollTag } from '../../config/roll-tags.js';
