@@ -158,7 +158,7 @@ export class ShadowSheet extends CombatantSheetBase {
 
 	async deleteDungeon(event: JQuery.ClickEvent) {
 		const index = Number(HTMLTools.getClosestData(event,"dungeonIndex"));
-		const arr= this.actor.system.encounter.dungeonEncounters;
+		const arr = this.actor.system.encounter.dungeonEncounters;
 		arr.splice(index, 1);
 		await this.actor.update({"system.encounter.dungeonEncounters": arr});
 	}

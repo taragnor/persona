@@ -23,6 +23,5 @@ export class PersonaPowerSheet extends PersonaPowerLikeBaseSheet {
 		super.activateListeners(html);
 	}
 
-
 }
 
