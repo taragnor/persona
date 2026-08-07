@@ -1,0 +1,13 @@
+<form class="skill-card-sheet">
+  <input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Power Name" placeholder="Power Name">
+  <div class="granted-thing">
+    <label> Provides: </label>
+    <span class="name">
+      {{grantedThing.name}}
+    </span>
+  </div>
+  <div class="price">
+    <label> Price </label>
+    {{numberInput item.system.price class="short" name="system.price" step=1 min=0 max=900}}
+  </div>
+</form>

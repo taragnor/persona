@@ -63,6 +63,7 @@ import {MathUtilityFunctions} from "./utility/math.js";
 import {TreasureList} from "./printers/treasure-list.js";
 import {PersonaTokenObject} from "./canvas/persona-token-object.js";
 import { PersonaFoundryUser } from "./persona-foundry-user.js";
+import {PersonaCardSheet} from "./item/sheets/skill-card-sheet.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -96,6 +97,7 @@ function registerSheetApplications() {
 	Items.registerSheet("persona", PersonaClassSheet, {types: ["characterClass"], makeDefault: true});
 	Items.registerSheet("persona", PersonaPowerSheet, {types: ["power"], makeDefault: true});
 	Items.registerSheet("persona", PersonaWeaponSheet, {types: ["weapon"], makeDefault: true});
+	Items.registerSheet("persona", PersonaCardSheet, {types: ["skillCard"], makeDefault: true});
 	Items.registerSheet("persona", PersonaItemSheet, {types: ["item"], makeDefault: true});
 	Items.registerSheet("persona", PersonaTalentSheet, {types: ["talent"], makeDefault: true});
 	Items.registerSheet("persona", PersonaFocusSheet, {types: ["focus"], makeDefault: true});
