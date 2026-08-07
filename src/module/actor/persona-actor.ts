@@ -3433,9 +3433,7 @@ async setEffectFlag(effect: Sourced<OtherEffect> & {type: "set-flag"}) {
 
 async resetAllCooldowns() {
   for (const eff of this.effects) {
-    if (eff.isCooldown()) {
-      await eff.delete();
-    }
+    if (eff.isCooldown()) { await eff.delete(); }
   }
 }
 

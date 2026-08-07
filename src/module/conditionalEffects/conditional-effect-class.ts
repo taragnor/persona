@@ -63,15 +63,16 @@ export class ConditionalEffectC {
   }
 
   static convertBatch(ceArr: CondEffectObject[], sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem) : ConditionalEffectC[] {
-    const arr  = ceArr
+    const arr = ceArr
       .map( x=> new ConditionalEffectC(x, sourceItem, sourceActor, realSource) );
     if (arr.some(x=> x._isEmbedded)) {
-      const embedded= arr.filter(x=> x._isEmbedded);
-      for (const ce of arr) {
-        if (!ce._isEmbedded) {
-          ce._embeddedEffects = embedded;
-        }
-      }
+      const embedded = arr.filter(x=> x._isEmbedded);
+      arr.forEach(ce => !ce._isEmbedded ? embedded : []);
+      // for (const ce of arr) {
+      //   if (!ce._isEmbedded) {
+      //     ce._embeddedEffects = embedded;
+      //   }
+      // }
     }
     return arr;
   }

@@ -351,11 +351,11 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
   getEmbeddedEffects(sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
     const {CETypes} = options;
     const base = this.cache.embeddedEffects.value;
-    if (CETypes == undefined || CETypes.length == 0){
+    if (CETypes == undefined || CETypes.length == 0) {
       return base;
     }
-    const arr=  base
-      .filter( x=> CETypes.includes(x.conditionalType));
+    const arr = base
+      .filter( x => CETypes.includes(x.conditionalType));
     return ConditionalEffectC.convertBatch(arr, this, sourceActor, this);
   }
 
@@ -416,18 +416,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
       console.log("effect timeout");
       console.log(this);
     }
-    if (this.parent instanceof PersonaActor && this.parent.isValidCombatant()) {
-      const activeDuration = game.combat && "amount" in this.statusDuration ? game.combat.round - this.duration.startRound : undefined ;
-      const situation : Situation = {
-        trigger: "on-active-effect-time-out",
-        triggeringUser: game.user.id,
-        activeEffect: this.accessor,
-        user: this.parent.accessor,
-        triggeringCharacter: this.parent.accessor,
-        activeDuration
-      };
-      await TriggeredEffect.autoApplyTrigger(situation, this.parent);
-    }
+    await this._activeEffectTimeOutTrigger();
     const duration = this.statusDuration;
     switch (duration.dtype) {
       case "USoNT":
@@ -447,6 +436,20 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
         break;
     }
     await this.delete();
+  }
+
+  private async _activeEffectTimeOutTrigger() : Promise<void> {
+    if (!(this.parent instanceof PersonaActor && this.parent.isValidCombatant())) { return;}
+    const activeDuration = game.combat && "amount" in this.statusDuration ? game.combat.round - this.duration.startRound : undefined ;
+    const situation : Situation = {
+      trigger: "on-active-effect-time-out",
+      triggeringUser: game.user.id,
+      activeEffect: this.accessor,
+      user: this.parent.accessor,
+      triggeringCharacter: this.parent.accessor,
+      activeDuration
+    };
+    await TriggeredEffect.autoApplyTrigger(situation, this.parent);
   }
 
   async onAEDelete() : Promise<void> {
