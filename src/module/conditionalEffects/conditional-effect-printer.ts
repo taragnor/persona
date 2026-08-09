@@ -718,26 +718,32 @@ export class ConditionalEffectPrinter {
 
 
     private static printConsequenceAmount(consAmt: ConsequenceAmount) : string {
-      if (typeof consAmt =="number") {return String(consAmt);}
-      switch (consAmt.type) {
-        case "constant":
-          return String(this.signedAmount(consAmt.val));
-        case "random-range":
-          return `Random (${consAmt.min} - ${consAmt.max})`;
-        case "operation":
-          return this.printConsAmountOperation(consAmt);
-        case "variable-value":
-          return `Variable: ${consAmt.varType} ${consAmt.variableId}`;
-        case "item-property":
-          return `${this.translate(consAmt.property, ITEM_PROPERTIES)} of ${consAmt.itemTarget} - $`;
-        case "situation-property":
-          return `${this.translate(consAmt.property, SITUATION_PROPERTIES)}`;
-        case "actor-property":
-          return `${this.translate(consAmt.property, CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES)}`;
-        default:
-          consAmt satisfies never;
+      try {
+        if (consAmt == undefined) {return 'undefined';}
+        if (typeof consAmt =="number") {return String(consAmt);}
+        switch (consAmt.type) {
+          case "constant":
+            return String(this.signedAmount(consAmt.val));
+          case "random-range":
+            return `Random (${consAmt.min} - ${consAmt.max})`;
+          case "operation":
+            return this.printConsAmountOperation(consAmt);
+          case "variable-value":
+            return `Variable: ${consAmt.varType} ${consAmt.variableId}`;
+          case "item-property":
+            return `${this.translate(consAmt.property, ITEM_PROPERTIES)} of ${consAmt.itemTarget} - $`;
+          case "situation-property":
+            return `${this.translate(consAmt.property, SITUATION_PROPERTIES)}`;
+          case "actor-property":
+            return `${this.translate(consAmt.property, CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES)}`;
+          default:
+            consAmt satisfies never;
+        }
+        return `Unknown Complex Consequence Amount`;
+      } catch (e) {
+        PersonaError.softFail(e as Error, consAmt);
+        return `ERROR`;
       }
-      return `Unknown Complex Consequence Amount`;
     }
 
     static printConsAmountOperation( consAmt: ConsequenceAmountV2 & {type: "operation"} ) :string {
