@@ -310,8 +310,10 @@ export class SocialCardEventHandler {
 				switch (cardData.card.system.dc.thresholdType) {
 					case "static":
 						return cardData.card.system.dc.num;
-					case "levelScaled":
-						return cardData.card.system.dc.multiplier * cardData.actor.system.combat.classData.level + cardData.card.system.dc.startingVal;
+					case "levelScaled": {
+            const effectiveLevel = 1 + (Math.floor(cardData.actor?.level ?? 0) / 10);
+						return Math.round(cardData.card.system.dc.multiplier * effectiveLevel + cardData.card.system.dc.startingVal);
+          }
 					case "statScaled": {
 						const stat = cardData.card.system.dc.stat;
 						return 10 + (cardData.actor.system.skills[stat] ?? -999);

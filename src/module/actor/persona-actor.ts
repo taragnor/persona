@@ -1540,7 +1540,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
         PersonaError.softFail(`Error on Refresh HP Status for ${this.name}, ${this.id}, hp: ${hp}, mhp: ${mhp}`, e);
       }
     }, {
-      inUseMsg : `Aboring Refreshing HP Status for ${this.name} (anti-loop)`, maxDepth : 3,
+      inUseMsg : `Aborting Refreshing HP Status for ${this.name} (anti-loop)`, maxDepth : 3,
       suppressMessages: !PersonaSettings.debugMode(),
     });
   }
@@ -3962,7 +3962,6 @@ async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: num
         luk: 0,
       };
       const newObj = {...bonuses};
-      // if (this.hasSoloPersona) {amt = Math.max(1, Math.round(amt / 2));}
       newObj[buffType] += amt;
       await this.update({ "system.combat.personaStats.permanentStatsBonuses": newObj});
     }
@@ -3973,7 +3972,7 @@ async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: num
   }
   const permaBuffLocalized = localize(PERMA_BUFFS[buffType]);
   void PersonaSFX.onPermaBuff(this, buffType, amt);
-  await Logger.sendToChat(`+${amt} ${permaBuffLocalized} applied to ${this.name}`);
+  await Logger.sendToChat(`+${amt} ${permaBuffLocalized} applied to ${this.name} (${this.persona()?.name})`);
 }
 
 fusionsInto(this: Shadow, min= 2, max=999, limited = false) : [Shadow, Shadow][] {
