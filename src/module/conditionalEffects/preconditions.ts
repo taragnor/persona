@@ -295,13 +295,6 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       .length;
       break;
     }
-    // case "social-variable": {
-    //   if (!PersonaSocial.currentSocialCardExecutor) {return false;}
-    //   const varVal = PersonaSocial.getSocialVariable(condition.variableId);
-    //   if (varVal == undefined) {return false;}
-    //   target = varVal;
-    //   break;
-    // }
     case "round-count": {
       if (!PersonaCombat.combat) {return false;}
       target = PersonaCombat.combat.round ?? -1;

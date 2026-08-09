@@ -463,7 +463,7 @@ export class ConditionalEffectPrinter {
           case ">":
           case "<":
           case "<=":
-            if ("num" in cond) {
+            if ("num" in cond && cond.num != undefined) {
               return `${cond.comparator} ${this.printConsequenceAmount(cond.num)}`;
             } else {
               return `${cond.comparator} ${derivedVar}`;

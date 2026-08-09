@@ -117,7 +117,8 @@ export class FinalizedCombatResult {
     return change.addStatus.length == 0
       && change.damage.length == 0
       && change.otherEffects.length == 0
-      && change.removeStatus.length == 0;
+      && change.removeStatus.length == 0
+      && change.localEffects.length == 0;
   }
 
   #evaluateDamage (dmg : ActorChange<ValidAttackers>["damage"]) : EvaluatedDamage[] {
@@ -274,6 +275,11 @@ export class FinalizedCombatResult {
       actorChanges.push( ...localEffects);
       atk.changes.forEach( chg => chg.localEffects = []);
     }
+    const costLocals = this.costs
+      .filter(x=> x.localEffects)
+      .map(chg => [chg.actor, chg.localEffects] as (typeof actorChanges)[number]);
+    actorChanges.push( ...costLocals);
+    this.costs.forEach( cost=> cost.localEffects = []);
     return new LocalEffectCombatResult(globalLocal, actorChanges);
   }
 
