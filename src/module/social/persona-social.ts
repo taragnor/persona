@@ -394,7 +394,6 @@ export class PersonaSocial {
 
   static async gainMoney(actor: PC, amt: number) {
     await actor.gainMoney(amt, true);
-
   }
 
   static displaySocialPanel( tracker: JQuery) {

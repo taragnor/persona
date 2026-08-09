@@ -371,34 +371,17 @@ export class ConditionalEffectDM extends foundry.abstract.DataModel {
     const {conditions, consequences} = data;
     data.conditions = this.migrateConditions(conditions);
     data.consequences = this.migrateConsequences(consequences);
-    // if (data.conditions == undefined)  {
-    // 	change = true;
-    // 	data.conditions = [];
+
+    //TODO: fix this so its more accurate
+    // if (data.conditions != conditions
+    //   || data.consequences != consequences) {
+    //   console.debug("Migrate Data for ConditionalEffectDM making changes ");
     // }
-    // if (data.consequences == undefined) {
-    // 	change = true;
-    // 	data.consequences = [];
-    // }
-    // if ( !Array.isArray(data.conditions)) {
-    // 	change = true;
-    // 	data.conditions = ConditionalEffectManager.ArrayCorrector(data.conditions) as typeof data.conditions ;
-    // }
-    // data.conditions = data.conditions
-    // 	.map (cond => PreconditionConverter.convertDeprecated(cond));
-    // if(!Array.isArray(data.consequences)) {
-    // 	change = true;
-    // 	data.consequences = ConditionalEffectManager.ArrayCorrector(data.consequences) as typeof data.consequences;
-    // }
-    // data.consequences = data.consequences
-    // 	.map (cons=> ConsequenceConverter.convertDeprecated(cons));
-    if (data.conditions != conditions
-      || data.consequences != consequences) {
-      console.debug("Migrate Data for ConditionalEffectDM making changes ");
-    }
     return data;
   }
 
   static migrateConditions(data: ConditionalEffect["conditions"]) {
+    //TODO: should return original data if no changes made
     const arr = ConditionalEffectManager.ArrayCorrector(data);
     return arr.map(cond=> PreconditionConverter.convertDeprecated(cond));
   }

@@ -26,10 +26,10 @@ export class ConsequenceApplier {
     await PersonaError.asyncErrorWrapper(  () => this._applyLocalEffect(effect, actor));
   }
 
-  private static async _applyLocalEffect( effect: Sourced<LocalEffect>, _actor : N<PersonaActor>) : Promise<void> {
+  private static async _applyLocalEffect( effect: Sourced<LocalEffect>, actor : N<PersonaActor>) : Promise<void> {
     switch (effect.type) {
       case "social-card-action":
-        await SocialActionExecutor.execSocialCardAction(effect);
+        await SocialActionExecutor.execSocialCardAction(effect, actor);
         break;
       default:
         effect.type satisfies never;

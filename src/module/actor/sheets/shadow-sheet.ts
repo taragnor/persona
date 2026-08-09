@@ -148,7 +148,7 @@ export class ShadowSheet extends CombatantSheetBase {
 	}
 
 	async addDungeon(_event: JQuery.ClickEvent) {
-		const arr= this.actor.system.encounter.dungeonEncounters;
+		const arr = this.actor.system.encounter.dungeonEncounters;
 		arr.push({
 			dungeonId: game.scenes.current.id,
 			frequencyNew: "normal",

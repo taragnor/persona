@@ -1,5 +1,6 @@
 import {CardTag} from "../../config/card-tags.js";
 import {ConsequenceAmount, LocalEffect, SocialCardActionConsequence, VariableAction} from "../../config/consequence-types.js";
+import {PersonaActor} from "../actor/persona-actor.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
 import {resolveActorIdOrTarot} from "../conditionalEffects/preconditions.js";
 import {PersonaError} from "../persona-error.js";
@@ -33,101 +34,102 @@ export class SocialActionExecutor {
 		return this.cardExecutor.cardData;
 	}
 
-	static async execSocialCardAction(eff: Sourced<LocalEffect & {type: "social-card-action"}>) : Promise<void> {
+	static async execSocialCardAction(eff: Sourced<LocalEffect & {type: "social-card-action"}>, actor: N<PersonaActor>) : Promise<void> {
 		try{
-			await this._execSocialCardAction(eff);
+      const pc = actor && actor.isPC() ? actor :  this.cardData.actor;
+			await this._execSocialCardAction(eff, pc);
 		} catch (e) {
 			PersonaError.softFail(`Error Executing Social Action ${eff.cardAction}`, e);
 		}
 	}
 
-	private static async _execSocialCardAction(eff: Sourced<LocalEffect> & {type : "social-card-action"}) : Promise<void> {
-		switch (eff.cardAction) {
-			case "stop-execution":
-				this.cardExecutor.setEarlyAbort();
-				break;
-			case "exec-event":
-				this.handler.forceEvent(eff.eventLabel);
-				this.handler.addExtraEvent(1);
-				break;
-			case "inc-events": {
-				if (!eff.amount) {return;}
-				this.handler.addExtraEvent(eff.amount ?? 0);
-				break;
-			}
-			case "gain-money": {
+  private static async _execSocialCardAction(eff: Sourced<LocalEffect> & {type : "social-card-action"}, actor: PC) : Promise<void> {
+    switch (eff.cardAction) {
+      case "stop-execution":
+        this.cardExecutor.setEarlyAbort();
+        break;
+      case "exec-event":
+        this.handler.forceEvent(eff.eventLabel);
+        this.handler.addExtraEvent(1);
+        break;
+      case "inc-events": {
+        if (!eff.amount) {return;}
+        this.handler.addExtraEvent(eff.amount ?? 0);
+        break;
+      }
+      case "gain-money": {
         const amount = eff.amount;
-				if (!amount) {return;}
-				await PersonaSocial.gainMoney(this.cardData.actor, amount?? 0);
-				break;
-			}
-			case "modify-progress-tokens": {
-				await this.modifyProgress(eff ?? 0);
-				break;
-			}
-			case "alter-student-skill": {
-					if (!eff.studentSkill) {
-						PersonaError.softFail("No student skill given");
-						break;
-					}
+        if (!amount) {
+          PersonaError.softFail("Can't add money, no amount given");
+          return;
+        }
+        await PersonaSocial.gainMoney(actor, amount?? 0);
+        break;
+      }
+      case "modify-progress-tokens": {
+        await this.modifyProgress(eff ?? 0);
+        break;
+      }
+      case "alter-student-skill": {
+        if (!eff.studentSkill) {
+          PersonaError.softFail("No student skill given");
+          break;
+        }
         const amount = eff.amount;
-				if (!amount) {return;}
-				await PersonaSocial.alterStudentSkill( this.mainActor, eff.studentSkill, amount ?? 0);
-				break;
-			}
-			case "modify-progress-tokens-cameo": {
-				const amount = eff.amount;
-				if (!amount) {return;}
-				await this.modifyCameoProgress(amount);
-				break;
-			}
-			case "add-card-events-to-list":
-					this.handler.addCardEvents(eff.cardId);
-				break;
-			case "replace-card-events":
-					this.handler.replaceCardEvents(eff.cardId, eff.keepEventChain);
-				break;
-			case "set-temporary-variable": {
-				const val = "value" in eff ? eff.value : Math.floor(eff.min + (eff.max * Math.random()));
-				this.variableAction(eff.operator, eff.variableId, val);
-				break;
-			}
-			case "card-response":
-				await this.handler.applyCardResponse(eff.text);
-				break;
-			case "append-card-tag":
-				this.#appendCardTag(eff.cardTag);
-				break;
-			case "remove-cameo":
-				this.#removeCameo();
-				break;
-			case "set-social-card-item":
-				this.cardExecutor.setSocialCardItem(eff.item);
-				break;
-			case "event-chain":
-				this.executeEventChainAction(eff);
-				break;
+        if (!amount) {return;}
+        await PersonaSocial.alterStudentSkill( actor, eff.studentSkill, amount ?? 0);
+        break;
+      }
+      case "modify-progress-tokens-cameo": {
+        const amount = eff.amount;
+        if (!amount) {return;}
+        await this.modifyCameoProgress(amount);
+        break;
+      }
+      case "add-card-events-to-list":
+        this.handler.addCardEvents(eff.cardId);
+        break;
+      case "replace-card-events":
+        this.handler.replaceCardEvents(eff.cardId, eff.keepEventChain);
+        break;
+      case "set-temporary-variable": {
+        const val = "value" in eff ? eff.value : Math.floor(eff.min + (eff.max * Math.random()));
+        this.variableAction(eff.operator, eff.variableId, val);
+        break;
+      }
+      case "card-response":
+        await this.handler.applyCardResponse(eff.text);
+        break;
+      case "append-card-tag":
+        this.#appendCardTag(eff.cardTag);
+        break;
+      case "remove-cameo":
+        this.#removeCameo();
+        break;
+      case "set-social-card-item":
+        this.cardExecutor.setSocialCardItem(eff.item);
+        break;
+      case "event-chain":
+        this.executeEventChainAction(eff);
+        break;
       case "expend-downtime-actions": {
-        const actor = this.cardData.actor;
         await actor.social.expendDowntimeAction("minor");
         await actor.social.expendDowntimeAction("standard");
         break;
       }
       case "alter-minor": {
-        const actor = this.cardData.actor;
         await actor.social.alterDowntimeAction("minor", eff.amount);
         break;
       }
       case "alter-major": {
-        const actor = this.cardData.actor;
         await actor.social.alterDowntimeAction("standard", eff.amount);
         break;
       }
-			default:
-				eff satisfies never;
-				break;
-		}
-	}
+      default:
+        eff satisfies never;
+        break;
+    }
+  }
 
 	static variableAction(operator: VariableAction, variableName: string, amount: number) {
 		let varVal = PersonaSocial.getSocialVariable(variableName);

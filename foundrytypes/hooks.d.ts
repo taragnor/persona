@@ -4,6 +4,7 @@ declare interface Hooks {
 	on <T extends keyof HOOKS, R extends HOOKS[T]>(hookname: T, fn: R): void;
 	/** @deprecated */
 	on <T extends keyof DEPRECATED_HOOKS, R extends DEPRECATED_HOOKS[T]>(hookname: T, fn: R): void;
+	off <T extends keyof DEPRECATED_HOOKS, R extends DEPRECATED_HOOKS[T]>(hookname: T, fn: R): void;
 	callAll<T extends keyof HOOKS>(hookname:T, ...args: Parameters<HOOKS[T]>): void;
 	call<T extends keyof HOOKS>(hookname: T, ...args: Parameters<HOOKS[T]>): boolean;
 }

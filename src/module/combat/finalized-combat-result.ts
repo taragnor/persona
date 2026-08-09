@@ -268,7 +268,9 @@ export class FinalizedCombatResult {
     //TODO: go through actor changes and separaet them, deleting local effects from actor changes,
     const actorChanges : [PersonaActor["accessor"], Sourced<LocalEffect>[]] [] = [];
     for (const atk of this.attacks) {
-      const localEffects = atk.changes.map(chg => [chg.actor, chg.localEffects] as (typeof actorChanges)[number]);
+      const localEffects = atk.changes
+        .filter( chg => chg.localEffects.length > 0)
+        .map(chg => [chg.actor, chg.localEffects] as (typeof actorChanges)[number]);
       actorChanges.push( ...localEffects);
       atk.changes.forEach( chg => chg.localEffects = []);
     }

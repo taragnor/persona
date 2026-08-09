@@ -417,21 +417,21 @@ export class CombatResult  {
               PersonaError.softFail(`Couldn't resolve social target $cons.socialLinkIdOrTarot}`, cons);
               break;
             }
-            this.globalLocalEffects.push( {
+            this.addLocalEffect( effect, {
               __localEffect: true,
               ...cons,
               amount,
               linkId: socialTarget.id,
             });
           } else {
-            this.globalLocalEffects.push( {
+            this.addLocalEffect( effect, {
               __localEffect: true,
               ...cons,
               amount,
             });
           }
         } else {
-          this.globalLocalEffects.push( {
+          this.addLocalEffect( effect, {
             __localEffect : true,
             ...cons
           });
@@ -559,6 +559,14 @@ export class CombatResult  {
     }
   }
 
+  private addLocalEffect(effect: U<ActorChange<ValidAttackers>> , localEffect: Sourced<LocalEffect>) {
+    if (effect) { 
+      effect.localEffects.push(localEffect);
+    } else {
+      this.globalLocalEffects.push(localEffect);
+    }
+  }
+
   private addEffect_inventoryAction( cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "inventory-action"}, effect: ActorChange<ValidAttackers>, situation: Readonly<Situation>) {
     switch (cons.invAction) {
       case "harvest-crops":
@@ -622,6 +630,7 @@ export class CombatResult  {
 				}
 			}
 			this.globalOtherEffects = this.globalOtherEffects.concat(other.globalOtherEffects);
+      this.globalLocalEffects = this.globalLocalEffects.concat(other.globalLocalEffects);
       this.activationRoll = this.activationRoll && this.activationRoll > 0 ? this.activationRoll : other.activationRoll;
 		}
 	}
