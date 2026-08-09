@@ -253,26 +253,50 @@ export class SocialCardExecutor {
     return await ChatMessage.create(msgData,{} );
   }
 
-  async #printCardFinale( cardData: CardData) : Promise<ChatMessage<Roll>> {
-    let html = "";
-    let SLImproveSpend = "";
-    let giftStr= "";
-    if (cardData.card.system.cardType == "social") {
-      const link = (await this.lookupLink()) as SocialLinkData;
-      if (link.actor) {
-        const SL=  (cardData.actor.getSocialSLWith(link.actor));
-        let improveAmt = 5;
-        if (SL <= 3 && cardData.actor?.tarot?.name == "Fool") {
-          improveAmt -= 2;
-        }
-        SLImproveSpend = `<li class="token-spend" data-token-amt="${improveAmt}" > spend ${improveAmt} progress tokens to raise link with ${link.actor.name} <button class="raise-SL" data-link-id="${link.actor.id}"> Raise SL </button></li>`;
-      }
+  private _giftText(cardData: CardData) : string {
+    try {
+      let giftStr = "";
       giftStr += `You may give a gift to anyone in the scene (max 1 gift per person). `;
       const SLCameos = cardData.cameos.filter(cameo => cardData.actor.getSocialSLWith(cameo) >= 4);
       if (SLCameos.length > 0) {
         giftStr += `However since there are multiple people in the scene...  ${SLCameos.map(x=> x.name).join(", ")}. Anyone who doesn't get a gift will lose a progress token if they are SL 4+ or higher. `;
       }
+      return giftStr;
+    } catch (e) {
+      PersonaError.softFail(e as Error);
+      return "ERROR: Gift String Error";
     }
+  }
+
+  private async _actorFinaleStrings(cardData: CardData) {
+    try {
+      let SLImproveSpend = "", giftStr = "";
+      if (cardData.card.system.cardType == "social") {
+        giftStr= this._giftText(cardData);
+        const link = (await this.lookupLink()) as SocialLinkData;
+        if (link.actor) {
+          const SL =  (cardData.actor.getSocialSLWith(link.actor));
+          let improveAmt = 5;
+          if (SL <= 3 && cardData.actor?.tarot?.name == "Fool") {
+            improveAmt -= 2;
+          }
+          SLImproveSpend = `<li class="token-spend" data-token-amt="${improveAmt}" > spend ${improveAmt} progress tokens to raise link with ${link.actor.name} <button class="raise-SL" data-link-id="${link.actor.id}"> Raise SL </button></li>`;
+        }
+      }
+      return {SLImproveSpend, giftStr};
+    } catch (e) {
+      PersonaError.softFail(e as Error);
+      const msg = "ERROR: Finale Social Link String Error";
+      return {
+        SLImproveSpend:msg,
+        giftStr: msg,
+      };
+    }
+  }
+
+  async #printCardFinale( cardData: CardData) : Promise<ChatMessage<Roll>> {
+    let html = "";
+    const {giftStr, SLImproveSpend} = await this._actorFinaleStrings(cardData);
     const jobPay = await this.getJobPayHTML(cardData);
     const tokenSpends = (cardData.card.system.tokenSpends ?? [])
     .concat(cardData.activity != cardData.card ?  cardData.activity.system.tokenSpends ?? [] : [])
