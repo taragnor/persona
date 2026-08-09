@@ -1,5 +1,4 @@
-import {Consequence, CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES, ConsequenceAmount, ConsequenceAmountV2, LEVEL_GAIN_TARGETS, NonDeprecatedConsequence, SITUATION_PROPERTIES} from "../../config/consequence-types.js";
-import {CREATURE_TAGS} from "../../config/creature-tags.js";
+import {Consequence, CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES, ConsequenceAmount, ConsequenceAmountV2, LEVEL_GAIN_TARGETS, NonDeprecatedConsequence, SITUATION_PROPERTIES} from "../../config/consequence-types.js"; import {CREATURE_TAGS} from "../../config/creature-tags.js";
 import {DAMAGE_TYPES_PLUS_AFFINITY, RESIST_STRENGTHS} from "../../config/damage-types.js";
 import {DAYS} from "../../config/days.js";
 import {DEFENSE_TYPES} from "../../config/defense-types.js";
@@ -486,11 +485,11 @@ export class ConditionalEffectPrinter {
           return `Talent Level ${endString(cond)}`;
         case "social-link-level": {
           try {
-          const situation = PersonaSocial.currentSocialCardExecutor?.cardData?.situation;
+            const situation = PersonaSocial.currentSocialCardExecutor?.cardData?.situation;
             if (!situation) {return "ERROR";}
-          const socialTarget = getSocialLinkTarget (cond.socialLinkIdOrTarot, situation, null);
-          const name = socialTarget ? socialTarget.displayedName : cond.socialLinkIdOrTarot;
-          return `${name} SL ${endString(cond)}`;
+            const socialTarget = getSocialLinkTarget (cond.socialLinkIdOrTarot, situation, null);
+            const name = socialTarget ? socialTarget.displayedName : cond.socialLinkIdOrTarot;
+            return `${name} SL ${endString(cond)}`;
           } catch (e) {
             PersonaError.softFail(e as Error, cond);
             return "ERROR";

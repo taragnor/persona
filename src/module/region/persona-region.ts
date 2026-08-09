@@ -16,6 +16,7 @@ import {randomSelect, removeDuplicates} from "../utility/array-tools.js";
 import {RegionPanel} from "../exploration/region-panel.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {Logger} from "../utility/logger.js";
+import {ItemModifierContainer, ModifierContainer} from "../item/persona-item.js";
 
 declare global {
   interface SocketMessage {
@@ -391,7 +392,10 @@ export class PersonaRegion extends RegionDocument {
       triggeringUser: game.user.id,
       triggeringRegionId : this.id,
     };
-    const modifiers = [
+    const actorMods = PersonaDB.activePCParty()
+    .flatMap( x=> x.actorMainModifiers());
+    const modifiers : ModifierContainer[] = [
+      ...actorMods,
       ...PersonaDB.getGlobalModifiers(),
       ...this.allRoomEffects,
     ];
