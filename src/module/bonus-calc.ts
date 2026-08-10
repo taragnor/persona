@@ -146,12 +146,7 @@ export class BonusCalculation extends CalculationV2 {
 }
 
 export const MODV2_DETAILS = {
-  "attack-roll" : {
-    type: "offensive",
-    rounding: "floor",
-    initial: 0,
-  },
-  "save" : {
+  "roll-bonus" : {
     type: "user",
     rounding: "floor",
     initial: 0,

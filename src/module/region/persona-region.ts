@@ -16,7 +16,7 @@ import {randomSelect, removeDuplicates} from "../utility/array-tools.js";
 import {RegionPanel} from "../exploration/region-panel.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {Logger} from "../utility/logger.js";
-import {ItemModifierContainer, ModifierContainer} from "../item/persona-item.js";
+import {ModifierContainer} from "../item/persona-item.js";
 
 declare global {
   interface SocketMessage {
@@ -25,9 +25,9 @@ declare global {
 }
 
 const PLAYER_VISIBLE_MOD_LIST = [
-  "treasure-poor", //1d10 treasure
-  "treasure-rich", //1d20+5 treasure
-  "treasure-ultra", //1d10+15 treasure
+  "treasure-poor",
+  "treasure-rich",
+  "treasure-ultra",
   "hazard-on-2",
   // "no-tension-roll",// don't roll tension after
   "safe",//can't search and no random encounter rolls
@@ -413,9 +413,14 @@ export class PersonaRegion extends RegionDocument {
     ).total(situation);
     let encounterType : EncounterOptions["encounterType"] = undefined;
     switch (battleType) {
+      case "wandering":
+      case "room":
+        break;
       case "secondary":
         encounterType = "standard";
         break;
+      default:
+        battleType satisfies never;
     }
     const options : EncounterOptions = {
       sizeMod,
@@ -539,14 +544,6 @@ export class PersonaRegion extends RegionDocument {
         }
         break;
       }
-        // case "concordiaPresence": {
-        // 	const val = this.regionData[field];
-        // 	element.append(
-        // 		$(`<input type="number">`).addClass(`${fieldClass}`).val(val ?? 0)
-        // 		.on("change", this.#refreshRegionData.bind(this))
-        // 	);
-        // 	break;
-        // }
       case "shadowPresence": {
         const val = this.regionData[field];
         element.append(

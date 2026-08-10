@@ -286,7 +286,7 @@ export class Tests {
   }
 
   static bonusCalcTest() : TestResult {
-    const calc = new BonusCalculation(["attack-roll"]);
+    const calc = new BonusCalculation(["roll-bonus"]);
     calc
       .set(0, 5, "Initial")
       .add(0, 10, "Add 10")
@@ -302,11 +302,10 @@ export class Tests {
         return {
           total: 3,
           steps: ["eval 3"],
-        }
-         ;
+        };
       }
     } satisfies Calculateable;
-    const calc2= new BonusCalculation(["attack-roll"])
+    const calc2 = new BonusCalculation(["roll-bonus"])
       .add(0, 1, "initial")
       .setTerm(0, 2, "x2", "multiply", {"takeBest":2})
       .mult(0, 4, "x4")
