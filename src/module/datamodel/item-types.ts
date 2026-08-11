@@ -98,14 +98,12 @@ class WeaponDM extends foundry.abstract.TypeDataModel {
     if (data?.damageNew == undefined && data?.damage?.low > 0) {
       data.damageNew = {
         weaponLevel: data.damage.low -1,
-        // baseAmt: PersonaSettings.getDamageSystem().convertFromOldLowDamageToNewBase(data?.damage?.low ?? 0),
         extraVariance: 0,
       };
       data.itemLevel = data.damage.low - 1;
     }
     if (data?.damageNew?.weaponLevel && data?.itemLevel == undefined) {
       data.itemLevel = data.damageNew.weaponLevel;
-      // data.damageNew.weaponLevel = 0;
     }
     return data;
   }
@@ -135,7 +133,6 @@ class TagSchema extends foundry.abstract.TypeDataModel {
       tagType: new txt({choices: TAG_TYPES}),
       tagLevel: new num( {initial: 0, integer: true}),
       linkedInternalTag: new txt(),
-      // treasure: itemTreasureStats(),
       tags: new arr( new txt<typeof POWER_TAGS_LIST[number] | Item["id"]>()),
       itemTags: new arr(new txt<typeof EQUIPMENT_TAGS_LIST[number] | Item["id"]>()),
       creatureTags: new arr(new txt<InternalCreatureTag | Item["id"]>()),
@@ -389,7 +386,6 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
       availabilityConditions: new arr(new obj<Precondition>()),
       num_of_events: new num({initial: 0, min:0, max: 5, integer:true}),
       events: new arr( new embedded(SocialCardEventDM)),
-      // eventsC: new collection(PersonaItem ) ,
       automatic: new txt(),
       skill: new txt<"primary" | "secondary">({initial: "primary"}),
       cameoType: new txt({initial: "none", choices: CAMEO_TYPES_LIST}),
@@ -446,6 +442,7 @@ export class ConditionalEffectDM extends foundry.abstract.DataModel {
     //   || data.consequences != consequences) {
     //   console.debug("Migrate Data for ConditionalEffectDM making changes ");
     // }
+
     return data;
   }
 
@@ -568,9 +565,6 @@ export class SocialCardEventDM extends foundry.abstract.DataModel {
     };
     const ret = await cardObj.update(updateObj);
     if (ret == undefined) {
-      // Debug(updateObj);
-      // Debug(subUpdateObj);
-      // ui.notifications.warn("Update may not have gone through");
       cardObj._initialize();
     }
     const evRefresh = cardObj.system.events[index];
@@ -661,20 +655,6 @@ export class CardChoiceDM extends foundry.abstract.DataModel {
       }
     }
     data.conditions = ConditionalEffectDM.migrateConditions(data.conditions);
-    // if (data.conditions == undefined) {
-    //   data.conditions = [];
-    // }
-    // if (!Array.isArray(data.conditions)) {
-    //   data.conditions = ConditionalEffectManager.ArrayCorrector(data.conditions) as typeof data.conditions;
-    // }
-
-    //not sure if this is the error or not
-    // if (data.postEffects.effects == undefined) {
-    //   data.postEffects.effects = [];
-    // }
-    // if (!Array.isArray(data.postEffects.effects)) {
-    //   data.postEffects.effects = ConditionalEffectManager.ArrayCorrector(data.postEffects.effects) as typeof data.postEffects.effects;
-    // }
     return source;
   }
 
@@ -696,7 +676,6 @@ export const ITEMMODELS = {
 
 //namespace Test{
 //	type PowerSO= Foundry.SystemDataObjectFromDM<typeof PowerSchema>;
-
 //}
 
 type slotsObj = {

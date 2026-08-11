@@ -1169,9 +1169,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
     try {
       const rawData = this.getSkillCardDataFromPower(power, options);
-    return await PersonaItem.create<SkillCard>(
-      rawData
-    );
+      return await PersonaItem.create<SkillCard>(
+        rawData
+      );
     } catch (e) {
       PersonaError.softFail(`Conversion o Power ${power.name} to skill card Failed`, e);
       throw e;
@@ -1641,7 +1641,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   validTargetConditions(this: Usable, user: ValidAttackers) : ConditionalEffectC["conditions"] {
     const targetConditions = this.itemBase?.system.validTargetConditions ?? this.system.validTargetConditions;
-  const sourcedTC = ConditionalEffectManager.getConditionals(targetConditions, this, user, this );
+    const sourcedTC = ConditionalEffectManager.getConditionals(targetConditions, this, user, this );
     return sourcedTC;
   }
 
@@ -2049,164 +2049,171 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   mpCost(this: Usable, userPersona: Persona | null): number {
     if (this.isConsumable()) {return 0;}
-    let mult  = 1;
-    if (userPersona) {
-      const sit : Situation = {
-        user: userPersona.user.accessor,
-        usedPower: this.accessor,
-        attacker: userPersona.user.accessor,
-      };
-      const list = userPersona.getBonuses('power-mp-cost-mult');
-      mult = list.total(sit, 'percentage');
-    }
+    const mult= this._getMPMultiplier(userPersona);
+    // let mult  = 1;
+    // if (userPersona) {
+    //   const sit : Situation = {
+    //     user: userPersona.user.accessor,
+    //     usedPower: this.accessor,
+    //     attacker: userPersona.user.accessor,
+    //   };
+    //   const list = userPersona.getBonuses('power-mp-cost-mult');
+    //   mult = list.total(sit, 'percentage');
+    // }
     const baseMPCost = this.baseMPCost;
     return Math.clamp(Math.round(baseMPCost * mult), 0,  1000);
   }
 
+private _getMPMultiplier(this: Usable, userPersona: N<Persona>) : number {
+  if (!userPersona) {return 1;}
+  const sit : Situation = {
+    user: userPersona.user.accessor,
+    usedPower: this.accessor,
+    attacker: userPersona.user.accessor,
+  };
+  const list = userPersona.getBonuses('power-mp-cost-mult');
+  return list.total(sit, 'percentage');
+}
 
-  get baseMPCost(): number {
-    if (!this.isPower()) {return 0;}
-    if (this.isTeamwork()) {return 0;}
-    if (this.customCost)
-    {return this.system.mpcost;}
-    if (this.cache.mpCost == undefined) {
-      this.cache.mpCost = PowerCostCalculator.calcMPCost(this);
-    }
-    if (this.cache.mpCost > 0)  {
-      return this.cache.mpCost;
-    }
-    return this.system.mpcost;
+get baseMPCost(): number {
+  if (!this.isPower() || this.isTeamwork()) {return 0;}
+  if (this.customCost) {return this.system.mpcost;}
+  if (this.cache.mpCost == undefined) {
+    this.cache.mpCost = PowerCostCalculator.calcMPCost(this);
   }
+  if (this.cache.mpCost > 0) { return this.cache.mpCost; }
+  return this.system.mpcost;
+}
 
-  private _getLinkedEffects (this: ItemModifierContainer, sourceActor: PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) : readonly ConditionalEffectC[] {
-    const tagEffects : ConditionalEffectC[] = [];
-    if (!this.isTalent() && !this.isTag() && !this.isUniversalModifier()){
-      const tags = this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
-        .filter (tag=> tag instanceof PersonaItem);
-      tagEffects.pushUnique(...tags.flatMap(tag =>
-        tag.getEffects(sourceActor, {CETypes, proxyItem: this})
-      ));
-    }
-    return tagEffects;
+private _getLinkedEffects (this: ItemModifierContainer, sourceActor: PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) : readonly ConditionalEffectC[] {
+  const tagEffects : ConditionalEffectC[] = [];
+  if (!this.isTalent() && !this.isTag() && !this.isUniversalModifier()){
+    const tags = this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
+      .filter (tag=> tag instanceof PersonaItem);
+    tagEffects.pushUnique(...tags.flatMap(tag =>
+      tag.getEffects(sourceActor, {CETypes, proxyItem: this})
+    ));
   }
+  return tagEffects;
+}
 
-  async addCreatureTag(this: Tag, tag ?: Tag) : Promise<void> {
-    const tags = this.system.creatureTags;
-    if (tag && tag instanceof PersonaItem) {
-      tags.push(tag.id);
-    } else {
-      tags.push("neko");
-    }
-    await this.update( {"system.creatureTags": tags});
+async addCreatureTag(this: Tag, tag ?: Tag) : Promise<void> {
+  const tags = this.system.creatureTags;
+  if (tag && tag instanceof PersonaItem) {
+    tags.push(tag.id);
+  } else {
+    tags.push("neko");
   }
+  await this.update( {"system.creatureTags": tags});
+}
 
-  async deleteCreatureTag(this: Tag, index: number) : Promise<void> {
-    const tags = this.system.creatureTags;
-    tags.splice(index, 1);
-    await this.update( {"system.creatureTags": tags});
+async deleteCreatureTag(this: Tag, index: number) : Promise<void> {
+  const tags = this.system.creatureTags;
+  tags.splice(index, 1);
+  await this.update( {"system.creatureTags": tags});
+}
+
+getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options : GetEffectsOptions = {}): readonly ConditionalEffectC[] {
+  if (!PersonaDB.isLoaded) {
+    throw new PersonaError("DB not loaded yet");
   }
-
-  getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options : GetEffectsOptions = {}): readonly ConditionalEffectC[] {
-    if (!PersonaDB.isLoaded) {
-      throw new PersonaError("DB not loaded yet");
-    }
-    const {CETypes} = options;
-    if (this.isCardItem()) {
-      return [ConditionalEffectC.fromCard(this)];
-    }
-    const deepTags = options.deepTags ?? true;
-    const tagEffects = deepTags ? this._getLinkedEffects(sourceActor, CETypes) : [];
-    if (!CETypes || CETypes.length == 0) {
-      const effects = this.itemBase.system.effects;
-      const effectsGetterFn = () => {
-        const proxyItem = options.proxyItem ? options.proxyItem : this;
-        return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
-          .filter (ce => ce.isMainModifier);
-      };
-      return this.#accessEffectsCache('allMainEffects', sourceActor, options, effectsGetterFn)
-        .slice()
-        .pushUnique(...tagEffects);
-    } else {
-      const effects: ConditionalEffectC[] = [];
-      for (const cType of CETypes) {
-        switch (cType) {
-          case 'defensive':
-            effects.pushUnique(...this.getDefensiveEffects(sourceActor, options));
-            break;
-          case 'triggered':
-            effects.pushUnique(...this.getTriggeredEffects(sourceActor, options));
-            break;
-          case 'passive':
-            effects.pushUnique(...this.getPassiveEffects(sourceActor, options));
-            break;
-          case 'on-use':
-            effects.pushUnique(...this.getOnUseEffects(sourceActor, options));
-            break;
-          case 'unknown':
-            effects.pushUnique(...this.getEffects(sourceActor, options).filter( x=> x.conditionalType == cType));
-            break;
-          default:
-            cType satisfies never;
-        }
-      }
-      return effects;
-    }
+  const {CETypes} = options;
+  if (this.isCardItem()) {
+    return [ConditionalEffectC.fromCard(this)];
   }
-
-  getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options: GetEffectsOptions = {}) : readonly ConditionalEffectC[] {
-    if (this.isCardItem()) { return []; }
+  const deepTags = options.deepTags ?? true;
+  const tagEffects = deepTags ? this._getLinkedEffects(sourceActor, CETypes) : [];
+  if (!CETypes || CETypes.length == 0) {
     const effects = this.itemBase.system.effects;
     const effectsGetterFn = () => {
-      const proxyItem = options.proxyItem ?? this;
+      const proxyItem = options.proxyItem ? options.proxyItem : this;
       return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
-        .filter (ce => ce.isEmbedded);
+        .filter (ce => ce.isMainModifier);
     };
-    const embedded= this.#accessEffectsCache('embeddedEffects', sourceActor, options, effectsGetterFn);
-    const {CETypes} = options;
-    if (CETypes == undefined || CETypes.length == 0) {return embedded;}
-    return embedded
-      .filter( x=> CETypes.includes(x.conditionalType));
-  }
-
-  getAuraEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options: GetEffectsOptions = {}) : readonly ConditionalEffectC[] {
-    if (this.isCardItem()) { return []; }
-    const effects = this.itemBase.system.effects;
-    const effectsGetterFn = () => {
-      const proxyItem = options.proxyItem ?? this;
-      return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
-        .filter (ce => ce.isAura);
-    };
-    const auras = this.#accessEffectsCache('auraEffects', sourceActor, options, effectsGetterFn);
-    const {CETypes} = options;
-    if (CETypes == undefined || CETypes.length == 0) {return auras;}
-    return auras
-      .filter( x=> CETypes.includes(x.conditionalType));
-  }
-
-  #accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, options: GetEffectsOptions, refresherFn: () => ConditionalEffectC[]) : readonly ConditionalEffectC[] {
-    if (!PersonaDB.isLoaded) {
-      throw new PersonaError("DB not loaded yet!");
-    }
-    if (options.deepTags === false) {return refresherFn();}
-    if (options.proxyItem) {return refresherFn();}
-    if (options.CETypes && options.CETypes.length > 0) {return refresherFn();}
-    PersonaItem.cacheStats.total++;
-    const cache = this.cache.effects[cacheType];
-    if (sourceActor == null) {
-      if (cache.nullActor == undefined) {
-        PersonaItem.cacheStats.miss++;
-        cache.nullActor = refresherFn();
+    return this.#accessEffectsCache('allMainEffects', sourceActor, options, effectsGetterFn)
+      .slice()
+      .pushUnique(...tagEffects);
+  } else {
+    const effects: ConditionalEffectC[] = [];
+    for (const cType of CETypes) {
+      switch (cType) {
+        case 'defensive':
+          effects.pushUnique(...this.getDefensiveEffects(sourceActor, options));
+          break;
+        case 'triggered':
+          effects.pushUnique(...this.getTriggeredEffects(sourceActor, options));
+          break;
+        case 'passive':
+          effects.pushUnique(...this.getPassiveEffects(sourceActor, options));
+          break;
+        case 'on-use':
+          effects.pushUnique(...this.getOnUseEffects(sourceActor, options));
+          break;
+        case 'unknown':
+          effects.pushUnique(...this.getEffects(sourceActor, options).filter( x=> x.conditionalType == cType));
+          break;
+        default:
+          cType satisfies never;
       }
-      return cache.nullActor;
-    } else {
-      const data = cache.actors.get(sourceActor);
-      if (data) {return data;}
+    }
+    return effects;
+  }
+}
+
+getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options: GetEffectsOptions = {}) : readonly ConditionalEffectC[] {
+  if (this.isCardItem()) { return []; }
+  const effects = this.itemBase.system.effects;
+  const effectsGetterFn = () => {
+    const proxyItem = options.proxyItem ?? this;
+    return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
+      .filter (ce => ce.isEmbedded);
+  };
+  const embedded= this.#accessEffectsCache('embeddedEffects', sourceActor, options, effectsGetterFn);
+  const {CETypes} = options;
+  if (CETypes == undefined || CETypes.length == 0) {return embedded;}
+  return embedded
+    .filter( x=> CETypes.includes(x.conditionalType));
+}
+
+getAuraEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options: GetEffectsOptions = {}) : readonly ConditionalEffectC[] {
+  if (this.isCardItem()) { return []; }
+  const effects = this.itemBase.system.effects;
+  const effectsGetterFn = () => {
+    const proxyItem = options.proxyItem ?? this;
+    return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
+      .filter (ce => ce.isAura);
+  };
+  const auras = this.#accessEffectsCache('auraEffects', sourceActor, options, effectsGetterFn);
+  const {CETypes} = options;
+  if (CETypes == undefined || CETypes.length == 0) {return auras;}
+  return auras
+    .filter( x=> CETypes.includes(x.conditionalType));
+}
+
+#accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, options: GetEffectsOptions, refresherFn: () => ConditionalEffectC[]) : readonly ConditionalEffectC[] {
+  if (!PersonaDB.isLoaded) {
+    throw new PersonaError("DB not loaded yet!");
+  }
+  if (options.deepTags === false) {return refresherFn();}
+  if (options.proxyItem) {return refresherFn();}
+  if (options.CETypes && options.CETypes.length > 0) {return refresherFn();}
+  PersonaItem.cacheStats.total++;
+  const cache = this.cache.effects[cacheType];
+  if (sourceActor == null) {
+    if (cache.nullActor == undefined) {
       PersonaItem.cacheStats.miss++;
-      const newData=  refresherFn();
-      cache.actors.set(sourceActor, newData);
-      return newData;
+      cache.nullActor = refresherFn();
     }
+    return cache.nullActor;
+  } else {
+    const data = cache.actors.get(sourceActor);
+    if (data) {return data;}
+    PersonaItem.cacheStats.miss++;
+    const newData=  refresherFn();
+    cache.actors.set(sourceActor, newData);
+    return newData;
   }
+}
 
 getTriggeredEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : readonly ConditionalEffectC[] {
   options = {...options, CETypes: []};
@@ -2731,7 +2738,7 @@ canEnchantItem(this: Tag, item: Weapon | InvItem): boolean {
   const itemLevel = item.itemLevel() - (item.isWeaponCrystal() ? 4 : 0);
   const {minlvl, maxlvl, validSlots} = this.system.enchantment;
   if ( maxlvl < itemLevel
-      || minlvl > itemLevel) {return false;}
+    || minlvl > itemLevel) {return false;}
   if (item.isWeapon()) {
     return validSlots["weapon"];
   }
@@ -2947,8 +2954,6 @@ export interface EffectCarrier {
 export interface ModifierContainer<T extends UniversalAccessorTypes & EffectCarrier = UniversalAccessorTypes & EffectCarrier> extends Accessible<T>, EffectCarrier {
 }
 
-
-
 Hooks.on('updateItem', (item :PersonaItem, _diff: DeepPartial<typeof item>) => {
   item.clearCache();
   if (item.parent instanceof PersonaActor) {
@@ -3010,7 +3015,6 @@ export interface GetEffectsOptions {
 type TagBearingItem = Talent | Focus | UsableAndCard | InvItem | Weapon;
 
 ItemHooks.init();
-
 
 type SkillCardCreationOptions = {
   velvetCard?: boolean;
