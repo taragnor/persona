@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { damage, damageNew, effects, powerCost, powerOnlyUsableProps, powerSpecific, triEffects, UsablePowerProps } from "./power-dm.js";
@@ -135,16 +137,85 @@ class TagSchema extends foundry.abstract.TypeDataModel {
       tagType: new txt({choices: TAG_TYPES}),
       tagLevel: new num( {initial: 0, integer: true}),
       linkedInternalTag: new txt(),
-      treasure: itemTreasureStats(),
+      // treasure: itemTreasureStats(),
       tags: new arr( new txt<typeof POWER_TAGS_LIST[number] | Item["id"]>()),
       itemTags: new arr(new txt<typeof EQUIPMENT_TAGS_LIST[number] | Item["id"]>()),
       creatureTags: new arr(new txt<InternalCreatureTag | Item["id"]>()),
       /** used purely for derived effects, like a resistnace type of damage*/
       dmg_type: new txt( {choices: DAMAGE_TYPES_LIST, initial:"none"}),
+      enchantment: new sch({
+        minlvl: new num({initial: 0, min: 0, max: 20}),
+        maxlvl: new num({initial: 0, min: 0, max: 20}),
+        rarity: new txt({choices: PROBABILITIES, initial:"never"}),
+        validSlots: new obj<slotsObj> ({initial: {
+          weapon: true,
+          body : true,
+          accessory : true,
+          weapon_crystal : true,
+        }}),
+      }),
       ...effects (false),
     };
     return ret;
   }
+
+  //shouldn't be needed anymroe
+  // static override migrateData(data: Record<string, any>) {
+  //   const system = data as Tag["system"];
+  //   if ( system.tagType == "enchantment"
+  //     && system?.enchantment == undefined
+  //     // && system?.enchantment?.minlvl == undefined
+  //     // && system?.enchantment?.validSlots == undefined
+  //     && data?.treasure != undefined) {
+  //     const copy = {...system};
+  //     const ten = (x: number) => Math.floor(x/10);
+  //     const slots = ()=> ({
+  //       weapon: true,
+  //       body: true, 
+  //       accessory: true,
+  //       weapon_crystal: true,
+  //     });
+  //     switch (true) {
+  //       case data?.treasure?.greater?.enabled:
+  //         system.enchantment = {
+  //           minlvl: ten(data.treasure.greater.minLevel as number) +1,
+  //           maxlvl: ten(data.treasure.greater.maxLevel as number)+1 ,
+  //           rarity: "normal",
+  //           validSlots: slots(),
+  //         };
+  //         break;
+  //       case data?.treasure?.royal?.enabled:
+  //         system.enchantment = {
+  //           minlvl: ten(data.treasure.royal.minLevel as number) ,
+  //           maxlvl: ten(data.treasure.royal.maxLevel as number) ,
+  //           rarity: data.treasure.royal.rarity,
+  //           validSlots: slots(),
+  //         };
+  //         break;
+  //       case data?.treasure?.lesser?.enabled:
+  //         system.enchantment = {
+  //           minlvl: ten(data.treasure.lesser.minLevel as number)  -1,
+  //           maxlvl: ten(data.treasure.lesser.maxLevel as number) +2,
+  //           rarity: "normal-plus",
+  //           validSlots: slots(),
+  //         };
+  //         break;
+  //       default:
+  //         system.enchantment = {
+  //           minlvl: 0,
+  //           maxlvl: 0,
+  //           rarity: "never",
+  //           validSlots: slots(),
+  //         };
+  //         break;
+  //     }
+  //     console.debug("Converted Enchantment tag");
+  //     Debug(copy);
+  //     data.treasure = undefined;
+  //   }
+  //   return data;
+  // }
+
 }
 
 class UniversalModifierDM extends foundry.abstract.TypeDataModel {
@@ -629,3 +700,10 @@ export const ITEMMODELS = {
 //	type PowerSO= Foundry.SystemDataObjectFromDM<typeof PowerSchema>;
 
 //}
+
+type slotsObj = {
+  weapon: boolean,
+  body : boolean,
+  accessory : boolean,
+  weapon_crystal : boolean,
+};

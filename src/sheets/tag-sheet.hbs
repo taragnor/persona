@@ -1,23 +1,23 @@
 <form class="tag-sheet">
-	<header class="f-row">
-			<div>
-				<img class="profile-img" src="{{item.img}}" data-edit="img"/>
-			</div>
-		<div class="f-col">
-			<div class="">
-				<input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Focus Name" placeholder="Focus Name">
-			</div>
-			<div>
-				<b> Tag </b>
-			</div>
-			<textarea name="system.description">{{item.system.description}}</textarea>
-			<div class="f-row">
-				<div class="tag-type">
-					<label> Tag Type</label>
-					<select name="system.tagType">
-						{{selectOptions TAG_TYPES localize=true selected=item.system.tagType}}
-					</select>
-				</div>
+  <header class="f-row">
+    <div>
+      <img class="profile-img" src="{{item.img}}" data-edit="img"/>
+    </div>
+    <div class="f-col">
+      <div class="">
+        <input type="text" class="borderless character-name" name="name" value="{{item.name}}" title="Focus Name" placeholder="Focus Name">
+      </div>
+      <div>
+        <b> Tag </b>
+      </div>
+      <textarea name="system.description">{{item.system.description}}</textarea>
+      <div class="f-row">
+        <div class="tag-type">
+          <label> Tag Type</label>
+          <select name="system.tagType">
+            {{selectOptions TAG_TYPES localize=true selected=item.system.tagType}}
+          </select>
+        </div>
 
         <div class="tag-link">
           <label>
@@ -58,8 +58,52 @@
         </div>
         {{#if (eq item.system.tagType "enchantment")}}
         <div class="f-row">
+          {{#if false}}
           {{> "systems/persona/parts/treasure-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
+          {{/if}}
+          <div>
+            <label> Item Level Range</label>
+            {{numberInput item.system.enchantment.minlvl class="short" name="system.enchantment.minlvl" step=1 min=0 max=20}}
+            {{numberInput item.system.enchantment.maxlvl class="short" name="system.enchantment.maxlvl" step=1 min=0 max=20}}
+            <select name="system.enchantment.rarity">
+              {{selectOptions POWERSTUFF.PROBABILITIES localize=true selected=item.system.enchantment.rarity}}
+            </select>
+            <div class="f-row">
+              <div>
+                <label>
+                  Weapon
+                </label>
+                <input type="checkbox"
+                       name="system.enchantment.validSlots.weapon"
+                       {{checked item.system.enchantment.validSlots.weapon}}>
+              </div>
+              <div>
+                <label>
+                  Armor
+                </label>
+                <input type="checkbox"
+                       name="system.enchantment.validSlots.body"
+                       {{checked item.system.enchantment.validSlots.body}}>
+              </div>
+              <div>
+                <label>
+                  Accessory
+                </label>
+                <input type="checkbox"
+                       name="system.enchantment.validSlots.accessory"
+                       {{checked item.system.enchantment.validSlots.accessory}}>
+              </div>
+              <div>
+                <label>
+                  Crystal
+                </label>
+                <input type="checkbox" name="system.enchantment.validSlots.weapon_crystal"
+                                       {{checked item.system.enchantment.validSlots.weapon_crystal}}>
+              </div>
+            </div>
+          </div>
         </div>
+
         {{/if}}
       </div>
     </div>
@@ -78,14 +122,14 @@
     </div>
   </header>
   <body>
-	<div class="dmg-type">
-		<label>
-			Damage Type
-		</label>
-		<select name="system.dmg_type">
-			{{selectOptions POWERSTUFF.DAMAGETYPES localize=true selected=item.system.dmg_type}}
-		</select>
-	</div>
+    <div class="dmg-type">
+      <label>
+        Damage Type
+      </label>
+      <select name="system.dmg_type">
+        {{selectOptions POWERSTUFF.DAMAGETYPES localize=true selected=item.system.dmg_type}}
+      </select>
+    </div>
 
     {{> "systems/persona/parts/effects-section.hbs" item=item POWERSTUFF=POWERSTUFF}}
   </body>

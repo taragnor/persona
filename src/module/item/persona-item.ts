@@ -545,6 +545,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.system.type == 'item' && this.system.slot == 'accessory';
   }
 
+  isWeaponCrystal() : boolean {
+    return this.system.type == 'item' && this.system.slot == 'weapon_crystal';
+  }
+
   isCardItem() : this is CardItem {
     return this.system.type == 'skillCard';
   }
@@ -2720,7 +2724,19 @@ get targetsDefense() : Defense {
 }
 
 isEnchantable(this: Carryable) : boolean {
-  return (this.isEquippable());
+  return this.isEquippable();
+}
+
+canEnchantItem(this: Tag, item: Weapon | InvItem): boolean {
+  if (this.system.tagType != "enchantment") {return false;}
+  const itemLevel = item.itemLevel() - (item.isWeaponCrystal() ? 4 : 0);
+  const {minlvl, maxlvl, validSlots} = this.system.enchantment;
+  if ( maxlvl < itemLevel
+      || minlvl > itemLevel) {return false;}
+  if (item.isWeapon()) {
+    return validSlots["weapon"];
+  }
+  return validSlots[item?.system?.slot as keyof typeof validSlots] ?? false;
 }
 
 isDamagePower(this: Usable): boolean {

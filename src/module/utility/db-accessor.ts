@@ -231,6 +231,7 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
   async onLoadPacks(): Promise<void> { }
 
   async #loadPacks() : Promise<void> {
+    console.debug("Reloading Compendium");
     await this.#_loadPacks();
     this._requiresReload = false;
     this._edited = [];
@@ -263,7 +264,6 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
   }
 
   onUpdateCompendium(compendium: FoundryCompendium<FoundryDocument>) {
-    console.debug("Updating Compendium");
     switch (compendium.documentName) {
       case "Actor":
       case "Item":

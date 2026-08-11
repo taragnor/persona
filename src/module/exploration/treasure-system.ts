@@ -16,7 +16,7 @@ export class TreasureSystem {
     const otherTreasure = this.moreTreasure(treasureRoll) ? this.generate(treasureLevel, searcher, modifier, treasureMin) : [];
     if (!item) {return otherTreasure;}
     if (item.isEnchantable()) {
-      const enchantments = this.generateEnchantments(item, treasureLevel, modifier, treasureMin);
+      const enchantments = this.generateEnchantments(item as Weapon | InvItem, treasureLevel, modifier, treasureMin);
       return [{
         item: item.accessor as UniversalItemAccessor<TreasureItem>,
         enchantments: enchantments.map( tag=> tag.id),
@@ -28,20 +28,28 @@ export class TreasureSystem {
     } as EnchantedTreasureFormat].concat(otherTreasure);
   }
 
-	static generateEnchantments(item: Carryable, treasureLevel: number, modifier = 0, treasureMin = 1) : Tag[] {
-		if (item.isInvItem()) {
-			if (item.system.slot == "weapon_crystal") {
-				modifier -= 50;
-			}
-			if (item.isAccessory()) {
-				treasureMin = Math.max(50, treasureMin);
-			}
-		}
+  static generateEnchantments(item: Weapon | InvItem, treasureLevel: number, modifier = 0, treasureMin = 1) : Tag[] {
+    // if (item.isInvItem()) {
+    // 	if (item.system.slot == "weapon_crystal") {
+    // 		modifier -= 50;
+    // 	}
+    // 	if (item.isAccessory()) {
+    // 		treasureMin = Math.max(50, treasureMin);
+    // 	}
+    // }
+    if (item.isWeaponCrystal()) {
+      modifier -= 0.25;
+    }
+    modifier -= item
+      .tagList(null)
+      .filter( tag =>tag instanceof PersonaItem ?  tag.isEnchantmentTag() : false)
+      .length * 25;
     for  (let tries = 0 ;tries < 10; ++tries) {
-		const enchantmentRoll = this.treasureRoll(modifier, treasureMin);
-    if (enchantmentRoll <= 15) {return [];}
-		const enchantmentTable = this.convertRollToTreasureTable(enchantmentRoll);
-		const enchantment = this.generateEnchantmentFromTable(enchantmentTable, treasureLevel);
+      const enchantmentRoll = this.treasureRoll(modifier, treasureMin);
+      if (enchantmentRoll <= 15) {return [];}
+      // const enchantmentTable = this.convertRollToTreasureTable(enchantmentRoll);
+      // const enchantment = this.generateEnchantmentFromTable(enchantmentTable, treasureLevel);
+      const enchantment = this.generateEnchantmentForItem(item);
       if (enchantment) {
         if (this.moreEnchantments(enchantmentRoll)) {
           return [enchantment].concat(this.generateEnchantments(item, treasureLevel, modifier, treasureMin));
@@ -50,26 +58,30 @@ export class TreasureSystem {
       }
       if (!item.isAccessory()) {return [];}
     }
-		return [];
-	}
+    return [];
+  }
 
-	static async DorisAbility(item: Carryable) {
-		if (!item.parent) {
-			ui.notifications.warn("This requires an item held by a PC");
-			return null;
-		}
-		const enchantments = this.generateEnchantments(item, item.parent.level);
+  static async DorisAbility(item: Carryable) {
+    if (!item.parent) {
+      ui.notifications.warn("This requires an item held by a PC");
+      return null;
+    }
+    if (!(item.isInvItem() && item.isWeapon()) || !item.isEquippable()) {
+      ui.notifications.warn("This itme can't take enchantments");
+      return null;
+    }
+    const enchantments = this.generateEnchantments(item, item.parent.level);
     const enchantmentNames=  enchantments.length > 0 ? enchantments.map( x=> x.name) : ["Ritual Fizzled"];
-		const html = `
-			<h2> Re-enchanting ${item.name} </h2>
-			Result : ${enchantmentNames.join(", ")}
-			`;
-		await ChatMessage.create( {
-			speaker: {
-				alias: "Re-enchantment ${item.name}"
-			},
-			content: html,
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
+    const html = `
+      <h2> Re-enchanting ${item.name} </h2>
+      Result : ${enchantmentNames.join(", ")}
+      `;
+    await ChatMessage.create( {
+      speaker: {
+        alias: "Re-enchantment ${item.name}"
+      },
+      content: html,
+      style: CONST.CHAT_MESSAGE_STYLES.OOC,
 
 		});
 		return enchantments;
@@ -110,20 +122,20 @@ export class TreasureSystem {
 		}
 	}
 
-	static enchantmentList(table: Exclude<TreasureTable, "none">, treasureLevel: number) : Tag[] {
-		return PersonaDB.enchantments()
-			.filter ( item =>
-				item.system.treasure.trinkets.enabled
-				|| item.system.treasure.lesser.enabled
-				|| item.system.treasure.greater.enabled
-				|| item.system.treasure.royal.enabled
-			)
-			.filter( tag =>
-				tag.system.treasure[table].enabled
-				&& treasureLevel >= tag.system.treasure[table].minLevel
-				&& treasureLevel <= tag.system.treasure[table].maxLevel
-			);
-	}
+	// static enchantmentList(table: Exclude<TreasureTable, "none">, treasureLevel: number) : Tag[] {
+	// 	return PersonaDB.enchantments()
+	// 		.filter ( item =>
+	// 			item.system.treasure.trinkets.enabled
+	// 			|| item.system.treasure.lesser.enabled
+	// 			|| item.system.treasure.greater.enabled
+	// 			|| item.system.treasure.royal.enabled
+	// 		)
+	// 		.filter( tag =>
+	// 			tag.system.treasure[table].enabled
+	// 			&& treasureLevel >= tag.system.treasure[table].minLevel
+	// 			&& treasureLevel <= tag.system.treasure[table].maxLevel
+	// 		);
+	// }
 
 	static treasureList(table: Exclude<TreasureTable, "none">, treasureLevel: number)  : Carryable[] {
 		return PersonaDB.treasureItems()
@@ -151,7 +163,7 @@ export class TreasureSystem {
 		return weightedChoice(weights);
 	}
 
-  static generateWeight(item: TreasureItem | Tag, table: Exclude<TreasureTable, "none"> , applyPossessionMult: boolean, searcher: N<PCLike>) : number {
+  static generateWeight(item: TreasureItem, table: Exclude<TreasureTable, "none"> , applyPossessionMult: boolean, searcher: N<PCLike>) : number {
     const rarity = item.system.treasure[table].rarity;
     const possessionMult = applyPossessionMult && item.isCarryableType() ? this.possessionWeightMod(item): 1;
     const baseWeight = ENCOUNTER_RATE_PROBABILITY[rarity];
@@ -203,18 +215,30 @@ export class TreasureSystem {
 		}
 	}
 
-	static generateEnchantmentFromTable(table: Exclude<TreasureTable, "none">, treasureLevel: number) : U<Tag> {
-		const list = this.enchantmentList(table, treasureLevel);
-		if (list.length == 0) {return undefined;}
-		const weights = list
-		.map( item=> {
-			const rarity = item.system.treasure[table].rarity;
-			const baseWeight = ENCOUNTER_RATE_PROBABILITY[rarity];
-			const weight = baseWeight;
-			return { item, weight };
-		});
-		return weightedChoice(weights);
-	}
+
+  static generateEnchantmentForItem(item : Weapon | InvItem) {
+    const list = PersonaDB.enchantments()
+      .filter (tag=> tag.canEnchantItem(item));
+    const weights= list
+      .map( item=> {
+        const rarity = item.system.enchantment.rarity;
+        const weight = ENCOUNTER_RATE_PROBABILITY[rarity];
+        return { item, weight};
+      });
+    return weightedChoice(weights);
+  }
+  // static generateEnchantmentFromTable(table: Exclude<TreasureTable, "none">, treasureLevel: number) : U<Tag> {
+  // 	const list = this.enchantmentList(table, treasureLevel);
+  // 	if (list.length == 0) {return undefined;}
+  // 	const weights = list
+  // 	.map( item=> {
+  // 		const rarity = item.system.treasure[table].rarity;
+  // 		const baseWeight = ENCOUNTER_RATE_PROBABILITY[rarity];
+  // 		const weight = baseWeight;
+  // 		return { item, weight };
+  // 	});
+  // 	return weightedChoice(weights);
+  // }
 
 	static printEnchantedTreasureString(treasure: EnchantedTreasureFormat) : string {
 		const basename = PersonaDB.findItem(treasure.item).name;
@@ -409,6 +433,11 @@ export class TreasureSystem {
 	}
 
 	static guessItemLevel(item: Carryable | Tag) : number {
+    if (item.isTag()) {
+      const min = item.system.enchantment.minlvl ?? 0;
+      const max = item.system.enchantment.maxlvl ?? 0;
+      return Math.floor(min+ max / 2);
+    }
 		const treasure = item.system.treasure;
 		for (let i = 0; i < 100; i+=5) {
 			if (i >= treasure.royal.minLevel

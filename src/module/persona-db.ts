@@ -124,7 +124,6 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     return classes.find (x=> x.name == name);
   }
 
-
   async refreshCombatStats() {
     for (const actor of this.allActors()) {
       if (!actor.isValidCombatant()) {continue;}
