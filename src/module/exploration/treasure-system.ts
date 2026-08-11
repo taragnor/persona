@@ -29,16 +29,8 @@ export class TreasureSystem {
   }
 
   static generateEnchantments(item: Weapon | InvItem, treasureLevel: number, modifier = 0, treasureMin = 1) : Tag[] {
-    // if (item.isInvItem()) {
-    // 	if (item.system.slot == "weapon_crystal") {
-    // 		modifier -= 50;
-    // 	}
-    // 	if (item.isAccessory()) {
-    // 		treasureMin = Math.max(50, treasureMin);
-    // 	}
-    // }
     if (item.isWeaponCrystal()) {
-      modifier -= 0.25;
+      modifier -= 25;
     }
     modifier -= item
       .tagList(null)
@@ -47,8 +39,6 @@ export class TreasureSystem {
     for  (let tries = 0 ;tries < 10; ++tries) {
       const enchantmentRoll = this.treasureRoll(modifier, treasureMin);
       if (enchantmentRoll <= 15) {return [];}
-      // const enchantmentTable = this.convertRollToTreasureTable(enchantmentRoll);
-      // const enchantment = this.generateEnchantmentFromTable(enchantmentTable, treasureLevel);
       const enchantment = this.generateEnchantmentForItem(item);
       if (enchantment) {
         if (this.moreEnchantments(enchantmentRoll)) {
@@ -121,21 +111,6 @@ export class TreasureSystem {
 			}
 		}
 	}
-
-	// static enchantmentList(table: Exclude<TreasureTable, "none">, treasureLevel: number) : Tag[] {
-	// 	return PersonaDB.enchantments()
-	// 		.filter ( item =>
-	// 			item.system.treasure.trinkets.enabled
-	// 			|| item.system.treasure.lesser.enabled
-	// 			|| item.system.treasure.greater.enabled
-	// 			|| item.system.treasure.royal.enabled
-	// 		)
-	// 		.filter( tag =>
-	// 			tag.system.treasure[table].enabled
-	// 			&& treasureLevel >= tag.system.treasure[table].minLevel
-	// 			&& treasureLevel <= tag.system.treasure[table].maxLevel
-	// 		);
-	// }
 
 	static treasureList(table: Exclude<TreasureTable, "none">, treasureLevel: number)  : Carryable[] {
 		return PersonaDB.treasureItems()
@@ -227,18 +202,6 @@ export class TreasureSystem {
       });
     return weightedChoice(weights);
   }
-  // static generateEnchantmentFromTable(table: Exclude<TreasureTable, "none">, treasureLevel: number) : U<Tag> {
-  // 	const list = this.enchantmentList(table, treasureLevel);
-  // 	if (list.length == 0) {return undefined;}
-  // 	const weights = list
-  // 	.map( item=> {
-  // 		const rarity = item.system.treasure[table].rarity;
-  // 		const baseWeight = ENCOUNTER_RATE_PROBABILITY[rarity];
-  // 		const weight = baseWeight;
-  // 		return { item, weight };
-  // 	});
-  // 	return weightedChoice(weights);
-  // }
 
 	static printEnchantedTreasureString(treasure: EnchantedTreasureFormat) : string {
 		const basename = PersonaDB.findItem(treasure.item).name;
