@@ -2708,7 +2708,6 @@ removesAilment(this:Power) : boolean {
     return true;
   }
   return false;
-  // return this.removesStatus(STATUS_AILMENT_LIST) > 0;
 }
 
 get customCost() : boolean {
@@ -2940,23 +2939,12 @@ export interface Accessible<T extends UniversalAccessorTypes> {
 export interface EffectCarrier {
   getEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions) : readonly ConditionalEffectC[];
   getAuraEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions) : readonly ConditionalEffectC[];
-  // getEmbeddedEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions) : readonly ConditionalEffectC[];
   getModifier(bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null): readonly ModifierListItem[];
   name: string;
   displayedName: string;
 }
 
-// export interface ModifierContainer <T extends Actor | TokenDocument | Item | ActiveEffect = ContainerTypes> {
 export interface ModifierContainer<T extends UniversalAccessorTypes & EffectCarrier = UniversalAccessorTypes & EffectCarrier> extends Accessible<T>, EffectCarrier {
-  // getEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions) : readonly ConditionalEffectC[];
-  // getAuraEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions) : readonly ConditionalEffectC[];
-  // getEmbeddedEffects(sourceActor : PersonaActor | null, options ?: GetEffectsOptions) : readonly SourcedConditionalEffect[];
-  // parent: T["parent"];
-  // name: string;
-  // id: T["id"];
-  // displayedName: string;
-  // accessor : UniversalAccessor<this>;
-  // getModifier(bonusTypes : ModifierTarget[] | ModifierTarget, sourceActor: PersonaActor | null): ModifierListItem[];
 }
 
 

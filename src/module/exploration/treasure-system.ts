@@ -29,9 +29,7 @@ export class TreasureSystem {
   }
 
   static generateEnchantments(item: Weapon | InvItem, treasureLevel: number, modifier = 0, treasureMin = 1) : Tag[] {
-    if (item.isWeaponCrystal()) {
-      modifier -= 25;
-    }
+    if (item.isWeaponCrystal()) { modifier -= 25; }
     modifier -= item
       .tagList(null)
       .filter( tag =>tag instanceof PersonaItem ?  tag.isEnchantmentTag() : false)
