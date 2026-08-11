@@ -5,6 +5,7 @@ import { PersonaError } from "./persona-error.js";
 import {PersonaDB} from "./persona-db.js";
 import {PersonaCombat} from "./combat/persona-combat.js";
 import {checkSituationProp} from "../config/situation.js";
+import {CalculationV2} from "./utility/calculation-v2.js";
 
 abstract class RollBundleBase {
   name: string | ((b: RollBundle) => string);
@@ -13,8 +14,9 @@ abstract class RollBundleBase {
 
   constructor (rollName: typeof this["name"] ,roll : Roll, playerRoll : boolean) {
     this._playerRoll = playerRoll;
-    if (!roll._evaluated)
-    {throw new Error("Can't construct a Roll bundle with unevaluated roll");}
+    if (!roll._evaluated) {
+      throw new Error("Can't construct a Roll bundle with unevaluated roll");
+    }
     this.roll = roll;
     this.name = rollName;
   }
@@ -30,13 +32,13 @@ abstract class RollBundleBase {
 
 export class RollBundle extends RollBundleBase {
   private modList: {
-    mods: ModifierList | Calculation;
+    mods: ValidModListType;
     situation: SituationComponent.RollParts.PreRoll;
   };
   private DC ?: number | ((b: RollBundle) => number);
   _resultFn : U< ((DC: number, total: number, rb: RollBundle) => SituationTypes.Roll["result"])>;
 
-  constructor (rollName: RollBundleBase["name"] ,roll : Roll, playerRoll : boolean,  modList : ModifierList | Calculation, situation : SituationTypes.PreRoll, DC : RollBundle["DC"]) {
+  constructor (rollName: RollBundleBase["name"] ,roll : Roll, playerRoll : boolean,  modList : ValidModListType, situation : SituationTypes.PreRoll, DC : RollBundle["DC"]) {
     super(rollName, roll, playerRoll);
     if (!roll._evaluated)
     {throw new Error("Can't construct a Roll bundle with unevaluated roll");}
@@ -217,3 +219,5 @@ export class ResolvedRollBundle extends RollBundleBase {
 
 }
 
+
+export type ValidModListType = ModifierList | Calculation | CalculationV2;
