@@ -11,7 +11,6 @@ import {CombatEngine} from "./combat/combat-engine.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {PersonaTargetting} from "./combat/persona-targetting.js";
 import {checkSituationProp} from "../config/situation.js";
-import {ConditionalEffectPrinter} from "./conditionalEffects/conditional-effect-printer.js";
 
 type TriggerParam<T extends Trigger=Trigger> = PartialKeys<TriggeredSituation.TriggerSituation, "triggeringUser"> & {trigger: T};
 
@@ -42,34 +41,6 @@ export class TriggeredEffect {
     const consequences = this._getTriggerConsequences(triggers, situationCopy );
     return consequences;
   }
-
-  // private static _cancelCheckCEs<const T extends Trigger>(situation: TriggerParam<T>, actor : U<ValidAttackers>) : ConditionalEffectC[] {
-  //   const situationCopy = {
-  //     ...(situation satisfies TriggerParam<T>),
-  //     triggeringUser: game.user.id,
-  //   } satisfies TriggeredSituation.TriggerSituation;
-  //   const triggers = this.getTriggerList(situationCopy.trigger, actor, situationCopy);
-  //   return triggers
-  //     .filter( trig => trig.canCancel());
-  // }
-
-  // static onTrigger_cancelCheck<const T extends Trigger>(situation: TriggerParam<T>, actor : U<ValidAttackers>) : boolean {
-  //   const situationCopy = {
-  //     ...(situation satisfies TriggerParam<T>),
-  //     triggeringUser: game.user.id,
-  //   } satisfies TriggeredSituation.TriggerSituation;
-  //   const triggers= this._cancelCheckCEs(situation, actor);
-  //   return triggers.some( trig=> trig.checkForCancelEffect(situationCopy));
-  // }
-
-  // static onTrigger_cancelCheck_getReasons<const T extends Trigger>(situation: TriggerParam<T>, actor: U<ValidAttackers>) : string[] {
-  //   const triggers= this._cancelCheckCEs(situation, actor);
-  //   const failedCond = triggers
-  //     .map (trig => {
-  //       return ConditionalEffectPrinter.printConditions(trig.conditions);
-  //     });
-  //   return failedCond;
-  // }
 
   private static _getTriggerConsequences ( triggers: ConditionalEffectC[], situation: Situation) {
     return triggers.flatMap ( CE => {

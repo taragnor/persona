@@ -5,7 +5,7 @@ import {TriggeredEffect} from "./module/triggered-effect.js";
 
 export class CancelTrigger {
 
-  static cancelCheck<T extends CancelCheck>(situation: CheckParam<T>, actor: U<ValidAttackers>) :boolean {
+  static cancelCheck<T extends CancelCheck>(situation: CheckParam<T>, actor: U<ValidAttackers>) : boolean {
     const situationCopy = {
       ...(situation satisfies CheckParam<T>),
       triggeringUser: game.user.id,

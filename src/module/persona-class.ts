@@ -22,7 +22,6 @@ import {Defense} from "../config/defense-types.js";
 import {PersonaStat} from "../config/persona-stats.js";
 import {Calculation, EvaluatedCalculation} from "./utility/calculation.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
-import {ConditionalEffectPrinter} from "./conditionalEffects/conditional-effect-printer.js";
 import {PersonaAura} from "./persona-auras.js";
 import {PowerLearningSystem} from "./power-learning.js";
 import {CombatEngine} from "./combat/combat-engine.js";
