@@ -1,9 +1,9 @@
+import {CancelTrigger} from "../../cancel-check-effect.js";
 import { PersonaActor } from "../actor/persona-actor.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 import {ConditionalEffectPrinter} from "../conditionalEffects/conditional-effect-printer.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
-import {TriggeredEffect} from "../triggered-effect.js";
 import {randomSelect} from "../utility/array-tools.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
 
@@ -114,7 +114,7 @@ export class PersonaTargetting {
   private targetPassesTargetCheckTrigger_getReasons(user: ValidAttackers, target: ValidAttackers, sit ?: Situation) : FailReason[] {
     const triggerSit = {
       ...sit,
-      trigger: "check-legal-target",
+      trigger: "check-legal-target" as const,
       triggeringUser: game.user.id,
       triggeringCharacter: user.accessor,
       addedTags: sit && "addedTags" in sit && sit.addedTags ? sit.addedTags : [],
@@ -122,8 +122,8 @@ export class PersonaTargetting {
       user: user.accessor,
       target: target.accessor,
       attacker : user.accessor,
-    } satisfies Situation;
-    const triggerCheck = TriggeredEffect.onTrigger_cancelCheck_getReasons(triggerSit, user);
+    } as const satisfies Situation;
+    const triggerCheck = CancelTrigger.getReasons(triggerSit, user);
     return triggerCheck;
   }
 

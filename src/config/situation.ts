@@ -38,6 +38,8 @@ export type AllSituations =
 
   export type TriggerSituation = TriggeredSituation.TriggerSituation;
 
+  export type CancelCheckSituation = TriggeredSituation.CancelSituation;
+
   export type BonusQuerySituation = (OffensiveBonusSituation | DefensiveBonusSituation | PowerPricing | UserOnlyBonusSituation | SocialCardWeightQuery)
     &  Partial<BonusQueryAdds>;
 
@@ -146,7 +148,6 @@ namespace SituationComponent {
 
     type PowerUsePart = SituationComponent.User & SituationComponent.Attacker & SituationComponent.Targetted & {
       usedPower : UniversalItemAccessor<UsableAndCard>;
-      // rollType: AttackRollType,
     }
 
     type CombatPreRollPart = PowerUsePart & {
@@ -154,9 +155,6 @@ namespace SituationComponent {
       instantKillRange : AttackResult["ranges"][number],
       critRange : AttackResult["ranges"][number],
       evadeRange : AttackResult["ranges"][number],
-      // ailmentRange : AttackResult["ailmentRange"],
-      // instantKillRange : AttackResult["instantKillRange"],
-      // critRange : AttackResult["critRange"],
     }
 
     type CombatReportPart = Partial<CombatPreRollPart> & PowerUsePart & CompletedRollPart & {
@@ -166,8 +164,6 @@ namespace SituationComponent {
       withinEvadeRange: boolean;
       resisted : boolean;
       struckWeakness : boolean;
-      // attackerPersona: Persona,
-      // targetPersona: Persona,
     }
 
   }
@@ -177,9 +173,19 @@ namespace SituationComponent {
 namespace TriggeredSituation {
   export type TriggerSituation = TriggerSituation_base & TriggerTypes;
 
+  export type CancelSituation = TriggerSituation_base & Checks;
+
   export type Select<T extends Trigger> = Prettify<
     HasKey<SituationTypes.TriggerSituation, "trigger"> & {trigger:T}
     >;
+
+  type PowerUsageCheck =
+    & SituationComponent.TriggeringCharacter
+    & SituationComponent.User
+    & SituationComponent.UsedPower
+    & {
+      trigger : "on-power-usage-check";
+    }
 
   type TriggerTypes = ExplorationTrigger
     | OnRollTrigger
@@ -194,7 +200,7 @@ namespace TriggeredSituation {
     | EndSocialCardTrigger
 
   type Checks =
-    OnPowerUsageCheckTrigger
+    PowerUsageCheck
     | EquipCheck
     | LegalTargetCheck;
 

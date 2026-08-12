@@ -46,7 +46,28 @@ export class ItemHooks {
       const msg = `${parent.name} deleted ${item.displayedName} (${item.amount})`;
       void Logger.sendToChat(msg, parent);
     });
+
+    Hooks.on('updateItem', (item :PersonaItem, _diff: DeepPartial<typeof item>) => {
+      item.clearCache();
+      if (item.parent instanceof PersonaActor) {
+        item.parent.clearCache();
+      }
+      if (item.isTag()) {
+        PersonaDB.allItems()
+          .filter (x=> x.isCarryableType() || x.isUsableType() )
+          .filter( x=> x.hasTag(item, null) )
+          .forEach( x=> x.clearCache() );
+      }
+    });
+
+    Hooks.on('deleteItem', async (item: PersonaItem) => {
+      if (item.parent instanceof PersonaActor && item.hasPlayerOwner && item.isOwner && !game.user.isGM) {
+        await Logger.sendToChat(`${item.parent.displayedName} deletes ${item.name}(${item.amount})`, item.parent);
+      }
+    });
+
   }
+
 
 }
 

@@ -71,70 +71,70 @@ export class TreasureSystem {
       content: html,
       style: CONST.CHAT_MESSAGE_STYLES.OOC,
 
-		});
-		return enchantments;
-	}
+    });
+    return enchantments;
+  }
 
-	static moreTreasure (treasureRoll: number) : boolean {
-		const die = treasureRoll ;
-		switch (true)  {
-			case die > 40 && die <= 50: return true;
-			case die >= 73 && die < 75: return true;
-			default: return false;
-		}
-	}
+  static moreTreasure (treasureRoll: number) : boolean {
+    const die = treasureRoll ;
+    switch (true)  {
+      case die > 40 && die <= 50: return true;
+      case die >= 73 && die < 75: return true;
+      default: return false;
+    }
+  }
 
   static moreEnchantments(treasureRoll: number) : boolean {
     return treasureRoll % 12 == 0;
   }
 
 
-	static treasureRoll(modifier: number, treasureRollMin: number) : number {
-		modifier += treasureRollMin;
-		const dieSize = 101 - treasureRollMin;
-		const die = modifier + Math.floor(Math.random() * dieSize);
-		return die;
-	}
+  static treasureRoll(modifier: number, treasureRollMin: number) : number {
+    modifier += treasureRollMin;
+    const dieSize = 101 - treasureRollMin;
+    const die = modifier + Math.floor(Math.random() * dieSize);
+    return die;
+  }
 
-	static convertRollToTreasureTable(rollValue: number) : Exclude<TreasureTable, "none"> {
-		const die = rollValue;
-		switch (true) {
-			case die < 60: return "trinkets";
-			case die < 80: return "lesser";
-			case die < 100: return "greater";
-			case die >= 100: return "royal";
-			default: {
-				PersonaError.softFail(`Defaulting to trinkets due to bad value for die ${die}`);
-				return "trinkets";
-			}
-		}
-	}
+  static convertRollToTreasureTable(rollValue: number) : Exclude<TreasureTable, "none"> {
+    const die = rollValue;
+    switch (true) {
+      case die < 60: return "trinkets";
+      case die < 80: return "lesser";
+      case die < 100: return "greater";
+      case die >= 100: return "royal";
+      default: {
+        PersonaError.softFail(`Defaulting to trinkets due to bad value for die ${die}`);
+        return "trinkets";
+      }
+    }
+  }
 
-	static treasureList(table: Exclude<TreasureTable, "none">, treasureLevel: number)  : Carryable[] {
-		return PersonaDB.treasureItems()
-			.filter ( item =>
-				item.system.treasure.trinkets.enabled
-				|| item.system.treasure.lesser.enabled
-				|| item.system.treasure.greater.enabled
-				|| item.system.treasure.royal.enabled
-			)
-			.filter( item =>
-				item.system.treasure[table].enabled
-				&& treasureLevel >= item.system.treasure[table].minLevel
-				&& treasureLevel <= item.system.treasure[table].maxLevel
-			);
-	}
+  static treasureList(table: Exclude<TreasureTable, "none">, treasureLevel: number)  : Carryable[] {
+    return PersonaDB.treasureItems()
+      .filter ( item =>
+        item.system.treasure.trinkets.enabled
+        || item.system.treasure.lesser.enabled
+        || item.system.treasure.greater.enabled
+        || item.system.treasure.royal.enabled
+      )
+      .filter( item =>
+        item.system.treasure[table].enabled
+        && treasureLevel >= item.system.treasure[table].minLevel
+        && treasureLevel <= item.system.treasure[table].maxLevel
+      );
+  }
 
-	static generateFromTable(table: Exclude<TreasureTable, "none">, treasureLevel: number, searcher : N<PCLike>) : U<TreasureItem> {
-		const list = this.treasureList(table, treasureLevel);
-		if (list.length == 0) {return undefined;}
-		const weights = list
-		.map( item=> {
+  static generateFromTable(table: Exclude<TreasureTable, "none">, treasureLevel: number, searcher : N<PCLike>) : U<TreasureItem> {
+    const list = this.treasureList(table, treasureLevel);
+    if (list.length == 0) {return undefined;}
+    const weights = list
+    .map( item=> {
       const weight = this.generateWeight(item, table, true, searcher);
-			return { item, weight };
-		});
-		return weightedChoice(weights);
-	}
+      return { item, weight };
+    });
+    return weightedChoice(weights);
+  }
 
   static generateWeight(item: TreasureItem, table: Exclude<TreasureTable, "none"> , applyPossessionMult: boolean, searcher: N<PCLike>) : number {
     const rarity = item.system.treasure[table].rarity;
@@ -159,34 +159,34 @@ export class TreasureSystem {
     return itemMod * searcherMult;
   }
 
-	static amountOfItemOwnedByParty(item : TreasureItem) : number {
-		const pcsAndAllies = game.actors.filter( (act:PersonaActor) => act.isPC() || act.isNPCAlly()) as PersonaActor[];
-		const items = pcsAndAllies.map( actor => actor.items.find(i=> i.name == item.name)?.amount ?? 0);
-		return items.reduce( (acc,i) => acc+i, 0);
-	}
+  static amountOfItemOwnedByParty(item : TreasureItem) : number {
+    const pcsAndAllies = game.actors.filter( (act:PersonaActor) => act.isPC() || act.isNPCAlly()) as PersonaActor[];
+    const items = pcsAndAllies.map( actor => actor.items.find(i=> i.name == item.name)?.amount ?? 0);
+    return items.reduce( (acc,i) => acc+i, 0);
+  }
 
-	static possessionWeightMod(item: TreasureItem) : number {
-		if (this.isCollectableItem(item)) {return 1;}
-		const amtOwned= this.amountOfItemOwnedByParty(item);
-		return Math.max(0.25, 1 - amtOwned/3);
-	}
+  static possessionWeightMod(item: TreasureItem) : number {
+    if (this.isCollectableItem(item)) {return 1;}
+    const amtOwned= this.amountOfItemOwnedByParty(item);
+    return Math.max(0.25, 1 - amtOwned/3);
+  }
 
-	static isCollectableItem( item: TreasureItem) {
-		switch (item.system.type) {
-			case "consumable":
-				return true;
-			case "item":
-				if (item.isCraftingItem) {return true;}
-				return false;
-			case "skillCard":
-				return false;
-			case "weapon":
-				return false;
-			default:
-				item.system satisfies never;
-				return false;
-		}
-	}
+  static isCollectableItem( item: TreasureItem) {
+    switch (item.system.type) {
+      case "consumable":
+        return true;
+      case "item":
+        if (item.isCraftingItem) {return true;}
+        return false;
+      case "skillCard":
+        return false;
+      case "weapon":
+        return false;
+      default:
+        item.system satisfies never;
+        return false;
+    }
+  }
 
 
   static generateEnchantmentForItem(item : Weapon | InvItem) {
@@ -201,24 +201,24 @@ export class TreasureSystem {
     return weightedChoice(weights);
   }
 
-	static printEnchantedTreasureString(treasure: EnchantedTreasureFormat) : string {
-		const basename = PersonaDB.findItem(treasure.item).name;
-		if (treasure.enchantments.length == 0) {
-			return basename;
-		}
-		const enchantments = treasure.enchantments.map( x=> PersonaDB.allTags().get(x)?.name);
-		return `${basename} (${enchantments.join(", ")})`;
-	}
+  static printEnchantedTreasureString(treasure: EnchantedTreasureFormat) : string {
+    const basename = PersonaDB.findItem(treasure.item).name;
+    if (treasure.enchantments.length == 0) {
+      return basename;
+    }
+    const enchantments = treasure.enchantments.map( x=> PersonaDB.allTags().get(x)?.name);
+    return `${basename} (${enchantments.join(", ")})`;
+  }
 
   /**prints out 100 treasure items*/
-	static async test(searcher: N<PCLike>, treasureLevel: number, modifier: number = 0, minLevel: number = 1) {
-		const arr : EnchantedTreasureFormat[] = [];
-		for (let i = 0; i <100; i++ ) {
-			const treasure = this.generate(treasureLevel, searcher, modifier, minLevel);
-			if (treasure) { arr.push(...treasure); }
-		}
-		await this.handleTreasureRolls(arr);
-	}
+  static async test(searcher: N<PCLike>, treasureLevel: number, modifier: number = 0, minLevel: number = 1) {
+    const arr : EnchantedTreasureFormat[] = [];
+    for (let i = 0; i <100; i++ ) {
+      const treasure = this.generate(treasureLevel, searcher, modifier, minLevel);
+      if (treasure) { arr.push(...treasure); }
+    }
+    await this.handleTreasureRolls(arr);
+  }
 
   static async handleTreasureRolls (treasures: EnchantedTreasureFormat[]) {
     await this.printTreasureFound(treasures);
@@ -241,30 +241,30 @@ export class TreasureSystem {
     return treasures;
   }
 
-	static async printTreasureFound (treasures: EnchantedTreasureFormat[]) {
-		if (treasures.length == 0) {return;}
-		const htmlHeader = `<h2> Treasure Found </h2>`;
+  static async printTreasureFound (treasures: EnchantedTreasureFormat[]) {
+    if (treasures.length == 0) {return;}
+    const htmlHeader = `<h2> Treasure Found </h2>`;
     const html = treasures.reduce( (acc, tr) => {
       const treasureStr = TreasureSystem.printEnchantedTreasureString(tr);
       return acc + `<div> ${treasureStr} </div>`;
     }, htmlHeader);
-		return await ChatMessage.create({
-			speaker: {
-				alias: "Treasure Rolls"
-			},
-			content: html,
-			style: CONST.CHAT_MESSAGE_STYLES.OOC,
-		});
-	}
+    return await ChatMessage.create({
+      speaker: {
+        alias: "Treasure Rolls"
+      },
+      content: html,
+      style: CONST.CHAT_MESSAGE_STYLES.OOC,
+    });
+  }
 
-	static randomPower(
+  static randomPower(
     baseCriteria: { slot?:0 | 1 | 2 | 3, forbidExotic?: boolean} = {}, condition ?: SourcedPrecondition, situation ?: Situation ) {
     const {forbidExotic, slot} = baseCriteria;
-		const powers = PersonaDB.allPowersArr()
-			.filter ( pwr => pwr.isInheritable())
-			.filter ( pwr => slot != undefined ? pwr.system.slot == slot : true)
-			.filter ( pwr => forbidExotic ? !pwr.isExotic() : true)
-			.filter ( pwr => {
+    const powers = PersonaDB.allPowersArr()
+      .filter ( pwr => pwr.isInheritable())
+      .filter ( pwr => slot != undefined ? pwr.system.slot == slot : true)
+      .filter ( pwr => forbidExotic ? !pwr.isExotic() : true)
+      .filter ( pwr => {
         if (!condition) {return true;}
         const sit = {
           ...situation,
@@ -272,205 +272,204 @@ export class TreasureSystem {
         };
         return testPrecondition(condition, sit);
       });
-		const weightedPowers = powers.map ( pwr =>
-			({
-				item: pwr,
-				weight: RANDOM_POWER_RATE[pwr.system.rarity]
-			}));
-		return weightedChoice(weightedPowers);
-	}
+    const weightedPowers = powers.map ( pwr =>
+      ({
+        item: pwr,
+        weight: RANDOM_POWER_RATE[pwr.system.rarity]
+      }));
+    return weightedChoice(weightedPowers);
+  }
 
 
-	private static async considerSkillCard(powerId: string, prob: number) : Promise<SkillCard[]> {
-		if (!powerId) {return [];}
-		const power = PersonaDB.allPowers().get(powerId);
-		if (!power) {
-			PersonaError.softFail(`Can't fiund Power Id ${powerId} for treasure`);
-			return [];
-		}
-		if (Math.random() > prob) {return [];}
-		const existingCard = PersonaDB.skillCards().find( x=> x.system.skillId  ==  powerId);
-		if (existingCard) {
-			return [existingCard];
-		}
-		const newCard = await PersonaItem.createSkillCardFromPower(power);
-		const msg = `Skill Card created for ${power.name}`;
-		ui.notifications.notify(msg);
-		console.log(msg);
-		return [newCard];
-	}
+  private static async considerSkillCard(powerId: string, prob: number) : Promise<SkillCard[]> {
+    if (!powerId) {return [];}
+    const power = PersonaDB.allPowers().get(powerId);
+    if (!power) {
+      PersonaError.softFail(`Can't fiund Power Id ${powerId} for treasure`);
+      return [];
+    }
+    if (Math.random() > prob) {return [];}
+    const existingCard = PersonaDB.skillCards().find( x=> x.system.skillId  ==  powerId);
+    if (existingCard) {
+      return [existingCard];
+    }
+    const newCard = await PersonaItem.createSkillCardFromPower(power);
+    const msg = `Skill Card created for ${power.name}`;
+    ui.notifications.notify(msg);
+    console.log(msg);
+    return [newCard];
+  }
 
-	private static considerItem (itemId: string, prob: number, maxAmount = 1) : Carryable[] {
-		const item = PersonaDB.treasureItems().find(x=> x.id == itemId);
-		let amt = Math.max(1, Math.floor(Math.random() * maxAmount + 1));
-		const arr : Carryable[] = [];
-		while (amt-- > 0) {
-			if (!item || prob <= 0) {return [];}
-			if (Math.random() > prob) {return [];}
-			arr.push(item);
-		}
-		return arr;
-	}
+  private static considerItem (itemId: string, prob: number, maxAmount = 1) : Carryable[] {
+    const item = PersonaDB.treasureItems().find(x=> x.id == itemId);
+    let amt = Math.max(1, Math.floor(Math.random() * maxAmount + 1));
+    const arr : Carryable[] = [];
+    while (amt-- > 0) {
+      if (!item || prob <= 0) {return [];}
+      if (Math.random() > prob) {return [];}
+      arr.push(item);
+    }
+    return arr;
+  }
 
-	static async generateTreasureForShadow( shadow: Shadow) : Promise<TreasureItem[]> {
-		const items : TreasureItem[] = [];
-		if (shadow.isDMon()) { return [];}
-		const size = shadow.encounterSizeValue();
-		const treasure = shadow.system.encounter.treasure;
-		const arr = ["item0", "item1", "item2", "item3"] as const;
-		const treasureMod = shadow.persona().getBonuses("shadowItemDropRate").total(shadow, "percentage");
-		const shadowItems = arr.reduce ( (acc, str) => {
-			const item = treasure[str];
-			if (!item) {return acc;}
-			const prob = treasure[`${str}prob_v`];
-			const percentage = ITEM_DROP_RATE[prob] * size * treasureMod;
-			const maxAmount = treasure[`${str}maxAmt`];
-			if (percentage <= 0) {
-				return acc;
-			}
-			const treasureItem = this.considerItem(item, percentage, maxAmount);
-			return acc.concat(treasureItem);
-		}, [] as TreasureItem[]);
-		const cardId = treasure["cardPowerId"];
-		if (cardId) {
-			// const prob = treasure["cardProb_v"];
+  static async generateTreasureForShadow( shadow: Shadow) : Promise<TreasureItem[]> {
+    const items : TreasureItem[] = [];
+    if (shadow.isDMon()) { return [];}
+    const size = shadow.encounterSizeValue();
+    const treasure = shadow.system.encounter.treasure;
+    const arr = ["item0", "item1", "item2", "item3"] as const;
+    const treasureMod = shadow.persona().getBonuses("shadowItemDropRate").total(shadow, "percentage");
+    const shadowItems = arr.reduce ( (acc, str) => {
+      const item = treasure[str];
+      if (!item) {return acc;}
+      const prob = treasure[`${str}prob_v`];
+      const percentage = ITEM_DROP_RATE[prob] * size * treasureMod;
+      const maxAmount = treasure[`${str}maxAmt`];
+      if (percentage <= 0) {
+        return acc;
+      }
+      const treasureItem = this.considerItem(item, percentage, maxAmount);
+      return acc.concat(treasureItem);
+    }, [] as TreasureItem[]);
+    const cardId = treasure["cardPowerId"];
+    if (cardId) {
+      // const prob = treasure["cardProb_v"];
       const power = PersonaDB.getPower(cardId as Power["id"]);
       const prob = power?.system?.rarity ? power.system.rarity : "never";
-			const percentage = CARD_DROP_RATE[prob] * size;
-			const card = await this.considerSkillCard(cardId, percentage);
-			if (card.length > 0) {
-				shadowItems.push(...card);
-			}
-		}
-		items.push(...shadowItems);
-		return items;
-	}
+      const percentage = CARD_DROP_RATE[prob] * size;
+      const card = await this.considerSkillCard(cardId, percentage);
+      if (card.length > 0) {
+        shadowItems.push(...card);
+      }
+    }
+    items.push(...shadowItems);
+    return items;
+  }
 
-	static async generateBattleTreasure(shadows: PersonaActor[]): Promise<BattleTreasure> {
-		try {
-			const money = shadows.reduce( (a,s) => a + s.moneyDropped(), 0);
-			const promises : Promise<TreasureItem[]>[] = shadows
-				.filter ( x=> x.isShadow())
-				.flatMap( async (shadow) => await this.generateTreasureForShadow(shadow));
-			const items = (await Promise.all(promises)).flat();
-			const treasure : BattleTreasure = { money, items };
-			return treasure;
-		} catch (e) {
-			PersonaError.softFail( "Problem with generating battle treasure", e);
-			return {money: 0, items: []};
-		}
-	}
+  static async generateBattleTreasure(shadows: PersonaActor[]): Promise<BattleTreasure> {
+    try {
+      const money = shadows.reduce( (a,s) => a + s.moneyDropped(), 0);
+      const promises : Promise<TreasureItem[]>[] = shadows
+        .filter ( x=> x.isShadow())
+        .flatMap( async (shadow) => await this.generateTreasureForShadow(shadow));
+      const items = (await Promise.all(promises)).flat();
+      const treasure : BattleTreasure = { money, items };
+      return treasure;
+    } catch (e) {
+      PersonaError.softFail( "Problem with generating battle treasure", e);
+      return {money: 0, items: []};
+    }
+  }
 
-	static getValueOf(treasure: EnchantedTreasureFormat)  :number {
-		const item = PersonaDB.findItem(treasure.item);
-		const baseVal = item.moneyValue;
-		const val= treasure.enchantments
-			.reduce ( (acc, enc)=> {
-				const tag = PersonaDB.allTags().get(enc);
-				if (!tag) {return acc;}
-				return acc * this.getTagCostMultiplier(tag);
-			}, baseVal);
-		return Math.round(val * (treasure.costMult ?? 1));
-	}
+  static getValueOf(treasure: EnchantedTreasureFormat)  :number {
+    const item = PersonaDB.findItem(treasure.item);
+    const baseVal = item.moneyValue;
+    const val= treasure.enchantments
+      .reduce ( (acc, enc)=> {
+        const tag = PersonaDB.allTags().get(enc);
+        if (!tag) {return acc;}
+        return acc * this.getTagCostMultiplier(tag);
+      }, baseVal);
+    return Math.round(val * (treasure.costMult ?? 1));
+  }
 
-	static baseItemPriceByLevel(item: Carryable) : number {
-		const base = item.system.price ?? 0;
-		if (base > 0) {return base;}
-		const ILevelCost=  this._itemCost(item.itemLevel());
-		if (item.isConsumable()) {return Math.round(ILevelCost * 0.33);}
-		return Math.round(ILevelCost);
-	}
+  static baseItemPriceByLevel(item: Carryable) : number {
+    const base = item.system.price ?? 0;
+    if (base > 0) {return base;}
+    const ILevelCost=  this._itemCost(item.itemLevel());
+    if (item.isConsumable()) {return Math.round(ILevelCost * 0.33);}
+    return Math.round(ILevelCost);
+  }
 
-	static getTagCostMultiplier(tag: Tag) : number {
-		if (tag.system.priceMult != 1) {return tag.system.priceMult;}
-		return (1 + 0.15 * tag.itemLevel());
-	}
+  static getTagCostMultiplier(tag: Tag) : number {
+    if (tag.system.priceMult != 1) {return tag.system.priceMult;}
+    return (1 + 0.15 * tag.itemLevel());
+  }
 
-	private static _itemCost(lvl: number) : number {
-		if (lvl <= 0) {return 0;}
-		if (lvl == 1) {return 40;}
-		return Math.round(this._itemCost(lvl -1) * 1.33);
+  private static _itemCost(lvl: number) : number {
+    if (lvl <= 0) {return 0;}
+    if (lvl == 1) {return 40;}
+    return Math.round(this._itemCost(lvl -1) * 1.33);
+  }
 
-	}
-
-	static guessItemLevel(item: Carryable | Tag) : number {
+  static guessItemLevel(item: Carryable | Tag) : number {
     if (item.isTag()) {
       const min = item.system.enchantment.minlvl ?? 0;
       const max = item.system.enchantment.maxlvl ?? 0;
       return Math.floor(min+ max / 2);
     }
-		const treasure = item.system.treasure;
-		for (let i = 0; i < 100; i+=5) {
-			if (i >= treasure.royal.minLevel
-				&& i <= treasure.royal.maxLevel)
-				{return Math.max(1, Math.round(i / 10) + 1);}
-		}
-		for (let i = 0; i < 100; i+=5) {
-			if (i >= treasure.greater.minLevel
-				&& i <= treasure.greater.maxLevel )
-				{return Math.max(1 ,Math.round(i / 10));}
-		}
-		for (let i = 0; i < 100; i+=5) {
-			if (i >= treasure.lesser.minLevel
-				&& i <= treasure.lesser.maxLevel)
-				{return Math.max( 1 , Math.round(i / 10) - 1);}
-		}
-		for (let i = 0; i < 100; i +=5) {
-			if (i >= treasure.trinkets.minLevel
-				&& i <= treasure.trinkets.maxLevel)
-				{return Math.max(1, Math.round(i / 10) - 3);}
-		}
-		return item.isTag() ? 0 : 1;
-	}
+    const treasure = item.system.treasure;
+    for (let i = 0; i < 100; i+=5) {
+      if (i >= treasure.royal.minLevel
+        && i <= treasure.royal.maxLevel)
+      {return Math.max(1, Math.round(i / 10) + 1);}
+    }
+    for (let i = 0; i < 100; i+=5) {
+      if (i >= treasure.greater.minLevel
+        && i <= treasure.greater.maxLevel )
+      {return Math.max(1 ,Math.round(i / 10));}
+    }
+    for (let i = 0; i < 100; i+=5) {
+      if (i >= treasure.lesser.minLevel
+        && i <= treasure.lesser.maxLevel)
+      {return Math.max( 1 , Math.round(i / 10) - 1);}
+    }
+    for (let i = 0; i < 100; i +=5) {
+      if (i >= treasure.trinkets.minLevel
+        && i <= treasure.trinkets.maxLevel)
+      {return Math.max(1, Math.round(i / 10) - 3);}
+    }
+    return item.isTag() ? 0 : 1;
+  }
 
-	static async printTreasure(treasure : BattleTreasure) {
-		const {money, items} = treasure;
-		const speaker = ChatMessage.getSpeaker({alias: "Treasure Generator"});
-		const treasureListHTML = items
-			.map( item => `<li> ${item.displayedName.toString()} </li>`)
-			.join("");
-		const text = `
-		<b>Money:</b> ${money} <br>
-		<ul class="treasure-list">
-		${treasureListHTML}
-		</ul>
-		`;
-		const messageData = {
-			speaker: speaker,
-			content: text,
-			whisper: game.users.filter(usr => usr.isGM),
-			style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
-		};
-		await ChatMessage.create(messageData, {});
-	}
+  static async printTreasure(treasure : BattleTreasure) {
+    const {money, items} = treasure;
+    const speaker = ChatMessage.getSpeaker({alias: "Treasure Generator"});
+    const treasureListHTML = items
+      .map( item => `<li> ${item.displayedName.toString()} </li>`)
+      .join("");
+    const text = `
+    <b>Money:</b> ${money} <br>
+    <ul class="treasure-list">
+    ${treasureListHTML}
+    </ul>
+    `;
+    const messageData = {
+      speaker: speaker,
+      content: text,
+      whisper: game.users.filter(usr => usr.isGM),
+      style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
+    };
+    await ChatMessage.create(messageData, {});
+  }
 
 }
 
 type TreasureItem = ReturnType<typeof PersonaDB["treasureItems"]>[number];
 
 export const ENCOUNTER_RATE_PROBABILITY : ProbabilityRate = {
-	common: 5,
-	"common-minus": 2,
-	"normal-plus": 1.5,
-	normal: 1,
-	"normal-minus": .75,
-	"rare-plus": .5,
-	rare: .2,
-	never: 0,
-	always: Infinity,
+  common: 5,
+  "common-minus": 2,
+  "normal-plus": 1.5,
+  normal: 1,
+  "normal-minus": .75,
+  "rare-plus": .5,
+  rare: .2,
+  never: 0,
+  always: Infinity,
 } ;
 
 //@ts-expect-error testing
 window.TreasureSystem = TreasureSystem;
 
 export type EnchantedTreasureFormat = {
-	item: UniversalItemAccessor<TreasureItem>,
-	enchantments: Tag["id"][],
-	costMult ?: number,
+  item: UniversalItemAccessor<TreasureItem>,
+  enchantments: Tag["id"][],
+  costMult ?: number,
   amount?: number,
 }
 
 export type BattleTreasure = {
-	money : number,
-	items: TreasureItem[],
+  money : number,
+  items: TreasureItem[],
 };

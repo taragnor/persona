@@ -60,6 +60,7 @@ import {MultiTierCache, PermanentCache, TimedCache} from "../utility/cache.js";
 import {ActorVoiceLines} from "./actor-voicelines.js";
 import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
 import {PersonaFoundryUser} from "../persona-foundry-user.js";
+import {CancelTrigger} from "../../cancel-check-effect.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -2364,9 +2365,10 @@ canEquip(this: PC | NPCAlly, item: Weapon | InvItem) : boolean {
     user: this.accessor,
     triggeringCharacter: this.accessor,
   } satisfies Situation;
-  const triggers = item.getTriggeredEffects(this, {triggerType: situation.trigger});
-  return triggers
-    .every( trig => !trig.checkForCancelEffect(situation));
+  return !CancelTrigger.cancelCheck(situation, this);
+  // const triggers = item.getTriggeredEffects(this, {triggerType: situation.trigger});
+  // return triggers
+  //   .every( trig => !trig.checkForCancelEffect(situation));
 }
 
 

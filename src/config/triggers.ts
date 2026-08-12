@@ -35,6 +35,7 @@ export const NONCOMBAT_TRIGGER_LIST = [
   "on-end-social-card",
 ] as const;
 
+
 export const DEPRECATED_TRIGGERS = [
   "on-metaverse-turn",
 	"on-combat-end",
@@ -56,6 +57,7 @@ export const CANCEL_CHECK = [
   "check-legal-target",
 ] as const;
 
+
 export const TRIGGER_LIST = [
 	...COMBAT_TRIGGER_LIST,
 	...NONCOMBAT_TRIGGER_LIST,
@@ -70,4 +72,6 @@ export type Trigger = typeof TRIGGER_LIST[number];
 export type CombatTriggerTypes = typeof COMBAT_TRIGGER_LIST[number];
 
 export type NonCombatTriggerTypes = typeof NONCOMBAT_TRIGGER_LIST[number];
+
+export type CancelCheck = typeof CANCEL_CHECK[number];
 

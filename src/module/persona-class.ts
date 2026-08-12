@@ -30,6 +30,7 @@ import {PersonaTagManager} from "./persona-tags.js";
 import {TimedCache} from "./utility/cache.js";
 import {multiCheckContains, multiCheckToArray} from "./conditionalEffects/preconditions.js";
 import {BonusCalculation, ModifierV2Target} from "./bonus-calc.js";
+import {CancelTrigger} from "../cancel-check-effect.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidAttackers = ValidAttackers> implements PersonaI {
   #combatStats: U<PersonaCombatStats>;
@@ -1325,17 +1326,23 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   private _checkConditionals(usable: UsableAndCard) : N<FailReason> {
-    const effects= usable.getTriggeredEffects(this.user, {triggerType: "on-power-usage-check"});
-    const situation : Situation = {
+    const acc = this.user.accessor;
+    const situation = {
       trigger : "on-power-usage-check",
-      user: this.user.accessor,
+      user: acc,
       usedPower: usable.accessor,
       triggeringUser: game.user.id,
-    };
-    const cancel =  effects.find( eff => eff.checkForCancelEffect(situation) );
-    if (cancel) {
-      return `Failed due to Conditional ${ConditionalEffectPrinter.printConditions(cancel.conditions)}`;
+      triggeringCharacter: acc,
+    } as const satisfies TriggeredSituation.CancelSituation;
+    // const effects= usable.getTriggeredEffects(this.user, {triggerType: "on-power-usage-check"});
+    // const cancel =  effects.find( eff => eff.checkForCancelEffect(situation) );
+    const cancel = CancelTrigger.getReasons(situation, this.user);
+    if (cancel.length > 0) {
+      return `Can't use power due to: ${cancel.join()}`;
     }
+    // if (cancel) {
+    //   return `Failed due to Conditional ${ConditionalEffectPrinter.printConditions(cancel.conditions)}`;
+    // }
     return null;
   }
 

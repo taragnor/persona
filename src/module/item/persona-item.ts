@@ -14,7 +14,6 @@ import { CombatResult, AttackResult } from '../combat/combat-result.js';
 import { ROLL_TAGS_AND_CARD_TAGS, RollTag } from '../../config/roll-tags.js';
 import { CardTag } from '../../config/card-tags.js';
 import { PersonaSettings } from '../../config/persona-settings.js';
-import { Logger } from '../utility/logger.js';
 import { DamageType } from '../../config/damage-types.js';
 import { EQUIPMENT_TAGS, EquipmentTag } from '../../config/equipment-tags.js';
 import { CreatureTag } from '../../config/creature-tags.js';
@@ -2076,7 +2075,9 @@ private _getMPMultiplier(this: Usable, userPersona: N<Persona>) : number {
 }
 
 get baseMPCost(): number {
-  if (!this.isPower() || this.isTeamwork()) {return 0;}
+  if (!this.isPower()
+    || this.isTeamwork()
+  ) {return 0;}
   if (this.customCost) {return this.system.mpcost;}
   if (this.cache.mpCost == undefined) {
     this.cache.mpCost = PowerCostCalculator.calcMPCost(this);
@@ -2571,7 +2572,7 @@ requiresTargetSelection(this: UsableAndCard) : boolean {
 }
 
 isInstantDeathAttack(this: Usable) : boolean {
-  return (this.system.instantKillChance != 'none');
+  return this.system.instantKillChance != 'none';
 }
 
 canDealDamage(this: Usable) :  boolean {
@@ -2582,7 +2583,6 @@ canDealDamage(this: Usable) :  boolean {
       )
     );
 }
-
 
 async markEventUsed(this: SocialCard, event: CardEvent) {
   const ev = this.system.events.find(ev => ev == event);
@@ -2601,7 +2601,6 @@ async markEventUsed(this: SocialCard, event: CardEvent) {
 
 static async DamageLevelConvert(item: PersonaItem) {
   if (!item.isUsableType()) {return;}
-  // if (item.isSkillCard()) {return;}
   if (!item.isPower()) {return;}
   let damageLevel : typeof item['system']['damageLevel'] | undefined;
   if (item.system.damageLevel != '-' && item.system.damageLevel != 'fixed') {return;}
@@ -2625,7 +2624,7 @@ static async DamageLevelConvert(item: PersonaItem) {
   }
 }
 
-static #convertPhysicalDamage(item: Power) :typeof item['system']['damageLevel'] | undefined  {
+static #convertPhysicalDamage(item: Power) : typeof item['system']['damageLevel'] | undefined  {
   switch (item.system.melee_extra_mult) {
     case -1:
       return 'miniscule';
@@ -2930,9 +2929,9 @@ declare global {
   type UsableAndCard = Usable | CardItem;
   type TreasureItem = Weapon | InvItem | Consumable | SkillCard;
   type PowerContainer = Consumable | Power | ItemModifierContainer;
-
 }
-type CraftingInventoryItem= InvItem & {system: {slot: "crafting"}};
+
+type CraftingInventoryItem = InvItem & {system: {slot: "crafting"}};
 
 export type ItemModifierContainer = ItemContainers;
 
@@ -2954,18 +2953,6 @@ export interface EffectCarrier {
 export interface ModifierContainer<T extends UniversalAccessorTypes & EffectCarrier = UniversalAccessorTypes & EffectCarrier> extends Accessible<T>, EffectCarrier {
 }
 
-Hooks.on('updateItem', (item :PersonaItem, _diff: DeepPartial<typeof item>) => {
-  item.clearCache();
-  if (item.parent instanceof PersonaActor) {
-    item.parent.clearCache();
-  }
-  if (item.isTag()) {
-    PersonaDB.allItems()
-      .filter (x=> x.isCarryableType() || x.isUsableType() )
-      .filter( x=> x.hasTag(item, null) )
-      .forEach( x=> x.clearCache() );
-  }
-});
 
 function cacheStats() {
   const {miss, total, modifierSkip, modifierRead} = PersonaItem.cacheStats;
@@ -2977,12 +2964,6 @@ function cacheStats() {
 
 //@ts-expect-error isn't defined on window
 window.cacheStats = cacheStats;
-
-Hooks.on('deleteItem', async (item: PersonaItem) => {
-  if (item.parent instanceof PersonaActor && item.hasPlayerOwner && item.isOwner && !game.user.isGM) {
-    await Logger.sendToChat(`${item.parent.displayedName} deletes ${item.name}(${item.amount})`, item.parent);
-  }
-});
 
 export type ItemSubtype <I extends Power, X extends I['system']['subtype']> = I & SystemSubtype<X>;
 type SystemSubtype<X extends string> = {system: {subytpe : X }};
