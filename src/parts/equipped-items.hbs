@@ -6,6 +6,9 @@
 		<select name="system.equipped.weapon" {{#if (inventoryLocked)}} disabled{{/if}} >
 			{{selectOptions equips.weapons localize=true selected=actor.system.equipped.weapon}}
 		</select>
+      <span>
+        {{actor.weapon.weaponRating}}
+      </span>
 	</div>
 	<div class="armor"> <label>
 			Clothing
@@ -13,6 +16,9 @@
 		<select name="system.equipped.body" {{#if (inventoryLocked)}} disabled{{/if}}>
 			{{selectOptions equips.body localize=true selected=actor.system.equipped.body}}
 		</select>
+      <span>
+        {{actor.armor.armorRating}}
+      </span>
 	</div>
 	<div class="accessory"> <label>
 			Accessory

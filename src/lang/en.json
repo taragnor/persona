@@ -480,6 +480,13 @@
 	"persona.power.tag.shadow-only": "Shadow Exclusive",
 	"persona.power.tag.non-inheritable": "Non-inheritable",
 	"persona.power.tag.persona-only": "Persona Exclusive",
+	"persona.power.tag.all-out": "All out",
+	"persona.power.tag.by-power": "Variable Damage",
+	"persona.power.tag.cold": "Cold",
+	"persona.power.tag.lightning": "Lightning",
+	"persona.power.tag.none": "Untyped Damage",
+	"persona.power.tag.untyped": "Almighty",
+
 	"persona.power.tag.lone-persona-only": "Lone Persona Exclusive",
 	"persona.power.tag.poison": "Poison",
 	"persona.power.tag.charged": "Charged",

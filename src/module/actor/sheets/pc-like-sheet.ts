@@ -14,29 +14,29 @@ export class PCLikeSheet extends CombatantSheetBase {
 		data.equips = {
 			weapons: Object.fromEntries(Array.from(this.actor.items)
         .filter( x=> x.isWeapon())
-        .filter( x=> this.actor.canEquip(x))
-        .sort ( (a,b)=> a.displayedName.localeCompare(b.displayedName))
+        .filter( item=> this.actor.canEquip(item))
+        .sort ( (a,b)=> this.itemSorter(a,b))
         .map( x=>  [ x.id, x.displayedName])
       ),
 			body: Object.fromEntries(Array.from(this.actor.items)
         .filter(x=> x.isInvItem())
         .filter( item=> item.system.slot == "body")
         .filter( item=> this.actor.canEquip(item))
-        .sort ( (a,b)=> a.displayedName.localeCompare(b.name))
+        .sort ( (a,b)=> this.itemSorter(a,b))
         .map( x=> [ x.id, x.displayedName])
 			),
 			accessory: Object.fromEntries(Array.from(this.actor.items)
         .filter(x=> x.isInvItem())
         .filter( item=> item.system.slot == "accessory")
         .filter( item=> this.actor.canEquip(item))
-        .sort ( (a,b)=> a.displayedName.localeCompare(b.name))
+        .sort ( (a,b)=> this.itemSorter(a,b))
         .map( x=> [ x.id, x.displayedName])
 			),
 			attachment: Object.fromEntries(Array.from(this.actor.items)
         .filter(x=> x.isInvItem())
         .filter( item=> item.system.slot == "weapon_crystal")
         .filter( item=> this.actor.canEquip(item))
-        .sort ( (a,b)=> a.displayedName.localeCompare(b.name))
+        .sort ( (a,b)=> this.itemSorter(a,b))
         .map( x=> [ x.id, x.displayedName])
 			),
 		};
@@ -44,6 +44,23 @@ export class PCLikeSheet extends CombatantSheetBase {
 		data.jobs = PersonaDB.allActivities().filter( activity=> Object.values(activity.system.weeklyAvailability).some (val => val));
 		return data;
 	}
+
+  private itemSorter<T extends InvItem | Weapon>(a: T, b:T) : number {
+    const a_pwr = this._itemPower(a);
+    const b_pwr = this._itemPower(b);
+    if (a_pwr != b_pwr) {
+      return b_pwr - a_pwr;
+    }
+    return a.displayedName.localeCompare(b.name);
+  }
+
+  private _itemPower(item: InvItem | Weapon): number {
+    if (item.isWeapon()) {return item.weaponRating;}
+    if (item.isOutfit()) {return item.armorRating;}
+    if (item.isAccessory()) {return item.itemLevel();}
+    if (item.isWeaponCrystal()) {return item.itemLevel();}
+    return 0;
+  }
 
 	override activateListeners(html: JQuery) {
 		super.activateListeners(html);

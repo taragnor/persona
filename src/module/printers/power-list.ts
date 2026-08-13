@@ -9,13 +9,15 @@ import {sleep} from "../utility/async-wait.js";
 import {MultiCheck} from "../../config/precondition-types.js";
 import {DAMAGE_TYPES_LIST} from "../../config/damage-types.js";
 import {PowerStuff} from "../../config/power-stuff.js";
+import {TagManager} from "../tag-manager.js";
 
 type PowerFilter = {
-    dmgFilter: Partial<MultiCheck<Power["system"]["dmg_type"]>>;
-    slotFilter: Partial<MultiCheck<string>>;
-    rarityFilter: Partial<MultiCheck<Power["system"]["rarity"]>>;
-    typeFilter: Partial<MultiCheck<Power["system"]["subtype"]>>;
-  };
+  dmgFilter: Partial<MultiCheck<Power["system"]["dmg_type"]>>;
+  slotFilter: Partial<MultiCheck<string>>;
+  rarityFilter: Partial<MultiCheck<Power["system"]["rarity"]>>;
+  typeFilter: Partial<MultiCheck<Power["system"]["subtype"]>>;
+  tagFilter: Partial<MultiCheck<Tag["id"]>>;
+};
 
 export class PowerPrinter extends FormApplication<PowerFilter> {
   static #instance : U<PowerPrinter>;
@@ -109,7 +111,8 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
         "never": game.user.isGM,
         "rare-plus": true,
       };
-    return {typeFilter, dmgFilter, slotFilter, rarityFilter};
+    const tagFilter ={};
+    return {typeFilter, dmgFilter, slotFilter, rarityFilter, tagFilter};
   }
 
   static override get defaultOptions() {
@@ -224,11 +227,17 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
         );
     }
     if (this.generalFilters) {
+      const tagFilter = Object.entries(this.generalFilters?.tagFilter)
+        .filter (([_k,v]) => v == true)
+        .map (([k, _v]) => TagManager.resolveTag(k as Tag["id"]));
       powerArr = powerArr.filter( pwr =>
         this.generalFilters!.dmgFilter[pwr.getBaseDamageType()]
         && this.generalFilters!.rarityFilter[pwr.system.rarity]
         && this.generalFilters!.slotFilter[String(pwr.system.slot)]
         && this.generalFilters!.typeFilter[pwr.system.subtype]
+        && tagFilter.length <= 0
+        ? !pwr.hasTag(["theurgy"], null)
+        : pwr.hasTag(tagFilter, null)
       );
     }
     return powerArr;

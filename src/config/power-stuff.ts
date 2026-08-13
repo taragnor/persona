@@ -229,12 +229,16 @@ private static _powerStuffBase: Record<string, unknown>;
 				"": "-",
 				...PersonaDB.createMergedTagLocList( ["power", "equipment"], {...POWER_TAGS, ...EQUIPMENT_TAGS})
 		 };
+    const POWER_TAGS_UNIFIED = {
+				...PersonaDB.createMergedTagLocList( ["power"], {...POWER_TAGS})
+    };
     const ROOMMODS = Object.fromEntries(PersonaDB.getSceneAndRoomModifiers().map( mod => [mod.id, mod.name]));
 
     const data = {
       ...this.powerStuffBase(),
       SOCIAL_LINKS,
       TAGS,
+      POWER_TAGS: POWER_TAGS_UNIFIED,
       AE_TIMEOUT_TARGETS,
       COMPENDIUM_TALENTS: Object.fromEntries(
         PersonaDB.allTalents().slice()
