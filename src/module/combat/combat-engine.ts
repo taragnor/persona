@@ -661,6 +661,7 @@ export class CombatEngine {
     const pierce = CombatEngine.hasPierce(attacker, power, situation);
     switch (resist) {
       case 'reflect': {
+        if (pierce) {break;}
         return situation.rollType != "reflect" ? "reflect" : "block";
       }
       case 'block': {

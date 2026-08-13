@@ -114,18 +114,6 @@ export class MainDamageSystem extends DamageSystemBase {
     return calc;
   }
 
-  // public getWeaponDamageByWpnLevel(lvl: number) : number {
-  //   lvl = Math.round(lvl);
-  //   return this._weaponDmgGrowth.valueAt(lvl + 1);
-  // }
-
-  // public getArmorDRByArmorLevel(lvl: number) : number {
-  //   const ARMOR_DIVISOR = this.ARMOR_TO_DAMAGE_DIVISOR;
-  //   const val =  this.getWeaponDamageByWpnLevel(lvl);
-  //   if (val > 0) {return Math.floor(val * ARMOR_DIVISOR);}
-  //   return 0;
-  // }
-
   protected getPercentModifier(attackStat: number, endurance: number) : number {
     const PERCENT_PADDING = PersonaCombatStats.PERCENT_PADDING;
     let percent = (PERCENT_PADDING + attackStat) / (PERCENT_PADDING + endurance);
@@ -138,30 +126,31 @@ export class MainDamageSystem extends DamageSystemBase {
 
   protected physDR(power: Power, attackerPersona : Persona, targetPersona: Persona): DamageCalculation {
     const calc = new DamageCalculation(null);
-    const attackStat = power.usesOptimizedDamage(attackerPersona) && attackerPersona.combatStats.strength < attackerPersona.combatStats.magic
-      ? attackerPersona.combatStats.magic
-      : attackerPersona.combatStats.strength;
+    const attackStat = power.usesOptimizedDamage(attackerPersona) 
+    ? attackerPersona.combatStats.strength + attackerPersona.combatStats.magic
+    : attackerPersona.combatStats.strength;
+    // const attackStat = power.usesOptimizedDamage(attackerPersona) && attackerPersona.combatStats.strength < attackerPersona.combatStats.magic
+    //   ? attackerPersona.combatStats.magic
+    //   : attackerPersona.combatStats.strength;
     const endurance = targetPersona.combatStats.endurance;
     const percent = this.getPercentModifier(attackStat, endurance);
     const armorVsWeapon = this.weaponVsArmorMult(attackerPersona, targetPersona);
     calc.merge(armorVsWeapon);
-    // const armorDR = this.armorDR(targetPersona);
-    // calc.merge(armorDR);
-    calc.add("stackMult", percent, "Strength vs Endurance Difference");
+    calc.add("stackMult", percent, "Attack Stat vs Endurance Difference");
     return calc;
   }
 
   protected magDR(power: Power, attackerPersona: Persona, targetPersona: Persona) : DamageCalculation {
     const calc = new DamageCalculation(null);
-    const attackStat = power.usesOptimizedDamage(attackerPersona) && attackerPersona.combatStats.strength > attackerPersona.combatStats.magic
-      ? attackerPersona.combatStats.strength
-      : attackerPersona.combatStats.magic;
-    // const attackStat = attackerPersona.combatStats.magic;
+    const attackStat = power.usesOptimizedDamage(attackerPersona) 
+    ? attackerPersona.combatStats.strength + attackerPersona.combatStats.magic
+    : attackerPersona.combatStats.magic;
+    // const attackStat = power.usesOptimizedDamage(attackerPersona) && attackerPersona.combatStats.strength > attackerPersona.combatStats.magic
+    //   ? attackerPersona.combatStats.strength
+    //   : attackerPersona.combatStats.magic;
     const endurance = targetPersona.combatStats.endurance;
     const percent= this.getPercentModifier(attackStat, endurance);
-    calc.add("stackMult", percent, "Magic vs Endurance Difference");
-    // const armorDR = this.armorDR(targetPersona);
-    // calc.merge(armorDR);
+    calc.add("stackMult", percent, "Attack Stat vs Endurance Difference");
     return calc;
   }
 

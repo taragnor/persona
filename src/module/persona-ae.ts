@@ -289,8 +289,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     if (duration.dtype == "UEoNT") {
       this.durationFix(duration);
     }
-    console.debug(duration);
-    Debug(duration);
+    // console.debug(duration);
+    // Debug(duration);
     duration = {
       ...duration,
       ...options,

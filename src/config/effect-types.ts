@@ -98,7 +98,6 @@ export const POWERTYPESLIST = [
 export type PowerType = typeof POWERTYPESLIST[number];
 
 export const POWERTYPES= HTMLTools.createLocalizationObject(POWERTYPESLIST, "persona.power.types");
-// export const POWERTYPES= Object.fromEntries( POWERTYPESLIST.map(x=> [x, `persona.power.types.${x}`]));
 
 export const TARGETINGLIST = [
   "1-engaged",

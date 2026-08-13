@@ -71,7 +71,7 @@ export class ConditionalEffectPrinter {
       default:
         cond satisfies never;
         PersonaError.softFail(`Unknown type ${(cond as {type?: string})?.type}`);
-          return "ERROR";
+          return "ERROR (unknown type)";
         }
     }
 
@@ -154,12 +154,12 @@ export class ConditionalEffectPrinter {
           const weekday = this.translate(cond.days, DAYS);
           return `weekday is ${not} : ${weekday}`;
         }
-        case "social-target-is": { const link = cond.socialLinkIdOrTarot ? (game.actors.get(cond.socialLinkIdOrTarot as PersonaActor["id"]) as PersonaActor)?.displayedName : "ERROR";
+        case "social-target-is": { const link = cond.socialLinkIdOrTarot ? (game.actors.get(cond.socialLinkIdOrTarot as PersonaActor["id"]) as PersonaActor)?.displayedName : "ERROR (social-target-is)";
           return `social Target is ${not} ${link}`;
         }
         case "social-target-is-multi": {
           const actors = multiCheckToArray(cond.socialLinkIdOrTarot)
-          .map( x=> x ? (game.actors.get(x as PersonaActor["id"]) as PersonaActor)?.displayedName ?? x : "ERROR");
+          .map( x=> x ? (game.actors.get(x as PersonaActor["id"]) as PersonaActor)?.displayedName ?? x : "ERROR (social-target-is-multi)");
           return `social Target is ${not} ${actors.join(", ")}`;
         }
         case "shadow-role-is": {
@@ -188,7 +188,7 @@ export class ConditionalEffectPrinter {
             }
             default:
               cond satisfies never;
-              return "ERROR";
+              return "ERROR (has-tag)";
           }
         }
         case "creature-type-is": {
@@ -211,7 +211,7 @@ export class ConditionalEffectPrinter {
               return `initiator is ${not} dating ${target1}`;
             default:
               cond satisfies never;
-              return `ERROR`;
+              return `ERROR (relationship-type-check)`;
           }
         case "has-creature-tag": {
           const tags = this.translate(cond.creatureTag, CREATURE_TAGS);
@@ -297,7 +297,7 @@ export class ConditionalEffectPrinter {
           return `possible treasure item ${not} has Tag: ${tagName}`;
         default:
           cond satisfies never;
-          return "ERROR";
+          return "ERROR (has-tag)";
       }
     }
 
@@ -331,7 +331,7 @@ export class ConditionalEffectPrinter {
         }
         case "power-name-is": {
           const power = PersonaDB.getPower(cond.powerId);
-          const powerName = power?.name ?? "ERROR";
+          const powerName = power?.name ?? "ERROR (power-name-is)";
           return `Power is ${powerName}`;
         }
         case "is-consumable":
@@ -340,7 +340,7 @@ export class ConditionalEffectPrinter {
           return `Power Targets ${not} ${this.translate(cond.defense, DEFENSE_TYPES)}`;
         default:
           cond satisfies never;
-          return "ERROR";
+          return "ERROR (power targets defense)";
       }
 
     }
@@ -366,7 +366,7 @@ export class ConditionalEffectPrinter {
           return `is ${not} a Basic Miss`;
         default:
           cond.rollProp satisfies never;
-          return "ERROR";
+          return "ERROR (roll-property-is)";
       }
     }
 
@@ -402,7 +402,7 @@ export class ConditionalEffectPrinter {
           return `Combat Result is ${cond.combatOutcome}`;
         default:
           cond satisfies never;
-          return "ERROR";
+          return "ERROR (combat-comparison)";
       }
     }
 
@@ -417,12 +417,12 @@ export class ConditionalEffectPrinter {
         case "room-has-hazard":
           return "Room has Hazard";
         case "room-has-modifier": {
-          const mod = PersonaDB.getSceneAndRoomModifiers().find(x=> x.id == cond.roomModifierId)?.displayedName ?? "ERROR" ;
+          const mod = PersonaDB.getSceneAndRoomModifiers().find(x=> x.id == cond.roomModifierId)?.displayedName ?? "ERROR (room-has-modifier)" ;
           return `Room Has Room Trait: ${mod}`;
         }
         default:
           cond satisfies never;
-          return "ERROR";
+          return "ERROR (special-boolean)";
       }
     }
 
@@ -444,13 +444,13 @@ export class ConditionalEffectPrinter {
           return this.translate(cond.itemTag as keyof typeof EQUIPMENT_TAGS, EQUIPMENT_TAGS);
         default:
           cond satisfies never;
-          return "ERROR";
+          return "ERROR (get has-Tag)";
       }
     }
 
     private static printNumericCond(cond: NonDeprecatedPrecondition & {type: "numeric"}) : string {
       const endString = (cond: Precondition & {type: "numeric"} , derivedVar?: string) => {
-        if (!("comparator" in cond)) { return "ERROR"; }
+        if (!("comparator" in cond)) { return "ERROR (no comparison in Numeric)"; }
         switch (cond.comparator) {
           case "odd":
             return "is Odd";
@@ -471,7 +471,7 @@ export class ConditionalEffectPrinter {
             return `between ${this.printConsequenceAmount(cond.num)} and ${cond.high}`;
           default:
             cond satisfies never;
-            return "ERROR";
+            return "ERROR (unknown numeric comparator)";
         }
       };
       switch (cond.comparisonTarget) {
@@ -486,13 +486,13 @@ export class ConditionalEffectPrinter {
         case "social-link-level": {
           try {
             const situation = PersonaSocial.currentSocialCardExecutor?.cardData?.situation;
-            if (!situation) {return "ERROR";}
+            if (!situation) {return "ERROR (SL level)";}
             const socialTarget = getSocialLinkTarget (cond.socialLinkIdOrTarot, situation, null);
             const name = socialTarget ? socialTarget.displayedName : cond.socialLinkIdOrTarot;
             return `${name} SL ${endString(cond)}`;
           } catch (e) {
             PersonaError.softFail(e as Error, cond);
-            return "ERROR";
+            return "ERROR (SL level)";
           }
         }
         case "student-skill": {
@@ -573,12 +573,12 @@ export class ConditionalEffectPrinter {
           return `Number of ${non}Knockdowns`;
         default:
           cons.resultSubtypeComparison satisfies never;
-          return "ERROR";
+          return "ERROR (combat result comparison)";
       }
     }
 
     static printConsequences(cons: ConditionalEffectC["consequences"]) : string {
-      if (cons == undefined) {return "ERROR";}
+      if (cons == undefined) {return "ERROR (undefined)";}
       return ConditionalEffectManager.getConsequences(cons, null , null, null)
         .map(x=> this.printConsequence(x))
         .filter(x => x)
@@ -654,7 +654,7 @@ export class ConditionalEffectPrinter {
           return this._printSFX(cons);
         default:
           cons satisfies never;
-          return "ERROR";
+          return "ERROR (combat cons)";
       }
     }
 
@@ -668,7 +668,7 @@ export class ConditionalEffectPrinter {
           return `Floating Text on ${cons.applyTo}`;
         default:
           cons satisfies never;
-          return "ERROR";
+          return "ERROR (print SFX)";
       }
 
     }
@@ -683,7 +683,7 @@ export class ConditionalEffectPrinter {
           return `Allow triggeringPower as opener`;
         default:
           cons satisfies never;
-          return "ERROR";
+          return "ERROR (trigger-event response)";
       }
     }
 
@@ -705,13 +705,13 @@ export class ConditionalEffectPrinter {
         case "add-card-item":
           return `add ${amount ?? 1} of card Item`;
         case "plant-crops": {
-          const itemName = PersonaDB.getItemById(cons.cropId)?.name ?? "ERROR";
+          const itemName = PersonaDB.getItemById(cons.cropId)?.name ?? "ERROR (plant-crops)";
           const daysToGrow = this.printConsequenceAmount(cons.daysToGrow);
           return `Plant ${amount} ${itemName} (growth Time ${daysToGrow})`;
         }
         default:
           cons satisfies never;
-          return "ERROR";
+          return "ERROR (inventory action)";
       }
     }
 
@@ -741,7 +741,7 @@ export class ConditionalEffectPrinter {
         return `Unknown Complex Consequence Amount`;
       } catch (e) {
         PersonaError.softFail(e as Error, consAmt);
-        return `ERROR`;
+        return `ERROR (cons amount)`;
       }
     }
 
@@ -761,7 +761,7 @@ export class ConditionalEffectPrinter {
           return `${v1} % ${v2}`;
         default:
           consAmt.operator satisfies never;
-          return "ERROR";
+          return "ERROR (cons amount operation)";
       }
     }
 
@@ -774,7 +774,7 @@ export class ConditionalEffectPrinter {
         case "addStatus": {
           const status = this.translate(cons.statusName, STATUS_EFFECT_TRANSLATION_TABLE);
           const dur = cons.statusDuration;
-          if (!dur) {return `ERROR`;}
+          if (!dur) {return `ERROR (add-status)`;}
           const duration = this.translate(dur, STATUS_EFFECT_DURATION_TYPES);
           return `Add Status ${status} (${duration})`;
         } case "removeStatus": {
@@ -803,7 +803,7 @@ export class ConditionalEffectPrinter {
           return `Escape Combat`;
         default:
           cons satisfies never;
-          return "ERROR";
+          return "ERROR (combat-effect)";
       }
     }
 
@@ -815,18 +815,18 @@ export class ConditionalEffectPrinter {
           return "Ignore Surprise";
         case "add-power-to-list": {
           const grantedPower = PersonaDB.getPower(cons.id);
-          return `Add power to list ${grantedPower?.displayedName?.toString() ?? "ERROR"}`;
+          return `Add power to list ${grantedPower?.displayedName?.toString() ?? "ERROR (add-power-to-list)"}`;
         }
         case "add-talent-to-list": {
           const grantedTalent = PersonaDB.getItemById(cons.id) as Talent;
-          return `Add Talent to list ${grantedTalent?.displayedName?.toString() ?? "ERROR"}`;
+          return `Add Talent to list ${grantedTalent?.displayedName?.toString() ?? "ERROR(add-talent-to-list)"}`;
         }
         case "teach-power": {
           if (cons.randomPower) {
             return "Random Power";
           } else {
             const power = PersonaDB.getPower(cons.id);
-            return `Teach Power ${power?.displayedName?.toString() ?? "ERROR"}`;
+            return `Teach Power ${power?.displayedName?.toString() ?? "ERROR (Teach power)"}`;
           }
         }
         case "add-creature-tag": {
@@ -836,17 +836,17 @@ export class ConditionalEffectPrinter {
         case "add-room-effect":{
           const RE = PersonaDB.getRoomModifiers().find( x=> x.id == cons.roomEffectId);
           if (!RE) {
-            return "ERROR";
+            return "ERROR (add-room-effect)";
           }
           return `add ${RE.name} to Room`;
         }
         case "grant-persona":{
-          const personaName = PersonaDB.getActor(cons.id)?.name || "ERROR";
+          const personaName = PersonaDB.getActor(cons.id)?.name || "ERROR (grant-persona)";
           return `grant Persona: ${personaName}`;
         }
         default:
           cons satisfies never;
-          return "ERROR";
+          return "ERROR (other-effect)";
       }
     }
 
@@ -901,7 +901,7 @@ export class ConditionalEffectPrinter {
           return `Standard Downtime Actions change: ${signedAmount}`;
         default:
           cons satisfies never;
-          return "ERROR";
+          return "ERROR (social-card-action)";
       }
     }
 
@@ -935,7 +935,7 @@ export class ConditionalEffectPrinter {
         }
         default:
           cons satisfies never;
-          return "ERROR";
+          return "ERROR (dungeon action)";
       }
     }
 
@@ -948,7 +948,7 @@ export class ConditionalEffectPrinter {
           return `MP Cost ${signedAmount} % of total`;
         default:
           cons.subtype satisfies never;
-          return "ERROR";
+          return "ERROR (mp alter)";
       }
     }
 
@@ -984,7 +984,7 @@ export class ConditionalEffectPrinter {
           return `Set HP to ${this.printConsequenceAmount(cons.amount)}%`;
         default:
           cons satisfies never;
-          return "ERROR";
+          return "ERROR (damage cons)";
       }
     }
 
