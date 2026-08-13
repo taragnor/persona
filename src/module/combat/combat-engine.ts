@@ -1399,7 +1399,6 @@ const AILMENT_RANGE_BY_POWER = {
   'always':{modifier: 20, high: 20},
 } as const;
 
-
 const AILMENT_BONUS_LEVELS : Record <InstantKillLevel, number> = {
   always: 11,//treat as always
   high: 9,

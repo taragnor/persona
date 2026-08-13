@@ -80,8 +80,18 @@ export const CREATURE_TAG_LIST = [
   ...AI_TAGS,
 ] as const;
 
+export const SHADOW_TAG_LIST = [
+  ...PERSONA_TAG_LIST,
+  ...TRAIT_TAG_LIST,
+  ...AI_TAGS,
+] as const;
+
 export type InternalCreatureTag = typeof CREATURE_TAG_LIST[number];
 
 export type CreatureTag = InternalCreatureTag | Tag;
 
+export const SHADOW_TAGS = HTMLTools.createLocalizationObject(SHADOW_TAG_LIST, "persona.creatureType");
+
 export const CREATURE_TAGS = HTMLTools.createLocalizationObject(CREATURE_TAG_LIST, "persona.creatureType");
+
+

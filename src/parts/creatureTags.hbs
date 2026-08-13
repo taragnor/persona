@@ -10,7 +10,7 @@
 		{{#each (convertTagsForList actor.system.creatureTags) as |tag i|}}
 		<div class="tag-item", data-tag-index="{{i}}">
 			<select name="system.creatureTags.{{i}}">
-				{{selectOptions ../POWERSTUFF.CREATURE_TAGS localize=true selected=tag}}
+				{{selectOptions (defVal tagList ../POWERSTUFF.CREATURE_TAGS) localize=true selected=tag}}
 			</select>
 			<a class="delTag">
 				<i class="fa-solid fa-trash-can"></i>
