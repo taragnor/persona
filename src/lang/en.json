@@ -424,6 +424,7 @@
 	"persona.power.targets.1d4-random": "1d4 random targets",
 	"persona.power.targets.1d4-random-rep": "1d4 random targets (repeats allowed)",
 	"persona.power.targets.1d3-random": "1d3 random targets",
+	"persona.power.targets.each-attack-random-enemy": "Each attack on random enemy (repeats allowed)",
 	"persona.power.targets.1d3-random-rep": "1d3 random targets (repeats allowed)",
 	"persona.power.targets.1-ally": "One nearby Ally",
 	"persona.power.targets.1d4-allies": "1d4 nearby allies",

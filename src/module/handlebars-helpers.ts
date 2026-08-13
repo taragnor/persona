@@ -49,6 +49,7 @@ import {TreasureSystem} from "./exploration/treasure-system.js";
 import {HypotheticalPersona} from "./pre-fusion-persona.js";
 import {convertToPercentages} from "./utility/array-tools.js";
 import {NumberTools} from "./utility/numberTools.js";
+import {TagManager} from "./tag-manager.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -1302,6 +1303,14 @@ export class PersonaHandleBarsHelpers {
       } catch {
         return [];
       }
+    },
+
+    "convertTagsForList": function (tags: string[]) {
+      return tags.map( tag=> {
+        const res = TagManager.resolveTag(tag);
+        if (res instanceof PersonaItem) {return res.id;}
+        return res;
+      });
     },
 
     "percentFormat" : function (num: number) {

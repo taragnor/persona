@@ -92,7 +92,7 @@ export class CombatEngine {
     }
   }
 
-  async usePower(attacker: PToken, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) : Promise<FinalizedCombatResult> {
+  async preAttackInit(attacker: PToken, power: UsableAndCard, options : CombatOptions = {}) {
     Helpers.ownerCheck(attacker.actor);
     Helpers.pauseCheck();
     this.setPendingResult();
@@ -104,6 +104,12 @@ export class CombatEngine {
     if (!options.ignorePrereqs && !await this.checkPowerPreqs(attacker, power)) {
       return new CombatResult().finalize();
     }
+    return undefined;
+  }
+
+  async usePower(attacker: PToken, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) : Promise<FinalizedCombatResult> {
+    const earlyExit = await this.preAttackInit(attacker, power, options);
+    if (earlyExit) {return earlyExit;}
     try {
       const targets = presetTargets ? presetTargets :  PersonaTargetting.getTargets(attacker, power);
       this.ensureCombatCheck(power, attacker, targets);
@@ -189,8 +195,9 @@ export class CombatEngine {
 
   async usePowerOn(attacker: PToken, power: UsableAndCard, targets: PToken[],  options: CombatOptions = {}) : Promise<CombatResult> {
     const result = new CombatResult();
-    const promises=  targets.map( async  (target, i) => {
-      const rollType = i == 0 && !options.subAttack ? "activation" : "standard";
+    const promises=  targets.map( async  (target, i, arr) => {
+      const rollType = i == 0 && !options.subAttack ? "activation" :
+      arr.indexOf(target) < i  ? "iterative" : "standard";
       return await this.usePowerOnTarget(attacker, power, target, rollType, options);
     });
     const resolved = (await Promise.allSettled(promises))
@@ -205,7 +212,7 @@ export class CombatEngine {
 
   async usePowerOnTarget(attacker: PToken, power: UsableAndCard, target: PToken, rollType : AttackRollType, options: CombatOptions) : Promise<CombatResult> {
     const result = new CombatResult();
-    const num_of_attacks = this.getNumOfAttacks(power);
+    const num_of_attacks = power.targets() != "each-attack-random-enemy" ? CombatEngine.getNumOfAttacks(power) : 1;
     for (let atkNum = 0; atkNum < num_of_attacks; ++atkNum) {
       rollType = atkNum > 0 ? 'iterative': rollType;
       const atkResult = await this.attackRollProcess( attacker, power, target, rollType, options);
@@ -234,7 +241,7 @@ export class CombatEngine {
     return result;
   }
 
-  getNumOfAttacks(power: UsableAndCard) : number {
+  static getNumOfAttacks(power: UsableAndCard) : number {
     if (!power.isPower()) { return 1;}
     const min = power.system.attacksMin ?? 1;
     const max = power.system.attacksMax ?? 1;
@@ -339,10 +346,6 @@ export class CombatEngine {
         rollTags.pushUnique("reflected-attack");
         break;
     }
-    // const activationRoll = rollType == 'activation';
-    // if (activationRoll) {
-    //   rollTags.push('activation');
-    // }
     return rollTags;
   }
 
@@ -885,11 +888,9 @@ export class CombatEngine {
         break;
       case "kill":
         calc.add(1, CombatEngine.baseInstantKillBonus(power), "Base Instant Kill bonus");
-        // mods.push("instantDeathRange");
         break;
       case "ail":
         calc.add(1, CombatEngine.baseAilmentAttackBonus(power), "Base Ailment bonus");
-        // mods.push("afflictionRange");
         break;
       case "none":
         break;
@@ -968,8 +969,6 @@ export class CombatEngine {
     const instantKillRangeRaw = CombatEngine.calculateInstantDeathRange(attackerPersona, targetPersona, power, situation);
     const critRangeRaw = CombatEngine.calculateCriticalRange(attackerPersona, targetPersona, power, situation);
     const evadeRangeRaw = CombatEngine.calculateEvadeRange(attackerPersona, targetPersona, power, situation);
-    if (PersonaSettings.debugMode()) {
-    }
     const ailmentRange = this.constrainRange(ailmentRangeRaw);
     const instantKillRange = this.constrainRange(instantKillRangeRaw);
     const critRange = this.constrainRange(critRangeRaw);
@@ -1387,15 +1386,15 @@ export type CalculatedRange = {
 const INSTANT_KILL_RANGE_BY_POWER = {
   'none': undefined,
   'low': {modifier: 1, high: 20},
-  'medium': {modifier: 3, high: 20},
-  'high': {modifier: 5, high: 20},
-  'always':{modifier: 14, high: 20},
+  'medium': {modifier: 4, high: 20},
+  'high': {modifier: 8, high: 20},
+  'always':{modifier: 20, high: 20},
 } as const;
 
 const AILMENT_RANGE_BY_POWER = {
   'none': undefined,
   'low': {modifier: 1, high: 18},
-  'medium': {modifier: 3, high: 18},
+  'medium': {modifier: 4, high: 18},
   'high': {modifier: 8, high: 20},
   'always':{modifier: 20, high: 20},
 } as const;

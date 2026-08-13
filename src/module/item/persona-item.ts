@@ -1803,10 +1803,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case "1-nearby-dead":
         return true;
       case "1-random-enemy":
-      case "1d4-random":
-      case "1d4-random-rep":
-      case "1d3-random":
-      case "1d3-random-rep":
+      case "each-attack-random-enemy":
       case "self":
       case "all-enemies":
       case "all-allies":
@@ -1826,10 +1823,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     switch (targets) {
       case "1-nearby-dead":
       case "1-random-enemy":
-      case "1d4-random":
-      case "1d4-random-rep":
-      case "1d3-random":
-      case "1d3-random-rep":
+      case "each-attack-random-enemy":
       case "all-enemies":
       case "all-others":
       case "everyone":
@@ -2468,10 +2462,7 @@ isMultiTarget(this: UsableAndCard) : boolean {
     case '1-random-enemy':
     case 'self':
       return false;
-    case '1d4-random':
-    case '1d4-random-rep':
-    case '1d3-random':
-    case '1d3-random-rep':
+    case 'each-attack-random-enemy':
     case 'all-enemies':
     case 'all-allies':
     case 'all-dead-allies':
@@ -2494,11 +2485,8 @@ isAoE(this: UsableAndCard) : boolean {
     case '1-nearby':
     case '1-engaged':
     case 'self':
-    case '1d4-random':
-    case '1d4-random-rep':
-    case '1d3-random':
-    case '1d3-random-rep':
     case '1-random-enemy':
+    case 'each-attack-random-enemy':
       return false;
     case 'all-enemies':
     case 'all-allies':
@@ -2547,15 +2535,11 @@ requiresTargetSelection(this: UsableAndCard) : boolean {
     case '1-engaged':
     case '1-nearby':
       return true;
-    case '1d4-random':
-    case '1d3-random':
+    case "each-attack-random-enemy":
     case '1-random-enemy':
       return false;
     case '1-nearby-dead':
       return true;
-    case '1d4-random-rep':
-    case '1d3-random-rep':
-      return false;
     case 'self':
       return false;
     case 'all-enemies':

@@ -121,11 +121,12 @@ export class MPCostCalculator extends CostCalculator {
     if (pwr.system.attacksMax == 1) {return this.i(0);}
     const min = pwr.system.attacksMin;
     const max = pwr.system.attacksMax;
-    const maxAdd =  0.666 * (max -1);
-    const minAdd = 0.666 * (min -1);
+    const maxAdd =  0.4 * (max -1);
+    const minAdd = 0.4 * (min -1);
     const costMod : CostModifier = {
       mult: 1 + maxAdd + minAdd,
-      add: 1 + Math.round(maxAdd + minAdd),
+      add: 0,
+      // add: 1 + Math.round(maxAdd + minAdd),
     };
     return costMod;
   }

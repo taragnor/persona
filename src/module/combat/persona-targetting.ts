@@ -5,6 +5,7 @@ import {ConditionalEffectPrinter} from "../conditionalEffects/conditional-effect
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {randomSelect} from "../utility/array-tools.js";
+import {CombatEngine} from "./combat-engine.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
 
 export class PersonaTargetting {
@@ -138,6 +139,19 @@ export class PersonaTargetting {
         .filter(target => power.targeting().targetMeetsTargettingConditions(attacker, target.actor));
         return [randomSelect(list)];
       }
+      case "each-attack-random-enemy": {
+        if (!power.isPower()) {
+          throw new TargettingError("non Powers shouldn't be in this category");
+        }
+        const numOfAttacks = CombatEngine.getNumOfAttacks(power);
+        const list = PersonaCombat.getAllEnemiesOf(attacker)
+        .filter(target => power.targeting().targetMeetsTargettingConditions(attacker, target.actor));
+        const targetList = [];
+        for (let atk = 0; atk < numOfAttacks; atk++) {
+          targetList.push(randomSelect(list));
+        }
+        return targetList;
+      }
       case '1-engaged':
       case '1-nearby':
         this.checkTargets(1,1, selected, true);
@@ -171,11 +185,6 @@ export class PersonaTargetting {
 			case 'self': {
 				return [this.getToken(attacker)];
 			}
-			case '1d4-random':
-			case '1d4-random-rep':
-			case '1d3-random-rep':
-			case '1d3-random':
-				throw new TargettingError('Targetting type not yet implemented');
 			case 'all-others': {
 				const combat= PersonaCombat.ensureCombatExists();
         const attackerToken = combat.getCombatantByActor(attacker)?.token;
@@ -308,10 +317,6 @@ export class PersonaTargetting {
     switch (targets) {
       case '1-engaged':
       case '1-nearby':
-      case '1d4-random':
-      case '1d4-random-rep':
-      case '1d3-random':
-      case '1d3-random-rep':
         if (!target.isAlive()) {return false;}
         break;
       case '1-nearby-dead':
@@ -321,6 +326,7 @@ export class PersonaTargetting {
         if (user != target) {return false;}
         break;
       case '1-random-enemy':
+      case 'each-attack-random-enemy':
       case 'all-enemies':
         if (PersonaCombat.isSameTeam(user, target)) {return false;}
         if (!target.isAlive()) {return false;}

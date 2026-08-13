@@ -1412,7 +1412,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       if (combat && energyRequired > 0 && energyRequired > currentEnergy) {
         return `Requires ${energyRequired} energy and you only have ${currentEnergy}`;
       }
-      if (combat && energyCost > (currentEnergy + 3)) {
+      if (combat && energyCost > (currentEnergy + 5)) {
         return (`Costs ${energyCost} energy and you only have ${currentEnergy}`);
       }
       if (usable.system.reqHealthPercentage < 100) {
