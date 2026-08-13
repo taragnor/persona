@@ -194,9 +194,6 @@ export class ConsequenceApplier {
         });
       }
     }
-    // if (power && !power.isAoE()) {
-    //   await PersonaSFX.onSingleTargetDamage(token, dmg.hpChange, dmg.damageType, power);
-    // }
     if (token) {
       Hooks.callAll("onTakeDamage", token, dmg.hpChange, dmg.damageType);
     }
