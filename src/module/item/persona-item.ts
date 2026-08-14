@@ -656,7 +656,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return localize(DEFENSE_TYPES[this.system.defense]);
   }
 
-  powerTagModifiers(this: Usable, user: ValidAttackers) : SourcedConditionalEffect[] {
+  powerTagModifiers(this: Usable, user: ValidAttackers) : ConditionalEffectC[] {
     const tags = this.tagList(user);
     return tags
       .filter( x=> x instanceof PersonaItem)
@@ -867,7 +867,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return costs.join(", ");
   }
 
-  static grantsPowers(eff: SourcedConditionalEffect) : boolean{
+  static grantsPowers(eff: ConditionalEffectC) : boolean{
     return eff.consequences.some(
       cons => cons.type == "other-effect" && cons.otherEffect == "add-power-to-list"
       // cons.type == 'add-power-to-list'
@@ -911,7 +911,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
   }
 
-  static grantsTalents (eff: TypedConditionalEffect) : boolean {
+  static grantsTalents (eff: ConditionalEffectC) : boolean {
     return eff.consequences.some(
       cons => cons.type == "other-effect" && cons.otherEffect == "add-talent-to-list"
       // cons.type == 'add-talent-to-list'
@@ -2185,7 +2185,7 @@ getAuraEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, o
     .filter( x=> CETypes.includes(x.conditionalType));
 }
 
-#accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, options: GetEffectsOptions, refresherFn: () => ConditionalEffectC[]) : readonly ConditionalEffectC[] {
+#accessEffectsCache(this: ItemModifierContainer, cacheType: keyof AdvancedEffectsCache, sourceActor: PersonaActor | null, options: GetEffectsOptions, refresherFn: () => readonly ConditionalEffectC[]) : readonly ConditionalEffectC[] {
   if (!PersonaDB.isLoaded) {
     throw new PersonaError("DB not loaded yet!");
   }
@@ -2259,7 +2259,7 @@ hasAuraEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null) : 
   return this.getAuraEffects(sourceActor).length > 0;
 }
 
-static triggersOn( eff: SourcedConditionalEffect, trig: Trigger) : boolean {
+static triggersOn( eff: ConditionalEffectC, trig: Trigger) : boolean {
   return eff.conditions
     .some (cond => cond.type === 'on-trigger' && cond.trigger == trig);
 }

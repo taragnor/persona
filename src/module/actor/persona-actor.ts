@@ -1945,7 +1945,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return ret;
   }
 
-  statusModifiers() : ModifierContainer[]{
+  private statusModifiers() : ModifierContainer[]{
     return this.effects.filter( eff => eff.hasEffects());
   }
 
@@ -3434,6 +3434,7 @@ async setEffectFlag(effect: Sourced<OtherEffect> & {type: "set-flag"}) {
       });
     }
   }
+  this.clearCache();
 }
 
 async resetAllCooldowns() {
@@ -3482,6 +3483,7 @@ async createEffectFlag(flagId: string,
 async clearEffectFlag(flagId: string) {
   const eff = this.effects.find(x=> x.isFlag(flagId));
   if (eff) {await eff.delete();}
+  this.clearCache();
 }
 
 async setRelationshipType(this: PC, socialLinkId: string, newRelationshipType: string) {

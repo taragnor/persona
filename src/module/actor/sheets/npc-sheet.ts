@@ -48,7 +48,7 @@ export class NPCSheet extends NoncombatantSheet  {
 		await this.actor.deleteTokenSpend(spendIndex);
 	}
 
-  override newConditionalMenu() : ContextMenuOptions<NonDeprecatedPrecondition>[]  {
+  override newConditionalMenu() : ContextMenuOptions<MaybeArray<NonDeprecatedPrecondition>>[]  {
     return [
       ...super.newConditionalMenu(),
       {
@@ -64,7 +64,7 @@ export class NPCSheet extends NoncombatantSheet  {
     ];
   }
 
-  override newConsequenceMenu() : ContextMenuOptions<NonDeprecatedConsequence>[]  {
+  override newConsequenceMenu() : ContextMenuOptions<MaybeArray<NonDeprecatedConsequence>>[]  {
     return [
       ...super.newConsequenceMenu(),
       {

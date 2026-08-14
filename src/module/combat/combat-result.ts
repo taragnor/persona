@@ -355,10 +355,29 @@ export class CombatResult  {
         try {
           if (cons.flagState) {
             const duration = convertConsToStatusDuration(cons, target, situation);
-            const embeddedEffects = cons.applyEmbedded ? ConditionalEffectC.getParent(cons)?.getEmbeddedEffects() ?? []: [];
+            if (cons.applyEmbedded) {
+              const parent = ConditionalEffectC.getParent(cons);
+              if (!parent) {
+                PersonaError.softFail("Can't find parent of consequence to get embedded effects");
+                Debug(cons);
+                debugger;
+                break;
+              }
+              const embeddedEffects = ConditionalEffectC.getParent(cons)?.getEmbeddedEffects() ?? [];
+              const mapped = embeddedEffects.map (x=> x.toJSON());
+              effect.otherEffects.push( {
+                ...cons,
+                embeddedEffects: mapped,
+                // embeddedEffects.map(x=> x.toJSON()),
+                duration,
+              });
+              console.log(`${embeddedEffects.length} Embedded Pushed`);
+              break;
+            }
+            // const embeddedEffects = cons.applyEmbedded ? ConditionalEffectC.getParent(cons)?.getEmbeddedEffects() ?? []: [];
             effect.otherEffects.push( {
               ...cons,
-              embeddedEffects,
+              embeddedEffects: [],
               duration,
             });
           } else {

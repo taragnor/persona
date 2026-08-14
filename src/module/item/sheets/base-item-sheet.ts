@@ -50,7 +50,7 @@ export class PersonaItemSheetBase extends foundry.appv1.sheets.ItemSheet<Persona
 
   }
 
-  newConditionalMenu() : ContextMenuOptions<NonDeprecatedPrecondition>[]  {
+  newConditionalMenu() : ContextMenuOptions<MaybeArray<NonDeprecatedPrecondition>>[]  {
     return [ {
       label: "Power Has Tag",
       action: () => ({
@@ -63,7 +63,7 @@ export class PersonaItemSheetBase extends foundry.appv1.sheets.ItemSheet<Persona
     } ];
   }
 
-  newConsequenceMenu() : ContextMenuOptions<NonDeprecatedConsequence>[]  {
+  newConsequenceMenu() : ContextMenuOptions<MaybeArray<NonDeprecatedConsequence>>[]  {
     return [ {
       label: "Damage",
       action: () => ({

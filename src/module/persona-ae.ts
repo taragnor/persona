@@ -339,7 +339,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     return ("anchorStatus" in duration && duration.anchorStatus != undefined);
   }
 
-  private _embeddedEffects() : ConditionalEffectC[] {
+  private _embeddedEffects() : readonly ConditionalEffectC[] {
     if (this.isAnchorHolder()) {return [];}
     const sourceActor = this.parent instanceof PersonaActor ? this.parent : null;
     const effects = this.getFlag("persona", "embeddedEffects") as string;
@@ -348,7 +348,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     return ConditionalEffectC.convertBatch(effectsArr, this, sourceActor, this);
   }
 
-  getEmbeddedEffects(sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
+  getEmbeddedEffects(_sourceActor: N<PersonaActor>, options: GetEffectsOptions = {}) : readonly ConditionalEffectC[] {
     const {CETypes} = options;
     const base = this.cache.embeddedEffects.value;
     if (CETypes == undefined || CETypes.length == 0) {
@@ -356,15 +356,17 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     }
     const arr = base
       .filter( x => CETypes.includes(x.conditionalType));
-    return ConditionalEffectC.convertBatch(arr, this, sourceActor, this);
+    return arr;
+    // return ConditionalEffectC.convertBatch(arr, this, sourceActor, this);
   }
 
   getAuraEffects(sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : ConditionalEffectC[] {
     return [
-      ...ConditionalEffectC.convertBatch(
-        this.getEmbeddedEffects(sourceActor, options).filter( x=> x.isAura),
-        this, sourceActor, this
-      ),
+      ...this.getEmbeddedEffects(sourceActor, options).filter( x=> x.isAura),
+      // ...ConditionalEffectC.convertBatch(
+      // this.getEmbeddedEffects(sourceActor, options).filter( x=> x.isAura),
+      // this, sourceActor, this
+      // ),
       ...this.getLinkedTags()
       .flatMap( tag => tag.getAuraEffects(sourceActor, options)),
     ];

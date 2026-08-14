@@ -10,7 +10,7 @@ import {testPreconditions} from "../conditionalEffects/preconditions.js";
 
 export type ModifierListItem = Sourced<{
   name: string;
-  conditions:  SourcedPrecondition[];
+  conditions:  readonly SourcedPrecondition[];
   modifier: (number | Sourced<ConsequenceAmountV2>)[];
 }>;
 

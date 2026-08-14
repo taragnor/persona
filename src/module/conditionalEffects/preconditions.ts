@@ -1,5 +1,5 @@
 import { TarotCard } from "../../config/tarot.js";
-import { ConsequenceAmount, EnhancedSourcedConsequence, NonDeprecatedConsequence } from "../../config/consequence-types.js";
+import { ConsequenceAmount } from "../../config/consequence-types.js";
 import { SceneClock } from "../exploration/scene-clock.js";
 import { NumberOfOthersWithComparison } from "../../config/numeric-comparison.js";
 import { CombatResultComparison } from "../../config/numeric-comparison.js";
@@ -37,7 +37,7 @@ import {PowerTag} from "../../config/power-tags.js";
 import {checkSituationProp} from "../../config/situation.js";
 
 /** @deprecated Use ConditionalEffectC.getActiveConsequences instead */
-export function getActiveConsequences(condEffect: ConditionalEffectC, situation: Situation) : EnhancedSourcedConsequence<NonDeprecatedConsequence>[] {
+export function getActiveConsequences(condEffect: ConditionalEffectC, situation: Situation) : ConditionalEffectC["consequences"] {
   return condEffect.getActiveConsequences(situation);
 }
 

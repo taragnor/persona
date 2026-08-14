@@ -37,7 +37,7 @@ export class ConditionalEffectPrinter {
     return `${this.printConditions(effect.conditions)} ---- ${this.printConsequences(effect.consequences)}`;
   }
 
-  static printConditions(cond: Precondition[]) : string {
+  static printConditions(cond: readonly Precondition[]) : string {
     return ConditionalEffectManager.getConditionals(cond, null, null, null)
       .map( x=> this.printConditional(x))
       .join (", ");

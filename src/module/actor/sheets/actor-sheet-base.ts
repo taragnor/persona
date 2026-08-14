@@ -268,11 +268,11 @@ export abstract class PersonaActorSheetBase<T extends PersonaActor = PersonaActo
     this.openSheets = new Set(remainingOpen);
   }
 
-  newConditionalMenu() : ContextMenuOptions<NonDeprecatedPrecondition>[]  {
+  newConditionalMenu() : ContextMenuOptions<MaybeArray<NonDeprecatedPrecondition>>[]  {
     return [];
   }
 
-  newConsequenceMenu() : ContextMenuOptions<NonDeprecatedConsequence>[]  {
+  newConsequenceMenu() : ContextMenuOptions<MaybeArray<NonDeprecatedConsequence>>[]  {
     return [];
   }
 }

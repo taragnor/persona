@@ -16,8 +16,10 @@ export class ConditionalEffectC {
 
   #CACHE_TIME = 5000;
 
-  _preconditions : SourcedPrecondition<NonDeprecatedPrecondition<Precondition>>[];
-  _consequences: SourcedConsequence<NonDeprecatedConsequence>[];
+  static batchConverted = new Set<ConditionalEffectC>();
+
+  _preconditions : readonly SourcedPrecondition<NonDeprecatedPrecondition<Precondition>>[];
+  _consequences: readonly SourcedConsequence<NonDeprecatedConsequence>[];
   _isEmbedded : boolean;
   _source: U<ModifierContainer["accessor"]>;
   _owner: U<UniversalActorAccessor<PersonaActor>>;
@@ -29,7 +31,9 @@ export class ConditionalEffectC {
   _isAura: boolean;
   _embeddedEffects : ConditionalEffectC[] = [];
 
-  static parents : WeakMap<object, ConditionalEffectC> = new WeakMap();
+  //need new way for this to work as it seems to hit problems detecting
+  static parents = new WeakMap<object, ConditionalEffectC>();
+  static parentsCreationId = new Map<number, ConditionalEffectC>();
 
   #cache = {
     cancelEffects: new PermanentCache( () => this._hasCancelEffects()),
@@ -49,9 +53,15 @@ export class ConditionalEffectC {
     this._consequences = ConditionalEffectManager.getConsequences(ce.consequences, sourceItem!, sourceActor!, realSource);
     for (const pre of this._preconditions) {
       ConditionalEffectC.parents.set(pre, this);
+      if (pre._id) {
+        ConditionalEffectC.parentsCreationId.set(pre._id, this);
+      }
     }
     for (const con of this._consequences) {
       ConditionalEffectC.parents.set(con, this);
+      if (con._id) {
+        ConditionalEffectC.parentsCreationId.set(con._id, this);
+      }
     }
     this._isEmbedded = ce.isEmbedded ?? false;
     this._isAura = ce.isAura ?? false;
@@ -66,22 +76,23 @@ export class ConditionalEffectC {
   static convertBatch(ceArr: CondEffectObject[], sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem) : ConditionalEffectC[] {
     const arr = ceArr
       .map( x=> new ConditionalEffectC(x, sourceItem, sourceActor, realSource) );
+    arr.forEach(x=> ConditionalEffectC.batchConverted.add(x));
     if (arr.some(x=> x._isEmbedded)) {
       const embedded = arr.filter(x=> x._isEmbedded);
-      arr.forEach(ce => !ce._isEmbedded ? embedded : []);
-      // for (const ce of arr) {
-      //   if (!ce._isEmbedded) {
-      //     ce._embeddedEffects = embedded;
-      //   }
-      // }
+      arr.forEach(ce => ce._embeddedEffects = !ce._isEmbedded ? embedded : []);
     }
     return arr;
   }
 
   static getParent(consOrCond: ConditionalEffectC["_preconditions"][number]): U<ConditionalEffectC>;
   static getParent(consOrCond: ConditionalEffectC["_consequences"][number]): U<ConditionalEffectC>;
-  static getParent(consOrCond: object) {
-    return ConditionalEffectC.parents.get(consOrCond);
+  static getParent(consOrCond: SourcedConsequence | SourcedPrecondition) {
+    const parent = ConditionalEffectC.parents.get(consOrCond);
+    if (parent) {return parent;}
+    if (consOrCond._id) {
+      const parent = ConditionalEffectC.parentsCreationId.get(consOrCond._id);
+      if (parent) {return parent;}
+    }
   }
 
   static fromCard( card: CardItem) {
@@ -149,11 +160,11 @@ export class ConditionalEffectC {
   }
 
   private _conditionsRaw(): ConditionalEffect["conditions"] {
-    return this.conditions;
+    return this.conditions.slice();
   }
 
   private _consequencesRaw(): ConditionalEffect["consequences"] {
-    return this.consequences;
+    return this.consequences.slice();
   }
 
   get conditions() {
@@ -220,7 +231,7 @@ export class ConditionalEffectC {
     return this.consequences;
   }
 
-  static failedPreconditions(conditions: SourcedPrecondition[], situation: Situation) {
+  static failedPreconditions(conditions: readonly SourcedPrecondition[], situation: Situation) {
     return conditions
       .filter( cond=>testPrecondition(cond, situation) == false);
   }
@@ -248,7 +259,7 @@ export class ConditionalEffectC {
     return ConditionalEffectC.getModifierAmount(this.consequences, targetMods);
   }
 
-  #determineConditionalType (ce: CondEffectObject, _conditions: SourcedConditionalEffect["conditions"], _consequences : SourcedConditionalEffect["consequences"], sourceItem: N<ConditonalEffectHolderItem> ) : this["_conditionalType"] {
+  #determineConditionalType (ce: CondEffectObject, _conditions: ConditionalEffectC["conditions"], _consequences : ConditionalEffectC["consequences"], sourceItem: N<ConditonalEffectHolderItem> ) : this["_conditionalType"] {
     let condType : this["_conditionalType"] = "unknown";
     const forceDefensive = (sourceItem?.isDefensive)
       ? sourceItem.isDefensive()

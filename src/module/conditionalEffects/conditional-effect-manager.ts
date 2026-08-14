@@ -30,11 +30,13 @@ type MenuHolder<D extends FoundryDocument> = D & {
 };
 
 export interface MenuDataI {
-  newConsequenceMenu?: () => ContextMenuOptions<NonDeprecatedConsequence>[],
-    newConditionalMenu?: () => ContextMenuOptions<NonDeprecatedPrecondition>[],
+  newConsequenceMenu?: () => ContextMenuOptions<MaybeArray<NonDeprecatedConsequence>>[],
+    newConditionalMenu?: () => ContextMenuOptions<MaybeArray<NonDeprecatedPrecondition>>[],
 }
 
 export class ConditionalEffectManager {
+
+  static _lastCreationId = 1;
 
   static cache = {
     preconditions: new WeakMap() as DataCache<NonDeprecatedPrecondition<Precondition>[]>,
@@ -467,7 +469,12 @@ export class ConditionalEffectManager {
       owner: (sourceActor? PersonaDB.getUniversalActorAccessor(sourceActor) : undefined),
       source: sourceItem != null ? sourceItem.accessor : undefined,
       realSource: realSource ? realSource.accessor : undefined,
+      _id: this.generateCreationId(),
     };
+  }
+
+  static generateCreationId() : number {
+    return this._lastCreationId++;
   }
 
   static ArrayCorrector<T>(obj: T[] | DeepNoArray<T[]>, owner ?: UN<{name: string}>) : T[] {
@@ -544,16 +551,42 @@ export class ConditionalEffectManager {
       }
     ] satisfies ContextMenu["options"];
     const menu = item.sheet.newConditionalMenu
-      ? item.sheet
-      .newConditionalMenu()
-      .map (menuItem => ({
-        ...menuItem,
-        action: () => this.handler_addPrecondition(ev, item, menuItem.action(ev)),
-      })
-      ) : [];
+      ? this.generateConditionalMenu(ev, item, item.sheet.newConditionalMenu())
+    : [];
+      // .map (menuItem => {
+      //   return {
+      //     ...menuItem,
+      //     action: async () => {
+      //       return {
+      //         const input = menuItem.action(ev);
+      //         const conditions = Array.isArray(input) ? input: [input];
+      //         for (const action of conditions) {
+      //           await this.handler_addPrecondition(ev, item, menuItem.action(ev));
+      //         }
+      //       };
+      //     },
+      //   };
+      // }) : [];
     options.push( ...menu);
     contextMenu.show(ev, options);
   }
+
+  private static generateConditionalMenu(ev: JQuery.ContextMenuEvent, item: MenuHolder<FoundryDocument>, menuItems: ContextMenuOptions<MaybeArray<NonDeprecatedPrecondition>>[]) {
+    return menuItems.map (menuItem => {
+      const fn = async () => {
+        const input = menuItem.action(ev);
+        const conditions = Array.isArray(input) ? input: [input];
+        for (const action of conditions) {
+          await this.handler_addPrecondition(ev, item, action);
+        }
+      };
+      return {
+        ...menuItem,
+        action: fn,
+      };
+    });
+  }
+
 
   private static openConsequencesMenu<D extends FoundryDocument>(ev: JQuery.ContextMenuEvent, item: MenuHolder<D>, contextMenu: ContextMenu) {
     const options = [{
@@ -565,11 +598,18 @@ export class ConditionalEffectManager {
     const menu = item.sheet.newConsequenceMenu
       ? item.sheet
       .newConsequenceMenu()
-      .map (menuItem => ({
-        ...menuItem,
-        action: () => this.handler_addConsequence(ev, item, menuItem.action(ev)),
-      })
-      ) : [];
+      .map (menuItem => {
+        return {
+          ...menuItem,
+          action: async () => {
+            const input = menuItem.action(ev);
+            const actions = Array.isArray(input) ? input: [input];
+            for (const action of actions) {
+              await this.handler_addConsequence(ev, item, action);
+            }
+          }
+        };
+      }) : [];
     options.push( ...menu);
     contextMenu.show(ev, options);
   }
@@ -865,6 +905,7 @@ declare global {
     source: U<ModifierContainer["accessor"]>;
     owner: U<UniversalActorAccessor<PersonaActor>>;
     realSource: U<ModifierContainer["accessor"]>;
+    _id?: number;
   }
 
 }

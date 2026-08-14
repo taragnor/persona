@@ -6,10 +6,11 @@ import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
 import {Persona} from "../persona-class.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
+import {ConditionalEffectC} from "./conditional-effect-class.js";
 
 export class ConsequenceProcessor {
 
-  static consequencesToResult(cons: SourcedConsequence<NonDeprecatedConsequence>[], power: U<ModifierContainer>, situation: Situation, atkResult: AttackResult | null): CombatResult {
+  static consequencesToResult(cons: ConditionalEffectC["consequences"], power: U<ModifierContainer>, situation: Situation, atkResult: AttackResult | null): CombatResult {
     const CombatRes = new CombatResult(atkResult);
     try {
       const attacker = ("attacker" in situation && situation.attacker) ? PersonaDB.findActor<ValidAttackers  | SocialLink>(situation.attacker)?.persona() : undefined;
@@ -33,7 +34,7 @@ export class ConsequenceProcessor {
     return { consequences };
   }
 
-  static ProcessConsequences(power: U<ModifierContainer>, situation: Situation, relevantConsequences: SourcedConsequence<NonDeprecatedConsequence>[], attackerPersona: U<Persona>, atkresult : Partial<AttackResult> | null)
+  static ProcessConsequences(power: U<ModifierContainer>, situation: Situation, relevantConsequences: ConditionalEffectC["consequences"], attackerPersona: U<Persona>, atkresult : Partial<AttackResult> | null)
     : ConsequenceProcessed {
       let consequences : ConsequenceProcessed['consequences']= [];
       for (const cons of relevantConsequences) {
@@ -97,7 +98,7 @@ export class ConsequenceProcessor {
     }
   }
 
-  static processConsequence_simple( cons: SourcedConsequence<NonDeprecatedConsequence>, targets: ValidAttackers[]) :ConsequenceProcessed['consequences'] {
+  static processConsequence_simple( cons: ConditionalEffectC["consequences"][number], targets: ValidAttackers[]) :ConsequenceProcessed['consequences'] {
     switch (cons.type) {
       case 'none':
       case 'modifier':
