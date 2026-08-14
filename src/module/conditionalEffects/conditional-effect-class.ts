@@ -31,9 +31,9 @@ export class ConditionalEffectC {
   _isAura: boolean;
   _embeddedEffects : ConditionalEffectC[] = [];
 
-  //need new way for this to work as it seems to hit problems detecting
   static parents = new WeakMap<object, ConditionalEffectC>();
-  static parentsCreationId = new Map<number, ConditionalEffectC>();
+  //NOTE: this could leak memory
+  static parentsCreationId = new Map<number, WeakRef<ConditionalEffectC>>();
 
   #cache = {
     cancelEffects: new PermanentCache( () => this._hasCancelEffects()),
@@ -54,13 +54,13 @@ export class ConditionalEffectC {
     for (const pre of this._preconditions) {
       ConditionalEffectC.parents.set(pre, this);
       if (pre._id) {
-        ConditionalEffectC.parentsCreationId.set(pre._id, this);
+        ConditionalEffectC.parentsCreationId.set(pre._id, new WeakRef(this));
       }
     }
     for (const con of this._consequences) {
       ConditionalEffectC.parents.set(con, this);
       if (con._id) {
-        ConditionalEffectC.parentsCreationId.set(con._id, this);
+        ConditionalEffectC.parentsCreationId.set(con._id, new WeakRef(this));
       }
     }
     this._isEmbedded = ce.isEmbedded ?? false;
@@ -86,11 +86,11 @@ export class ConditionalEffectC {
 
   static getParent(consOrCond: ConditionalEffectC["_preconditions"][number]): U<ConditionalEffectC>;
   static getParent(consOrCond: ConditionalEffectC["_consequences"][number]): U<ConditionalEffectC>;
-  static getParent(consOrCond: SourcedConsequence | SourcedPrecondition) {
+  static getParent(consOrCond: SourcedConsequence | SourcedPrecondition) : U<ConditionalEffectC> {
     const parent = ConditionalEffectC.parents.get(consOrCond);
     if (parent) {return parent;}
     if (consOrCond._id) {
-      const parent = ConditionalEffectC.parentsCreationId.get(consOrCond._id);
+      const parent = ConditionalEffectC.parentsCreationId.get(consOrCond._id)?.deref();
       if (parent) {return parent;}
     }
   }
