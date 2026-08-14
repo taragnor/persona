@@ -467,6 +467,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 		const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.getItemById<Power>(powerId as Power["id"]);
 		const CONST = PersonaActorSheetBase.CONST();
 		if (!power) {return;}
+    if (!power.isTrulyUsable()) {return;}
 		const persona = this.actor.persona();
 		const target = PersonaTargetting.targettedPTokens()
 			.filter( x=> x.actor.persona().effectiveScanLevel >=2 ).at(0) ?? null ;

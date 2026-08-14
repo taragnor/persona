@@ -630,7 +630,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
           case "passive":
             return false;
         }
-        return true; 
+        return true;
       }
       case 'skillCard':
         return true;
@@ -1056,14 +1056,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.canBeUsedInCombat();
   }
 
-  estimateShadowCosts(this: Power, persona: Persona) : Power["system"]["energy"] {
-    if (!persona.user.isShadow()) {return {
+  estimateShadowCosts(this: Power, persona: N<Persona>) : Power["system"]["energy"] {
+    if (persona && !persona.user.isShadow()) {return {
       cost: 0,
       required: 0,
       newForm: true,
     };
     }
-    const cost= EnergyClassCalculator.calcEnergyCost(this, persona);
+    const cost = EnergyClassCalculator.calcEnergyCost(this, persona);
     return {
       cost: cost.energyCost,
       required: cost.energyRequired,
@@ -1078,7 +1078,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       required = this.system.energy.required;
       cost = this.system.energy.cost;
     } else {
-      const Ecost= this.energyCostData(persona);
+      const Ecost = this.energyCostData(persona);
       required = Ecost.required;
       cost = this.energyCost(persona);
     }
@@ -1108,13 +1108,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   energyCost(this: UsableAndCard, persona:Persona) : number {
     const cost = this.energyCostData(persona);
-    const sit : Situation= {
-      usedPower: this.accessor,
-      user: persona.user.accessor,
-    };
-    const mod = persona.getBonuses("power-energy-cost").total(sit, "standard");
-    const rounded = Math.round(mod /10);
-    return cost.cost + rounded;
+    return cost.cost;
+    // const sit : Situation= {
+    //   usedPower: this.accessor,
+    //   user: persona.user.accessor,
+    // };
+    // const mod = persona.getBonuses("power-energy-cost").total(sit, "standard");
+    // const rounded = Math.round(mod /10);
+    // return cost.cost + rounded;
   }
 
   getBonuses(this: ItemModifierContainer & PersonaItem, modNames: MaybeArray<NonDeprecatedModifierType>) : ModifierList {

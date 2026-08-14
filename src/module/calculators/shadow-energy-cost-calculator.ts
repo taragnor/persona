@@ -11,11 +11,18 @@ import {Persona} from "../persona-class.js";
 export class EnergyClassCalculator extends CostCalculator {
   static MULTIATTACK_MULT = 16 as const;
 
-  static calcEnergyCost(pwr: Power, shadow: Persona) : {energyRequired: number, energyCost: number, cooldown: number} {
+  static calcEnergyCost(pwr: Power, shadow: N<Persona>) : {energyRequired: number, energyCost: number, cooldown: number} {
     const baseCost = this.calcBasePowerCost(pwr);
     if (baseCost == null) {
       const emptyCost = { energyRequired:0, energyCost:0, cooldown: 0 };
       return emptyCost;
+    }
+    if (!shadow) {
+      return {
+        "energyCost" : baseCost.energyCost,
+        "energyRequired": baseCost.energyRequired,
+        cooldown: 0,
+      };
     }
     return this.personalizedCostForShadow(baseCost, shadow, pwr);
   }

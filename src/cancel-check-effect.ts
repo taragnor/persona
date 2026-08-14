@@ -1,3 +1,4 @@
+import {PersonaSettings} from "./config/persona-settings.js";
 import {CancelCheck, Trigger} from "./config/triggers.js";
 import {PersonaActor} from "./module/actor/persona-actor.js";
 import {ConditionalEffectC} from "./module/conditionalEffects/conditional-effect-class.js";
@@ -33,7 +34,12 @@ export class CancelTrigger {
     const triggers = this._cancelCheckCEs(situation, actor);
     const failedCond = triggers
       .map (trig => {
-        return ConditionalEffectPrinter.printConditions(trig.conditions) + ` (${trig.findRealSource()?.name})`;
+        const name = trig.findRealSource()?.name;
+        if (name && !PersonaSettings.debugMode()) {
+          return name;
+        }
+        const failedConditions= ConditionalEffectPrinter.printConditions(trig.conditions);
+        return `${name ?? "Unknown Source"} [${failedConditions}]`;
       });
     return failedCond;
   }

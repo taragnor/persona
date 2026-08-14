@@ -1333,15 +1333,10 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       triggeringUser: game.user.id,
       triggeringCharacter: acc,
     } as const satisfies TriggeredSituation.CancelSituation;
-    // const effects= usable.getTriggeredEffects(this.user, {triggerType: "on-power-usage-check"});
-    // const cancel =  effects.find( eff => eff.checkForCancelEffect(situation) );
     const cancel = CancelTrigger.getReasons(situation, this.user);
     if (cancel.length > 0) {
-      return `Can't use power due to: ${cancel.join()}`;
+      return `Can't use power due to a cancel effect: ${cancel.join()}`;
     }
-    // if (cancel) {
-    //   return `Failed due to Conditional ${ConditionalEffectPrinter.printConditions(cancel.conditions)}`;
-    // }
     return null;
   }
 
