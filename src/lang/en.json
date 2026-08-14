@@ -993,6 +993,7 @@
 	"persona.triggers.on-open-door": "A door opens",
 	"persona.triggers.on-inflict-status": "Inflict a Status",
 	"persona.triggers.pre-inflict-status": "Pre-Inflict Status",
+	"persona.triggers.on-remove-status": "Remove a status",
 	"persona.triggers.on-attain-tarot-perk": "Attain a Tarot Perk",
 	"persona.triggers.on-clock-tick": "On Clock Tick",
 	"persona.triggers.on-clock-change": "On Clock Change",

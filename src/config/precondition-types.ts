@@ -67,7 +67,7 @@ type SimpleTrigger = {
 }
 
 type AdvancedTrigger =
-  onInflictStatus
+  onStatusChange
   | onTarotPerk
   | ClockTickTrigger
   | StatusTimeOut
@@ -122,8 +122,8 @@ type FlagTimeout = {
 	flagId: string;
 }
 
-type onInflictStatus = {
-	trigger: "on-inflict-status" | "pre-inflict-status",
+type onStatusChange = {
+	trigger: "on-inflict-status" | "pre-inflict-status" | "on-remove-status",
 	status : MultiCheckOrSingle<StatusEffectPlus>,
 }
 

@@ -308,7 +308,7 @@ type ClockTriggerOverflow = {
     }
 
   type NonGenericCombatTrigger =
-    InflictStatusTrigger
+    StatusTrigger
     | CombatStartTrigger
     | UsePowerTrigger
     | KillTargetTrigger
@@ -390,13 +390,19 @@ type ClockTriggerOverflow = {
     attacker: UniversalActorAccessor<ValidAttackers>,
   };
 
+  type OnRemoveStatusTrigger = SituationComponent.User & InflictStatusTrigger_Generic & {
+    trigger: "on-remove-status",
+  }
+
+
   type OnPreInflictStatusTrigger =  SituationComponent.User & InflictStatusTrigger_Generic & {
     trigger :"pre-inflict-status",
   };
 
-  type InflictStatusTrigger =
+  type StatusTrigger =
     OnInflictStatusTrigger
-    | OnPreInflictStatusTrigger;
+    | OnPreInflictStatusTrigger
+ | OnRemoveStatusTrigger;
 
 type CombatEndTrigger = {
   trigger: "on-combat-end-dual";

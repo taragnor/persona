@@ -514,6 +514,7 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
     case "on-attain-tarot-perk":
       if (!("tarot" in situation)) {return false;}
       return condition.tarot == situation.tarot;
+    case "on-remove-status":
     case "on-inflict-status":
       if (!("statusEffect" in situation) || situation.statusEffect == undefined) {return false;}
       if (condition.status == "triggering") {

@@ -23,6 +23,7 @@ import {sleep} from "../utility/async-wait.js";
 import {LocalEffectCombatResult} from "./local-effect-combat-result.js";
 import {ResolvedRollBundle} from "../roll-bundle.js";
 import {PersonaAnimation} from "./persona-animations.js";
+import {StatusEffectId} from "../../config/status-effects.js";
 
 const SAFETY_SLEEP_DURATION = 250 as const;
 const DELAY_FOR_UPDATES_TO_GET_THERE_FIRST = 25 as const;
@@ -568,6 +569,7 @@ Hooks.on("updateActor", (updatedActor : PersonaActor, changes) => {
 declare global {
   interface HOOKS {
     'onAddStatus': (token: PToken, status: StatusEffect) => unknown;
+    'onRemoveStatus': (token: PToken, status: StatusEffectId) => unknown;
     'onTakeDamage': (token: PToken, amount: number, damageType: RealDamageType)=> unknown;
   }
 }

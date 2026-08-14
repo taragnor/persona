@@ -11,6 +11,7 @@ export const COMBAT_TRIGGER_LIST = [
 	"on-combat-start-dual",
 	"on-inflict-status",
 	"pre-inflict-status",
+  "on-remove-status",
 	"start-turn",
 	"end-turn",
   "get-added-power-tags",

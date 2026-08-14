@@ -1,5 +1,6 @@
 import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
+import {StatusEffectId} from "../../config/status-effects.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {ActorConverters} from "../converters/actorConverters.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
@@ -61,7 +62,8 @@ export class ConsequenceApplier {
       }
     }
     for (const status of change.removeStatus) {
-      await actor.removeStatus(status);
+      await this._removeStatus(status.id, actor, power, attacker, token);
+      // await actor.removeStatus(status);
     }
     const mpmult = 1;
     const mutableState =  {
@@ -95,6 +97,19 @@ export class ConsequenceApplier {
     }
     if (statusAdd && token) {
       Hooks.callAll("onAddStatus", token, status);
+    }
+    return chained;
+  }
+
+  private static async _removeStatus (status: StatusEffectId, actor : ValidAttackers, power: U<UsableAndCard>,  attacker : U<UniversalTokenAccessor<PToken>>, token : U<PToken>) : Promise<FinalizedCombatResult[]> {
+    const statusRem = await actor.removeStatus(status);
+    // void actor.voicelines.onEvent("status-removed" , {"statusRemoved" : status.id});
+    const chained : FinalizedCombatResult[] = [];
+    if (statusRem && attacker && token && power?.isUsableType()) {
+      chained.push(...this._resolveRemoveStatus(token, attacker, status, power));
+    }
+    if (statusRem && token) {
+      Hooks.callAll("onRemoveStatus", token, status);
     }
     return chained;
   }
@@ -137,6 +152,37 @@ export class ConsequenceApplier {
       }
     }
     return chained;
+  }
+
+  private static _resolveRemoveStatus (targetToken: PToken, attacker: UniversalTokenAccessor<PToken>, status: StatusEffectId, power: U<Usable>) : FinalizedCombatResult[] {
+    const targetActor = targetToken.actor;
+    const chained : FinalizedCombatResult[] = [];
+    const attackerActor = PersonaDB.findToken(attacker)?.actor;
+    console.log(`On remove status: ${status} ${targetActor.name}`);
+    const sitPartial ={
+      target: targetActor.accessor,
+      triggeringCharacter: attackerActor.accessor,
+      attacker: attackerActor.accessor,
+      trigger : "on-remove-status",
+      usedPower: power?.accessor,
+      statusEffect: status,
+      triggeringUser: game.user,
+    } as const;
+    for (const SitUser of [attackerActor, targetActor]) {
+      const situation : Situation =  {
+        ...sitPartial,
+        triggeringUser: game.user.id,
+        user: SitUser.accessor,
+      } as const satisfies TriggeredSituation.Select<"on-remove-status">;
+      const eff = (TriggeredEffect.onTrigger(situation, SitUser))
+        .finalize()
+        .emptyCheck() ;
+      if (eff) {
+        chained.push(eff);
+      }
+    }
+    return chained;
+
   }
 
   private static async _applyDamage(actor: ValidAttackers, token: PToken | undefined, dmg: EvaluatedDamage, power: U<UsableAndCard>, attackerTokenAcc ?: UniversalTokenAccessor<PToken>) : Promise<FinalizedCombatResult[]> {

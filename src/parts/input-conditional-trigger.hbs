@@ -14,7 +14,7 @@
 </select>
 {{/if}}
 
-{{#if (eqAny cond.trigger "on-inflict-status" "pre-inflict-status")}}
+{{#if (eqAny cond.trigger "on-inflict-status" "pre-inflict-status" "on-remove-status")}}
 {{multicheck (strcat namePrefix 'status') POWERSTUFF.STATUS_EFFECTS_PLUS checked=cond.status localize=true}}
 {{/if}}
 
