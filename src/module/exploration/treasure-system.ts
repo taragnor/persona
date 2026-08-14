@@ -16,7 +16,7 @@ export class TreasureSystem {
     const otherTreasure = this.moreTreasure(treasureRoll) ? this.generate(treasureLevel, searcher, modifier, treasureMin) : [];
     if (!item) {return otherTreasure;}
     if (item.isEnchantable()) {
-      const enchantments = this.generateEnchantments(item as Weapon | InvItem, treasureLevel, modifier, treasureMin);
+      const enchantments = this.generateEnchantments(item as Weapon | InvItem, modifier, treasureMin);
       return [{
         item: item.accessor as UniversalItemAccessor<TreasureItem>,
         enchantments: enchantments.map( tag=> tag.id),
@@ -28,7 +28,7 @@ export class TreasureSystem {
     } as EnchantedTreasureFormat].concat(otherTreasure);
   }
 
-  static generateEnchantments(item: Weapon | InvItem, treasureLevel: number, modifier = 0, treasureMin = 1) : Tag[] {
+  static generateEnchantments(item: Weapon | InvItem,  modifier = 0, treasureMin = 1) : Tag[] {
     if (item.isWeaponCrystal()) { modifier -= 25; }
     modifier -= item
       .tagList(null)
@@ -40,7 +40,7 @@ export class TreasureSystem {
       const enchantment = this.generateEnchantmentForItem(item);
       if (enchantment) {
         if (this.moreEnchantments(enchantmentRoll)) {
-          return [enchantment].concat(this.generateEnchantments(item, treasureLevel, modifier, treasureMin));
+          return [enchantment].concat(this.generateEnchantments(item, modifier, treasureMin));
         }
         return [enchantment];
       }
@@ -281,7 +281,7 @@ export class TreasureSystem {
   }
 
 
-  private static async considerSkillCard(powerId: string, prob: number) : Promise<SkillCard[]> {
+  private static async considerSkillCard(powerId: string, prob: number) : Promise<EnchantedTreasureFormat[]> {
     if (!powerId) {return [];}
     const power = PersonaDB.allPowers().get(powerId);
     if (!power) {
@@ -291,29 +291,47 @@ export class TreasureSystem {
     if (Math.random() > prob) {return [];}
     const existingCard = PersonaDB.skillCards().find( x=> x.system.skillId  ==  powerId);
     if (existingCard) {
-      return [existingCard];
+      return [{
+        item: existingCard.accessor,
+        enchantments: [],
+      }];
     }
     const newCard = await PersonaItem.createSkillCardFromPower(power);
     const msg = `Skill Card created for ${power.name}`;
     ui.notifications.notify(msg);
     console.log(msg);
-    return [newCard];
+    return [{
+      item: newCard.accessor,
+      enchantments: [],
+    }];
   }
 
-  private static considerItem (itemId: string, prob: number, maxAmount = 1) : Carryable[] {
+  private static considerItem (itemId: string, prob: number, maxAmount = 1) : EnchantedTreasureFormat[] {
     const item = PersonaDB.treasureItems().find(x=> x.id == itemId);
     let amt = Math.max(1, Math.floor(Math.random() * maxAmount + 1));
-    const arr : Carryable[] = [];
+    const arr : EnchantedTreasureFormat[] = [];
     while (amt-- > 0) {
       if (!item || prob <= 0) {return [];}
       if (Math.random() > prob) {return [];}
-      arr.push(item);
+      if (item.isEnchantable()) {
+        const enchantments = this.generateEnchantments(item as Weapon | InvItem).map( x=> x.id);
+        const enchanted = {
+          item: item.accessor,
+          enchantments,
+        } satisfies EnchantedTreasureFormat;
+        arr.push(enchanted);
+        continue;
+      }
+      arr.push({
+        item: item.accessor,
+        enchantments: [],
+      });
     }
     return arr;
   }
 
-  static async generateTreasureForShadow( shadow: Shadow) : Promise<TreasureItem[]> {
-    const items : TreasureItem[] = [];
+  static async generateTreasureForShadow( shadow: Shadow) : Promise<EnchantedTreasureFormat[]> {
+    const items : EnchantedTreasureFormat[] = [];
     if (shadow.isDMon()) { return [];}
     const size = shadow.encounterSizeValue();
     const treasure = shadow.system.encounter.treasure;
@@ -330,7 +348,7 @@ export class TreasureSystem {
       }
       const treasureItem = this.considerItem(item, percentage, maxAmount);
       return acc.concat(treasureItem);
-    }, [] as TreasureItem[]);
+    }, [] as EnchantedTreasureFormat[]);
     const cardId = treasure["cardPowerId"];
     if (cardId) {
       // const prob = treasure["cardProb_v"];
@@ -349,7 +367,7 @@ export class TreasureSystem {
   static async generateBattleTreasure(shadows: PersonaActor[]): Promise<BattleTreasure> {
     try {
       const money = shadows.reduce( (a,s) => a + s.moneyDropped(), 0);
-      const promises : Promise<TreasureItem[]>[] = shadows
+      const promises : Promise<EnchantedTreasureFormat[]>[] = shadows
         .filter ( x=> x.isShadow())
         .flatMap( async (shadow) => await this.generateTreasureForShadow(shadow));
       const items = (await Promise.all(promises)).flat();
@@ -423,10 +441,12 @@ export class TreasureSystem {
   }
 
   static async printTreasure(treasure : BattleTreasure) {
+    try {
     const {money, items} = treasure;
     const speaker = ChatMessage.getSpeaker({alias: "Treasure Generator"});
     const treasureListHTML = items
-      .map( item => `<li> ${item.displayedName.toString()} </li>`)
+      .map( item => `<li> ${TreasureSystem.printEnchantedTreasureString(item)} </li>`)
+      // .map( item => `<li> ${item.displayedName.toString()} </li>`)
       .join("");
     const text = `
     <b>Money:</b> ${money} <br>
@@ -441,6 +461,9 @@ export class TreasureSystem {
       style: CONST.CHAT_MESSAGE_STYLES.WHISPER,
     };
     await ChatMessage.create(messageData, {});
+    } catch (e) {
+      PersonaError.softFail(e as Error);
+    }
   }
 
 }
@@ -471,5 +494,5 @@ export type EnchantedTreasureFormat = {
 
 export type BattleTreasure = {
   money : number,
-  items: TreasureItem[],
+  items: EnchantedTreasureFormat[],
 };

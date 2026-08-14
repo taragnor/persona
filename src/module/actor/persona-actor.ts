@@ -326,7 +326,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     }) ;
   }
 
-  async treasureRoll(this: Shadow) : Promise<TreasureItem[]> {
+  async treasureRoll(this: Shadow) : Promise<EnchantedTreasureFormat[]> {
     return await TreasureSystem.generateTreasureForShadow(this);
   }
 

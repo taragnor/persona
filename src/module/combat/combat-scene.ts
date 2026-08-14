@@ -1,6 +1,6 @@
 import {PersonaActor} from "../actor/persona-actor.js";
 import {Encounter} from "../exploration/random-encounters.js";
-import {BattleTreasure, EnchantedTreasureFormat} from "../exploration/treasure-system.js";
+import {BattleTreasure } from "../exploration/treasure-system.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
@@ -282,11 +282,11 @@ export class CombatScene {
       return;
     }
     for (const item of treasure.items) {
-      const itemFormatted : EnchantedTreasureFormat = {
-        item: item.accessor,
-        enchantments: [],
-      };
-      await pileActor.actor.addTreasureItem(itemFormatted);
+      // const itemFormatted : EnchantedTreasureFormat = {
+      //   item: item.accessor,
+      //   enchantments: [],
+      // };
+      await pileActor.actor.addTreasureItem(item);
     }
   }
 
