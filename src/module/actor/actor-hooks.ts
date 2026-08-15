@@ -164,6 +164,16 @@ export class ActorHooks {
       }
     });
 
+    Hooks.on("updateActor", (modifiedActor : PersonaActor) => {
+      if (modifiedActor.isShadow() && modifiedActor.isPersona()) {
+        PersonaDB.PCs()
+          .filter( actor=> actor.personaList
+            .some(p=> p.source == modifiedActor))
+          .filter( actor=> actor.sheet._state > 0)
+          .forEach( actor=> actor.sheet.render(false));
+      }
+    });
+
 	}
 
 

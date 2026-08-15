@@ -11,7 +11,7 @@ import {DamageCalculation, EvaluatedDamage} from "./damage-calc.js";
 import {ConsequenceProcessed, PersonaCombat} from "./persona-combat.js";
 
 export abstract class DamageSystemBase implements DamageInterface {
-  BURN_PERCENT = 0.15 as const; //percentage damage of burn damage
+  BURN_PERCENT = 0.20 as const; //percentage damage of burn damage
 
   getDamage(power: Usable, attackerPersona: Persona, targetPersona: Persona, situation ?: Situation & SituationComponent.User, options : GetDamageOptions = {}) : DamageCalculation {
     const damageType = power.getDamageType(attackerPersona);
@@ -92,7 +92,7 @@ export abstract class DamageSystemBase implements DamageInterface {
   }
 
   getBurnDamage(_power: Usable, _attackerPersona: Persona, targetPersona: Persona) : number {
-    return Math.round(targetPersona.source.mhp  * this.BURN_PERCENT);
+    return Math.round(targetPersona.source.baseClassHP  * this.BURN_PERCENT);
   }
 
   protected calculateAllOutAttackDamage(attackLeader: ValidAttackers, allAttackers: readonly ValidAttackers[], target:ValidAttackers, situation: AttackResult['situation'] ) : AllOutReturn[] {

@@ -360,7 +360,6 @@ export class CombatResult  {
               if (!parent) {
                 PersonaError.softFail("Can't find parent of consequence to get embedded effects");
                 Debug(cons);
-                debugger;
                 break;
               }
               const embeddedEffects = ConditionalEffectC.getParent(cons)?.getEmbeddedEffects() ?? [];

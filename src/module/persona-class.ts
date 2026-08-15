@@ -1270,6 +1270,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   private _downtimeUsageCheck(usable: UsableAndCard) : N<FailReason> {
     if (Metaverse.getPhase() != "downtime") {return null;}
+    if (usable.isSkillCard()) {return null;}
     if (usable.hasTag("downtime-minor", this)) {
       if (!this.user.isPC()) {return "Only PCs can take downtime minor actions";}
       if (!this.user.social.hasMinorSocialAction() && !PersonaSettings.debugMode()) {

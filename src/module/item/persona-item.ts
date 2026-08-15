@@ -1779,15 +1779,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   canBeUsedInDowntime() : boolean {
-    if (!this.isUsableType()) {return false;}
     if (this.isSkillCard()) {return true;}
+    if (!this.isUsableType()) {return false;}
     if (!this.hasTag(["downtime", "downtime-minor"], null)) {return false;}
     return true;
   }
 
   canBeUsedInExploration() : boolean {
-    if (!this.isUsableType()) {return false;}
     if (this.isSkillCard()) {return true;}
+    if (!this.isUsableType()) {return false;}
     if (this.isPassive() || this.isDefensive()) {return false;}
     if (!this.canBeUsedOnAllies()) { return false;}
     if (this.hasTag("exploration", null)) {return true;}

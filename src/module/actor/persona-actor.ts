@@ -360,6 +360,16 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return item;
   }
 
+  async addSkillCard(power: Power) {
+    const cardData = PersonaItem.getSkillCardDataFromPower(power, {}) as SkillCard ;
+    cardData.system["amount"] = 1;
+    const item = (await this.createEmbeddedDocuments("Item", [cardData]))[0];
+    if (this.hasPlayerOwner) {
+      void Logger.sendToChat(`${this.name} gained ${item.name}`);
+    }
+    return item;
+  }
+
   private async stackItems(a: Carryable, b: Carryable) : Promise<boolean> {
     if (!this.items.contents.includes(a)
       || !this.items.contents.includes(b)

@@ -30,11 +30,12 @@ export class CardCraftingPanel extends CraftingPanel {
   async produceProduct(product: ItemSpecifier<Power>): Promise<void> {
     const powerAcc = product.item.accessor;
     const power = PersonaDB.findItem(powerAcc);
-    const card = await PersonaItem.createSkillCardFromPower(power);
-    for (let i = 0 ; i< product.amount; ++i) {
-      await this.actor.addItem(card);
-    }
-    await card.delete();
+    // const card = await PersonaItem.createSkillCardFromPower(power);
+    await this.actor.addSkillCard(power);
+    // for (let i = 0 ; i< product.amount; ++i) {
+    //   await this.actor.addItem(card);
+    // }
+    // await card.delete();
   }
 
   override productSpecifierToString(spec: ItemSpecifier<Power>) : string {

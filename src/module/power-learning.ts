@@ -382,17 +382,25 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
   }
 
   async deletePower(id: Power["id"] ) {
+    if (!id) {
+      PersonaError.softFail("Can't delete Power: blank Id given");
+      return;
+    }
     const actor = this.#actor;
     const item = actor.items.find(x => x.id == id);
     if (item) {
       await item.delete();
       return true;
     }
-    const result = await this.deletefromLearnBuffer(id)
+    const result = await this.deleteFromLearnBuffer(id)
       || await this.deleteFromMainPowers(id)
-      || (actor.isNPCAlly() ? await this.deleteNavigatorSkill(id) : undefined)
-      || (!actor.isShadow() ? await this.deleteFromSideboard(id) : false) ;
+      || (actor.isNPCAlly() ? await this.deleteNavigatorSkill(id) : false)
+      || (!actor.isShadow() ? await this.deleteFromSideboard(id) : false);
     await this.promotePowers();
+    if (result != true) {
+      const power = PersonaDB.getItemById(id) as Power;
+      PersonaError.softFail(`Can't find power ${power?.name ?? id} on ${actor.name}`);
+    }
     return result;
   }
 
@@ -403,7 +411,7 @@ export class PowerLearningSystem< T extends ValidAttackers = ValidAttackers> {
     await actor.update({"system.combat.powersToLearn": learnables});
   }
 
-  async deletefromLearnBuffer( id: Power["id"]) : Promise<boolean> {
+  async deleteFromLearnBuffer( id: Power["id"]) : Promise<boolean> {
     const actor = this.#actor;
     let buffer = actor.system.combat.learnedPowersBuffer;
     const power = PersonaDB.getItemById(id) as Power;
