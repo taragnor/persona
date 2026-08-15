@@ -1245,6 +1245,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.name;
   }
 
+  get directoryName() : string {
+    return this.displayedName;
+  }
+
   get detailedName() : string {
     switch (this.system.type) {
       case "power": {
