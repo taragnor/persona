@@ -36,6 +36,11 @@ export class PersonaCalendar {
 			}
 			throw new PersonaError("Error getting season from Stars and Seasons");
 		}
+    if (window.CALENDARIA?.api) {
+      const season = window.CALENDARIA.api.getActiveCalendar().getCurrentSeason().name;
+      if (season == "Autumn") {return "Fall";}
+      return season;
+    }
 		throw new PersonaError("No Calendar system found");
 	}
 
@@ -64,6 +69,10 @@ export class PersonaCalendar {
 		if (game.seasonsStars) {
 			return await this.#advanceSeasonStars(amt);
 		}
+    if (window.CALENDARIA) {
+      return await this.#advanceCalendaria(amt);
+
+    }
 		throw new PersonaError("No Calendar system found");
 	}
 
@@ -84,12 +93,24 @@ export class PersonaCalendar {
 		return await calendar.changeDate({day:amt});
 	}
 
+  static async #advanceCalendaria(amt: number = 1) : Promise<boolean> {
+    if (!window.CALENDARIA) {
+			throw new PersonaError("Calendaria not present");
+    }
+		const calendar = window.CALENDARIA.api;
+		await calendar.advanceTime({day:amt});
+    return true;
+  }
+
 	static getCurrentDate() : DateObject {
 		if (window.SimpleCalendar) {
 			return window.SimpleCalendar.api.currentDateTime();
 		}
 		if (game.seasonsStars) {
 			return game.seasonsStars.api.getCurrentDate();
+		}
+		if (window.CALENDARIA) {
+			return window.CALENDARIA.api.getCurrentDateTime();
 		}
 		throw new PersonaError("No Calendar system found");
 	}
@@ -103,6 +124,11 @@ export class PersonaCalendar {
 		if (game.seasonsStars) {
 			const date = game.seasonsStars.api.getCurrentDate();
 			return game.seasonsStars.api.formatDate(date);
+		}
+		if (window.CALENDARIA) {
+			const date = window.CALENDARIA.api.formatDate();
+      return date;
+
 		}
 		throw new PersonaError("No Calendar system found");
 	}
@@ -118,6 +144,10 @@ export class PersonaCalendar {
 				return weekdayObj.name as WeekdayName;
 			}
 		}
+    if (window.CALENDARIA) {
+      const api = window.CALENDARIA.api;
+      return api.getCurrentWeekday().name;
+    }
 		throw new PersonaError("No Calendar system found");
 	}
 
@@ -128,7 +158,6 @@ export class PersonaCalendar {
 		try {
 			while (weekday == original_Weekday) {
 				await sleep(500 * sleepMult);
-				// const ret = await calendar.changeDate({day:1});
 				const ret = await this.#advanceDay(1);
 				await sleep(2000 * sleepMult);
 				if (ret == false) {
@@ -270,8 +299,6 @@ export class PersonaCalendar {
   }
 
 	static determineWeather( date: Readonly<CalendarDate>) : WeatherType {
-		// const {day, month, year} = date;
-		// const str = `${year}-${day}-${month}`;
     const str = this.dateSeedString(date);
 		const rng = new SeededRandom(str);
 		const rand = rng.die(2,6);
@@ -341,23 +368,30 @@ export class PersonaCalendar {
 		return {day, month, year};
 	}
 
-	static #calcPrevDay (date: Readonly<CalendarDate>) : CalendarDate {
-		const d = game.seasonsStars!.api.getCurrentDate();
-		const months = d.calendar.months;
-		let {day, month} = date;
-		const {year} = date;
-		day -= 1;
-		if (day >= 0) {
-			return {day, month, year};
-		}
-		//Day must be less than 0
-		month -= 1;
-		if (month < 0) {
-			month = months.length - 1;
-		}
-		day = months[month].days - 1;
-		return {day, month, year};
-	}
+  static #calcPrevDay (date: Readonly<CalendarDate>) : CalendarDate {
+    if (!window.CALENDARIA) {
+      throw new PersonaError("Calendaria not loaded");
+    }
+    const api = window.CALENDARIA.api;
+    const c = api.getActiveCalendar();
+    // const d = api.getCurrentDateTime();
+    // const d = game.seasonsStars!.api.getCurrentDate();
+    // const months = d.calendar.months;
+    const months = c.monthsArray;
+    let {day, month} = date;
+    const {year} = date;
+    day -= 1;
+    if (day >= 0) {
+      return {day, month, year};
+    }
+    //Day must be less than 0
+    month -= 1;
+    if (month < 0) {
+      month = months.length - 1;
+    }
+    day = months[month].days - 1;
+    return {day, month, year};
+  }
 
 	static getWeather() : WeatherType {
 		const weather = PersonaSettings.get("weather");
