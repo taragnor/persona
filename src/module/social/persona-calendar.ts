@@ -30,12 +30,16 @@ export class PersonaCalendar {
     if (!this._calendar) {
       throw new PersonaError("Can't get calendar bridge");
     }
-    return this._calendar!;
+    return this._calendar;
   }
 
 
   static init() {
-    this.initBridge();
+    try {
+      this.initBridge();
+    } catch (e) {
+      PersonaError.softFail(e as Error);
+    }
   }
 
   private static initBridge() {
