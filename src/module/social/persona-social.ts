@@ -420,7 +420,7 @@ export class PersonaSocial {
       const doomtxt = `${doom.amt} / ${doom.max}`;
       tracker.find("span.doomsday").text(doomtxt);
     }
-    const weekday = PersonaCalendar.getDateString();
+    const weekday = PersonaCalendar.calendar.getDateString();
     tracker.find(".day").text(weekday);
   }
 

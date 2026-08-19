@@ -124,7 +124,7 @@ export class DowntimePanel extends PersonaPanel {
     return {
       ...await super.getData(),
       doom: PersonaCalendar.DoomsdayClock,
-      day: PersonaCalendar.getDateString(),
+      day: PersonaCalendar.calendar.getDateString(),
       weatherIcon : PersonaCalendar.getWeatherIcon()[0].outerHTML,
       actor: this.actor,
     };

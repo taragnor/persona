@@ -42,7 +42,7 @@ getCurrentDateTime(): DateObject;
   }
 
   interface SeasonData {
-    name: "Spring" | "Summer" | "Autumn" | "Winter";
+    name: SeasonName;
     dayStart: number;
     dayEnd: number;
   }
@@ -62,8 +62,12 @@ getCurrentDateTime(): DateObject;
   }
 
   interface WeekDay {
-    name: "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
+    name: WeekdayName;
 
   };
+
+  type SeasonName = "Spring" | "Summer" | "Autumn" | "Winter";
+
+	type WeekdayName= "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
 
 }

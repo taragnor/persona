@@ -666,7 +666,7 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
     }
 
     case "weekday-is": {
-      const weekday = PersonaCalendar.getCurrentWeekday();
+      const weekday = PersonaCalendar.calendar.getCurrentWeekday();
       return condition.days[weekday];
     }
 
