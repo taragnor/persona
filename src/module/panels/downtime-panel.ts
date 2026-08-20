@@ -11,6 +11,7 @@ import {ItemUsePanel} from "./item-use-panel.js";
 import {PersonaPanel} from "./sub-panel.js";
 import { SidePanel } from "../side-panel/side-panel.js";
 import {SocialActivityPanel} from "./social-activity-panel.js";
+import {sleep} from "../utility/async-wait.js";
 
 export class DowntimePanel extends PersonaPanel {
   actor: U<PC> = undefined;
@@ -121,6 +122,8 @@ export class DowntimePanel extends PersonaPanel {
     ];
   }
   override async getData() {
+    await PersonaDB.waitUntilLoaded();
+    await PersonaCalendar.waitUntilLoaded();
     return {
       ...await super.getData(),
       doom: PersonaCalendar.DoomsdayClock,
@@ -190,6 +193,7 @@ export class DowntimePanel extends PersonaPanel {
 
   override activateListeners(html: JQuery) {
     super.activateListeners(html);
+    html.find(".weather-icon").on("click", () => this.weatherForecast());
   }
 
   async _onSocialLinkButton() {
@@ -225,6 +229,10 @@ export class DowntimePanel extends PersonaPanel {
     await this.push(
       new SocialActivityPanel(this.actor, list, filter)
     );
+  }
+
+  async weatherForecast() {
+    await PersonaCalendar.weatherForecastMessage();
   }
 
 }
@@ -265,3 +273,22 @@ Hooks.on("personaCalendarAdvance", () => {
   SidePanelManager.refreshAllInstancesOf(DowntimePanel);
 });
 
+Hooks.on("personaCalendarLoaded", () => {
+  SidePanelManager.refreshAllInstancesOf(DowntimePanel);
+});
+
+Hooks.on("ready", async () => {
+  await PersonaDB.waitUntilLoaded();
+  await PersonaCalendar.waitUntilLoaded();
+  const combat = PersonaCombat.combat;
+  if (!combat) {return;}
+  const combatant = combat?.combatant;
+  if (combat?.isSocial
+    && combatant
+    && combatant.isOwner
+    && combatant.actor.isPC()) {
+    await PersonaSocial.panel.setActor(combatant?.actor);
+    await PersonaSocial.panel.activate();
+  }
+
+});

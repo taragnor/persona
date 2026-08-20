@@ -57,7 +57,7 @@ declare global {
   }
 }
 
-export class PersonaCombat extends Combat<ValidAttackers> {
+export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
   VAR_FLAG_NAME = "combatVars" as const;
   static WAIT_FOR_FOUNRY_DELAY = 750 as const;
   _resolvingAttack: boolean = false;
@@ -1333,7 +1333,8 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   static getAllEnemiesOf(token: PToken) : PToken [];
   static getAllEnemiesOf(tokenOrActor: PToken | ValidAttackers) : PToken [] {
     const combat= this.ensureCombatExists();
-    const token = tokenOrActor instanceof TokenDocument ? tokenOrActor  : combat.getCombatantByActor(tokenOrActor)?.token;
+    // const token = tokenOrActor instanceof TokenDocument ? tokenOrActor  : combat.getCombatantByActor(tokenOrActor)?.token;
+    const token = tokenOrActor instanceof TokenDocument ? tokenOrActor  : combat.getCombatantsByActor(tokenOrActor).at(0)?.token;
     if (token) {
       return combat.getAllEnemiesOf(token as PToken);
     }
@@ -1348,10 +1349,10 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     // const token = tokenOrActor instanceof TokenDocument ? tokenOrActor : tokenOrActor.actor;
     const attackerType = actor.getAllegiance();
     const combat= this.combat;
-    const combatant = combat?.getCombatantByActor(actor);
+    const combatant = combat?.getCombatantsByActor(actor).at(0);
     if (combat && !combat.isSocial && !combatant) {return [];}
     const tokens = combat
-      ? ( combat.validCombatants(combat.getCombatantByActor(actor)!.token as PToken)
+      ? ( combat.validCombatants(combat.getCombatantsByActor(actor).at(0)?.token as PToken)
         .filter( x=> x.actor)
         .map(x=> x.token))
       : (game.scenes.current.tokens
@@ -1494,9 +1495,9 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   turnCheck(token: PToken): boolean ;
   turnCheck(thing: PToken  | Required<typeof this.combatant> | ValidAttackers): boolean  {
     const combatant = thing instanceof TokenDocument
-      ? this.getCombatantByToken(thing)
+      ? this.getCombatantsByToken(thing)?.at(0)
       : thing instanceof PersonaActor
-      ? this.getCombatantByActor(thing)
+      ? this.getCombatantsByActor(thing)?.at(0)
       : thing;
     if (!combatant || !combatant.actor) {return false;}
     if (
@@ -1512,7 +1513,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
   }
 
   outOfActions(token: PToken) : boolean {
-    const comb =this.getCombatantByToken(token);
+    const comb =this.getCombatantsByToken(token).at(0);
     if (! comb) {
       PersonaError.softFail(`Can't find token ${token.name} as a combatant`);
       return false;
@@ -1919,7 +1920,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
     if (attacker.actor.isPCLike()) {
       const combat = PersonaCombat.combat;
       if (!combat) {return [];}
-      const combatant = combat.getCombatantByToken(attacker);
+      const combatant = combat.getCombatantsByToken(attacker).at(0);
       if (!combatant) {return [];}
       return combat.getFoes(combatant)
         .map( comb => comb.token)
@@ -1949,7 +1950,7 @@ export class PersonaCombat extends Combat<ValidAttackers> {
 
   async removeFromCombat(comb: U<PersonaCombatant | ValidAttackers>) : Promise<void> {
     if (comb instanceof PersonaActor) {
-      comb = this.getCombatantByActor(comb) as U<PersonaCombatant>;
+      comb = this.getCombatantsByActor(comb).at(0) as U<PersonaCombatant>;
     }
     if (!comb) {return;}
     if (this.combatant == comb) {

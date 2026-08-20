@@ -1,14 +1,13 @@
 import {PersonaError} from "../persona-error.js";
 
-export abstract class CalendarBridge {
-	abstract getSeason() : SeasonName;
-
-  abstract advanceDay(amt: number) : Promise<boolean>;
-  abstract getCurrentDate(): DateObject;
-	abstract getDateString() : string;
-  abstract getCurrentWeekday(): WeekdayName;
-  abstract calcPreviousDay(date: Readonly<CalendarDate>): CalendarDate;
-
+export interface CalendarBridge {
+  getSeason() : SeasonName;
+  advanceDay(amt: number) : Promise<boolean>;
+  getCurrentDate(): DateObject;
+  getDateString() : string;
+  getCurrentWeekday(): WeekdayName;
+  calcPreviousDay(date: Readonly<CalendarDate>): CalendarDate;
+  monthsList(): Month[];
 }
 
 export type SeasonName = "Winter" | "Summer" | "Fall" | "Spring";
@@ -23,7 +22,11 @@ export type DateObject = {
 
 type CalendarDate = {day: number, year:number, month: number}
 
-export class CalendariaBridge extends CalendarBridge {
+type Month= {name: string,
+  days: number,
+};
+
+export class CalendariaBridge implements CalendarBridge {
 
   api: NonNullable<Window["CALENDARIA"]>["api"];
 
@@ -31,9 +34,7 @@ export class CalendariaBridge extends CalendarBridge {
     if (!window.CALENDARIA) {
       throw new PersonaError("Calendaria not detected");
     }
-    super();
     this.api = window.CALENDARIA?.api;
-
   }
 
   getSeason() : SeasonName {
@@ -52,6 +53,12 @@ export class CalendariaBridge extends CalendarBridge {
 
   getCurrentWeekday() : WeekdayName {
     return this.api.getCurrentWeekday().name;
+  }
+
+
+  monthsList() : Month[] {
+    const c= this.api.getActiveCalendar();
+    return c.monthsArray;
   }
 
   async advanceDay(amt: number = 1) : Promise<boolean> {

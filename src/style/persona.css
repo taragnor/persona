@@ -864,6 +864,11 @@ div.weather-icon{
     font-size: 1.2rem;
     font-weight: bold;
   }
+
+  .weather-icon:hover {
+    cursor: pointer;
+    color: green;
+  }
 }
 
 .power-name-block .cost-string{

@@ -21,10 +21,14 @@ namespace Foundry {
 		}
 		scene: Scene;
 		started: boolean;
-		combatants: Collection<Combatant<T>>;
+		combatants: Collection<CType>;
 		turns: CType[];
-		getCombatantByToken(tokenIdOrToken: TokenDocument<T>["id"] | TokenDocument<T>) : Combatant<T> | undefined;
-		getCombatantByActor(actorIdOrActor: Actor["id"] | T): Combatant<T> | undefined;
+    /** @deprecated, use getCombatantsByToken instead */
+		getCombatantByToken(tokenIdOrToken: TokenDocument<T>["id"] | TokenDocument<T>) : CType & Combatant<T> | undefined;
+    getCombatantsByToken(tokenIdOrToken: TokenDocument<T>["id"] | TokenDocument<T>): CType & Combatant<T>[];
+    /** @deprecated, use getCombatantsByActor instead */
+		getCombatantByActor(actorIdOrActor: Actor["id"] | T): CType & Combatant<T> | undefined;
+    getCombatantsByActor(actorIdOrActor: Actor["id"] | T): CType & Combatant<T>[];
 		startCombat(): Promise<this>;
 		nextRound(): Promise<this>;
 		previousRound(): Promise<this>;
@@ -43,9 +47,9 @@ namespace Foundry {
 		/**
 		 * Return the Array of combatants sorted into initiative order, breaking ties alphabetically by name.
 		 */
-		setupTurns: Combatant<T>[];
+		setupTurns: CType[];
 		/** current combatant whose turn it is */
-		combatant: undefined | Combatant<T>;
+		combatant: U<CType>;
 
 	}
 

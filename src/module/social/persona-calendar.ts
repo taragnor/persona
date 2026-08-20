@@ -2,7 +2,7 @@ import { DoomsdayClock } from "../exploration/doomsday-clock.js";
 import { SeededRandom } from "../utility/seededRandom.js";
 import { PersonaSFX } from "../combat/persona-sfx.js";
 import { PersonaDB } from "../persona-db.js";
-import { sleep } from "../utility/async-wait.js";
+import { sleep, waitUntilTrue } from "../utility/async-wait.js";
 import { PersonaSocial } from "./persona-social.js";
 import { localize } from "../persona.js";
 import { WEATHER_TYPES } from "../../config/weather-types.js";
@@ -15,11 +15,16 @@ import {CalendarBridge, CalendariaBridge} from "./calendar-bridge.js";
 
 declare global {
 	interface HOOKS {
-		"personaCalendarAdvance": () => unknown;
+		"personaCalendarAdvance": (calendar: PersonaCalendar) => unknown;
+    "personaCalendarLoaded": (calendar: PersonaCalendar) => unknown;
 	}
 }
 
 export class PersonaCalendar {
+
+  static _isLoaded = false;
+
+  static WAIT_DELAY = 500 as const;
 
   private static _calendar : U<CalendarBridge>;
 
@@ -33,6 +38,15 @@ export class PersonaCalendar {
     return this._calendar;
   }
 
+  static get isLoaded(): boolean {
+    return this._isLoaded;
+  }
+
+  static async waitUntilLoaded() {
+    if (this.isLoaded) {return;}
+    await waitUntilTrue( () => this.isLoaded, this.WAIT_DELAY);
+  }
+
 
   static init() {
     try {
@@ -40,6 +54,8 @@ export class PersonaCalendar {
     } catch (e) {
       PersonaError.softFail(e as Error);
     }
+    this._isLoaded = true;
+    Hooks.callAll("personaCalendarLoaded", this);
   }
 
   private static initBridge() {
@@ -269,7 +285,7 @@ export class PersonaCalendar {
     ;
     const promises = actorPool.map ( async (actor) => ([actor, await actor.onStartDay()]) );
     const settled = await Promise.allSettled(promises);
-    Hooks.callAll("personaCalendarAdvance");
+    Hooks.callAll("personaCalendarAdvance", this);
     const report = settled
     .filter ( x=> x.status == "fulfilled")
     .map ( x=> x.value as [PersonaActor, string[]])
@@ -380,8 +396,7 @@ export class PersonaCalendar {
 
 	//returns the day after the current date
 	static #calcNextDay (date: Readonly<CalendarDate>) : CalendarDate {
-		const d = game.seasonsStars!.api.getCurrentDate();
-		const months = d.calendar.months;
+    const months = this.calendar.monthsList();
 		if (!months) {throw new PersonaError("Calendar Module not loaded");}
 		const currMonth = months[date.month];
 		let {day, month, year} = date;
@@ -397,30 +412,22 @@ export class PersonaCalendar {
 		return {day, month, year};
 	}
 
-  //static #calcPrevDay (date: Readonly<CalendarDate>) : CalendarDate {
-  //  if (!window.CALENDARIA) {
-  //    throw new PersonaError("Calendaria not loaded");
-  //  }
-  //  const api = window.CALENDARIA.api;
-  //  const c = api.getActiveCalendar();
-  //  // const d = api.getCurrentDateTime();
-  //  // const d = game.seasonsStars!.api.getCurrentDate();
-  //  // const months = d.calendar.months;
-  //  const months = c.monthsArray;
-  //  let {day, month} = date;
-  //  const {year} = date;
-  //  day -= 1;
-  //  if (day >= 0) {
-  //    return {day, month, year};
-  //  }
-  //  //Day must be less than 0
-  //  month -= 1;
-  //  if (month < 0) {
-  //    month = months.length - 1;
-  //  }
-  //  day = months[month].days - 1;
-  //  return {day, month, year};
-  //}
+  static #calcPrevDay (date: Readonly<CalendarDate>) : CalendarDate {
+    const months = this.calendar.monthsList();
+    let {day, month} = date;
+    const {year} = date;
+    day -= 1;
+    if (day >= 0) {
+      return {day, month, year};
+    }
+    //Day must be less than 0
+    month -= 1;
+    if (month < 0) {
+      month = months.length - 1;
+    }
+    day = months[month].days - 1;
+    return {day, month, year};
+  }
 
 	static getWeather() : WeatherType {
 		const weather = PersonaSettings.get("weather");
@@ -472,7 +479,7 @@ export class PersonaCalendar {
 		throw new PersonaError(`Unknwon weather type ${weather as string}`);
 	}
 
-	static async openWeatherForecast() {
+	static async weatherForecastMessage() {
 		const weatherReport = PersonaCalendar.weatherReport(4)
 			.map(weather =>` <span class="weather-icon"> ${PersonaCalendar.getWeatherIcon(weather).get(0)?.outerHTML} </span>`)
 			.join("");

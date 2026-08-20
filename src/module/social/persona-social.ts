@@ -414,7 +414,7 @@ export class PersonaSocial {
     }
     const weatherIcon = PersonaCalendar.getWeatherIcon();
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    tracker.find("div.weather-icon").append(weatherIcon).on("click" , PersonaCalendar.openWeatherForecast.bind(PersonaCalendar));
+    tracker.find("div.weather-icon").append(weatherIcon).on("click" , PersonaCalendar.weatherForecastMessage.bind(PersonaCalendar));
     const doom = PersonaCalendar.DoomsdayClock;
     if (doom) {
       const doomtxt = `${doom.amt} / ${doom.max}`;
