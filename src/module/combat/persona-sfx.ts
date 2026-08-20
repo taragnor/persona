@@ -558,7 +558,7 @@ declare global {
 }
 
 interface TokenMagic {
-	deleteFilters(token :Token, filterId: string): Promise<unknown>;
-	addUpdateFilters(token: Token, filterData: object): Promise<unknown>;
+	deleteFilters(token :Foundry.Token, filterId: string): Promise<unknown>;
+	addUpdateFilters(token: Foundry.Token, filterData: object): Promise<unknown>;
 }
 

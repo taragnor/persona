@@ -29,7 +29,6 @@ import {StatusDuration} from "../module/persona-ae.js";
 import {PowerTagOrId} from "./power-tags.js";
 import {CalculationOperation} from "../module/utility/calculation-v2.js";
 import {ModifierV2Target} from "../module/bonus-calc.js";
-import {ConditionalEffectC} from "../module/conditionalEffects/conditional-effect-class.js";
 
 
 export type OtherEffect = {__localEffect?: undefined; } &

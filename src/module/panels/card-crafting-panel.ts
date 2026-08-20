@@ -2,7 +2,6 @@ import {PersonaDB} from "../persona-db.js";
 import {CraftingPanel, CraftingRecipe} from "./crafting-panel.js";
 import { SidePanel } from "../side-panel/side-panel.js";
 import {ItemSpecifier} from "../item/universal-crafting-inventory.js";
-import { PersonaItem } from "../item/persona-item.js";
 import {PersonaError} from "../persona-error.js";
 
 export class CardCraftingPanel extends CraftingPanel {

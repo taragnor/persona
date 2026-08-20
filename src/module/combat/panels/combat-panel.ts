@@ -209,7 +209,7 @@ export class CombatPanel extends PersonaPanel {
     const token = this.target;
     if (!this.combat) {return {...data};}
     const roomModifiers = this.combat.getRoomEffects();
-    const combatant = this.combat?.getCombatantByActor(actor as ValidAttackers);
+    const combatant = this.combat?.getCombatantsByActor(actor as ValidAttackers).at(0);
     let engagedList : PersonaCombatant[] = [];
     if (combatant && PersonaCombat.isPersonaCombatant(combatant))  {
       engagedList = this.combat.getAllEngagedEnemies(combatant);
@@ -401,7 +401,7 @@ export class CombatPanel extends PersonaPanel {
   }
 
   private static initHooks() {
-    Hooks.on("controlToken", async (token : Token<PersonaActor>, selected: boolean) => {
+    Hooks.on("controlToken", async (token : Foundry.Token<PersonaActor>, selected: boolean) => {
       if (Metaverse.getPhase() != "combat") {return;}
       if (!selected) {
         await this.instance.setTarget(null);

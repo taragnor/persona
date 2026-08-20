@@ -101,7 +101,7 @@ export class PostCombatPanel extends PersonaPanel {
   }
 }
 
-Hooks.on("controlToken", async (token : Token<PersonaActor>) => {
+Hooks.on("controlToken", async (token : Foundry.Token<PersonaActor>) => {
   if (Metaverse.getPhase() != "postcombat") {return;}
   const actor = token?.document?.actor;
   if (!actor) {return;}

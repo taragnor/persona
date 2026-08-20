@@ -450,9 +450,9 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
     else {throw new Error("Active Effect doesn't have a pvalid parent");}
   }
 
-  getUniversalTokenAccessor<T extends Token<any>>(tok: T) : UniversalTokenAccessor<T["document"]> ;
+  getUniversalTokenAccessor<T extends Foundry.Token<any>>(tok: T) : UniversalTokenAccessor<T["document"]> ;
   getUniversalTokenAccessor<T extends TokenDocument<any>>(tok: T) : UniversalTokenAccessor<T>;
-  getUniversalTokenAccessor(tok: Token<any> | TokenDocument<any>) : UniversalTokenAccessor<any> {
+  getUniversalTokenAccessor(tok: Foundry.Token<any> | TokenDocument<any>) : UniversalTokenAccessor<any> {
     const TokClass =foundry?.canvas?.placeables?.Token ? foundry.canvas.placeables.Token : foundry.canvas.placeables.Token;
     if (tok instanceof TokClass) {
       tok = tok.document;

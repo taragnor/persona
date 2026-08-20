@@ -221,7 +221,7 @@ export abstract class DamageSystemBase implements DamageInterface {
         }
         const userToken = PersonaDB.findToken(userTokenAcc);
         if (!combat) {return null;}
-        const leader = combat.getCombatantByToken(userToken);
+        const leader = combat.getCombatantsByToken(userToken).at(0);
         if (!leader) {return null;}
         const allAttackers = combat
         .getAllies(leader, true)

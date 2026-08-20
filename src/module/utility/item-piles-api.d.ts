@@ -13,7 +13,7 @@ interface ItemPilesAPI {
 	getActorItems ( target: Actor | TokenDocument): Promise<Item[]>;
 	getItemQuantity ( item: Item) : number;
 	createItemPile (options: ItemPileCreationOptions) : Promise<{tokenUuid: string, actorUuid: string}>;
-	isValidItemPile(target: TokenDocument | Token) : boolean;
+	isValidItemPile(target: TokenDocument | Foundry.Token) : boolean;
 }
 
 

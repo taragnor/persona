@@ -29,7 +29,7 @@ export class FollowUpManager {
 
   async onFollowUpAction(token: PToken, activationRoll: number) {
     console.debug(`Calling On Follow Up Action ${activationRoll}`);
-    const combatant = token.object ? this.combat.getCombatantByToken(token): null;
+    const combatant = token.object ? this.combat.getCombatantsByToken(token).at(0): null;
     if (!combatant || !combatant.actor || !PersonaCombat.isPersonaCombatant(combatant)) {return;}
     if (combatant.actor && combatant.actor.hasStatus('down')) {return;}
     const list = this.usableFollowUpsList(combatant, activationRoll);
@@ -157,7 +157,7 @@ export class FollowUpManager {
   }
 
   private	getUsableFollowUps(token: PToken, activationRoll: number) : Power []{
-    const combatant = token.object ? this.combat.getCombatantByToken(token): null;
+    const combatant = token.object ? this.combat.getCombatantsByToken(token).at(0): null;
     if (!combatant || !combatant.actor) {return [];}
     const actor = combatant.actor;
     const situation = {
@@ -170,8 +170,6 @@ export class FollowUpManager {
     } satisfies Situation;
     const persona = actor.persona();
     const followUpMoves = actor
-    // .powers
-    // .filter(pwr => pwr.isFollowUpMove())
       .persona().followUpMoves
       .filter( pwr=> persona.canPayActivationCost(pwr)
         && pwr.testFollowUpPrereqs(situation, actor)

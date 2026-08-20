@@ -25,10 +25,10 @@ namespace Foundry {
 		turns: CType[];
     /** @deprecated, use getCombatantsByToken instead */
 		getCombatantByToken(tokenIdOrToken: TokenDocument<T>["id"] | TokenDocument<T>) : CType & Combatant<T> | undefined;
-    getCombatantsByToken(tokenIdOrToken: TokenDocument<T>["id"] | TokenDocument<T>): CType & Combatant<T>[];
+    getCombatantsByToken(tokenIdOrToken: TokenDocument<T>["id"] | TokenDocument<T>): (CType & Combatant<T>)[];
     /** @deprecated, use getCombatantsByActor instead */
 		getCombatantByActor(actorIdOrActor: Actor["id"] | T): CType & Combatant<T> | undefined;
-    getCombatantsByActor(actorIdOrActor: Actor["id"] | T): CType & Combatant<T>[];
+    getCombatantsByActor(actorIdOrActor: Actor["id"] | T): (CType & Combatant<T>)[];
 		startCombat(): Promise<this>;
 		nextRound(): Promise<this>;
 		previousRound(): Promise<this>;

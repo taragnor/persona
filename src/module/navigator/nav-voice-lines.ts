@@ -190,7 +190,7 @@ export class NavigatorVoiceLines {
     });
   }
 
-	static onHoverToken(token: Token<PersonaActor>, hover: boolean) {
+	static onHoverToken(token: Foundry.Token<PersonaActor>, hover: boolean) {
 		if (hover != true) {return;}
 		if (game.user.isGM) {return;}
 		const combat = game.combat as PersonaCombat;
@@ -279,7 +279,7 @@ export class NavigatorVoiceLines {
 }
 
 
-Hooks.on("hoverToken", function (token: Token<PersonaActor>, hover: boolean) {
+Hooks.on("hoverToken", function (token: Foundry.Token<PersonaActor>, hover: boolean) {
 	NavigatorVoiceLines.onHoverToken(token, hover);
 });
 

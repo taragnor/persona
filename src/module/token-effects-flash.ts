@@ -6,8 +6,8 @@ export class TokenEffectsFlash {
 
   static init() {
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    const oldDrawEffect = Token.prototype._drawEffect;
-    foundry.canvas.placeables.Token.prototype._drawEffect = async function (this: Token<PersonaActor>, src: string, tint: N<PIXI.ColorSource>) : Promise<U<PIXI.Sprite>> {
+    const oldDrawEffect = foundry.canvas.placeables.Token.prototype._drawEffect;
+    foundry.canvas.placeables.Token.prototype._drawEffect = async function (this: Foundry.Token<PersonaActor>, src: string, tint: N<PIXI.ColorSource>) : Promise<U<PIXI.Sprite>> {
       const sprite = await (oldDrawEffect.call(this, src, tint) as ReturnType<typeof oldDrawEffect>);
       if (!sprite) {return sprite;}
       const arr = flashMap.get(this) ?? [];
@@ -25,7 +25,7 @@ Hooks.on("ready", () => {
     game.canvas.app.ticker.add( handleFlash);
 });
 
-const flashMap : WeakMap<Token<PersonaActor>, ([PIXI.Sprite, PersonaAE])[]> = new WeakMap();
+const flashMap : WeakMap<Foundry.Token<PersonaActor>, ([PIXI.Sprite, PersonaAE])[]> = new WeakMap();
 
 let time = 0;
 

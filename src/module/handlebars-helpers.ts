@@ -880,6 +880,7 @@ export class PersonaHandleBarsHelpers {
       const status = CONFIG.statusEffects.find( x=> x.id == statusId);
       if (status) {
         const locName = localize(status.name as LocalizationString);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const icon = status.img ?? status.icon;
         return new Handlebars.SafeString(`
     <img class="status-icon" src='${icon}' title='${locName}'>`);

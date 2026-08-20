@@ -1033,8 +1033,10 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
         try {
           const owner = PersonaDB.findActor(cond.owner);
           if (game.combat) {
-            const combatant = game.combat.getCombatantByActor(owner);
-            if (combatant) { return [combatant.token as PToken];}
+            const combatants = game.combat.getCombatantsByActor(owner);
+            if (combatants.length > 0) {
+              return combatants.map( c=> c.token as PToken);
+            }
           }
           if (owner) { return [owner as ValidAttackers];}
         } catch (e) {
@@ -1183,7 +1185,7 @@ export function numberOfOthersWithResolver(condition: Sourced<NumberOfOthersWith
       case "allies": {
         if (subject.isNPC()) {return false;}
         if (combat) {
-          const comb = combat.getCombatantByActor(subject);
+          const comb = combat.getCombatantsByActor(subject).at(0);
           if (!comb) {return false;}
           const allies = combat.getAllies(comb);
           targets.push(...allies

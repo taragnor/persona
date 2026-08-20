@@ -97,7 +97,7 @@ export class AnimationQueue {
   getToken(actor: ValidAttackers)  : U<TokenDocument<ValidAttackers>> {
     const combat= PersonaCombat.combat;
     if (combat) {
-      const comb= combat.getCombatantByActor(actor);
+      const comb= combat.getCombatantsByActor(actor).at(0);
       if (comb && comb.token) {return comb.token;}
     }
     const sceneTok = game.scenes.current.tokens.find(tok=>
@@ -235,7 +235,7 @@ export class AnimationQueue {
     return orig_sequence;
   }
 
-  private static appendScrollingText<T extends Sequence>(seq: T, anim: AnimationQueue["queue"][number] & {sfxType: "floating-text"} , location: Token | TokenDocument) {
+  private static appendScrollingText<T extends Sequence>(seq: T, anim: AnimationQueue["queue"][number] & {sfxType: "floating-text"} , location: Foundry.Token | TokenDocument) {
     const style = {
       fill: anim.color ?? "white",
       fontFamily: anim.fontFamily ?? "Almendra",

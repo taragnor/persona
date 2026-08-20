@@ -107,7 +107,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   get token() : N<PToken> {
     const combat = PersonaCombat.combat;
     const user = this.user;
-    const comb = combat?.getCombatantByActor(user);
+    const comb = combat?.getCombatantsByActor(user).at(0);
     if (comb && comb.token) {return comb.token as PToken;}
     const tok = game.scenes.current.tokens.find( x=> x.actor == user);
     if (tok) {return tok as PToken;}

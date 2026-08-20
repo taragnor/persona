@@ -489,7 +489,7 @@ private static _addCritToQueue(target: PToken, attacker: PToken) {
     return baseScale * scaleMult;
   }
 
-  private basicAnimationOnTarget(animData: BasicAnimationData, target: TokenDocument | Token) {
+  private basicAnimationOnTarget(animData: BasicAnimationData, target: TokenDocument | Foundry.Token) {
     const locationData =  animData.randomOffsetPercent
       ? {randomOffset: animData.randomOffsetPercent}
       : {};
@@ -497,7 +497,7 @@ private static _addCritToQueue(target: PToken, attacker: PToken) {
       .atLocation(target, locationData);
   }
 
-  private projectileAnimation (animData: BasicAnimationData, source: TokenDocument | Token, target: TokenDocument | Token)  {
+  private projectileAnimation (animData: BasicAnimationData, source: TokenDocument | Foundry.Token, target: TokenDocument | Foundry.Token)  {
     if (!this.usable.isAoE()) {
       return this.basicAnimationOnTarget(animData, source)
         .stretchTo(target);
@@ -506,7 +506,7 @@ private static _addCritToQueue(target: PToken, attacker: PToken) {
     }
   }
 
-  private spreadFireProjectileAnimation( animData: BasicAnimationData, source: TokenDocument | Token, target: TokenDocument | Token) {
+  private spreadFireProjectileAnimation( animData: BasicAnimationData, source: TokenDocument | Foundry.Token, target: TokenDocument | Foundry.Token) {
     let seq : U<EffectProxy> = undefined;
     for (let i = 0; i< 7 ; ++i ) {
       seq =  this.loadAnimationData(animData, seq);

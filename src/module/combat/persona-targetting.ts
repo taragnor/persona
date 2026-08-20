@@ -187,7 +187,7 @@ export class PersonaTargetting {
 			}
 			case 'all-others': {
 				const combat= PersonaCombat.ensureCombatExists();
-        const attackerToken = combat.getCombatantByActor(attacker)?.token;
+        const attackerToken = combat.getCombatantsByActor(attacker).at(0)?.token;
 				return combat.validCombatants(attackerToken as PToken)
 				.filter( x=> x.actor != attacker
 					&& x?.actor?.isAlive())
@@ -197,7 +197,7 @@ export class PersonaTargetting {
 			}
 			case 'everyone': {
 				const combat = PersonaCombat.ensureCombatExists();
-        const attackerToken = combat.getCombatantByActor(attacker)?.token;
+        const attackerToken = combat.getCombatantsByActor(attacker).at(0)?.token;
 				return combat.validCombatants(attackerToken as PToken)
 				.filter( x=> x?.actor?.isAlive())
 				.map( x=> x.token)
@@ -205,7 +205,7 @@ export class PersonaTargetting {
 			}
 			case 'everyone-even-dead': {
 				const combat= PersonaCombat.ensureCombatExists();
-        const attackerToken = combat.getCombatantByActor(attacker)?.token;
+        const attackerToken = combat.getCombatantsByActor(attacker).at(0)?.token;
 				return combat.validCombatants(attackerToken as PToken)
 				.filter( x=> x.actor && !x.actor.isFullyFaded())
 				.map( x=> x.token)
@@ -221,7 +221,7 @@ export class PersonaTargetting {
   static getToken(actor: ValidAttackers) : PToken {
     const combat = PersonaCombat.combat;
     if (combat) {
-      const comb = combat.getCombatantByActor(actor);
+      const comb = combat.getCombatantsByActor(actor).at(0);
       if (comb) {return comb.token as PToken;}
     }
     const token = game.scenes.active.tokens.find(tok=> tok.actor == actor && tok.actorLink == true);

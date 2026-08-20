@@ -198,6 +198,7 @@ Hooks.on("renderChatMessageHTML", (msg, html) => {
 			if (msg.whisper.length> 0) {break;}
 			elem.addClass("other");
 			break;
+		// eslint-disable-next-line @typescript-eslint/no-deprecated
 		case styles.ROLL:
 			elem.addClass("roll");
 			break;

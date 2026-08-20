@@ -544,7 +544,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
         if (this.isShadow() && this.isCustomPersona()) {return this.name;}
         const combat = PersonaCombat.combat;
         if (!combat) {return this.name;}
-        const token = combat.getCombatantByActor(this as ValidAttackers)?.token;
+        const token = combat.getCombatantsByActor(this as ValidAttackers).at(0)?.token;
         if (!token) {return this.prototypeToken.name;}
         return token.name;
       }

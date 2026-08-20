@@ -32,7 +32,7 @@ export class NPCSheet extends NoncombatantSheet  {
 
 	async activatePerk(_ev: JQuery.ClickEvent) {
 		const target = Array.from(game.user.targets)
-			.find( (x: Token<PersonaActor>) => x.actor && x.actor.isPC());
+			.find( (x: Foundry.Token<PersonaActor>) => x.actor && x.actor.isPC());
 		if (target) {
 			console.log(`Awarding Perk to ${target?.name}`);
 			await PersonaSocial.awardPerk(target.actor as PC, this.actor);

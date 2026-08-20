@@ -89,19 +89,19 @@ export class CombatScene {
     this.combatOver = false;
     this.voteToReturn = false;
 		await waitUntilTrue( () => game.scenes.current == scene && game.canvas.scene == scene && game.canvas.ready);
-		const tokens : Token<PersonaActor>[] = await this.setupShadows();
+		const tokens : Foundry.Token<PersonaActor>[] = await this.setupShadows();
     const playerTokens = await this.setupPCs();
 		tokens.push(...playerTokens);
 		await this.addTokensToCombat(tokens);
 	}
 
-  private async setupShadows() : Promise<Token<PersonaActor>[]> {
+  private async setupShadows() : Promise<Foundry.Token<PersonaActor>[]> {
 		const INITIAL_OFFSET = { x: 5, y: 5} as const;
 		const SPACING_BLOCKS = 3 as const;
 		const gridsize = this.scene.grid.size;
 		let x = INITIAL_OFFSET.x * gridsize;
 		const y = INITIAL_OFFSET.y * gridsize;
-		const tokens : Token<PersonaActor>[] = [];
+		const tokens : Foundry.Token<PersonaActor>[] = [];
 		for (const shadow of this.encounter.enemies) {
 			const token = await CreateToken.create(shadow, {x,y}, this.scene);
 			if (token) {
@@ -112,7 +112,7 @@ export class CombatScene {
     return tokens;
   }
 
-  private async setupPCs() : Promise<Token<PersonaActor>[]> {
+  private async setupPCs() : Promise<Foundry.Token<PersonaActor>[]> {
     this.clearUnusedPartyMembers();
 		const playerTokens = await this.getPlayerTokens();
 		const INITIAL_OFFSET = { x: 6, y: 12} as const;
@@ -128,7 +128,7 @@ export class CombatScene {
     return playerTokens;
   }
 
-  async getPlayerTokens() : Promise<Token<PersonaActor>[]> {
+  async getPlayerTokens() : Promise<Foundry.Token<PersonaActor>[]> {
     const PCParty = PersonaDB.activePCParty();
     for (const pc of PCParty) {
       if (!this.scene.tokens.contents.some(tok => tok.actor == pc)) {
@@ -215,7 +215,7 @@ export class CombatScene {
     }
   }
 
-	async addTokensToCombat(tokens: Token<PersonaActor>[], allowDuplicates = false) {
+	async addTokensToCombat(tokens: Foundry.Token<PersonaActor>[], allowDuplicates = false) {
 		const combat = await this.getOrCreateCombat();
 		if (!allowDuplicates) {
 			tokens = tokens.filter (t => !combat.combatants.contents.some( c=> c.token == t.document));

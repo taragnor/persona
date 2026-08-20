@@ -22,7 +22,7 @@ export class PersonaTokenObject extends CONFIG.Token.objectClass {
   async openObserverPanel() {
     const actor = this.actor;
     if (!actor.isValidCombatant()) {return;}
-    const token = PersonaCombat.combat?.getCombatantByActor(actor)?.token;
+    const token = PersonaCombat.combat?.getCombatantsByActor(actor).at(0)?.token;
     if (!token) {return;}
     await CombatPanel.instance.activate();
     await CombatPanel.instance.setMode("tactical");

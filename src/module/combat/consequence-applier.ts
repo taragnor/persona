@@ -654,7 +654,7 @@ export class ConsequenceApplier {
         if (actor.isShadow()) {
           if (effect.downgrade == false) {
             await actor.increaseScanLevel(effect.amount);
-            const token = PersonaCombat.combat?.getCombatantByActor(actor)?.token;
+            const token = PersonaCombat.combat?.getCombatantsByActor(actor).at(0)?.token;
             if (token) {
               void PersonaSFX.onScan(token as PToken, effect.amount);
             }

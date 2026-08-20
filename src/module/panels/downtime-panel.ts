@@ -11,7 +11,6 @@ import {ItemUsePanel} from "./item-use-panel.js";
 import {PersonaPanel} from "./sub-panel.js";
 import { SidePanel } from "../side-panel/side-panel.js";
 import {SocialActivityPanel} from "./social-activity-panel.js";
-import {sleep} from "../utility/async-wait.js";
 
 export class DowntimePanel extends PersonaPanel {
   actor: U<PC> = undefined;
@@ -193,7 +192,7 @@ export class DowntimePanel extends PersonaPanel {
 
   override activateListeners(html: JQuery) {
     super.activateListeners(html);
-    html.find(".weather-icon").on("click", () => this.weatherForecast());
+    html.find(".weather-icon").on("click", () => void this.weatherForecast());
   }
 
   async _onSocialLinkButton() {
@@ -238,7 +237,7 @@ export class DowntimePanel extends PersonaPanel {
 }
 
 
-Hooks.on("controlToken", async (token : Token<PersonaActor>, selected: boolean) => {
+Hooks.on("controlToken", async (token : Foundry.Token<PersonaActor>, selected: boolean) => {
   if (Metaverse.getPhase() != "downtime") {return;}
   if (!selected) {
     return;

@@ -88,7 +88,7 @@ export class RegionPanel {
 			RegionPanel.clearRegionDisplay();
 		});
 
-		Hooks.on("controlToken", async (token : Token<PersonaActor>) => {
+		Hooks.on("controlToken", async (token : Foundry.Token<PersonaActor>) => {
       if (Metaverse.getPhase() != "exploration") {return;}
 			const actor = token?.document?.actor;
 			if (!actor) {return;}

@@ -14,14 +14,14 @@ class Sequence {
 
 interface EffectProxy extends Sequence {
 	file(name: string) : this;
-	atLocation(token: Token | TokenDocument, options?: LocationOptions) : this;
+	atLocation(token: Foundry.Token | TokenDocument, options?: LocationOptions) : this;
 	scale(scale: number): this;
 	/** persists until deleted */
 	persist() : this;
 	fadeIn(ms: number) : this;
 	fadeOut(ms: number, options?: FadeOptions): this;
 	/** used for ray effects this targets them*/
-	stretchTo(token: Token | TokenDocument, options?: LocationOptions) : this;
+	stretchTo(token: Foundry.Token | TokenDocument, options?: LocationOptions) : this;
 	playbackRate(multipier: number): this;
 	belowTokens(): this;
 	scaleToObject(num: number): this;
@@ -52,7 +52,7 @@ interface LocationOptions {
 
 interface ScrollingTextProxy extends Sequence {
 	text(txt: string, style?: TextStyle) : this;
-	atLocation(token: Token | TokenDocument, options?: LocationOptions) : this;
+	atLocation(token: Foundry.Token | TokenDocument, options?: LocationOptions) : this;
 }
 
 interface InOptions {
