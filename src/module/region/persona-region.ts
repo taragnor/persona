@@ -592,7 +592,8 @@ export class PersonaRegion extends RegionDocument {
   }
 
   #refreshRegionData(event: JQuery.ChangeEvent) {
-    const topLevel  = $(event.currentTarget).closest(".tab.region-identity");
+    // const topLevel  = $(event.currentTarget).closest(".tab.region-identity");
+    const topLevel  = $(event.currentTarget).closest(REGION_ADDITION_SELECTOR);
     const data = this.regionData;
     for( const key of Object.keys(data)) {
       const k = key as keyof RegionData;
@@ -687,6 +688,7 @@ export class PersonaRegion extends RegionDocument {
 
 } //end of class
 
+const REGION_ADDITION_SELECTOR = ".tab.region-appearance" as const;
 
 Hooks.on("closeRegionConfig", async (app) => {
   const region = app.document as PersonaRegion;
@@ -695,7 +697,8 @@ Hooks.on("closeRegionConfig", async (app) => {
 
 //Append Region Configuraton dialog
 Hooks.on("renderRegionConfig", async (app, html) => {
-  const appendPoint = $(html).find(".tab.region-identity");
+  // const appendPoint = $(html).find(".tab.region-identity");
+  const appendPoint = $(html).find(REGION_ADDITION_SELECTOR);
   if (appendPoint.length != 1) {
     throw new Error(`Append Point Length equals ${appendPoint.length}`);
   }
