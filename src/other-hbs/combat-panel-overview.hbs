@@ -1,0 +1,7 @@
+<section class="combat-panel-overview">
+  <h2> Overview </h2>
+  {{#each turnOrder as |combatant i|}}
+  {{> "systems/persona/parts/character-summary-box.hbs" character=combatant.token}}
+  {{/each}}
+
+</section>

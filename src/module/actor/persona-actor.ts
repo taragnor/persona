@@ -3655,7 +3655,6 @@ async setEnergy(this: Shadow, amt: number) {
 }
 
 async alterEnergy(this: Shadow, amt: number) {
-  console.log(`Altering Energy ${amt}`);
   await this.setEnergy(this.system.combat.energy.value + amt);
 }
 

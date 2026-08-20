@@ -170,6 +170,7 @@ export class AnimationQueue {
   private buildBasicSequence(anim: typeof this.queue[number], orig_sequence: Sequence, innateDelay: number) {
     switch(anim.sfxType) {
       case "play-sound": {
+        console.debug(`Adding sound: ${anim.fileName}`);
         let seq = orig_sequence.sound();
         seq = this.setGenericSequenceParams(anim, seq, innateDelay);
         seq = seq

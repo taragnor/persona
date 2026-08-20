@@ -229,9 +229,9 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
     if (!list.includes(item.system.type)) {
       list.pushUnique(item.system.type);
     }
-    list.pushUnique(
-      ... this.getDamageTypeTags(item, user)
-    );
+    // list.pushUnique(
+    //   ... this.getDamageTypeTags(item, user)
+    // );
     if (STATUS_AILMENT_POWER_TAGS.some(tag=> list.includes(tag))) {
       list.pushUnique('ailment');
     }
@@ -270,7 +270,7 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
     list.pushUnique(...idCheck);
 
     list.pushUnique(...this.baseItemExtraTags(user ?? null));
-    list.pushUnique( this.idCheck(item.getBaseDamageType()));
+    // list.pushUnique( this.idCheck(item.getBaseDamageType()));
     list.pushUnique( this.idCheck(item.system.type));
     return list;
   }

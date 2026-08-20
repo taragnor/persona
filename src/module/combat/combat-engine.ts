@@ -923,15 +923,11 @@ export class CombatEngine {
     return defenseMod;
   }
 
-  processPowerEffectsOnTarget(atkResult: AttackResult) : CombatResult {
-    const {situation} = atkResult;
-    const power = PersonaDB.findItem(atkResult.power);
-    const attacker = atkResult.attacker ? PersonaDB.findToken(atkResult.attacker).actor : PersonaDB.findActor(atkResult.situation.attacker);
-    const target = atkResult.target ? PersonaDB.findToken(atkResult.target).actor : PersonaDB.findActor(atkResult.situation.target);
+  static getAllEffects( power: UsableAndCard, attacker: ValidAttackers, target: ValidAttackers, addedTags: (string | Tag)[]):  readonly ConditionalEffectC[] {
     const attackerEffects= attacker.getEffects(['passive']);
     const defenderEffects = target.getEffects(['defensive']);
     const powerEffects= power.getEffects(attacker, {CETypes: ['on-use', 'passive']});
-    const extraTagEffects = (situation.addedTags ?? [])
+    const extraTagEffects = addedTags
       .flatMap ( tag => tag instanceof PersonaItem ? tag.getEffects(null ) : []);
     const sourcedEffects : ConditionalEffectC[] = [];
     const eqTest = (a: ConditionalEffectC, b: ConditionalEffectC) => a.equals(b);
@@ -939,13 +935,19 @@ export class CombatEngine {
     sourcedEffects.pushUniqueS(eqTest, ...defenderEffects);
     sourcedEffects.pushUniqueS(eqTest, ...powerEffects);
     sourcedEffects.pushUniqueS(eqTest, ...extraTagEffects);
+    return sourcedEffects;
+  }
+
+  processPowerEffectsOnTarget(atkResult: AttackResult) : CombatResult {
+    const {situation} = atkResult;
+    const power = PersonaDB.findItem(atkResult.power);
+    const attacker = atkResult.attacker ? PersonaDB.findToken(atkResult.attacker).actor : PersonaDB.findActor(atkResult.situation.attacker);
+    const target = atkResult.target ? PersonaDB.findToken(atkResult.target).actor : PersonaDB.findActor(atkResult.situation.target);
+    const sourcedEffects = CombatEngine.getAllEffects(power, attacker, target, situation.addedTags ?? []);
     const CombatRes = new CombatResult(atkResult);
     const consequences = sourcedEffects.flatMap( eff => eff.getActiveConsequences(situation));
     const res = ConsequenceProcessor.consequencesToResult(consequences, power,  situation, atkResult);
     CombatRes.merge(res);
-    // if (PersonaSettings.debugMode() && game.user.isGM) {
-    //   console.debug(res);
-    // }
     return CombatRes;
   }
 

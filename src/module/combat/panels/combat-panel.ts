@@ -16,7 +16,7 @@ import {PersonaCombat, PersonaCombatant, PToken} from "../persona-combat.js";
 export class CombatPanel extends PersonaPanel {
   private _target: U<PToken>;
   private static _instance: U<CombatPanel>;
-  mode: "main" | "tactical";
+  mode: "main" | "tactical" | "overview";
   tacticalTarget: U<PToken>;
   deferUpdate = false;
   static DEFER_SLEEP_TIME = 300;
@@ -94,8 +94,13 @@ export class CombatPanel extends PersonaPanel {
 
   override get templatePath(): string {
     const target = this.mode != "tactical" ? this.target?.actor : this.tacticalTarget?.actor ?? this.target?.actor;
-    if (this.mode == "tactical") {
+    switch (this.mode) {
+      case "tactical":
       return this._observerTemplate();
+      case "overview":
+        return this._combatOverview();
+      case "main":
+        break;
     }
     if (!target) {return "";}
     switch (true) {
@@ -141,6 +146,7 @@ export class CombatPanel extends PersonaPanel {
     html.find(".control-panel .follow-ups .follow-up").on("click", (ev) => void this._onSelectFollowUp(ev));
     html.find(".follow-ups button.act-again").on("click", (ev) => void this._onReturnToMainButton(ev));
     html.find(".room-mods .mod").on("click", ev => this._openRoomMod(ev));
+    html.find(".character-card").on("click", ev=> void this._onClickOverviewPortrait(ev));
     if (this.combat) {
       this.combat.followUp.activateListeners(html);
     }
@@ -174,7 +180,7 @@ export class CombatPanel extends PersonaPanel {
     if (this._target == token) {return;}
     if (token == undefined || !token.actor) {
       this._target = undefined;
-      await this.setMode("main");
+      await this.setMode("overview");
       return;
     }
     if (token.actor.isPC() && !token.actor.isRealPC()) {
@@ -201,19 +207,25 @@ export class CombatPanel extends PersonaPanel {
     return "systems/persona/other-hbs/combat-panel-obs.hbs";
   }
 
+  private _combatOverview(): string {
+    return "systems/persona/other-hbs/combat-panel-overview.hbs";
+  }
+
   override async getData() {
     const data = await super.getData();
     const CONST = PersonaActorSheetBase.CONST();
     const actor = this.target?.actor;
+    const combat = PersonaCombat.combat;
     const persona = actor?.persona();
     const token = this.target;
-    if (!this.combat) {return {...data};}
-    const roomModifiers = this.combat.getRoomEffects();
-    const combatant = this.combat?.getCombatantsByActor(actor as ValidAttackers).at(0);
+    if (!combat) {return {...data};}
+    const roomModifiers = combat.getRoomEffects();
+    const combatant = combat.getCombatantsByActor(actor as ValidAttackers).at(0);
     let engagedList : PersonaCombatant[] = [];
     if (combatant && PersonaCombat.isPersonaCombatant(combatant))  {
-      engagedList = this.combat.getAllEngagedEnemies(combatant);
+      engagedList = combat.getAllEngagedEnemies(combatant);
     }
+    const turnOrder = this.turnOrderList();
     return {
       ...data,
       mode: this.mode,
@@ -225,7 +237,26 @@ export class CombatPanel extends PersonaPanel {
       actor,
       token,
       roomModifiers,
+      turnOrder,
     };
+  }
+
+  turnOrderList() : Combatant[] {
+    const combat = PersonaCombat.combat;
+    if (!combat) {return [];}
+    const combatants = combat.turns.slice();
+    const current = combat.combatant;
+    if (!current) {return combatants;}
+    let emergencyBreak = 0; 
+    while (combatants[0] != current) {
+      const c = combatants.shift()!;
+      combatants.push(c);
+      if (emergencyBreak++ > 1000) {
+        PersonaError.softFail("Emergency Break on turnOrderList", combatants);
+        return combatants;
+      }
+    }
+    return combatants;
   }
 
   static get instance() : CombatPanel {
@@ -376,6 +407,22 @@ export class CombatPanel extends PersonaPanel {
     if (item && item.isOwner) {item.sheet.render(true);}
   }
 
+  async _onClickOverviewPortrait(ev: JQuery.ClickEvent) {
+    const tokenId = HTMLTools.getClosestData<Actor["id"] | Foundry.Token["id"]>(ev, "targetId");
+    if (!PersonaCombat.combat) {return;}
+    const target = PersonaCombat.combat.combatants.find( c=> c.id == tokenId || c.token?.id == tokenId ||  c.actor?.id == tokenId);
+    if (!target) {
+      PersonaError.softFail(`Can't find target id: ${tokenId}`);
+      return;
+    }
+    if (target.isOwner) {
+      await this.setMode("main");
+    } else {
+      await this.setMode("tactical");
+    }
+    await this.setTarget(target.token as PToken);
+    return;
+  }
 
   openToken(_ev: JQuery.ClickEvent) {
     this.actor?.sheet.render(true);
