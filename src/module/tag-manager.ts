@@ -9,9 +9,7 @@ export abstract class TagManager<TagTypeRaw extends string = string> {
   abstract clearCache(): void;
 
   hasTag<T extends Tag | TagTypeRaw> (tagOrArr: T | T[], ...args: Parameters<this["tagList"]>):  boolean {
-    //@ts-expect-error TS hates this but it should work
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-    const list = this.tagList(...args as any);
+    const list = this.tagList(...args as Parameters<typeof this.tagList>);
     const tags = this.getTagArr(tagOrArr);
     return TagManager.hasTag(list, tags);
   }
@@ -31,6 +29,7 @@ export abstract class TagManager<TagTypeRaw extends string = string> {
   }
 
   static resolveTag<const T extends (string | Tag | Tag["id"])>(tag: T) : Tag | Exclude<T, Tag | Tag["id"]>  {
+    //for some reason need this or TS complains
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     if (tag instanceof PersonaItem) {return tag as Tag;}
     const tagGetTest = PersonaDB.allTags().get(tag as Tag["id"]);
