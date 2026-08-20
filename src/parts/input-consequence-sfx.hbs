@@ -58,9 +58,11 @@
   <div class="f-row" data-filename="{{cons.fileName}}">
     <label>FilePath</label>
     {{#if (eqAny cons.sfxType "play-sound")}}
-    {{filePicker type="audio" target=(strcat namePrefix 'fileName')}}
-    {{/if}}
+    <file-picker type="audio" name="{{strcat namePrefix 'fileName'}}" value="{{cons.fileName}}">
+    </file-picker>
+    {{else}}
     <input class="file-name" type="text" name="{{strcat namePrefix 'fileName'}}" value="{{cons.fileName}}">
+    {{/if}}
     {{#if (and (eqAny cons.sfxType "play-sound") cons.fileName)}}
     <button class="play-sound">Play </button>
     {{/if}}

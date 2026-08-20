@@ -381,28 +381,6 @@
   </select>
   {{/if}}
 
-  {{#if (eq cons.type "play-sound")}}
-  <div>
-    <span>
-      Volume
-    </span>
-    <span>
-      <input class="short" type=number name="{{strcat namePrefix 'volume'}}" value="{{cons.volume}}">
-    </span>
-  </div>
-  <div class="flexrow">
-    {{filePicker type="audio" target=(strcat namePrefix 'soundSrc')}}
-    <input class="img" type="hidden" name="{{strcat namePrefix 'soundSrc'}}" value="{{cons.soundSrc}}">
-    {{#if cons.soundSrc}}
-    <div>{{cons.soundSrc}}</div>
-    {{/if}}
-  </div>
-  <div>
-    <label> Wait Until Finished </label>
-    <input type="checkbox" name="{{strcat namePrefix 'waitUntilFinished'}}" {{checked cons.waitUntilFinished}}>
-  </div>
-  {{/if}}
-
   {{#if (eq cons.type "gain-levels") }}
   <input class="short" type=number name="{{strcat namePrefix 'amount'}}" value="{{cons.amount}}">
   <select name="{{strcat namePrefix 'gainTarget'}}">

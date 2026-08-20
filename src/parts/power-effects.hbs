@@ -3,8 +3,8 @@
 		Sound
 	</label>
 	<div class="flexrow">
-		{{filePicker type="audio" target="system.sound"}}
-		<input class="img" type="hidden" name="system.sound" value="{{item.system.sound}}">
+    <file-picker type="audio" name="system.sound" value="{{item.system.sound}}">
+    </file-picker>
 		{{#if item.system.sound}}
 		<div>{{item.system.sound}}</div>
 		{{/if}}

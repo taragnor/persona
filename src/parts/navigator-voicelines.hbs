@@ -42,9 +42,9 @@
         </a>
       </span>
       {{else}}
-      {{filePicker type="audio" target=(strcat "system.combat.navigatorVoice." i ".fileName") }}
+     <file-picker type="audio" name="{{strcat 'system.combat.navigatorVoice.' i '.fileName'}}" value="{{vl.fileName}}">
+      </file-picker>
       {{/if}}
-      <input type="hidden" name="system.combat.navigatorVoice.{{i}}.fileName" value="{{vl.fileName}}">
       <a class="del-voiceline">
         <i class="fa-solid fa-trash-can"></i>
       </a>

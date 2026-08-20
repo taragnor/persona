@@ -10,56 +10,59 @@
             </label>
             {{actor.level}}
           </div>
-					<div>
-						<label>
-							{{localize "persona.tarot.cardname"}}
-						</label>
-						<select name="system.tarot">
-							{{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
-						</select>
-					</div>
-					<div>
-						<label>
-							Navigator
-						</label>
-						<input class="navigator-check" type="checkbox" name="system.combat.isNavigator" {{checked actor.system.combat.isNavigator}}>
-					</div>
-				</div>
-				<div class="f-row">
-					<div>
-						<label> Total SLs:</label>
-						<span>
-							{{actor.social.totalSLs}}
-						</span>
-					</div>
-					<div>
-						<label>
-							Using Meta Pod
-						</label>
-						<input type="checkbox" name="system.combat.usingMetaPod" {{checked actor.system.combat.usingMetaPod}} {{#if (not (canChangePodStatus actor))}} disabled {{/if}}>
-					</div>
-				</div>
-				{{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF allowEdit=true}}
-			</div>
-			<div>
-				{{#if (not actor.system.combat.personaImg)}}
-				{{filePicker type="image" target="system.combat.personaImg"}}
-				<input class="img" type="hidden" name="system.combat.personaImg" value="{{actor.system.combat.personaImg}}">
-				{{/if}}
-				<img class="profile-img persona-img" src="{{actor.system.combat.personaImg}}">
-				</img>
-			</div>
-		</div>
-	</header>
-	<nav class="sheet-tabs tabs" data-group="primary">
-		<a class="item" data-tab="combat">
-			{{localize "persona.sheet.tabs.combat.tabname" }}
-		</a>
-		{{#if (isGM)}}
-		<a  class="item" data-tab="persona">
-			{{actor.system.personaName}}
-		</a>
-		{{/if}}
+          <div>
+            <label>
+              {{localize "persona.tarot.cardname"}}
+            </label>
+            <select name="system.tarot">
+              {{selectOptions CONST.TAROT localize=true selected=actor.system.tarot}}
+            </select>
+          </div>
+          <div>
+            <label>
+              Navigator
+            </label>
+            <input class="navigator-check" type="checkbox" name="system.combat.isNavigator" {{checked actor.system.combat.isNavigator}}>
+          </div>
+        </div>
+        <div class="f-row">
+          <div>
+            <label> Total SLs:</label>
+            <span>
+              {{actor.social.totalSLs}}
+            </span>
+          </div>
+          <div>
+            <label>
+              Using Meta Pod
+            </label>
+            <input type="checkbox" name="system.combat.usingMetaPod" {{checked actor.system.combat.usingMetaPod}} {{#if (not (canChangePodStatus actor))}} disabled {{/if}}>
+          </div>
+        </div>
+        {{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF allowEdit=true}}
+      </div>
+      <div>
+        {{#if (not actor.system.combat.personaImg)}}
+        <file-picker type="image" value="{{actor.system.combat.personaImg}}" name="system.combat.personaImg" >
+        </file-picker>
+          {{/if}}
+          {{#if (isGM)}}
+          <file-picker type="image" value="{{actor.system.combat.personaImg}}" name="system.combat.personaImg" >
+          </file-picker>
+            {{/if}}
+            <img class="profile-img persona-img" src="{{actor.system.combat.personaImg}}">
+      </div>
+    </div>
+  </header>
+  <nav class="sheet-tabs tabs" data-group="primary">
+    <a class="item" data-tab="combat">
+      {{localize "persona.sheet.tabs.combat.tabname" }}
+    </a>
+    {{#if (isGM)}}
+    <a  class="item" data-tab="persona">
+      {{actor.system.personaName}}
+    </a>
+    {{/if}}
 
 		<a class="item" data-tab="inv">
 			{{localize "persona.sheet.tabs.inventory.tabname" }}

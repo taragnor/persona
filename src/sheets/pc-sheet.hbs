@@ -34,11 +34,15 @@
       </section>
       <div>
         {{#if (not persona.img)}}
-        {{filePicker type="image" target="system.combat.personaImg"}}
-        <input class="img" type="hidden" name="system.combat.personaImg" value="{{actor.system.combat.personaImg}}">
-        {{else}}
-        <img class="profile-img persona-img" src="{{persona.img}}" title="{{persona.publicName}}">
-        {{/if}}
+        <file-picker type="image" value="{{actor.system.combat.personaImg}}" name="system.combat.personaImg" >
+        </file-picker>
+          {{else}}
+          {{#if (isGM)}}
+          <file-picker type="image" value="{{actor.system.combat.personaImg}}" name="system.combat.personaImg" >
+          </file-picker>
+            {{/if}}
+            <img class="profile-img persona-img" src="{{persona.img}}" title="{{persona.publicName}}">
+            {{/if}}
       </div>
     </div>
   </header>

@@ -415,6 +415,9 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
   }
 
   static override migrateData(data: SocialCard["system"]) {
+    data.availabilityConditions = ConditionalEffectDM.migrateConditions(data.availabilityConditions);
+    data.conditions = ConditionalEffectDM.migrateConditions(data.conditions);
+    data.cameoConditions = ConditionalEffectDM.migrateConditions(data.conditions);
     return data;
   }
 }
@@ -599,9 +602,7 @@ export class SocialCardEventDM extends foundry.abstract.DataModel {
     if (data.conditions == undefined) {
       data.conditions = [];
     }
-    if (!Array.isArray(data.conditions)) {
-      data.conditions = ConditionalEffectManager.ArrayCorrector(data.conditions)as typeof data.conditions;
-    }
+    data.conditions = ConditionalEffectDM.migrateConditions(data.conditions);
     if (data.choices == undefined)
     {data.choices = [];}
     if (FREQUENCY[data.frequency as keyof typeof FREQUENCY] == undefined) {
@@ -623,8 +624,6 @@ export class CardChoiceDM extends foundry.abstract.DataModel {
         effects: new arr(new embedded(ConditionalEffectDM)),
       }),
     };
-
-
   }
 
   get displayedName(): string {

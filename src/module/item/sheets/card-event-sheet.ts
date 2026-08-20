@@ -6,6 +6,7 @@ import {ConditionalEffectManager, MenuDataI} from "../../conditionalEffects/cond
 import {ConsequenceAmountResolver} from "../../conditionalEffects/consequence-amount.js";
 import {SocialCardEventDM} from "../../datamodel/item-types.js";
 import {PersonaError} from "../../persona-error.js";
+import {PersonaSounds} from "../../persona-sounds.js";
 import {ContextMenu, ContextMenuOptions} from "../../utility/context-menu.js";
 import {HTMLTools} from "../../utility/HTMLTools.js";
 import {PersonaItem} from "../persona-item.js";
@@ -13,6 +14,7 @@ import {PersonaEffectContainerBaseSheet} from "./effect-container.js";
 import {PersonaSocialCardSheet} from "./social-card-sheet.js";
 
 export class CardEventSheet extends FormApplication<SocialCardEventDM> implements MenuDataI {
+  static sound: U<FOUNDRY.AUDIO.Sound>;
   _event: SocialCardEventDM;
   _card: SocialCard;
   private _eventIndex : number;
@@ -77,6 +79,7 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
     html.find(".del-choice").on("click", (ev) => void this.deleteChoice(ev));
     html.find(".paste-choice").on("click", (ev) => void this.pasteChoice(ev));
     html.find(".copy-choice").on("click", ev => this.copyChoice(ev));
+    html.find(".play-sound").on("click", ev => this.playSound(ev)); 
   }
 
   get eventIndex() {
@@ -150,6 +153,14 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
 
   async addChoice(_ev: JQuery.ClickEvent) {
     await this.item.addEventChoice(this.eventIndex);
+  }
+
+  async playSound(ev: JQuery.ClickEvent) {
+    if (CardEventSheet.sound) {
+      CardEventSheet.sound.stop();
+    }
+		const file = HTMLTools.getClosestData(ev, "soundFile");
+    CardEventSheet.sound = await PersonaSounds.playFree(file, this.event.volume ?? 1);
   }
 
   async deleteChoice(ev: JQuery.ClickEvent) {
