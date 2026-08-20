@@ -225,10 +225,11 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
       .concat( item.system.tags)
       .concat(item.system.itemTags)
       .pushUnique(...this.#autoTags_usable(item))
-      .pushUnique(...this.baseItemExtraTags(user ?? null));
-    if (!list.includes(item.system.type)) {
-      list.pushUnique(item.system.type);
-    }
+      .pushUnique(...this.baseItemExtraTags(user ?? null))
+      .pushUnique(item.system.type);
+    // if (!list.includes(item.system.type)) {
+    //   list.pushUnique(item.system.type);
+    // }
     list.pushUnique(
       ... this.getDamageTypeTags(item, user)
     );

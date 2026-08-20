@@ -1232,14 +1232,18 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       }
       case "weapon":
       case "item": {
+        const powerRating = this.isWeapon()
+        ? ` [${this.weaponRating}]`
+        : this.isOutfit()
+        ? ` [${this.armorRating}]`
+        : "";
         const tags = (this as InvItem | Weapon).tagList(null)
         .filter( tag => tag instanceof PersonaItem)
         .filter( tag=> tag.isEnchantmentTag() && !tag.isHidden)
         .map( tag=> tag.name)
         .join (" ,");
-        if (tags.length > 0) {
-          return `${this.name} (${tags})`;
-        }
+        const tagStr = tags.length > 0 ? ` (${tags})`: "";
+        return `${this.name}${tagStr}${powerRating}`;
       }
     }
     return this.name;
