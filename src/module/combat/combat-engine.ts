@@ -197,7 +197,7 @@ export class CombatEngine {
     const result = new CombatResult();
     const promises=  targets.map( async  (target, i, arr) => {
       const rollType = i == 0 && !options.subAttack ? "activation" :
-      arr.indexOf(target) < i  ? "iterative" : "standard";
+        arr.indexOf(target) < i  ? "iterative" : "standard";
       return await this.usePowerOnTarget(attacker, power, target, rollType, options);
     });
     const resolved = (await Promise.allSettled(promises))
@@ -1338,10 +1338,10 @@ export class CombatEngine {
   static isAnyFullMiss(situation: Situation) : U<boolean> {
     if (!("result" in situation)) {return undefined;}
     const result = situation.result;
-      return result == "miss"
-        || result == "evade"
-        || result == "block"
-        || result == "reflect";
+    return result == "miss"
+    || result == "evade"
+    || result == "block"
+    || result == "reflect";
   }
 
   static isFumble( situation: Situation) : U<boolean> {
