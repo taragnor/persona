@@ -18,19 +18,25 @@ export class ConditionalEffectC {
 
   static batchConverted = new Set<ConditionalEffectC>();
 
-  _preconditions : readonly SourcedPrecondition<NonDeprecatedPrecondition<Precondition>>[];
-  _consequences: readonly SourcedConsequence<NonDeprecatedConsequence>[];
-  _isEmbedded : boolean;
-  _source: U<ModifierContainer["accessor"]>;
-  _owner: U<UniversalActorAccessor<PersonaActor>>;
-  _realSource: U<ModifierContainer["accessor"]>;
-  _original : CondEffectObject | CardItem;
-  _conditionalType: typeof CETypes[number];
-  _isDefensiveRaw: boolean;
-  _isMainModifier: boolean;
-  _isAura: boolean;
-  _embeddedEffects : ConditionalEffectC[] = [];
-  _grantedBonuses: Set<NonDeprecatedModifierTarget>= new Set();
+  private _preconditions : readonly SourcedPrecondition<NonDeprecatedPrecondition<Precondition>>[];
+  private _consequences: readonly SourcedConsequence<NonDeprecatedConsequence>[];
+  private _isEmbedded : boolean;
+  private _original : CondEffectObject | CardItem;
+  private _conditionalType: typeof CETypes[number];
+  private _isDefensiveRaw: boolean;
+  private _isMainModifier: boolean;
+  private _isAura: boolean;
+  private _embeddedEffects : ConditionalEffectC[] = [];
+  private _grantedBonuses: Set<NonDeprecatedModifierTarget>= new Set();
+
+  // private _source: U<ModifierContainer["accessor"]>;
+  // private _owner: U<UniversalActorAccessor<PersonaActor>>;
+  // private _realSource: U<ModifierContainer["accessor"]>;
+  private _ownershipData: {
+    source: U<ModifierContainer["accessor"]>;
+    owner: U<UniversalActorAccessor<PersonaActor>>;
+    realSource: U<ModifierContainer["accessor"]>;
+  };
 
   static parents = new WeakMap<object, ConditionalEffectC>();
   //NOTE: this could leak memory
@@ -67,9 +73,14 @@ export class ConditionalEffectC {
     this._isEmbedded = ce.isEmbedded ?? false;
     this._isAura = ce.isAura ?? false;
     this._conditionalType = this.#determineConditionalType(ce, this._preconditions, this._consequences, sourceItem!);
-    this._owner= sourceActor?.accessor;
-    this._source= sourceItem != null ? sourceItem.accessor : undefined;
-    this._realSource= realSource? realSource.accessor: undefined;
+    this._ownershipData = {
+      owner: sourceActor?.accessor,
+      source: sourceItem != null ? sourceItem.accessor : undefined,
+      realSource: realSource? realSource.accessor: undefined,
+    };
+    // this._owner = sourceActor?.accessor;
+    // this._source = sourceItem != null ? sourceItem.accessor : undefined;
+    // this._realSource = realSource? realSource.accessor: undefined;
     this._isDefensiveRaw = ce.isDefensive ?? false;
     this._isMainModifier = !this._isEmbedded && !this._isAura;
     this.setGrantedBonuses();
@@ -129,15 +140,15 @@ export class ConditionalEffectC {
 
   get name() : string {
     let ret = "";
-    if (this._realSource && !PersonaDB.accessorEq(this._realSource, this._source)) {
-      ret += PersonaDB.find(this._realSource)?.name;
+    if (this.realSource && !PersonaDB.accessorEq(this.realSource, this.source)) {
+      ret += this.findRealSource()?.name;
     }
-    if (this._source) {
-      const sourceName = PersonaDB.find(this._source)?.name;
+    if (this.source) {
+      const sourceName = this.findSource()?.name;
       ret += ` (${sourceName})`;
     }
-    if (this._owner) {
-      const ownerName = PersonaDB.find(this._owner)?.name;
+    if (this.owner) {
+      const ownerName = this.findOwner()?.name;
       ret += ` (${ownerName})`;
     }
     if (ret.length == 0) {
@@ -211,12 +222,12 @@ export class ConditionalEffectC {
     return this._isAura;
   }
 
-  findSource() { return this._source ? PersonaDB.find(this._source) : undefined;}
-  findRealSource() { return this._realSource ? PersonaDB.find(this._realSource) : undefined;}
-  findOwner() { return this._owner ? PersonaDB.find(this._owner) : undefined;}
-  get source() { return this._source;}
-  get realSource() { return this._realSource;}
-  get owner() { return this._owner; }
+  findSource() { return this.source ? PersonaDB.find(this.source) : undefined;}
+  findRealSource() { return this.realSource ? PersonaDB.find(this.realSource) : undefined;}
+  findOwner() { return this.owner ? PersonaDB.find(this.owner) : undefined;}
+  get source() { return this._ownershipData.source;}
+  get realSource() { return this._ownershipData.realSource;}
+  get owner() { return this._ownershipData.owner; }
 
   equals( other: ConditionalEffectC) : boolean {
     return this._original == other._original;
@@ -279,8 +290,8 @@ export class ConditionalEffectC {
     return ConditionalEffectC.getModifierAmount(this.consequences, targetMods);
   }
 
-  #determineConditionalType (ce: CondEffectObject, _conditions: ConditionalEffectC["conditions"], _consequences : ConditionalEffectC["consequences"], sourceItem: N<ConditonalEffectHolderItem> ) : this["_conditionalType"] {
-    let condType : this["_conditionalType"] = "unknown";
+  #determineConditionalType (ce: CondEffectObject, _conditions: ConditionalEffectC["conditions"], _consequences : ConditionalEffectC["consequences"], sourceItem: N<ConditonalEffectHolderItem> ) : this["conditionalType"] {
+    let condType : this["conditionalType"] = "unknown";
     const forceDefensive = (sourceItem?.isDefensive)
       ? sourceItem.isDefensive()
       : false;
@@ -310,11 +321,16 @@ export class ConditionalEffectC {
 
   private _generateCardEffects(card: CardItem) {
     this._original = card;
-    this._source = card.accessor;
-    this._owner = card.parent?.accessor;
+    // this._source = card.accessor;
+    // this._owner = card.parent?.accessor;
+    // this._realSource = undefined;
+    this._ownershipData = {
+      source : card.accessor,
+      owner : card.parent?.accessor,
+      realSource: undefined,
+    };
     this._isEmbedded = false;
     this._conditionalType = "on-use";
-    this._realSource = undefined;
     if (card.isSkillCard()) {
       return this._generateSkillCardTeachEffect(card);
     }

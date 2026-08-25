@@ -2160,23 +2160,34 @@ async deleteCreatureTag(this: Tag, index: number) : Promise<void> {
   await this.update( {"system.creatureTags": tags});
 }
 
+private _getBaseMainModifierEffects(this: ItemModifierContainer, sourceActor: N<PersonaActor>, proxyItem: UN<ItemContainers> ) : readonly ConditionalEffectC[] {
+  if (this.isCardItem()) {
+    return [ConditionalEffectC.fromCard(this)];
+  }
+  const effects = this.itemBase.system.effects;
+  proxyItem = proxyItem ? proxyItem : this;
+  return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
+    .filter (ce => ce.isMainModifier);
+}
+
 getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options : GetEffectsOptions = {}): readonly ConditionalEffectC[] {
   if (!PersonaDB.isLoaded) {
     throw new PersonaError("DB not loaded yet");
   }
-  const {CETypes} = options;
   if (this.isCardItem()) {
     return [ConditionalEffectC.fromCard(this)];
   }
+  const {CETypes} = options;
   const deepTags = options.deepTags ?? true;
   const tagEffects = deepTags ? this._getLinkedEffects(sourceActor, CETypes) : [];
   if (!CETypes || CETypes.length == 0) {
-    const effects = this.itemBase.system.effects;
-    const effectsGetterFn = () => {
-      const proxyItem = options.proxyItem ? options.proxyItem : this;
-      return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
-        .filter (ce => ce.isMainModifier);
-    };
+    const effectsGetterFn =  () => this._getBaseMainModifierEffects(sourceActor, options.proxyItem);
+    // const effectsGetterFn = () => {
+    //   const effects = this.itemBase.system.effects;
+    //   const proxyItem = options.proxyItem ? options.proxyItem : this;
+    //   return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
+    //     .filter (ce => ce.isMainModifier);
+    // };
     return this.#accessEffectsCache('allMainEffects', sourceActor, options, effectsGetterFn)
       .slice()
       .pushUnique(...tagEffects);

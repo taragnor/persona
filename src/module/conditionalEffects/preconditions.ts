@@ -225,18 +225,18 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       target = clock.amt;
       break;
     }
-    // case "percentage-of-hp": {
-    //   const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
-    //   if (!subject) {return false;}
-    //   target = subject.hp / subject.mhpEstimate;
-    //   break;
-    // }
-    // case "percentage-of-mp": {
-    //   const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
-    //   if (!subject) {return false;}
-    //   target = subject.mp / subject.mmp;
-    //   break;
-    // }
+      // case "percentage-of-hp": {
+      //   const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
+      //   if (!subject) {return false;}
+      //   target = subject.hp / subject.mhpEstimate;
+      //   break;
+      // }
+      // case "percentage-of-mp": {
+      //   const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
+      //   if (!subject) {return false;}
+      //   target = subject.mp / subject.mmp;
+      //   break;
+      // }
     case "energy": {
       const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
       if (!subject) {return false;}
@@ -569,7 +569,7 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
       const globalSit = "global" in situation? situation.global : false;
       return (globalSit == condition.global);
     }
-    // case "on-enter-region":
+      // case "on-enter-region":
     case "on-presence-check":
       if (!("triggeringRegionId" in situation)) {
         return false;
@@ -1170,7 +1170,8 @@ export function multiCheckToSet<
     }
     const cache= MultiCheckSetCache.get(multiCheck);
     if (cache != undefined) {return cache as Set<T>;}
-    const trueKeys = Object.entries(multiCheck)
+    const trueKeys = Object
+    .entries(multiCheck)
     .filter( ([_, val]) => val == true)
     .map( ([k, _v]) => k);
     const set= new Set(trueKeys);
