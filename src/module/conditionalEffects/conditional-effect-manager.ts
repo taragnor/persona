@@ -115,17 +115,18 @@ export class ConditionalEffectManager {
 
   static canModifyStat (effects: readonly ConditionalEffectC[] | ConditionalEffectC, stat: NonDeprecatedModifierTarget): boolean {
     effects = Array.isArray(effects) ? effects : [effects];
-    return effects.some( eff => eff.consequences.some( c=> {
-      if ( "modifiedField" in c ) {
-        if (c.modifiedField == stat) {return true;}
-      }
-      if ( "modifiedFields" in c) {
-        if (c.modifiedFields[stat] == true)
-        {return true;}
-      }
-      return false;
-    })
-    );
+    return effects.some( eff=> eff.grantsBonusTypeV1(stat));
+    // return effects.some( eff => eff.consequences.some( c=> {
+    //   if ( "modifiedField" in c ) {
+    //     if (c.modifiedField == stat) {return true;}
+    //   }
+    //   if ( "modifiedFields" in c) {
+    //     if (c.modifiedFields[stat] == true)
+    //     {return true;}
+    //   }
+    //   return false;
+    // })
+    // );
   }
 
   static getAllActiveConsequences(condEffects: readonly ConditionalEffectC[], situation: Situation) : Consequence[] {

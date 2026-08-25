@@ -1301,7 +1301,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     bonusTypes = Array.isArray(bonusTypes) ? bonusTypes : [bonusTypes];
     return bonusTypes.flatMap( btype => {
       return effects
-        .filter( eff => eff.consequences.some( cons => ('modifiedFields' in cons && cons.modifiedFields[btype] == true) || ('modifiedField' in cons && cons.modifiedField == btype)))
+        .filter( eff => eff.grantsBonusTypeV1(btype))
+      // && eff.consequences.some( cons => ('modifiedFields' in cons && cons.modifiedFields[btype] == true) || ('modifiedField' in cons && cons.modifiedField == btype)))
         .map(eff => {
           const source = eff.source ? PersonaDB.find(eff.source) : undefined;
           const realSource = eff.realSource ? PersonaDB.find(eff.realSource) : undefined;
@@ -1948,7 +1949,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   get armorRating() : number {
-    const amt = PersonaSettings.getDamageSystem().getArmorRatingByItemLvl(this.armorLevel);
+    const amt = PersonaSettings.getDamageSystem()
+      .getArmorRatingByItemLvl(this.armorLevel);
     return amt;
   }
 

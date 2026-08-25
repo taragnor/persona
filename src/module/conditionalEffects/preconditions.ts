@@ -1021,8 +1021,10 @@ export function resolveActorIdOrTarot (targetIdOrTarot: PersonaActor["id"] | Tar
 
 function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K) : readonly (PToken | ValidAttackers | NPC) []{
   if (!(field in cond)) {
-    Debug(cond);
-    Debug(situation);
+    Debug(`${field} not present in condition`, cond, situation, field );
+    // Debug(cond);
+    // Debug(situation);
+    // Debug(field);
     return [];
   }
   const condTarget = cond[field];

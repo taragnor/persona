@@ -1,5 +1,5 @@
 import { ConsequenceAmountV2, NonDeprecatedConsequence } from "../../config/consequence-types.js";
-import {NonDeprecatedModifierTarget} from "../../config/item-modifiers.js";
+import {NonDeprecatedModifierTarget, NonDeprecatedModifierType} from "../../config/item-modifiers.js";
 import {NonDeprecatedPrecondition} from "../../config/precondition-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {ModifierV2Target} from "../bonus-calc.js";
@@ -30,6 +30,7 @@ export class ConditionalEffectC {
   _isMainModifier: boolean;
   _isAura: boolean;
   _embeddedEffects : ConditionalEffectC[] = [];
+  _grantedBonuses: Set<NonDeprecatedModifierTarget>= new Set();
 
   static parents = new WeakMap<object, ConditionalEffectC>();
   //NOTE: this could leak memory
@@ -71,6 +72,21 @@ export class ConditionalEffectC {
     this._realSource= realSource? realSource.accessor: undefined;
     this._isDefensiveRaw = ce.isDefensive ?? false;
     this._isMainModifier = !this._isEmbedded && !this._isAura;
+    this.setGrantedBonuses();
+  }
+
+  private setGrantedBonuses() {
+    this._grantedBonuses = this.consequences.reduce<Set<NonDeprecatedModifierType>>( (acc, cons) => {
+      if ('modifiedFields' in cons) {
+        Object.entries(cons.modifiedFields)
+          .filter( ([_k,v])=> v == true)
+          .forEach ( ([k,_v]) => acc.add(k as NonDeprecatedModifierType));
+      }
+      if ('modifiedField' in cons) {
+        acc.add(cons.modifiedField);
+      }
+      return acc;
+    }, new Set());
   }
 
   static convertBatch(ceArr: CondEffectObject[], sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem) : ConditionalEffectC[] {
@@ -148,7 +164,11 @@ export class ConditionalEffectC {
     return ret;
   }
 
-  grantsBonusType(btype: ModifierV2Target) {
+  grantsBonusTypeV1(btype: NonDeprecatedModifierTarget) : boolean {
+    return this._grantedBonuses.has(btype);
+  }
+
+  grantsBonusTypeV2(btype: ModifierV2Target) {
     return this.#cache.bonusTypes.get(btype);
   }
 

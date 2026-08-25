@@ -79,7 +79,7 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
     html.find(".del-choice").on("click", (ev) => void this.deleteChoice(ev));
     html.find(".paste-choice").on("click", (ev) => void this.pasteChoice(ev));
     html.find(".copy-choice").on("click", ev => this.copyChoice(ev));
-    html.find(".play-sound").on("click", ev => this.playSound(ev)); 
+    html.find(".play-sound").on("click", ev => void this.playSound(ev));
   }
 
   get eventIndex() {

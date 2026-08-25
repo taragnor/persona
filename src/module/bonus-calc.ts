@@ -26,7 +26,7 @@ export class BonusCalculation extends CalculationV2 {
   addCE(...effects: readonly ConditionalEffectC[]) : this {
     const bonusEffects = effects
       .filter ( ce=> this.modNames
-        .some (mod => ce.grantsBonusType(mod))
+        .some (mod => ce.grantsBonusTypeV2(mod))
       );
     for (const ce of bonusEffects) {
       const filteredCons = ce.consequences
