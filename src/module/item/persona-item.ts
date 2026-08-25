@@ -57,6 +57,7 @@ declare global {
 
 export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE> implements ModifierContainer<PersonaItem> {
 
+  static LONG_CACHE = 500000 as const;
   private _tags = new ItemTagManager(this);
 
   static #cache =  {
@@ -83,6 +84,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   private cache2 = {
     accessor: new TimedCache( () => this._accessor(), 1500),
+    restoresMP: new TimedCache( () => 
+      (this as Consumable | Power)._restoresMP(),
+      PersonaItem.LONG_CACHE),
+    restoresHP: new TimedCache( () =>
+      (this as Consumable | Power)._restoresHP(),
+      PersonaItem.LONG_CACHE),
+    isCraftingMaterial: new TimedCache( () =>
+      this._isCraftingMaterial(), PersonaItem.LONG_CACHE),
+    powerCategory: new TimedCache( () =>
+      (this as Usable)._getPowerCategory(), PersonaItem.LONG_CACHE),
   };
 
   static cacheStats = {
@@ -216,6 +227,22 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   getPowerCategory(this: Usable, user?: ValidAttackers | Persona ) : U<ItemCategory> {
+    if (this.getBaseDamageType() == "by-power") {
+      return this._getByPowerDamageCategory(user);
+    }
+    return this.cache2.powerCategory.value;
+  }
+
+  _getByPowerDamageCategory(this: Usable, user ?: ValidAttackers | Persona) : U<ItemCategory> {
+    if (!user) {
+      PersonaError.softFail("No user provided for get item category");
+      return undefined;
+    }
+    const altDtype = this.getDamageType(user);
+    return altDtype;
+  }
+
+  private _getPowerCategory(this: Usable, user?: ValidAttackers | Persona ) : U<ItemCategory> {
     const dtype = this.getBaseDamageType();
     switch (dtype) {
       case 'fire':
@@ -230,18 +257,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case 'untyped':
         return dtype;
       case 'by-power': {
-        if (!user) {
-          PersonaError.softFail("No user provided for get item category");
-          return undefined;
-        }
-        const altDtype = this.getDamageType(user);
-        return altDtype;
+        return this._getByPowerDamageCategory(user);
+        // if (!user) {
+        //   PersonaError.softFail("No user provided for get item category");
+        //   return undefined;
+        // }
+        // const altDtype = this.getDamageType(user);
+        // return altDtype;
       }
       case 'none':
       case 'all-out':
         break;
     }
-    if (this.hasTag('ailment', user ?? null)) {
+    // if (this.hasTag('ailment', user ?? null)) {
+    if (this.hasTag('ailment', null)) {
       return "ailment";
     }
     if (this.isPassive() || this.isDefensive()) {
@@ -330,6 +359,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   restoresHP(this: Consumable | Power) : boolean {
+    return this.cache2.restoresHP.value;
+  }
+
+  private _restoresHP(this: Consumable | Power) : boolean {
     if (this.getBaseDamageType() != "healing") {return false;}
     return this.getEffects(null).some( eff => {
       return eff.consequences.some( cons => {
@@ -339,6 +372,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   restoresMP(this: Consumable | Power) : boolean {
+    return this.cache2.restoresMP.value;
+  }
+
+  _restoresMP(this: Consumable | Power) : boolean {
     return this.getEffects(null, {deepTags: false}).some( eff => eff.consequences.filter (cons => cons.type == "alter-mp")
       .some(cons => typeof cons.amount == "number"
         ? cons.amount > 0
@@ -1985,6 +2022,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   isCraftingMaterial(): boolean {
+    return this.cache2.isCraftingMaterial.value;
+  }
+
+  private _isCraftingMaterial(): boolean {
     if (!this.isCarryableType()) {return false;}
     if (this.isInvItem()) {
       return this.system.slot == "crafting";

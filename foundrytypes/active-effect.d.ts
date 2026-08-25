@@ -30,6 +30,7 @@ namespace Foundry {
 		duration: EffectDuration;
 		transfer: boolean;
 		get isTemporary(): boolean;
+    showIcon: ValueOf<typeof CONST.ACTIVE_EFFECT_SHOW_ICON>;
 	}
 
 

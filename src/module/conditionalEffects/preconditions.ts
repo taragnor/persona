@@ -1152,30 +1152,55 @@ export function multiCheckToArray<
   > (multiCheck: MultiCheckOrSingle<T>) : T[] {
     if (multiCheck == undefined) {return [];}
     if (typeof multiCheck == "string") {return [multiCheck];}
-    return Object.entries(multiCheck)
+    const cache= MultiCheckArrayCache.get(multiCheck);
+    if (cache != undefined) {return cache as T[];}
+    const val = Object.entries(multiCheck)
       .filter( ([_, val]) => val == true)
       .map( ([k,_v]) => k as T);
+    MultiCheckArrayCache.set(multiCheck, val);
+    return val;
+  }
+
+export function multiCheckToSet<
+  const T extends string,
+  > (multiCheck: MultiCheckOrSingle<T>) : Set<T> {
+    if (multiCheck == undefined) {return new Set();}
+    if (typeof multiCheck == "string") {
+      return new Set([multiCheck]);
+    }
+    const cache= MultiCheckSetCache.get(multiCheck);
+    if (cache != undefined) {return cache as Set<T>;}
+    const trueKeys = Object.entries(multiCheck)
+    .filter( ([_, val]) => val == true)
+    .map( ([k, _v]) => k);
+    const set= new Set(trueKeys);
+    MultiCheckSetCache.set(multiCheck, set);
+    return set as Set<T>;
   }
 
 export function multiCheckContains<T extends R, const R extends string>(multiCheck: MultiCheck<T> | T, arrOrSingle: readonly R[] | R) : boolean {
-  const arr = Array.isArray(arrOrSingle)
+  const arr : readonly T[] = Array.isArray(arrOrSingle)
     ? arrOrSingle
     : [arrOrSingle];
   if (typeof multiCheck != "object") {
     return arr.includes(multiCheck);
   }
-  return Object.entries(multiCheck)
-    .filter( ([_, val]) => val == true)
-    .some (([item, _]) => arr.includes(item));
+  const set = multiCheckToSet(multiCheck);
+  return arr.some (x=> set.has(x));
+  // return Object.entries(multiCheck)
+  //   .filter( ([_, val]) => val == true)
+  //   .some (([item, _]) => arr.includes(item));
 }
 
 function multiCheckTest<T extends string>(multiCheck: MultiCheck<T> | T, testFn: (x: T) => boolean) : boolean {
   if (typeof multiCheck != "object") {
     return testFn(multiCheck);
   }
-  return Object.entries(multiCheck)
-    .filter( ([_, val]) => val == true)
-    .some (([item, _]) => testFn(item as T));
+  const arr = multiCheckToArray(multiCheck);
+  return arr.some(x=> testFn(x));
+  // return Object.entries(multiCheck)
+  //   .filter( ([_, val]) => val == true)
+  //   .some (([item, _]) => testFn(item as T));
 }
 
 export function numberOfOthersWithResolver(condition: Sourced<NumberOfOthersWithComparison>, situation : Situation) : number | false {
@@ -1581,4 +1606,7 @@ export function getSourceDType(condition: Sourced<object>, prop : "source" | "re
   }
   return null;
 }
+
+const MultiCheckArrayCache : WeakMap<MultiCheck<string>, string[]>   = new WeakMap();
+const MultiCheckSetCache : WeakMap<MultiCheck<string>, Set<string>>   = new WeakMap();
 

@@ -39,6 +39,7 @@ namespace Foundry {
       NAME: string
     }
 
+    ACTIVE_EFFECT_SHOW_ICON: {NEVER: 0, CONDITIONAL: 1, ALWAYS: 2},
 
 	};
 

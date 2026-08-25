@@ -1685,7 +1685,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     const newState = {
       ...stateData,
       name: game.i18n.localize(stateData.name as LocalizationString),
-      statuses: [id]
+      statuses: [id],
+      showIcon: CONST.ACTIVE_EFFECT_SHOW_ICON.ALWAYS,
     };
     const newEffect = (await  this.createEmbeddedDocuments("ActiveEffect", [newState]))[0] as PersonaAE;
     //potency can change in checkStatusNullification so its important to wait to unpack it until here
@@ -3441,7 +3442,8 @@ async setEffectFlag(effect: Sourced<OtherEffect> & {type: "set-flag"}) {
     if (statusTag) {
       await flag.update({
         "img" : statusTag.img,
-        "statuses" : [statusTag.id]
+        "statuses" : [statusTag.id],
+        "showIcon": CONST.ACTIVE_EFFECT_SHOW_ICON.ALWAYS,
       });
     }
   }
