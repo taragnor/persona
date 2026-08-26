@@ -29,9 +29,6 @@ export class ConditionalEffectC {
   private _embeddedEffects : ConditionalEffectC[] = [];
   private _grantedBonuses: Set<NonDeprecatedModifierTarget>= new Set();
 
-  // private _source: U<ModifierContainer["accessor"]>;
-  // private _owner: U<UniversalActorAccessor<PersonaActor>>;
-  // private _realSource: U<ModifierContainer["accessor"]>;
   private _ownershipData: {
     source: U<ModifierContainer["accessor"]>;
     owner: U<UniversalActorAccessor<PersonaActor>>;

@@ -338,8 +338,6 @@ export class ConditionalEffectManager {
   static getEffects<T extends PersonaActor, I extends ConditonalEffectHolderItem> (CEObject: DeepNoArray<ConditionalEffect[]> | ConditionalEffect[], sourceItem: N<I>, sourceActor: T | null, realSource ?: ConditonalEffectHolderItem) : ConditionalEffectC[] {
     const conditionalEffects = Array.isArray(CEObject) ? CEObject : (this.ArrayCorrector(CEObject, realSource ?? sourceItem) as ConditionalEffect[]);
     return ConditionalEffectC.convertBatch(conditionalEffects, sourceItem, sourceActor, realSource);
-    // return conditionalEffects
-    //   .map( ce=> new ConditionalEffectC(ce, sourceItem, sourceActor, realSource)) satisfies SourcedConditionalEffect[];
   }
 
   static getConditionalType<I extends ConditonalEffectHolderItem>( ce: ConditionalEffect, sourceItem ?: I | null ) : TypedConditionalEffect["conditionalType"] {
@@ -456,7 +454,6 @@ export class ConditionalEffectManager {
     this.cache.consequences.set(consObject, data);
     return data;
   }
-
 
   static getConsequences<T extends PersonaActor, I extends (ModifierContainer)>(consObject: DeepNoArray<ConditionalEffect["consequences"]>, sourceItem: I | null, sourceActor: T | null, realSource: null | U<ModifierContainer>): SourcedConditionalEffect["consequences"] {
     return this.getUnsourcedConsequences(consObject, sourceItem)
