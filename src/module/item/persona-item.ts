@@ -2910,6 +2910,9 @@ getCooldown(this:Power, user: N<ValidAttackers | Persona>) : number {
   if (!user.isShadow()) {
     return this.system.cooldown ?? 0;
   }
+  if (!this.isMagicSkill() && !this.isWeaponSkill()) {
+    return 0;
+  }
   const cost= EnergyClassCalculator.calcCooldown(this, user);
   return Math.max(cost, this.system.cooldown ?? 0);
 }

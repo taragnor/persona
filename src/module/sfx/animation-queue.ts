@@ -193,6 +193,7 @@ export class AnimationQueue {
         .file(anim.fileName);
         seq = this.setGenericSequenceParams(anim, seq, innateDelay);
         if (PersonaSettings.debugMode()) {
+          console.debug(`Playing Animatiun ${anim.fileName}`);
           Debug(anim);
           console.log(anim);
         }
@@ -268,11 +269,14 @@ export class AnimationQueue {
           seq = seq.atLocation(anim.target, {randomOffset: anim.offsetPercent ?? 1});
           break;
         case "missed":
-          seq = seq.missed();
+          seq = seq.atLocation(anim.target)
+            .missed();
           break;
         default:
           anim satisfies never;
           PersonaError.softFail("Bad anim type");
+          Debug("bad anim type");
+          Debug(anim);
       }
       return seq;
     }

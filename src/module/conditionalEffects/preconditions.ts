@@ -48,7 +48,7 @@ export function testPreconditions(conditionArr: readonly (PreconditionContainerC
   try {
     return conditionArr.every( condition => {
       const cond = condition instanceof PreconditionC ? condition.cond : condition;
-      testPrecondition(cond, situation, "ownershipInfo" in condition ? condition.ownershipInfo : ownershipInfo!);
+      return testPrecondition(cond, situation, "ownershipInfo" in condition ? condition.ownershipInfo : ownershipInfo!);
     });
   } catch (e) {
     if (e instanceof Error) {

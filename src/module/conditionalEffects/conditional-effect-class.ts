@@ -1,6 +1,5 @@
-import { Consequence, ConsequenceAmountV2, NonDeprecatedConsequence } from "../../config/consequence-types.js";
+import { Consequence, ConsequenceAmountV2 } from "../../config/consequence-types.js";
 import {NonDeprecatedModifierTarget, NonDeprecatedModifierType} from "../../config/item-modifiers.js";
-import {NonDeprecatedPrecondition} from "../../config/precondition-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {ModifierV2Target} from "../bonus-calc.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
@@ -9,7 +8,6 @@ import {PersonaError} from "../persona-error.js";
 import {MultiTierCache, PermanentCache, TimedCache} from "../utility/cache.js";
 import {CETypes, ConditionalEffectManager} from "./conditional-effect-manager.js";
 import {ConditionalEffectPrinter} from "./conditional-effect-printer.js";
-import {ConsequenceAmountResolver} from "./consequence-amount.js";
 import {PreconditionC, ConsequenceC} from "./consequence-class.js";
 import {testPrecondition} from "./preconditions.js";
 

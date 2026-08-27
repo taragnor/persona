@@ -106,6 +106,7 @@ export class ActorVoiceLines {
 
   static async playVoice(fileName: string, selfOnly: boolean = false) : Promise<void> {
     try {
+      console.debug(`Navigatior voiceline: playing sound file ${fileName}`);
       await new Sequence().sound()
         .file(fileName)
         .play({local: selfOnly} );

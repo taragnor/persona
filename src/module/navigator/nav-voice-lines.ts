@@ -118,6 +118,10 @@ export class NavigatorVoiceLines {
       if (!navigator) {return;}
       let lines = navigator.navigatorVoiceLines
         .filter ( ln => ln.trigger == trigger.type);
+      if (lines.length == 0) {
+        console.debug(`Navigator has no voice lines for ${trigger.type}`)
+        return;
+      }
       switch (trigger.type) {
         case "vulnerable":
         case "immune":
