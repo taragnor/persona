@@ -193,7 +193,7 @@ export class AnimationQueue {
         .file(anim.fileName);
         seq = this.setGenericSequenceParams(anim, seq, innateDelay);
         if (PersonaSettings.debugMode()) {
-          console.debug(`Playing Animatiun ${anim.fileName}`);
+          console.debug(`Playing Animation ${anim.fileName}`);
           Debug(anim);
           console.log(anim);
         }

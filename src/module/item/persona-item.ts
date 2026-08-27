@@ -962,6 +962,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   testOpenerPrereqs (this: UsableAndCard, situation: SituationComponent.PowerUse & SituationComponent.RollParts.CompletedRollPart, user: ValidAttackers) : boolean {
     if (this.isCardItem()) {return false;}
+    if (this.isPower() && user.isPowerOnCooldown(this)) {return false;}
     if (this.hasTag(["opener", "optional-opener"], user.persona())) {
       const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this, user , this);
       return testPreconditions(conditions, situation,{
