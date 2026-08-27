@@ -410,11 +410,11 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
   }
 
   getUniversalActorAccessor<T extends Actor<any>> (actor: T) : UniversalActorAccessor<T> {
-    if (actor.token && actor.token.object && actor.token.actorLink == false) {
+    if (actor.token && actor.token.actorLink == false) {
       return {
         actorName: actor.name,
         actorId: actor.id,
-        token: this.getUniversalTokenAccessor(actor.token.object),
+        token: this.getUniversalTokenAccessor(actor.token),
       };
     }
     for (const comb of game.combat?.combatants ?? [])

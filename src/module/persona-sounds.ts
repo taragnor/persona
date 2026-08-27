@@ -71,7 +71,7 @@ export class PersonaSounds {
     console.debug(`playing ${src}`);
 		const sound = await this.playFree(src, volume, recipients);
 		if (sound) {
-			await waitUntilTrue( () => !sound.playing, 25);
+			await waitUntilTrue( () => !sound.playing, 10);
 		}
 	}
 

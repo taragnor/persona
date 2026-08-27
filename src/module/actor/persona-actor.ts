@@ -2811,7 +2811,7 @@ async gainMoney(this: PC, amt: number, log :boolean, breakLimit = false) {
   if (amt < 0) {
     return this.spendMoney(amt);
   }
-  if (amt > 300 && !breakLimit) {
+  if (amt > 500 && !breakLimit) {
     throw new PersonaError("Can't get this much money at once!");
   }
   const resources = this.system.money + amt;

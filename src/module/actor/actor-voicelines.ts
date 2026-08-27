@@ -84,6 +84,11 @@ export class ActorVoiceLines {
       }
       if (lines.length == 0) {return false;}
       const line = randomSelect(lines);
+      if (line.fileName == undefined) {
+        PersonaError.softFail(`Undefined voiceline for navigator voice: ${trigger}`);
+        return false;
+
+      }
       await this._playVoice(line.fileName, options.selfOnly);
       return true;
     } catch (e) {
@@ -106,7 +111,12 @@ export class ActorVoiceLines {
 
   static async playVoice(fileName: string, selfOnly: boolean = false) : Promise<void> {
     try {
-      console.debug(`Navigatior voiceline: playing sound file ${fileName}`);
+      if (fileName == undefined) {
+        console.debug(`Navigatior voiceline: playing undefined navigator voice`);
+        if (PersonaSettings.debugMode()) {
+          throw new PersonaError("Navigator null line");
+        }
+      }
       await new Sequence().sound()
         .file(fileName)
         .play({local: selfOnly} );

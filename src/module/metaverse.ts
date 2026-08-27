@@ -170,17 +170,22 @@ export class Metaverse {
   }
 
   static async chooseAlly() {
-    const alliesNames = PersonaDB.NPCAllies()
-      .map (x=> x.name);
-    const dialog = new VotingDialog(alliesNames, "NPC Ally Selection");
-    const choice = await dialog.majorityVote();
-    if (!PersonaDB.activePCParty().find (x=> x.name == choice)) {
-      const newAlly = PersonaDB.NPCAllies().find( npc=> npc.name == choice);
-      if (!newAlly) {
-        PersonaError.softFail(`Can't activate ${choice} as this NPC could not be found`);
-        return;
+    try {
+      if (!game.users.contents.some( user=> !user.isGM && user.active)) {return;}
+      const alliesNames = PersonaDB.NPCAllies()
+        .map (x=> x.name);
+      const dialog = new VotingDialog(alliesNames, "NPC Ally Selection");
+      const choice = await dialog.majorityVote();
+      if (!PersonaDB.activePCParty().find (x=> x.name == choice)) {
+        const newAlly = PersonaDB.NPCAllies().find( npc=> npc.name == choice);
+        if (!newAlly) {
+          PersonaError.softFail(`Can't activate ${choice} as this NPC could not be found`);
+          return;
+        }
+        await newAlly.setAsActivePartyMember();
       }
-      await newAlly.setAsActivePartyMember();
+    } catch (e) {
+      PersonaError.softFail(e as Error);
     }
   }
 
