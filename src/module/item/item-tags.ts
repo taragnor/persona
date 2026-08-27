@@ -12,7 +12,6 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
 
   private _cache : {
     autoTags_power: CacheBase<TagType[]>;
-    // tagListRaw: CacheBase<readonly TagType[]>;
   };
 
   protected CACHE_TIME = 15000 as const;
