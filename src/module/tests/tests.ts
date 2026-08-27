@@ -103,7 +103,7 @@ export class Tests {
     return ret?.actor?.name;
   }
 
-  static async theurgyTest(amt = 10) {
+  static async theurgyTest(amt = 10) : Promise<boolean> {
     const kim = this.kim;
     const eff : Sourced<OtherEffect> = {
       type: "combat-effect",
@@ -118,7 +118,7 @@ export class Tests {
     };
     await ConsequenceApplier._applyOtherEffect(kim, undefined, eff, undefined, mutableState);
     console.log(mutableState.theurgy);
-    return mutableState.theurgy;
+    return mutableState.theurgy == amt;
     //note doesn't actualy add this to Therugy just checks the math on the modifier
   }
 
@@ -127,10 +127,17 @@ export class Tests {
     await PersonaSocial.panel.activate();
   }
 
-  static async stepsAdvance(num: number) {
-    while (num-- > 0) {
+  static async stepsAdvance(amt: number = 5) {
+    const orig_steps = StepsClock.instance.amt;
+    const origAmt= amt;
+    while (amt-- > 0) {
       await StepsClock.instance.inc();
     }
+    const new_steps =StepsClock.instance.amt;
+    if (new_steps - orig_steps == origAmt) {
+      return true;
+    }
+    return false;
   }
 
   private static get dummyShell() {
@@ -339,6 +346,31 @@ export class Tests {
     return null;
   }
 
+
+  static async batteryOfTests() : Promise<boolean> {
+    await PersonaDB.waitUntilLoaded();
+    const results =[];
+    let failures = 0;
+    const tests = [
+      "testRecovery",
+      "testAnchoredStatus",
+      "testRecovery",
+      "testSocialActionChange",
+      "theurgyTest",
+      "stepsAdvance",
+    ] as const;
+    for (const test of tests) {
+      const result = await this[test]();
+      if (result == true) {
+        results.push(`${this[test].name} passed!`);
+      } else {
+        results.push(`${this[test].name} failed!`);
+        failures++;
+      }
+    }
+    console.log(results.join("\n"));
+    return failures == 0;
+  }
 }
 
 //@ts-expect-error adding to global
