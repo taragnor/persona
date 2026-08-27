@@ -1,20 +1,22 @@
-import { Consequence, NonDeprecatedConsequence } from "../../config/consequence-types.js";
+import { Consequence, ConsequenceAmountV2, NonDeprecatedConsequence } from "../../config/consequence-types.js";
+import {NonDeprecatedModifierTarget} from "../../config/item-modifiers.js";
 import {NonDeprecatedPrecondition} from "../../config/precondition-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaItem} from "../item/persona-item.js";
 import {ConsequenceConverter} from "../migration/convertConsequence.js";
 import {PreconditionConverter} from "../migration/convertPrecondition.js";
-import {ConditionalEffectC} from "./conditional-effect-class.js";
+import {ConditionalEffectC, EffectOwnershipData} from "./conditional-effect-class.js";
 import {ConditionalEffectManager} from "./conditional-effect-manager.js";
+import {ConsequenceAmountResolver} from "./consequence-amount.js";
 
 abstract class ConditionalEffectComponent {
   private static lastCreationId = 1;
   private static parentsCreationId = new Map<number, WeakRef<ConditionalEffectC>>();
-  #creationId: number;
+  protected _creationId: number;
 
   constructor (parent: ConditionalEffectC) {
-    this.#creationId = ConditionalEffectComponent.generateCreationId();
-    ConditionalEffectComponent.parentsCreationId.set(this.#creationId, new WeakRef(parent));
+    this._creationId = ConditionalEffectComponent.generateCreationId();
+    ConditionalEffectComponent.parentsCreationId.set(this._creationId, new WeakRef(parent));
   }
 
   static generateCreationId(): number {
@@ -22,7 +24,7 @@ abstract class ConditionalEffectComponent {
   }
 
   get parent(): U<ConditionalEffectC> {
-    return ConditionalEffectComponent.parentsCreationId.get(this.#creationId)?.deref();
+    return ConditionalEffectComponent.parentsCreationId.get(this._creationId)?.deref();
   }
 
   get owner():  U<UniversalActorAccessor<PersonaActor>> {
@@ -40,12 +42,27 @@ abstract class ConditionalEffectComponent {
   findRealSource() { return this.parent?.findRealSource();}
   findOwner() { return this.parent?.findOwner();}
 
+  get ownershipInfo(): EffectOwnershipData {
+    return this.parent?.ownershipInfo ?? {
+      owner: undefined,
+      source: undefined,
+      realSource: undefined,
+      creationId: this._creationId,
+      _id: this._creationId,
+    };
+  }
+
+  static getParentById(id: U<number>) : U<ConditionalEffectC> {
+    if (id == undefined)  {return undefined;}
+    return this.parentsCreationId.get(id)?.deref();
+  }
+
 }
 
-export class ConsequenceC extends ConditionalEffectComponent {
-  private _cons: Readonly<NonDeprecatedConsequence>;
+export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedConsequence> extends ConditionalEffectComponent {
+  private _cons: Readonly<C>;
 
-  constructor (cons: NonDeprecatedConsequence, parent: ConditionalEffectC) {
+  constructor (cons: C, parent: ConditionalEffectC) {
     super(parent);
     this._cons = cons;
   }
@@ -54,7 +71,7 @@ export class ConsequenceC extends ConditionalEffectComponent {
     return ConsequenceConverter.convertDeprecated(cons, sourceItem instanceof Item ? sourceItem : null);
   }
 
-  get cons(): NonDeprecatedConsequence {
+  get cons(): Readonly<C> {
     return this._cons;
   }
 
@@ -64,25 +81,62 @@ export class ConsequenceC extends ConditionalEffectComponent {
     return cons.map( cons=> new ConsequenceC(ConsequenceC.cleanCons(cons, realSource instanceof PersonaItem ? realSource : null), parent));
   }
 
+  canAllowOpenersForPowers() : boolean {
+    const cons = this.cons as NonDeprecatedConsequence;
+    return  cons.type == "trigger-event-cons"
+      && cons.eventMod == "allow-as-opener";
+  }
+
+  static getModifierAmount(cons: Sourced<NonDeprecatedConsequence>, targetMods: NonDeprecatedModifierTarget[]) : N<number | Sourced<ConsequenceAmountV2>> {
+    if ("modifiedFields" in cons
+      && targetMods.some( f => cons.modifiedFields[f] == true)
+    ) {
+      const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
+      // acc.push(sourced);
+      return sourced;
+    }
+    if ("modifiedField" in cons && cons.modifiedField && targetMods.includes(cons.modifiedField)) {
+      const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
+      // acc.push(sourced);
+      return sourced;
+    }
+    return null;
+  }
+
+  toSourced(): Sourced<C> {
+    const obj = sourceCache.get(this);
+    if (obj) {return obj as Sourced<C>;}
+    const parent = this.parent;
+    const sourced =  {
+      ...this.cons,
+      source: parent?.source,
+      realSource: parent?.realSource,
+      owner: parent?.owner,
+    };
+    sourceCache.set(this, sourced);
+    return sourced;
+  }
+
 }
 
-export class PreconditionC extends ConditionalEffectComponent {
-  private _cond: Readonly<NonDeprecatedPrecondition>;
+export class PreconditionC<C extends NonDeprecatedPrecondition = NonDeprecatedPrecondition> extends ConditionalEffectComponent {
+  private _cond: Readonly<C>;
 
-  constructor (cond: NonDeprecatedPrecondition, parent: ConditionalEffectC) {
+  constructor (cond: C, parent: ConditionalEffectC) {
     super(parent);
     this._cond = cond;
   }
 
-  get cond(): Readonly<NonDeprecatedPrecondition> {
+  get cond(): Readonly<C> {
     return this._cond;
   }
+
 
   static cleanCond(cond : Precondition) : NonDeprecatedPrecondition {
     return PreconditionConverter.convertDeprecated(cond);
   }
 
-  fromArrayLike(arr: ConditionalEffect["conditions"], parent: ConditionalEffectC) : PreconditionC[] {
+  static fromArrayLike(arr: ConditionalEffect["conditions"], parent: ConditionalEffectC) : PreconditionC[] {
     const cond = ConditionalEffectManager.ArrayCorrector(arr);
     return cond
       .map( cond=> new PreconditionC(
@@ -90,4 +144,17 @@ export class PreconditionC extends ConditionalEffectComponent {
       );
   }
 
+  toSourced(): Sourced<C> {
+    const obj = sourceCache.get(this);
+    if (obj) {return obj as Sourced<C>;}
+    const sourced =  {
+      ...this.cond,
+      ...this.ownershipInfo,
+    } satisfies Sourced<C>;
+    sourceCache.set(this, sourced);
+    return sourced;
+  }
+
 }
+
+const sourceCache = new WeakMap<ConditionalEffectComponent, Sourced<object>> ();

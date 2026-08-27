@@ -121,7 +121,7 @@ export class PersonaRegion extends RegionDocument {
       .some( CE=> {
         const cons = CE.getActiveConsequences(situation);
         return cons.some( cons =>
-          cons.type == "dungeon-action" && cons.dungeonAction == "disable-region");
+          cons.cons.type == "dungeon-action" && cons.cons.dungeonAction == "disable-region");
       });
   }
 

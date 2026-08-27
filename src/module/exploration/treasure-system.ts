@@ -270,7 +270,13 @@ export class TreasureSystem {
           ...situation,
           usedPower: pwr.accessor,
         };
-        return testPrecondition(condition, sit);
+        return testPrecondition(condition, sit, {
+          owner: undefined,
+          "_id": -1,
+          "creationId": -1,
+          "realSource": undefined,
+          "source": undefined,
+        });
       });
     const weightedPowers = powers.map ( pwr =>
       ({

@@ -370,7 +370,8 @@ export class PersonaSocial {
 
   static async applyEffects(effects: ConditionalEffectC[], situation: Situation, actor: PC) {
     const results = effects.flatMap( eff=> eff.getActiveConsequences(situation));
-    const processed= ConsequenceProcessor.processConsequences_simple(results, situation);
+    const sourcedResults = results.map (r=> r.toSourced());
+    const processed= ConsequenceProcessor.processConsequences_simple(sourcedResults, situation);
     const result = new CombatResult();
     for (const c of processed.consequences) {
       result.addEffect(null, actor, c.cons, situation);
@@ -489,7 +490,13 @@ export class PersonaSocial {
       owner: target.accessor,
       realSource: undefined,
     }));
-    return testPreconditions(sourced, situation);
+    return testPreconditions(sourced, situation, {
+      source: undefined,
+      owner: target.accessor,
+      realSource: undefined,
+      _id : -1,
+      creationId: -1,
+    });
   }
 
   static async getExpendQuestionRequest(msg : SocketMessage["EXPEND_QUESTION"], payload: SocketPayload<"EXPEND_QUESTION">) {
@@ -521,7 +528,13 @@ export class PersonaSocial {
       realSource: undefined,
       ...PreconditionConverter.convertDeprecated(cond),
     }));
-    return testPreconditions(sourced, situation);
+    return testPreconditions(sourced, situation, {
+      owner: undefined,
+      source: undefined,
+      realSource: undefined,
+      "_id" : -1,
+      "creationId": -1,
+    });
   }
 
   static async getExpendEventRequest(msg : SocketMessage["EXPEND_EVENT"], payload: SocketPayload<"EXPEND_EVENT">) {
@@ -739,7 +752,8 @@ export class PersonaSocial {
       attacker: pc.accessor,
     };
     const sourcedConditions = ConditionalEffectManager.getConditionals(activity.system.conditions, null, null, null );
-    if(!testPreconditions(sourcedConditions, sit)) {return false;}
+    if(!testPreconditions(sourcedConditions, sit, ConditionalEffectC.NULL_OWNERSHIP
+    )) {return false;}
     if (pc.hasStatus("exhausted") && activity.system.cardType == "training") {
       return false;
     }

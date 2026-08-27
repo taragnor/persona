@@ -105,7 +105,13 @@ export class PersonaTargetting {
       target: target.accessor,
       usedPower: usable.accessor,
     } as const;
-    const failed = ConditionalEffectC.failedPreconditions(conditions, sit);
+    const failed = ConditionalEffectC.failedPreconditions(conditions, sit, {
+      owner: user.accessor,
+      source: usable.accessor,
+      realSource: usable.accessor,
+      "_id": -1,
+      "creationId": -1
+    });
     for (const cond of failed) {
       retArr.push( `Target Condition Fail: ${ConditionalEffectPrinter.printConditional(cond)}`);
     }

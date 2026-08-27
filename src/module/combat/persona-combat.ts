@@ -2005,7 +2005,7 @@ export type ConsequenceProcessed = {
   consequences: {
     applyTo: 'global' | ValidAttackers,
     // cons: EnhancedSourcedConsequence<NonDeprecatedConsequence>,
-    cons: ConditionalEffectC["consequences"][number],
+    cons: ReturnType<ConditionalEffectC["consequences"][number]["toSourced"]>,
   }[],
 }
 

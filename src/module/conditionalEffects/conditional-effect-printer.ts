@@ -26,6 +26,7 @@ import {localize} from "../persona.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {ConditionalEffectC} from "./conditional-effect-class.js";
 import {ConditionalEffectManager} from "./conditional-effect-manager.js";
+import {ConsequenceC, PreconditionC} from "./consequence-class.js";
 import {getSocialLinkTarget, multiCheckToArray} from "./preconditions.js";
 
 export class ConditionalEffectPrinter {
@@ -37,7 +38,8 @@ export class ConditionalEffectPrinter {
     return `${this.printConditions(effect.conditions)} ---- ${this.printConsequences(effect.consequences)}`;
   }
 
-  static printConditions(cond: readonly Precondition[]) : string {
+  static printConditions(cond: ConditionalEffectC["conditions"] | (readonly Precondition[])) : string {
+    cond = cond.map( c=> c instanceof PreconditionC ? c.cond : c);
     return ConditionalEffectManager.getConditionals(cond, null, null, null)
       .map( x=> this.printConditional(x))
       .join (", ");
@@ -577,9 +579,10 @@ export class ConditionalEffectPrinter {
       }
     }
 
-    static printConsequences(cons: ConditionalEffectC["consequences"]) : string {
+    static printConsequences(cons: readonly (Consequence | ConsequenceC)[] ) : string {
       if (cons == undefined) {return "ERROR (undefined)";}
-      return ConditionalEffectManager.getConsequences(cons, null , null, null)
+      const printables = cons.map( c=> c instanceof ConsequenceC ? c.cons : c);
+      return ConditionalEffectManager.getConsequences(printables, null , null, null)
         .map(x=> this.printConsequence(x))
         .filter(x => x)
         .join (", ");

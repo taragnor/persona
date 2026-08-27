@@ -325,7 +325,13 @@ export class ActorSocial <T extends PersonaActor> {
       user: pc.accessor,
       target: sl.accessor,
     };
-    if(!testPreconditions(sl.getAvailabilityConditions(), sit)) {
+    if(!testPreconditions(sl.getAvailabilityConditions(), sit, {
+      owner: undefined,
+      source: undefined,
+      realSource: undefined,
+      "creationId": -1,
+      _id: -1,
+    })) {
       return false;
     }
     if (PersonaSocial.availabilityDisqualifierStatuses.some (st=> sl.hasStatus(st))) {return false;}

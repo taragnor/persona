@@ -332,7 +332,13 @@ export class PersonaHandleBarsHelpers {
 
     },
     "meetsConditions" : function (cardData: CardData, conditions: SourcedPrecondition[]) : boolean {
-      return testPreconditions(conditions ?? [], cardData.situation);
+      return testPreconditions(conditions ?? [], cardData.situation, {
+        "_id": -1,
+        "creationId": -1,
+        "owner": undefined,
+        "source": undefined,
+        "realSource": undefined,
+      });
     },
 
     "isActivitySelectable": function (pc: PC, activity: Activity): boolean {

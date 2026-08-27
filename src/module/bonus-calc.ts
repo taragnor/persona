@@ -1,3 +1,4 @@
+import {NonDeprecatedConsequence} from "../config/consequence-types.js";
 import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 import {ConsequenceAmountResolver} from "./conditionalEffects/consequence-amount.js";
 import {PersonaError} from "./persona-error.js";
@@ -30,12 +31,18 @@ export class BonusCalculation extends CalculationV2 {
       );
     for (const ce of bonusEffects) {
       const filteredCons = ce.consequences
-        .filter( cons => cons.type == "modifier-v2")
-        .filter( cons => this.modNames.includes(cons.modTarget));
+        // .filter( cons => cons.type == "modifier-v2")
+        .filter( consequence => {
+          const cons = consequence.cons;
+          if (cons.type != "modifier-v2") {return false;}
+          return this.modNames.includes(cons.modTarget);
+        });
+
       for (const cons of filteredCons) {
-        const calculateable = this._toCalculateable(ce, cons);
-        this.setTerm(cons.priority ?? 10, calculateable,
-          ce.name,  cons.operation);
+        const sourced = cons.toSourced() as (Sourced<typeof cons["_cons"]> & {type : "modifier-v2"});
+        const calculateable = this._toCalculateable(ce, sourced);
+        this.setTerm(sourced.priority ?? 10, calculateable,
+          ce.name,  sourced.operation);
       }
     }
     return this;
@@ -100,7 +107,7 @@ export class BonusCalculation extends CalculationV2 {
     }
   }
 
-  private _toCalculateable(ce: ConditionalEffectC, cons: ConditionalEffectC["consequences"][number] & {type : "modifier-v2"}) : Calculateable {
+  private _toCalculateable(ce: ConditionalEffectC, cons: Sourced<NonDeprecatedConsequence> & {type : "modifier-v2"}) : Calculateable {
     const calculateable: Calculateable = {
       eval: (sit :Situation) => {
         if (sit == undefined) {return null;}

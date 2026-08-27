@@ -923,7 +923,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     ];
     const effectChangers=  modifiers.filter( x=>
       x.consequences
-      .some( cons=>cons.type == "raise-resistance" || cons.type == "lower-resistance"));
+      .some( cons=>cons.cons.type == "raise-resistance" || cons.cons.type == "lower-resistance"));
     const situation : Situation = {
       user: this.user.accessor,
       target: this.user.accessor,
@@ -932,9 +932,12 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       .flatMap( eff =>
         eff.getActiveConsequences(situation)
       );
+
+
     const resval = (x: ResistStrength): number => RESIST_STRENGTH_LIST.indexOf(x);
     let resBonus = 0, resPenalty = 0;
-    for (const cons of consequences) {
+    for (const consC of consequences) {
+      const cons = consC.cons;
       switch (cons.type) {
         case "raise-resistance": {
           const isSameType = multiCheckContains(cons.resistType, [type]);
@@ -1000,7 +1003,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     const effectChangers = modifiers
       .filter ( mod => mod.consequences
         .some( cons=>
-          cons.type == "raise-status-resistance" && multiCheckContains(cons.statusName,status)
+          cons.cons.type == "raise-status-resistance" && multiCheckContains(cons.cons.statusName,status)
         ));
     const situation : Situation = {
       user: actor.accessor,
@@ -1014,7 +1017,8 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     const baseStatusResist = resists[status as ResistableStatus] ? resists[status as ResistableStatus] : "normal" ;
     const resval = (x: ResistStrength): number => RESIST_STRENGTH_LIST.indexOf(x);
     let resist = baseStatusResist;
-    for (const cons of consequences) {
+    for (const consC of consequences) {
+      const cons = consC.cons;
       if (cons.type == "raise-status-resistance") {
         const statusList = multiCheckToArray(cons.statusName);
         if (statusList.includes(status)) {

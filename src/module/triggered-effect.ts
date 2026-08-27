@@ -32,7 +32,7 @@ export class TriggeredEffect {
     return res;
   }
 
-  static onTrigger_consequences<const T extends Trigger>(situation: TriggerParam<T>, actor : U<ValidAttackers>) : SourcedConsequence[] {
+  static onTrigger_consequences<const T extends Trigger>(situation: TriggerParam<T>, actor : U<ValidAttackers>) : ConditionalEffectC["consequences"] {
     const situationCopy = {
       ...(situation satisfies TriggerParam<T>),
       triggeringUser: game.user.id,
@@ -78,7 +78,7 @@ export class TriggeredEffect {
     const filteredEffects = removeDuplicates(triggers
       .filter ( x=>
         x.conditionalType == "triggered"
-        && x.conditions.some( cond => cond.type == "on-trigger" && cond.trigger == trigger)
+        && x.conditions.some( cond => cond.cond.type == "on-trigger" && cond.cond.trigger == trigger)
       )
     );
     return filteredEffects;

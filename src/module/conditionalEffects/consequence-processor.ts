@@ -38,10 +38,13 @@ export class ConsequenceProcessor {
     : ConsequenceProcessed {
       let consequences : ConsequenceProcessed['consequences']= [];
       for (const cons of relevantConsequences) {
-        const sourcedC = {
-          ...cons,
-        };
+        //why was this copy here?
+        // const sourcedC = {
+        //   ...cons,
+        // };
+        const sourcedC = cons.toSourced();
         if (attackerPersona) {
+          // const newCons = this.processConsequence(power, situation, sourcedC, attackerPersona, atkresult);
           const newCons = this.processConsequence(power, situation, sourcedC, attackerPersona, atkresult);
           consequences = consequences.concat(newCons);
         } else {
@@ -98,7 +101,7 @@ export class ConsequenceProcessor {
     }
   }
 
-  static processConsequence_simple( cons: ConditionalEffectC["consequences"][number], targets: ValidAttackers[]) :ConsequenceProcessed['consequences'] {
+  static processConsequence_simple( cons: Sourced<NonDeprecatedConsequence>, targets: ValidAttackers[]) :ConsequenceProcessed['consequences'] {
     switch (cons.type) {
       case 'none':
       case 'modifier':

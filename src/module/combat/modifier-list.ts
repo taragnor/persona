@@ -10,7 +10,7 @@ import {testPreconditions} from "../conditionalEffects/preconditions.js";
 
 export type ModifierListItem = Sourced<{
   name: string;
-  conditions:  readonly SourcedPrecondition[];
+  conditions:  ConditionalEffectC["conditions"];
   modifier: (number | Sourced<ConsequenceAmountV2>)[];
 }>;
 
@@ -39,7 +39,8 @@ export class ModifierList {
         source: eff.source,
         owner: eff.owner,
         realSource : eff.realSource,
-        conditions: ConditionalEffectManager.ArrayCorrector(eff.conditions),
+        conditions: eff.conditions,
+        // conditions: ConditionalEffectManager.ArrayCorrector(eff.conditions),
         modifier: [typeof listTypeOrFn == "function" ? listTypeOrFn(eff): 0],
       };
     });
@@ -47,7 +48,7 @@ export class ModifierList {
       .filter (x=> x.modifier[0] != 0);
   }
 
-  add(name: string, modifier: number, sourceItem?: ModifierListItem["source"], owner ?: ModifierListItem["owner"], conditions: SourcedPrecondition[] = []) : ModifierList {
+  add(name: string, modifier: number, sourceItem?: ModifierListItem["source"], owner ?: ModifierListItem["owner"], conditions: ConditionalEffectC["conditions"] = []) : ModifierList {
     this._data.push({
       source: sourceItem,
       owner,
@@ -97,7 +98,8 @@ export class ModifierList {
         name: eff.displayedName,
         source: eff.source,
         owner: eff.owner,
-        conditions: ConditionalEffectManager.ArrayCorrector(eff.conditions),
+        conditions: eff.conditions,
+        // conditions: ConditionalEffectManager.ArrayCorrector(eff.conditions),
         modifier: eff.getModifierAmount(bonusTypes),
         realSource: eff.realSource,
       };
@@ -158,7 +160,7 @@ export class ModifierList {
 }
 
 export type ConditionalModifier = {
-  conditions: Precondition[],
+  conditions: ConditionalEffectC["conditions"],
   modifiers: Modifier[],
 }
 

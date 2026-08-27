@@ -323,6 +323,7 @@ export class CombatEngine {
     } satisfies TriggeredSituation.Select<"get-added-power-tags">;
     const consList = TriggeredEffect.onTrigger_consequences(trigSit, attackerActor);
     const tags = consList
+      .map (cons => cons.cons)
       .filter( cons=> cons.type == "combat-effect"
         && cons.combatEffect == "add-power-tag-to-attack")
       .map (cons => PersonaItem.resolveTag(cons.powerTag));

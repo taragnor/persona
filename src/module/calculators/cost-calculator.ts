@@ -18,33 +18,34 @@ export abstract class CostCalculator {
 		return subtotal.add * subtotal.mult;
 	}
 
-	static durationFactor(pwr: Power, st: StatusEffectId): number | StatusDuration["dtype"] {
-		for (const eff of pwr.getEffects(null)) {
-			const statusAdd=  eff.consequences
-				.find( cons=> cons.type == "combat-effect" && cons.combatEffect == "addStatus" && cons.statusName == st) as (NonDeprecatedConsequence & {type: "combat-effect", combatEffect : "addStatus"});
-			if (!statusAdd) {continue;}
-			switch (statusAdd.statusDuration) {
-				case "X-rounds":
-					return statusAdd.amount ?? 3;
-				case "3-rounds":
-						return 3;
-				case "UEoT":
-				case "UEoNT":
-				case "USoNT":
-					return 1;
-				case "save-normal":
-				case "save-easy":
-				case "save-hard":
-				case "presave-easy":
-				case "presave-normal":
-				case "presave-hard":
-					return "save";
-				default:
-					return statusAdd.statusDuration;
-			}
-		}
-		return 0;
-	}
+  static durationFactor(pwr: Power, st: StatusEffectId): number | StatusDuration["dtype"] {
+    for (const eff of pwr.getEffects(null)) {
+      const statusAdd=  eff.consequences
+        .map( cons => cons.cons)
+        .find( cons => cons.type == "combat-effect" && cons.combatEffect == "addStatus" && cons.statusName == st) as (NonDeprecatedConsequence & {type: "combat-effect", combatEffect : "addStatus"});
+      if (!statusAdd) {continue;}
+      switch (statusAdd.statusDuration) {
+        case "X-rounds":
+          return statusAdd.amount ?? 3;
+        case "3-rounds":
+            return 3;
+        case "UEoT":
+        case "UEoNT":
+        case "USoNT":
+          return 1;
+        case "save-normal":
+        case "save-easy":
+        case "save-hard":
+        case "presave-easy":
+        case "presave-normal":
+        case "presave-hard":
+          return "save";
+        default:
+          return statusAdd.statusDuration;
+      }
+    }
+    return 0;
+  }
 
 	/**generate a simple multiplier only*/
 	static s(mult: number) : CostModifier {

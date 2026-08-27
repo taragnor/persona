@@ -1,3 +1,4 @@
+import {EffectOwnershipData} from "../module/conditionalEffects/conditional-effect-class.js";
 import {ConditionalEffectManager} from "../module/conditionalEffects/conditional-effect-manager.js";
 import {testPreconditions} from "../module/conditionalEffects/preconditions.js";
 import {Persona} from "../module/persona-class.js";
@@ -731,7 +732,14 @@ export class FusionTable {
 			user: fusor.accessor,
 			target: fusionResult.accessor,
 		};
-		return testPreconditions(fusionConditions, situation);
+    const ownershipInfo = {
+      owner: fusionResult.accessor,
+      source: undefined,
+      realSource: undefined,
+      _id: 0,
+      "creationId": 0,
+    } satisfies EffectOwnershipData;
+		return testPreconditions(fusionConditions, situation, ownershipInfo);
 	}
 
 } // end of class

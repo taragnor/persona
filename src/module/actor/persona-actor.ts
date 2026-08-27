@@ -61,6 +61,7 @@ import {ActorVoiceLines} from "./actor-voicelines.js";
 import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
 import {PersonaFoundryUser} from "../persona-foundry-user.js";
 import {CancelTrigger} from "../../cancel-check-effect.js";
+import {NonDeprecatedPrecondition} from "../../config/precondition-types.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -3533,7 +3534,7 @@ async deleteTokenSpend(this: SocialLink, deleteIndex:number) {
   await this.update({"system.tokenSpends":list});
 }
 
-getAvailabilityConditions(this: SocialLink)  : readonly SourcedPrecondition[] {
+getAvailabilityConditions(this: SocialLink)  : readonly Sourced<NonDeprecatedPrecondition>[] {
   if (this.isPC()) {return [];}
   const conds = ConditionalEffectManager.getConditionals(this.system.availabilityConditions, null, null, null);
   return conds;

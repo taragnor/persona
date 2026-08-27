@@ -27,7 +27,7 @@ import { StatusEffectId } from "../../config/status-effects.js";
 import { PersonaCombat } from "../combat/persona-combat.js";
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
 import {PreconditionConverter} from "../migration/convertPrecondition.js";
-import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
+import {ConditionalEffectC, EffectOwnershipData} from "../conditionalEffects/conditional-effect-class.js";
 import {ResolvedActorChange} from "../combat/finalized-combat-result.js";
 import {PersonaItem} from "../item/persona-item.js";
 import {CombatEngine} from "../combat/combat-engine.js";
@@ -35,16 +35,21 @@ import {PersonaAE} from "../persona-ae.js";
 import {Persona} from "../persona-class.js";
 import {PowerTag} from "../../config/power-tags.js";
 import {checkSituationProp} from "../../config/situation.js";
+import {PreconditionC} from "./consequence-class.js";
 
 /** @deprecated Use ConditionalEffectC.getActiveConsequences instead */
 export function getActiveConsequences(condEffect: ConditionalEffectC, situation: Situation) : ConditionalEffectC["consequences"] {
   return condEffect.getActiveConsequences(situation);
 }
 
-export function testPreconditions(conditionArr: readonly SourcedPrecondition[], situation: Situation) : boolean {
+export function testPreconditions(conditionArr: readonly PreconditionContainerClass[], situation: Situation) : boolean;
+export function testPreconditions(conditionArr: readonly NonDeprecatedPrecondition[], situation: Situation, ownershipInfo: EffectOwnershipData) : boolean;
+export function testPreconditions(conditionArr: readonly (PreconditionContainerClass | NonDeprecatedPrecondition)[], situation: Situation, ownershipInfo?: EffectOwnershipData) : boolean {
   try {
-    return conditionArr.every( cond =>
-      testPrecondition(cond, situation));
+    return conditionArr.every( condition => {
+      const cond = condition instanceof PreconditionC ? condition.cond : condition;
+      testPrecondition(cond, situation, "ownershipInfo" in condition ? condition.ownershipInfo : ownershipInfo!);
+    });
   } catch (e) {
     if (e instanceof Error) {
       PersonaError.softFail(e.toString(), e, conditionArr, situation);
@@ -53,14 +58,14 @@ export function testPreconditions(conditionArr: readonly SourcedPrecondition[], 
   }
 }
 
-export function testPrecondition (condition: SourcedPrecondition, situation: Situation) : boolean {
+export function testPrecondition (condition: PreconditionType, situation: Situation, ownershipInfo: EffectOwnershipData) : boolean {
   switch (condition.type) {
     case "numeric":
-      return numericComparison(condition, situation);
+      return numericComparison(condition, situation, ownershipInfo);
     case "boolean":
-      return booleanComparison(condition, situation);
+      return booleanComparison(condition, situation, ownershipInfo);
     case "on-trigger":
-      return triggerComparison(condition, situation);
+      return triggerComparison(condition, situation, ownershipInfo);
     case "save-versus":
       if (!("saveVersus" in situation) || !situation.saveVersus) { return false; }
       return situation.saveVersus == condition.status;
@@ -92,7 +97,7 @@ export function testPrecondition (condition: SourcedPrecondition, situation: Sit
   }
 }
 
-function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, situation: Situation) : boolean {
+function numericComparison(condition: PreconditionType & {type : "numeric"}, situation: Situation, ownershipInfo: EffectOwnershipData ) : boolean {
   let target: number;
   let testCase = ("num" in condition) ? condition.num : 0;
   switch (condition.comparisonTarget) {
@@ -121,7 +126,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
         return false; };
       if (!situation.user) {return false;}
       const user = PersonaDB.findActor(situation.user);
-      const sourceItem = condition.source ? PersonaDB.find(condition.source) : undefined;
+      const sourceItem = ownershipInfo.source ? PersonaDB.find(ownershipInfo.source) : undefined;
       const id = sourceItem && sourceItem instanceof PersonaItem ? sourceItem.id : undefined;
       if (!id || !user) {
         return false;
@@ -138,7 +143,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
         return true;
       }
       if (!actor  || actor.isShadow()) {return false;}
-      const socialLink = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, condition.source);
+      const socialLink = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, ownershipInfo.source);
       if (!socialLink) {
         target = 0;
         break;
@@ -173,7 +178,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
     case "resistance-level" : {
       if (!checkSituationProp(situation, "usedPower")) { return false; };
       if (!checkSituationProp(situation, "attacker")) { return false; };
-      const subject = getSubjectActors(condition, situation as Situation, "conditionTarget")[0];
+      const subject = getSubjectActors(condition, situation as Situation, "conditionTarget", ownershipInfo)[0];
       if (!subject) {return false;}
       testCase = RESIST_STRENGTH_LIST.indexOf(condition.resistLevel);
       let element : DamageType = condition.element;
@@ -192,7 +197,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       break;
     }
     case "status-resistance-level": {
-      const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const subject = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!subject || subject.isNPC()) {return false;}
       let statusId : StatusEffectId ;
       if (condition.status == "triggering") {
@@ -208,13 +213,13 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       break;
     }
     case "health-percentage": {
-      const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const subject = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!subject) {return false;}
       target = (subject.hp / subject.mhpEstimate) * 100;
       break;
     }
     case "magic-percentage": {
-      const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const subject = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!subject) {return false;}
       target = (subject.hp / subject.mmp) * 100;
       break;
@@ -238,7 +243,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       //   break;
       // }
     case "energy": {
-      const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const subject = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!subject) {return false;}
       if (!subject.isShadow()) {return false;}
       target = subject.system.combat.energy.value;
@@ -255,7 +260,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       break;
     }
     case "itemCount": {
-      const arr = getSubjectActors(condition, situation, "conditionTarget");
+      const arr = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo);
       if (arr.length == 0) {return false;}
       target = arr.reduce( (acc,subject) => {
         const item = game.items.get(condition.itemId);
@@ -269,9 +274,9 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       break;
     }
     case "inspirationWith": {
-      const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const subject = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!subject) {return false;}
-      const link = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, condition.source);
+      const link = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, ownershipInfo.source);
       if (!link) {return false;}
       target = subject.social.getInspirationWith(link, true);
       break;
@@ -301,7 +306,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       break;
     }
     case "total-SL-levels": {
-      const subject : PersonaActor | undefined = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const subject : PersonaActor | undefined = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!subject) {return false;}
       let targetActor : SocialLink | undefined = undefined;
       switch (subject.system.type) {
@@ -329,7 +334,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
     case "progress-tokens-with": {
       if (!checkSituationProp(situation, "user")) { return false; };
       if (!checkSituationProp(situation, "attacker")) { return false; };
-      const targetActor = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const targetActor = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!targetActor || !targetActor.isSocialLink()) {
         return false;
       }
@@ -348,7 +353,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       break;
     }
     case "num-of-others-with": {
-      const res  =  numberOfOthersWithResolver(condition, situation);
+      const res  =  numberOfOthersWithResolver(condition, situation, ownershipInfo);
       if (typeof res == "boolean") {return res;}
       target = res;
       break;
@@ -356,7 +361,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
     case "variable-value": {
       let val: number | undefined;
       if (condition.varType == "actor") {
-        const subject = getSubjectActors(condition, situation, "applyTo")[0];
+        const subject = getSubjectActors(condition, situation, "applyTo", ownershipInfo)[0];
         if (subject == undefined) {return false;}
         const reqCondition = {
           ...condition,
@@ -375,14 +380,14 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       break;
     }
     case "scan-level": {
-      const targetActor = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const targetActor = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!targetActor || !targetActor.isValidCombatant()) {return false;}
       target = targetActor.persona().scanLevelRaw;
       break;
     }
     case "advanced-number": {
-      const source = condition.source ? PersonaDB.find(condition.source): undefined;
-      const owner = condition.owner ? PersonaDB.find(condition.owner) : undefined;
+      const source = ownershipInfo.source ? PersonaDB.find(ownershipInfo.source): undefined;
+      const owner = ownershipInfo.owner ? PersonaDB.find(ownershipInfo.owner) : undefined;
       const ownersList = owner ? [owner]
       : source?.parent instanceof PersonaActor
       && source.parent.isValidCombatant()
@@ -394,9 +399,10 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
         ...situation,
       };
       const sourced = {
-        source: condition.source,
-        owner: condition.owner,
-        realSource: condition.realSource,
+        ...ownershipInfo,
+        // source: ownershipInfo.source,
+        // owner: ownershipInfo.owner,
+        // realSource: ownershipInfo.realSource,
         ...condition.comparisonVal,
       };
       const resolved = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situationN);
@@ -410,7 +416,7 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
       return false;
   }
 
-  const resolvedNum = resolveTestCase(testCase, condition, situation);
+  const resolvedNum = resolveTestCase(testCase, condition, situation, ownershipInfo);
   if (resolvedNum == null) {return false;}
   testCase = resolvedNum;
 
@@ -433,17 +439,17 @@ function numericComparison(condition: SourcedPrecondition & {type : "numeric"}, 
   }
 }
 
-function resolveTestCase(testCase: ConsequenceAmount , condition: Sourced<NonDeprecatedPrecondition>, situation: Situation) : N<number> {
+function resolveTestCase(testCase: ConsequenceAmount , _condition: NonDeprecatedPrecondition, situation: Situation, ownershipInfo: EffectOwnershipData) : N<number> {
   if (typeof testCase != "number") {
     let source : U<UniversalAccessorTypes> = undefined;
     let owner : U<PersonaActor> = undefined;
     try {
-      source = condition.source ? PersonaDB.find(condition.source): undefined;
+      source = ownershipInfo.source ? PersonaDB.find(ownershipInfo.source): undefined;
     }  catch  {
       source = undefined;
     }
     try {
-      owner = condition.owner ? PersonaDB.find(condition.owner) : undefined;
+      owner = ownershipInfo.owner ? PersonaDB.find(ownershipInfo.owner) : undefined;
     } catch {
       owner=undefined;
     }
@@ -454,9 +460,10 @@ function resolveTestCase(testCase: ConsequenceAmount , condition: Sourced<NonDep
       ? [source.parent.accessor]
       : [];
     const sourced = {
-      source: condition.source,
-      owner: condition.owner,
-      realSource: condition.realSource,
+      ...ownershipInfo,
+      // source: condition.source,
+      // owner: condition.owner,
+      // realSource: condition.realSource,
       ...testCase,
     };
     const situationN = {
@@ -507,7 +514,7 @@ export function combatResultBasedNumericTarget(condition: CombatResultComparison
   return count;
 }
 
-function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}, situation: Situation) : boolean {
+function triggerComparison(condition: PreconditionType & {type: "on-trigger"}, situation: Situation, ownershipInfo: EffectOwnershipData) : boolean {
   if (!("trigger" in situation)) {return false;}
   if (condition.trigger != situation.trigger) {return false;}
   switch (condition.trigger) {
@@ -586,7 +593,7 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
         case "status":
           return effect.statusId == condition.statusId;
         case "self": {
-          const source = condition.realSource ? PersonaDB.find(condition.realSource) : undefined;
+          const source = ownershipInfo.realSource ? PersonaDB.find(ownershipInfo.realSource) : undefined;
           if (! (source instanceof PersonaAE)) { return false;}
           return effect == source;
         }
@@ -604,10 +611,10 @@ function triggerComparison(condition: SourcedPrecondition & {type: "on-trigger"}
 }
 
 /** returns undefined in case of a state that just shouldn't be analzyed at all*/
-function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, situation: Situation): boolean | undefined {
+function getBoolTestState(condition: PreconditionType & {type: "boolean"}, situation: Situation, ownershipInfo: EffectOwnershipData): boolean | undefined {
   switch(condition.boolComparisonTarget) {
     case "is-shadow": {
-      const arr = getSubjects(condition, situation, "conditionTarget");
+      const arr = getSubjects(condition, situation, "conditionTarget", ownershipInfo);
       if (!arr) {return undefined;}
       return arr.some( target => {
         const targetActor = target instanceof PersonaActor ? target : target.actor;
@@ -615,15 +622,15 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
       });
     }
     case "is-pc": {
-      const targets = getSubjectActors(condition, situation,  "conditionTarget");
+      const targets = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo);
       if (!targets) {return undefined;}
       return targets.some( target => target.isRealPC());
     }
     case "has-tag": {
-      return hasTagConditional(condition, situation);
+      return hasTagConditional(condition, situation, ownershipInfo);
     }
     case "has-status" : {
-      const arr = getSubjects(condition, situation, "conditionTarget");
+      const arr = getSubjects(condition, situation, "conditionTarget", ownershipInfo);
       if (!arr) {return undefined;}
       return arr.some( target => {
         const targetActor = target instanceof PersonaActor ? target : target.actor;
@@ -637,7 +644,7 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
       });
     }
     case "flag-state": {
-      const targetActor = getSubjectActors(condition, situation,  "conditionTarget")[0];
+      const targetActor = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo)[0];
       if (!targetActor) {return undefined;}
       return targetActor.getFlagState(condition.flagId);
     }
@@ -645,14 +652,14 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
     case "is-same-arcana": {
       if (!checkSituationProp(situation, "attacker")) { return undefined; };
       const actor = PersonaDB.findActor<SocialLink | ValidAttackers>(situation.attacker);
-      const targetActor = getSubjectActors(condition, situation,  "conditionTarget")[0];
+      const targetActor = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo)[0];
       if (!targetActor) {return undefined;}
       return actor.system.tarot == targetActor.system.tarot;
     }
 
     case "target-owner-comparison": {
-      const target = getSubjectActors(condition, situation, "conditionTarget")[0];
-      const target2 = getSubjectActors(condition, situation, "conditionTarget2")[0];
+      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
+      const target2 = getSubjectActors(condition, situation, "conditionTarget2", ownershipInfo)[0];
       if (!target || !target2) {return undefined;}
       return target == target2;
     }
@@ -671,23 +678,23 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
     }
 
     case "social-target-is": {
-      const arr = getSubjects(condition, situation, "conditionTarget");
+      const arr = getSubjects(condition, situation, "conditionTarget", ownershipInfo);
       if (!arr) {return undefined;}
       return arr.some( target => {
-        const desiredActor = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, condition.source);
+        const desiredActor = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, ownershipInfo.source);
         return target == desiredActor;
       });
     }
 
     case "social-target-is-multi": {
-      const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!target) { return undefined; }
       const actors= multiCheckToArray(condition.socialLinkIdOrTarot) as SocialLinkIdOrTarot[];
-      return actors.some(actor => getSocialLinkTarget(actor, situation, condition.source) == target);
+      return actors.some(actor => getSocialLinkTarget(actor, situation, ownershipInfo.source) == target);
     }
 
     case "shadow-role-is": {
-      const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!target) {return undefined;}
       if (!target.isShadow()) {return false;}
       if (typeof condition.shadowRole == "string") {
@@ -708,7 +715,7 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
     }
 
     case "has-item-in-inventory": {
-      const targets = getSubjectActors(condition, situation,  "conditionTarget");
+      const targets = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo);
       if (!targets) {return undefined;}
       const itemList = targets.flatMap( target=> condition.equipped
         ? target.equippedItems()
@@ -737,13 +744,13 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
       }
     }
     case "creature-type-is": {
-      const target = getSubjectActors(condition, situation,  "conditionTarget")[0];
+      const target = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo)[0];
       if (!target) {return undefined;}
       return multiCheckContains(condition.creatureType, [target.system.creatureType]);
     }
 
     case "social-availability": {
-      return resolveSocialAvailabilityCheck(condition, situation);
+      return resolveSocialAvailabilityCheck(condition, situation, ownershipInfo);
     }
 
     case "cameo-in-scene": {
@@ -752,7 +759,7 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
     }
 
     case "arcana-is": {
-      const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!target) {return undefined;}
       const tarot = target.system.tarot;
       if (!tarot) {return undefined;}
@@ -762,44 +769,46 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
     case "logical-and":
     case "logical-or": {
       const comp1 = {
-        source: condition.source,
-        owner: condition.owner,
-        realSource: condition.realSource,
+        ...ownershipInfo,
+        // source: condition.source,
+        // owner: condition.owner,
+        // realSource: condition.realSource,
         ...condition.comparison1 as NonDeprecatedPrecondition<Precondition>,
         //this is guaranteed to be nondeprecated by convertPrecondition function working deep into logical ors
       };
       const comp2 = {
-        source: condition.source,
-        owner: condition.owner,
-        realSource: condition.realSource,
+        ...ownershipInfo,
+        // source: condition.source,
+        // owner: condition.owner,
+        // realSource: condition.realSource,
         ...condition.comparison2 as NonDeprecatedPrecondition<Precondition>,
         //this is guaranteed to be nondeprecated by convertPrecondition function working deep into logical ors
       };
       if (condition.boolComparisonTarget == "logical-or") {
-        return testPrecondition(comp1, situation) || testPrecondition(comp2, situation);
+        return testPrecondition(comp1, situation, ownershipInfo) || testPrecondition(comp2, situation, ownershipInfo);
       } else {
-        return testPrecondition(comp1, situation) && testPrecondition(comp2, situation);
+        return testPrecondition(comp1, situation, ownershipInfo) && testPrecondition(comp2, situation, ownershipInfo);
       }
     }
     case "scene-clock-name-is":
       return SceneClock.instance.clockName.toUpperCase().trim() == condition.clockName.toUpperCase().trim();
     case "using-meta-pod": {
-      const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!target.isValidCombatant()) {return false;}
       return target.isUsingMetaPod();
     }
     case "actor-exists": {
-      const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       return (target != undefined);
     }
     case "knows-power": {
-      const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       const power = PersonaDB.allPowers().get(condition.powerId);
       if (!power) {return false;}
       return target.powers.includes(power);
     }
     case "has-class": {
-      const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!target) {return undefined;}
       return multiCheckContains(condition.classId, [target.class.id]);
     }
@@ -810,11 +819,11 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
       return false;
     }
     case "power-has":
-      return powerHasConditional(condition, situation);
+      return powerHasConditional(condition, situation, ownershipInfo);
     case "roll-property-is":
       return rollPropertyIs(condition, situation);
     case "combat-comparison":
-      return combatComparison(condition, situation);
+      return combatComparison(condition, situation, ownershipInfo);
     case "special-boolean":
       return specialComparison(condition, situation);
     default :
@@ -823,7 +832,7 @@ function getBoolTestState(condition: SourcedPrecondition & {type: "boolean"}, si
   }
 }
 
-function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC & {boolComparisonTarget: "has-tag"}, situation: Situation) : boolean | undefined {
+function hasTagConditional(condition: PreconditionType & BooleanComparisonPC & {boolComparisonTarget: "has-tag"}, situation: Situation, ownershipInfo: EffectOwnershipData) : boolean | undefined {
   switch (condition.tagComparisonType) {
     case undefined:
     case "item-used-consumable":
@@ -848,7 +857,7 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
       const tagList = unifiedTagList(powerTags);
       if (condition.powerTag == undefined) {
         //weird Sachi Error
-        const source = condition.source ? PersonaDB.find(condition.source) : undefined;
+        const source = ownershipInfo.source ? PersonaDB.find(ownershipInfo.source) : undefined;
         if (source) {
           PersonaError.softFail(`Error in ${source?.name}, no Power Tags provided`, condition, situation, source);
         } else {
@@ -859,7 +868,7 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
       return multiCheckContains(condition.powerTag, tagList);
     }
     case "actor": {
-      const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!target) {return undefined;}
       return multiCheckTest(condition.creatureTag, x => target.hasCreatureTag(x));
     }
@@ -869,7 +878,7 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
       return multiCheckContains(condition.rollTag, rollTags);
     }
     case "weapon":{
-      const target = getSubjectActors(condition, situation, "conditionTarget")[0];
+      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!target || !target.weapon || target.isNPC()) {return undefined;}
       const tagCheck = condition.rollTag;
       const tagIds = unifiedTagList(target.weapon.tagList(target));
@@ -890,8 +899,8 @@ function hasTagConditional(condition: SourcedPrecondition & BooleanComparisonPC 
   }
 }
 
-function booleanComparison(condition : SourcedPrecondition & {type: "boolean"}, situation: Situation): boolean {
-  const testState = getBoolTestState(condition, situation);
+function booleanComparison(condition : PreconditionType & {type: "boolean"}, situation: Situation, ownershipInfo: EffectOwnershipData): boolean {
+  const testState = getBoolTestState(condition, situation, ownershipInfo);
   if (testState === undefined) {return false;}
   const targetState = condition.booleanState ?? false;
   return targetState == testState;
@@ -913,21 +922,21 @@ function getUser (target: UserComparisonTarget, situation : Situation) : Foundry
   return undefined;
 }
 
-function getSubjectTokens<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K): PToken[] {
-  const subjects = getSubjects(cond, situation, field)
+function getSubjectTokens<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, field : K, ownershipInfo: EffectOwnershipData): PToken[] {
+  const subjects = getSubjects(cond, situation, field, ownershipInfo)
     .filter( subject =>  subject instanceof TokenDocument);
   return subjects;
 }
 
-export function getSubjectActors<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K): (ValidAttackers | NPC) []{
-  const subjects = getSubjects(cond, situation, field)
+export function getSubjectActors<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, field : K, ownershipInfo: EffectOwnershipData): (ValidAttackers | NPC) []{
+  const subjects = getSubjects(cond, situation, field, ownershipInfo)
     .map( subject => subject instanceof TokenDocument ? subject.actor : subject);
   return subjects;
 }
 
-function getSubjectPersonas<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K) : Persona[] {
+function getSubjectPersonas<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, field : K, ownershipInfo: EffectOwnershipData) : Persona[] {
   return accessPersonaCache(situation, field, () => {
-    return getSubjects(cond, situation, field)
+    return getSubjects(cond, situation, field, ownershipInfo)
       .map( subject => {
         if (subject instanceof TokenDocument) {
           subject = subject.actor;
@@ -1019,7 +1028,7 @@ export function resolveActorIdOrTarot (targetIdOrTarot: PersonaActor["id"] | Tar
   return PersonaDB.getSocialLinkByTarot(targetIdOrTarot);
 }
 
-function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarget>>>( cond: T, situation: Situation, field : K) : readonly (PToken | ValidAttackers | NPC) []{
+function getSubjects<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, field : K, ownershipInfo: EffectOwnershipData) : readonly (PToken | ValidAttackers | NPC) []{
   if (!(field in cond)) {
     Debug(`${field} not present in condition`, cond, situation, field );
     // Debug(cond);
@@ -1031,9 +1040,9 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
   switch (condTarget) {
     case "owner": {
       //owner of the power in question
-      if (cond.owner) {
+      if (ownershipInfo.owner) {
         try {
-          const owner = PersonaDB.findActor(cond.owner);
+          const owner = PersonaDB.findActor(ownershipInfo.owner);
           if (game.combat) {
             const combatants = game.combat.getCombatantsByActor(owner);
             if (combatants.length > 0) {
@@ -1049,13 +1058,13 @@ function getSubjects<K extends string, T extends Sourced<Record<K, ConditionTarg
           }
         }
       }
-      const source = cond.source ? PersonaDB.find(cond.source) : undefined;
+      const source = ownershipInfo.source ? PersonaDB.find(ownershipInfo.source) : undefined;
       if (source && source.parent instanceof PersonaActor) {
         const parent = source.parent;
         if (parent instanceof PersonaActor && parent.isValidCombatant()) {return [parent];}
       }
       if ("actorOwner" in cond && cond.actorOwner) {
-        const tok = 	PersonaCombat.getPTokenFromActorAccessor(cond.owner as NonNullable<SourcedPrecondition["owner"]>);
+        const tok = 	PersonaCombat.getPTokenFromActorAccessor(ownershipInfo.owner as NonNullable<EffectOwnershipData["owner"]>);
         return tok ? [tok] : [];
       }
       return [];
@@ -1204,9 +1213,9 @@ function multiCheckTest<T extends string>(multiCheck: MultiCheck<T> | T, testFn:
   //   .some (([item, _]) => testFn(item as T));
 }
 
-export function numberOfOthersWithResolver(condition: Sourced<NumberOfOthersWithComparison>, situation : Situation) : number | false {
+export function numberOfOthersWithResolver(condition: NumberOfOthersWithComparison, situation : Situation, ownershipInfo: EffectOwnershipData) : number | false {
   let targets : PersonaActor[] = [];
-  getSubjectActors(condition, situation, "conditionTarget").some ( subject => {
+  getSubjectActors(condition, situation, "conditionTarget", ownershipInfo).some ( subject => {
     if (!subject) {return false;}
     const combat = game.combat as PersonaCombat | undefined;
     switch (condition.group) {
@@ -1272,16 +1281,16 @@ export function numberOfOthersWithResolver(condition: Sourced<NumberOfOthersWith
       };
       const sourcedP = {
         ...PreconditionConverter.convertDeprecated(condition.otherComparison),
-        source: condition.source,
-        owner: condition.owner,
-        realSource: condition.realSource,
+        // source: condition.source,
+        // owner: condition.owner,
+        // realSource: condition.realSource,
       };
-      return	a + (testPrecondition(sourcedP, situation) ? 1 : 0);
+      return	a + (testPrecondition(sourcedP, situation, ownershipInfo) ? 1 : 0);
     }
     , 0);
 }
 
-function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "power-has"}, situation: Situation) : U<boolean> {
+function powerHasConditional(condition : PreconditionType  & {type: "boolean"; boolComparisonTarget: "power-has"}, situation: Situation, ownershipInfo: EffectOwnershipData) : U<boolean> {
   if (!checkSituationProp(situation, "usedPower")) { return undefined; }
   const power = PersonaDB.findItem(situation.usedPower);
   switch (condition.powerProp) {
@@ -1298,7 +1307,7 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
         tagComparisonType: "power",
         boolComparisonTarget: "has-tag",
       } as const;
-      return hasTagConditional(conditionMod, situation);
+      return hasTagConditional(conditionMod, situation, ownershipInfo);
     }
     case "damage-type-is": {
       if (!power || power.isCardItem()) {return undefined;}
@@ -1311,7 +1320,7 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
       const attacker = PersonaDB.findActor(attackerAcc);
       if (!attacker) {return undefined;}
       const powerDType = power.getDamageType(attacker);
-      return damageTypeComparison(condition, condition.powerDamageType, powerDType);
+      return damageTypeComparison(condition, condition.powerDamageType, powerDType, ownershipInfo);
     }
     case "power-type-is": {
       return power.system.type == "power" && power.system.subtype == condition.powerType;
@@ -1340,7 +1349,7 @@ function powerHasConditional(condition : SourcedPrecondition  & {type: "boolean"
   }
 }
 
-function rollPropertyIs(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "roll-property-is"}, situation: Situation) : U<boolean> {
+function rollPropertyIs(condition : PreconditionType  & {type: "boolean"; boolComparisonTarget: "roll-property-is"}, situation: Situation) : U<boolean> {
   switch (condition.rollProp) {
     case "is-critical":
       return CombatEngine.isCrit(situation);
@@ -1366,7 +1375,7 @@ function rollPropertyIs(condition : SourcedPrecondition  & {type: "boolean"; boo
   }
 }
 
-function simpleCombatComparison(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "combat-comparison", conditionTarget?: undefined}, situation: Situation) : U<boolean> {
+function simpleCombatComparison(condition : PreconditionType  & {type: "boolean"; boolComparisonTarget: "combat-comparison", conditionTarget?: undefined}, situation: Situation) : U<boolean> {
   switch (condition.combatProp) {
     case "in-combat":
       return Metaverse.getPhase() == "combat";
@@ -1394,14 +1403,14 @@ function simpleCombatComparison(condition : SourcedPrecondition  & {type: "boole
 
 }
 
-function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; boolComparisonTarget: "combat-comparison"}, situation: Situation)  : U<boolean> {
+function combatComparison(condition : PreconditionType  & {type: "boolean"; boolComparisonTarget: "combat-comparison"}, situation: Situation, ownershipInfo: EffectOwnershipData)  : U<boolean> {
   switch (condition.combatProp) {
     case "in-combat":
     case "combat-result-is":
     case "struck-weakness":
       return simpleCombatComparison(condition, situation);
   }
-  const subjects = getSubjectPersonas(condition, situation, "conditionTarget");
+  const subjects = getSubjectPersonas(condition, situation, "conditionTarget", ownershipInfo);
   if (!subjects || !subjects.at(0)) {return undefined;}
   const combat = PersonaCombat.combat;
   switch (condition.combatProp) {
@@ -1427,8 +1436,8 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
     }
     case "engaged-with" : {
       if (!combat) {return undefined;}
-      const target = getSubjectTokens(condition, situation, "conditionTarget")[0];
-      const target2 = getSubjectTokens(condition, situation, "conditionTarget2")[0];
+      const target = getSubjectTokens(condition, situation, "conditionTarget", ownershipInfo)[0];
+      const target2 = getSubjectTokens(condition, situation, "conditionTarget2", ownershipInfo)[0];
       if (!target || !target2) {return undefined;}
       const tok1 = PersonaDB.getUniversalTokenAccessor(target);
       const tok2 = PersonaDB.getUniversalTokenAccessor(target2);
@@ -1436,8 +1445,8 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
     }
     case "in-melee-with": {
       if (!combat) {return undefined;}
-      const target = getSubjectTokens(condition, situation, "conditionTarget")[0];
-      const target2 = getSubjectTokens(condition, situation, "conditionTarget2")[0];
+      const target = getSubjectTokens(condition, situation, "conditionTarget", ownershipInfo)[0];
+      const target2 = getSubjectTokens(condition, situation, "conditionTarget2", ownershipInfo)[0];
       if (!target || !target2) {return undefined;}
       const tok1 = PersonaDB.getUniversalTokenAccessor(target);
       const tok2 = PersonaDB.getUniversalTokenAccessor(target2);
@@ -1471,8 +1480,8 @@ function combatComparison(condition : SourcedPrecondition  & {type: "boolean"; b
       });
     }
     case "is-enemy":{
-      const target = getSubjectTokens(condition, situation,   "conditionTarget")[0];
-      const target2 = getSubjectTokens(condition, situation, "conditionTarget2")[0];
+      const target = getSubjectTokens(condition, situation,   "conditionTarget", ownershipInfo)[0];
+      const target2 = getSubjectTokens(condition, situation, "conditionTarget2", ownershipInfo)[0];
       if (!target || !target2) {return undefined;}
       const combat = PersonaCombat.combat;
       if (!combat) {return undefined;}
@@ -1492,11 +1501,14 @@ export function unifiedTagList<T extends string>(tagList?: readonly (Tag | T)[])
     .flatMap (tag => typeof tag == "string"? [tag] : [tag.id, tag.system.linkedInternalTag]);
 }
 
-function resolveSocialAvailabilityCheck(condition: SourcedPrecondition & {type: "boolean", boolComparisonTarget: "social-availability" }, situation: Situation) :U<boolean>{
+function resolveSocialAvailabilityCheck(condition: PreconditionType & {type: "boolean", boolComparisonTarget: "social-availability" }, situation: Situation, ownershipInfo: EffectOwnershipData) :U<boolean>{
   if (!condition.conditionTarget) {
+    console.warn("defaulting to condition Target 'user' in condition");
+    Debug(condition, ownershipInfo);
+    //@ts-expect-error modifying readonly
     condition.conditionTarget = "user";
   }
-  let target1 = getSubjectActors(condition, situation,  "conditionTarget")[0];
+  let target1 = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo)[0];
   if (!target1) {
     if (!checkSituationProp(situation, "user")) { return undefined; }
     target1 = PersonaDB.findActor(situation.user);
@@ -1505,7 +1517,7 @@ function resolveSocialAvailabilityCheck(condition: SourcedPrecondition & {type: 
   if (target1.isShadow()) {return undefined;}
   switch (condition.socialTypeCheck) {
     case "relationship-type-check": {
-      const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, condition.source);
+      const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, ownershipInfo.source);
       const link = target1.socialLinks.find(x=>x.actor == target2);
       if (!link) {return undefined;}
       return link.relationshipType.toUpperCase() == condition.relationshipType.toUpperCase();
@@ -1516,13 +1528,13 @@ function resolveSocialAvailabilityCheck(condition: SourcedPrecondition & {type: 
       if (!target1.isPC()) {
         return undefined;
       }
-      const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, condition.source);
+      const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, ownershipInfo.source);
       if (!target2) {return undefined;}
       return PersonaSocial.isAvailable(target2, target1 );
       // return target1.isAvailable(target2);
     }
     case "is-dating": {
-      const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, condition.source);
+      const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, ownershipInfo.source);
       if (!target2) {return undefined;}
       return target1.social.isDating(target2);
     }
@@ -1535,7 +1547,7 @@ function resolveSocialAvailabilityCheck(condition: SourcedPrecondition & {type: 
   }
 }
 
-function specialComparison(condition: SourcedPrecondition & {type: "boolean", boolComparisonTarget: "special-boolean" }, situation: Situation): U<boolean> {
+function specialComparison(condition: PreconditionType & {type: "boolean", boolComparisonTarget: "special-boolean" }, situation: Situation): U<boolean> {
   switch (condition.specialType) {
     case "farming-can-harvest": {
       if (!checkSituationProp(situation, "user")) {return undefined;}
@@ -1571,14 +1583,14 @@ function specialComparison(condition: SourcedPrecondition & {type: "boolean", bo
   }
 }
 
-function damageTypeComparison (condition: SourcedPrecondition, multiCheck : MultiCheckOrSingle<DamageTypesPlusAffinity>, powerDType : Exclude<DamageType, "by-weapon">)  : U<boolean>{
+function damageTypeComparison (_condition: PreconditionType, multiCheck : MultiCheckOrSingle<DamageTypesPlusAffinity>, powerDType : Exclude<DamageType, "by-weapon">, ownershipInfo: EffectOwnershipData)  : U<boolean>{
   if (multiCheckContains<DamageTypesPlusAffinity, DamageTypesPlusAffinity>(multiCheck, "source-dtype"))  {
-    const effectAffDType = getSourceDType(condition, "source");
+    const effectAffDType = getSourceDType(ownershipInfo, "source");
     if (effectAffDType != null
       && effectAffDType == powerDType) {return true;}
   }
   if (multiCheckContains<DamageTypesPlusAffinity, DamageTypesPlusAffinity>(multiCheck, "realSource-dtype"))  {
-    const effectAffDType = getSourceDType(condition, "realSource");
+    const effectAffDType = getSourceDType(ownershipInfo, "realSource");
     if (effectAffDType != null
       && effectAffDType == powerDType) {return true;}
   }
@@ -1611,3 +1623,7 @@ export function getSourceDType(condition: Sourced<object>, prop : "source" | "re
 const MultiCheckArrayCache : WeakMap<MultiCheck<string>, string[]>   = new WeakMap();
 const MultiCheckSetCache : WeakMap<MultiCheck<string>, Set<string>>   = new WeakMap();
 
+
+type PreconditionType = ConditionalEffectC["conditions"][number]["cond"];
+
+type PreconditionContainerClass = ConditionalEffectC["conditions"][number];

@@ -8,7 +8,7 @@ import { Persona } from '../persona-class.js';
 import { POWER_ICONS } from '../../config/icons.js';
 import { RealDamageType } from '../../config/damage-types.js';
 import { PToken, PersonaCombat } from '../combat/persona-combat.js';
-import { ItemSelector, NonDeprecatedConsequence} from '../../config/consequence-types.js';
+import { ConsequenceAmount, ItemSelector, NonDeprecatedConsequence} from '../../config/consequence-types.js';
 import { Trigger } from '../../config/triggers.js';
 import { CombatResult, AttackResult } from '../combat/combat-result.js';
 import { ROLL_TAGS_AND_CARD_TAGS, RollTag } from '../../config/roll-tags.js';
@@ -366,7 +366,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     if (this.getBaseDamageType() != "healing") {return false;}
     return this.getEffects(null).some( eff => {
       return eff.consequences.some( cons => {
-        return (cons.type == "combat-effect" && cons.combatEffect == "damage");
+        return (cons.cons.type == "combat-effect" && cons.cons.combatEffect == "damage");
       });
     });
   }
@@ -376,10 +376,15 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   _restoresMP(this: Consumable | Power) : boolean {
-    return this.getEffects(null, {deepTags: false}).some( eff => eff.consequences.filter (cons => cons.type == "alter-mp")
-      .some(cons => typeof cons.amount == "number"
-        ? cons.amount > 0
-        : cons.amount.type == "constant" && cons.amount.val > 0)
+    return this.getEffects(null, {deepTags: false}).some( eff =>
+      eff.consequences.some(cons => {
+        if ( cons.cons.type != "alter-mp") {return false;}
+        const consAmt = cons.cons.amount;
+        return typeof consAmt == "number"
+          ? consAmt > 0
+          : consAmt.type == "constant"
+          && consAmt.val > 0;
+      })
     );
   }
 
@@ -388,7 +393,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     if (dmgType == "healing" || dmgType == "none") {return false;}
     return this.getEffects(null).some( eff => {
       return eff.consequences.some( cons => {
-        return (cons.type == "combat-effect" && cons.combatEffect == "damage");
+        return (cons.cons.type == "combat-effect" && cons.cons.combatEffect == "damage");
       });
     });
   }
@@ -906,7 +911,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   static grantsPowers(eff: ConditionalEffectC) : boolean{
     return eff.consequences.some(
-      cons => cons.type == "other-effect" && cons.otherEffect == "add-power-to-list"
+      cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == "add-power-to-list"
       // cons.type == 'add-power-to-list'
     );
   }
@@ -918,7 +923,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     try{
       const grantsPowers= this.getEffects(null).some(
         eff => eff.consequences.some(
-          cons => cons.type == "other-effect" && cons.otherEffect == "add-power-to-list"
+          cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == "add-power-to-list"
           // cons.type == 'add-power-to-list'
         ));
       this.cache.grantsPowers = grantsPowers;
@@ -937,7 +942,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     try{
       const grantsTalents= this.getEffects(null).some(
         eff => eff.consequences.some(
-          cons => cons.type == "other-effect" && cons.otherEffect == "add-talent-to-list"
+          cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == "add-talent-to-list"
           // cons.type == 'add-talent-to-list'
         ));
       this.cache.grantsTalents = grantsTalents;
@@ -950,7 +955,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   static grantsTalents (eff: ConditionalEffectC) : boolean {
     return eff.consequences.some(
-      cons => cons.type == "other-effect" && cons.otherEffect == "add-talent-to-list"
+      cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == "add-talent-to-list"
       // cons.type == 'add-talent-to-list'
     );
   }
@@ -959,12 +964,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     if (this.isCardItem()) {return false;}
     if (this.hasTag(["opener", "optional-opener"], user.persona())) {
       const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this, user , this);
-      return testPreconditions(conditions, situation);
+      return testPreconditions(conditions, situation,{
+        source: this.accessor,
+        owner: user.accessor,
+        realSource: this.accessor,
+        _id: -1,
+        "creationId" : -1,
+      });
     }
     const inheritedPrereqs = this._openerElevators(user.persona());
     for (const CE of inheritedPrereqs) {
-      const elevator = CE.consequences.find( ce=>
-        ce.type == "trigger-event-cons" && ce.eventMod == "allow-as-opener");
+      const elevator = CE.consequences
+        .map( ce=> ce.cons)
+        .find( cons=>
+          cons.type == "trigger-event-cons" && cons.eventMod == "allow-as-opener");
       if (!elevator) {continue;}
       if (situation.naturalRoll >= elevator.low && situation.naturalRoll <= elevator.high) {
         return true;
@@ -982,7 +995,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         this.system satisfies never;
     }
     const conditions = ConditionalEffectManager.getConditionals(this.system.teamworkConditions, this,user , this );
-    return testPreconditions(conditions, situation);
+    return testPreconditions(conditions, situation, {
+      source: this.accessor,
+      owner: user.accessor,
+      realSource: this.accessor,
+      _id: -1,
+      "creationId": -1,
+    });
   }
 
   testFollowUpPrereqs(this: UsableAndCard, situation: Situation, user: PersonaActor): boolean {
@@ -996,7 +1015,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       };
     }
     const powers = eff.getActiveConsequences(situation)
-      .flatMap(cons => cons.type == "other-effect" && cons.otherEffect == 'add-power-to-list' ? [cons.id] : [])
+      .flatMap(cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == 'add-power-to-list' ? [cons.cons.id] : [])
       .map(id=> PersonaDB.allPowers().get(id))
       .filter (pwr=> pwr != undefined);
     return removeDuplicates(powers);
@@ -1012,12 +1031,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const talents= this.getPassiveEffects(user)
       .filter(
         eff => eff.consequences.some(
-          cons => cons.type == "other-effect" &&
-          cons.otherEffect == 'add-talent-to-list'
+          cons => cons.cons.type == "other-effect" &&
+          cons.cons.otherEffect == 'add-talent-to-list'
         ))
       .flatMap(eff=> eff.getActiveConsequences(situation))
-      .flatMap(x=>  x.type == "other-effect"
-        && x.otherEffect == 'add-talent-to-list' ? [x.id] : [])
+      .flatMap(x=>  x.cons.type == "other-effect"
+        && x.cons.otherEffect == 'add-talent-to-list' ? [x.cons.id] : [])
       .map(id=> PersonaDB.allTalents().find(x=> x.id == id))
       .flatMap( tal=> tal? [tal]: []);
     return removeDuplicates(talents);
@@ -1032,6 +1051,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const cons =
       sourcedEffect.getActiveConsequences(situation);
     return cons
+      .map( x=>x.cons)
       .filter (x=> x.type == "other-effect" && x.otherEffect == "add-talent-to-list")
       .map(cons=> PersonaDB.allTalents().find(x=> x.id == cons.id))
       .filter ( x=> x!= undefined);
@@ -1414,7 +1434,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
     const effects = this.getEffects(actor);
     if (!effects.some( e => e.consequences
-      .some( cons => cons.type == "other-effect" && cons.otherEffect == 'add-creature-tag'))) {
+      .some( cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == 'add-creature-tag'))) {
       this.cache.containsTagAdd = false;
       return [];
     }
@@ -1422,6 +1442,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       user: actor.accessor,
     };
     const cons : (NonDeprecatedConsequence & {type : 'other-effect', otherEffect: 'add-creature-tag'})[] = ConditionalEffectManager.getAllActiveConsequences(effects, situation)
+      .map( c=> c.cons)
       .filter( c=> c.type == "other-effect" && c.otherEffect == 'add-creature-tag') ;
     return cons
       .map( c => c.creatureTag)
@@ -1685,7 +1706,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return 'passive';
   }
 
-  validTargetConditions(this: Usable, user: ValidAttackers) : ConditionalEffectC["conditions"] {
+  validTargetConditions(this: Usable, user: ValidAttackers) : SourcedPrecondition[] {
     const targetConditions = this.itemBase?.system.validTargetConditions ?? this.system.validTargetConditions;
     const sourcedTC = ConditionalEffectManager.getConditionals(targetConditions, this, user, this );
     return sourcedTC;
@@ -2281,7 +2302,7 @@ getTriggeredEffects(this: ItemModifierContainer, sourceActor: PersonaActor | nul
   if (!options.triggerType) {return data;}
   return data
     .filter( x=> x.conditions
-      .some( cond => cond.type == "on-trigger" && cond.trigger == options.triggerType));
+      .some( cond => cond.cond.type == "on-trigger" && cond.cond.trigger == options.triggerType));
 }
 
 hasTriggeredEffects(this: ItemModifierContainer, actor: PersonaActor) : boolean {
@@ -2324,13 +2345,13 @@ hasAuraEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null) : 
 
 static triggersOn( eff: ConditionalEffectC, trig: Trigger) : boolean {
   return eff.conditions
-    .some (cond => cond.type === 'on-trigger' && cond.trigger == trig);
+    .some (cond => cond.cond.type === 'on-trigger' && cond.cond.trigger == trig);
 }
 
 triggersOn(this: ItemModifierContainer, trig: Trigger)  :boolean {
   const effects= this.getTriggeredEffects(null);
   return effects.some( eff=> eff.conditions
-    .some (cond => cond.type === 'on-trigger' && cond.trigger == trig)
+    .some (cond => cond.cond.type === 'on-trigger' && cond.cond.trigger == trig)
   );
 }
 
@@ -2339,20 +2360,21 @@ requiredLinkLevel(this: Focus) : number  {
   for (const eff of this.getEffects( null)) {
     for (const cond of eff.conditions) {
       if (
-        cond.type != 'numeric'
-        || cond.comparisonTarget != 'social-link-level'
+        cond.cond.type != 'numeric'
+        || cond.cond.comparisonTarget != 'social-link-level'
       ) {
         continue;
       }
       if (
-        cond.socialLinkIdOrTarot == 'SLSource'
-        || cond.socialLinkIdOrTarot == this.parent?.id
-        || cond.socialLinkIdOrTarot == this.parent?.name
-        || cond.socialLinkIdOrTarot == this.parent?.tarot?.name
+        cond.cond.socialLinkIdOrTarot == 'SLSource'
+        || cond.cond.socialLinkIdOrTarot == this.parent?.id
+        || cond.cond.socialLinkIdOrTarot == this.parent?.name
+        || cond.cond.socialLinkIdOrTarot == this.parent?.tarot?.name
       ) {
         // return 'num' in cond ? cond.num ?? 0 : 0;
-        if ('num' in cond) {
-          const sourced = ConsequenceAmountResolver.extractSourcedFromField(cond, "num");
+        if ('num' in cond.cond) {
+          const sourcedC = cond.toSourced() as (ReturnType<typeof cond["toSourced"]> & {"num": ConsequenceAmount});
+          const sourced = ConsequenceAmountResolver.extractSourcedFromField(sourcedC, "num");
           const val = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, {});
           return val ?? 0;
         }
@@ -2626,7 +2648,7 @@ canDealDamage(this: Usable) :  boolean {
   if (this.isPower() && this.system.damageLevel == "none") {return false;}
   return this.getOnUseEffects(null)
     .some( eff => eff.consequences
-      .some( cons => cons.type == "combat-effect" && cons.combatEffect == "damage" || cons.type.includes("dmg")
+      .some( cons => cons.cons.type == "combat-effect" && cons.cons.combatEffect == "damage" || cons.cons.type.includes("dmg")
       )
     );
 }
@@ -2804,13 +2826,13 @@ isDamagePower(this: Usable): boolean {
 statusesAdded(this: Usable, deepTagList = true): {status: StatusEffectId, potency: number}[] {
   const options : GetEffectsOptions = {deepTags: deepTagList};
   const effects= this.getEffects(null, options).flatMap( (eff) => eff.consequences.flatMap( cons =>
-    cons.type == "combat-effect" && cons.combatEffect == 'addStatus'? [{status: cons.statusName, potency:cons.potency ?? 1}] : []));
+    cons.cons.type == "combat-effect" && cons.cons.combatEffect == 'addStatus'? [{status: cons.cons.statusName, potency: cons.cons.potency ?? 1}] : []));
   return effects;
 }
 
 statusesRemoved(this: Usable): StatusEffectId[] {
-  const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons => 
-    cons.type == "combat-effect" && cons.combatEffect == 'removeStatus'? multiCheckToArray(cons.statusName) : []));
+  const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons =>
+    cons.cons.type == "combat-effect" && cons.cons.combatEffect == 'removeStatus'? multiCheckToArray(cons.cons.statusName) : []));
   return statusesRemoved;
 }
 

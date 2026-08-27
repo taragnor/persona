@@ -496,18 +496,20 @@ export class SocialCardEventHandler {
     return null;
   }
 
-	eventList() : CardData["eventList"] {
-		const cardData = this.cardData;
-		const situation = {
-			...cardData.situation,
-			rollTags: cardData.extraCardTags.concat(cardData.card.cardTags),
-		};
-		return this.cardData.eventList
-			.filter ( ev => !ev.eventTags.includes("disabled"))
-			.filter( (ev) => !cardData.eventsChosen.includes(ev) && testPreconditions(
-				ConditionalEffectManager.getConditionals( ev.conditions, null, null, null),
-				situation));
-	}
+  eventList() : CardData["eventList"] {
+    const cardData = this.cardData;
+    const situation = {
+      ...cardData.situation,
+      rollTags: cardData.extraCardTags.concat(cardData.card.cardTags),
+    };
+    return this.cardData.eventList
+      .filter ( ev => !ev.eventTags.includes("disabled"))
+      .filter( (ev) => !cardData.eventsChosen.includes(ev)
+        && testPreconditions(
+          ConditionalEffectManager.getConditionals( ev.conditions, null, null, null),
+          situation, ConditionalEffectC.NULL_OWNERSHIP)
+      );
+  }
 
 	static isChainEvent(ev: CardData["eventList"][number]) : boolean {
 		return ev.chainLabel != undefined && ev.chainLabel.length > 0;
@@ -817,7 +819,7 @@ export class SocialCardEventHandler {
 			source: undefined,
 			realSource: undefined,
 		}));
-		return testPreconditions(sourced, this.cardData.situation);
+		return testPreconditions(sourced, this.cardData.situation, ConditionalEffectC.NULL_OWNERSHIP);
 	}
 
 	/** Generates the text for a choice by analyzing the auto effects*/

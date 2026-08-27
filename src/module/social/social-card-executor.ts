@@ -16,6 +16,7 @@ import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect
 import {testPreconditions} from "../conditionalEffects/preconditions.js";
 import {TriggeredEffect} from "../triggered-effect.js";
 import {sleep} from "../utility/async-wait.js";
+import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 
 export class SocialCardExecutor {
   private _handler : U<SocialCardEventHandler>;
@@ -302,7 +303,7 @@ export class SocialCardExecutor {
     .concat(cardData.activity != cardData.card ?  cardData.activity.system.tokenSpends ?? [] : [])
     .filter( spend => {
       const conds = ConditionalEffectManager.getConditionals(spend.conditions, null, null, null);
-      return testPreconditions(conds ?? [], cardData.situation);
+      return testPreconditions(conds ?? [], cardData.situation, ConditionalEffectC.NULL_OWNERSHIP);
     })
     .map(x=> `spend ${x.amount} progress tokens to ${x.text}.`)
     .map(x=> `<li class="token-spend"> ${x} </li>`);
@@ -385,7 +386,7 @@ export class SocialCardExecutor {
     }
     const preconditionPass =  cardList
       .filter( card => card.system.frequency > 0)
-      .filter( card => testPreconditions(this.cardConditionsToSelect(card), situation));
+      .filter( card => testPreconditions(this.cardConditionsToSelect(card), situation, ConditionalEffectC.NULL_OWNERSHIP));
     if (PersonaSettings.debugMode() == true) {
       console.log(`Valid Cards: ${preconditionPass.map(x=> x.name).join(", ")}`);
     }
@@ -424,7 +425,7 @@ export class SocialCardExecutor {
       };
       if (PersonaSocial.cameoDisqualifierStatuses.some( st => cameo.hasStatus(st))) { return false;}
       const sourcedConditions = ConditionalEffectManager.getConditionals(card.system.cameoConditions, null, null, null);
-      return testPreconditions(sourcedConditions, situation);
+      return testPreconditions(sourcedConditions, situation, ConditionalEffectC.NULL_OWNERSHIP);
     };
     const allCameos = PersonaDB.socialLinks().
       filter (link => testCameo(link));

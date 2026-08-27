@@ -21,6 +21,7 @@ import {getSocialLinkTarget, getSourceDType, multiCheckToArray} from "../conditi
 import {checkSituationProp} from "../../config/situation.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
+import {ConsequenceC} from "../conditionalEffects/consequence-class.js";
 
 declare global {
 	interface SocketMessage {
@@ -297,7 +298,7 @@ export class CombatResult  {
       case "none":
         break;
       case "expend-item": {
-        const item = cons.source ? PersonaDB.find(cons.source ?? cons.realSource) : undefined;
+        const item = cons.source ?? cons.realSource ? PersonaDB.find(cons.source! ?? cons.realSource!) : undefined;
         if (! (item instanceof PersonaItem)) {
           const msg = "Illegal target for expend item";
           PersonaError.softFail(msg, item, cons);
@@ -356,13 +357,13 @@ export class CombatResult  {
           if (cons.flagState) {
             const duration = convertConsToStatusDuration(cons, target, situation);
             if (cons.applyEmbedded) {
-              const parent = ConditionalEffectC.getParent(cons);
+              const parent = ConsequenceC.getParentById(cons._id);
               if (!parent) {
                 PersonaError.softFail("Can't find parent of consequence to get embedded effects");
                 Debug(cons);
                 break;
               }
-              const embeddedEffects = ConditionalEffectC.getParent(cons)?.getEmbeddedEffects() ?? [];
+              const embeddedEffects = ConsequenceC.getParentById(cons._id)?.getEmbeddedEffects() ?? [];
               const mapped = embeddedEffects.map (x=> x.toJSON());
               effect.otherEffects.push( {
                 ...cons,
@@ -992,3 +993,4 @@ export type ResistResult =  {
 }
 
 type Cons = ConsequenceProcessed["consequences"][number]["cons"]
+
