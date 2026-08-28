@@ -22,7 +22,7 @@ import { PowerTag } from '../../config/power-tags.js';
 import { localize } from '../persona.js';
 import { POWER_TAGS } from '../../config/power-tags.js';
 import { ModifierList, ModifierListItem } from '../combat/modifier-list.js';
-import { CardChoice, CardChoiceData, CardEvent, CardRoll } from '../../config/social-card-config.js';
+import { CardChoiceData, CardEvent, CardRoll } from '../../config/social-card-config.js';
 import { BASIC_PC_POWER_NAMES } from '../../config/basic-powers.js';
 import { BASIC_SHADOW_POWER_NAMES } from '../../config/basic-powers.js';
 import { PersonaError } from '../persona-error.js';
@@ -48,7 +48,7 @@ import {ItemTagManager} from './item-tags.js';
 import {ItemHooks} from './item-hooks.js';
 import {TimedCache} from '../utility/cache.js';
 import {ConditionalEffectManager} from '../conditionalEffects/conditional-effect-manager.js';
-import {multiCheckToArray, testPreconditions} from '../conditionalEffects/preconditions.js';
+import {multiCheckToArray} from '../conditionalEffects/preconditions.js';
 import {BonusCalculation, ModifierV2Target} from '../bonus-calc.js';
 
 declare global {
@@ -964,14 +964,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     if (this.isCardItem()) {return false;}
     if (this.isPower() && user.isPowerOnCooldown(this)) {return false;}
     if (this.hasTag(["opener", "optional-opener"], user.persona())) {
-      const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this, user , this);
-      return testPreconditions(conditions, situation,{
-        source: this.accessor,
-        owner: user.accessor,
-        realSource: this.accessor,
-        _id: -1,
-        "creationId" : -1,
-      });
+      const conditions = ConditionalEffectC.createPreconditionOnly(this.system.openerConditions, this, user, this);
+      return conditions.testPreconditions(situation);
+      // const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this, user , this);
+      // return testPreconditions(conditions, situation,{
+      //   source: this.accessor,
+      //   owner: user.accessor,
+      //   realSource: this.accessor,
+      //   _id: -1,
+      //   "creationId" : -1,
+      // });
     }
     const inheritedPrereqs = this._openerElevators(user.persona());
     for (const CE of inheritedPrereqs) {
@@ -995,14 +997,16 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       default:
         this.system satisfies never;
     }
-    const conditions = ConditionalEffectManager.getConditionals(this.system.teamworkConditions, this,user , this );
-    return testPreconditions(conditions, situation, {
-      source: this.accessor,
-      owner: user.accessor,
-      realSource: this.accessor,
-      _id: -1,
-      "creationId": -1,
-    });
+    const conditions = ConditionalEffectC.createPreconditionOnly(this.system.teamworkConditions, this, user, this);
+    return conditions.testPreconditions(situation);
+    // const conditions = ConditionalEffectManager.getConditionals(this.system.teamworkConditions, this,user , this );
+    // return testPreconditions(conditions, situation, {
+    //   source: this.accessor,
+    //   owner: user.accessor,
+    //   realSource: this.accessor,
+    //   _id: -1,
+    //   "creationId": -1,
+    // });
   }
 
   testFollowUpPrereqs(this: UsableAndCard, situation: Situation, user: PersonaActor): boolean {
@@ -1707,9 +1711,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return 'passive';
   }
 
-  validTargetConditions(this: Usable, user: ValidAttackers) : SourcedPrecondition[] {
+  validTargetConditions(this: Usable, user: ValidAttackers) : ConditionalEffectC {
     const targetConditions = this.itemBase?.system.validTargetConditions ?? this.system.validTargetConditions;
-    const sourcedTC = ConditionalEffectManager.getConditionals(targetConditions, this, user, this );
+    const sourcedTC = ConditionalEffectC.createPreconditionOnly(targetConditions, this, user, this);
+    // const sourcedTC = ConditionalEffectManager.getConditionals(targetConditions, this, user, this );
     return sourcedTC;
   }
 
@@ -2058,78 +2063,78 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return false;
   }
 
-  equals(other: PersonaItem) : boolean {
-    return this == other;
-  }
+equals(other: PersonaItem) : boolean {
+  return this == other;
+}
 
-  isSameBaseItem (other: Carryable) : boolean {
-    return this.itemBase == other.itemBase;
-  }
+isSameBaseItem (other: Carryable) : boolean {
+  return this.itemBase == other.itemBase;
+}
 
-  get isStackable() : boolean {
-    return this.isCraftingMaterial() || this.isConsumable() || this.isSkillCard();
-  }
+get isStackable() : boolean {
+  return this.isCraftingMaterial() || this.isConsumable() || this.isSkillCard();
+}
 
-  isStackableWith(a: TagBearingItem): boolean {
-    if (!this.isStackable || !a.isStackable) {return false;}
-    const tagListA = a.tagList(null);
-    const thisTagList = this.tagList(null);
-    if (this.itemBase != a.itemBase) {return false;}
-    return this.isStackable && a.isStackable
-      && this.name == a.name
-      && tagListA.every(tag => thisTagList.includes(tag))
-      && thisTagList.every(tag => tagListA.includes(tag));
-  }
+isStackableWith(a: TagBearingItem): boolean {
+  if (!this.isStackable || !a.isStackable) {return false;}
+  const tagListA = a.tagList(null);
+  const thisTagList = this.tagList(null);
+  if (this.itemBase != a.itemBase) {return false;}
+  return this.isStackable && a.isStackable
+    && this.name == a.name
+    && tagListA.every(tag => thisTagList.includes(tag))
+    && thisTagList.every(tag => tagListA.includes(tag));
+}
 
-  isEquippable(): boolean {
-    if (!this.isCarryableType()) {return false;}
-    if (this.isWeapon()) {return true;}
-    if (this.system.type != "item") {return false;}
-    switch (this.system.slot) {
-      case "key-item": return false;
-      case "body": return true;
-      case "accessory": return true;
-      case "weapon_crystal": return true;
-      case "crafting": return false;
-      case "none": return false;
-      default:
-        this.system.slot satisfies never;
-        return false;
-    }
+isEquippable(): boolean {
+  if (!this.isCarryableType()) {return false;}
+  if (this.isWeapon()) {return true;}
+  if (this.system.type != "item") {return false;}
+  switch (this.system.slot) {
+    case "key-item": return false;
+    case "body": return true;
+    case "accessory": return true;
+    case "weapon_crystal": return true;
+    case "crafting": return false;
+    case "none": return false;
+    default:
+      this.system.slot satisfies never;
+      return false;
   }
+}
 
-  isShadowExclusivePower(): boolean {
-    if (!this.isPower()) {return false;}
-    return this.hasTag('shadow-only', null);
-  }
+isShadowExclusivePower(): boolean {
+  if (!this.isPower()) {return false;}
+  return this.hasTag('shadow-only', null);
+}
 
-  isBasicPower(this: UsableAndCard) : boolean {
-    if (this.isSkillCard()) {return false;}
-    if (this.isConsumable()) {return false;}
-    const basics = [
-      ...PersonaItem.getBasicPCPowers(),
-      ...PersonaItem.getBasicShadowPowers(),
-    ];
-    //straight up comparison failed for some reason, probably due to how Foundry draws from compendiums
-    return basics.some(pwr=> pwr.id == this.id);
-  }
+isBasicPower(this: UsableAndCard) : boolean {
+  if (this.isSkillCard()) {return false;}
+  if (this.isConsumable()) {return false;}
+  const basics = [
+    ...PersonaItem.getBasicPCPowers(),
+    ...PersonaItem.getBasicShadowPowers(),
+  ];
+  //straight up comparison failed for some reason, probably due to how Foundry draws from compendiums
+  return basics.some(pwr=> pwr.id == this.id);
+}
 
-  mpCost(this: Usable, userPersona: Persona | null): number {
-    if (this.isConsumable()) {return 0;}
-    const mult= this._getMPMultiplier(userPersona);
-    // let mult  = 1;
-    // if (userPersona) {
-    //   const sit : Situation = {
-    //     user: userPersona.user.accessor,
-    //     usedPower: this.accessor,
-    //     attacker: userPersona.user.accessor,
-    //   };
-    //   const list = userPersona.getBonuses('power-mp-cost-mult');
-    //   mult = list.total(sit, 'percentage');
-    // }
-    const baseMPCost = this.baseMPCost;
-    return Math.clamp(Math.round(baseMPCost * mult), 0,  1000);
-  }
+mpCost(this: Usable, userPersona: Persona | null): number {
+  if (this.isConsumable()) {return 0;}
+  const mult= this._getMPMultiplier(userPersona);
+  // let mult  = 1;
+  // if (userPersona) {
+  //   const sit : Situation = {
+  //     user: userPersona.user.accessor,
+  //     usedPower: this.accessor,
+  //     attacker: userPersona.user.accessor,
+  //   };
+  //   const list = userPersona.getBonuses('power-mp-cost-mult');
+  //   mult = list.total(sit, 'percentage');
+  // }
+  const baseMPCost = this.baseMPCost;
+  return Math.clamp(Math.round(baseMPCost * mult), 0,  1000);
+}
 
 private _getMPMultiplier(this: Usable, userPersona: N<Persona>) : number {
   if (!userPersona) {return 1;}
@@ -2470,18 +2475,17 @@ async addEventChoice(this: SocialCard, eventIndex: number, newChoice ?: CardChoi
     newChoice = choice;
   };
   arr.push( newChoice);
-  event.choices = arr;
+  event.choices = arr as typeof event.choices;
   await event.update!({choices: arr});
 }
 
 async deleteEventChoice(this: SocialCard, eventIndex: number, choiceIndex: number) {
   const event = this.system.events[eventIndex];
-  const arr = ConditionalEffectManager.ArrayCorrector(event.choices) as CardChoice[];
+  const arr = ConditionalEffectManager.ArrayCorrector(event.choices);
   arr.splice(choiceIndex, 1);
   event.choices = arr;
   await event.update!({choices: arr});
 }
-
 
 get perk() : string {
   switch (this.system.type) {

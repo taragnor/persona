@@ -27,7 +27,6 @@ import {SocialCardExecutor} from "./social-card-executor.js";
 import {ConditionalEffectPrinter} from "../conditionalEffects/conditional-effect-printer.js";
 import {DowntimePanel} from "../panels/downtime-panel.js";
 import {Helpers} from "../utility/helpers.js";
-import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
 import {testPreconditions} from "../conditionalEffects/preconditions.js";
 import {SeededRandom} from "../utility/seededRandom.js";
 import {BonusCalculation} from "../bonus-calc.js";
@@ -751,9 +750,14 @@ export class PersonaSocial {
       user: pc.accessor,
       attacker: pc.accessor,
     };
-    const sourcedConditions = ConditionalEffectManager.getConditionals(activity.system.conditions, null, null, null );
-    if(!testPreconditions(sourcedConditions, sit, ConditionalEffectC.NULL_OWNERSHIP
-    )) {return false;}
+    const conditions = ConditionalEffectC.createPreconditionOnly(activity.system.conditions);
+    // if(!testPreconditions(sourcedConditions, sit, ConditionalEffectC.NULL_OWNERSHIP
+
+    // const sourcedConditions = ConditionalEffectManager.getConditionals(activity.system.conditions, null, null, null );
+    // if(!testPreconditions(sourcedConditions, sit, ConditionalEffectC.NULL_OWNERSHIP)) {
+    if (!conditions.testPreconditions(sit)) {
+      return false;
+    }
     if (pc.hasStatus("exhausted") && activity.system.cardType == "training") {
       return false;
     }

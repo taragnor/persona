@@ -1,8 +1,7 @@
 import {PersonaActor} from "../actor/persona-actor.js";
 import {CombatScene, CombatSetupOptions} from "../combat/combat-scene.js";
 import {ModifierList} from "../combat/modifier-list.js";
-import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
-import {testPreconditions} from "../conditionalEffects/preconditions.js";
+import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 import {Metaverse, PresenceRollData} from "../metaverse.js";
 import {NavigatorVoiceLines} from "../navigator/nav-voice-lines.js";
 import {PersonaDB} from "../persona-db.js";
@@ -488,14 +487,16 @@ export class RandomEncounter {
           user: shadow.accessor,
           target: shadow.accessor,
         };
-        const sourced = ConditionalEffectManager.getConditionals(shadow.system.encounter.conditions, null, shadow, null);
-        return testPreconditions(sourced, situation, {
-          owner: shadow.accessor,
-          "_id": -1,
-          "creationId": -1,
-          "realSource": undefined,
-          "source": undefined,
-        });
+        // const sourced = ConditionalEffectManager.getConditionals(shadow.system.encounter.conditions, null, shadow, null);
+        const cond = ConditionalEffectC.createPreconditionOnly(shadow.system.encounter.conditions, null, shadow, null);
+        return cond.testPreconditions(situation);
+        // return testPreconditions(sourced, situation, {
+        //   owner: shadow.accessor,
+        //   "_id": -1,
+        //   "creationId": -1,
+        //   "realSource": undefined,
+        //   "source": undefined,
+        // });
       });
 
     return shadows;

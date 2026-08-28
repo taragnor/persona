@@ -2,7 +2,7 @@ import {StatusEffectId} from "../../config/status-effects.js";
 import {TarotCard} from "../../config/tarot.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
-import {resolveActorIdOrTarot, testPreconditions} from "../conditionalEffects/preconditions.js";
+import {resolveActorIdOrTarot} from "../conditionalEffects/preconditions.js";
 import {PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
@@ -325,15 +325,17 @@ export class ActorSocial <T extends PersonaActor> {
       user: pc.accessor,
       target: sl.accessor,
     };
-    if(!testPreconditions(sl.getAvailabilityConditions(), sit, {
-      owner: undefined,
-      source: undefined,
-      realSource: undefined,
-      "creationId": -1,
-      _id: -1,
-    })) {
-      return false;
-    }
+    if(!sl.getAvailabilityConditions().testPreconditions(sit)) { return false; }
+
+    // if(!testPreconditions(sl.getAvailabilityConditions(), sit, {
+    //   owner: undefined,
+    //   source: undefined,
+    //   realSource: undefined,
+    //   "creationId": -1,
+    //   _id: -1,
+    // })) {
+    //   return false;
+    // }
     if (PersonaSocial.availabilityDisqualifierStatuses.some (st=> sl.hasStatus(st))) {return false;}
     const availability = sl.system.weeklyAvailability;
     return availability?.available ?? false;

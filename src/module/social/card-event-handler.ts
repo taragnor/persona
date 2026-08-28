@@ -504,11 +504,15 @@ export class SocialCardEventHandler {
     };
     return this.cardData.eventList
       .filter ( ev => !ev.eventTags.includes("disabled"))
-      .filter( (ev) => !cardData.eventsChosen.includes(ev)
-        && testPreconditions(
-          ConditionalEffectManager.getConditionals( ev.conditions, null, null, null),
-          situation, ConditionalEffectC.NULL_OWNERSHIP)
-      );
+      .filter( (ev) => {
+        const cond = ConditionalEffectC.createPreconditionOnly( ev.conditions ?? []);
+        return !cardData.eventsChosen.includes(ev)
+          && cond.testPreconditions(situation);
+        // && testPreconditions(
+        //   ConditionalEffectManager.getConditionals( ev.conditions, null, null, null),
+        //   situation, ConditionalEffectC.NULL_OWNERSHIP)
+        // );
+      });
   }
 
 	static isChainEvent(ev: CardData["eventList"][number]) : boolean {

@@ -46,8 +46,8 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["persona", "sheet", "event"],
       template: `${HBS_TEMPLATES_DIR}/card-event-sheet.hbs`,
-      width: 800,
-      height: 800,
+      width: 1000,
+      height: 1000,
       tabs: [],
       submitOnChange: true,
       closeOnSubmit: false,

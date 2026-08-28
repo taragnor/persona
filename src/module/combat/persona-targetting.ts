@@ -1,6 +1,5 @@
 import {CancelTrigger} from "../../cancel-check-effect.js";
 import { PersonaActor } from "../actor/persona-actor.js";
-import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 import {ConditionalEffectPrinter} from "../conditionalEffects/conditional-effect-printer.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
@@ -105,15 +104,16 @@ export class PersonaTargetting {
       target: target.accessor,
       usedPower: usable.accessor,
     } as const;
-    const failed = ConditionalEffectC.failedPreconditions(conditions, sit, {
-      owner: user.accessor,
-      source: usable.accessor,
-      realSource: usable.accessor,
-      "_id": -1,
-      "creationId": -1
-    });
+    const failed = conditions.failedPreconditions(sit);
+    // const failed = ConditionalEffectC.failedPreconditions(conditions, sit, {
+    //   owner: user.accessor,
+    //   source: usable.accessor,
+    //   realSource: usable.accessor,
+    //   "_id": -1,
+    //   "creationId": -1
+    // });
     for (const cond of failed) {
-      retArr.push( `Target Condition Fail: ${ConditionalEffectPrinter.printConditional(cond)}`);
+      retArr.push( `Target Condition Fail: ${ConditionalEffectPrinter.printConditional(cond.cond)}`);
     }
     return retArr;
   }

@@ -166,7 +166,6 @@ export abstract class SidePanel {
 
   private async _onPressButton(ev: JQuery.ClickEvent) {
     const index = HTMLTools.getClosestDataNumber(ev, "buttonIndex");
-    // const buttons = await this.getButtons();
     const buttons = this._buttonData;
     const button = buttons[index];
     if (!button) {

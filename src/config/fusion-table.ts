@@ -1,4 +1,4 @@
-import {EffectOwnershipData} from "../module/conditionalEffects/conditional-effect-class.js";
+import {ConditionalEffectC, EffectOwnershipData} from "../module/conditionalEffects/conditional-effect-class.js";
 import {ConditionalEffectManager} from "../module/conditionalEffects/conditional-effect-manager.js";
 import {testPreconditions} from "../module/conditionalEffects/preconditions.js";
 import {Persona} from "../module/persona-class.js";
@@ -727,19 +727,21 @@ export class FusionTable {
 	}
 
 	static meetsConditionsToFuse(fusionResult: Shadow, fusor: PC) : boolean {
-		const fusionConditions = ConditionalEffectManager.getConditionals(fusionResult.system.personaConversion.fusionConditions, null, fusionResult, null);
+		const fusionConditions = ConditionalEffectC.createPreconditionOnly(fusionResult.system.personaConversion.fusionConditions, null, fusionResult, null);
+		// const fusionConditions = ConditionalEffectManager.getConditionals(fusionResult.system.personaConversion.fusionConditions, null, fusionResult, null);
 		const situation = {
 			user: fusor.accessor,
 			target: fusionResult.accessor,
 		};
-    const ownershipInfo = {
-      owner: fusionResult.accessor,
-      source: undefined,
-      realSource: undefined,
-      _id: 0,
-      "creationId": 0,
-    } satisfies EffectOwnershipData;
-		return testPreconditions(fusionConditions, situation, ownershipInfo);
+    // const ownershipInfo = {
+    //   owner: fusionResult.accessor,
+    //   source: undefined,
+    //   realSource: undefined,
+    //   _id: 0,
+    //   "creationId": 0,
+    // } satisfies EffectOwnershipData;
+    return fusionConditions.testPreconditions(situation);
+		// return testPreconditions(fusionConditions, situation, ownershipInfo);
 	}
 
 } // end of class

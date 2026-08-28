@@ -39,13 +39,20 @@ export class ConditionalEffectPrinter {
   }
 
   static printConditions(cond: ConditionalEffectC["conditions"] | (readonly Precondition[])) : string {
-    cond = cond.map( c=> c instanceof PreconditionC ? c.cond : c);
-    return ConditionalEffectManager.getConditionals(cond, null, null, null)
-      .map( x=> this.printConditional(x))
+    if (Array.isArray(cond)) {
+      cond = ConditionalEffectC.createPreconditionOnly(cond).conditions;
+    }
+    const conditions = cond.map( c=> (c as PreconditionC).cond );
+    // return ConditionalEffectManager.getConditionals(cond, null, null, null)
+    return conditions
+      .map( c=> this.printConditional(c))
       .join (", ");
   }
 
-  static printConditional(cond: NonDeprecatedPrecondition<Precondition>) : string {
+  static printConditional(cond: NonDeprecatedPrecondition<Precondition> | PreconditionC) : string {
+    if (cond instanceof PreconditionC) {
+      cond = cond.cond;
+    }
     switch (cond.type) {
       case "boolean":
         return this.#printBooleanCond(cond);

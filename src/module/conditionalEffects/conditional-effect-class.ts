@@ -34,6 +34,8 @@ export class ConditionalEffectC {
 
   private _ownershipData: EffectOwnershipData;
 
+  static EmptyCE = this.createConsequenceOnly([], null, null, null);
+
 
   static NULL_OWNERSHIP : EffectOwnershipData= {
     owner: undefined,
@@ -52,23 +54,15 @@ export class ConditionalEffectC {
   };
 
   private constructor (card: CardItem);
-  private constructor (ce: CondEffectObject, sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem);
-  private constructor (ce: CondEffectObject | CardItem, sourceItem?: N<ConditonalEffectHolderItem> , sourceActor?: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem) {
+  private constructor (ce: CondEffectObject, sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource ?: N<ConditonalEffectHolderItem>);
+  private constructor (ce: CondEffectObject | CardItem, sourceItem?: N<ConditonalEffectHolderItem> , sourceActor?: N<PersonaActor>, realSource ?: N<ConditonalEffectHolderItem>) {
     if (ce instanceof PersonaItem)  {
       this._generateCardEffects(ce);
       return;
     }
     this._original = ce;
-    const creationId= ConditionalEffectC.getCreationId();
-      this._ownershipData = {
-        owner: sourceActor?.accessor,
-        source: sourceItem != null ? sourceItem.accessor : undefined,
-        realSource: realSource? realSource.accessor: undefined,
-        creationId,
-        _id: creationId,
-      };
-    Object.freeze(this._ownershipData);
-    this._buildCoreData(ce, sourceItem, sourceActor, realSource );
+    this._buildOwnershipData(sourceItem!, sourceActor!, realSource!);
+    this._buildCoreData(ce);
     this._isEmbedded = ce.isEmbedded ?? false;
     this._isAura = ce.isAura ?? false;
     this._conditionalType = this.#determineConditionalType(ce, this._preconditions, this._consequences, sourceItem!);
@@ -77,33 +71,25 @@ export class ConditionalEffectC {
     this.setGrantedBonuses();
   }
 
+  private _buildOwnershipData( sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource : N<ConditonalEffectHolderItem>) {
+    const creationId= ConditionalEffectC.getCreationId();
+    this._ownershipData = {
+      owner: sourceActor?.accessor,
+      source: sourceItem != null ? sourceItem.accessor : undefined,
+      realSource: realSource? realSource.accessor: undefined,
+      creationId,
+      _id: creationId,
+    };
+    Object.freeze(this._ownershipData);
+    return this._ownershipData;
+  }
+
   //alternate
-  private _buildCoreData(ce: CondEffectObject, _sourceItem?: N<ConditonalEffectHolderItem> , _sourceActor?: N<PersonaActor>, _realSource ?: ConditonalEffectHolderItem) {
+  private _buildCoreData(ce: CondEffectObject) {
     this._preconditions = PreconditionC.fromArrayLike(ce.conditions, this);
     this._consequences = ConsequenceC.fromArrayLike(ce.consequences, this);
   }
 
-  // private _buildCoreData(ce: CondEffectObject, sourceItem?: N<ConditonalEffectHolderItem> , sourceActor?: N<PersonaActor>, realSource ?: ConditonalEffectHolderItem) {
-  //   this._preconditions = ConditionalEffectManager.getConditionals(ce.conditions, sourceItem!, sourceActor!, realSource);
-  //   this._consequences = ConditionalEffectManager.getConsequences(ce.consequences, sourceItem!, sourceActor!, realSource);
-  //   this._setupParentsLink();
-  // }
-
-  //private _setupParentsLink() {
-  //  //requires ownership data to be set up
-  //  for (const pre of this._preconditions) {
-  //    ConditionalEffectC.parents.set(pre, this);
-  //    if (pre._id) {
-  //      ConditionalEffectC.parentsCreationId.set(pre._id, new WeakRef(this));
-  //    }
-  //  }
-  //  for (const con of this._consequences) {
-  //    ConditionalEffectC.parents.set(con, this);
-  //    if (con._id) {
-  //      ConditionalEffectC.parentsCreationId.set(con._id, new WeakRef(this));
-  //    }
-  //  }
-  //}
 
   private setGrantedBonuses() {
     this._grantedBonuses = this.consequences.reduce<Set<NonDeprecatedModifierType>>( (acc, consC) => {
@@ -135,16 +121,35 @@ export class ConditionalEffectC {
     return arr;
   }
 
-  // static getParent(consOrCond: ConditionalEffectC["_preconditions"][number]): U<ConditionalEffectC>;
-  // static getParent(consOrCond: ConditionalEffectC["_consequences"][number]): U<ConditionalEffectC>;
-  // static getParent(consOrCond: SourcedConsequence | SourcedPrecondition) : U<ConditionalEffectC> {
-  //   const parent = ConditionalEffectC.parents.get(consOrCond);
-  //   if (parent) {return parent;}
-  //   if (consOrCond._id) {
-  //     const parent = ConditionalEffectC.parentsCreationId.get(consOrCond._id)?.deref();
-  //     if (parent) {return parent;}
-  //   }
-  // }
+  static createPreconditionOnly(
+    preconditionArr: readonly Precondition[],
+    sourceItem: N<ConditonalEffectHolderItem> = null,
+    sourceActor: N<PersonaActor> = null,
+    realSource : N<ConditonalEffectHolderItem> = null)
+    :ConditionalEffectC {
+    const condEffectObject = this.createDummyCondEffectObject(preconditionArr, []);
+    return new ConditionalEffectC(condEffectObject, sourceItem, sourceActor, realSource);
+  }
+
+  static createConsequenceOnly(
+    consequenceArr: readonly Consequence[],
+    sourceItem: N<ConditonalEffectHolderItem>,
+    sourceActor: N<PersonaActor>,
+    realSource ?: N<ConditonalEffectHolderItem>)  :ConditionalEffectC {
+    const condEffectObject = this.createDummyCondEffectObject([], consequenceArr);
+    return new ConditionalEffectC(condEffectObject, sourceItem, sourceActor, realSource);
+  }
+
+  private static createDummyCondEffectObject(conditions: readonly Precondition[], consequences: readonly Consequence[]): CondEffectObject {
+    const condEffectObject = {
+      conditions: conditions,
+      consequences: consequences,
+      isDefensive: false,
+      isEmbedded: false,
+      isAura: false,
+    } satisfies CondEffectObject;
+    return condEffectObject;
+  }
 
   static fromCard( card: CardItem) {
     return new ConditionalEffectC(card);
@@ -360,16 +365,11 @@ export class ConditionalEffectC {
     return this._consequences
       .some (cons =>
         cons.canAllowOpenersForPowers()
-        // cons.type == "trigger-event-cons"
-        // && cons.eventMod == "allow-as-opener"
       );
   }
 
   private _generateCardEffects(card: CardItem) {
     this._original = card;
-    // this._source = card.accessor;
-    // this._owner = card.parent?.accessor;
-    // this._realSource = undefined;
     const id = ConditionalEffectC.getCreationId();
     this._ownershipData = {
       source : card.accessor,
@@ -398,9 +398,6 @@ export class ConditionalEffectC {
     this._preconditions = [
       new PreconditionC({
         type: 'always',
-        // source: card.accessor,
-        // owner: card.parent?.accessor,
-        // realSource: undefined,
       }
         , this)];
     this._consequences= [
@@ -409,9 +406,6 @@ export class ConditionalEffectC {
         otherEffect: "teach-power",
         randomPower: false,
         id: card.system.skillId,
-        // source: card.accessor,
-        // owner: card.parent?.accessor,
-        // realSource: undefined,
         applyTo: "user",
       } satisfies ConditionalEffect["consequences"][number], this)
     ];
@@ -426,9 +420,6 @@ export class ConditionalEffectC {
     this._preconditions = [
       new PreconditionC( {
         type: 'always',
-        // source: card.accessor,
-        // owner: card.parent?.accessor,
-        // realSource: undefined,
       }, this)
     ];
     this._consequences= [
@@ -436,9 +427,6 @@ export class ConditionalEffectC {
       type: 'other-effect',
       otherEffect: "grant-persona",
       id: card.system.shadowId,
-      // source: card.accessor,
-      // owner: card.parent?.accessor,
-      // realSource: undefined,
       applyTo: "user",
     } satisfies ConditionalEffect["consequences"][number], this)
     ];
@@ -453,31 +441,11 @@ export class ConditionalEffectC {
       })
       .filter (x => x != null);
 
-    // return consequences
-    //   .reduce( (acc,cons)=> {
-    //     if ("modifiedFields" in cons
-    //       && targetMods
-    //       .some( f => cons.modifiedFields[f] == true)
-    //     ) {
-    //       const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
-    //       acc.push(sourced);
-    //       return acc;
-    //     }
-    //     if ("modifiedField" in cons && cons.modifiedField && targetMods.includes(cons.modifiedField)) {
-    //       const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
-    //       acc.push(sourced);
-    //       return acc;
-    //     }
-    //     return acc;
-    //   }, [] as (number |Sourced<ConsequenceAmountV2>)[]);
   }
 
 }
 
 type CondEffectObject = ConditionalEffect;
-
-// export type ConditonalEffectHolderItem = ModifierContainer & (PersonaItem | PersonaAE) & Partial<{isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]}> ;
-
 
 export type ConditonalEffectHolderItem = ModifierContainer & CEItemData;
 
@@ -494,4 +462,5 @@ export type EffectOwnershipData = {
   creationId: number;
   _id: number;
 };
+
 

@@ -57,12 +57,12 @@ export class ActorVoiceLines {
   private async playVoice(trigger: keyof typeof GENERAL_COMBATANT_VOICE_TRIGGERS, options : VoiceLineOptions =  {}) : Promise<boolean> {
     try {
       if (this.nowPlaying) {return false;}
+      if (!PersonaSettings.get("navigatorVoiceLines")) {
+        return false;
+      }
       if (options.percent && options.percent > 0) {
         const change = Math.random() < options.percent;
         if (!change) {return false;}
-      }
-      if (!PersonaSettings.get("navigatorVoiceLines")) {
-        return false;
       }
       let lines = this.voiceLines
         .filter ( ln => ln.trigger == trigger);
@@ -87,7 +87,6 @@ export class ActorVoiceLines {
       if (line.fileName == undefined) {
         PersonaError.softFail(`Undefined voiceline for navigator voice: ${trigger}`);
         return false;
-
       }
       await this._playVoice(line.fileName, options.selfOnly);
       return true;
@@ -101,6 +100,7 @@ export class ActorVoiceLines {
 
   private async _playVoice(fileName: string, selfOnly: boolean = false) : Promise<void> {
     try {
+      if (this.nowPlaying) {return;}
       this.nowPlaying = true;
       await ActorVoiceLines.playVoice(fileName, selfOnly);
     } catch (e) {

@@ -14,8 +14,7 @@ import { PersonaActor } from "./actor/persona-actor.js";
 import { HTMLTools } from "./utility/HTMLTools.js";
 import {ENCOUNTER_RATE_PROBABILITY, ProbabilityRate} from "../config/probability.js";
 import {RandomEncounter} from "./exploration/random-encounters.js";
-import {ConditionalEffectManager} from "./conditionalEffects/conditional-effect-manager.js";
-import {testPreconditions} from "./conditionalEffects/preconditions.js";
+import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.js";
 
 export class PersonaScene extends Scene {
 	static ENCOUNTER_DATA_FLAG_NAME = "encounterData" as const;
@@ -124,14 +123,16 @@ export class PersonaScene extends Scene {
           user: shadow.accessor,
           target: shadow.accessor,
         };
-        const sourced = ConditionalEffectManager.getConditionals(shadow.system.encounter.conditions, null, shadow, null);
-        return testPreconditions(sourced, situation, {
-          source: undefined,
-          realSource: undefined,
-          owner: shadow.accessor,
-          "_id": -1,
-          "creationId": -1,
-        });
+        const cond = ConditionalEffectC.createPreconditionOnly(shadow.system.encounter.conditions);
+        return cond.testPreconditions(situation);
+        // const sourced = ConditionalEffectManager.getConditionals(shadow.system.encounter.conditions, null, shadow, null);
+        // return testPreconditions(sourced, situation, {
+        //   source: undefined,
+        //   realSource: undefined,
+        //   owner: shadow.accessor,
+        //   "_id": -1,
+        //   "creationId": -1,
+        // });
       });
     if (!PersonaCalendar.isStormy()) {
       encounterList = encounterList.filter( shadow => shadow.system.encounter.rareShadow != true);

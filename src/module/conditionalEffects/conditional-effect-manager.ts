@@ -116,17 +116,6 @@ export class ConditionalEffectManager {
   static canModifyStat (effects: readonly ConditionalEffectC[] | ConditionalEffectC, stat: NonDeprecatedModifierTarget): boolean {
     effects = Array.isArray(effects) ? effects : [effects];
     return effects.some( eff=> eff.grantsBonusTypeV1(stat));
-    // return effects.some( eff => eff.consequences.some( c=> {
-    //   if ( "modifiedField" in c ) {
-    //     if (c.modifiedField == stat) {return true;}
-    //   }
-    //   if ( "modifiedFields" in c) {
-    //     if (c.modifiedFields[stat] == true)
-    //     {return true;}
-    //   }
-    //   return false;
-    // })
-    // );
   }
 
   static getAllActiveConsequences(condEffects: readonly ConditionalEffectC[], situation: Situation) {
@@ -405,7 +394,7 @@ export class ConditionalEffectManager {
     return (cond.type == "on-trigger");
   }
 
-  static getConditionals<T extends PersonaActor, I extends ModifierContainer>
+  private static getConditionals<T extends PersonaActor, I extends ModifierContainer>
     (
       condObject: DeepNoArray<ConditionalEffect["conditions"]>,
       sourceItem: I | null,
@@ -424,7 +413,7 @@ export class ConditionalEffectManager {
     if (!condObject) {
       return [];
     }
-    const cached = this.cache.preconditions.get(condObject);
+    const cached = this.cache.preconditions.get(condObject)
     if (cached) {
       ++this.cache.hits;
       return cached;
@@ -551,20 +540,6 @@ export class ConditionalEffectManager {
     const menu = item.sheet.newConditionalMenu
       ? this.generateConditionalMenu(ev, item, item.sheet.newConditionalMenu())
     : [];
-      // .map (menuItem => {
-      //   return {
-      //     ...menuItem,
-      //     action: async () => {
-      //       return {
-      //         const input = menuItem.action(ev);
-      //         const conditions = Array.isArray(input) ? input: [input];
-      //         for (const action of conditions) {
-      //           await this.handler_addPrecondition(ev, item, menuItem.action(ev));
-      //         }
-      //       };
-      //     },
-      //   };
-      // }) : [];
     options.push( ...menu);
     contextMenu.show(ev, options);
   }
@@ -859,23 +834,14 @@ export const CETypes = [
 //@ts-expect-error added to window objects
 window.CEManager = ConditionalEffectManager;
 
-// type ConditonalEffectHolderItem = ModifierContainer & (PersonaItem | PersonaAE) & Partial<{isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]}> ;
-
-// type ConditonalEffectHolderItem = ModifierContainer & CEItemData;
-
-// type CEItemData =
-//   Partial< {
-//     isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]
-//   } > ;
-
 declare global {
 
   interface ConditionalEffect {
     isDefensive: boolean;
     isEmbedded: boolean;
     isAura: boolean;
-    conditions: Precondition[];
-    consequences: Consequence[];
+    conditions: readonly Precondition[];
+    consequences: readonly Consequence[];
   }
 
   interface NonDeprecatedConditionalEffect {
@@ -885,8 +851,6 @@ declare global {
     isEmbedded: boolean;
     isAura: boolean;
   }
-
-  // type SourcedConditionalEffects = SourcedConditionalEffect[];
 
   type SourcedConditionalEffect<T extends TypedConditionalEffect= TypedConditionalEffect> = Sourced<T>;
 

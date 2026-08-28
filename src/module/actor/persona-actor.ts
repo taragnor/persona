@@ -3534,9 +3534,10 @@ async deleteTokenSpend(this: SocialLink, deleteIndex:number) {
   await this.update({"system.tokenSpends":list});
 }
 
-getAvailabilityConditions(this: SocialLink)  : readonly Sourced<NonDeprecatedPrecondition>[] {
-  if (this.isPC()) {return [];}
-  const conds = ConditionalEffectManager.getConditionals(this.system.availabilityConditions, null, null, null);
+getAvailabilityConditions(this: SocialLink) : ConditionalEffectC {
+  if (this.isPC()) {return ConditionalEffectC.EmptyCE;}
+  const conds = ConditionalEffectC.createPreconditionOnly(this.system.availabilityConditions);
+  // const conds = ConditionalEffectManager.getConditionals(this.system.availabilityConditions, null, null, null);
   return conds;
 }
 

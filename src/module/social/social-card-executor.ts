@@ -13,7 +13,6 @@ import { PersonaSocial} from "./persona-social.js";
 import {ItemSelector} from "../../config/consequence-types.js";
 import {DowntimeActionData} from "../actor/actor-social.js";
 import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
-import {testPreconditions} from "../conditionalEffects/preconditions.js";
 import {TriggeredEffect} from "../triggered-effect.js";
 import {sleep} from "../utility/async-wait.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
@@ -302,8 +301,11 @@ export class SocialCardExecutor {
     const tokenSpends = (cardData.card.system.tokenSpends ?? [])
     .concat(cardData.activity != cardData.card ?  cardData.activity.system.tokenSpends ?? [] : [])
     .filter( spend => {
-      const conds = ConditionalEffectManager.getConditionals(spend.conditions, null, null, null);
-      return testPreconditions(conds ?? [], cardData.situation, ConditionalEffectC.NULL_OWNERSHIP);
+      const conds = ConditionalEffectC.createPreconditionOnly(ConditionalEffectManager.ArrayCorrector(spend.conditions));
+      return conds.testPreconditions(cardData.situation);
+
+      // const conds = ConditionalEffectManager.getConditionals(spend.conditions, null, null, null);
+      // return testPreconditions(conds ?? [], cardData.situation, ConditionalEffectC.NULL_OWNERSHIP);
     })
     .map(x=> `spend ${x.amount} progress tokens to ${x.text}.`)
     .map(x=> `<li class="token-spend"> ${x} </li>`);
@@ -386,7 +388,9 @@ export class SocialCardExecutor {
     }
     const preconditionPass =  cardList
       .filter( card => card.system.frequency > 0)
-      .filter( card => testPreconditions(this.cardConditionsToSelect(card), situation, ConditionalEffectC.NULL_OWNERSHIP));
+      .filter( card => this.cardConditionsToSelect(card)
+        .testPreconditions(situation));
+      // .filter( card => testPreconditions(this.cardConditionsToSelect(card), situation, ConditionalEffectC.NULL_OWNERSHIP));
     if (PersonaSettings.debugMode() == true) {
       console.log(`Valid Cards: ${preconditionPass.map(x=> x.name).join(", ")}`);
     }
@@ -424,8 +428,10 @@ export class SocialCardExecutor {
         socialRandom : Math.floor(Math.random() * 20) + 1,
       };
       if (PersonaSocial.cameoDisqualifierStatuses.some( st => cameo.hasStatus(st))) { return false;}
-      const sourcedConditions = ConditionalEffectManager.getConditionals(card.system.cameoConditions, null, null, null);
-      return testPreconditions(sourcedConditions, situation, ConditionalEffectC.NULL_OWNERSHIP);
+      const cameoConditions = ConditionalEffectC.createPreconditionOnly(card.system.cameoConditions, null, null, null);
+      // const sourcedConditions = ConditionalEffectManager.getConditionals(card.system.cameoConditions, null, null, null);
+      // return testPreconditions(sourcedConditions, situation, ConditionalEffectC.NULL_OWNERSHIP);
+      return cameoConditions.testPreconditions(situation);
     };
     const allCameos = PersonaDB.socialLinks().
       filter (link => testCameo(link));
@@ -616,13 +622,17 @@ export class SocialCardExecutor {
     return this.cardData.variables[varId] ?? 0;
   }
 
-  static cardConditionsToSelect( card: SocialCard) : readonly SourcedPrecondition[] {
+  static cardConditionsToSelect( card: SocialCard) : ConditionalEffectC {
     const extraConditionsFromTags =this.extraConditionsFromTags(card);
-    if (extraConditionsFromTags.length == 0) {
-      return ConditionalEffectManager.getConditionals(card.system.conditions, null, null, null);
-    }
-    const conditions =  card.system.conditions.concat(extraConditionsFromTags);
-    return ConditionalEffectManager.getConditionals(conditions, null, null, null);
+    const conditions = extraConditionsFromTags.length == 0
+      ? card.system.conditions
+      : card.system.conditions.concat(extraConditionsFromTags);
+    return ConditionalEffectC.createPreconditionOnly(conditions);
+    // if (extraConditionsFromTags.length == 0) {
+    //   return ConditionalEffectManager.getConditionals(card.system.conditions, null, null, null);
+    // }
+    // const conditions =  card.system.conditions.concat(extraConditionsFromTags);
+    // return ConditionalEffectManager.getConditionals(conditions, null, null, null);
   }
 
   static extraConditionsFromTags( card: SocialCard) : SocialCard['system']['conditions'] {
