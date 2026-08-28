@@ -58,10 +58,8 @@ import {ActorTagManager} from "./actor-tags.js";
 import {ActorSocial} from "./actor-social.js";
 import {MultiTierCache, PermanentCache, TimedCache} from "../utility/cache.js";
 import {ActorVoiceLines} from "./actor-voicelines.js";
-import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
 import {PersonaFoundryUser} from "../persona-foundry-user.js";
 import {CancelTrigger} from "../../cancel-check-effect.js";
-import {NonDeprecatedPrecondition} from "../../config/precondition-types.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -2339,20 +2337,13 @@ isCustomPersona(this: ValidAttackers): boolean {
 
 knowsPowerInnately(this: ValidAttackers, power : Power)  : boolean{
   const powers = this.system.combat.powers;
-  if (powers.includes(power.id)) {
-    return true;
-  }
+  if (powers.includes(power.id)) { return true; }
   if (!this.isShadow()) {
     const sideboard =  this.system.combat.powers_sideboard;
-    if (sideboard.includes(power.id)) {
-      return true;
-    }
+    if (sideboard.includes(power.id)) { return true; }
   }
   const buffer = this.system.combat.learnedPowersBuffer;
-  if (buffer.includes(power.id)) {
-    return true;
-
-  }
+  if (buffer.includes(power.id)) { return true; }
   return false;
 }
 
@@ -2375,7 +2366,6 @@ canEquip(this: PC | NPCAlly, item: Weapon | InvItem) : boolean {
   } satisfies Situation;
   return !CancelTrigger.cancelCheck(situation, this);
 }
-
 
 isUsingMetaPod(this: ValidAttackers): boolean {
   if (this.isShadow()) {return false;}

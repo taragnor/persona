@@ -47,6 +47,10 @@ export abstract class ConditionalEffectComponent {
     };
   }
 
+  errorCheck() : string[] {
+    return [];
+  }
+
   static getParentBySourced(sourced: Sourced<object>) : U<ConditionalEffectC> {
     const id = sourced._id;
     if (id == undefined)  {return undefined;}

@@ -41,6 +41,7 @@
           <i class="fa-solid fa-play"></i>
         </a>
       </span>
+      <input class="level-up" type="hidden" name="system.combat.navigatorVoice.{{i}}.fileName" value="{{vl.fileName}}">
       {{else}}
      <file-picker type="audio" name="{{strcat 'system.combat.navigatorVoice.' i '.fileName'}}" value="{{vl.fileName}}">
       </file-picker>

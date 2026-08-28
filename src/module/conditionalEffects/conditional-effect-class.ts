@@ -450,16 +450,16 @@ export class ConditionalEffectC {
     ];
   }
 
-    // static getModifierAmount(consequences: ConditionalEffectC["consequences"], targetMods: NonDeprecatedModifierTarget[] | NonDeprecatedModifierTarget) : (number | Sourced<ConsequenceAmountV2>)[] {
-    // targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
-    //   return consequences.map( c=> {
-    //     const cons = c instanceof ConsequenceC ? c.toSourced() : c;
-    //     const ret = ConsequenceC.getModifierAmount(cons, targetMods);
-    //     return ret;
-    //   })
-    //   .filter (x => x != null);
-
-  // }
+  errorCheck() : string[] {
+    const errors : string[] = [];
+    errors.push(...this.conditions
+      .flatMap(cond => cond.errorCheck())
+    );
+    errors.push(...this.consequences
+      .flatMap(cons => cons.errorCheck())
+    );
+    return errors;
+  }
 
 }
 

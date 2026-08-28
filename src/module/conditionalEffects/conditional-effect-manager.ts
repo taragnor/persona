@@ -413,7 +413,7 @@ export class ConditionalEffectManager {
     if (!condObject) {
       return [];
     }
-    const cached = this.cache.preconditions.get(condObject)
+    const cached = this.cache.preconditions.get(condObject);
     if (cached) {
       ++this.cache.hits;
       return cached;

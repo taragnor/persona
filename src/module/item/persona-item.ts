@@ -8,7 +8,7 @@ import { Persona } from '../persona-class.js';
 import { POWER_ICONS } from '../../config/icons.js';
 import { RealDamageType } from '../../config/damage-types.js';
 import { PToken, PersonaCombat } from '../combat/persona-combat.js';
-import { ConsequenceAmount, ItemSelector, NonDeprecatedConsequence} from '../../config/consequence-types.js';
+import { ConsequenceAmount, ItemSelector} from '../../config/consequence-types.js';
 import { Trigger } from '../../config/triggers.js';
 import { CombatResult, AttackResult } from '../combat/combat-result.js';
 import { ROLL_TAGS_AND_CARD_TAGS, RollTag } from '../../config/roll-tags.js';
@@ -48,7 +48,6 @@ import {ItemTagManager} from './item-tags.js';
 import {ItemHooks} from './item-hooks.js';
 import {TimedCache} from '../utility/cache.js';
 import {ConditionalEffectManager} from '../conditionalEffects/conditional-effect-manager.js';
-import {multiCheckToArray} from '../conditionalEffects/preconditions.js';
 import {BonusCalculation, ModifierV2Target} from '../bonus-calc.js';
 
 declare global {

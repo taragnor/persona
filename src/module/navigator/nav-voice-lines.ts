@@ -119,7 +119,7 @@ export class NavigatorVoiceLines {
       let lines = navigator.navigatorVoiceLines
         .filter ( ln => ln.trigger == trigger.type);
       if (lines.length == 0) {
-        console.debug(`Navigator has no voice lines for ${trigger.type}`)
+        console.debug(`Navigator has no voice lines for ${trigger.type}`);
         return;
       }
       switch (trigger.type) {

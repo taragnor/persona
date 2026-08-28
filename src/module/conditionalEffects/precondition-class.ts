@@ -40,6 +40,10 @@ export class PreconditionC<C extends NonDeprecatedPrecondition = NonDeprecatedPr
     return sourced;
   }
 
+  override errorCheck() : string[]{
+    return super.errorCheck();
+  }
+
 }
 
 const sourceCache = new WeakMap<ConditionalEffectComponent, Sourced<object>> ();

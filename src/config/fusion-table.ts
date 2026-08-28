@@ -1,6 +1,4 @@
-import {ConditionalEffectC, EffectOwnershipData} from "../module/conditionalEffects/conditional-effect-class.js";
-import {ConditionalEffectManager} from "../module/conditionalEffects/conditional-effect-manager.js";
-import {testPreconditions} from "../module/conditionalEffects/preconditions.js";
+import {ConditionalEffectC} from "../module/conditionalEffects/conditional-effect-class.js";
 import {Persona} from "../module/persona-class.js";
 import {PersonaDB} from "../module/persona-db.js";
 import {PersonaError} from "../module/persona-error.js";
