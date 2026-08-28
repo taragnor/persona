@@ -35,7 +35,7 @@ import {PersonaAE} from "../persona-ae.js";
 import {Persona} from "../persona-class.js";
 import {PowerTag} from "../../config/power-tags.js";
 import {checkSituationProp} from "../../config/situation.js";
-import {PreconditionC} from "./consequence-class.js";
+import {PreconditionC} from "./precondition-class.js";
 
 /** @deprecated Use ConditionalEffectC.getActiveConsequences instead */
 export function getActiveConsequences(condEffect: ConditionalEffectC, situation: Situation) : ConditionalEffectC["consequences"] {

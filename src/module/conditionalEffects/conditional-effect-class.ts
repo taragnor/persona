@@ -8,7 +8,8 @@ import {PersonaError} from "../persona-error.js";
 import {MultiTierCache, PermanentCache, TimedCache} from "../utility/cache.js";
 import {CETypes, ConditionalEffectManager} from "./conditional-effect-manager.js";
 import {ConditionalEffectPrinter} from "./conditional-effect-printer.js";
-import {PreconditionC, ConsequenceC} from "./consequence-class.js";
+import { ConsequenceC} from "./consequence-class.js";
+import {PreconditionC} from "./precondition-class.js";
 import {testPrecondition} from "./preconditions.js";
 
 export class ConditionalEffectC {

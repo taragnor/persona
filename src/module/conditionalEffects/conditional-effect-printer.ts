@@ -26,7 +26,8 @@ import {localize} from "../persona.js";
 import {PersonaSocial} from "../social/persona-social.js";
 import {ConditionalEffectC} from "./conditional-effect-class.js";
 import {ConditionalEffectManager} from "./conditional-effect-manager.js";
-import {ConsequenceC, PreconditionC} from "./consequence-class.js";
+import {ConsequenceC} from "./consequence-class.js";
+import {PreconditionC} from "./precondition-class.js";
 import {getSocialLinkTarget, multiCheckToArray} from "./preconditions.js";
 
 export class ConditionalEffectPrinter {
