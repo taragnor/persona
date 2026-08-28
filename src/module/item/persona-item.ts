@@ -975,18 +975,25 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       //   "creationId" : -1,
       // });
     }
+
     const inheritedPrereqs = this._openerElevators(user.persona());
-    for (const CE of inheritedPrereqs) {
-      const elevator = CE.consequences
-        .map( ce=> ce.cons)
-        .find( cons=>
-          cons.type == "trigger-event-cons" && cons.eventMod == "allow-as-opener");
-      if (!elevator) {continue;}
-      if (situation.naturalRoll >= elevator.low && situation.naturalRoll <= elevator.high) {
-        return true;
-      }
-    }
-    return false;
+    return inheritedPrereqs
+      .some( pre=> pre.consequences
+      .some( cons => cons.canElevateToOpener(situation.naturalRoll))
+    );
+
+    // for (const CE of inheritedPrereqs) {
+    //   const elevator = CE.consequences
+      // .map( ce=> ce.cons)
+      // .find( cons=>
+      //   cons.type == "trigger-event-cons" && cons.eventMod == "allow-as-opener");
+
+      // if (!elevator) {continue;}
+      // if (situation.naturalRoll >= elevator.low && situation.naturalRoll <= elevator.high) {
+        // return true;
+      // }
+    // }
+    // return false;
   }
 
   testTeamworkPrereqs (this: UsableAndCard, situation: Situation, user: PersonaActor) : boolean {
@@ -1020,9 +1027,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       };
     }
     const powers = eff.getActiveConsequences(situation)
-      .flatMap(cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == 'add-power-to-list' ? [cons.cons.id] : [])
-      .map(id=> PersonaDB.allPowers().get(id))
-      .filter (pwr=> pwr != undefined);
+    .map ( cons => cons.grantedPower)
+    .filter ( cons => cons != undefined);
+      // .flatMap(cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == 'add-power-to-list' ? [cons.cons.id] : [])
+      // .map(id=> PersonaDB.allPowers().get(id))
+      // .filter (pwr=> pwr != undefined);
     return removeDuplicates(powers);
   }
 
@@ -1034,33 +1043,35 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       };
     }
     const talents= this.getPassiveEffects(user)
-      .filter(
-        eff => eff.consequences.some(
-          cons => cons.cons.type == "other-effect" &&
-          cons.cons.otherEffect == 'add-talent-to-list'
-        ))
+    // .filter(
+    //   eff => eff.consequences.some(
+    //     cons => cons.cons.type == "other-effect" &&
+    //     cons.cons.otherEffect == 'add-talent-to-list'
+    //   ))
       .flatMap(eff=> eff.getActiveConsequences(situation))
-      .flatMap(x=>  x.cons.type == "other-effect"
-        && x.cons.otherEffect == 'add-talent-to-list' ? [x.cons.id] : [])
-      .map(id=> PersonaDB.allTalents().find(x=> x.id == id))
-      .flatMap( tal=> tal? [tal]: []);
+      .map(cons => cons.grantedTalent)
+      .filter( talent=> talent != undefined);
+    // .flatMap(x=>  x.cons.type == "other-effect"
+    //   && x.cons.otherEffect == 'add-talent-to-list' ? [x.cons.id] : [])
+    // .map(id=> PersonaDB.allTalents().find(x=> x.id == id))
+    // .flatMap( tal=> tal? [tal]: []);
     return removeDuplicates(talents);
   }
 
-  static getGrantedTalents(sourcedEffect: ConditionalEffectC, user: ValidAttackers, situation ?: Situation) : Talent[] {
-    if (!situation) {
-      situation = {
-        user: user.accessor
-      };
-    }
-    const cons =
-      sourcedEffect.getActiveConsequences(situation);
-    return cons
-      .map( x=>x.cons)
-      .filter (x=> x.type == "other-effect" && x.otherEffect == "add-talent-to-list")
-      .map(cons=> PersonaDB.allTalents().find(x=> x.id == cons.id))
-      .filter ( x=> x!= undefined);
-  }
+  // static getGrantedTalents(sourcedEffect: ConditionalEffectC, user: ValidAttackers, situation ?: Situation) : Talent[] {
+  //   if (!situation) {
+  //     situation = {
+  //       user: user.accessor
+  //     };
+  //   }
+  //   const cons =
+  //     sourcedEffect.getActiveConsequences(situation);
+  //   return cons
+  //     .map( x=>x.cons)
+  //     .filter (x=> x.type == "other-effect" && x.otherEffect == "add-talent-to-list")
+  //     .map(cons=> PersonaDB.allTalents().find(x=> x.id == cons.id))
+  //     .filter ( x=> x!= undefined);
+  // }
 
   modifiedHpCost(this: Usable, persona: Persona, sit ?: Situation) : number {
     const situation = sit ? sit :  {
@@ -1387,31 +1398,33 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   getModifier(this: ItemModifierContainer, bonusTypes : NonDeprecatedModifierTarget[] | NonDeprecatedModifierTarget, sourceActor: PersonaActor | null) : ModifierListItem[] {
-    PersonaItem.cacheStats.modifierRead++;
-    if (this.cache.containsModifier === false) {
-      PersonaItem.cacheStats.modifierSkip++;
-      return [];
-    }
-    bonusTypes = Array.isArray(bonusTypes) ? bonusTypes : [bonusTypes];
-    let found = false;
-    for (const modifier of bonusTypes) {
-      let hasBonus = this.cache.statsModified.get(modifier);
-      if (hasBonus === undefined) {
-        hasBonus = ConditionalEffectManager.canModifyStat(this.getPassiveAndDefensiveEffects(sourceActor), modifier);
-        this.cache.statsModified.set(modifier, hasBonus);
-      }
-      if (hasBonus === true) {
-        found = true;
-      }
-    }
-    if (!found) {
-      PersonaItem.cacheStats.modifierSkip++;
-      return [];
-    }
+    // PersonaItem.cacheStats.modifierRead++;
+    // if (this.cache.containsModifier === false) {
+    //   PersonaItem.cacheStats.modifierSkip++;
+    //   return [];
+    // }
+    // bonusTypes = Array.isArray(bonusTypes) ? bonusTypes : [bonusTypes];
+    // let found = false;
+    // for (const modifier of bonusTypes) {
+    //   let hasBonus = this.cache.statsModified.get(modifier);
+    //   if (hasBonus === undefined) {
+    //     hasBonus = ConditionalEffectManager.canModifyStat(this.getPassiveAndDefensiveEffects(sourceActor), modifier);
+    //     this.cache.statsModified.set(modifier, hasBonus);
+    //   }
+    //   if (hasBonus === true) {
+    //     found = true;
+    //   }
+    // }
+    // if (!found) {
+    //   PersonaItem.cacheStats.modifierSkip++;
+    //   return [];
+    // }
+    // const filteredEffects = this.getEffects(sourceActor)
+    //   .filter( eff => eff.consequences.some( cons => 'modifiedFields' in cons || 'modifiedField' in cons))
+    // ;
+    // this.cache.containsModifier = filteredEffects.length > 0;
     const filteredEffects = this.getEffects(sourceActor)
-      .filter( eff => eff.consequences.some( cons => 'modifiedFields' in cons || 'modifiedField' in cons))
-    ;
-    this.cache.containsModifier = filteredEffects.length > 0;
+    .filter (ce => ce.grantsBonusTypeV1(bonusTypes));
     return filteredEffects
       .map(x => {
         const realSource = x.realSource ? PersonaDB.find(x.realSource) : undefined;
@@ -1434,24 +1447,28 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   getConferredTags(this: ItemModifierContainer, actor: ValidAttackers) : CreatureTag[] {
-    if (this.cache.containsTagAdd === false) {
-      return [];
-    }
+    // if (this.cache.containsTagAdd === false) {
+    //   return [];
+    // }
     const effects = this.getEffects(actor);
-    if (!effects.some( e => e.consequences
-      .some( cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == 'add-creature-tag'))) {
-      this.cache.containsTagAdd = false;
-      return [];
-    }
+    // if (!effects.some( e => e.consequences
+    //   .some( cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == 'add-creature-tag'))) {
+    //   this.cache.containsTagAdd = false;
+    //   return [];
+    // }
     const situation = {
       user: actor.accessor,
     };
-    const cons : (NonDeprecatedConsequence & {type : 'other-effect', otherEffect: 'add-creature-tag'})[] = ConditionalEffectManager.getAllActiveConsequences(effects, situation)
-      .map( c=> c.cons)
-      .filter( c=> c.type == "other-effect" && c.otherEffect == 'add-creature-tag') ;
+    const cons = ConditionalEffectManager.getAllActiveConsequences(effects, situation);
     return cons
-      .map( c => c.creatureTag)
-      .map( t => PersonaItem.resolveTag(t));
+      .map(c => c.addedCreatureTags)
+      .filter (t=> t != undefined);
+    // const cons : (NonDeprecatedConsequence & {type : 'other-effect', otherEffect: 'add-creature-tag'})[] = ConditionalEffectManager.getAllActiveConsequences(effects, situation);
+    // .map( c=> c.cons)
+    // .filter( c=> c.type == "other-effect" && c.otherEffect == 'add-creature-tag') ;
+    // return cons
+    // .map( c => c.creatureTag)
+    // .map( t => PersonaItem.resolveTag(t));
   }
 
   getBaseDamageType (this: Usable | Weapon) : DamageType {
@@ -2653,8 +2670,8 @@ canDealDamage(this: Usable) :  boolean {
   if (this.isPower() && this.system.damageLevel == "none") {return false;}
   return this.getOnUseEffects(null)
     .some( eff => eff.consequences
-      .some( cons => cons.cons.type == "combat-effect" && cons.cons.combatEffect == "damage" || cons.cons.type.includes("dmg")
-      )
+      .some( cons => cons.canDealDamage())
+      // .some( cons => cons.cons.type == "combat-effect" && cons.cons.combatEffect == "damage" || cons.cons.type.includes("dmg"))
     );
 }
 
@@ -2830,14 +2847,19 @@ isDamagePower(this: Usable): boolean {
 
 statusesAdded(this: Usable, deepTagList = true): {status: StatusEffectId, potency: number}[] {
   const options : GetEffectsOptions = {deepTags: deepTagList};
-  const effects= this.getEffects(null, options).flatMap( (eff) => eff.consequences.flatMap( cons =>
-    cons.cons.type == "combat-effect" && cons.cons.combatEffect == 'addStatus'? [{status: cons.cons.statusName, potency: cons.cons.potency ?? 1}] : []));
+  const effects= this.getEffects(null, options).flatMap( (eff) => eff.consequences
+    .map( cons => cons.statusesAdded())
+    .filter (cons => cons != undefined)
+  );
+    // cons.cons.type == "combat-effect" && cons.cons.combatEffect == 'addStatus'? [{status: cons.cons.statusName, potency: cons.cons.potency ?? 1}] : []));
   return effects;
 }
 
 statusesRemoved(this: Usable): StatusEffectId[] {
-  const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences.flatMap( cons =>
-    cons.cons.type == "combat-effect" && cons.cons.combatEffect == 'removeStatus'? multiCheckToArray(cons.cons.statusName) : []));
+  const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences
+    .flatMap( cons => cons.statusesRemoved())
+  );
+    // cons.cons.type == "combat-effect" && cons.cons.combatEffect == 'removeStatus'? multiCheckToArray(cons.cons.statusName) : []));
   return statusesRemoved;
 }
 

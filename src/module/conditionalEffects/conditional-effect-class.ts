@@ -105,6 +105,16 @@ export class ConditionalEffectC {
     }, new Set());
   }
 
+  getGrantedTalents(situationOrUser:  SituationComponent.User | ValidAttackers) : Talent[] {
+    const situation = (situationOrUser instanceof Actor)
+    ?{ user: situationOrUser.accessor } : situationOrUser;
+
+    const cons = this.getActiveConsequences(situation);
+    return cons
+      .map( c=> c.grantedTalent)
+      .filter( t=> t != undefined);
+  }
+
   static getCreationId() {
     return this._lastCreationId++;
   }
@@ -207,8 +217,11 @@ export class ConditionalEffectC {
     return this._ownershipData;
   }
 
-  grantsBonusTypeV1(btype: NonDeprecatedModifierTarget) : boolean {
-    return this._grantedBonuses.has(btype);
+  grantsBonusTypeV1(btype: MaybeArray<NonDeprecatedModifierTarget>) : boolean {
+    if (typeof btype == "string") {
+      return this._grantedBonuses.has(btype);
+    }
+    return btype.some( b=> this._grantedBonuses.has(b));
   }
 
   grantsBonusTypeV2(btype: ModifierV2Target) {
@@ -221,6 +234,7 @@ export class ConditionalEffectC {
         && cons.cons.modTarget== btype
       );
   }
+
 
   private _conditionsRaw(): ConditionalEffect["conditions"] {
     // return this.conditions.slice();
@@ -335,7 +349,12 @@ export class ConditionalEffectC {
   }
 
   getModifierAmount(targetMods: NonDeprecatedModifierTarget[] | NonDeprecatedModifierTarget) : (number | Sourced<ConsequenceAmountV2>)[] {
-    return ConditionalEffectC.getModifierAmount(this.consequences, targetMods);
+    targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
+    return this.consequences.map( c=> {
+      const ret = c.getModifierAmount(targetMods);
+      return ret;
+    })
+      .filter (x => x != null);
   }
 
   #determineConditionalType (ce: CondEffectObject, _conditions: ConditionalEffectC["conditions"], _consequences : ConditionalEffectC["consequences"], sourceItem: N<ConditonalEffectHolderItem> ) : this["conditionalType"] {
@@ -431,16 +450,16 @@ export class ConditionalEffectC {
     ];
   }
 
-    static getModifierAmount(consequences: ConditionalEffectC["consequences"], targetMods: NonDeprecatedModifierTarget[] | NonDeprecatedModifierTarget) : (number | Sourced<ConsequenceAmountV2>)[] {
-    targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
-      return consequences.map( c=> {
-        const cons = c instanceof ConsequenceC ? c.toSourced() : c;
-        const ret = ConsequenceC.getModifierAmount(cons, targetMods);
-        return ret;
-      })
-      .filter (x => x != null);
+    // static getModifierAmount(consequences: ConditionalEffectC["consequences"], targetMods: NonDeprecatedModifierTarget[] | NonDeprecatedModifierTarget) : (number | Sourced<ConsequenceAmountV2>)[] {
+    // targetMods = Array.isArray(targetMods) ? targetMods : [targetMods];
+    //   return consequences.map( c=> {
+    //     const cons = c instanceof ConsequenceC ? c.toSourced() : c;
+    //     const ret = ConsequenceC.getModifierAmount(cons, targetMods);
+    //     return ret;
+    //   })
+    //   .filter (x => x != null);
 
-  }
+  // }
 
 }
 

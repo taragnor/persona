@@ -55,7 +55,7 @@ export class TriggeredEffect {
     });
   }
 
-  static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Situation) :  ConditionalEffectC[] {
+  static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: SituationTypes.TriggerSituation) :  ConditionalEffectC[] {
     const triggers : ConditionalEffectC[] = PersonaDB.getGlobalModifiers().flatMap( x=> x
       .getTriggeredEffects(null, {triggerType: trigger})
     );
@@ -67,6 +67,12 @@ export class TriggeredEffect {
       const user = situation.user ? PersonaDB.findActor(situation.user) : null;
       const PowerTriggers = power.getTriggeredEffects(user, {triggerType: trigger});
       triggers.push(...PowerTriggers);
+    }
+    if (checkSituationProp(situation, "item")) {
+      const item = PersonaDB.findItem(situation.item);
+      const user = situation.user ? PersonaDB.findActor(situation.user) : null;
+      const itemTriggers= item.getTriggeredEffects(user, {triggerType: trigger});
+      triggers.push(...itemTriggers);
     }
     if (!actor) {
       const rm = Metaverse.activeRoomModifiers()

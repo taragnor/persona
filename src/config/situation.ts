@@ -216,6 +216,7 @@ type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
   ;
 
   type EquipCheck = SituationComponent.Item &
+    SituationComponent.User &
     SituationComponent.TriggeringCharacter &
     {
     trigger: "on-equip-check",

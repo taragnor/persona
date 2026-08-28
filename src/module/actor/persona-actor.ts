@@ -2374,9 +2374,6 @@ canEquip(this: PC | NPCAlly, item: Weapon | InvItem) : boolean {
     triggeringCharacter: this.accessor,
   } satisfies Situation;
   return !CancelTrigger.cancelCheck(situation, this);
-  // const triggers = item.getTriggeredEffects(this, {triggerType: situation.trigger});
-  // return triggers
-  //   .every( trig => !trig.checkForCancelEffect(situation));
 }
 
 

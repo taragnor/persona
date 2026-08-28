@@ -44,7 +44,7 @@ export class CancelTrigger {
     return failedCond;
   }
 
-  static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: Situation) :  ConditionalEffectC[] {
+  static getTriggerList(trigger : Trigger, actor : U<PersonaActor>, situation: SituationTypes.TriggerSituation) :  ConditionalEffectC[] {
     return TriggeredEffect.getTriggerList(trigger, actor, situation);
   }
 
