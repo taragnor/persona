@@ -20,7 +20,6 @@ import {ResolvedRollBundle} from "../roll-bundle.js";
 import {getSocialLinkTarget, getSourceDType, multiCheckToArray} from "../conditionalEffects/preconditions.js";
 import {checkSituationProp} from "../../config/situation.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
-import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
 import {ConsequenceC} from "../conditionalEffects/consequence-class.js";
 
 declare global {
@@ -353,43 +352,46 @@ export class CombatResult  {
         break;
       case "set-flag": {
         if (!effect || !target || target == "global" || !target.isValidCombatant()) {break;}
-        try {
-          if (cons.flagState) {
-            const duration = convertConsToStatusDuration(cons, target, situation);
-            if (cons.applyEmbedded) {
-              const parent = ConsequenceC.getParentById(cons._id);
-              if (!parent) {
-                PersonaError.softFail("Can't find parent of consequence to get embedded effects");
-                Debug(cons);
-                break;
-              }
-              const embeddedEffects = ConsequenceC.getParentById(cons._id)?.getEmbeddedEffects() ?? [];
-              const mapped = embeddedEffects.map (x=> x.toJSON());
-              effect.otherEffects.push( {
-                ...cons,
-                embeddedEffects: mapped,
-                // embeddedEffects.map(x=> x.toJSON()),
-                duration,
-              });
-              console.log(`${embeddedEffects.length} Embedded Pushed`);
-              break;
-            }
-            // const embeddedEffects = cons.applyEmbedded ? ConditionalEffectC.getParent(cons)?.getEmbeddedEffects() ?? []: [];
-            effect.otherEffects.push( {
-              ...cons,
-              embeddedEffects: [],
-              duration,
-            });
-          } else {
-            effect.otherEffects.push( {
-              ...cons,
-              embeddedEffects: [],
-            });
-          }
-        } catch (e) {
-          PersonaError.softFail(`Problem converting set Flag duration: ${cons?.flagId ?? "unknown Flag Id" }`, e);
-        }
+        this.addEffect_setFlag(cons,effect, target, situation );
         break;
+        // if (!effect || !target || target == "global" || !target.isValidCombatant()) {break;}
+        // try {
+        //   if (cons.flagState) {
+        //     const duration = convertConsToStatusDuration(cons, target, situation);
+        //     if (cons.applyEmbedded) {
+        //       const parent = ConsequenceC.getParentById(cons._id);
+        //       if (!parent) {
+        //         PersonaError.softFail("Can't find parent of consequence to get embedded effects");
+        //         Debug(cons);
+        //         break;
+        //       }
+        //       const embeddedEffects = ConsequenceC.getParentById(cons._id)?.getEmbeddedEffects() ?? [];
+        //       const mapped = embeddedEffects.map (x=> x.toJSON());
+        //       effect.otherEffects.push( {
+        //         ...cons,
+        //         embeddedEffects: mapped,
+        //         // embeddedEffects.map(x=> x.toJSON()),
+        //         duration,
+        //       });
+        //       console.log(`${embeddedEffects.length} Embedded Pushed`);
+        //       break;
+        //     }
+        //     // const embeddedEffects = cons.applyEmbedded ? ConditionalEffectC.getParent(cons)?.getEmbeddedEffects() ?? []: [];
+        //     effect.otherEffects.push( {
+        //       ...cons,
+        //       embeddedEffects: [],
+        //       duration,
+        //     });
+        //   } else {
+        //     effect.otherEffects.push( {
+        //       ...cons,
+        //       embeddedEffects: [],
+        //     });
+        //   }
+        // } catch (e) {
+        //   PersonaError.softFail(`Problem converting set Flag duration: ${cons?.flagId ?? "unknown Flag Id" }`, e);
+        // }
+        // break;
       }
       case "inspiration-cost": {
         if (!effect) {break;}
@@ -551,6 +553,47 @@ export class CombatResult  {
     }
     const effects = this.attacks.get(atkResult)!;
     CombatResult.mergeChanges(effects, [effect]);
+  }
+
+  private addEffect_setFlag( cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "set-flag"}, effect: ActorChange<ValidAttackers>, target: ValidAttackers, situation: Readonly<Situation>) {
+    try {
+      if (cons.flagState) {
+        const duration = convertConsToStatusDuration(cons, target, situation);
+        if (cons.applyEmbedded) {
+          const parent = ConsequenceC.getParentBySourced(cons);
+          if (!parent) {
+            PersonaError.softFail("Can't find parent of consequence to get embedded effects");
+            Debug(cons);
+            return;
+          }
+          const embeddedEffects = parent.getEmbeddedEffects() ?? [];
+          const mapped = embeddedEffects.map (x=> x.toJSON());
+          effect.otherEffects.push( {
+            ...cons,
+            embeddedEffects: mapped,
+            duration,
+          });
+          if (embeddedEffects.length ==0) {
+            PersonaError.softFail("Couldn't find any valid embedded effects");
+          } else {
+            console.log(`${embeddedEffects.length} Embedded Pushed`);
+          }
+          return;
+        }
+        effect.otherEffects.push( {
+          ...cons,
+          embeddedEffects: [],
+          duration,
+        });
+      } else {
+        effect.otherEffects.push( {
+          ...cons,
+          embeddedEffects: [],
+        });
+      }
+    } catch (e) {
+      PersonaError.softFail(`Problem converting set Flag duration: ${cons?.flagId ?? "unknown Flag Id" }`, e);
+    }
   }
 
   private addEffect_sfx( cons: Readonly<ConsequenceProcessed["consequences"][number]["cons"]> & {type: "sfx"}, effect: U<ActorChange<ValidAttackers>>, _situation: Readonly<Situation>) {

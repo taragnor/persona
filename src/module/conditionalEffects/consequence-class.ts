@@ -5,6 +5,7 @@ import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaItem} from "../item/persona-item.js";
 import {ConsequenceConverter} from "../migration/convertConsequence.js";
 import {PreconditionConverter} from "../migration/convertPrecondition.js";
+import {PersonaError} from "../persona-error.js";
 import {ConditionalEffectC, EffectOwnershipData} from "./conditional-effect-class.js";
 import {ConditionalEffectManager} from "./conditional-effect-manager.js";
 import {ConsequenceAmountResolver} from "./consequence-amount.js";
@@ -13,10 +14,12 @@ abstract class ConditionalEffectComponent {
   private static lastCreationId = 1;
   private static parentsCreationId = new Map<number, WeakRef<ConditionalEffectC>>();
   protected _creationId: number;
+  protected _parentId: number;
 
   constructor (parent: ConditionalEffectC) {
     this._creationId = ConditionalEffectComponent.generateCreationId();
-    ConditionalEffectComponent.parentsCreationId.set(this._creationId, new WeakRef(parent));
+    this._parentId = parent.ownershipInfo.creationId;
+    ConditionalEffectComponent.parentsCreationId.set(this._parentId, new WeakRef(parent));
   }
 
   static generateCreationId(): number {
@@ -24,8 +27,9 @@ abstract class ConditionalEffectComponent {
   }
 
   get parent(): U<ConditionalEffectC> {
-    return ConditionalEffectComponent.parentsCreationId.get(this._creationId)?.deref();
+    return ConditionalEffectComponent.parentsCreationId.get(this._parentId)?.deref();
   }
+
 
   get owner():  U<UniversalActorAccessor<PersonaActor>> {
     return this.parent?.owner;
@@ -52,7 +56,8 @@ abstract class ConditionalEffectComponent {
     };
   }
 
-  static getParentById(id: U<number>) : U<ConditionalEffectC> {
+  static getParentBySourced(sourced: Sourced<object>) : U<ConditionalEffectC> {
+    const id = sourced._id;
     if (id == undefined)  {return undefined;}
     return this.parentsCreationId.get(id)?.deref();
   }
@@ -107,11 +112,20 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
     const obj = sourceCache.get(this);
     if (obj) {return obj as Sourced<C>;}
     const parent = this.parent;
+    if (!parent) {
+      PersonaError.softFail("Can't find parent for CE");
+      Debug(this);
+      return {
+        ...this.cons,
+        ...ConditionalEffectC.NULL_OWNERSHIP,
+      };
+    }
     const sourced =  {
       ...this.cons,
-      source: parent?.source,
-      realSource: parent?.realSource,
-      owner: parent?.owner,
+      ...parent.ownershipInfo
+      // source: parent?.source,
+      // realSource: parent?.realSource,
+      // owner: parent?.owner,
     };
     sourceCache.set(this, sourced);
     return sourced;

@@ -21,8 +21,6 @@ export class ConditionalEffectC {
 
   private _preconditions : readonly PreconditionC[];
   private _consequences: readonly ConsequenceC[];
-  // private _preconditions : readonly SourcedPrecondition<NonDeprecatedPrecondition<Precondition>>[];
-  // private _consequences: readonly SourcedConsequence<NonDeprecatedConsequence>[];
   private _isEmbedded : boolean;
   private _original : CondEffectObject | CardItem;
   private _conditionalType: typeof CETypes[number];
@@ -114,7 +112,7 @@ export class ConditionalEffectC {
     const arr = ceArr
       .map( x=> new ConditionalEffectC(x, sourceItem, sourceActor, realSource) );
     arr.forEach(x=> ConditionalEffectC.batchConverted.add(x));
-    if (arr.some(x=> x._isEmbedded)) {
+    if (arr.some(ce=> ce._isEmbedded)) {
       const embedded = arr.filter(x=> x._isEmbedded);
       arr.forEach(ce => ce._embeddedEffects = !ce._isEmbedded ? embedded : []);
     }
