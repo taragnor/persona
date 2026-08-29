@@ -978,19 +978,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const inheritedPrereqs = this._openerElevators(user.persona());
     return inheritedPrereqs
       .some( pre=> pre.consequences
-      .some( cons => cons.canElevateToOpener(situation.naturalRoll))
-    );
+        .some( cons => cons.canElevateToOpener(situation.naturalRoll))
+      );
 
     // for (const CE of inheritedPrereqs) {
     //   const elevator = CE.consequences
-      // .map( ce=> ce.cons)
-      // .find( cons=>
-      //   cons.type == "trigger-event-cons" && cons.eventMod == "allow-as-opener");
+    // .map( ce=> ce.cons)
+    // .find( cons=>
+    //   cons.type == "trigger-event-cons" && cons.eventMod == "allow-as-opener");
 
-      // if (!elevator) {continue;}
-      // if (situation.naturalRoll >= elevator.low && situation.naturalRoll <= elevator.high) {
-        // return true;
-      // }
+    // if (!elevator) {continue;}
+    // if (situation.naturalRoll >= elevator.low && situation.naturalRoll <= elevator.high) {
+    // return true;
+    // }
     // }
     // return false;
   }
@@ -1026,11 +1026,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       };
     }
     const powers = eff.getActiveConsequences(situation)
-    .map ( cons => cons.grantedPower)
-    .filter ( cons => cons != undefined);
-      // .flatMap(cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == 'add-power-to-list' ? [cons.cons.id] : [])
-      // .map(id=> PersonaDB.allPowers().get(id))
-      // .filter (pwr=> pwr != undefined);
+      .map ( cons => cons.grantedPower)
+      .filter ( cons => cons != undefined);
+    // .flatMap(cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == 'add-power-to-list' ? [cons.cons.id] : [])
+    // .map(id=> PersonaDB.allPowers().get(id))
+    // .filter (pwr=> pwr != undefined);
     return removeDuplicates(powers);
   }
 
@@ -1423,7 +1423,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     // ;
     // this.cache.containsModifier = filteredEffects.length > 0;
     const filteredEffects = this.getEffects(sourceActor)
-    .filter (ce => ce.grantsBonusTypeV1(bonusTypes));
+      .filter (ce => ce.grantsBonusTypeV1(bonusTypes));
     return filteredEffects
       .map(x => {
         const realSource = x.realSource ? PersonaDB.find(x.realSource) : undefined;
@@ -2064,20 +2064,20 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return false;
   }
 
-  isCraftingMaterial(): boolean {
-    return this.cache2.isCraftingMaterial.value;
-  }
+isCraftingMaterial(): boolean {
+  return this.cache2.isCraftingMaterial.value;
+}
 
-  private _isCraftingMaterial(): boolean {
-    if (!this.isCarryableType()) {return false;}
-    if (this.isInvItem()) {
-      return this.system.slot == "crafting";
-    }
-    if (this.isConsumable()) {
-      return this.hasTag(["crafting", "secondary-crafting"], null);
-    }
-    return false;
+private _isCraftingMaterial(): boolean {
+  if (!this.isCarryableType()) {return false;}
+  if (this.isInvItem()) {
+    return this.system.slot == "crafting";
   }
+  if (this.isConsumable()) {
+    return this.hasTag(["crafting", "secondary-crafting"], null);
+  }
+  return false;
+}
 
 equals(other: PersonaItem) : boolean {
   return this == other;
@@ -2850,7 +2850,7 @@ statusesAdded(this: Usable, deepTagList = true): {status: StatusEffectId, potenc
     .map( cons => cons.statusesAdded())
     .filter (cons => cons != undefined)
   );
-    // cons.cons.type == "combat-effect" && cons.cons.combatEffect == 'addStatus'? [{status: cons.cons.statusName, potency: cons.cons.potency ?? 1}] : []));
+  // cons.cons.type == "combat-effect" && cons.cons.combatEffect == 'addStatus'? [{status: cons.cons.statusName, potency: cons.cons.potency ?? 1}] : []));
   return effects;
 }
 
@@ -2858,7 +2858,7 @@ statusesRemoved(this: Usable): StatusEffectId[] {
   const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences
     .flatMap( cons => cons.statusesRemoved())
   );
-    // cons.cons.type == "combat-effect" && cons.cons.combatEffect == 'removeStatus'? multiCheckToArray(cons.cons.statusName) : []));
+  // cons.cons.type == "combat-effect" && cons.cons.combatEffect == 'removeStatus'? multiCheckToArray(cons.cons.statusName) : []));
   return statusesRemoved;
 }
 

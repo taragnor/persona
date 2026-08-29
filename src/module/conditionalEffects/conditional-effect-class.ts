@@ -1,5 +1,6 @@
 import { Consequence, ConsequenceAmountV2 } from "../../config/consequence-types.js";
 import {NonDeprecatedModifierTarget, NonDeprecatedModifierType} from "../../config/item-modifiers.js";
+import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {ModifierV2Target} from "../bonus-calc.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
@@ -33,7 +34,12 @@ export class ConditionalEffectC {
 
   private _ownershipData: EffectOwnershipData;
 
-  static EmptyCE = this.createConsequenceOnly([], null, null, null);
+  static _emptyCE: U<ConditionalEffectC>;
+
+  static get EmptyCE() : ConditionalEffectC {
+    if (this._emptyCE) {return this._emptyCE;}
+    return this._emptyCE = this.createConsequenceOnly([], null, null, null);
+  }
 
 
   static NULL_OWNERSHIP : EffectOwnershipData= {
@@ -68,6 +74,19 @@ export class ConditionalEffectC {
     this._isDefensiveRaw = ce.isDefensive ?? false;
     this._isMainModifier = !this._isEmbedded && !this._isAura;
     this.setGrantedBonuses();
+    if (PersonaSettings.debugMode()) {
+      this._errorCheck();
+    }
+  }
+
+  private _errorCheck() {
+    const errors : string[] = [];
+    errors.push(...this._preconditions.flatMap(x=> x.errorCheck()));
+    errors.push(...this._consequences.flatMap(x=> x.errorCheck()));
+    if (errors.length > 0) {
+      const errorsStr = errors.join("\n");
+      console.warn(`errors detected in ${this.name}: ${errorsStr}`);
+    }
   }
 
   private _buildOwnershipData( sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource : N<ConditonalEffectHolderItem>) {
@@ -90,24 +109,29 @@ export class ConditionalEffectC {
   }
 
 
-  private setGrantedBonuses() {
+  private setGrantedBonuses() : Set<NonDeprecatedModifierType> {
     this._grantedBonuses = this.consequences.reduce<Set<NonDeprecatedModifierType>>( (acc, consC) => {
-      const cons = consC.cons;
-      if ('modifiedFields' in cons) {
-        Object.entries(cons.modifiedFields)
-          .filter( ([_k,v])=> v == true)
-          .forEach ( ([k,_v]) => acc.add(k as NonDeprecatedModifierType));
-      }
-      if ('modifiedField' in cons) {
-        acc.add(cons.modifiedField);
+      for (const element of consC.getGrantedBonuses()) {
+        acc.add(element);
       }
       return acc;
+      // const cons = consC.cons;
+      // if ('modifiedFields' in cons) {
+      //   Object.entries(cons.modifiedFields)
+      //     .filter( ([_k,v])=> v == true)
+      //     .forEach ( ([k,_v]) => acc.add(k as NonDeprecatedModifierType));
+      // }
+      // if ('modifiedField' in cons) {
+      //   acc.add(cons.modifiedField);
+      // }
+      // return acc;
     }, new Set());
+    return this._grantedBonuses;
   }
 
   getGrantedTalents(situationOrUser:  SituationComponent.User | ValidAttackers) : Talent[] {
     const situation = (situationOrUser instanceof Actor)
-    ?{ user: situationOrUser.accessor } : situationOrUser;
+      ?{ user: situationOrUser.accessor } : situationOrUser;
 
     const cons = this.getActiveConsequences(situation);
     return cons
@@ -136,18 +160,18 @@ export class ConditionalEffectC {
     sourceActor: N<PersonaActor> = null,
     realSource : N<ConditonalEffectHolderItem> = null)
     :ConditionalEffectC {
-    const condEffectObject = this.createDummyCondEffectObject(preconditionArr, []);
-    return new ConditionalEffectC(condEffectObject, sourceItem, sourceActor, realSource);
-  }
+      const condEffectObject = this.createDummyCondEffectObject(preconditionArr, []);
+      return new ConditionalEffectC(condEffectObject, sourceItem, sourceActor, realSource);
+    }
 
   static createConsequenceOnly(
     consequenceArr: readonly Consequence[],
     sourceItem: N<ConditonalEffectHolderItem>,
     sourceActor: N<PersonaActor>,
     realSource ?: N<ConditonalEffectHolderItem>)  :ConditionalEffectC {
-    const condEffectObject = this.createDummyCondEffectObject([], consequenceArr);
-    return new ConditionalEffectC(condEffectObject, sourceItem, sourceActor, realSource);
-  }
+      const condEffectObject = this.createDummyCondEffectObject([], consequenceArr);
+      return new ConditionalEffectC(condEffectObject, sourceItem, sourceActor, realSource);
+    }
 
   private static createDummyCondEffectObject(conditions: readonly Precondition[], consequences: readonly Consequence[]): CondEffectObject {
     const condEffectObject = {
@@ -442,11 +466,11 @@ export class ConditionalEffectC {
     ];
     this._consequences= [
       new ConsequenceC( {
-      type: 'other-effect',
-      otherEffect: "grant-persona",
-      id: card.system.shadowId,
-      applyTo: "user",
-    } satisfies ConditionalEffect["consequences"][number], this)
+        type: 'other-effect',
+        otherEffect: "grant-persona",
+        id: card.system.shadowId,
+        applyTo: "user",
+      } satisfies ConditionalEffect["consequences"][number], this)
     ];
   }
 

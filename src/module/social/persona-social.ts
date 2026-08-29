@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
 import { StatusEffectId } from "../../config/status-effects.js";
 import { PersonaSettings } from "../../config/persona-settings.js";
 import { TurnAlert } from "../utility/turnAlert.js";
@@ -217,19 +216,19 @@ export class PersonaSocial {
               if (value) {
                 conf(value);
               } else {
-                reject("Something weird happened");
+                reject(new Error("Something weird happened"));
               }
             }
           },
           two: {
             icon: `<i class="fas fa-times"></i>`,
             label: "Cancel",
-            callback: () => reject("Cancel"),
+            callback: () => reject(new CancelDialogException()),
           }
         },
         default: "one",
         close: () => {
-          reject("close");
+          reject(new CloseDialogException());
         },
       }, {});
       dialog.render(true);
@@ -892,9 +891,11 @@ Hooks.on("updateActor", (_actor: PersonaActor, changes) => {
   }
 });
 
-Hooks.on("updateItem", (_item: PersonaItem, changes) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-  if ((changes as any)?.system?.weeklyAvailability) {
+Hooks.on("updateItem", (_item: PersonaItem, changes : DeepPartial<PersonaItem>) => {
+  const system = changes?.system;
+  if (system
+    && "weeklyAvailability" in system
+    && system?.weeklyAvailability) {
     (game.actors.contents as PersonaActor[])
       .filter(x=> x.isPC()
         && x.sheet._state > 0)
@@ -915,3 +916,11 @@ Hooks.on("renderChatMessageHTML", (message: ChatMessage, htm: HTMLElement ) => {
 export class InitialLinkError extends Error {}
 
 export class LinkNotFoundError extends Error {}
+
+export class CancelDialogException extends Error {
+  constructor() { super("Canceled Dialog"); }
+}
+
+export class CloseDialogException extends Error {
+  constructor() { super("Closed Dialog"); }
+}

@@ -1524,7 +1524,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return Promise.resolve();
   }
 
-    private async _refreshHpStatus(this: ValidAttackers, persona ?: Persona) {
+  private async _refreshHpStatus(this: ValidAttackers, persona ?: Persona) {
     await antiLoop( this, async() => {
       const hp = this.system.combat.hp;
       const mhp = persona ?.mhp ?? this.mhp;
@@ -2078,176 +2078,176 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return recoveryDays;
   }
 
-  hasAlteredFatigueToday(this:PC): boolean {
-    return this.system.fatigue.hasAlteredFatigueToday ?? false;
-  }
+hasAlteredFatigueToday(this:PC): boolean {
+  return this.system.fatigue.hasAlteredFatigueToday ?? false;
+}
 
-  hasMadeFatigueRollToday(this:PC) : boolean {
-    return this.system.fatigue.hasMadeFatigueRollToday ?? false;
-  }
+hasMadeFatigueRollToday(this:PC) : boolean {
+  return this.system.fatigue.hasMadeFatigueRollToday ?? false;
+}
 
-  async setAlteredFatigue(val = true) {
-    await this.update({"system.fatigue.hasAlteredFatigueToday": val});
-  }
+async setAlteredFatigue(val = true) {
+  await this.update({"system.fatigue.hasAlteredFatigueToday": val});
+}
 
-  async setFatigueLevel(lvl: number,log = true) : Promise<FatigueStatusId | undefined> {
-    const oldLvl = this.fatigueLevel;
-    const oldId = fatigueLevelToStatus(oldLvl);
-    const newId = fatigueLevelToStatus(lvl);
-    for (const eff of this.effects.contents) {
-      if (eff.isFatigueStatus) {
-        if (!eff.statuses.has(newId!))
-        {await eff.delete();}
+async setFatigueLevel(lvl: number,log = true) : Promise<FatigueStatusId | undefined> {
+  const oldLvl = this.fatigueLevel;
+  const oldId = fatigueLevelToStatus(oldLvl);
+  const newId = fatigueLevelToStatus(lvl);
+  for (const eff of this.effects.contents) {
+    if (eff.isFatigueStatus) {
+      if (!eff.statuses.has(newId!))
+      {await eff.delete();}
+    }
+  }
+  if (newId) {
+    await this.addStatus( {
+      id: newId,
+      duration: {
+        dtype:"permanent",
+        anchorHolder: undefined,
       }
-    }
-    if (newId) {
-      await this.addStatus( {
-        id: newId,
-        duration: {
-          dtype:"permanent",
-          anchorHolder: undefined,
-        }
-      }, true);
-    }
-    if (lvl < statusToFatigueLevel("exhausted")) {
-      await this.addStatus( {
-        id: "crippled",
-        duration: {
-          dtype:"permanent",
-          anchorHolder: undefined,
-        }
-      }, true);
-    }
-    // const newId = await this.setFatigueLevel(st);
-    if (log && (oldId != newId || lvl < -1)) {
-      const oldName = oldId ? localize(statusMap.get(oldId)!.name as LocalizationString) : "Normal";
-      const newName = newId ? localize(statusMap.get(newId)!.name as LocalizationString): "Normal";
-      const hospital = lvl < statusToFatigueLevel("exhausted") ? `${this.displayedName} is over-fatigued and need to be hospitalized!`: "";
-      await Logger.sendToChat(`${this.displayedName}  fatigue changed from ${oldName} to ${newName}. ${hospital}`);
-    }
-    return newId;
+    }, true);
   }
-
-  /** positive removes fatigue and negative adds it*/
-  async alterFatigueLevel(amt: number, log=true) : Promise<FatigueStatusId | undefined> {
-    if (amt == 0) {return;}
-    const oldLvl = this.fatigueLevel;
-    const newLvl = oldLvl + amt;
-    return await this.setFatigueLevel(newLvl, log);
-  }
-
-  getUnarmedDamageType(): RealDamageType {
-    if (this.isShadow()) {return this.system.combat.baseDamageType ?? "physical";}
-    return "physical";
-  }
-
-  listComplementRatings(this: Shadow, list: Shadow[]) : string[] {
-    return list.map( shadow => {
-      const rating = Math.round(this.complementRating(shadow) * 10) / 10;
-      return {rating, name: shadow.name};
-    })
-      .sort( (a,b) => b.rating - a.rating)
-      .map(x => `${x.name}: ${x.rating}`);
-
-  }
-
-  complementRating (this: Shadow, other: Shadow) : number {
-    return this.cache2.complementRating.get(other);
-    // const cachedRating = this.cache.complementRating.get(other.id);
-    // if (cachedRating != undefined) {
-    //   return cachedRating;
-    // }
-    // const rating = this.#complementRating(other) + other.#complementRating(this);
-    // this.cache.complementRating.set(other.id, rating);
-    // return rating;
-  }
-
-  private _complementRating (this: Shadow, other: Shadow) : number {
-    return this.#complementRating(other) + other.#complementRating(this);
-  }
-
-  #complementRating (this: Shadow, other: Shadow) : number {
-    let rating = 0;
-    if (this == other) {return 0;} //baseline
-    const scaledPairs : [Shadow["system"]["role"], Shadow["system"]["role"], number][] = [
-      ["soldier", "lurker", 1],
-      ["soldier", "support", 1],
-      ["soldier", "artillery", 1],
-      ["brute", "support", 1],
-      ["brute", "controller", 1],
-      ["assassin", "lurker", -1],
-      ["lurker", "support", -1],
-      ["lurker", "controller", 1],
-      ["lurker", "lurker", -0.5],
-      ["soldier", "soldier", -0.5],
-      ["support", "support", -0.5],
-    ] as const;
-    for (const [r1,r2, amt] of scaledPairs) {
-      if (this.hasRole(r1) && other.hasRole(r2)) {
-        rating += amt;
+  if (lvl < statusToFatigueLevel("exhausted")) {
+    await this.addStatus( {
+      id: "crippled",
+      duration: {
+        dtype:"permanent",
+        anchorHolder: undefined,
       }
-    }
-    const thisP= this.persona();
-    const otherP = other.persona();
-    const weaknesses = DAMAGE_TYPES_LIST
-      .filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "weakness") as RealDamageType[];
-    rating -= 0.5 * weaknesses.length;
-    const normalR = DAMAGE_TYPES_LIST
-      .filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "normal") as RealDamageType[];
-    for (const w of weaknesses) {
-      const res = otherP.elemResist(w);
-      switch (res)  {
-        case "block":
-          rating += 2;
-          break;
-        case "absorb":
-        case "reflect":
-          rating += 3;
-          break;
-        case "resist":
-          rating += 0.5;
-          break;
-        case "normal":
-          rating -= 1;
-          break;
-        case "weakness":
-          rating -= 2;
-          break;
-        default:
-          break;
-      }
-    }
-    for (const n of normalR) {
-      const res = otherP.elemResist(n);
-      switch (res) {
-        case "resist":
-          rating += 0.1;
-          break;
-        case "absorb":
-        case "reflect":
-        case "block":
-          rating += 1;
-          break;
-        case "weakness":
-          rating -= 1;
-          break;
-      }
-    }
-
-    const attacks = new Set(
-      this.powers
-      .map(x=> x.getBaseDamageType())
-      .filter (dmgType => dmgType != "untyped" && dmgType != "none")
-    );
-    const otherAttacks =
-      other.powers
-      .map(x=> x.getBaseDamageType())
-      .filter (dmgType => dmgType != "healing" && dmgType != "untyped" && dmgType != "none");
-    rating += otherAttacks.reduce( (acc, dmg) =>
-      acc + (!attacks.has(dmg) ? 1 : 0)
-      , 0 );
-    return rating;
+    }, true);
   }
+  // const newId = await this.setFatigueLevel(st);
+  if (log && (oldId != newId || lvl < -1)) {
+    const oldName = oldId ? localize(statusMap.get(oldId)!.name as LocalizationString) : "Normal";
+    const newName = newId ? localize(statusMap.get(newId)!.name as LocalizationString): "Normal";
+    const hospital = lvl < statusToFatigueLevel("exhausted") ? `${this.displayedName} is over-fatigued and need to be hospitalized!`: "";
+    await Logger.sendToChat(`${this.displayedName}  fatigue changed from ${oldName} to ${newName}. ${hospital}`);
+  }
+  return newId;
+}
+
+/** positive removes fatigue and negative adds it*/
+async alterFatigueLevel(amt: number, log=true) : Promise<FatigueStatusId | undefined> {
+  if (amt == 0) {return;}
+  const oldLvl = this.fatigueLevel;
+  const newLvl = oldLvl + amt;
+  return await this.setFatigueLevel(newLvl, log);
+}
+
+getUnarmedDamageType(): RealDamageType {
+  if (this.isShadow()) {return this.system.combat.baseDamageType ?? "physical";}
+  return "physical";
+}
+
+listComplementRatings(this: Shadow, list: Shadow[]) : string[] {
+  return list.map( shadow => {
+    const rating = Math.round(this.complementRating(shadow) * 10) / 10;
+    return {rating, name: shadow.name};
+  })
+    .sort( (a,b) => b.rating - a.rating)
+    .map(x => `${x.name}: ${x.rating}`);
+
+}
+
+complementRating (this: Shadow, other: Shadow) : number {
+  return this.cache2.complementRating.get(other);
+  // const cachedRating = this.cache.complementRating.get(other.id);
+  // if (cachedRating != undefined) {
+  //   return cachedRating;
+  // }
+  // const rating = this.#complementRating(other) + other.#complementRating(this);
+  // this.cache.complementRating.set(other.id, rating);
+  // return rating;
+}
+
+private _complementRating (this: Shadow, other: Shadow) : number {
+  return this.#complementRating(other) + other.#complementRating(this);
+}
+
+#complementRating (this: Shadow, other: Shadow) : number {
+  let rating = 0;
+  if (this == other) {return 0;} //baseline
+  const scaledPairs : [Shadow["system"]["role"], Shadow["system"]["role"], number][] = [
+    ["soldier", "lurker", 1],
+    ["soldier", "support", 1],
+    ["soldier", "artillery", 1],
+    ["brute", "support", 1],
+    ["brute", "controller", 1],
+    ["assassin", "lurker", -1],
+    ["lurker", "support", -1],
+    ["lurker", "controller", 1],
+    ["lurker", "lurker", -0.5],
+    ["soldier", "soldier", -0.5],
+    ["support", "support", -0.5],
+  ] as const;
+  for (const [r1,r2, amt] of scaledPairs) {
+    if (this.hasRole(r1) && other.hasRole(r2)) {
+      rating += amt;
+    }
+  }
+  const thisP= this.persona();
+  const otherP = other.persona();
+  const weaknesses = DAMAGE_TYPES_LIST
+    .filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "weakness") as RealDamageType[];
+  rating -= 0.5 * weaknesses.length;
+  const normalR = DAMAGE_TYPES_LIST
+    .filter( dmg => dmg != "by-power" && thisP.elemResist(dmg) == "normal") as RealDamageType[];
+  for (const w of weaknesses) {
+    const res = otherP.elemResist(w);
+    switch (res)  {
+      case "block":
+        rating += 2;
+        break;
+      case "absorb":
+      case "reflect":
+        rating += 3;
+        break;
+      case "resist":
+        rating += 0.5;
+        break;
+      case "normal":
+        rating -= 1;
+        break;
+      case "weakness":
+        rating -= 2;
+        break;
+      default:
+        break;
+    }
+  }
+  for (const n of normalR) {
+    const res = otherP.elemResist(n);
+    switch (res) {
+      case "resist":
+        rating += 0.1;
+        break;
+      case "absorb":
+      case "reflect":
+      case "block":
+        rating += 1;
+        break;
+      case "weakness":
+        rating -= 1;
+        break;
+    }
+  }
+
+  const attacks = new Set(
+    this.powers
+    .map(x=> x.getBaseDamageType())
+    .filter (dmgType => dmgType != "untyped" && dmgType != "none")
+  );
+  const otherAttacks =
+    other.powers
+    .map(x=> x.getBaseDamageType())
+    .filter (dmgType => dmgType != "healing" && dmgType != "untyped" && dmgType != "none");
+  rating += otherAttacks.reduce( (acc, dmg) =>
+    acc + (!attacks.has(dmg) ? 1 : 0)
+    , 0 );
+  return rating;
+}
 
 instantKillResistanceMultiplier(this: ValidAttackers, attacker: ValidAttackers) : number {
   const situation : Situation = {

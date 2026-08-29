@@ -24,30 +24,30 @@ const GENERAL_COMBATANT_VOICE_TRIGGERS_LIST = [
 
 
 const NAVIGATOR_TRIGGER_LIST = [
-	"unused",
-	"rare-enemy",
-	"tough-enemy",
-	"1-enemy",
-	"2-enemy",
-	"3-enemy",
-	"4-enemy",
-	"5-enemy",
-	"1-enemy-adv",
-	"2-enemy-adv",
-	"3-enemy-adv",
-	"4-enemy-adv",
-	"5-enemy-adv",
-	"1-enemy-amb",
-	"2-enemy-amb",
-	"3-enemy-amb",
-	"4-enemy-amb",
-	"5-enemy-amb",
-	"boss-enemy",
-	"immune",
-	"vulnerable",
-	"injured",
-	"great-work",
-	"recovery",
+  "unused",
+  "rare-enemy",
+  "tough-enemy",
+  "1-enemy",
+  "2-enemy",
+  "3-enemy",
+  "4-enemy",
+  "5-enemy",
+  "1-enemy-adv",
+  "2-enemy-adv",
+  "3-enemy-adv",
+  "4-enemy-adv",
+  "5-enemy-adv",
+  "1-enemy-amb",
+  "2-enemy-amb",
+  "3-enemy-amb",
+  "4-enemy-amb",
+  "5-enemy-amb",
+  "boss-enemy",
+  "immune",
+  "vulnerable",
+  "injured",
+  "great-work",
+  "recovery",
   "enemy-healing",
   "enemy-spotted",
   "reaper",
@@ -76,34 +76,34 @@ export const ALL_VOICE_TRIGGERS = {
 
 export class NavigatorVoiceLines {
 
-	static lastChat = 0;
-	private static nowPlaying = false;
+  static lastChat = 0;
+  private static nowPlaying = false;
 
-	static async onStartCombat(combat: PersonaCombat) {
-		const shadows = combat.combatants.contents
-			.map( x=> x.actor)
-			.filter (x=> x != undefined)
-			.filter (x=> x.isShadow()
-			);
-		if (shadows.some(x=> x.hasRole("treasure-shadow"))) {
-			return await this.playVoice({ type: "rare-enemy"});
-		}
-		if (shadows.some( x=> x.isBossOrMiniBossType())) {
-			return await this.playVoice({type: "tough-enemy"});
-		}
-		switch (shadows.length) {
-			case 1:
-			case 2:
-			case 3:
-			case 4:
-			case 5:
-				return await this.playVoice({
-					type: `${shadows.length}-enemy`}
-				);
-			default:
-				return;
-		}
-	}
+  static async onStartCombat(combat: PersonaCombat) {
+    const shadows = combat.combatants.contents
+      .map( x=> x.actor)
+      .filter (x=> x != undefined)
+      .filter (x=> x.isShadow()
+      );
+    if (shadows.some(x=> x.hasRole("treasure-shadow"))) {
+      return await this.playVoice({ type: "rare-enemy"});
+    }
+    if (shadows.some( x=> x.isBossOrMiniBossType())) {
+      return await this.playVoice({type: "tough-enemy"});
+    }
+    switch (shadows.length) {
+      case 1:
+      case 2:
+      case 3:
+      case 4:
+      case 5:
+        return await this.playVoice({
+          type: `${shadows.length}-enemy`}
+        );
+      default:
+        return;
+    }
+  }
 
   static async playVoice (trigger: NavigatorVoiceEvent, selfOnly = !game.user.isGM) : PVoid {
     try {
@@ -141,11 +141,9 @@ export class NavigatorVoiceLines {
       if (selfOnly) {
         this.nowPlaying = true;
         await ActorVoiceLines.playVoice(line.fileName, true);
-        // await PersonaSounds.playFileSelf(line.fileName);
       } else {
         this.nowPlaying = true;
         await ActorVoiceLines.playVoice(line.fileName, false);
-        // await PersonaSounds.playFileAll(line.fileName);
       }
       this.nowPlaying = false;
     } catch (e) {
@@ -156,24 +154,24 @@ export class NavigatorVoiceLines {
     }
   }
 
-	static async onTargetKilled(target: ValidAttackers, combat: PersonaCombat) {
-		if (target.isShadow()) {return;}
-		const remainingPCs = combat.combatants.filter( c=>
-				c.actor != undefined
-				&& !c.actor.isShadow()
-				&& c.actor.isAlive());
-		if (remainingPCs.length <= 2) {
-			await this.playVoice({
-				type: "injured",
+  static async onTargetKilled(target: ValidAttackers, combat: PersonaCombat) {
+    if (target.isShadow()) {return;}
+    const remainingPCs = combat.combatants.filter( c=>
+      c.actor != undefined
+      && !c.actor.isShadow()
+      && c.actor.isAlive());
+    if (remainingPCs.length <= 2) {
+      await this.playVoice({
+        type: "injured",
         severity: 3,
-			});
-		} else {
-			await this.playVoice({
-				type: "injured",
+      });
+    } else {
+      await this.playVoice({
+        type: "injured",
         severity: 2,
-			});
+      });
     }
-	}
+  }
 
   static async onTargetHeal(target: ValidAttackers, combat: PersonaCombat, amt: number) {
     if (target.isNPCAlly() || target.isPC() || combat.isSocial) {return;}
@@ -181,9 +179,9 @@ export class NavigatorVoiceLines {
       return;
     }
     if (Math.random() < 0.3) {
-			await this.playVoice({
-				type: "enemy-healing",
-			});
+      await this.playVoice({
+        type: "enemy-healing",
+      });
     }
   }
 
@@ -194,56 +192,56 @@ export class NavigatorVoiceLines {
     });
   }
 
-	static onHoverToken(token: Foundry.Token<PersonaActor>, hover: boolean) {
-		if (hover != true) {return;}
-		if (game.user.isGM) {return;}
-		const combat = game.combat as PersonaCombat;
-		if(!combat || combat.isSocial) {return;}
-		if (!combat.started) {return;}
-		const actor = token.actor;
-		if (!actor) {return;}
-		if (!actor.isShadow()) {return;}
-		const combatant = combat.findCombatant(actor);
-		if (!combatant) {return;}
-		const targetPersona = actor.persona();
-		if (targetPersona.scanLevelRaw < 1) {return;}
-		const currentActor = combat.combatant?.actor;
-		if (!currentActor || !currentActor.isOwner) {return;}
-		const damage = currentActor.persona().possibleElementTypes();
-		const hintList =  damage.filter(
-			dmgType => {
-				const resist = this.knownElementResists(dmgType, targetPersona);
-				return resist != "resist" && resist != "normal";
-			});
-		if (hintList.length == 0) {return;}
-		const randElement = randomSelect(hintList);
-		const resist = targetPersona.elemResist(randElement);
-		switch (resist) {
-			case "weakness":
-				void this.playVoice({
-					type: "vulnerable",
-					elementType: randElement,
+  static onHoverToken(token: Foundry.Token<PersonaActor>, hover: boolean) {
+    if (hover != true) {return;}
+    if (game.user.isGM) {return;}
+    const combat = game.combat as PersonaCombat;
+    if(!combat || combat.isSocial) {return;}
+    if (!combat.started) {return;}
+    const actor = token.actor;
+    if (!actor) {return;}
+    if (!actor.isShadow()) {return;}
+    const combatant = combat.findCombatant(actor);
+    if (!combatant) {return;}
+    const targetPersona = actor.persona();
+    if (targetPersona.scanLevelRaw < 1) {return;}
+    const currentActor = combat.combatant?.actor;
+    if (!currentActor || !currentActor.isOwner) {return;}
+    const damage = currentActor.persona().possibleElementTypes();
+    const hintList =  damage.filter(
+      dmgType => {
+        const resist = this.knownElementResists(dmgType, targetPersona);
+        return resist != "resist" && resist != "normal";
+      });
+    if (hintList.length == 0) {return;}
+    const randElement = randomSelect(hintList);
+    const resist = targetPersona.elemResist(randElement);
+    switch (resist) {
+      case "weakness":
+        void this.playVoice({
+          type: "vulnerable",
+          elementType: randElement,
           strongEnemy: false,
-				}, true);
-				return;
-			case "absorb":
-			case "reflect":
-			case "block":
-				void this.playVoice({
-					type: "immune",
-					elementType: randElement,
+        }, true);
+        return;
+      case "absorb":
+      case "reflect":
+      case "block":
+        void this.playVoice({
+          type: "immune",
+          elementType: randElement,
           strongEnemy: false,
-				}, true);
-				return;
-			default:
-				return;
-		}
-	}
+        }, true);
+        return;
+      default:
+        return;
+    }
+  }
 
-	static knownElementResists(element: RealDamageType,  persona: Persona) : ResistStrength {
-		return persona.elemResist(element);
+  static knownElementResists(element: RealDamageType,  persona: Persona) : ResistStrength {
+    return persona.elemResist(element);
 
-	}
+  }
 
   static async onEnemyEncountered(encounter: Encounter)  : Promise<void> {
     const diff = RandomEncounter.getLevelDiffString(encounter);
@@ -284,7 +282,7 @@ export class NavigatorVoiceLines {
 
 
 Hooks.on("hoverToken", function (token: Foundry.Token<PersonaActor>, hover: boolean) {
-	NavigatorVoiceLines.onHoverToken(token, hover);
+  NavigatorVoiceLines.onHoverToken(token, hover);
 });
 
 type PVoid = Promise<void>; //for some reason Promise<void> screws up indenting
@@ -292,10 +290,10 @@ type PVoid = Promise<void>; //for some reason Promise<void> screws up indenting
 
 
 type NavigatorVoiceEvent = {
-	type: Exclude<NavigatorTrigger, "vulnerable" | "immune" | "injured" | "enemy-spotted" | "level-up">
+  type: Exclude<NavigatorTrigger, "vulnerable" | "immune" | "injured" | "enemy-spotted" | "level-up">
 } | {
-	type: "vulnerable" | "immune"
-	elementType: RealDamageType,
+  type: "vulnerable" | "immune"
+  elementType: RealDamageType,
   strongEnemy: boolean,
 } | {
   type: "injured",

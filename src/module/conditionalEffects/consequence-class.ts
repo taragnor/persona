@@ -10,7 +10,7 @@ import {ConditionalEffectComponent} from "./conditional-component.js";
 import {ConditionalEffectC} from "./conditional-effect-class.js";
 import {ConditionalEffectManager} from "./conditional-effect-manager.js";
 import {ConsequenceAmountResolver} from "./consequence-amount.js";
-import {multiCheckToArray} from "./preconditions.js";
+import {multiCheckToArray, multiCheckToSet} from "./preconditions.js";
 
 
 export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedConsequence> extends ConditionalEffectComponent {
@@ -39,6 +39,19 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
     const cons = this.cons as NonDeprecatedConsequence;
     return  cons.type == "trigger-event-cons"
       && cons.eventMod == "allow-as-opener";
+  }
+
+  getGrantedBonuses() : Set<NonDeprecatedModifierTarget> {
+    const cons = this.cons as NonDeprecatedConsequence;
+    if ('modifiedFields' in cons) {
+      return multiCheckToSet(cons.modifiedFields);
+    }
+    if ('modifiedField' in cons) {
+      const set : Set<NonDeprecatedModifierTarget> = new Set();
+      set.add(cons.modifiedField);
+      return set;
+    }
+    return new Set();
   }
 
   getModifierAmount(targetMods: NonDeprecatedModifierTarget[]) : N<number | Sourced<ConsequenceAmountV2>> {
@@ -123,6 +136,33 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
     const cons = this.cons as NonDeprecatedConsequence;
     if (cons.type != "combat-effect" || cons.combatEffect != 'removeStatus') {return [];}
     return multiCheckToArray(cons.statusName);
+  }
+
+  override errorCheck() : string[] {
+    const data = super.errorCheck();
+    const tests = [
+      "_errorCheckDefensive"
+    ] as const;
+    for (const test of tests) {
+      const result = this[test]();
+      if (result == null) {continue;}
+      data.push(result);
+    }
+    return data;
+  }
+
+  private _errorCheckDefensive() : N<string> {
+    const bonuses = this.getGrantedBonuses();
+    const defensive : NonDeprecatedModifierTarget[] = ["allDefenses", "ref", "fort", "kill", "ail"];
+    if (defensive.some( bonus => bonuses.has(bonus))
+    && this.parent?.conditionalType != "defensive") {
+      let str = "Invalid Modifier on NonDefensive consequence: ";
+      str += defensive.filter( bonus => bonuses
+        .has(bonus))
+        .join();
+      return str;
+    }
+    return null;
   }
 
 }
