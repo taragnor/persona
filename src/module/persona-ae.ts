@@ -32,7 +32,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     embeddedEffects: new PermanentCache( () => this._embeddedEffects()),
   };
 
-  static async applyHook (this: never, _actor: PersonaActor, _change: Foundry.AEChange, _current: unknown, _delta: unknown, _changes: Record<string, unknown> ) {
+  static async applyHook (_actor: PersonaActor, _change: Foundry.AEChange, _current: unknown, _delta: unknown, _changes: Record<string, unknown> ) {
     //*changes object is a record of values taht may get changed by applying the AE;
     // example: changes["system.hp"] = 25
   }
@@ -609,7 +609,6 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     }
   }
 
-
   /** returns true if the status expires*/
   async onEndCombatTurn() : Promise<boolean> {
     const duration = this.statusDuration;
@@ -877,13 +876,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
       .concat( this.getEmbeddedEffects(actor, options));
   }
 
-  static async onPreDelete(this: never, effect: PersonaAE) {
+  static async onPreDelete(effect: PersonaAE) {
     const flag = effect.linkedFlagId;
-    try {
-      // await effect.unsetFlag("persona", "LinkedEffectFlag");
-    } catch (e)  {
-      console.log(e);
-    }
     if (flag && effect.parent instanceof PersonaActor) {
       effect["_flaggedDeletion"] = true;
       await effect.parent.clearEffectFlag(flag);
@@ -970,11 +964,9 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 }
 
 
-// eslint-disable-next-line @typescript-eslint/unbound-method
-Hooks.on("preDeleteActiveEffect", PersonaAE.onPreDelete);
+Hooks.on("preDeleteActiveEffect", (effect : PersonaAE) => PersonaAE.onPreDelete(effect) );
 
-// eslint-disable-next-line @typescript-eslint/unbound-method
-Hooks.on("applyActiveEffect", PersonaAE.applyHook);
+Hooks.on("applyActiveEffect", (...args : Parameters<typeof PersonaAE["applyHook"]>) => PersonaAE.applyHook(...args));
 
 //Sachi told me to disable this because it sucks apparently
 CONFIG.ActiveEffect.legacyTransferral = false;
@@ -1048,8 +1040,15 @@ Hooks.on("deleteActiveEffect", async function (eff: PersonaAE) {
 
 type DurationOptions = {
   clearOnDeath ?: boolean;
-} & ({ anchorHolder : U<UniversalActorAccessor<PersonaActor>>;} | {anchorStatus : UniversalAEAccessor<PersonaAE>;})
-;
+} & AnchorDurationOptions;
+
+type AnchorDurationOptions =
+  {
+    anchorHolder : U<UniversalActorAccessor<PersonaActor>>;
+  } | {
+    anchorStatus : UniversalAEAccessor<PersonaAE>;
+  };
+
 //@ts-expect-error adding to global scope
 window.testAE = async function testAE(actor: PersonaActor, name : string = "TEST") {
   const flag = await actor.createEffectFlag(name, name);

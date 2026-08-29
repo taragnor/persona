@@ -490,9 +490,6 @@ export class CombatEngine {
     ]. filter (x=> x != undefined);
     const addonAttackResultData = {
       ranges,
-      // ailmentRange: situation.ailmentRange,
-      // instantKillRange: situation.instantKillRange,
-      // critRange: situation.critRange,
       situation,
     };
     const {result, resisted, struckWeakness} = this.determineAttackResult(attacker, target, power, rollBundle, situation);
@@ -878,10 +875,7 @@ export class CombatEngine {
       const bonuses = this.getAttackRollModifiers(attacker, target, power);
       attackBonus.merge(bonuses);
     }
-    // const attackBonus = this.getBaseAttackBonus(attacker, power);
     attackBonus.add(1, this.customAtkBonus ?? 0, 'Custom modifier');
-    // const defense = this.getDefenderAttackModifiers(target, power.system.defense, power);
-    // attackBonus.add(1, defense, "Defense Mods");
     if (options.modifiers) {
       attackBonus.add(1, options.modifiers, "Extra Mods");
     }
@@ -1112,11 +1106,8 @@ export class CombatEngine {
       situation = this.defaultSituation(attackerPersona, targetPersona, power);
     }
     const mods = this.getAttackerAndDefenderModifiers("evade-range", attackerPersona, targetPersona, power);
-    // const resist = this.getAttackerAndDefenderModifiers("critResist", attackerPersona, targetPersona, power);
     const calc = new Calculation(0, 3);
     calc.add(1, mods, "Evade Modifiers");
-    // calc.subtract(1, resist, "Critical Resist");
-    // calc.add(1, luckDiff, "Luck Difference Mod");
     const {total, steps} = calc.eval(situation);
     const low = 1;
     const high = 1 + total;

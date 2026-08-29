@@ -40,7 +40,6 @@ export class ConditionalEffectC {
     return this._emptyCE = this.createConsequenceOnly([], null, null, null);
   }
 
-
   static NULL_OWNERSHIP : EffectOwnershipData= {
     owner: undefined,
     source: undefined,
@@ -500,7 +499,6 @@ type CEItemData =
     isDefensive : () => boolean, defaultConditionalEffectType: () => TypedConditionalEffect["conditionalType"]
   } > ;
 
-
 export type EffectOwnershipData = {
   source: U<ModifierContainer["accessor"]>;
   owner: U<UniversalActorAccessor<PersonaActor>>;
@@ -508,5 +506,3 @@ export type EffectOwnershipData = {
   creationId: number;
   _id: number;
 };
-
-
