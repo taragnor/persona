@@ -358,7 +358,7 @@ export class CombatEngine {
       .filter( cons=> cons.type == "combat-effect"
         && cons.combatEffect == "add-power-tag-to-attack")
       .map (cons => PersonaItem.resolveTag(cons.powerTag));
-    if (tags.length > 0) {
+    if (PersonaSettings.debugMode() && tags.length > 0) {
       const tagNames= tags.map ( tag=> tag instanceof PersonaItem ? tag.name : tag);
       console.log(`Adding Tag: ${tagNames.join()}`);
     }

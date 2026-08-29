@@ -3253,15 +3253,21 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
     const damage = burnStatus.potency;
     await this.modifyHP(-damage);
   }
+  // const bonusEnergy = 3 + this.persona().getBonuses("energy-per-turn").total(situation);
   if (this.isShadow()) {
-    const situation : Situation = {
-      user: this.accessor,
-    };
-    const bonusEnergy = 3 + this.persona().getBonuses("energy-per-turn").total(situation);
-    await this.alterEnergy(bonusEnergy);
+    await this.alterEnergy(this.shadowEnergyGain);
   }
   ret.push(...await this.endTurnStatusEffects());
   return ret;
+}
+
+get shadowEnergyGain() : number {
+  if (!this.isShadow()) {return 0;}
+
+    const situation : Situation = {
+      user: this.accessor,
+    };
+    return 3 + this.persona().getBonuses("energy-per-turn").total(situation);
 }
 
 despairMPDamage(this: PC | NPCAlly) : number {

@@ -618,7 +618,7 @@ function getBoolTestState(condition: PreconditionType & {type: "boolean"}, situa
       if (!arr) {return undefined;}
       return arr.some( target => {
         const targetActor = target instanceof PersonaActor ? target : target.actor;
-        if (targetActor.system.type == "shadow") {return true;}
+        return targetActor.isShadow();
       });
     }
     case "is-pc": {

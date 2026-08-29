@@ -908,7 +908,12 @@ export class CombatResult  {
         return `ERROR: ${txt}`;
       }
     };
+    try {
     return StringUtilities.replaceStr(msg, resolver);
+    } catch (e) {
+      PersonaError.softFail(e as Error, msg, situation);
+      return `ERROR :${msg}`;
+    }
   }
 }
 
