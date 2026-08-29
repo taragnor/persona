@@ -4109,6 +4109,11 @@ get summoningCost() : number {
   return PersonaCompendium.costToSummon(this);
 }
 
+get isUltimatePersona() : boolean {
+  if (!this.isShadow()) {return false;}
+  return (this.system.personaConversion.fusionConditions.length > 0);
+}
+
 }//end of class
 
 

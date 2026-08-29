@@ -250,9 +250,9 @@ export class PowerPrinter extends FormApplication<PowerFilter> {
     const powers = (await this.mainPowerList())
       .filter( x=> x!= undefined && x.length > 0)
       .map( list => list.sort(PowerPrinter.sortPowerFn));
-    if (powers.length == 0 && this.filterString.length == 0) {
-      throw new PersonaError("No Powers to display");
-    }
+    // if (powers.length == 0 && this.filterString.length == 0 && ) {
+    //   throw new PersonaError("No Powers to display");
+    // }
     return {
       ...data,
       powerLists: powers,
