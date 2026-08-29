@@ -230,18 +230,6 @@ function numericComparison(condition: PreconditionType & {type : "numeric"}, sit
       target = clock.amt;
       break;
     }
-      // case "percentage-of-hp": {
-      //   const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
-      //   if (!subject) {return false;}
-      //   target = subject.hp / subject.mhpEstimate;
-      //   break;
-      // }
-      // case "percentage-of-mp": {
-      //   const subject = getSubjectActors(condition, situation, "conditionTarget")[0];
-      //   if (!subject) {return false;}
-      //   target = subject.mp / subject.mmp;
-      //   break;
-      // }
     case "energy": {
       const subject = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!subject) {return false;}
@@ -400,9 +388,6 @@ function numericComparison(condition: PreconditionType & {type : "numeric"}, sit
       };
       const sourced = {
         ...ownershipInfo,
-        // source: ownershipInfo.source,
-        // owner: ownershipInfo.owner,
-        // realSource: ownershipInfo.realSource,
         ...condition.comparisonVal,
       };
       const resolved = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, situationN);
@@ -777,17 +762,11 @@ function getBoolTestState(condition: PreconditionType & {type: "boolean"}, situa
     case "logical-or": {
       const comp1 = {
         ...ownershipInfo,
-        // source: condition.source,
-        // owner: condition.owner,
-        // realSource: condition.realSource,
         ...condition.comparison1 as NonDeprecatedPrecondition<Precondition>,
         //this is guaranteed to be nondeprecated by convertPrecondition function working deep into logical ors
       };
       const comp2 = {
         ...ownershipInfo,
-        // source: condition.source,
-        // owner: condition.owner,
-        // realSource: condition.realSource,
         ...condition.comparison2 as NonDeprecatedPrecondition<Precondition>,
         //this is guaranteed to be nondeprecated by convertPrecondition function working deep into logical ors
       };
@@ -1038,9 +1017,6 @@ export function resolveActorIdOrTarot (targetIdOrTarot: PersonaActor["id"] | Tar
 function getSubjects<K extends string, T extends Record<K, ConditionTarget>>( cond: T, situation: Situation, field : K, ownershipInfo: EffectOwnershipData) : readonly (PToken | ValidAttackers | NPC) []{
   if (!(field in cond)) {
     Debug(`${field} not present in condition`, cond, situation, field );
-    // Debug(cond);
-    // Debug(situation);
-    // Debug(field);
     return [];
   }
   const condTarget = cond[field];
@@ -1091,7 +1067,6 @@ function getSubjects<K extends string, T extends Record<K, ConditionTarget>>( co
         const tok = PersonaDB.findToken(situation.target.token) as PToken | undefined;
         return tok ? [tok] : [];
       }
-      // const target : UniversalActorAccessor<ValidAttackers | ValidSocialTarget> | undefined = situation.target ?? situation.socialTarget;
       const actor = situation.target ? PersonaDB.findActor<SocialLink | ValidAttackers>(situation.target): undefined;
       return actor ? [actor] : [];
     }
@@ -1304,9 +1279,6 @@ export function numberOfOthersWithResolver(condition: NumberOfOthersWithComparis
       };
       const sourcedP = {
         ...PreconditionConverter.convertDeprecated(condition.otherComparison),
-        // source: condition.source,
-        // owner: condition.owner,
-        // realSource: condition.realSource,
       };
       return	a + (testPrecondition(sourcedP, situation, ownershipInfo) ? 1 : 0);
     }
@@ -1551,7 +1523,6 @@ function resolveSocialAvailabilityCheck(condition: PreconditionType & {type: "bo
       const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, ownershipInfo.source);
       if (!target2) {return undefined;}
       return PersonaSocial.isAvailable(target2, target1 );
-      // return target1.isAvailable(target2);
     }
     case "is-dating": {
       const target2 = getSocialLinkTarget(condition.socialLinkIdOrTarot ?? "", situation, ownershipInfo.source);
