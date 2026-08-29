@@ -776,13 +776,15 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   async addTalent(talent: Talent) {
     const source = this.source;
     const arr = source.system.combat.talents;
-    if (!this.source.isShadow() && talent.system.shadowOnly) {
+    if (!source.isShadow() && talent.system.shadowOnly) {
       ui.notifications.error("This talent can only be used by shadows");
     }
     arr.pushUnique(talent.id);
     await source.update( {"system.combat.talents": arr});
     if (source.hasPlayerOwner) {
       await Logger.sendToChat(`${this.name} added ${talent.name} Talent` , source);
+    } else {
+      ui.notifications.notify(`${this.name} added ${talent.name} Talent`);
     }
   }
 
