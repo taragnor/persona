@@ -1,6 +1,5 @@
 import { Consequence, ConsequenceAmountV2 } from "../../config/consequence-types.js";
 import {NonDeprecatedModifierTarget, NonDeprecatedModifierType} from "../../config/item-modifiers.js";
-import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {ModifierV2Target} from "../bonus-calc.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";

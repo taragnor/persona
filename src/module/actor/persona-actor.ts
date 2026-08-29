@@ -556,7 +556,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   baseShadow(this: Shadow) : Shadow {
     const baseId = this.system?.personaConversion?.baseShadowId;
     if (baseId) {
-      const baseShadow = PersonaDB.getActorById(baseId as PersonaActor["id"]);
+      const baseShadow = PersonaDB.getActorById(baseId);
       if (baseShadow && baseShadow.isShadow()) {
         return baseShadow;
       }
