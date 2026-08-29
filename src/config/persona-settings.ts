@@ -1,5 +1,6 @@
 import { MainDamageSystem } from "../module/combat/damage-system-v1.js";
 import {DamageInterface} from "../module/combat/damage-system.js";
+import {FinalizedCombatResult} from "../module/combat/finalized-combat-result.js";
 import {PersonaError} from "../module/persona-error.js";
 import {PersonaScene} from "../module/persona-scene.js";
 import {PersonaRegion} from "../module/region/persona-region.js";
@@ -70,10 +71,11 @@ export class PersonaSettings {
 			return this.get("combatPanel") ?? true;
 	 }
 
-	static async setGlobalVariable(varName: string, value: number) {
+	static async setGlobalVariable(varName: string, value: number) : Promise<FinalizedCombatResult[]> {
 		const globals = (this.get("globalVariables") || {}) as Record<string, number>;
 		globals[varName] = value;
 		await this.set("globalVariables", globals);
+    return [];
 	}
 
 	static getGlobalVariable(varName: string) : U<number> {

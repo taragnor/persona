@@ -21,6 +21,7 @@ import {getSocialLinkTarget, getSourceDType, multiCheckToArray} from "../conditi
 import {checkSituationProp} from "../../config/situation.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {ConsequenceC} from "../conditionalEffects/consequence-class.js";
+import {StringUtilities} from "../utility/string-utility.js";
 
 declare global {
 	interface SocketMessage {
@@ -354,44 +355,6 @@ export class CombatResult  {
         if (!effect || !target || target == "global" || !target.isValidCombatant()) {break;}
         this.addEffect_setFlag(cons,effect, target, situation );
         break;
-        // if (!effect || !target || target == "global" || !target.isValidCombatant()) {break;}
-        // try {
-        //   if (cons.flagState) {
-        //     const duration = convertConsToStatusDuration(cons, target, situation);
-        //     if (cons.applyEmbedded) {
-        //       const parent = ConsequenceC.getParentById(cons._id);
-        //       if (!parent) {
-        //         PersonaError.softFail("Can't find parent of consequence to get embedded effects");
-        //         Debug(cons);
-        //         break;
-        //       }
-        //       const embeddedEffects = ConsequenceC.getParentById(cons._id)?.getEmbeddedEffects() ?? [];
-        //       const mapped = embeddedEffects.map (x=> x.toJSON());
-        //       effect.otherEffects.push( {
-        //         ...cons,
-        //         embeddedEffects: mapped,
-        //         // embeddedEffects.map(x=> x.toJSON()),
-        //         duration,
-        //       });
-        //       console.log(`${embeddedEffects.length} Embedded Pushed`);
-        //       break;
-        //     }
-        //     // const embeddedEffects = cons.applyEmbedded ? ConditionalEffectC.getParent(cons)?.getEmbeddedEffects() ?? []: [];
-        //     effect.otherEffects.push( {
-        //       ...cons,
-        //       embeddedEffects: [],
-        //       duration,
-        //     });
-        //   } else {
-        //     effect.otherEffects.push( {
-        //       ...cons,
-        //       embeddedEffects: [],
-        //     });
-        //   }
-        // } catch (e) {
-        //   PersonaError.softFail(`Problem converting set Flag duration: ${cons?.flagId ?? "unknown Flag Id" }`, e);
-        // }
-        // break;
       }
       case "inspiration-cost": {
         if (!effect) {break;}
@@ -403,19 +366,23 @@ export class CombatResult  {
         });
         break;
       }
-      case "display-msg":
+      case "display-msg":{
+        const msg = this.processMessage(cons.msg, situation);
         if (effect && !cons.newChatMsg) {
           effect.otherEffects.push( {
             ...cons,
             newChatMsg: false,
+            msg,
           });
         } else {
           this.globalOtherEffects.push({
             ...cons,
             newChatMsg: true,
+            msg,
           });
         }
         break;
+      }
       case "use-power":  {
         if (!effect) {break;}
         if (!cons.owner) {
@@ -901,6 +868,48 @@ export class CombatResult  {
     return "global";
   }
 
+  private processMessage(msg: string, situation: Situation) : string {
+    const resolver = (txt: string) : string => {
+      try {
+        const peices = txt.split(".");
+        if (peices.length ==0) {return "";}
+        const first= peices.shift()!;
+        const data = situation[first as keyof typeof situation] as unknown;
+        if (typeof data != "object") {
+          // eslint-disable-next-line @typescript-eslint/no-base-to-string
+          return String(data);
+        }
+        let current : U<unknown>;
+        if (PersonaDB.isActorAccessor(data)) {
+          current = PersonaDB.findActor(data);
+        }
+        if (PersonaDB.isItemAccessor(data)) {
+          current = PersonaDB.findItem(data);
+        }
+        if (PersonaDB.isTokenAccessor(data)) {
+          current = PersonaDB.findToken(data);
+        }
+        if (PersonaDB.isAEAccessor(data)) {
+          current = PersonaDB.findAE(data);
+        }
+        if (current == undefined) {return "ERROR";}
+        while (peices.length) {
+          const data = peices.shift()!;
+          if (!current) {return "ERROR";}
+          let  newElem = current[data as keyof typeof current] as unknown;
+          if (typeof newElem == "function") {
+            newElem= newElem.call(current);
+          }
+          current= newElem;
+        }
+        return String(current);
+      } catch (e) {
+        PersonaError.softFail(e as Error, msg, situation);
+        return `ERROR: ${txt}`;
+      }
+    };
+    return StringUtilities.replaceStr(msg, resolver);
+  }
 }
 
 export interface ActorChange<T extends PersonaActor = PersonaActor> {
@@ -1025,7 +1034,6 @@ function convertConsToStatusDuration(cons: SourcedConsequence & ({type : "set-fl
     dtype: "instant",
     anchorHolder: undefined
   };
-
 
 }
 

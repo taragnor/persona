@@ -670,10 +670,27 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
     return comb.actor?.isValidCombatant() == true && comb.parent != undefined;
   }
 
-  async setVariable(id: string, value: number) : Promise<void> {
+  async setVariable(id: string, value: number) : Promise<FinalizedCombatResult[]> {
     const variables = this.getFlag<Record<string, number>>("persona",this.VAR_FLAG_NAME) ?? {};
     variables[id] = value;
     await this.setFlag("persona", this.VAR_FLAG_NAME, variables);
+    const ret : FinalizedCombatResult[] = [];
+    for (const comb of this.combatants) {
+      if (!comb.actor) {continue;}
+      const situation = {
+        trigger : "on-variable-change",
+        varType: "combat",
+        variableId:  id,
+        user: comb.actor.accessor,
+        triggeringUser: game.user.id,
+      } satisfies Situation;
+      const result = TriggeredEffect
+        .onTrigger(situation, comb.actor)
+        .finalize()
+        .emptyCheck();
+      if (result) {ret.push(result);}
+    }
+    return ret;
   }
 
   getVariable(id: string) : number {

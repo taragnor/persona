@@ -1010,6 +1010,7 @@
 	"persona.triggers.on-social-turn-start": "Social Turn (start)",
 	"persona.triggers.on-start-social-card": "Starts a Sociall Card",
 	"persona.triggers.on-end-social-card": "Ends a Social Card",
+	"persona.triggers.on-variable-change": "On Variable Change",
 
 	"persona.othereffect.search-twice": "Search Twice",
 	"persona.othereffect.ignore-surprise": "Act during surprise rounds",

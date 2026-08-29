@@ -60,6 +60,7 @@ import {MultiTierCache, PermanentCache, TimedCache} from "../utility/cache.js";
 import {ActorVoiceLines} from "./actor-voicelines.js";
 import {PersonaFoundryUser} from "../persona-foundry-user.js";
 import {CancelTrigger} from "../../cancel-check-effect.js";
+import {FinalizedCombatResult} from "../combat/finalized-combat-result.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -3634,15 +3635,37 @@ get energy() : number {
   return this.system.combat.energy.value;
 }
 
-async setVariable ( varName: string, value: number) : Promise<void> {
+async setVariable ( varName: string, value: number) : Promise<FinalizedCombatResult[]> {
   const vars : Record<string, number> = this.getFlag("persona", "variables") ?? {};
   vars[varName] = value;
   await this.setFlag("persona", "variables", vars);
+  if (this.isValidCombatant()) {
+    const situation = {
+      trigger : "on-variable-change",
+      varType: "actor",
+      variableId:  varName,
+      applyTo: "user",
+      user: this.accessor,
+      triggeringUser: game.user.id,
+    } satisfies Situation;
+    const result = TriggeredEffect
+      .onTrigger(situation, this)
+      .finalize()
+      .emptyCheck();
+    if (result) {
+      return [result];
+    }
+  }
+  return [];
 }
 
 getVariable(varName: string) : number {
   const vars : Record<string, number> = this.getFlag("persona", "variables") ?? {};
   return vars[varName] ?? 0;
+}
+
+get vars(): Record<string, number>  {
+  return this.variables;
 }
 
 get variables(): Record<string, number>  {

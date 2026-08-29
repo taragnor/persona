@@ -282,19 +282,24 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
     return a.name.localeCompare(b.name);
   }
 
-  isItemAccessor(obj: unknown) : obj is UniversalItemAccessor<Item> {
+  isItemAccessor(obj: unknown) : obj is UniversalItemAccessor {
     const x = obj as Partial<UniversalItemAccessor<Item>>;
     return (typeof x?.itemId == "string");
   }
 
-  isActorAccessor(obj: unknown): obj is UniversalActorAccessor<any> {
+  isActorAccessor(obj: unknown): obj is UniversalActorAccessor {
     const x = obj as Partial<UniversalActorAccessor<any>>;
     return (typeof x?.actorId == "string");
   }
 
-  isTokenAccessor( obj: unknown): obj is UniversalTokenAccessor<any> {
+  isTokenAccessor( obj: unknown): obj is UniversalTokenAccessor {
     const x = obj as Partial<UniversalTokenAccessor<any>>;
     return (typeof x?.tokenId == "string");
+  }
+
+  isAEAccessor( obj: unknown): obj is UniversalAEAccessor {
+    const x = obj as Partial<UniversalAEAccessor<any>>;
+    return (typeof x?.effectId == "string");
   }
 
   tryFindItem<T extends Item<any>> (accessor: UniversalItemAccessor<T>): U<T> {

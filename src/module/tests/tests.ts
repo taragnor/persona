@@ -19,6 +19,7 @@ import {sleep} from "../utility/async-wait.js";
 import {MultiTierCache, TimedCache} from "../utility/cache.js";
 import {Calculateable} from "../utility/calculation-v2.js";
 import {NumberTools} from "../utility/numberTools.js";
+import {StringUtilities} from "../utility/string-utility.js";
 
 export class Tests {
 
@@ -346,6 +347,10 @@ export class Tests {
     return null;
   }
 
+  static testStringUtil() {
+    const ret =StringUtilities.replaceStr("I am {{test}}", (str) => `${str}1`);
+    return ret == "I am test1";
+  }
 
   static async batteryOfTests() : Promise<boolean> {
     await PersonaDB.waitUntilLoaded();

@@ -42,3 +42,7 @@
 </div>
 {{/if}}
 
+{{#if (eqAny cond.trigger "on-variable-change")}}
+  {{> "systems/persona/parts/variable-type-specifier.hbs" namePrefix=namePrefix cons=cond POWERSTUFF=POWERSTUFF owner=owner}}
+{{/if}}
+

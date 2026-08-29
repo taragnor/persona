@@ -62,8 +62,9 @@ export class ConsequenceApplier {
       }
     }
     for (const status of change.removeStatus) {
-      await this._removeStatus(status.id, actor, power, attacker, token);
-      // await actor.removeStatus(status);
+      chained.push(
+        ...(await this._removeStatus(status.id, actor, power, attacker, token))
+      );
     }
     const mpmult = 1;
     const mutableState =  {
@@ -72,7 +73,9 @@ export class ConsequenceApplier {
     } satisfies MutableActorState;
     for (const otherEffect of change.otherEffects) {
       try {
-        await this._applyOtherEffect(actor, token, otherEffect, attacker, mutableState);
+        chained.push(
+          ...(await this._applyOtherEffect(actor, token, otherEffect, attacker, mutableState))
+        );
       } catch (e) {
         PersonaError.softFail(`Error trying to execute ${otherEffect.type} on ${actor.name}`, e);
       }
@@ -103,7 +106,6 @@ export class ConsequenceApplier {
 
   private static async _removeStatus (status: StatusEffectId, actor : ValidAttackers, power: U<UsableAndCard>,  attacker : U<UniversalTokenAccessor<PToken>>, token : U<PToken>) : Promise<FinalizedCombatResult[]> {
     const statusRem = await actor.removeStatus(status);
-    // void actor.voicelines.onEvent("status-removed" , {"statusRemoved" : status.id});
     const chained : FinalizedCombatResult[] = [];
     if (statusRem && attacker && token && power?.isUsableType()) {
       chained.push(...this._resolveRemoveStatus(token, attacker, status, power));
@@ -123,7 +125,9 @@ export class ConsequenceApplier {
         console.log(`Bailing on calling inflict status trigger on ${status.id} due to no attackerActor provided`);
         return [];}
     }
-    console.log(`On inflict status: ${status.id} ${targetActor.name}`);
+    if (PersonaSettings.debugMode()) {
+      console.log(`On inflict status: ${status.id} ${targetActor.name}`);
+    }
     const sitPartial ={
       target: targetActor.accessor,
       triggeringCharacter: attackerActor.accessor,
@@ -143,7 +147,7 @@ export class ConsequenceApplier {
         .finalize()
         .emptyCheck() ;
       if (eff) {
-        console.log("Pushing Chained effect after knockdown");
+        // console.log("Pushing Chained effect after knockdown");
         chained.push(eff);
       }
       if ((status.id == "curse" || status.id == "expel")) {
@@ -270,24 +274,24 @@ export class ConsequenceApplier {
     } satisfies Sourced<OtherEffect> & {type: "sfx", sfxType: "floating-text"});
   }
 
-  static async _applyOtherEffect(actor: ValidAttackers, _token: PToken | undefined, otherEffect: Sourced<OtherEffect>, attacker : U<UniversalTokenAccessor<PToken>>, mutableState: MutableActorState): Promise<void> {
+  static async _applyOtherEffect(actor: ValidAttackers, _token: PToken | undefined, otherEffect: Sourced<OtherEffect>, attacker : U<UniversalTokenAccessor<PToken>>, mutableState: MutableActorState): Promise<FinalizedCombatResult[]> {
     switch (otherEffect.type) {
       case "expend-item": {
         if (!otherEffect.source) {
           PersonaError.softFail(`No item source type to expend`);
-          return;
+          return [];
         }
         const item = PersonaDB.find(otherEffect.source);
         if (!item) {
           PersonaError.softFail(`Couldn't find personal Item to expend`);
-          return;
+          return [];
         }
         if (item instanceof PersonaItem && item.isCarryableType()) {
           // const item = PersonaDB.find(otherEffect.source);
           if ( item.parent) {
             await item.parent.expendItem(item);
           }
-          return;
+          return [];
         }
         break;
       }
@@ -334,15 +338,11 @@ export class ConsequenceApplier {
           PersonaError.softFail("No situation present in variable alteration");
           break;
         }
-        await PersonaVariables.alterVariable(varCons, varCons.situation);
-        break;
+        return await PersonaVariables.alterVariable(varCons, varCons.situation);
       }
       case "perma-buff":
         await actor.addPermaBuff(otherEffect.buffType, otherEffect.value ?? 0);
         break;
-        // case "play-sound":
-        //     await PersonaSounds.playFile(otherEffect.soundSrc);
-        //   break;
       case "gain-levels": {
         const {gainTarget, amount}=  otherEffect;
         if (!amount) {
@@ -371,6 +371,7 @@ export class ConsequenceApplier {
       default:
         otherEffect satisfies never;
     }
+    return [];
   }
 
   private static _applySFX(actor: ValidAttackers, otherEffect: Sourced<OtherEffect> & {type: "sfx"}, attacker : U<UniversalTokenAccessor<PToken>> ) : void {

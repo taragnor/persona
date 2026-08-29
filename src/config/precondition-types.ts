@@ -4,6 +4,7 @@ import { BooleanComparisonPC } from "./boolean-comparison.js";
 import { TarotCard } from "./tarot.js";
 import { StatusEffectId, StatusEffectPlus } from "../config/status-effects.js";
 import { DEPRECATED_TRIGGERS, Trigger } from "../config/triggers.js";
+import {VariableTypeSpecifier} from "./consequence-types.js";
 
 export const PRECONDITIONLIST = [
 	"always",
@@ -73,7 +74,12 @@ type AdvancedTrigger =
   | StatusTimeOut
   | EventTrigger
   | GlobalToggleTriggers
+  | OnVariableChange
 ;
+
+type OnVariableChange = {
+  trigger : "on-variable-change"
+} & VariableTypeSpecifier
 
 type GlobalToggleTriggers = GlobalToggleTrigger<
   "on-combat-end-dual"

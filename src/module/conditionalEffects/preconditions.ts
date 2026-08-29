@@ -595,6 +595,15 @@ function triggerComparison(condition: PreconditionType & {type: "on-trigger"}, s
           return false;
       }
     }
+    case "on-variable-change": {
+      if (situation.trigger != condition.trigger) {return false;}
+      if (situation.variableId  != condition.variableId
+        || situation.varType != condition.varType) {
+        return false;
+      }
+      return true;
+      //NOTE: may not be checking perfectly for actor vars since it never checks the actual actor/user
+    }
     default:
       condition satisfies never;
       return false;

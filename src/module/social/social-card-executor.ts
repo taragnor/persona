@@ -16,6 +16,7 @@ import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect
 import {TriggeredEffect} from "../triggered-effect.js";
 import {sleep} from "../utility/async-wait.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
+import {FinalizedCombatResult} from "../combat/finalized-combat-result.js";
 
 export class SocialCardExecutor {
   private _handler : U<SocialCardEventHandler>;
@@ -592,7 +593,7 @@ export class SocialCardExecutor {
     return "Gain 2 social progress tokens with the target character";
   }
 
-  setSocialVariable(varId: string, value: number) {
+  setSocialVariable(varId: string, value: number) : FinalizedCombatResult[] {
     if (PersonaSettings.debugMode()) {
       const msg =`Setting social var ${varId} to ${value}`;
       ui.notifications.notify(msg);
@@ -600,6 +601,7 @@ export class SocialCardExecutor {
     }
     const varData = this.cardData.variables;
     varData[varId] = value;
+    return [];
   }
 
   public setSocialCardItem(selector: ItemSelector){

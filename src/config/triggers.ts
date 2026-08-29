@@ -35,6 +35,7 @@ export const NONCOMBAT_TRIGGER_LIST = [
   "on-social-turn-start",
   "on-start-social-card",
   "on-end-social-card",
+  "on-variable-change",
 ] as const;
 
 

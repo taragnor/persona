@@ -11,6 +11,7 @@ import {FinalizedCombatResult} from "../module/combat/finalized-combat-result.js
 import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js";
 import {AttackRollType} from "../module/combat/combat-engine.js";
 import {PersonaAE} from "../module/persona-ae.js";
+import {VariableTypeSpecifier} from "./consequence-types.js";
 
 
 
@@ -192,7 +193,13 @@ namespace TriggeredSituation {
     | ClockTrigger
     | SocialTrigger
     | CombatTrigger
+    | VariableChangeTrigger
     | Checks;
+
+  type VariableChangeTrigger = {
+    trigger: "on-variable-change",
+  } & VariableTypeSpecifier
+    & SituationComponent.User;
 
   type SocialTrigger = 
     StartSocialTurnTrigger

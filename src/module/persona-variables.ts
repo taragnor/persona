@@ -10,18 +10,19 @@ import { PersonaActor } from "./actor/persona-actor.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
 import {ConsequenceAmountResolver} from "./conditionalEffects/consequence-amount.js";
 import {PersonaSettings} from "../config/persona-settings.js";
+import {FinalizedCombatResult} from "./combat/finalized-combat-result.js";
 
 export class PersonaVariables {
-	static async alterVariable (cons: SourcedConsequence & {type: "alter-variable"}, situation : Partial<Situation>) {
+	static async alterVariable (cons: SourcedConsequence & {type: "alter-variable"}, situation : Partial<Situation>) : Promise<FinalizedCombatResult[]> {
 		const variableLocation = this.#convertTypeSpecToLocation(cons, situation);
-		if (!variableLocation) {return;}
+		if (!variableLocation) {return [];}
 		const origValue = this.#get(variableLocation) ?? 0;
 		const newValue = this.#applyMutator( cons, origValue, situation);
 		if (newValue == undefined) {
 			PersonaError.softFail(`Couldn't execute ${cons.operator} on ${cons.varType} variable ${cons.variableId}`);
-			return;
+			return [];
 		}
-		await this.#set(variableLocation, newValue);
+		return await this.#set(variableLocation, newValue);
 	}
 
 	/** returns 0 on a non-existent variable, returns undefined if the request was invalid (bad actor Id, etc) */
@@ -119,35 +120,32 @@ export class PersonaVariables {
 		}
 	}
 
-	static async #set(data: VariableData, value: number) {
+	static async #set(data: VariableData, value: number) : Promise<FinalizedCombatResult[]> {
 		switch (data.varType) {
 			case "global":
-				await this.setGlobalVariable(data.variableId, value);
-				break;
+				return await this.setGlobalVariable(data.variableId, value);
 			case "scene": {
 				const vars : Record<string, number> = data.scene.getFlag("persona", "variables") ?? {};
 				vars[data.variableId] = value;
 				await data.scene.setFlag("persona", "variables", vars);
-				break;
+        return [];
 			}
 			case "actor": {
-				await data.actor.setVariable(data.variableId, value);
-				break;
+				return await data.actor.setVariable(data.variableId, value);
 			}
 			case "social-temp": {
-				PersonaSocial.currentSocialCardExecutor?.setSocialVariable(data.variableId, value);
-				break;
+				return PersonaSocial.currentSocialCardExecutor?.setSocialVariable(data.variableId, value) ?? [];
 			}
       case "combat": {
         if (!PersonaCombat.combat) {
           PersonaError.softFail(`Can't set combat variable  ${data.variableId} as combat doens't exist`);
-          break;
+          return [];
         }
-        await PersonaCombat.combat.setVariable(data.variableId, value);
-        break;
+        return await PersonaCombat.combat.setVariable(data.variableId, value);
       }
 			default:
 				data satisfies never;
+        return [];
 		}
 
 	}
