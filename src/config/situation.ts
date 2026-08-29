@@ -202,7 +202,8 @@ namespace TriggeredSituation {
   type Checks =
     PowerUsageCheck
     | EquipCheck
-    | LegalTargetCheck;
+    | LegalTargetCheck
+    | NullifyAttackCheck;
 
 
 type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
@@ -214,6 +215,12 @@ type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
     | TarotPerkTrigger
     | OnMetaverseTurn
   ;
+
+  type NullifyAttackCheck = SituationComponent.Roll &
+    SituationComponent.TriggeringCharacter &
+    {
+      trigger: "check-nullify-attack",
+    }
 
   type EquipCheck = SituationComponent.Item &
     SituationComponent.User &
@@ -308,19 +315,20 @@ type ClockTriggerOverflow = {
       trigger: "get-added-power-tags",
     }
 
-  type NonGenericCombatTrigger =
-    StatusTrigger
-    | CombatStartTrigger
-    | UsePowerTrigger
-    | KillTargetTrigger
-    | CombatEndTrigger
-    | PreDamageTrigger
-    | DamageTrigger
-    | StartEventTrigger
-    | EndEventTrigger
-    | OnPowerStartUse
-    | OnAETimeoutTrigger
-  ;
+type NonGenericCombatTrigger =
+  StatusTrigger
+  | CombatStartTrigger
+  | UsePowerTrigger
+  | KillTargetTrigger
+  | CombatEndTrigger
+  | PreDamageTrigger
+  | DamageTrigger
+  | StartEventTrigger
+  | EndEventTrigger
+  | OnPowerStartUse
+  | OnAETimeoutTrigger
+  | OnAttackNullifiedTrigger
+;
 
   type OnAETimeoutTrigger = SituationComponent.TriggeringCharacter & {
     trigger: "on-active-effect-time-out" | "on-active-effect-end",
@@ -368,6 +376,11 @@ type ClockTriggerOverflow = {
     trigger: "on-kill-target",
   }
 
+
+type OnAttackNullifiedTrigger =
+  {trigger: "on-attack-nullified"}
+  & SituationComponent.Roll
+  & SituationComponent.TriggeringCharacter;
 
   type UsePowerTrigger = SituationComponent.PowerUse
     & SituationComponent.TriggeringCharacter

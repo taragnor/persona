@@ -3001,6 +3001,12 @@ get canBeTraded() : boolean {
   return !this.system.noTrade;
 }
 
+isNullifiable(this: UsableAndCard) : boolean {
+  if (this.isSkillCard()) {return false;}
+  if (this.isConsumable()) {return false;}
+  return !this.hasTag("theurgy", null);
+}
+
 }
 
 declare global {

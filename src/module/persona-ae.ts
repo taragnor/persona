@@ -467,6 +467,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
       return;
     }
     if (this.parent instanceof PersonaActor && this.parent.isValidCombatant()) {
+      //this may not work since game.combat.rounds seemed to be undefined, maybe a V14 change
       const activeDuration = game.combat ? game.combat.round - this.duration.startRound : undefined ;
       const situation : Situation = {
         trigger: "on-active-effect-end",
@@ -493,25 +494,6 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
         console.log(e);
       }
     }
-    // switch (duration.dtype) {
-    //   case "USoNT":
-    //   case "UEoNT":
-    //   case "UEoT": {
-    //     if (!("anchorStatus" in  duration)) {break;}
-    //     const acc = duration.anchorStatus;
-    //     try {
-    //       const anchorStatus = PersonaDB.findAE(acc);
-    //       if (anchorStatus) {
-    //         await anchorStatus.delete();
-    //       }
-    //     } catch (e) {
-    //       console.log(e);
-    //     }
-    //     break;
-    //   }
-    //   default:
-    //     break;
-    // }
   }
 
   /** returns true if the status expires*/
@@ -532,10 +514,6 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
         return true;
       case "X-rounds":
       case "3-rounds":
-        // if (this.duration.startRound + duration.amount >= (game.combat!.round ?? 0) || this.duration.startTurn) {
-        // 	return false;
-        // }
-        // await this.endStatusTimeout();
         if (duration.amount >= 1) {
           duration.amount -= 1;
           await this.setDuration(duration);

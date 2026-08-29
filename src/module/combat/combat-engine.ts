@@ -1,3 +1,4 @@
+import {CancelTrigger} from "../../cancel-check-effect.js";
 import {OtherEffect} from "../../config/consequence-types.js";
 import {DamageType} from "../../config/damage-types.js";
 import {Defense} from "../../config/defense-types.js";
@@ -219,6 +220,8 @@ export class CombatEngine {
       if (atkResult.activationRoll) {
         result.activationRoll = atkResult.activationRoll;
       }
+      const nullificationCheck = this.checkNullifyingTrigger(atkResult, options);
+      if (nullificationCheck) {return nullificationCheck;}
       const this_result = this.processEffects(atkResult);
       result.merge(this_result);
       const secondary = await this.handleSecondaryAttacks(this_result, atkResult, power, attacker, target, rollType, options);
@@ -226,6 +229,34 @@ export class CombatEngine {
       Hooks.callAll('onUsePower', power, attacker, target);
     }
     return result;
+  }
+
+  private checkNullifyingTrigger(atkResult :AttackResult, options: CombatOptions) : N<CombatResult> {
+    if (options.simulated) {return null;}
+    const power = PersonaDB.findItem(atkResult.power);
+    if (!power) {return null;}
+    if (!power.isNullifiable()) {return null;}
+    const AtkSituation = atkResult.situation;
+    if (!this.combat) {return null;}
+    for (const combatant of this.combat.combatants) {
+      const actor = combatant.actor;
+      if (!actor) {continue;}
+      const situation = {
+        ...AtkSituation,
+        trigger: "check-nullify-attack",
+        triggeringCharacter: actor.accessor,
+        triggeringUser: game.user.id,
+      } satisfies TriggeredSituation.CancelSituation;
+      if (CancelTrigger.cancelCheck(situation, actor)) {
+        const nullSit = {
+          ...situation,
+          trigger: "on-attack-nullified",
+        } satisfies TriggeredSituation.CombatTrigger;
+        return TriggeredEffect.onTrigger(nullSit, actor);
+      }
+    }
+
+    return null;
   }
 
   async handleSecondaryAttacks(CR: CombatResult, atkResult: AttackResult, power: UsableAndCard, attacker: PToken, _target: PToken, _rollType: AttackRollType, options: CombatOptions  ): Promise<CombatResult> {

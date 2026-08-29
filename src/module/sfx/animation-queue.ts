@@ -25,12 +25,18 @@ export class AnimationQueue {
     const overrides= this.queue
       .filter (x => x.actionType == "override");
     for (const override of overrides) {
-      this.applyOverride(override.sfxType, override.priority);
+      this.applyOverride(override);
     }
   }
 
-  private applyOverride(subtype: typeof this.queue[number]["sfxType"] ,priority: number) {
-    this.queue = this.queue.filter( x=> x.sfxType != subtype || x.priority >= priority);
+  private applyOverride(override: typeof this.queue[number]) {
+    // ( subtype: typeof this.queue[number]["sfxType"] ,priority: number, order: number) {
+    this.queue = this.queue
+      .filter( x=> x.sfxType != override.sfxType
+        || x.order != override.order
+        || x.priority > override.priority
+        || x == override
+      );
   }
 
   addSound(otherEffect: Sourced<OtherEffect> & {type: "sfx", sfxType: "play-sound"}) : void {
@@ -41,7 +47,6 @@ export class AnimationQueue {
       order: otherEffect.order ?? 0,
     } as const;
     this.queue.push(queueObj);
-    this.filterQueue();
   }
 
   quickScrollingText(target: ValidAttackers, order: number, text: string, color: string = "white", delay = 0) {

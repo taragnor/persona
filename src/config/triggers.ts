@@ -7,6 +7,7 @@ export const COMBAT_TRIGGER_LIST = [
 	"on-event-start",
 	"on-event-end",
 	"on-use-power",
+  "on-attack-nullified", //after a nullify check trigger
 	"on-combat-end-dual",
 	"on-combat-start-dual",
 	"on-inflict-status",
@@ -56,6 +57,7 @@ export const CANCEL_CHECK = [
 	"on-power-usage-check",
   "on-equip-check",
   "check-legal-target",
+  "check-nullify-attack",
 ] as const;
 
 

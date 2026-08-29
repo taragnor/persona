@@ -561,6 +561,8 @@ function triggerComparison(condition: PreconditionType & {type: "on-trigger"}, s
     case "on-start-social-card":
     case "on-end-social-card":
     case "check-legal-target":
+    case "on-attack-nullified":
+    case "check-nullify-attack":
       return true;
     case "on-clock-change":
     case "on-clock-tick":
@@ -593,7 +595,11 @@ function triggerComparison(condition: PreconditionType & {type: "on-trigger"}, s
         case "status":
           return effect.statusId == condition.statusId;
         case "self": {
-          const source = ownershipInfo.realSource ? PersonaDB.find(ownershipInfo.realSource) : undefined;
+          const source = ownershipInfo.source ? PersonaDB.find(ownershipInfo.source) : undefined;
+          if (source instanceof PersonaItem && source.isTag() && source.system.tagType == "status") {
+            //not the greatest way ot handle this but shoould suffice
+            return (effect.getLinkedTags().includes(source));
+          }
           if (! (source instanceof PersonaAE)) { return false;}
           return effect == source;
         }
@@ -644,9 +650,10 @@ function getBoolTestState(condition: PreconditionType & {type: "boolean"}, situa
       });
     }
     case "flag-state": {
-      const targetActor = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo)[0];
-      if (!targetActor) {return undefined;}
-      return targetActor.getFlagState(condition.flagId);
+      const targetActors= getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo);
+      if (targetActors.length == 0) {return undefined;}
+      return targetActors
+      .some ( a=> a.getFlagState(condition.flagId));
     }
 
     case "is-same-arcana": {
@@ -1119,7 +1126,23 @@ function getSubjects<K extends string, T extends Record<K, ConditionTarget>>( co
       }
     case "all-foes":
     case "all-allies": {
-      PersonaError.softFail("all-foes and all-allies not allowed as part of a conditional");
+      if (!checkSituationProp(situation, "user")) {
+        return [];
+      }
+      const user = PersonaDB.findActor(situation.user);
+      const combat= PersonaCombat.combat;
+      if (!combat) {return [];}
+      const combatant = combat.getCombatantsByActor(user).at(0);
+      if (!combatant) {return [];}
+      if (condTarget == "all-foes") {
+        return combat.getFoes(combatant).map (c => c.actor);
+      }
+      if (condTarget == "all-allies") {
+        return combat.getAllies(combatant).map( c=> c.actor);
+      }
+      condTarget satisfies never;
+      PersonaError.softFail(`Ilegal result for condTarget ${condTarget as string}`);
+      // PersonaError.softFail("all-foes and all-allies not allowed as part of a conditional");
       return [];
     }
     case "all-in-region": {
@@ -1425,15 +1448,12 @@ function combatComparison(condition : PreconditionType  & {type: "boolean"; bool
       });
     }
     case "is-dead": {
-      return subjects.some( target => {
-        return target.hp <= 0;
-      });
+      return subjects
+      .some( target => target.hp <= 0);
     }
-    case "is-distracted": {
-      const target = subjects.at(0);
-      if (!target) {return undefined;}
-      return target.user.isDistracted();
-    }
+    case "is-distracted":
+      if (subjects.length == 0) {return undefined;}
+      return subjects.some( x=> x.user.isDistracted());
     case "engaged-with" : {
       if (!combat) {return undefined;}
       const target = getSubjectTokens(condition, situation, "conditionTarget", ownershipInfo)[0];
