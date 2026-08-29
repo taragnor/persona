@@ -156,16 +156,17 @@ export class MainDamageSystem extends DamageSystemBase {
 
   protected weaponVsArmorMult(attackerPersona: Persona, targetPersona: Persona) : DamageCalculation {
     const calc = new DamageCalculation(null);
-    const armor = targetPersona.user.armor;
+    // const armor = targetPersona.user.armor;
     const weapon = attackerPersona.user.weapon;
     const weaponValue = attackerPersona.user.isPCLike()
       ? this.getWeaponRatingByWpnLevel(weapon?.weaponLevel ?? 0)
       : this.getWeaponRatingByWpnLevel(this.getShadowEffectiveEquipmentLevel(targetPersona.user as Shadow));
     ;
-    const armorValue =
-      targetPersona.user.isPCLike()
-      ? this.getArmorRatingByItemLvl(armor?.armorLevel ?? 0)
-      : this.getArmorRatingByItemLvl(this.getShadowEffectiveEquipmentLevel(targetPersona.user as Shadow) );
+    const armorValue = targetPersona.user.armorRating;
+    // const armorValue =
+    //   targetPersona.user.isPCLike()
+    //   ? this.getArmorRatingByItemLvl(armor?.armorLevel ?? 0)
+    //   : this.getArmorRatingByItemLvl(this.getShadowEffectiveEquipmentLevel(targetPersona.user as Shadow) );
     const bonusStr = weaponValue > armorValue ? "Weapon Outclasses Armor"
       : weaponValue < armorValue
       ? "Weapon underpowered vs Armor" : "Weapon and armor matched";
@@ -182,51 +183,11 @@ export class MainDamageSystem extends DamageSystemBase {
     return Math.round(25 * Math.pow(1.2, armorLvl));
   }
 
-
-  // protected armorDR(targetPersona: Persona) : DamageCalculation {
-  //   const calc = new DamageCalculation(null);
-  //   const situation = {
-  //     user: targetPersona.user.accessor,
-  //     target: targetPersona.user.accessor,
-  //   };
-  //   const armor = this.#armorDR(targetPersona);
-  //   const armorBonus = targetPersona.getDefensiveBonuses("armor-dr").total(situation);
-  //   const armorMult = targetPersona.getDefensiveBonuses("armor-dr-mult").total(situation, "percentage");
-  //   const armorString = "Armor DR";
-  //   // console.log(`${targetPersona.name} DR mult : ${armorMult}`);
-  //   const modifiedArmor = -Math.abs(Math.round(armor * armorMult));
-  //   calc.add("base", modifiedArmor, armorString);
-  //   calc.add("base", -armorBonus, "Armor Modifiers");
-  //   return calc;
-  // }
-
   getShadowEffectiveEquipmentLevel(shadow: Shadow) {
     // const base =  Math.floor((shadow.level -5) / 10);
     const base =  (shadow.level -5) / 10;
     return Math.max(0, base);
   }
-
-  // #armorDR(persona: Persona) : number {
-  //   if (persona.user.isShadow()) {
-  //     return this.getArmorDRByArmorLevel(this.getShadowEffectiveEquipmentLevel(persona.user));
-  //   }
-  //   const armor = persona.user.equippedItems().find(x => x.isInvItem() && x.system.slot == "body") as U<InvItem>;
-  //   return armor  != undefined ? this.armorDRByEquipment(armor) : 0;
-  // }
-
-  // armorDRByEquipment(item: InvItem) : number {
-  //   if (item.system.slot != "body") {return 0;}
-  //   if (item.system.armorLevel > 0) {
-  //     return this.getArmorDRByArmorLevel(item.system.armorLevel);
-  //   }
-  //   if (item.system.armorDR > 0) {
-  //     return item.system.armorDR;
-  //   }
-  //   if (item.itemLevel() > 0) {
-  //     return this.getArmorDRByArmorLevel(item.itemLevel());
-  //   }
-  //   return 0;
-  // }
 
   protected strDamageBonus(persona: Persona) : Calculation {
     const strength = persona.combatStats.strength;
@@ -251,22 +212,6 @@ export class MainDamageSystem extends DamageSystemBase {
       .add(0, magic, `${persona.displayedName} Magic`)
       .mult(1, this.HEALING_MAGIC_MULT, `Magic Healing Multiplier`);
   }
-
-  // protected weaponDamage(persona: Persona) : NewDamageParams {
-  //   if (persona.user.isShadow()) {
-  //     const shadowDmg = this.getWeaponDamageByWpnLevel(this.getShadowEffectiveEquipmentLevel(persona.user));
-  //     return {
-  //       baseAmt: Math.max(0, shadowDmg) ,
-  //       extraVariance: 0
-  //     };
-  //   } else {
-  //     const wpn = persona.user.weapon;
-  //     if (!wpn) {
-  //       return  {baseAmt: 0, extraVariance: 0};
-  //     }
-  //     return wpn.baseDamage();
-  //   }
-  // }
 
   protected weaponSkillDamage(weaponPower:ItemSubtype<Power, "weapon">) : ExtraDamageParams {
     switch (weaponPower.system.damageLevel) {

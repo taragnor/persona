@@ -3,7 +3,10 @@ import {DamageType} from "../../config/damage-types.js";
 import {DeprecatedModifierTarget, ModifierTarget, NonDeprecatedModifierTarget} from "../../config/item-modifiers.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {ConditionTarget, MultiCheck} from "../../config/precondition-types.js";
+import {ModifierV2Target} from "../bonus-calc.js";
 import {PersonaItem} from "../item/persona-item.js";
+import {PersonaError} from "../persona-error.js";
+import {CalculationOperationV2} from "../utility/calculation-v2.js";
 
 export class ConsequenceConverter {
 
@@ -94,7 +97,10 @@ export class ConsequenceConverter {
       }
       case "modifier": {
         const newField = this.convertModifierField(dep.modifiedField);
-        if (newField) {
+        if (newField == undefined) {
+          return { type : "none", };
+        }
+        if (newField && typeof newField == "string") {
           const ret : NonDeprecatedConsequence = {
             type: dep.type,
             modifiedField: newField,
@@ -103,9 +109,18 @@ export class ConsequenceConverter {
           };
           return ret;
         }
-        return {
-          type : "none",
-        };
+        if (typeof newField == "object") {
+          return {
+            type :"modifier-v2",
+            "amount": dep.amount,
+            "modTarget": newField.V2Name,
+            "operation": newField.op,
+            "priority": 0,
+          };
+        }
+        newField satisfies never;
+        PersonaError.softFail("Weird error happened, unable to convert modifier deprecated category", dep);
+        return { type : "none", };
       }
       case "expend-slot":
         return { type : "none", };
@@ -185,7 +200,7 @@ export class ConsequenceConverter {
     return Object.fromEntries(reviseArr) as MultiCheck<NonDeprecatedModifierTarget>;
   }
 
-  static convertModifierField( field: U<ModifierTarget>) : U<NonDeprecatedModifierTarget> {
+  static convertModifierField( field: U<ModifierTarget>) : U<NonDeprecatedModifierTarget | V2Operation> {
     const nonDField = field as DeprecatedModifierTarget;
     switch (nonDField) {
       case "wpnMult":
@@ -198,6 +213,11 @@ export class ConsequenceConverter {
         return undefined;
       case "mpCostMult":
         return "power-mp-cost-mult";
+      case "armor-dr":
+        return {op: "add", V2Name: "armor-rating"};
+      case "armor-dr-mult":
+        return {op: "multiply", V2Name: "armor-rating"};
+
       case undefined:
         return "allAtk"; //for modifiers that have yet to be filled in
       default:
@@ -304,4 +324,9 @@ export class ConsequenceConverter {
     return "target";
   }
 
+}
+
+type V2Operation = {
+  V2Name: ModifierV2Target,
+  op: CalculationOperationV2,
 }

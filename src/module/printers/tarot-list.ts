@@ -45,7 +45,7 @@ export class TarotPrinter extends Application {
 	}
 
 	openFocus(event: JQuery.ClickEvent) : void {
-		const tarotId = HTMLTools.getClosestData(event, "tarotId");
+		const tarotId = HTMLTools.getClosestData<Tarot["id"]>(event, "tarotId");
 		const focusId = HTMLTools.getClosestData(event, "focusId");
 		const tarot = PersonaDB.getActorById(tarotId)!;
 		const focus = tarot.items.find(f => f.id == focusId);

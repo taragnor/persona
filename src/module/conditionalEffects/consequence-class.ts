@@ -2,6 +2,7 @@ import { Consequence, ConsequenceAmountV2, NonDeprecatedConsequence } from "../.
 import {CreatureTag} from "../../config/creature-tags.js";
 import {NonDeprecatedModifierTarget} from "../../config/item-modifiers.js";
 import {StatusEffectId} from "../../config/status-effects.js";
+import {ModifierV2Target, MODV2_DETAILS} from "../bonus-calc.js";
 import {PersonaItem} from "../item/persona-item.js";
 import {ConsequenceConverter} from "../migration/convertConsequence.js";
 import {PersonaDB} from "../persona-db.js";
@@ -53,6 +54,13 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
     }
     return new Set();
   }
+
+  getGrantedBonusesV2() : U<ModifierV2Target> {
+    const cons = this.cons as NonDeprecatedConsequence;
+    if (cons.type != "modifier-v2") {return undefined;}
+    return cons.modTarget;
+  }
+
 
   getModifierAmount(targetMods: NonDeprecatedModifierTarget[]) : N<number | Sourced<ConsequenceAmountV2>> {
     const cons = this.toSourced();
@@ -141,7 +149,8 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
   override errorCheck() : string[] {
     const data = super.errorCheck();
     const tests = [
-      "_errorCheckDefensive"
+      "_errorCheckDefensiveV1",
+      "_errorCheckDefensiveV2",
     ] as const;
     for (const test of tests) {
       const result = this[test]();
@@ -151,7 +160,7 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
     return data;
   }
 
-  private _errorCheckDefensive() : N<string> {
+  private _errorCheckDefensiveV1() : N<string> {
     const bonuses = this.getGrantedBonuses();
     const defensive : NonDeprecatedModifierTarget[] = ["allDefenses", "ref", "fort", "kill", "ail"];
     if (defensive.some( bonus => bonuses.has(bonus))
@@ -161,6 +170,26 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
         .has(bonus))
         .join();
       return str;
+    }
+    return null;
+  }
+
+  private _errorCheckDefensiveV2() : N<string> {
+    const btype = this.getGrantedBonusesV2();
+    if (!btype) {return null;}
+    const category = MODV2_DETAILS[btype]?.type;
+    switch (category) {
+      case "user":
+        break;
+      case "defensive":
+        if (!this.parent?.isDefensive) {
+          return `Invalid Modifier on NonDefensive consequence: ${btype} `;
+        }
+        break;
+      case "item":
+        break;
+      default:
+        category satisfies never;
     }
     return null;
   }

@@ -124,8 +124,8 @@
     {{/if}}
 
     {{#if (eq cons.otherEffect "add-talent-to-list")}}
-    <select name="{{strcat namePrefix 'creatureTag'}}">
-      {{selectOptions POWERSTUFF.CREATURE_TAGS localize=true selected=cons.creatureTag}}
+    <select name="{{strcat namePrefix 'id'}}">
+      {{selectOptions POWERSTUFF.COMPENDIUM_TALENTS localize=true selected=cons.id}}
     </select>
     {{/if}}
 

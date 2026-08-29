@@ -556,7 +556,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   baseShadow(this: Shadow) : Shadow {
     const baseId = this.system?.personaConversion?.baseShadowId;
     if (baseId) {
-      const baseShadow = PersonaDB.getActorById(baseId);
+      const baseShadow = PersonaDB.getActorById(baseId as PersonaActor["id"]);
       if (baseShadow && baseShadow.isShadow()) {
         return baseShadow;
       }
@@ -1467,13 +1467,27 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     }
   }
 
-  get armorRating() : number {
+  private _baseArmorRating() : number {
     if (this.isShadow()) {
       const dsys = PersonaSettings.getDamageSystem();
       const shadowLevel = dsys.getShadowEffectiveEquipmentLevel(this);
       return dsys.getArmorRatingByItemLvl(shadowLevel);
     }
     return this.armor?.armorRating ?? 0;
+  }
+
+  get armorRating() : number {
+    if (!this.isValidCombatant()) {return 0;}
+    const situation ={
+      user: this.accessor,
+      target: this.accessor,
+    } as const satisfies Situation;
+    const total = this.persona()
+      .getBonusesV2("armor-rating")
+      .add(0, this._baseArmorRating(), `${this.armor?.name ?? "Shadow Natural armor"}`)
+      .eval(situation)
+      .total;
+    return total;
   }
 
   unarmedTagList() : readonly PowerTag[] {

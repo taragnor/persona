@@ -659,7 +659,7 @@ export class PersonaSocial {
 
   static async _onRaiseSLButton(ev: JQuery.ClickEvent) {
     const tokenCost = HTMLTools.getClosestDataNumber(ev, "tokenAmt");
-    const PCId = HTMLTools.getClosestData(ev, "pcId");
+    const PCId = HTMLTools.getClosestData<PC["id"]>(ev, "pcId");
     const linkId = HTMLTools.getClosestData<SocialLink["id"]>(ev, "linkId");
     const PC = PersonaDB.getActor(PCId);
     if (!PC || !PC.isPC()) {
@@ -688,34 +688,6 @@ export class PersonaSocial {
     };
     await ChatMessage.create(messageData, {});
   }
-
-  // static async refreshSocialActions( actor: PC) {
-  //   const socialActions = {
-  //     minor: 1,
-  //     standard: 1,
-  //   };
-  //   await actor.setFlag("persona", "socialActions", socialActions);
-  // }
-
-  // private static getDowntimeActionsRemaining(actor: PC, type: keyof DowntimeActionData) : number {
-  //   if (PersonaSettings.debugMode()) {return 1;}
-  //   const data = actor.getFlag<DowntimeActionData>("persona", "socialActions");
-  //   return data ? data[type] ?? 0 : 0;
-  // }
-
-  // static async expendDowntimeAction(actor: PC, type: keyof DowntimeActionData)  {
-  //   const data = actor.getFlag<DowntimeActionData>("persona", "socialActions") ?? {minor: 0, standard:0};
-  //   data[type]= Math.max( 0, data[type]-1);
-  //   await actor.setFlag("persona", "socialActions", data);
-  // }
-
-  // static hasMainSocialAction(actor: PC) : boolean {
-  //   return this.getDowntimeActionsRemaining(actor, "standard") > 0;
-  // }
-
-  // static hasMinorSocialAction(actor: PC) : boolean {
-  //   return this.getDowntimeActionsRemaining(actor, "minor") > 0;
-  // }
 
   static availableMinorActionActivities(pc: PC) : SocialCard[] {
     return PersonaDB.minorActionActivities()
@@ -750,10 +722,6 @@ export class PersonaSocial {
       attacker: pc.accessor,
     };
     const conditions = ConditionalEffectC.createPreconditionOnly(activity.system.conditions);
-    // if(!testPreconditions(sourcedConditions, sit, ConditionalEffectC.NULL_OWNERSHIP
-
-    // const sourcedConditions = ConditionalEffectManager.getConditionals(activity.system.conditions, null, null, null );
-    // if(!testPreconditions(sourcedConditions, sit, ConditionalEffectC.NULL_OWNERSHIP)) {
     if (!conditions.testPreconditions(sit)) {
       return false;
     }

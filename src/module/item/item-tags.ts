@@ -158,6 +158,9 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
 
   #autoTags_power(power : Power): TagType[] {
     const list : TagType [] = this.#autoTags_usable(power);
+    if (power.parent instanceof Actor) {
+      list.pushUnique("shadow-only");
+    }
     if (power.system.subtype == "weapon" || power.system.subtype == "magic") {
       list.pushUnique(power.system.subtype);
     }

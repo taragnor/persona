@@ -168,6 +168,11 @@ export const MODV2_DETAILS = {
     type: "defensive",
     rounding: "none",
     initial: 0,
+  },
+  "armor-rating": {
+    type: "defensive",
+    rounding: "round",
+    initial: 0,
   }
 } as const satisfies Record<string, ModV2Type>;
 

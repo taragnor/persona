@@ -27,7 +27,7 @@ import {AttackResult} from "../module/combat/combat-result.js";
 import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js";
 import {StatusDuration} from "../module/persona-ae.js";
 import {PowerTagOrId} from "./power-tags.js";
-import {CalculationOperation} from "../module/utility/calculation-v2.js";
+import {CalculationOperationV2} from "../module/utility/calculation-v2.js";
 import {ModifierV2Target} from "../module/bonus-calc.js";
 
 
@@ -645,7 +645,7 @@ type ModifierConsequence =
 type ModifierV2Consequence = {
   type: "modifier-v2";
 } & {
-  operation: CalculationOperation;
+  operation: CalculationOperationV2;
   modTarget: ModifierV2Target;
   priority: number;
   amount: ConsequenceAmount;

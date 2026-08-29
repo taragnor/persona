@@ -51,7 +51,7 @@ export class PersonaPrinter extends Application {
 	}
 
 	openPersona(event: JQuery.ClickEvent) {
-		const personaId = HTMLTools.getClosestData(event, "personaId");
+		const personaId = HTMLTools.getClosestData<Shadow["id"]>(event, "personaId");
 		const shadow = PersonaDB.getActorById(personaId);
 		if (!shadow || !shadow.isShadow()) {
 			throw new Error(`Can't find Shadow for  ${shadow?.name}`);
@@ -60,15 +60,6 @@ export class PersonaPrinter extends Application {
 	}
 
 }
-
-//This is way too expensive and was removed
-// Hooks.on("updateActor", function (actor: PersonaActor ) {
-// 	const instance = PersonaPrinter._instance;
-// 	if (instance && actor.isShadow())  {
-// 		instance.render(false);
-// 	}
-// });
-
 
 //@ts-expect-error editing global scope
 window.PersonaList = PersonaPrinter;

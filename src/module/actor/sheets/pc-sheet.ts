@@ -392,18 +392,18 @@ export class PCSheet extends PCLikeSheet {
 	}
 
 	fusionOptionSelect (ev: JQuery.ClickEvent) {
-		const shadowId = HTMLTools.getClosestData(ev, "shadowId");
+		const shadowId = HTMLTools.getClosestData<Shadow["id"]>(ev, "shadowId");
 		const shadow = PersonaDB.getActorById(shadowId) as Shadow;
 		if (!shadow) {
 			throw new PersonaError(`Couldn't find Shadow ${shadowId}`);
 		}
 		//get components
-		const componentIds: string[] = [];
+		const componentIds: Actor["id"][] = [];
 		$(ev.currentTarget).find("[data-shadow-component-id]")
 			.each( function () {
 				const x = $(this).data('shadow-component-id') as unknown;
 				if (x && typeof x == "string" && x.length > 0) {
-					componentIds.push(x);
+					componentIds.push(x as Actor["id"]);
 				}
 			});
 		const components = componentIds
@@ -418,7 +418,7 @@ export class PCSheet extends PCLikeSheet {
 	}
 
 	compendiumOptionSelect(ev: JQuery.ClickEvent) {
-		const shadowId = HTMLTools.getClosestData(ev, "personaId");
+		const shadowId = HTMLTools.getClosestData<Shadow["id"]>(ev, "personaId");
 		const shadow = PersonaDB.getActorById(shadowId) as Shadow;
 		if (!shadow) {
 			throw new PersonaError(`Couldn't find Shadow ${shadowId}`);

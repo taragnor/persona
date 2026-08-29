@@ -95,7 +95,7 @@ export class CalculationV2 {
     };
   }
 
-  private applyCalcItem(lastTotal: number, operation: CalculationOperation, amt : number) : number {
+  private applyCalcItem(lastTotal: number, operation: CalculationOperationV2, amt : number) : number {
     const operand = amt;
     switch (operation) {
       case "set":  {
@@ -168,7 +168,7 @@ export class CalculationV2 {
         return a.priority - b.priority;
       }
       if (a.op != b.op) {
-        const OrderVal = (op: CalculationOperation) => OPERATION_ORDER_LIST.indexOf(op);
+        const OrderVal = (op: CalculationOperationV2) => OPERATION_ORDER_LIST.indexOf(op);
         return OrderVal(a.op) - OrderVal(b.op);
       }
       return 0;
@@ -229,7 +229,7 @@ export class CalculationV2 {
 }
 
 type CalcList = {
-  op: CalculationOperation,
+  op: CalculationOperationV2,
   priority: number,
 } & CalculationNumber;
 
@@ -241,7 +241,7 @@ const OPERATION_ORDER_LIST = [
   "sub",
   "multiply",
   "divide",
-] as const satisfies CalculationOperation[];
+] as const satisfies CalculationOperationV2[];
 
 const OPERATION_TYPE_LIST = [
 	"add",
@@ -253,7 +253,7 @@ const OPERATION_TYPE_LIST = [
 
 export const CALCULATION_OPERATION_V2 = HTMLTools.createLocalizationObject(OPERATION_TYPE_LIST, "persona.calculation.operation");
 
-export type CalculationOperation = typeof OPERATION_TYPE_LIST[number];
+export type CalculationOperationV2 = typeof OPERATION_TYPE_LIST[number];
 
 type CalculationNumber = {
 	name: string,

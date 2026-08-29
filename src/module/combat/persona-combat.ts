@@ -991,7 +991,9 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
   static getPTokenFromActorAccessor(acc: UniversalActorAccessor<PersonaActor>) : PToken | undefined {
     const combat = game.combat as U<PersonaCombat>;
     if (acc.token && !acc.token.actorLink) {
+      try {
       return PersonaDB.findToken(acc.token) as PToken;
+      } catch { }
     }
     const actor = PersonaDB.findActor(acc);
     if (combat && actor.isValidCombatant())  {

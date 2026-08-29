@@ -143,11 +143,11 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
     return this.getAllByType ("Actor") as ActorType[];
   }
 
-  getActor(id: string) : Option<ActorType> {
+  getActor(id: Actor["id"] | FoundryDocument["id"]) : Option<ActorType> {
     return this.getActorById(id);
   }
 
-  getActorById<T extends ActorType = ActorType> (id: string) : Option<T> {
+  getActorById<T extends ActorType = ActorType> (id: Actor["id"] | FoundryDocument["id"]) : Option<T> {
     return this.#findById(id, "Actor") as Option<T>;
   }
 
@@ -180,16 +180,20 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
     return retarr[0];
   }
 
-  #findById(id: string, type: ValidDBTypes = "Actor") : Option<ItemType | ActorType> {
+  #findById(id: FoundryDocument["id"], type: ValidDBTypes = "Actor") : Option<ItemType | ActorType> {
     // let retarr: (Actor<any> | Item<any>)[];
     switch (type) {
       case "Actor": {
         const actor = this.allActorsMap.get(id);
-        return actor ? actor : null;
+        if (actor) {return actor;}
+        const actor2 = game.actors.get(id as Actor["id"]);
+        return actor2 ? actor2 as ActorType : null;
       }
       case "Item": {
         const item = this.allItemsMap.get(id);
-        return item ? item : null;
+        if (item) {return item;}
+        const item2 = game.items.get(id as Item["id"]);
+        return item2 ? item2 as ItemType : null;
       }
       default:
         throw new Error(`Unsupported Type ${type as string}`);

@@ -422,7 +422,7 @@ export class PersonaScene extends Scene {
         <span class="shadow-ban-toggle"></span>
         </span>
       `).on("click", (ev) => {
-          const id = HTMLTools.getClosestData(ev, "shadowId");
+          const id = HTMLTools.getClosestData<Shadow["id"]>(ev, "shadowId");
           const shadow = PersonaDB.getActorById(id);
           if (!shadow) {return;}
           void shadow.sheet.render(true);

@@ -74,18 +74,22 @@ export class ConditionalEffectC {
     this._isDefensiveRaw = ce.isDefensive ?? false;
     this._isMainModifier = !this._isEmbedded && !this._isAura;
     this.setGrantedBonuses();
-    if (PersonaSettings.debugMode()) {
+    if (game.user.isGM) {
       this._errorCheck();
     }
   }
 
   private _errorCheck() {
     const errors : string[] = [];
-    errors.push(...this._preconditions.flatMap(x=> x.errorCheck()));
-    errors.push(...this._consequences.flatMap(x=> x.errorCheck()));
+    errors.push(
+      ...this._preconditions.flatMap(x=> x.errorCheck() ),
+      ...this._consequences.flatMap(x=> x.errorCheck() ),
+    );
     if (errors.length > 0) {
       const errorsStr = errors.join("\n");
       console.warn(`errors detected in ${this.name}: ${errorsStr}`);
+      ui.notifications.warn(`Errors detected on ConditionalEffect ${this.name}` );
+      Debug(this);
     }
   }
 
@@ -253,10 +257,11 @@ export class ConditionalEffectC {
   }
 
   _grantsBonusType( btype : ModifierV2Target) : boolean {
-    return this.consequences
-      .some(cons => cons.cons.type == "modifier-v2"
-        && cons.cons.modTarget== btype
-      );
+    return this.consequences.some(cons=> cons.getGrantedBonusesV2() == btype);
+    // return this.consequences
+    //   .some(cons => cons.cons.type == "modifier-v2"
+    //     && cons.cons.modTarget== btype
+    //   );
   }
 
 

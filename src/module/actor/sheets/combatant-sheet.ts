@@ -565,7 +565,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 	openPersona(event: JQuery.ClickEvent) {
-		const personaId = HTMLTools.getClosestData(event, "personaId");
+		const personaId = HTMLTools.getClosestData<Shadow["id"]>(event, "personaId");
 		const persona = PersonaDB.getActorById(personaId);
 		if (!persona) {
 			throw new PersonaError(`Can't find persona ${personaId}`);
@@ -608,7 +608,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 	async copyToCompendium(ev: JQuery.ClickEvent) {
-		const personaId = HTMLTools.getClosestData(ev, "personaId");
+		const personaId = HTMLTools.getClosestData<Shadow["id"]>(ev, "personaId");
 		if (!this.actor.isPC()) {
 			throw new PersonaError("Cant' use copy to compendium for a Shadow persona");
 		}

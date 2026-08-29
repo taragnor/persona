@@ -25,6 +25,8 @@ const DEPRECATED_TYPES = [
 	"weakestSlot",
 	"mpCostMult",
 	"will",
+	"armor-dr",
+	"armor-dr-mult",
 ] as const;
 
 export const COMBAT_BONUS_TYPES = [
@@ -53,8 +55,6 @@ const DEFENSE_TYPES = [
 	"kill", //kill defense bonus
 	"ail", //ailment defnese bonus
 	"dr",
-	"armor-dr",
-	"armor-dr-mult",
 	"instantDeathResistanceMult",
 	"critResist",
 	"baleful-status-duration",

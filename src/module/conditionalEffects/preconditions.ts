@@ -1016,7 +1016,7 @@ function resolveSocialNonIDTarget (
 
 
 export function resolveActorIdOrTarot (targetIdOrTarot: PersonaActor["id"] | TarotCard)  {
-  const idTest = PersonaDB.getActorById(targetIdOrTarot);
+  const idTest = PersonaDB.getActorById(targetIdOrTarot as PersonaActor["id"]);
   if (idTest != undefined) {
     if (idTest.isNPCAlly()) {
       return idTest.getNPCProxyActor();
