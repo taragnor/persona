@@ -3784,6 +3784,7 @@ startingEnergy(this: Shadow) : number {
 /** rate that shadow is encountered in the a scene
  */
 encounterWeight(this: Shadow, scene: PersonaScene = game.scenes.current as PersonaScene) : number {
+  if (this.tarot == undefined) {return 0;}
   const weightMultList = this.persona()
     .getBonuses("encounter-weight-mult");
   const weightMult = weightMultList.total({user: this.accessor}, "percentage");
