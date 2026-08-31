@@ -939,9 +939,6 @@ export type AttackResult = {
   power: UniversalItemAccessor<UsableAndCard>,
   situation: HasKey<SituationComponent.Roll, "resisted">,
   roll: ResolvedRollBundle | null ,
-  // ailmentRange: U<{low: number, high: number}>
-  // instantKillRange: U<{low: number, high:number}>;
-  // critRange: U<{low: number, high:number}>;
   ranges: CalculatedRange[];
   activationRoll?: number;
 };
