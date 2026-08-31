@@ -398,11 +398,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   async refreshItemBase(this: Carryable) {
-    if (this.system.itemBase && this.parent != undefined) {return "no change";}
+    // if (this.system.itemBase && this.parent != undefined) {return "no change";}
     const itemBase = this._deriveItemBase();
     if (this.parent instanceof PersonaActor) {
       // const item = PersonaDB.getItemByName(this.name);
-      if (itemBase) {
+      if (itemBase && itemBase.id != this.system.itemBase) {
         await this.update( {"system.itemBase": itemBase.id});
         return itemBase;
       }
@@ -428,10 +428,23 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
     const baseId = this.system.itemBase ?? this._deriveItemBase()?.id;
     if (this.system.itemBase == undefined ||
-      (this.system.itemBase != this.id && this.parent == undefined)) {
+      (
+        this.system.itemBase != this.id
+        && this.parent == undefined
+      ) ||
+      (
+        this.parent instanceof Actor
+        && baseId == this.id
+      )
+    ) {
       void this.refreshItemBase();
     }
-    if (baseId && baseId != this.id) {
+    if (!(this.parent instanceof PersonaActor)) {
+      return this;
+    }
+
+    // if (baseId && baseId != this.id) {
+    if (baseId) {
       const baseItem = PersonaDB.getItemById(baseId);
       if (baseItem && baseItem.system.type == this.system.type) {
         return baseItem as typeof this;

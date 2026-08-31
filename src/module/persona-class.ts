@@ -999,7 +999,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   statusResist(status: StatusEffectId, modifiers ?: readonly ConditionalEffectC[]) : ResistStrength {
-    const actor= this.source;
+    const actor = this.source;
     if (!modifiers) {
       modifiers = this.mainModifiers();
     }

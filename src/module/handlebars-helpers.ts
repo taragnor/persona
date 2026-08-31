@@ -491,12 +491,14 @@ export class PersonaHandleBarsHelpers {
     },
 
     "printConditionals": function (cond: Precondition[]) {
+      if (!cond || !Array.isArray(cond)) {return "ERROR";}
       const str= ConditionalEffectPrinter.printConditions(cond);
       return new Handlebars.SafeString( `<div class="printed-conditional">${str}</div>`
       );
     },
 
     "printConsequences": function (cons: ConditionalEffectC["consequences"]) {
+      if (!cons || !Array.isArray(cons)) {return "ERROR";}
       const str= ConditionalEffectPrinter.printConsequences(cons);
       return new Handlebars.SafeString( `<div class="printed-consequence">${str}</div>`
       );
