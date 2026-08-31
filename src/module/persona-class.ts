@@ -30,6 +30,7 @@ import {TimedCache} from "./utility/cache.js";
 import {multiCheckContains, multiCheckToArray} from "./conditionalEffects/preconditions.js";
 import {BonusCalculation, ModifierV2Target} from "./bonus-calc.js";
 import {CancelTrigger} from "../cancel-check-effect.js";
+import {NonDeprecatedConsequence} from "../config/consequence-types.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidAttackers = ValidAttackers> implements PersonaI {
   #combatStats: U<PersonaCombatStats>;
@@ -1005,7 +1006,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     const effectChangers = modifiers
       .filter ( mod => mod.consequences
         .some( cons=>
-          cons.cons.type == "raise-status-resistance" && multiCheckContains(cons.cons.statusName,status)
+          cons.statusResistancesAltered().has(status)
         ));
     const situation : Situation = {
       user: actor.accessor,
@@ -1020,17 +1021,14 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     const resval = (x: ResistStrength): number => RESIST_STRENGTH_LIST.indexOf(x);
     let resist = baseStatusResist;
     for (const consC of consequences) {
-      const cons = consC.cons;
-      if (cons.type == "raise-status-resistance") {
-        const statusList = multiCheckToArray(cons.statusName);
-        if (statusList.includes(status)) {
-          if (!cons.lowerResist && resval(cons.resistanceLevel) > resval(resist)) {
-            resist = cons.resistanceLevel;
-          }
-          if (cons.lowerResist && resval(cons.resistanceLevel) < resval(resist)) {
-            resist = cons.resistanceLevel;
-          }
-        }
+      const statusList = consC.statusResistancesAltered();
+      if (!statusList.has(status)) {continue;}
+      const cons = consC.cons as (NonDeprecatedConsequence & {type: "raise-status-resistance"});
+      if (!cons.lowerResist && resval(cons.resistanceLevel) > resval(resist)) {
+        resist = cons.resistanceLevel;
+      }
+      if (cons.lowerResist && resval(cons.resistanceLevel) < resval(resist)) {
+        resist = cons.resistanceLevel;
       }
     }
     return resist;

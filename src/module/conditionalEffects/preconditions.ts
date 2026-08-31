@@ -1204,9 +1204,6 @@ export function multiCheckContains<T extends R, const R extends string>(multiChe
   }
   const set = multiCheckToSet(multiCheck);
   return arr.some (x=> set.has(x));
-  // return Object.entries(multiCheck)
-  //   .filter( ([_, val]) => val == true)
-  //   .some (([item, _]) => arr.includes(item));
 }
 
 function multiCheckTest<T extends string>(multiCheck: MultiCheck<T> | T, testFn: (x: T) => boolean) : boolean {
@@ -1215,9 +1212,6 @@ function multiCheckTest<T extends string>(multiCheck: MultiCheck<T> | T, testFn:
   }
   const arr = multiCheckToArray(multiCheck);
   return arr.some(x=> testFn(x));
-  // return Object.entries(multiCheck)
-  //   .filter( ([_, val]) => val == true)
-  //   .some (([item, _]) => testFn(item as T));
 }
 
 export function numberOfOthersWithResolver(condition: NumberOfOthersWithComparison, situation : Situation, ownershipInfo: EffectOwnershipData) : number | false {

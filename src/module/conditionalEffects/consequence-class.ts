@@ -146,11 +146,20 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
     return multiCheckToArray(cons.statusName);
   }
 
+  statusResistancesAltered() : Set<StatusEffectId> {
+    const cons = this.cons as NonDeprecatedConsequence;
+    if (cons.type == "raise-status-resistance") {
+      return multiCheckToSet(cons.statusName);
+    }
+    return EMPTY_SET as Set<StatusEffectId>;
+  }
+
   override errorCheck() : string[] {
     const data = super.errorCheck();
     const tests = [
       "_errorCheckDefensiveV1",
       "_errorCheckDefensiveV2",
+      "_errorCheckDefensiveStatusResist"
     ] as const;
     for (const test of tests) {
       const result = this[test]();
@@ -194,6 +203,17 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
     return null;
   }
 
+  private _errorCheckDefensiveStatusResist() : N<string> {
+    const statusResist= this.statusResistancesAltered();
+    if (statusResist.size == 0) { return null; }
+    if (!this.parent?.isDefensive) {
+          return `Invalid StatusResist enhancer on NonDefensive consequence: ${Array.from(statusResist.keys()).join()} `;
+    }
+    return null;
+  }
+
 }
 
 const sourceCache = new WeakMap<ConditionalEffectComponent, Sourced<object>> ();
+
+const EMPTY_SET : Set<unknown>= new Set();

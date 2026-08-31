@@ -467,7 +467,7 @@ export class ConditionalEffectC {
         type: 'always',
       }, this)
     ];
-    this._consequences= [
+    this._consequences = [
       new ConsequenceC( {
         type: 'other-effect',
         otherEffect: "grant-persona",
