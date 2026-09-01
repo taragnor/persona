@@ -156,6 +156,13 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
 
   override errorCheck() : string[] {
     const data = super.errorCheck();
+    data.push(...this._errorCheckDefensiveRequired());
+    data.push(...this._errorCheckGrantedPersonaItems());
+    return data;
+  }
+
+  private _errorCheckDefensiveRequired(): string[] {
+    const data = [];
     const tests = [
       "_errorCheckDefensiveV1",
       "_errorCheckDefensiveV2",
@@ -212,6 +219,71 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
     return null;
   }
 
+  private _errorCheckGrantedPersonaItems() : string [] {
+    const parent = this.parent;
+    if (!parent) {
+      return ["No Parent can't grant Talents/powers/tags"];
+    }
+    const data = [];
+    const tests = [
+      "_errorCheckGrantedTalent",
+      "_errorCheckGrantedTag",
+      "_errorCheckGrantedPower",
+    ] as const;
+    for (const test of tests) {
+      const result = this[test]();
+      if (result == null) {continue;}
+      data.push(result);
+    }
+    return data;
+  }
+
+  private _errorCheckGrantedTalent() : N<string> {
+    if (!this.grantedTalent) {return null;}
+    const parent = this.parent!;
+    if (parent.isEmbedded) {return null;}
+    const bannedTypes : PersonaItem["type"][] = ["talent", "power"];
+    const source = parent.findSource();
+    if (parent.isAura) {
+      return `Illegal talent granted ${this.grantedTalent.id} on aura`;
+    }
+    if (parent.isAura ||
+      (source && source instanceof PersonaItem && bannedTypes.includes(source.type))
+    ) {
+      return `Illegal talent granted ${this.grantedTalent.id} on ${(source as PersonaItem)?.type}`;
+    }
+    return null;
+  }
+
+  private _errorCheckGrantedTag() : N<string> {
+    if (!this.addedCreatureTags) {return null;}
+    const parent = this.parent!;
+    if (parent.isEmbedded) {return null;}
+    const source = parent.findSource();
+    const bannedTypes : PersonaItem["type"][] = ["tag","talent", "power"];
+    if (parent.isAura ||
+      (source && source instanceof PersonaItem && bannedTypes.includes(source.type))
+    ) {
+      const tag = this.addedCreatureTags;
+      const tagstr = tag instanceof PersonaItem ? tag.name : tag;
+      return `Illegal talent granted ${tagstr} on ${(source as PersonaItem)?.type}`;
+    }
+    return null;
+  }
+
+  private _errorCheckGrantedPower() : N<string> {
+    if (!this.grantedPower) {return null;}
+    const parent = this.parent!;
+    if (parent.isEmbedded) {return null;}
+    const source = parent.findSource();
+    const bannedTypes : PersonaItem["type"][] = [ "power"];
+    if (parent.isAura ||
+      (source && source instanceof PersonaItem && bannedTypes.includes(source.type) && !this.grantedPower.hasTag("navigator", null))
+    ) {
+      return `Illegal talent granted ${this.grantedPower.name} on ${(source as PersonaItem)?.type}`;
+    }
+    return null;
+  }
 }
 
 const sourceCache = new WeakMap<ConditionalEffectComponent, Sourced<object>> ();

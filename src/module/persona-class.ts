@@ -186,8 +186,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
         && !power.isFollowUpMove()
         && !power.isMinorActionItem()
         && !power.isTheurgy()
-        //was prevengin bonus powers from showing combat skills
-        // && !this.displayedMainSkills.includes(power)
     );
   }
 
