@@ -1462,11 +1462,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   get armor() : U<InvItem> {
     return this.equippedItems()
     .find( x=> x.isOutfit()) as U<InvItem>;
-    // for (const x of this.equippedItems()) {
-    //   if (x.isInvItem() && x.system.slot == "body") {
-    //     return x;
-    //   }
-    // }
   }
 
   private _baseArmorRating() : number {

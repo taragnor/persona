@@ -638,6 +638,9 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       case "item":
         sources= this.passiveModifiers();
         break;
+      case "power":
+        sources = this.passiveModifiers();
+        break;
       default:
         calc.category satisfies never;
         throw new PersonaError(`Illegal calc Type ${calc.category as string}`);

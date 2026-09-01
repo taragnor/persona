@@ -203,6 +203,7 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
         }
         break;
       case "item":
+      case "power":
         break;
       default:
         category satisfies never;

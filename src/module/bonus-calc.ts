@@ -70,6 +70,11 @@ export class BonusCalculation extends CalculationV2 {
           PersonaError.softFail("No item in situation for", situation, this._typeData);
         }
         break;
+      case "power":
+        if (!situation || !("usedPower" in situation)) {
+          PersonaError.softFail("No usedPower in situation for", situation, this._typeData);
+        }
+        break;
       default:
         this._typeData.type satisfies never;
         break;
@@ -173,6 +178,12 @@ export const MODV2_DETAILS = {
     type: "defensive",
     rounding: "round",
     initial: 0,
+  },
+  "mp-cost": {
+    type: "power",
+    rounding: "round",
+    initial: 1,
+    clamp: {min:0, max: 9999},
   }
 } as const satisfies Record<string, ModV2Type>;
 
@@ -184,7 +195,7 @@ export type ModifierV2Target = keyof typeof MODIFIER_V2_TARGET;
 
 
 type ModV2Type = {
-  type: "offensive" | "defensive" | "user" | "item",
+  type: "offensive" | "defensive" | "user" | "item" | "power",
   rounding: "floor" | "ceiling" | "round" | "none",
   clamp ?: {min: number, max:number},
   initial: number,

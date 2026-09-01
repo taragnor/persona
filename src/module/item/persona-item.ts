@@ -35,7 +35,7 @@ import {Defense, DEFENSE_TYPES} from '../../config/defense-types.js';
 import {EnergyClassCalculator} from '../calculators/shadow-energy-cost-calculator.js';
 import {ConsequenceAmountResolver} from '../conditionalEffects/consequence-amount.js';
 import {EnchantedTreasureFormat, TreasureSystem} from '../exploration/treasure-system.js';
-import {Calculation} from '../utility/calculation.js';
+import {Calculation, EvaluatedCalculation} from '../utility/calculation.js';
 import {DamageInterface} from '../combat/damage-system.js';
 import {ConditionalEffectC} from '../conditionalEffects/conditional-effect-class.js';
 import {changeProbability, PROBABILITIES_POWER_RARITY} from '../../config/probability.js';
@@ -49,6 +49,7 @@ import {ItemHooks} from './item-hooks.js';
 import {TimedCache} from '../utility/cache.js';
 import {ConditionalEffectManager} from '../conditionalEffects/conditional-effect-manager.js';
 import {BonusCalculation, ModifierV2Target} from '../bonus-calc.js';
+import {MPCostCalculatorV2} from '../calculators/mpcost-calculatorv2.js';
 
 declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -1194,13 +1195,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   energyCost(this: UsableAndCard, persona:Persona) : number {
     const cost = this.energyCostData(persona);
     return cost.cost;
-    // const sit : Situation= {
-    //   usedPower: this.accessor,
-    //   user: persona.user.accessor,
-    // };
-    // const mod = persona.getBonuses("power-energy-cost").total(sit, "standard");
-    // const rounded = Math.round(mod /10);
-    // return cost.cost + rounded;
   }
 
   getBonuses(this: ItemModifierContainer & PersonaItem, modNames: MaybeArray<NonDeprecatedModifierType>) : ModifierList {
@@ -1224,7 +1218,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         sources= this.getPassiveEffects(user, options);
         break;
       case "item":
-        sources= this.getPassiveEffects(user, options);
+        sources = this.getPassiveEffects(user, options);
+        break;
+      case "power":
+        sources = this.getPassiveEffects(user, options);
         break;
       default:
         calc.category satisfies never;
@@ -2186,6 +2183,25 @@ get baseMPCost(): number {
   }
   if (this.cache.mpCost > 0) { return this.cache.mpCost; }
   return this.system.mpcost;
+}
+
+get newBaseMPCost() : EvaluatedCalculation {
+  if (!this.isPower()) {
+    return {
+      total: 0, steps:[]
+    };
+  }
+  if (this.customCost) {
+    return {
+      total: this.system.mpcost,
+      steps: ["custom cost"],
+    };
+  }
+  const calc = MPCostCalculatorV2.calcBaseMPCost(this);
+  const sit = {
+    usedPower: this.accessor,
+  };
+  return calc.eval(sit);
 }
 
 private _getLinkedEffects (this: ItemModifierContainer, sourceActor: PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) : readonly ConditionalEffectC[] {
