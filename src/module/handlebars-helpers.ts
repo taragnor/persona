@@ -690,7 +690,8 @@ export class PersonaHandleBarsHelpers {
       }
       if (power.isMagicSkill()) {
         const mpCost = power.mpCost(null);
-        return `${mpCost}${customCost} MP`;
+        const altCost = power.newBaseMPCost.total;
+        return `${mpCost}${customCost} MP / ${altCost}`;
       }
       return "";
     },
