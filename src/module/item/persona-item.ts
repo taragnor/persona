@@ -393,10 +393,8 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   async refreshItemBase(this: Carryable) {
-    // if (this.system.itemBase && this.parent != undefined) {return "no change";}
     const itemBase = this._deriveItemBase();
     if (this.parent instanceof PersonaActor) {
-      // const item = PersonaDB.getItemByName(this.name);
       if (itemBase && itemBase.id != this.system.itemBase) {
         await this.update( {"system.itemBase": itemBase.id});
         return itemBase;
@@ -1318,7 +1316,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return bonusTypes.flatMap( btype => {
       return effects
         .filter( eff => eff.grantsBonusTypeV1(btype))
-      // && eff.consequences.some( cons => ('modifiedFields' in cons && cons.modifiedFields[btype] == true) || ('modifiedField' in cons && cons.modifiedField == btype)))
         .map(eff => {
           const source = eff.source ? PersonaDB.find(eff.source) : undefined;
           const realSource = eff.realSource ? PersonaDB.find(eff.realSource) : undefined;
@@ -1927,137 +1924,137 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return false;
   }
 
-isCraftingMaterial(): boolean {
-  return this.cache2.isCraftingMaterial.value;
-}
-
-private _isCraftingMaterial(): boolean {
-  if (!this.isCarryableType()) {return false;}
-  if (this.isInvItem()) {
-    return this.system.slot == "crafting";
+  isCraftingMaterial(): boolean {
+    return this.cache2.isCraftingMaterial.value;
   }
-  if (this.isConsumable()) {
-    return this.hasTag(["crafting", "secondary-crafting"], null);
+
+  private _isCraftingMaterial(): boolean {
+    if (!this.isCarryableType()) {return false;}
+    if (this.isInvItem()) {
+      return this.system.slot == "crafting";
+    }
+    if (this.isConsumable()) {
+      return this.hasTag(["crafting", "secondary-crafting"], null);
+    }
+    return false;
   }
-  return false;
-}
 
-equals(other: PersonaItem) : boolean {
-  return this == other;
-}
-
-isSameBaseItem (other: Carryable) : boolean {
-  return this.itemBase == other.itemBase;
-}
-
-get isStackable() : boolean {
-  return this.isCraftingMaterial() || this.isConsumable() || this.isSkillCard();
-}
-
-isStackableWith(a: TagBearingItem): boolean {
-  if (!this.isStackable || !a.isStackable) {return false;}
-  const tagListA = a.tagList(null);
-  const thisTagList = this.tagList(null);
-  if (this.itemBase != a.itemBase) {return false;}
-  return this.isStackable && a.isStackable
-    && this.name == a.name
-    && tagListA.every(tag => thisTagList.includes(tag))
-    && thisTagList.every(tag => tagListA.includes(tag));
-}
-
-isEquippable(): boolean {
-  if (!this.isCarryableType()) {return false;}
-  if (this.isWeapon()) {return true;}
-  if (this.system.type != "item") {return false;}
-  switch (this.system.slot) {
-    case "key-item": return false;
-    case "body": return true;
-    case "accessory": return true;
-    case "weapon_crystal": return true;
-    case "crafting": return false;
-    case "none": return false;
-    default:
-      this.system.slot satisfies never;
-      return false;
+  equals(other: PersonaItem) : boolean {
+    return this == other;
   }
-}
 
-isShadowExclusivePower(): boolean {
-  if (!this.isPower()) {return false;}
-  return this.hasTag('shadow-only', null);
-}
-
-isBasicPower(this: UsableAndCard) : boolean {
-  if (this.isSkillCard()) {return false;}
-  if (this.isConsumable()) {return false;}
-  const basics = [
-    ...PersonaItem.getBasicPCPowers(),
-    ...PersonaItem.getBasicShadowPowers(),
-  ];
-  //straight up comparison failed for some reason, probably due to how Foundry draws from compendiums
-  return basics.some(pwr=> pwr.id == this.id);
-}
-
-mpCost(this: Usable, userPersona: Persona | null): number {
-  if (this.isConsumable()) {return 0;}
-  const mult= this._getMPMultiplier(userPersona);
-  const baseMPCost = this.baseMPCost;
-  return Math.clamp(Math.round(baseMPCost * mult), 0,  1000);
-}
-
-private _getMPMultiplier(this: Usable, userPersona: N<Persona>) : number {
-  if (!userPersona) {return 1;}
-  const sit : Situation = {
-    user: userPersona.user.accessor,
-    usedPower: this.accessor,
-    attacker: userPersona.user.accessor,
-  };
-  const list = userPersona.getBonuses('power-mp-cost-mult');
-  return list.total(sit, 'percentage');
-}
-
-get baseMPCost(): number {
-  if (!this.isPower()
-    || this.isTeamwork()
-  ) {return 0;}
-  if (this.customCost) {return this.system.mpcost;}
-  if (this.cache.mpCost == undefined) {
-    this.cache.mpCost = PowerCostCalculator.calcMPCost(this);
+  isSameBaseItem (other: Carryable) : boolean {
+    return this.itemBase == other.itemBase;
   }
-  if (this.cache.mpCost > 0) { return this.cache.mpCost; }
-  return this.system.mpcost;
-}
 
-get newBaseMPCost() : EvaluatedCalculation {
-  if (!this.isPower()) {
-    return {
-      total: 0, steps:[]
+  get isStackable() : boolean {
+    return this.isCraftingMaterial() || this.isConsumable() || this.isSkillCard();
+  }
+
+  isStackableWith(a: TagBearingItem): boolean {
+    if (!this.isStackable || !a.isStackable) {return false;}
+    const tagListA = a.tagList(null);
+    const thisTagList = this.tagList(null);
+    if (this.itemBase != a.itemBase) {return false;}
+    return this.isStackable && a.isStackable
+      && this.name == a.name
+      && tagListA.every(tag => thisTagList.includes(tag))
+      && thisTagList.every(tag => tagListA.includes(tag));
+  }
+
+  isEquippable(): boolean {
+    if (!this.isCarryableType()) {return false;}
+    if (this.isWeapon()) {return true;}
+    if (this.system.type != "item") {return false;}
+    switch (this.system.slot) {
+      case "key-item": return false;
+      case "body": return true;
+      case "accessory": return true;
+      case "weapon_crystal": return true;
+      case "crafting": return false;
+      case "none": return false;
+      default:
+        this.system.slot satisfies never;
+        return false;
+    }
+  }
+
+  isShadowExclusivePower(): boolean {
+    if (!this.isPower()) {return false;}
+    return this.hasTag('shadow-only', null);
+  }
+
+  isBasicPower(this: UsableAndCard) : boolean {
+    if (this.isSkillCard()) {return false;}
+    if (this.isConsumable()) {return false;}
+    const basics = [
+      ...PersonaItem.getBasicPCPowers(),
+      ...PersonaItem.getBasicShadowPowers(),
+    ];
+    //straight up comparison failed for some reason, probably due to how Foundry draws from compendiums
+    return basics.some(pwr=> pwr.id == this.id);
+  }
+
+  mpCost(this: Usable, userPersona: Persona | null): number {
+    if (this.isConsumable()) {return 0;}
+    const mult= this._getMPMultiplier(userPersona);
+    const baseMPCost = this.baseMPCost;
+    return Math.clamp(Math.round(baseMPCost * mult), 0,  1000);
+  }
+
+  private _getMPMultiplier(this: Usable, userPersona: N<Persona>) : number {
+    if (!userPersona) {return 1;}
+    const sit : Situation = {
+      user: userPersona.user.accessor,
+      usedPower: this.accessor,
+      attacker: userPersona.user.accessor,
     };
+    const list = userPersona.getBonuses('power-mp-cost-mult');
+    return list.total(sit, 'percentage');
   }
-  if (this.customCost) {
-    return {
-      total: this.system.mpcost,
-      steps: ["custom cost"],
-    };
-  }
-  const calc = MPCostCalculatorV2.calcBaseMPCost(this);
-  const sit = {
-    usedPower: this.accessor,
-  };
-  return calc.eval(sit);
-}
 
-private _getLinkedEffects (this: ItemModifierContainer, sourceActor: PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) : readonly ConditionalEffectC[] {
-  const tagEffects : ConditionalEffectC[] = [];
-  if (!this.isTalent() && !this.isTag() && !this.isUniversalModifier()){
-    const tags = this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
-      .filter (tag=> tag instanceof PersonaItem);
-    tagEffects.pushUnique(...tags.flatMap(tag =>
-      tag.getEffects(sourceActor, {CETypes, proxyItem: this})
-    ));
+  get baseMPCost(): number {
+    if (!this.isPower()
+      || this.isTeamwork()
+    ) {return 0;}
+    if (this.customCost) {return this.system.mpcost;}
+    if (this.cache.mpCost == undefined) {
+      this.cache.mpCost = PowerCostCalculator.calcMPCost(this);
+    }
+    if (this.cache.mpCost > 0) { return this.cache.mpCost; }
+    return this.system.mpcost;
   }
-  return tagEffects;
-}
+
+  get newBaseMPCost() : EvaluatedCalculation {
+    if (!this.isPower()) {
+      return {
+        total: 0, steps:[]
+      };
+    }
+    if (this.customCost) {
+      return {
+        total: this.system.mpcost,
+        steps: ["custom cost"],
+      };
+    }
+    const calc = MPCostCalculatorV2.calcBaseMPCost(this);
+    const sit = {
+      usedPower: this.accessor,
+    };
+    return calc.eval(sit);
+  }
+
+  private _getLinkedEffects (this: ItemModifierContainer, sourceActor: PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) : readonly ConditionalEffectC[] {
+    const tagEffects : ConditionalEffectC[] = [];
+    if (!this.isTalent() && !this.isTag() && !this.isUniversalModifier()){
+      const tags = this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
+        .filter (tag=> tag instanceof PersonaItem);
+      tagEffects.pushUnique(...tags.flatMap(tag =>
+        tag.getEffects(sourceActor, {CETypes, proxyItem: this})
+      ));
+    }
+    return tagEffects;
+  }
 
 async addCreatureTag(this: Tag, tag ?: Tag) : Promise<void> {
   const tags = this.system.creatureTags;
@@ -2259,7 +2256,6 @@ requiredLinkLevel(this: Focus) : number  {
         || cond.cond.socialLinkIdOrTarot == this.parent?.name
         || cond.cond.socialLinkIdOrTarot == this.parent?.tarot?.name
       ) {
-        // return 'num' in cond ? cond.num ?? 0 : 0;
         if ('num' in cond.cond) {
           const sourcedC = cond.toSourced() as (ReturnType<typeof cond["toSourced"]> & {"num": ConsequenceAmount});
           const sourced = ConsequenceAmountResolver.extractSourcedFromField(sourcedC, "num");
