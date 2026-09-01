@@ -17,7 +17,6 @@ export class MPCostCalculatorV2 extends CostCalculator {
       "mpCost_ailment",
       "mpCost_tags",
 			"mpcost_shields",
-
     ] as const;
     for (const fn of functions) {
       this[fn](pwr, calc);
@@ -28,17 +27,11 @@ export class MPCostCalculatorV2 extends CostCalculator {
   private static _damage(pwr: Power, calc : BonusCalculation) : void {
     const baselevel = pwr.system.damageLevel;
     if (baselevel == "none" || baselevel == "fixed") {return;}
-    // const baseCost = this.BASE_MP_COSTS["directDamage"];
     const levelMult = this.DAMAGE_LEVEL_MULTIPLIERS_MP[baselevel] ;
     const baseCost = Math.round(this.DAMAGE_LEVEL_BASE_COST_MP[baselevel] / levelMult) - 1;
-    // const cost = baseCost * levelMult;
     const dmgLevel = localize(DAMAGE_LEVELS[baselevel]);
     calc.add(0, baseCost, `${dmgLevel} Damage`);
     calc.mult(0, levelMult, `${dmgLevel} Damage`);
-    // if (pwr.isAoE()) {
-    //   cost *= 1.5;
-    //   cost += 4;
-    // }
   }
 
   private static _targetsAndAoE(pwr: Power, calc: BonusCalculation) : void {
@@ -57,7 +50,6 @@ export class MPCostCalculatorV2 extends CostCalculator {
     const buffsGranted=  pwr.addsStatus(["attack-boost", "damage-boost", "defense-boost", "attack-nerf", "damage-nerf", "defense-nerf"], true);
     if (buffsGranted == 0) {return;}
     const baseCost = buffsGranted * 8;
-    // if (buffsGranted >= 3) {baseCost += 6;}
     calc.add(0, baseCost, `Buff/Debuff`);
     if (pwr.isAoE()) {
       calc.mult(0, 1.5, "AoE Buff");
@@ -120,9 +112,6 @@ export class MPCostCalculatorV2 extends CostCalculator {
 				pwr.system.ailmentChance satisfies never;
 				return;
 		}
-		// if (pwr.isAoE()) {
-		// 	add += 6;
-		// }
     calc.mult(0, mult, `${pwr.system.ailmentChance} Ailment Chance`);
     calc.add(0, add, `${pwr.system.ailmentChance} Ailment Chance`);
 	}
@@ -146,10 +135,8 @@ export class MPCostCalculatorV2 extends CostCalculator {
     calc.add(0, baseCost, "shielding power");
 		if (pwr.isAoE()) {
       calc.mult(0, 1.5, "AoE shielding");
-			// baseCost *= 2.75;
 		}
 	}
-
 
 	static TAG_ADJUST_MP_MULT : Partial<Record<Exclude<PowerTag, Tag>, number>> = {
 		"half-on-miss": 1.1,

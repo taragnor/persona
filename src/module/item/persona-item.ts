@@ -258,12 +258,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         return dtype;
       case 'by-power': {
         return this._getByPowerDamageCategory(user);
-        // if (!user) {
-        //   PersonaError.softFail("No user provided for get item category");
-        //   return undefined;
-        // }
-        // const altDtype = this.getDamageType(user);
-        // return altDtype;
       }
       case 'none':
       case 'all-out':
@@ -552,7 +546,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   get accessor() : UniversalItemAccessor<this> {
     return this.cache2.accessor.value;
-    // return PersonaDB.getUniversalItemAccessor(this);
   }
 
   _accessor() : UniversalItemAccessor<this> {
@@ -632,7 +625,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case 'weapon':
       case 'consumable':
         return false;
-        // return (this as Usable | Focus | InvItem | Talent | Weapon).tagList(null).includes('defensive');
       case 'universalModifier':
       case 'tag':
       case 'skillCard':
@@ -925,7 +917,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   static grantsPowers(eff: ConditionalEffectC) : boolean{
     return eff.consequences.some(
       cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == "add-power-to-list"
-      // cons.type == 'add-power-to-list'
     );
   }
   grantsPowers(this: ItemModifierContainer): boolean {
@@ -937,7 +928,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       const grantsPowers= this.getEffects(null).some(
         eff => eff.consequences.some(
           cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == "add-power-to-list"
-          // cons.type == 'add-power-to-list'
         ));
       this.cache.grantsPowers = grantsPowers;
       return this.cache.grantsPowers;
@@ -979,14 +969,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     if (this.hasTag(["opener", "optional-opener"], user.persona())) {
       const conditions = ConditionalEffectC.createPreconditionOnly(this.system.openerConditions, this, user, this);
       return conditions.testPreconditions(situation);
-      // const conditions = ConditionalEffectManager.getConditionals(this.system.openerConditions, this, user , this);
-      // return testPreconditions(conditions, situation,{
-      //   source: this.accessor,
-      //   owner: user.accessor,
-      //   realSource: this.accessor,
-      //   _id: -1,
-      //   "creationId" : -1,
-      // });
     }
 
     const inheritedPrereqs = this._openerElevators(user.persona());
@@ -994,19 +976,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       .some( pre=> pre.consequences
         .some( cons => cons.canElevateToOpener(situation.naturalRoll))
       );
-
-    // for (const CE of inheritedPrereqs) {
-    //   const elevator = CE.consequences
-    // .map( ce=> ce.cons)
-    // .find( cons=>
-    //   cons.type == "trigger-event-cons" && cons.eventMod == "allow-as-opener");
-
-    // if (!elevator) {continue;}
-    // if (situation.naturalRoll >= elevator.low && situation.naturalRoll <= elevator.high) {
-    // return true;
-    // }
-    // }
-    // return false;
   }
 
   testTeamworkPrereqs (this: UsableAndCard, situation: Situation, user: PersonaActor) : boolean {
@@ -1019,14 +988,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
     const conditions = ConditionalEffectC.createPreconditionOnly(this.system.teamworkConditions, this, user, this);
     return conditions.testPreconditions(situation);
-    // const conditions = ConditionalEffectManager.getConditionals(this.system.teamworkConditions, this,user , this );
-    // return testPreconditions(conditions, situation, {
-    //   source: this.accessor,
-    //   owner: user.accessor,
-    //   realSource: this.accessor,
-    //   _id: -1,
-    //   "creationId": -1,
-    // });
   }
 
   testFollowUpPrereqs(this: UsableAndCard, situation: Situation, user: PersonaActor): boolean {
@@ -1042,9 +1003,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const powers = eff.getActiveConsequences(situation)
       .map ( cons => cons.grantedPower)
       .filter ( cons => cons != undefined);
-    // .flatMap(cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == 'add-power-to-list' ? [cons.cons.id] : [])
-    // .map(id=> PersonaDB.allPowers().get(id))
-    // .filter (pwr=> pwr != undefined);
     return removeDuplicates(powers);
   }
 
@@ -1056,35 +1014,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       };
     }
     const talents= this.getPassiveEffects(user)
-    // .filter(
-    //   eff => eff.consequences.some(
-    //     cons => cons.cons.type == "other-effect" &&
-    //     cons.cons.otherEffect == 'add-talent-to-list'
-    //   ))
       .flatMap(eff=> eff.getActiveConsequences(situation))
       .map(cons => cons.grantedTalent)
       .filter( talent=> talent != undefined);
-    // .flatMap(x=>  x.cons.type == "other-effect"
-    //   && x.cons.otherEffect == 'add-talent-to-list' ? [x.cons.id] : [])
-    // .map(id=> PersonaDB.allTalents().find(x=> x.id == id))
-    // .flatMap( tal=> tal? [tal]: []);
     return removeDuplicates(talents);
   }
-
-  // static getGrantedTalents(sourcedEffect: ConditionalEffectC, user: ValidAttackers, situation ?: Situation) : Talent[] {
-  //   if (!situation) {
-  //     situation = {
-  //       user: user.accessor
-  //     };
-  //   }
-  //   const cons =
-  //     sourcedEffect.getActiveConsequences(situation);
-  //   return cons
-  //     .map( x=>x.cons)
-  //     .filter (x=> x.type == "other-effect" && x.otherEffect == "add-talent-to-list")
-  //     .map(cons=> PersonaDB.allTalents().find(x=> x.id == cons.id))
-  //     .filter ( x=> x!= undefined);
-  // }
 
   modifiedHpCost(this: Usable, persona: Persona, sit ?: Situation) : number {
     const situation = sit ? sit :  {
@@ -1407,31 +1341,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   getModifier(this: ItemModifierContainer, bonusTypes : NonDeprecatedModifierTarget[] | NonDeprecatedModifierTarget, sourceActor: PersonaActor | null) : ModifierListItem[] {
-    // PersonaItem.cacheStats.modifierRead++;
-    // if (this.cache.containsModifier === false) {
-    //   PersonaItem.cacheStats.modifierSkip++;
-    //   return [];
-    // }
-    // bonusTypes = Array.isArray(bonusTypes) ? bonusTypes : [bonusTypes];
-    // let found = false;
-    // for (const modifier of bonusTypes) {
-    //   let hasBonus = this.cache.statsModified.get(modifier);
-    //   if (hasBonus === undefined) {
-    //     hasBonus = ConditionalEffectManager.canModifyStat(this.getPassiveAndDefensiveEffects(sourceActor), modifier);
-    //     this.cache.statsModified.set(modifier, hasBonus);
-    //   }
-    //   if (hasBonus === true) {
-    //     found = true;
-    //   }
-    // }
-    // if (!found) {
-    //   PersonaItem.cacheStats.modifierSkip++;
-    //   return [];
-    // }
-    // const filteredEffects = this.getEffects(sourceActor)
-    //   .filter( eff => eff.consequences.some( cons => 'modifiedFields' in cons || 'modifiedField' in cons))
-    // ;
-    // this.cache.containsModifier = filteredEffects.length > 0;
     const filteredEffects = this.getEffects(sourceActor)
       .filter (ce => ce.grantsBonusTypeV1(bonusTypes));
     return filteredEffects
@@ -1456,15 +1365,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   getConferredTags(this: ItemModifierContainer, actor: ValidAttackers) : CreatureTag[] {
-    // if (this.cache.containsTagAdd === false) {
-    //   return [];
-    // }
     const effects = this.getEffects(actor);
-    // if (!effects.some( e => e.consequences
-    //   .some( cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == 'add-creature-tag'))) {
-    //   this.cache.containsTagAdd = false;
-    //   return [];
-    // }
     const situation = {
       user: actor.accessor,
     };
@@ -1472,12 +1373,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return cons
       .map(c => c.addedCreatureTags)
       .filter (t=> t != undefined);
-    // const cons : (NonDeprecatedConsequence & {type : 'other-effect', otherEffect: 'add-creature-tag'})[] = ConditionalEffectManager.getAllActiveConsequences(effects, situation);
-    // .map( c=> c.cons)
-    // .filter( c=> c.type == "other-effect" && c.otherEffect == 'add-creature-tag') ;
-    // return cons
-    // .map( c => c.creatureTag)
-    // .map( t => PersonaItem.resolveTag(t));
   }
 
   getBaseDamageType (this: Usable | Weapon) : DamageType {
@@ -1521,44 +1416,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
 
-  // baseDamage(this: Weapon) : Readonly<NewDamageParams> {
-  //   if (this.system.damageNew)  {
-  //     return {baseAmt: 0,
-  //       extraVariance: this.system.damageNew.extraVariance};
-  //     if (this.system.damageNew.baseAmt > 0) {return this.system.damageNew;}
-  //     if (this.system.damageNew.weaponLevel > 0) {
-  //       return {
-  //         baseAmt: this.damage.getWeaponDamageByWpnLevel(this.system.damageNew.weaponLevel),
-  //         extraVariance: this.system.damageNew.extraVariance ?? 0,
-  //       };
-  //     }
-  //     if (this.itemLevel() > 0) {
-  //       return {
-  //         baseAmt: this.damage.getWeaponDamageByWpnLevel(this.itemLevel()),
-  //         extraVariance: this.system.damageNew.extraVariance ?? 0,
-  //       };
-  //     }
-  //   }
-  //   if (this.system.damage.high >0) {
-  //     return PersonaItem.convertOldDamageToNew(this.system.damage);
-  //   }
-  //   return {
-  //     baseAmt: 0,
-  //     extraVariance: 0
-  //   };
-  // }
-
-  // static convertOldDamageToNew (oldDmg : Weapon['system']['damage']): Readonly<NewDamageParams> {
-  //   const {high, low} = oldDmg;
-  //   const diff = high-low;
-  //   let extraVariance = 0;
-  //   if (diff >=4) { extraVariance= 1;}
-  //   return {
-  //     extraVariance,
-  //     baseAmt: PersonaSettings.getDamageSystem().convertFromOldLowDamageToNewBase(low),
-  //   };
-  // }
-
   /** used for damage calculation estaimate for char sheet*/
   generateSimulatedResult(this: Usable, user: ValidAttackers, target: N<PToken>, situation: AttackResult['situation']) : CombatResult | undefined;
   generateSimulatedResult(this: Usable, user: ValidAttackers, target: N<PToken>, simulatedNat: number) : CombatResult | undefined;
@@ -1585,9 +1442,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const critRange = atkResult.ranges.find( x=> x.type == "critical");
     const instantKillChance = atkResult.ranges.find( x=> x.type == "instantKill");
     const ailmentRange = atkResult.ranges.find( x=> x.type == "ailment");
-    // const critRange = atkResult.critRange;
-    // const instantKillChance = atkResult.instantKillRange;
-    // const ailmentRange = atkResult.ailmentRange;
     return {damage, critRange, instantKillChance, ailmentRange};
   }
 
@@ -1740,7 +1594,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   validTargetConditions(this: Usable, user: ValidAttackers) : ConditionalEffectC {
     const targetConditions = this.itemBase?.system.validTargetConditions ?? this.system.validTargetConditions;
     const sourcedTC = ConditionalEffectC.createPreconditionOnly(targetConditions, this, user, this);
-    // const sourcedTC = ConditionalEffectManager.getConditionals(targetConditions, this, user, this );
     return sourcedTC;
   }
 
@@ -2148,16 +2001,6 @@ isBasicPower(this: UsableAndCard) : boolean {
 mpCost(this: Usable, userPersona: Persona | null): number {
   if (this.isConsumable()) {return 0;}
   const mult= this._getMPMultiplier(userPersona);
-  // let mult  = 1;
-  // if (userPersona) {
-  //   const sit : Situation = {
-  //     user: userPersona.user.accessor,
-  //     usedPower: this.accessor,
-  //     attacker: userPersona.user.accessor,
-  //   };
-  //   const list = userPersona.getBonuses('power-mp-cost-mult');
-  //   mult = list.total(sit, 'percentage');
-  // }
   const baseMPCost = this.baseMPCost;
   return Math.clamp(Math.round(baseMPCost * mult), 0,  1000);
 }
@@ -2254,12 +2097,6 @@ getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, optio
   const tagEffects = deepTags ? this._getLinkedEffects(sourceActor, CETypes) : [];
   if (!CETypes || CETypes.length == 0) {
     const effectsGetterFn =  () => this._getBaseMainModifierEffects(sourceActor, options.proxyItem);
-    // const effectsGetterFn = () => {
-    //   const effects = this.itemBase.system.effects;
-    //   const proxyItem = options.proxyItem ? options.proxyItem : this;
-    //   return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
-    //     .filter (ce => ce.isMainModifier);
-    // };
     return this.#accessEffectsCache('allMainEffects', sourceActor, options, effectsGetterFn)
       .slice()
       .pushUnique(...tagEffects);

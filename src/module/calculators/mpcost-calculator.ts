@@ -126,7 +126,6 @@ export class MPCostCalculator extends CostCalculator {
     const costMod : CostModifier = {
       mult: 1 + maxAdd + minAdd,
       add: 0,
-      // add: 1 + Math.round(maxAdd + minAdd),
     };
     return costMod;
   }
@@ -171,5 +170,3 @@ export class MPCostCalculator extends CostCalculator {
 	} as const;
 
 }
-
-
