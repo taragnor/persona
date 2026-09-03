@@ -50,6 +50,7 @@ import {TimedCache} from '../utility/cache.js';
 import {ConditionalEffectManager} from '../conditionalEffects/conditional-effect-manager.js';
 import {BonusCalculation, ModifierV2Target} from '../bonus-calc.js';
 import {MPCostCalculatorV2} from '../calculators/mpcost-calculatorv2.js';
+import {CalculationV2} from '../utility/calculation-v2.js';
 
 declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -875,10 +876,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.hasTag("secondary-crafting", null);
   }
 
-  costString1(persona: Persona) : string {
+  costString1(persona: Persona, options: PrintStringOptions) : string {
     switch (this.system.type) {
       case 'power':
-        return (this as Power).powerCostString(persona);
+        return (this as Power).powerCostString(persona, options);
       case 'consumable':
         return 'consumable';
       default:
@@ -907,11 +908,11 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
   }
 
-  powerCostString(this: Power, persona: Persona) : string {
+  powerCostString(this: Power, persona: Persona, options: PrintStringOptions) : string {
     const costs : string[] = [];
     const baseCost= persona.user.isShadow()
       ? this.powerCostString_Shadow(persona)
-      : this.powerCostString_PC(persona);
+      : this.powerCostString_PC(persona, options);
     if (baseCost.length) {costs.push(baseCost);}
     if (this.getCooldown(persona)) {
       costs.push(`CD ${this.getCooldown(persona)}`);
@@ -1039,7 +1040,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return Math.clamp(Math.round(oldHPCost * persona.hpCostMod().total(situation as SituationTypes.BonusQuerySituation, 'percentage')), 0, 1000);
   }
 
-  powerCostString_PC(this: Power, persona: Persona) : string {
+  powerCostString_PC(this: Power, persona: Persona, options: PrintStringOptions = {} ) : string {
     const FREE = '';
     if (this.hasTag("theurgy", null)) {
       return "Theurgy";
@@ -1057,7 +1058,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       }
       case 'magic': {
         const mpcost = this.mpCost(persona);
-        return `${mpcost} MP`;
+        // return `${mpcost.total} MP`;
+        if (options.nestedList) {
+        return `${CalculationV2.printEvaluatedHTML(mpcost)} MP`;
+        } else {
+          return `${mpcost.total}`;
+        }
       }
       case 'social-link':
         if (this.system.inspirationCost > 0) {
@@ -2002,12 +2008,29 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return basics.some(pwr=> pwr.id == this.id);
   }
 
-  mpCost(this: Usable, userPersona: Persona | null): number {
-    if (this.isConsumable()) {return 0;}
-    const mult= this._getMPMultiplier(userPersona);
-    const baseMPCost = this.baseMPCost;
-    return Math.clamp(Math.round(baseMPCost.total * mult), 0,  1000);
+
+  mpCost(this: Usable, userPersona: Persona | null): EvaluatedCalculation {
+    if (this.isConsumable()) {
+      return { steps: [], total: 0};
+    }
+    if (!userPersona) {return this.baseMPCost;}
+    const cost = this.baseMPCostRaw();
+    const list = userPersona.getBonusesV2('mp-cost');
+    cost.merge(list);
+    const sit : Situation = {
+      user: userPersona.user.accessor,
+      usedPower: this.accessor,
+      attacker: userPersona.user.accessor,
+    };
+    return cost.eval(sit);
   }
+
+  // mpCost(this: Usable, userPersona: Persona | null): number {
+  //   if (this.isConsumable()) {return 0;}
+  //   const mult= this._getMPMultiplier(userPersona);
+  //   const baseMPCost = this.baseMPCost;
+  //   return Math.clamp(Math.round(baseMPCost.total * mult), 0,  1000);
+  // }
 
   private _getMPMultiplier(this: Usable, userPersona: N<Persona>) : number {
     if (!userPersona) {return 1;}
@@ -2034,23 +2057,36 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.system.mpcost;
   }
 
+  baseMPCostRaw(this: Power) : CalculationV2 {
+    if (this.customCost) {
+      const calc= new CalculationV2(0);
+      calc.set(-1, this.system.mpcost, "Custom Cost");
+      return calc;
+    }
+    return MPCostCalculatorV2.calcBaseMPCost(this);
+  }
+
   get baseMPCost() : EvaluatedCalculation {
     if (!this.isPower()) {
       return {
         total: 0, steps:[]
       };
     }
-    if (this.customCost) {
-      return {
-        total: this.system.mpcost,
-        steps: ["custom cost"],
-      };
-    }
-    const calc = MPCostCalculatorV2.calcBaseMPCost(this);
     const sit = {
       usedPower: this.accessor,
     };
-    return calc.eval(sit);
+    return this.baseMPCostRaw().eval(sit);
+    // if (this.customCost) {
+    //   return {
+    //     total: this.system.mpcost,
+    //     steps: [`${this.system.mpcost} (custom cost)`],
+    //   };
+    // }
+    // const calc = MPCostCalculatorV2.calcBaseMPCost(this);
+    // const sit = {
+    //   usedPower: this.accessor,
+    // };
+    // return calc.eval(sit);
   }
 
   private _getLinkedEffects (this: ItemModifierContainer, sourceActor: PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) : readonly ConditionalEffectC[] {
@@ -2974,4 +3010,8 @@ ItemHooks.init();
 
 type SkillCardCreationOptions = {
   velvetCard?: boolean;
+}
+
+type PrintStringOptions = {
+  nestedList?: boolean;
 }

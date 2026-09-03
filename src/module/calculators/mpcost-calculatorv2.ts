@@ -1,5 +1,6 @@
 import {DAMAGE_LEVELS, DamageLevel} from "../../config/damage-types.js";
 import {PowerTag} from "../../config/power-tags.js";
+import {STATUS_AILMENT_LIST} from "../../config/status-effects.js";
 import {BonusCalculation} from "../bonus-calc.js";
 import {localize} from "../persona.js";
 import {CostCalculator} from "./cost-calculator.js";
@@ -17,6 +18,7 @@ export class MPCostCalculatorV2 extends CostCalculator {
       "mpCost_ailment",
       "mpCost_tags",
 			"mpcost_shields",
+      "status_removal",
     ] as const;
     for (const fn of functions) {
       this[fn](pwr, calc);
@@ -62,6 +64,14 @@ export class MPCostCalculatorV2 extends CostCalculator {
     }
   }
 
+  static status_removal(pwr: Power, calc: BonusCalculation)  : void {
+    const statusesRemoved = pwr.removesStatus(STATUS_AILMENT_LIST);
+    if (statusesRemoved == 0) {return;}
+    const scaling = Math.pow(1.2, statusesRemoved /3);
+    const amt = statusesRemoved * scaling;
+    calc.add(0, amt, `Ailment Removal (${statusesRemoved})`);
+  }
+
   static mpCost_instantKill(pwr: Power, calc: BonusCalculation): void {
     if (!pwr.canInstantKill()) {return;}
     const instantKillGeneralMultAoE = 1.35 as const;
@@ -92,7 +102,7 @@ export class MPCostCalculatorV2 extends CostCalculator {
 	static mpCost_dekaja(pwr: Power, calc: BonusCalculation) : void {
 		const buffsRemoved = pwr.removesStatus(["attack-nerf", "damage-nerf", "defense-nerf", "attack-boost", "defense-boost", "damage-boost"]);
     if (buffsRemoved == 0) {return;}
-    const dekajaFormula = 1 + (buffsRemoved * 3);
+    const dekajaFormula = 1 + (buffsRemoved * 2);
     calc.add(0, dekajaFormula , "Buff Removal");
 	}
 

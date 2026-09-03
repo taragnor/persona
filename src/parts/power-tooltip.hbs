@@ -7,7 +7,7 @@ Attack Bonus: +{{getAttackBonus persona power targetPersona}}
 Tags: {{getPowerTagsL actor power}}
 
 Damage: {{damage}} {{getDamageType actor power}}
-Cost: {{powerCostString power persona}}
+Cost: {{powerCostString power persona pretty=false}}
 
 {{#if critRange}}
 Crit Range: {{critRange.low}} - {{critRange.high}}

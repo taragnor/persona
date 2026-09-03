@@ -1,16 +1,16 @@
-<span class="tooltip pretty-power-name {{#if (not (canUsePower user power))}} unusable {{/if}}">
+<span class="pretty-power-name {{#if (not (canUsePower user power))}} unusable {{/if}}">
   <span class="power-type-icon">
     {{displayPowerIcon power user}}
   </span>
-  <span class="power-name">
+  <span class="power-name tooltip">
     {{power.displayedName}}
+    <div class="tooltiptext">
+      {{> "systems/persona/parts/power-tooltip-lite.hbs" power=power persona=user}}
+    </div>
   </span>
   {{#if (isPowerOnCooldown user power)}}
   <span class="cooldown" title="On Cooldown">
     <i class="fa-solid fa-clock"></i>
   </span>
   {{/if}}
-  <div class="tooltiptext">
-    {{> "systems/persona/parts/power-tooltip-lite.hbs" power=power persona=user}}
-  </div>
 </span>

@@ -1357,7 +1357,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
             if ( this.user.hp <= (usable as Power).hpCost()) {return "HP cost would kill user";}
             break;
           case "magic": {
-            const mpcost = (usable as Power).mpCost(this);
+            const mpcost = (usable as Power).mpCost(this).total;
             if (mpcost > 0 && this.user.mp < mpcost) {
               return "Can't afford MP Cost";
             }

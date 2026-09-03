@@ -668,9 +668,11 @@ export class PersonaHandleBarsHelpers {
       return engine.getAttackBonus(attacker, power, target).eval(situation).total;
     },
 
-    "powerCostString": function (power: Power, persona: Persona)  : SafeString {
+    "powerCostString": function (power: Power, persona: Persona, options: {hash?: {pretty?: boolean}} )  : SafeString {
       try {
-        const costString = power.costString1(persona);
+        const costString = power.costString1(persona, {
+          nestedList: options?.hash?.pretty ?? false
+        });
         if (costString.length == 0) {
           return new Handlebars.SafeString("");
         }
@@ -691,7 +693,7 @@ export class PersonaHandleBarsHelpers {
       if (power.isMagicSkill()) {
         const mpCost = power.mpCost(null);
         // const altCost = power.oldBaseMPCost;
-        return `${mpCost}${customCost} MP`;
+        return `${mpCost.total}${customCost} MP`;
         // return `${mpCost}${customCost} MP / ${altCost}`;
       }
       return "";

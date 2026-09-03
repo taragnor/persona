@@ -189,6 +189,19 @@ export class CalculationV2 {
     }
   }
 
+  static printEvaluatedHTML(res: EvaluatedCalculation) : string {
+    const tooltip = res.steps
+      .map( step => `<div> ${step} </div>`)
+      .join("");
+    ;
+    return `<span class="eval-total tooltip">
+    ${res.total}
+        <div class="tooltiptext">
+        ${tooltip}
+        </div>
+    </span>`;
+  }
+
   resolveCalculationNumber(entry : typeof this.data[number], situation ?: Situation) : N<ResolvedCalculationNumber> {
     const {amt} = entry;
     if (typeof amt == "number") {

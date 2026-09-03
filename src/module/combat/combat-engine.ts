@@ -1218,17 +1218,19 @@ export class CombatEngine {
       res.addEffect(null, attacker.actor, deprecatedConvert, situation );
     }
     if (!attacker.actor.isShadow()
-      && power.system.subtype == 'magic'
-      && power.mpCost(attacker.actor.persona()) > 0) {
-      res.addEffect(null, attacker.actor, {
-        type: 'alter-mp',
-        subtype: 'direct',
-        amount: -power.mpCost(attacker.actor.persona()),
-        source: power.accessor,
-        owner: attacker.actor.accessor,
-        realSource: undefined,
-        applyTo: "attacker",
-      }, situation);
+      && power.system.subtype == 'magic') {
+      const cost = power.mpCost(attacker.actor.persona()).total;
+      if (cost > 0) {
+        res.addEffect(null, attacker.actor, {
+          type: 'alter-mp',
+          subtype: 'direct',
+          amount: -cost,
+          source: power.accessor,
+          owner: attacker.actor.accessor,
+          realSource: undefined,
+          applyTo: "attacker",
+        }, situation);
+      }
     }
     if (attacker.actor.isShadow()) {
       const ecost = power.energyCost(attacker.actor.persona());
