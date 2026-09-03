@@ -2648,7 +2648,7 @@ addsStatus(this: Usable, statusIds: StatusEffectId | StatusEffectId[], usePowerS
 removesStatus(this: Usable, statusIds: StatusEffectId) : number;
 removesStatus<T extends StatusEffectId>(this: Usable, statusIds: readonly T[]) : number;
 removesStatus(this: Usable, statusIds: StatusEffectId | readonly StatusEffectId[]) : number {
-  const ids = Array.isArray(statusIds) ? statusIds : [statusIds];
+  const ids : readonly StatusEffectId[] = Array.isArray(statusIds) ? statusIds : [statusIds];
   const statusesRemoved = this.statusesRemoved();
   return statusesRemoved.reduce( (acc,st) => acc + (ids.includes(st)? 1: 0), 0);
 }
@@ -2717,19 +2717,19 @@ isDamagePower(this: Usable): boolean {
 
 statusesAdded(this: Usable, deepTagList = true): {status: StatusEffectId, potency: number}[] {
   const options : GetEffectsOptions = {deepTags: deepTagList};
-  const effects= this.getEffects(null, options).flatMap( (eff) => eff.consequences
-    .map( cons => cons.statusesAdded())
-    .filter (cons => cons != undefined)
-  );
-  // cons.cons.type == "combat-effect" && cons.cons.combatEffect == 'addStatus'? [{status: cons.cons.statusName, potency: cons.cons.potency ?? 1}] : []));
+  const effects= this.getEffects(null, options)
+    .flatMap( (eff) => eff.consequences
+      .map( cons => cons.statusesAdded())
+      .filter (cons => cons != undefined)
+    );
   return effects;
 }
 
 statusesRemoved(this: Usable): StatusEffectId[] {
-  const statusesRemoved = this.getEffects(null).flatMap( (eff) => eff.consequences
-    .flatMap( cons => cons.statusesRemoved())
-  );
-  // cons.cons.type == "combat-effect" && cons.cons.combatEffect == 'removeStatus'? multiCheckToArray(cons.cons.statusName) : []));
+  const statusesRemoved = this.getEffects(null)
+    .flatMap( eff => eff.consequences
+      .flatMap( cons => cons.statusesRemoved())
+    );
   return statusesRemoved;
 }
 

@@ -90,7 +90,7 @@ export class MPCostCalculatorV2 extends CostCalculator {
   }
 
 	static mpCost_dekaja(pwr: Power, calc: BonusCalculation) : void {
-		const buffsRemoved = pwr.removesStatus(["attack-nerf", "damage-nerf", "defense-nerf"]);
+		const buffsRemoved = pwr.removesStatus(["attack-nerf", "damage-nerf", "defense-nerf", "attack-boost", "defense-boost", "damage-boost"]);
     if (buffsRemoved == 0) {return;}
     const dekajaFormula = 1 + (buffsRemoved * 3);
     calc.add(0, dekajaFormula , "Buff Removal");
@@ -98,8 +98,7 @@ export class MPCostCalculatorV2 extends CostCalculator {
 
 	private static mpCost_ailment(pwr: Power, calc: BonusCalculation) : void {
 		if (!pwr.causesAilment()) {return;}
-		let mult = 1;
-		let add = 0;
+		let mult = 1, add = 0;
 		switch (pwr.system.ailmentChance) {
 			case "low":
 				mult *= 1.1;
