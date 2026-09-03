@@ -115,7 +115,7 @@ export class ConsequenceConverter {
             "amount": dep.amount,
             "modTarget": newField.V2Name,
             "operation": newField.op,
-            "priority": 0,
+            "priority": newField.priority ?? 0,
           };
         }
         newField satisfies never;
@@ -212,12 +212,15 @@ export class ConsequenceConverter {
       case "will":
         return undefined;
       case "mpCostMult":
-        return "power-mp-cost-mult";
+      case "power-mp-cost-mult":
+        return {op: "multiply", V2Name: "mp-cost", priority: 1};
+      case "power-mp-cost":
+        return {op: "add", V2Name: "mp-cost", priority: 1};
+        // return "power-mp-cost-mult";
       case "armor-dr":
-        return {op: "add", V2Name: "armor-rating"};
+        return {op: "add", V2Name: "armor-rating", priority: 1};
       case "armor-dr-mult":
-        return {op: "multiply", V2Name: "armor-rating"};
-
+        return {op: "multiply", V2Name: "armor-rating", priority: 1};
       case undefined:
         return "allAtk"; //for modifiers that have yet to be filled in
       default:
@@ -329,4 +332,5 @@ export class ConsequenceConverter {
 type V2Operation = {
   V2Name: ModifierV2Target,
   op: CalculationOperationV2,
+  priority: number,
 }

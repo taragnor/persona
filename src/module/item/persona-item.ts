@@ -2006,7 +2006,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     if (this.isConsumable()) {return 0;}
     const mult= this._getMPMultiplier(userPersona);
     const baseMPCost = this.baseMPCost;
-    return Math.clamp(Math.round(baseMPCost * mult), 0,  1000);
+    return Math.clamp(Math.round(baseMPCost.total * mult), 0,  1000);
   }
 
   private _getMPMultiplier(this: Usable, userPersona: N<Persona>) : number {
@@ -2016,11 +2016,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       usedPower: this.accessor,
       attacker: userPersona.user.accessor,
     };
-    const list = userPersona.getBonuses('power-mp-cost-mult');
-    return list.total(sit, 'percentage');
+    // const list = userPersona.getBonuses('power-mp-cost-mult');
+    // return list.total(sit, 'percentage');
+    const calc = userPersona.getBonusesV2("mp-cost").eval(sit);
+    return calc.total;
   }
 
-  get baseMPCost(): number {
+  get oldBaseMPCost(): number {
     if (!this.isPower()
       || this.isTeamwork()
     ) {return 0;}
@@ -2032,7 +2034,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.system.mpcost;
   }
 
-  get newBaseMPCost() : EvaluatedCalculation {
+  get baseMPCost() : EvaluatedCalculation {
     if (!this.isPower()) {
       return {
         total: 0, steps:[]

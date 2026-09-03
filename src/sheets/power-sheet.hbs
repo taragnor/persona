@@ -43,15 +43,13 @@
       {{#if item.customCost}}
       {{numberInput item.system.mpcost class="short" name="system.mpcost" step=1 min=1 max=100}}
       {{else}}
-      {{item.baseMPCost}} (
       <span class="tooltip">
-        {{item.newBaseMPCost.total}}
+        {{item.baseMPCost.total}}
         <div class="tooltiptext">
-          {{#each item.newBaseMPCost.steps as |step|}}
+          {{#each item.baseMPCost.steps as |step|}}
           <div> {{step}} </div>
           {{/each}}
         </div>
-
       </span>
       )
       {{/if}}

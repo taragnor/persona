@@ -120,7 +120,7 @@ export class BonusCalculation extends CalculationV2 {
         const res = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, sit);
         if (res == undefined) {return null;}
         return {
-          total: this.applyFinalStep(res),
+          total: res,
           steps: [ce.name],
         } satisfies EvaluatedCalculation;
       }

@@ -27,6 +27,8 @@ const DEPRECATED_TYPES = [
 	"will",
 	"armor-dr",
 	"armor-dr-mult",
+	"power-mp-cost",
+	"power-mp-cost-mult",
 ] as const;
 
 export const COMBAT_BONUS_TYPES = [
@@ -105,8 +107,8 @@ export const STUDENT_SKILLS_TYPES = [
 export const OTHER_TYPES = [
 	"power-energy-cost",
 	"power-energy-req",
-	"power-mp-cost",
-	"power-mp-cost-mult",
+	// "power-mp-cost",
+	// "power-mp-cost-mult",
 	"power-hp-cost",
 ] as const;
 

@@ -311,4 +311,4 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
 
 const sourceCache = new WeakMap<ConditionalEffectComponent, Sourced<object>> ();
 
-const EMPTY_SET : Set<unknown>= new Set();
+const EMPTY_SET : Set<unknown> = new Set();

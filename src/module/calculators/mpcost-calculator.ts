@@ -15,7 +15,7 @@ export class MPCostCalculator extends CostCalculator {
 			// this.statusRemoval(pwr),
 			this.#mpCost_tags(pwr),
 			this.mpCost_multiattack(pwr),
-			this.#modifiers(pwr),
+			// this.#modifiers(pwr),
 		];
 		return Math.max(0, Math.round(this.combineModifiers(mods)));
 	}
@@ -33,14 +33,14 @@ export class MPCostCalculator extends CostCalculator {
     return this.i(cost);
   }
 
-	static #modifiers(pwr: Power) : CostModifier {
-		const situation: Situation = {
-			usedPower: pwr.accessor,
-		};
-		const add = pwr.getBonuses("power-mp-cost").total(situation);
-		const mult = pwr.getBonuses("power-mp-cost-mult").total(situation, "percentage");
-		return {mult, add};
-	}
+	// static #modifiers(pwr: Power) : CostModifier {
+	// 	const situation: Situation = {
+	// 		usedPower: pwr.accessor,
+	// 	};
+	// 	const add = pwr.getBonuses("power-mp-cost").total(situation);
+	// 	const mult = pwr.getBonuses("power-mp-cost-mult").total(situation, "percentage");
+	// 	return {mult, add};
+	// }
 
 	static mpCost_dekaja(pwr: Power) : CostModifier {
 		const buffsRemoved = pwr.removesStatus(["attack-nerf", "damage-nerf", "defense-nerf"]);

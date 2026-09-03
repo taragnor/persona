@@ -2164,13 +2164,6 @@ listComplementRatings(this: Shadow, list: Shadow[]) : string[] {
 
 complementRating (this: Shadow, other: Shadow) : number {
   return this.cache2.complementRating.get(other);
-  // const cachedRating = this.cache.complementRating.get(other.id);
-  // if (cachedRating != undefined) {
-  //   return cachedRating;
-  // }
-  // const rating = this.#complementRating(other) + other.#complementRating(this);
-  // this.cache.complementRating.set(other.id, rating);
-  // return rating;
 }
 
 private _complementRating (this: Shadow, other: Shadow) : number {

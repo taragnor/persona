@@ -6,7 +6,7 @@ import {CostCalculator} from "./cost-calculator.js";
 
 export class MPCostCalculatorV2 extends CostCalculator {
   static calcBaseMPCost (pwr: Power) : BonusCalculation {
-    const calc=  pwr.getBonusesV2("mp-cost", null);
+    const calc = pwr.getBonusesV2("mp-cost", null);
     const functions = [
       "_damage",
       "_targetsAndAoE",
