@@ -81,13 +81,12 @@ export class BonusCalculation extends CalculationV2 {
     }
   }
 
-
   override eval(situation ?: Situation, options= {hideTotals: false}) : EvaluatedCalculation {
     try {
-    this.situationSafetyCheck(situation);
-    const data = super.eval(situation, options);
-    data.total = this.applyFinalStep(data.total);
-    return data;
+      this.situationSafetyCheck(situation);
+      const data = super.eval(situation, options);
+      data.total = this.applyFinalStep(data.total);
+      return data;
     } catch (e) {
       PersonaError.softFail(e as Error, this, situation, options);
       return {
@@ -97,7 +96,7 @@ export class BonusCalculation extends CalculationV2 {
     }
   }
 
-  private static safetyCheck(data: ModV2Type[]) {
+  private static safetyCheck(data: ModV2Type[]) : void {
     if (data.length == 0) {
       throw new PersonaError("Null length bonus-calc");
     }
@@ -116,8 +115,7 @@ export class BonusCalculation extends CalculationV2 {
     const calculateable: Calculateable = {
       eval: (sit :Situation) => {
         if (sit == undefined) {return null;}
-        if (!ce.testPreconditions(sit))
-        {return null;}
+        if (!ce.testPreconditions(sit)) {return null;}
         const sourced = ConsequenceAmountResolver.extractSourcedAmount(cons);
         const res = ConsequenceAmountResolver.resolveConsequenceAmount(sourced, sit);
         if (res == undefined) {return null;}
@@ -200,6 +198,5 @@ type ModV2Type = {
   clamp ?: {min: number, max:number},
   initial: number,
 }
-
 
 //TODO: do elaborate setup for each bopnus type with a starting value and then rounding rules

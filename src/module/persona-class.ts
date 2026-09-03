@@ -27,7 +27,7 @@ import {PowerLearningSystem} from "./power-learning.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaTagManager} from "./persona-tags.js";
 import {TimedCache} from "./utility/cache.js";
-import {multiCheckContains, multiCheckToArray} from "./conditionalEffects/preconditions.js";
+import {multiCheckContains} from "./conditionalEffects/preconditions.js";
 import {BonusCalculation, ModifierV2Target} from "./bonus-calc.js";
 import {CancelTrigger} from "../cancel-check-effect.js";
 import {NonDeprecatedConsequence} from "../config/consequence-types.js";
@@ -36,7 +36,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   #combatStats: U<PersonaCombatStats>;
   user: T;
   source: S;
-  _powers: Power[];
+  private _powers: Power[];
   #cache: PersonaClassCache;
   private _tags: PersonaTagManager<this>;
   private _talentCache: TimedCache<readonly Talent[]>;

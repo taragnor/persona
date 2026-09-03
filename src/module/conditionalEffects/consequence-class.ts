@@ -158,6 +158,7 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
     const data = super.errorCheck();
     data.push(...this._errorCheckDefensiveRequired());
     data.push(...this._errorCheckGrantedPersonaItems());
+    data.push(...this._damageCheck());
     return data;
   }
 
@@ -285,6 +286,25 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
     }
     return null;
   }
+
+  private _damageCheck() : string[] {
+    const cons = this.cons as NonDeprecatedConsequence;
+    if (cons.type != "combat-effect" || cons.combatEffect != "damage") {
+      return [];
+    }
+    if (cons.damageSubtype == "odd-even" || cons.damageSubtype == "high" || cons.damageSubtype == "low") {
+      const source = this.findRealSource();
+      if (source instanceof PersonaItem && source.isPower()) {
+        if (source.effectLevel == "none" || source.getBaseDamageType() == "none") {
+          return [
+            `has Damage Consequence yet ${source.name} is set to no damage`,
+          ];
+        }
+      }
+    }
+    return [];
+  }
+
 }
 
 const sourceCache = new WeakMap<ConditionalEffectComponent, Sourced<object>> ();

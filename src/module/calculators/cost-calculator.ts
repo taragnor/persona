@@ -76,7 +76,7 @@ export abstract class CostCalculator {
 	static INSTANT_KILL_LEVELS_MULT : Record<InstantKillLevel, number> = {
 		none: 0,
 		low: 1,
-		medium: 1.875,
+		medium: 2,
 		high: 2.5,
 		always: 4,
 	};

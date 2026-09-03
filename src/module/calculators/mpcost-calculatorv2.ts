@@ -27,11 +27,12 @@ export class MPCostCalculatorV2 extends CostCalculator {
   private static _damage(pwr: Power, calc : BonusCalculation) : void {
     const baselevel = pwr.system.damageLevel;
     if (baselevel == "none" || baselevel == "fixed") {return;}
-    const levelMult = this.DAMAGE_LEVEL_MULTIPLIERS_MP[baselevel] ;
-    const baseCost = Math.round(this.DAMAGE_LEVEL_BASE_COST_MP[baselevel] / levelMult) - 1;
+    // const levelMult = this.DAMAGE_LEVEL_MULTIPLIERS_MP[baselevel] ;
+    const baseCost = Math.round(this.DAMAGE_LEVEL_BASE_COST_MP[baselevel]) - 1;
     const dmgLevel = localize(DAMAGE_LEVELS[baselevel]);
     calc.add(0, baseCost, `${dmgLevel} Damage`);
-    calc.mult(0, levelMult, `${dmgLevel} Damage`);
+    // calc.mult(0, 1.25, `Damage Power mult`);
+    // calc.mult(0, levelMult, `${dmgLevel} Damage`);
   }
 
   private static _targetsAndAoE(pwr: Power, calc: BonusCalculation) : void {
@@ -49,8 +50,10 @@ export class MPCostCalculatorV2 extends CostCalculator {
   static mpCost_buffOrDebuff(pwr: Power, calc: BonusCalculation) : void {
     const buffsGranted=  pwr.addsStatus(["attack-boost", "damage-boost", "defense-boost", "attack-nerf", "damage-nerf", "defense-nerf"], true);
     if (buffsGranted == 0) {return;}
-    const baseCost = buffsGranted * 8;
-    calc.add(0, baseCost, `Buff/Debuff`);
+    const valueOfEachBuffAdded = this.BASE_MP_COSTS["buff"];
+    const baseCost = buffsGranted * valueOfEachBuffAdded;
+    const scaling = Math.pow(1.1, buffsGranted - 1);
+    calc.add(0, Math.round((baseCost -1) * scaling), `Buff/Debuff`);
     if (pwr.isAoE()) {
       calc.mult(0, 1.5, "AoE Buff");
     }
@@ -58,17 +61,22 @@ export class MPCostCalculatorV2 extends CostCalculator {
 
   static mpCost_instantKill(pwr: Power, calc: BonusCalculation): void {
     if (!pwr.canInstantKill()) {return;}
-    let mult = this.INSTANT_KILL_LEVELS_MULT[pwr.system.instantKillChance];
-    const INSTANT_KILL_BASE_COST = 7;
-    calc.add(0, INSTANT_KILL_BASE_COST, `Instant Kill ${pwr.system.instantKillChance}`);
-    mult *= pwr.isFlurryPower() ? 0.75 : 1;
-    calc.mult(0, Math.max(1, mult), `Instant Kill multiplier ${pwr.system.instantKillChance}`);
+    const instantKillGeneralMultAoE = 1.35 as const;
+    const instantKillGeneralMult = 1.2 as const;
+    const baseMult = this.INSTANT_KILL_LEVELS_MULT[pwr.system.instantKillChance] / instantKillGeneralMult;
+    const INSTANT_KILL_BASE_COST = (this.BASE_MP_COSTS.instantKill) * baseMult;
+    calc.add(0, INSTANT_KILL_BASE_COST - 1, `Instant Kill ${pwr.system.instantKillChance}`);
     if (pwr.isAoE()) {
-      calc.mult(0, 1.2, `Instant Kill AoE`);
+      calc.mult(0, instantKillGeneralMultAoE, "Instant kill mult (AoE)");
+    } else {
+      calc.mult(0, instantKillGeneralMult, "Instant kill mult (non-AoE)");
+    }
+    if (pwr.isFlurryPower()) {
+      calc.mult(0, 0.75, `Flurry Instant-kill Modifier`);
     }
   }
 
-  static mpCost_multiattack(pwr: Power, calc: BonusCalculation) : void{
+  static mpCost_multiattack(pwr: Power, calc: BonusCalculation) : void {
     if (pwr.system.attacksMax == 1) {return;}
     const min = pwr.system.attacksMin;
     const max = pwr.system.attacksMax;
@@ -78,7 +86,7 @@ export class MPCostCalculatorV2 extends CostCalculator {
     calc.mult(0, costMod, `Flurry of Attacks Multiplier ${min}-${max}`);
   }
 
-	static mpCost_dekaja(pwr: Power, calc: BonusCalculation) : void{
+	static mpCost_dekaja(pwr: Power, calc: BonusCalculation) : void {
 		const buffsRemoved = pwr.removesStatus(["attack-nerf", "damage-nerf", "defense-nerf"]);
     if (buffsRemoved == 0) {return;}
     const dekajaFormula = 1 + (buffsRemoved * 3);
@@ -131,7 +139,7 @@ export class MPCostCalculatorV2 extends CostCalculator {
 		if (shields < 1) {return ;}
 		const duration = this.durationFactor(pwr, "magic-shield") || this.durationFactor(pwr, "phys-shield");
 		const durationFactor = typeof duration == "number" ? duration : 1.5;
-		const baseCost = (shields > 2 ? 1.5 : 1) * 24 * Math.min(1.5, durationFactor);
+		const baseCost = (shields >= 2 ? 1.5 : 1) * 24 * Math.min(1.5, durationFactor);
     calc.add(0, baseCost, "shielding power");
 		if (pwr.isAoE()) {
       calc.mult(0, 1.5, "AoE shielding");
@@ -147,6 +155,8 @@ export class MPCostCalculatorV2 extends CostCalculator {
 
 	static BASE_MP_COSTS = {
 		"directDamage": 4,
+    "instantKill": 8,
+    "buff": 8,
 	} as const;
 
 	static DAMAGE_LEVEL_MULTIPLIERS_MP : Record<DamageLevel, number>  = {
@@ -174,5 +184,13 @@ export class MPCostCalculatorV2 extends CostCalculator {
     severe: 30,
     colossal: 62,
   };
+
+	// static override INSTANT_KILL_LEVELS_MULT : Record<InstantKillLevel, number> = {
+	// 	none: 0,
+	// 	low: 1,
+	// 	medium: 1.5,
+	// 	high: 2,
+	// 	always: 3,
+	// };
 
 }

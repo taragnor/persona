@@ -127,6 +127,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return PersonaSettings.getDamageSystem();
   }
 
+  get effectLevel() : Power["system"]["damageLevel"] {
+    if (this.isPower()) {
+      return this.system.damageLevel;
+    }
+    return "none";
+  }
+
   usesOptimizedDamage(this: Power, user: Persona) :boolean {
     return this.hasTag(["theurgy", "teamwork"], user);
   }
