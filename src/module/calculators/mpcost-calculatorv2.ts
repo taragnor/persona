@@ -52,10 +52,13 @@ export class MPCostCalculatorV2 extends CostCalculator {
     if (buffsGranted == 0) {return;}
     const valueOfEachBuffAdded = this.BASE_MP_COSTS["buff"];
     const baseCost = buffsGranted * valueOfEachBuffAdded;
-    const scaling = Math.pow(1.1, buffsGranted - 1);
-    calc.add(0, Math.round((baseCost -1) * scaling), `Buff/Debuff`);
+    const scaling = Math.pow(1.125, buffsGranted - 1);
+    const trueBaseCost = (baseCost * scaling) - 1;
     if (pwr.isAoE()) {
-      calc.mult(0, 1.5, "AoE Buff");
+      calc.add(0, trueBaseCost * 1.2, `Buff/Debuff (AoE)`);
+      calc.mult(0, 1.25, "AoE Buff General Multiplier");
+    } else {
+      calc.add(0, trueBaseCost, `Buff/Debuff (single target)`);
     }
   }
 

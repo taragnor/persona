@@ -292,7 +292,9 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
     if (cons.type != "combat-effect" || cons.combatEffect != "damage") {
       return [];
     }
-    if (cons.damageSubtype == "odd-even" || cons.damageSubtype == "high" || cons.damageSubtype == "low") {
+    if (cons.damageSubtype == "odd-even"
+      || cons.damageSubtype == "high"
+      || cons.damageSubtype == "low") {
       const source = this.findRealSource();
       if (source instanceof PersonaItem && source.isPower()) {
         if (source.effectLevel == "none" || source.getBaseDamageType() == "none") {
