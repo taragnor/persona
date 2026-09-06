@@ -550,19 +550,25 @@ export class PersonaSocial {
   }
 
   static async sendGMCardRequest(actor: PC, link: SocialLink | Activity) : Promise<SocialCard> {
-    const gms = game.users.filter(x=> x.isGM);
-    if (this.cardDrawPromise) {
-      this.cardDrawPromise.rej("Second Draw");
-      this.cardDrawPromise = null;
+    const card = this._drawSocialCard(actor, link); 
+    if (card) {
+      const gms = game.users.filter(x=> x.isGM);
+      PersonaSockets.simpleSend("DRAW_CARD", {actorId: actor.id, linkId: link.id}, gms.map( x=> x.id));
     }
-    const promise : Promise<string> = new Promise( (res, rej) => {
-      this.cardDrawPromise = { res, rej};
-    });
-    PersonaSockets.simpleSend("DRAW_CARD", {actorId: actor.id, linkId: link.id}, gms.map( x=> x.id));
-    const cardId = await promise;
-    const card = game.items.get(cardId as SocialCard["id"]) as SocialCard | undefined;
-    if (!card) {throw new PersonaError(`No card found for ${link.name}`);}
     return card;
+    // const gms = game.users.filter(x=> x.isGM);
+    // if (this.cardDrawPromise) {
+    //   this.cardDrawPromise.rej("Second Draw");
+    //   this.cardDrawPromise = null;
+    // }
+    // const promise : Promise<string> = new Promise( (res, rej) => {
+    //   this.cardDrawPromise = { res, rej};
+    // });
+    // PersonaSockets.simpleSend("DRAW_CARD", {actorId: actor.id, linkId: link.id}, gms.map( x=> x.id));
+    // const cardId = await promise;
+    // const card = game.items.get(cardId as SocialCard["id"]) as SocialCard | undefined;
+    // if (!card) {throw new PersonaError(`No card found for ${link.name}`);}
+    // return card;
   }
 
   static async answerCardRequest(req: SocketMessage["DRAW_CARD"], socketPayload: SocketPayload<"DRAW_CARD">) {

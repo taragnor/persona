@@ -198,8 +198,9 @@ private static _powerStuffBase: Record<string, unknown>;
 				.filter ( x=> x != undefined)
 			]
 		);
-		const ITEMS = Object.fromEntries( (game.items.contents as PersonaItem[])
+		const ITEMS = Object.fromEntries( (PersonaDB.allItems() as PersonaItem[])
 			.filter( item => item.isAnyItemType())
+      .sort( (a,b) => a.name.localeCompare(b.name))
 			.map (item => [item.id, item.name])
 		);
 		const ITEMS_PLUS_NULL = {

@@ -510,6 +510,10 @@ section.qualifiers {
 
 }
 
+.token-spends button {
+  color: white;
+}
+
 .card-roll select,
 .card-roll input {
   font-size: 1rem;      /* match your text size */
@@ -896,7 +900,16 @@ form h5 {
 }
 
 .social-card-event button:disabled{
+  color: white;
+}
+
+.token-spend button {
+  color: white;
+}
+
+.social-card-event button:disabled{
   cursor: not-allowed !important;
+  color: white;
   opacity: 0.75;
 }
 

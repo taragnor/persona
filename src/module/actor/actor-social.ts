@@ -78,6 +78,10 @@ export class ActorSocial <T extends PersonaActor> {
 
   getSocialSLWith( sl : Tarot | SocialLink | UniversalActorAccessor<SocialLink>) : number {
     if (!this.actor.isPCLike() && !this.actor.isNPC()) {return 0;}
+    if (sl == undefined) {
+      PersonaError.softFail("sl is undefined");
+      return 0;
+    }
     if ("actorId" in sl) {
       sl = PersonaDB.findActor(sl);
     }
