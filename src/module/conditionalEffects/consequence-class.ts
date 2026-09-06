@@ -203,6 +203,7 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
           return `Invalid Modifier on NonDefensive consequence: ${btype} `;
         }
         break;
+      case "social-targetted":
       case "item":
       case "power":
         break;

@@ -75,6 +75,11 @@ export class BonusCalculation extends CalculationV2 {
           PersonaError.softFail("No usedPower in situation for", situation, this._typeData);
         }
         break;
+      case "social-targetted":
+        if (!situation || !("target" in situation)) {
+          PersonaError.softFail("No target in situation for defensive bonus", situation, this._typeData);
+        }
+        break;
       default:
         this._typeData.type satisfies never;
         break;
@@ -168,7 +173,7 @@ export const MODV2_DETAILS = {
     clamp: {min: 0, max: 100},
   },
   "social-card-weight": {
-    type: "defensive",
+    type: "social-targetted",
     rounding: "none",
     initial: 0,
   },
@@ -193,7 +198,7 @@ export type ModifierV2Target = keyof typeof MODIFIER_V2_TARGET;
 
 
 type ModV2Type = {
-  type: "offensive" | "defensive" | "user" | "item" | "power",
+  type: "offensive" | "defensive" | "user" | "item" | "power" | "social-targetted",
   rounding: "floor" | "ceiling" | "round" | "none",
   clamp ?: {min: number, max:number},
   initial: number,

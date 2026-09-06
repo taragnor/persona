@@ -1168,6 +1168,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       case "power":
         sources = this.getPassiveEffects(user, options);
         break;
+      case "social-targetted":
+        sources = this.getPassiveEffects(user, options);
+        break;
       default:
         calc.category satisfies never;
         throw new PersonaError(`Illegal calc Type ${calc.category as string}`);
