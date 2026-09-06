@@ -446,7 +446,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       "system.combat.personaStats.pLevel" : newLevel,
       "system.combat.personaStats.xp": neededXP,
     });
-    await Logger.sendToChat(`${this.displayedName} gained ${amt} levels`);
+    await Logger.sendToChat(`${this.displayedName} (${this.user.displayedName}) gained ${amt} levels`);
   }
 
   /** return leveled Persona on level up*/

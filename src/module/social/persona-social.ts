@@ -536,7 +536,7 @@ export class PersonaSocial {
   }
 
   static async getExpendEventRequest(msg : SocketMessage["EXPEND_EVENT"], payload: SocketPayload<"EXPEND_EVENT">) {
-    const card = game.items.get(msg.cardId) as SocialCard;
+    const card = PersonaDB.getItemById(msg.cardId) as SocialCard;
     if (!card) {
       PersonaError.softFail(`Can't fiund Card Id ${msg.cardId}`, msg, payload);
       return;
@@ -573,7 +573,7 @@ export class PersonaSocial {
 
   static async answerCardRequest(req: SocketMessage["DRAW_CARD"], socketPayload: SocketPayload<"DRAW_CARD">) {
     const actor = game.actors.get(req.actorId) as PC;
-    const activity = (game.actors.get(req.linkId as PersonaActor["id"]) ?? game.items.get(req.linkId as PersonaItem["id"])) as SocialLink | SocialCard;
+    const activity = (PersonaDB.getActorById(req.linkId) ?? PersonaDB.getItemById(req.linkId as PersonaItem["id"])) as SocialLink | SocialCard;
     //typescript was being fussy and needed me to define a concrete type despuite it being legal to call set availability on either
     if (activity instanceof PersonaItem && activity.system.cardType == "job") {
       await activity.setAvailability(false);

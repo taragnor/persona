@@ -186,7 +186,7 @@ export class ConditionalEffectPrinter {
           switch (cond.itemCheck) {
             case undefined:
             case "specific-item": {
-              const item = game.items.get(cond.itemId);
+              const item = PersonaDB.getItemById(cond.itemId);
               return `${target1} ${not} has ${item?.name ?? "Unknown Item"} in Inventory`;
             }
             case "has-tag": {
@@ -540,7 +540,7 @@ export class ConditionalEffectPrinter {
         case "inspirationWith":
           return `Has Inspiration With Link ??? ${endString(cond)}`;
         case "itemCount": {
-          const item = game.items.get(cond.itemId);
+          const item = PersonaDB.getItemById(cond.itemId);
           return `Has Amount of ${item?.name ?? "UNKNOWN"} ${endString(cond)}`;
         }
         case "opening-roll":

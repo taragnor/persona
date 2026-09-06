@@ -251,7 +251,7 @@ function numericComparison(condition: PreconditionType & {type : "numeric"}, sit
       const arr = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo);
       if (arr.length == 0) {return false;}
       target = arr.reduce( (acc,subject) => {
-        const item = game.items.get(condition.itemId);
+        const item = PersonaDB.getItemById(condition.itemId);
         if (!item) {return acc;}
         return acc + subject.items.contents
           .reduce( (a,x) => (x.name == item.name && ("amount" in x.system))
