@@ -204,13 +204,13 @@ export class OpenerSaves {
       }
       default: {
         msg.push('Failure');
-        await actor.increaseFadeState();
         const fadeState = actor.hasStatus('fading') ? 'Starting to Fade Away' : 'Fully Fade Away (Ejected from Metaverse)';
+        // await actor.increaseFadeState();
         options.push({
           combatant: combatant.id,
           optionName: `${fadeState} (Help in Spirit Only)`,
           mandatory: true,
-          optionEffects: ['fightInSpirit'],
+          optionEffects: ['fightInSpirit', 'fade'],
         });
         break;
       }

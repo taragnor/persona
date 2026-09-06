@@ -198,7 +198,7 @@ export class PersonaRoller {
     const maybeDC = this.#getDC(situation, options);
     const DC = maybeDC ? maybeDC : 11;
     const difficultyTxt = DC == 11 ? "normal" : DC == 16 ? "hard" : DC == 6 ? "easy" : "unknown difficulty";
-    const labelTxt = `Saving Throw (${label ? label + " " + difficultyTxt : ""})`;
+    const labelTxt = `${actor?.publicName ?? actor?.displayedName} Saving Throw (${label ? label + " " + difficultyTxt : ""})`;
     const bundle = await this.#makeRoll(labelTxt, mods, situation, DC);
     return bundle;
   }

@@ -61,10 +61,10 @@ export class OpenerManager {
     );
   }
 
-  async onEndTurn() {
+  async onEndTurn(comb: Combatant) {
     //this may be run by PCs so can't do any GM functions
     void this.panel.pop();
-    if (game.user.isGM) {
+    if (game.user.isGM && this.combat.combatant == comb) {
       await this.clearOpenerChoices();
     }
   }
@@ -417,6 +417,9 @@ export class OpenerManager {
           break;
         case "fightInSpirit":
           break;
+        case "fade":
+          await combatant.actor.increaseFadeState();
+          break;
         case "revive":
           await combatant.actor.setHP(1);
           break;
@@ -487,6 +490,7 @@ interface OptionEffects {
   'attackRandomEnemy': string;
   'attackAlly': string;
   'throw-away-money': string;
+  'fade': string;
 }
 
 type OptionEffect = keyof OptionEffects;

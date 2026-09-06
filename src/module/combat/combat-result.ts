@@ -171,9 +171,9 @@ export class CombatResult  {
       }
       case "removeStatus": {
         if (!effect) {break;}
-        const actor = PersonaDB.findActor(effect.actor);
+        // const actor = PersonaDB.findActor(effect.actor);
         for (const id of multiCheckToArray(cons.statusName)) {
-          if (actor.hasStatus(id)) {
+          if (target && target?.hasStatus(id)) {
             effect.removeStatus.push({
               id,
             });
