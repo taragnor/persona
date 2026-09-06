@@ -1735,6 +1735,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   canBeUsedInCombat () : boolean {
     if (!this.isUsableType()) {return false;}
     if (this.isSkillCard()) {return false;}
+    if (this.hasTag(["combat"], null)) {return true;}
     if (this.hasTag(["exploration", "downtime", "downtime-minor"], null)) {return false;}
     return true;
   }
