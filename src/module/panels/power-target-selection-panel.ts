@@ -1,6 +1,7 @@
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaCombat, PToken} from "../combat/persona-combat.js";
 import {PersonaTargetting} from "../combat/persona-targetting.js";
+import {Metaverse} from "../metaverse.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
@@ -34,13 +35,26 @@ export class PowerTargetSelectionPanel extends SubPanel {
   }
 
   private _targetList() : readonly (ValidAttackers | PToken)[] {
-    const combat = PersonaCombat.combat;
-    if (!combat) {
-      return PersonaDB.activePCParty();
+    const phase = Metaverse.getPhase();
+    switch (phase) {
+      case "postcombat":
+      case "exploration":
+        return PersonaDB.activePCParty();
+      case "combat": {
+        const combat = PersonaCombat.combat!;
+        return combat.combatants.contents
+        .map( c => c.token)
+        .filter( t => t.actor != undefined && t.actor.isValidCombatant()) as PToken[] ;
+      }
+      case "downtime":
+        return [
+          ...PersonaDB.realPCs(),
+          ...PersonaDB.NPCAllies()
+        ];
+      default:
+        phase satisfies never;
+        throw new PersonaError(`Unknown phase ${phase as string}`);
     }
-    return combat.combatants.contents
-      .map( c => c.token)
-      .filter( t => t.actor != undefined && t.actor.isValidCombatant()) as PToken[] ;
   }
 
   override async getData() {

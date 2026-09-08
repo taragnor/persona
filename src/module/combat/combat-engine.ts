@@ -1261,18 +1261,6 @@ export class CombatEngine {
         applyTo: "attacker",
       }, situation);
     }
-    if (
-      Metaverse.getPhase() == "downtime"
-      && power.hasTag("downtime-minor", null)) {
-        res.addEffect(null, attacker.actor, {
-          type: "social-card-action",
-          cardAction : "alter-minor",
-          amount: ConsequenceAmountResolver.constant(-1),
-          source: power.accessor,
-          owner: attacker.actor.accessor,
-          realSource: power.accessor,
-        }, situation);
-      }
     return res;
   }
 
@@ -1308,13 +1296,31 @@ export class CombatEngine {
       default:
         usableOrCard.system satisfies never;
     }
+    res.merge(this.#processUniversalCosts(attacker, usableOrCard, situation));
     return res;
   }
 
-  ensureCombatExists() : PersonaCombat {
-    if (this.combat) {return this.combat;}
-    return PersonaCombat.ensureCombatExists();
-  }
+  #processUniversalCosts(attacker: PToken , usableOrCard: UsableAndCard, situation: Situation) : CombatResult {
+    const res = new CombatResult();
+    if (usableOrCard.isCardItem()) {return res;}
+    const usable = usableOrCard;
+    if ( Metaverse.getPhase() == "downtime"
+      && usable.hasTag("downtime-minor", null)) {
+        res.addEffect(null, attacker.actor, {
+          type: "social-card-action",
+          cardAction : "alter-minor",
+          amount: ConsequenceAmountResolver.constant(-1),
+          source: usable.accessor,
+          owner: attacker.actor.accessor,
+          realSource: usable.accessor,
+        }, situation);
+      }
+return res;
+}
+ensureCombatExists() : PersonaCombat {
+  if (this.combat) {return this.combat;}
+  return PersonaCombat.ensureCombatExists();
+}
 
   static calculateBaseAilmentRange(power: Usable):  U<{high: number, modifier: number, locType: string}> {
     const chance  = AILMENT_RANGE_BY_POWER[power.system.ailmentChance];

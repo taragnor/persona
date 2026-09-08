@@ -1684,7 +1684,8 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
   }
 
   async roomEffectsDialog(initialRoomModsIds: string[] = [], startSocial: boolean) : Promise<DialogReturn> {
-    const roomMods = startSocial ? [] : PersonaDB.getSceneAndRoomModifiers();
+    initialRoomModsIds = !startSocial ? initialRoomModsIds : [];
+    const roomMods = PersonaDB.getSceneAndRoomModifiers();
     const ROOMMODS = Object.fromEntries(roomMods.map( mod => [mod.id, mod.name]));
     const advanceCal = startSocial
     && !PersonaSettings.debugMode()
