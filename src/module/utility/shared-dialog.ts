@@ -1,4 +1,4 @@
-import {HTMLDataInputDefinition, HTMLInputReturnType, HTMLTools} from "./HTMLTools.js";
+import {HTMLDataInputDefinition, HTMLInputReturnType, HTMLReturnField, HTMLTools} from "./HTMLTools.js";
 import {SocketManager, SocketPayload} from "./socket-manager.js";
 
 declare global {
@@ -297,6 +297,55 @@ export class VotingDialog<Choices extends string> {
 		const val = winner[0];
 		return val;
 	}
+
+}
+
+export class OwnedActorChoiceDialog<const V extends HTMLDataInputDefinition> {
+	private _dialog : SharedDialog;
+  private _actors: readonly Actor[];
+  private _choices : V;
+  private _optionsArr: HTMLDataInputDefinition;
+
+  constructor( actors: readonly Actor[], choicesPerToken: V, promptName: string) {
+    this._choices = choicesPerToken;
+    this._actors = actors;
+    const options = Object.fromEntries(
+      Object.entries(choicesPerToken)
+      .flatMap( ([k,v])=>
+        actors.map( t => ([
+          `${t.id}-${k}`,
+          {
+            ...v,
+            label: `${v.label} (${t.name})`,
+            editingUsers: game.users.filter(user=> t.testUserPermission(user, "OWNER")).map( x=> x.id),
+          }])
+        ))) satisfies HTMLDataInputDefinition;
+    this._dialog = new SharedDialog( options, promptName);
+  }
+
+  async getChoices() {
+    const ret= await this._dialog.open( x=> {
+      const entries= Object.values(x);
+      return entries.every(x => !!x && x != "undecided");
+    });
+    const entries= Object.entries(ret);
+    const data=  entries.reduce( (acc, [k,vee]) => {
+      const v= vee as unknown;
+      const p = k.split("-");
+      const token =this._actors.find(t=> t.id == p[0]);
+      if (!token) {
+        console.warn(`Can't find ${p[0]} in tokens`);
+        return acc;
+      }
+      if (p[1] && p[1].length > 0) {
+        const obj = acc[p[0]] ?? {};
+        obj [p[1]] = v == "yes" ? true : false;
+        acc[p[0]] = obj;
+      }
+      return acc;
+    }, {} as Record<string, Record<string, unknown>>);
+    return data;
+  }
 
 }
 

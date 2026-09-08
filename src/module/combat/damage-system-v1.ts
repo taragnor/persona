@@ -17,7 +17,7 @@ export class MainDamageSystem extends DamageSystemBase {
   private HEALING_MAGIC_MULT = 0.5 as const;
   private BASE_VARIANCE = 2 as const;
   private ALL_OUT_ATTACK_HELPER_DIVISOR = 0.333 as const;
-  private BASIC_ATTACK_LEVEL_DIVISOR = 0.85 as const;
+  private BASIC_ATTACK_LEVEL_DIVISOR = 1.00 as const;
   private BASE_DAMAGE_LEVEL_DIVISOR = 0.666 as const;
 
   individualContributionToAllOutAttackDamage(actor: ValidAttackers, target: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation {
@@ -69,9 +69,6 @@ export class MainDamageSystem extends DamageSystemBase {
     const bonusDamage = userPersona.getBonusWpnDamage().total(situation);
     const bonusVariance = userPersona.getBonusVariance().total(situation);
     calc.add('base', userPersona.user.level * levelDivisor, `Character Level * ${levelDivisor} `);
-    // const weaponDmg = this.weaponDamage(userPersona);
-    // const weaponName = userPersona.user.isShadow() ? 'Unarmed Shadow Damage' : (userPersona.user.weapon?.displayedName ?? 'Unarmed');
-    // calc.add('base', weaponDmg.baseAmt, weaponName.toString());
     calc.add('base', bonusDamage, 'Bonus Damage');
     const weapon = userPersona.user.weapon;
     const weaponVariance = weapon ? weapon.varianceBoost() : 0;

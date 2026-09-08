@@ -492,11 +492,11 @@ type StringChoiceFieldDef<T extends string> =
 
 export type HTMLDataInputDefinition = Record< string, HTMLInputFieldDefinition<string | number | boolean>>;
 
-export type HTMLInputReturnType<T extends HTMLDataInputDefinition> = {
+export type HTMLInputReturnType<T extends HTMLDataInputDefinition = HTMLDataInputDefinition> = {
 	[K in keyof T] : K extends string ? HTMLReturnField<T[K]> : never};
 
 
-type HTMLReturnField<T extends HTMLInputFieldDefinition< string | number | boolean>> =
+export type HTMLReturnField<T extends HTMLInputFieldDefinition< string | number | boolean> = HTMLInputFieldDefinition<string | number | boolean>> =
 	"choices" extends keyof T
 		? (
 			T["choices"] extends readonly unknown[]

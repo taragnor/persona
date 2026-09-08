@@ -2371,6 +2371,14 @@ isUsingMetaPod(this: ValidAttackers): boolean {
   return this.system.combat.usingMetaPod ?? true;
 }
 
+async setMetaPodState(this: PC | NPCAlly, newVal: boolean) {
+
+  if (this.system.combat.usingMetaPod == newVal ) {
+    return;
+  }
+  await this.update({"system.combat.usingMetaPod": newVal});
+}
+
 async checkSideboardEmptySpace(this: ValidAttackers) {
   if (this.isShadow()) {return;}
   while (this.sideboardPowers.length < this.persona().maxSideboardPowers) {
