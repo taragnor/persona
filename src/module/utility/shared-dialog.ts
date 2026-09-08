@@ -1,4 +1,4 @@
-import {HTMLDataInputDefinition, HTMLInputReturnType, HTMLReturnField, HTMLTools} from "./HTMLTools.js";
+import {HTMLDataInputDefinition, HTMLInputReturnType, HTMLTools} from "./HTMLTools.js";
 import {SocketManager, SocketPayload} from "./socket-manager.js";
 
 declare global {

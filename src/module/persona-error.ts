@@ -3,46 +3,50 @@ import { PersonaSockets } from "./persona.js";
 export class PersonaError extends Error {
 
   constructor (e: Error);
-	 constructor (errortxt: string, ...debugArgs: unknown[]);
-	 constructor (error: string | Error, ...debugArgs: unknown[]) {
-     if (error instanceof Error) {
-       super(error.message);
-       if (error.stack) {
-       this.stack = error.stack;
-       }
-       this.name = error.name;
-       return;
-     }
-     const errortxt = error;
-			super(errortxt);
-			PersonaError.notifyGM({
-        "errorMsg": errortxt, stack: this.stack
+  constructor (errortxt: string, ...debugArgs: unknown[]);
+  constructor (error: string | Error, ...debugArgs: unknown[]) {
+    if (error instanceof Error) {
+      super(error.message);
+      if (error.stack) {
+        this.stack = error.stack;
       }
-        , debugArgs);
-			ui.notifications.error(errortxt);
-			console.error(errortxt);
-			debugArgs.forEach(x=> Debug(x));
-	 }
+      this.name = error.name;
+      return;
+    }
+    const errortxt = error;
+    super(errortxt);
+    PersonaError.notifyGM({
+      "errorMsg": errortxt, stack: this.stack
+    }
+      , debugArgs);
+    ui.notifications.error(errortxt);
+    console.error(errortxt);
+    debugArgs.forEach(x=> Debug(x));
+  }
 
-  static softFail(error: string | Error, ...debugArgs: unknown[]) : void {
+  static softFail(error: unknown, ...debugArgs: unknown[]) : void {
     try {
       if (error instanceof Error) {
         this.notifyGM({
-          "errorMsg": error.toString(), 
-          stack: error.stack}
-          , debugArgs);
+          "errorMsg": error.toString(),
+          stack: error.stack,
+        } , debugArgs);
         ui.notifications.error(error.message);
         console.error(`${error.message} \n ${error.stack}`);
         return;
       }
       const errortxt = error;
-      ui.notifications.error(errortxt);
-      const trace = this.getTrace();
-      this.notifyGM( {
-        "errorMsg":errortxt, 
-        "stack": trace
-      }, debugArgs);
-      console.error(`${errortxt} \n ${trace}`);
+      if (typeof errortxt == "string") {
+        ui.notifications.error(errortxt);
+        const trace = this.getTrace();
+        this.notifyGM( {
+          "errorMsg":errortxt,
+          "stack": trace,
+        }, debugArgs);
+        console.error(`${errortxt} \n ${trace}`);
+        return;
+      }
+      PersonaError.softFail(`Unknown type sent to Softfail ${typeof error}`, error, ...debugArgs);
     } catch (newErr) {
       if (debugArgs) {
         debugArgs.forEach( arg=> Debug(arg));

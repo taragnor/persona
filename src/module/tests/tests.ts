@@ -357,6 +357,11 @@ export class Tests {
     await XPManager.awardXPAmount(100, PersonaDB.activePCParty());
   }
 
+
+  static testError(error: unknown, ...args : unknown[]) {
+    PersonaError.softFail(error, ...args);
+  }
+
   static async batteryOfTests() : Promise<boolean> {
     await PersonaDB.waitUntilLoaded();
     const results =[];
