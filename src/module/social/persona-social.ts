@@ -834,14 +834,13 @@ Hooks.on("socketsReady" , function() {
   PersonaSockets.setHandler("DEC_AVAILABILITY", async ( task_id: string) => {
     if (!game.user.isGM) {return;}
     const link = game.actors.find(x=> x.id == task_id);
-    if (link) {
-      const actor = link as PersonaActor;
-      if (actor.isNPC() || actor.isPC()) {
-        await actor.setAvailability(false);
-      }
-      return;
+    if (!link) {
+      throw new PersonaError(`Can't find Task ${task_id} to decremetn availability`);
     }
-    throw new PersonaError(`Can't find Task ${task_id} to decremetn availability`);
+    const actor = link as PersonaActor;
+    if (actor.isNPC() || actor.isPC()) {
+      await actor.setAvailability(false);
+    }
   });
 });
 
