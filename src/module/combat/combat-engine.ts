@@ -11,6 +11,7 @@ import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class
 import {ConsequenceAmountResolver} from "../conditionalEffects/consequence-amount.js";
 import {ConsequenceProcessor} from "../conditionalEffects/consequence-processor.js";
 import {PersonaItem} from "../item/persona-item.js";
+import {Metaverse} from "../metaverse.js";
 import {Persona} from "../persona-class.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
@@ -1260,16 +1261,18 @@ export class CombatEngine {
         applyTo: "attacker",
       }, situation);
     }
-    if (power.hasTag("downtime-minor", null))  {
-      res.addEffect(null, attacker.actor, {
-        type: "social-card-action",
-        cardAction : "alter-minor",
-        amount: ConsequenceAmountResolver.constant(-1),
-        source: power.accessor,
-        owner: attacker.actor.accessor,
-        realSource: power.accessor,
-      }, situation);
-    }
+    if (
+      Metaverse.getPhase() == "downtime"
+      && power.hasTag("downtime-minor", null)) {
+        res.addEffect(null, attacker.actor, {
+          type: "social-card-action",
+          cardAction : "alter-minor",
+          amount: ConsequenceAmountResolver.constant(-1),
+          source: power.accessor,
+          owner: attacker.actor.accessor,
+          realSource: power.accessor,
+        }, situation);
+      }
     return res;
   }
 
