@@ -66,6 +66,7 @@ declare interface HOOKS {
 	"getSceneControlButtons": (...args : unknown[]) => unknown;
 	"renderActorSheet": (...args : unknown[]) => unknown;
 	"renderJournalDirectory": (...args : unknown[]) => unknown;
+  "preRenderCombatTracker" : PreRenderHook<CombatTracker>,
 	"renderCombatTracker": RenderCombatTabFn;
 	"renderApplication": (...args : unknown[]) => unknown;
 	"renderChatMessageHTML": (msg: ChatMessage, htmlElement: HTMLElement, data: unknown) => unknown;
@@ -116,6 +117,8 @@ type CombatUpdateOptions = {
 }
 
 
+
+type PreRenderHook<T extends object> = (item: T, user: FoundryUser, renderinfo: PreRenderOptions) => unknown ;
 type RenderCombatTabFn= (item: CombatTracker, element: JQuery<HTMLElement> | HTMLElement, options: RenderCombatTabOptions) => unknown;
 
 type RenderCombatTabOptions = {
@@ -129,14 +132,20 @@ type RenderCombatTabOptions = {
 	hasCombat: boolean;
 	labels: Record<string, string>;
 	linked: boolean;
-	nextId: unknown | null;
-	previousId: unknown | null;
+	nextId: N<unknown>;
+	previousId: N<unknown>;
 	round: number;
 	settings: Record<string, unknown>;
-	started: undefined | unknown;
+	started: U<unknown>;
 	tabName: string;
 	turn: number;
 	turns: unknown[];
 	user: FoundryUser
 };
+
+type PreRenderOptions = {
+/**this seems present in popouts so is a good way to detect them*/
+  window?: object; 
+
+}
 

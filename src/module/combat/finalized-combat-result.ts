@@ -321,9 +321,6 @@ export class FinalizedCombatResult {
 
   private async autoApplyResult_GM() : Promise<boolean> {
     try {
-      // if (power && attacker) {
-      //   void PersonaSFX.onUsePowerStart(this.power, attacker);
-      // }
       await this.#apply();
       if (this.options.printData) {
         const {effectNameOrHeader, initiator} = this.options.printData;

@@ -63,7 +63,7 @@ export class SocialActionExecutor {
           PersonaError.softFail("Can't add money, no amount given");
           return;
         }
-        await PersonaSocial.gainMoney(actor, amount?? 0);
+        await actor.gainMoney(amount?? 0);
         break;
       }
       case "modify-progress-tokens": {

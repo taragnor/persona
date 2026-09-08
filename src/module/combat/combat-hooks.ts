@@ -193,6 +193,16 @@ export class CombatHooks {
       }
     });
 
+    Hooks.on("renderCombatTracker", (_tracker, _user, _options)  => {
+      const combat = PersonaCombat.combat;
+      if (!combat) {return;}
+      if (combat.isSocial) {
+        console.log("Closing Combat popout");
+        setTimeout( () => ui.combat?.popout?.close(), 250);
+        return;
+      }
+    });
+
 	}
 
 }//end of class

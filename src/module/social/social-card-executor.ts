@@ -360,7 +360,9 @@ export class SocialCardExecutor {
       const tokens = actor.social.getActivityProgress(cardData.card.id) ?? 0;
       await actor.social.activityProgress(card.id, -999);
       const total = base + (token * tokens);
-      await actor.gainMoney(total, true, false);
+      await actor.gainMoney(total, {
+        breakLimit: true,
+      });
       return `
     <section class="job-pay-section" data-base-pay="${base}" data-per-token="${token}">
       <label>

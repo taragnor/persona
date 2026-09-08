@@ -303,7 +303,7 @@ export class PCSheet extends PCLikeSheet {
 	async gainMoney(_ev: Event) {
 		const x = await HTMLTools.getNumber("Amount to gain");
 		if (x <= 0) {return;}
-		await this.actor.gainMoney(x, true);
+		await this.actor.gainMoney(x);
 	}
 
 	async spendMoney(_ev: Event) {

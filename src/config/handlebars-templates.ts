@@ -114,6 +114,7 @@ const templateFileNames : string[] =[
   "character-summary-box.hbs",
   "fusion-combination-list.hbs",
   "npc-valid-cards.hbs",
+  "other-effect.hbs",
 ];
 
 export const templatePaths = templateFileNames.

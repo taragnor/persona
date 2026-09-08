@@ -391,10 +391,6 @@ export class PersonaSocial {
     await actor.alterSocialSkill(skill, amt);
   }
 
-  static async gainMoney(actor: PC, amt: number) {
-    await actor.gainMoney(amt, true);
-  }
-
   static displaySocialPanel( tracker: JQuery) {
     if (tracker.find(".social-section").length == 0) {
       const socialTracker = `
@@ -782,10 +778,10 @@ export class PersonaSocial {
     };
     const content = `
     <div class="f-row">
-    <img class="navigator-img" src=${talker.img}>
-<div class="navigator-speech">
-      "${text}"
-</div>
+      <img class="navigator-img" src=${talker.img}>
+      <div class="navigator-speech">
+        "${text}"
+      </div>
     </div>
     `;
     const messageData = {

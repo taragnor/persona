@@ -79,6 +79,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   // static FULL_FADE_OPACITY = 0.2 as const;
 
   static MPMap = new Map<number, number>;
+  static MONEY_GAIN_LIMIT = 500 as const;
 
   NPC_FATIGUE = {
     TURN: 1,
@@ -2791,19 +2792,25 @@ get money() : number {
   return 0;
 }
 
-async gainMoney(this: PC, amt: number, log :boolean, breakLimit = false) {
+
+async gainMoney(this: PC, amt: number, options: GainMoneyOptions = {}) {
+  // async gainMoney(this: PC, amt: number, log :boolean, breakLimit = false) {
   if (amt < 0) {
     return this.spendMoney(amt);
   }
-  if (amt > 500 && !breakLimit) {
+  if (amt > PersonaActor.MONEY_GAIN_LIMIT && !options.breakLimit) {
     throw new PersonaError("Can't get this much money at once!");
   }
-  const resources = this.system.money + amt;
+  const current= this.system.money ?? 0;
+  const resources = current + amt;
   await this.update({ "system.money": resources});
-  if (log && amt > 0) {
-    await Logger.sendToChat(`${this.name} Gained ${amt} resource points`);
+  if (!options.omitLog && amt > 0) {
+    await Logger.sendToChat(`${this.name} Gained ${amt} resource points (previous: ${current})`);
+  }
+  if (!options.omitSound) {
     await PersonaSounds.ching();
   }
+
 }
 
 async spendMoney(this: PC, amt: number) {
@@ -2811,9 +2818,10 @@ async spendMoney(this: PC, amt: number) {
     throw new PersonaError("You don't have that much money!");
   }
   const amount = Math.abs(amt);
-  const resources = this.system.money - amount;
+  const current= this.system.money ?? 0;
+  const resources = current - amount;
   await this.update({ "system.money": resources});
-  await Logger.sendToChat(`${this.name} spent ${amount} resource points`);
+  await Logger.sendToChat(`${this.name} spent ${amount} resource points (previous: ${current}`);
   await PersonaSounds.ching();
 }
 
@@ -4156,6 +4164,12 @@ declare global {
 }
 
 type RealPC = PC & {tarot : Tarot};
+
+type GainMoneyOptions = {
+  omitLog ?: boolean,
+  breakLimit ?: boolean,
+  omitSound ?: boolean,
+}
 
 
 // type CustomPersonaLearningList= Record<number, {slot: keyof typeof SLOTTYPES, rarity: keyof typeof PROBABILITIES_POWER_RARITY}>;

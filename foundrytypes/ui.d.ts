@@ -12,11 +12,9 @@ declare const ui : {
 	combat: CombatTracker;
 };
 
-
-
-
 interface CombatTracker extends Application {
-
+  popout: CombatTracker;
+  close() : Promise<CombatTracker>;
 }
 
 interface ChatUI {

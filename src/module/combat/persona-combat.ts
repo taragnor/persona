@@ -235,6 +235,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
   }
 
   async onEndCombat() : Promise<void> {
+    void this.panel.deactivate();
     if (!game.user.isGM) {return;}
     void this.openers.onEndCombat();
     void this.refreshActorSheets();
@@ -1682,8 +1683,11 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
   }
 
   async roomEffectsDialog(initialRoomModsIds: string[] = [], startSocial: boolean) : Promise<DialogReturn> {
-    const roomMods = PersonaDB.getSceneAndRoomModifiers();
+    const roomMods = startSocial ? [] : PersonaDB.getSceneAndRoomModifiers();
     const ROOMMODS = Object.fromEntries(roomMods.map( mod => [mod.id, mod.name]));
+    const advanceCal = startSocial
+    && !PersonaSettings.debugMode()
+    && game.users.filter(x=> !x.isGM && x.active).length > 0;
     const html = await foundry.applications.handlebars.renderTemplate('systems/persona/sheets/dialogs/room-effects.hbs', {
       ROOMMODS : {
         '': '-',
@@ -1691,6 +1695,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
       },
       roomMods: initialRoomModsIds,
       startSocial,
+      advanceCal,
     });
     return new Promise( (conf, rej) => {
       const dialogOptions : DialogOptions = {

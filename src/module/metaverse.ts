@@ -30,6 +30,7 @@ import {NavigatorVoiceLines} from "./navigator/nav-voice-lines.js";
 import {VotingDialog} from "./utility/shared-dialog.js";
 import {CombatScene} from "./combat/combat-scene.js";
 import {sleep} from "./utility/async-wait.js";
+import {PersonaSounds} from "./persona-sounds.js";
 
 export class Metaverse {
   static lastCrunch : number = 0;
@@ -350,7 +351,7 @@ export class Metaverse {
   }
 
   static async distributeMoney(money: number, players: PersonaActor[]) {
-    if (players.length <= 0) {return;}
+    if (players.length <= 0 || money <= 0) {return;}
     const moneyShare = Math.floor(money / players.length);
     const shareDist =
       players.map( actor => ({
@@ -364,10 +365,14 @@ export class Metaverse {
         entry.share += 1;
         moneyOverflow--;
       }
-      if (entry.pc.system.type == "pc") {
-        await (entry.pc as PC).gainMoney(entry.share, true, true);
+      if (entry.pc.isPC()) {
+        await entry.pc.gainMoney(entry.share, {
+          omitSound: true,
+          breakLimit: true,
+        });
       }
     }
+    await PersonaSounds.ching();
   }
 
   static async executeDungeonAction( action: DungeonActionConsequence) : Promise<void> {
