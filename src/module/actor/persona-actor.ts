@@ -68,28 +68,25 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   declare statuses: Set<StatusEffectId>;
   declare sheet: PersonaActorSheetBase<this>;
 
-  _pendingRefresh= false;
+  _pendingRefresh = false;
+  _farming : U<Farming>;
+  social = new ActorSocial<typeof this>(this);
+  #powerLearning : PowerLearningSystem<ValidAttackers>;
+  tags = new ActorTagManager(this);
+  voicelines = new ActorVoiceLines(this);
 
-  DOWNED_OPACITY = 0.5 as const;
-  FULL_FADE_OPACITY = 0.2 as const;
+  // static DOWNED_OPACITY = 0.5 as const;
+  // static FULL_FADE_OPACITY = 0.2 as const;
+
+  static MPMap = new Map<number, number>;
 
   NPC_FATIGUE = {
     TURN: 1,
-    BATTLE: 3,
-    EXIT_MV : 20,
-    KO: 5,
+    BATTLE: 5,
+    EXIT_MV : 2,
+    KO: 8,
+    THRESHOLD: 40,
   } as const;
-
-  social = new ActorSocial<typeof this>(this);
-
-  #powerLearning : PowerLearningSystem<ValidAttackers>;
-
-  static MPMap = new Map<number, number>;
-  _farming : U<Farming>;
-
-  tags = new ActorTagManager(this);
-
-  voicelines = new ActorVoiceLines(this);
 
   private cache2 = {
     startingLevel: new PermanentCache( () => this._startingLevel()),
@@ -2029,7 +2026,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   /** NPC Fatigue tracking */
   async alterNPCFatigueTracker(this: NPCAlly, amt: number) {
-    const NPC_FATIGUE_THRESHOLD = this.npcFatigueThreshold;
+    const NPC_FATIGUE_THRESHOLD = this.NPC_FATIGUE.THRESHOLD;
     const oldVal = this.system.fatigueTracker ?? 0;
     let newVal = Math.max(0, amt+oldVal);
     while (newVal > NPC_FATIGUE_THRESHOLD) {
@@ -2038,10 +2035,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       void PersonaSocial.characterDialog(this, this._fatigueMsg(this.fatigueLevel));
     }
     await this.update({"system.fatigueTracker": newVal});
-  }
-
-  get npcFatigueThreshold() : number {
-    return 40 as const;
   }
 
   private _fatigueMsg(newLevel: PersonaActor["fatigueLevel"]) : string {

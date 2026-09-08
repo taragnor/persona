@@ -550,7 +550,7 @@ export class PersonaSocial {
   }
 
   static async sendGMCardRequest(actor: PC, link: SocialLink | Activity) : Promise<SocialCard> {
-    const card = this._drawSocialCard(actor, link); 
+    const card = this._drawSocialCard(actor, link);
     if (card) {
       const gms = game.users.filter(x=> x.isGM);
       PersonaSockets.simpleSend("DRAW_CARD", {actorId: actor.id, linkId: link.id}, gms.map( x=> x.id));
@@ -715,7 +715,6 @@ export class PersonaSocial {
     }
     if (activity instanceof PersonaActor) {
       return activity.social.isAvailable(pc);
-      // return this._isAvailable_SL(activity, pc);
     }
     activity satisfies never;
     PersonaError.softFail("Can't identify type of Activity", activity);
@@ -747,16 +746,16 @@ export class PersonaSocial {
     if (activity instanceof PersonaActor && activity.isSocialLink()) {
       const sl = activity;
       const statuses : StatusEffectId[] = ["jailed", "exhausted", "crippled", "injured"];
-      if ( statuses.some( x=> sl.hasStatus(x))) {
+      if ( statuses.some( x=> sl.hasStatus(x)) ) {
         return true;
       }
       switch (true) {
-        case sl.isNPCAlly():{
+        case sl.isNPCAlly() : {
           const proxy = sl.getNPCProxyActor();
           if (!proxy) {return false;}
           return this.isDisabled(proxy);
         }
-        case sl.isNPC():
+        case sl.isNPC() :
           if (sl.tarot == undefined) {return true;}
           break;
       }
@@ -771,7 +770,7 @@ export class PersonaSocial {
   }
 
   static isVisible(activity: Activity | SocialLink, _pc: PC) : boolean {
-    if( activity.system.weeklyAvailability.disabled) {
+    if ( activity.system.weeklyAvailability.disabled) {
       return false;
     }
     return true;
@@ -799,8 +798,6 @@ export class PersonaSocial {
 
 } //end of class
 
-
-
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ActivityOptions { }
 
@@ -826,15 +823,10 @@ declare global {
 }
 
 Hooks.on("socketsReady", () => {
-  console.log("Sockets set handler");
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  PersonaSockets.setHandler("DRAW_CARD", PersonaSocial.answerCardRequest.bind(PersonaSocial));
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  PersonaSockets.setHandler("CARD_REPLY", PersonaSocial.getCardReply.bind(PersonaSocial));
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  PersonaSockets.setHandler("EXPEND_EVENT", PersonaSocial.getExpendEventRequest.bind(PersonaSocial));
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  PersonaSockets.setHandler("EXPEND_QUESTION", PersonaSocial.getExpendQuestionRequest.bind(PersonaSocial));
+  PersonaSockets.setHandler("DRAW_CARD", (...args) => PersonaSocial.answerCardRequest(...args));
+  PersonaSockets.setHandler("CARD_REPLY", req => PersonaSocial.getCardReply(req));
+  PersonaSockets.setHandler("EXPEND_EVENT", (...args) => PersonaSocial.getExpendEventRequest(...args));
+  PersonaSockets.setHandler("EXPEND_QUESTION", (...args) => PersonaSocial.getExpendQuestionRequest(...args));
 });
 
 
