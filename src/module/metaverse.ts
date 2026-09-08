@@ -1,8 +1,6 @@
-import { Persona } from "./persona-class.js";
 import { StepsClock } from "./exploration/steps-clock.js";
 import { DoomsdayClock } from "./exploration/doomsday-clock.js";
 import { SceneClock } from "./exploration/scene-clock.js";
-import { PersonaSFX } from "./combat/persona-sfx.js";
 import { TriggeredEffect } from "./triggered-effect.js";
 import { Helpers } from "./utility/helpers.js";
 import { PersonaSockets } from "./persona.js";
@@ -274,81 +272,113 @@ export class Metaverse {
     await RandomEncounter.printRandomEncounterList(encounter);
   }
 
-  static inactiveMembersXPRate(party: ValidAttackers[], ally: NPCAlly): number {
-    const bonuses = party.reduce( (acc, actor) => {
-      const situation = {
-        user: actor.accessor,
-        target: ally.accessor,
-      };
-      return acc + actor.persona().getBonuses("inactive-party-member-xp-gains").total(situation);
-    }, 0 );
-    return Math.clamp(bonuses, 0, 1);
-  }
+  // static inactiveMembersXPRate(party: ValidAttackers[], ally: NPCAlly): number {
+  //   const bonuses = party.reduce( (acc, actor) => {
+  //     const situation = {
+  //       user: actor.accessor,
+  //       target: ally.accessor,
+  //     };
+  //     return acc + actor.persona().getBonuses("inactive-party-member-xp-gains").total(situation);
+  //   }, 0 );
+  //   return Math.clamp(bonuses, 0, 1);
+  // }
 
-  static inactiveMembersXP (amt: number, party: ValidAttackers[]) : Promise<XPGainReport[]>[]  {
-    const otherAllies = PersonaDB.NPCAllies()
-      .filter (x=> !party.includes( x));
-    const otherAlliesAwards = otherAllies.map( async ally=> {
-      try {
-        const XPRate= this.inactiveMembersXPRate(party, ally);
-        if (XPRate <= 0) {return [];}
-        const inactiveAmt = XPRate * amt;
-        const XPReport = await ally.awardXP(inactiveAmt);
-        return XPReport;
-      } catch (e) {
-        PersonaError.softFail(`Error giving XP to Inactive Ally ${ally.name}`, e);
-        return [];
-      }
-    });
-    return otherAlliesAwards;
-  }
+  // static inactiveMembersXP (amt: number, party: ValidAttackers[]) : Promise<XPGainReport[]>[]  {
+  //   const otherAllies = PersonaDB.NPCAllies()
+  //     .filter (x=> !party.includes( x));
+  //   const otherAlliesAwards = otherAllies.map( async ally=> {
+  //     try {
+  //       const XPRate= this.inactiveMembersXPRate(party, ally);
+  //       if (XPRate <= 0) {return [];}
+  //       const inactiveAmt = XPRate * amt;
+  //       const XPReport = await ally.awardXP(inactiveAmt);
+  //       return [XPReport];
+  //     } catch (e) {
+  //       PersonaError.softFail(`Error giving XP to Inactive Ally ${ally.name}`, e);
+  //       return [] as XPGainReport[];
+  //     }
+  //   });
+  //   return otherAlliesAwards;
+  // }
 
-  static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void> {
-    if (!game.user.isGM) {return;}
-    const numOfPCs = party.length;
-    const xp= Persona.calcXP(shadows, numOfPCs );
-    const navigator = PersonaDB.getNavigator();
-    if (navigator) {
-      party.push(navigator);
-    }
-    const inactivePartyXP = this.inactiveMembersXP(xp, party);
-    const XPAwardDataPromises = party.map( async actor => {
-      try {
-        const XPReport = await actor.awardXP(xp);
-        return XPReport;
-      } catch (e) {
-        PersonaError.softFail(`Error giving XP to ${actor.name}`, e);
-        return [];
-      }
-    });
-    const data = (await Promise.all(XPAwardDataPromises.concat(inactivePartyXP)))
-    .flatMap(x=> x);
-    await this.reportXPGain(data);
-  }
+  // static async awardXP(shadows: Shadow[], party: ValidAttackers[]) : Promise<void> {
+  //   if (!game.user.isGM) {return;}
+  //   const numOfPCs = party.length;
+  //   const xp= Persona.calcXP(shadows, numOfPCs );
+  //   const navigator = PersonaDB.getNavigator();
+  //   if (navigator) {
+  //     party.push(navigator);
+  //   }
+  //   const inactivePartyXP = this.inactiveMembersXP(xp, party);
+  //   const XPAwardDataPromises = party.map( async actor => {
+  //     try {
+  //       const XPReport = await actor.awardXP(xp);
+  //       return [XPReport];
+  //     } catch (e) {
+  //       PersonaError.softFail(`Error giving XP to ${actor.name}`, e);
+  //       return [];
+  //     }
+  //   });
+  //   const data = (await Promise.all(XPAwardDataPromises.concat(inactivePartyXP)))
+  //   .flatMap(x=> x);
+  //   await this.reportXPGain(data);
+  // }
 
-  static async reportXPGain(xpReport: XPGainReport[]) : Promise<void> {
-    const xpStringParts = xpReport
-    .map( ({name, amount, leveled}) => {
-      let LUMsg = "";
-      const base =  `<div> ${name}: +${amount} XP </div>`;
-      if (leveled) {
-        LUMsg =  `<div class="level-up-msg"> Level Up!</div>`;
-      }
-      return base + LUMsg;
-    });
-    const text = xpStringParts.join("");
-    if (xpReport.some(x=> x.leveled)) {
-      void PersonaSFX.onLevelUp();
-    }
-    await ChatMessage.create({
-      speaker: {
-        alias: "XP Award",
-      },
-      content: text ,
-      rolls: [],
-      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-    });
-  }
+  // static async reportXPGain(xpReport: XPGainReport[]) : Promise<void> {
+  //   const xpStringParts = xpReport
+  //   .map( report => this.processXPReportList(report));
+  //   // .map( ([actorId, report]) =>  {
+  //   //   return this.processIndividualReportList(actorId as ValidAttackers["id"], report);
+  //     // const mainActor = PersonaDB.findActor(actorId);
+  //     // const mainActor = actor.name;
+  //     // const levelUp = report.some( r=> r.leveled);
+  //     // // const xpStringParts = xpReport
+  //     // .map( ({name, amount, leveled}) => {
+  //     //   let LUMsg = "";
+  //     //   const base =  `${name}: +${amount} XP `;
+  //     //   if (leveled) {
+  //     //     LUMsg =  `<span class="level-up-msg"> Level Up!</span>`;
+  //     //   }
+  //     //   return `<div class="xp-gain">` + base + LUMsg + `</div>`;
+  //   // });
+  //   const text = xpStringParts.join("");
+  //   // if (Object.values(xpReport)
+  //   //   .some( x=> x
+  //   //     .some(x=> x.leveled)
+  //   //   )) {
+  //   if(xpReport.some( x=> x.reports.some(y=> y.leveled))) {
+  //       void PersonaSFX.onLevelUp();
+  //     }
+  //   await ChatMessage.create({
+  //     speaker: {
+  //       alias: "XP Award",
+  //     },
+  //     content: text ,
+  //     rolls: [],
+  //     style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+  //   });
+  // }
+
+  // private static processXPReportList(report: XPGainReport) : string {
+  //   try {
+  //     const {mainActor, reports} = report;
+  //     const amt = report.origAmount;
+  //     const levelUp = reports.some( r=> r.leveled) ? "LEVEL UP!" : "";
+  //     // const xpStringParts = xpReport
+  //     const levelUpStrings = reports
+  //       .map( ({name, amount, leveled}) => {
+  //         let LUMsg = "";
+  //         const base =  `${name}: +${amount} XP `;
+  //         if (leveled) {
+  //           LUMsg =  `<span class="level-up-msg"> Level Up!</span>`;
+  //         }
+  //         return `<div class="xp-gain">` + base + LUMsg + `</div>`;
+  //       });
+  //     return `<h3> ${mainActor.displayedName} (${amt} XP) ${levelUp}</h3> ${levelUpStrings.join()}`;
+  //   } catch {
+  //     return `<div class="error"> ERROR with ${report?.mainActor?.name} XP ${report?.origAmount}</div>`;
+  //   }
+  // }
 
   static async distributeMoney(money: number, players: PersonaActor[]) {
     if (players.length <= 0 || money <= 0) {return;}

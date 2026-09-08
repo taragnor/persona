@@ -30,7 +30,7 @@ export class CombatOutput {
 		const html = await foundry.applications.handlebars.renderTemplate("systems/persona/other-hbs/combat-roll-header.hbs", {attackerToken, attackerPersona, attackerName, effectName});
 		return html;
     } catch (e) {
-      PersonaError.softFail((e as Error).toString(), e);
+      PersonaError.softFail(e as Error);
       return "ERROR";
     }
 	}

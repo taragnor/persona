@@ -2107,22 +2107,57 @@ textarea.finale-input {
   cursor: pointer;
 }
 
-.roll-block {
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transform: translateY(-0.5rem);
-  transition:
-  max-height 0.35s ease,
-  opacity 0.25s ease,
-  transform 0.35s ease;
+.outer-roll-block {
+  cursor: help;
+
+  &.open .roll-block {
+    max-height: 500px; /* large enough for content */
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  &.open .simple-target {
+    visibility: hidden;
+  }
+
+  .roll-block {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateY(-0.5rem);
+    transition:
+    max-height 0.35s ease,
+    opacity 0.25s ease,
+    transform 0.35s ease;
+  }
+
 }
 
-.outer-roll-block.open .roll-block {
-  max-height: 500px; /* large enough for content */
-  opacity: 1;
-  transform: translateY(0);
+.overall-xp-report {
+
+  h3 {
+    cursor: help;
+    font-size: 1.2em;
+  }
+
+  &.open .individual-awards {
+    max-height: 500px; /* large enough for content */
+    opacity: 1;
+    transform: translateY(0);
+  }
+  & .individual-awards {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateY(-0.5rem);
+    transition:
+    max-height 0.35s ease,
+    opacity 0.25s ease,
+    transform 0.35s ease;
+  }
+
 }
+
 
 .simple-target {
   justify-content: center;
@@ -2131,13 +2166,7 @@ textarea.finale-input {
   text-align: center;
 }
 
-.outer-roll-block {
-  cursor: help;
-}
 
-.outer-roll-block.open .simple-target {
-  visibility: hidden;
-}
 
 .active-control-panel button.end-turn {
   visibility: visible;

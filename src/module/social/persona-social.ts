@@ -545,6 +545,7 @@ export class PersonaSocial {
     await card.markEventUsed(event);
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   static async sendGMCardRequest(actor: PC, link: SocialLink | Activity) : Promise<SocialCard> {
     const card = this._drawSocialCard(actor, link);
     if (card) {

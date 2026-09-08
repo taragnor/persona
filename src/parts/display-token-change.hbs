@@ -32,7 +32,7 @@
   -{{displayStatusIcon status.id}}
   {{/each}}
   {{#each change.otherEffects as |effect|}}
-			{{> "systems/persona/parts/other-effect.hbs" effect=effect}}
+			{{> "systems/persona/parts/other-effect.hbs" actor=../change.actor effect=effect}}
 	{{/each}}
 </div>
 

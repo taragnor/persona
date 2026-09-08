@@ -10,10 +10,10 @@ export class OpenerSaves {
     this.combat=  combat;
   }
 
-  public async openerSaves(combatant: PersonaCombatant & {actor: ValidAttackers}, situation: SituationComponent.Roll) {
+  public openerSaves(combatant: PersonaCombatant & {actor: ValidAttackers}, situation: SituationComponent.Roll) {
     const returns :OpenerOptionsGroups[]= [];
     returns.push(
-      await this.fadingRoll(combatant, situation),
+      this.fadingRoll(combatant, situation),
       this.saveVsSleep(combatant),
       this.saveVsDizzy(combatant, situation),
       this.saveVsFear(combatant, situation),
@@ -145,7 +145,7 @@ export class OpenerSaves {
     return { msg, options};
   }
 
-  private async fadingRoll( combatant: Combatant<ValidAttackers> , situation: SituationTypes.Roll) : Promise<OpenerOptionsGroups> {
+  private fadingRoll( combatant: Combatant<ValidAttackers> , situation: SituationTypes.Roll) : OpenerOptionsGroups {
     const options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     if (!situation.rollTags?.includes('opening')) {return {msg, options};}

@@ -306,6 +306,7 @@ export class PersonaHandleBarsHelpers {
     },
 
     "getEffectFlagName" : function (acc: UniversalActorAccessor<PC | Shadow>, flagEffect: OtherEffect & {type: "set-flag"}): string {
+      if (acc  == undefined) {return "ERROR (undefined)";}
       const actor = PersonaDB.findActor(acc);
       const flag = actor.getEffectFlag(flagEffect.flagId);
       if (flag) {

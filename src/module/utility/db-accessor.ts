@@ -147,8 +147,8 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
     return this.getActorById(id);
   }
 
-  getActorById<T extends ActorType = ActorType> (id: Actor["id"] | FoundryDocument["id"]) : Option<T> {
-    return this.#findById(id, "Actor") as Option<T>;
+  getActorById (id: Actor["id"] | FoundryDocument["id"]) : Option<ActorType> {
+    return this.#findById(id, "Actor") as Option<ActorType>;
   }
 
   getItemById<T extends ItemType = ItemType> (id : Item["id"]) : Option<T> {

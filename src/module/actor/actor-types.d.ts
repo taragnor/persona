@@ -20,12 +20,6 @@ type SocialLinkData = {
 
 type Team = "PCs" | "Shadows" | "Neutral" ;
 
-type XPGainReport = {
-	name: string,
-	amount: number,
-	leveled: boolean,
-};
-
 type ValidSocialTarget = NPC | PC | NPCAlly
 
 type ValidAttackers = PC | Shadow | NPCAlly;

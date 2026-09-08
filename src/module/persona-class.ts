@@ -31,6 +31,7 @@ import {multiCheckContains} from "./conditionalEffects/preconditions.js";
 import {BonusCalculation, ModifierV2Target} from "./bonus-calc.js";
 import {CancelTrigger} from "../cancel-check-effect.js";
 import {NonDeprecatedConsequence} from "../config/consequence-types.js";
+import {XPGainReportIndividual} from "./combat/xp-report.js";
 
 export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidAttackers = ValidAttackers> implements PersonaI {
   #combatStats: U<PersonaCombatStats>;
@@ -450,7 +451,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   /** return leveled Persona on level up*/
-  async awardXP(amt: number, allowMult = true): Promise<U<XPGainReport>> {
+  async awardXP(amt: number, allowMult = true): Promise<U<XPGainReportIndividual>> {
     const isSideboard = this.user.sideboardPersonas.some(x=> x.equals(this));
     const isInactive = !this.user.persona().equals(this) && !isSideboard;
     if (!amt) {
@@ -486,7 +487,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.increaseXP(amt);
   }
 
-  async increaseXP(amt: number): Promise<U<XPGainReport>> {
+  async increaseXP(amt: number): Promise<U<XPGainReportIndividual>> {
     amt = Math.round(amt);
     const currXP  = this.source.system.combat.personaStats.xp;
     const newXP = Math.round(currXP + amt);

@@ -110,6 +110,7 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
   onUpdateItem(_item: PersonaItem) {
   }
 
+
   getClassById(id: CClass["id"]): Option<CClass> {
     const item = this.getItemById(id);
     if (!item) {return null;}

@@ -5,6 +5,7 @@ import {FusionAnimation} from "../animation/persona-merge.js";
 import {BonusCalculation, ModifierV2Target} from "../bonus-calc.js";
 import { ConsequenceApplier } from "../combat/consequence-applier.js";
 import {ResolvedActorChange} from "../combat/finalized-combat-result.js";
+import {XPManager} from "../combat/xp-report.js";
 import {StepsClock} from "../exploration/steps-clock.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
 import {StatusDuration} from "../persona-ae.js";
@@ -350,6 +351,10 @@ export class Tests {
   static testStringUtil() {
     const ret =StringUtilities.replaceStr("I am {{test}}", (str) => `${str}1`);
     return ret == "I am test1";
+  }
+
+  static async testAwardXP () {
+    await XPManager.awardXPAmount(100, PersonaDB.activePCParty());
   }
 
   static async batteryOfTests() : Promise<boolean> {

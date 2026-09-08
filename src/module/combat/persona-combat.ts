@@ -40,6 +40,7 @@ import {ResolvedRollBundle, RollBundle} from '../roll-bundle.js';
 import {checkSituationProp} from '../../config/situation.js';
 import {DebugTools} from '../utility/debug.js';
 import {ConditionalEffectC} from '../conditionalEffects/conditional-effect-class.js';
+import {XPManager} from './xp-report.js';
 
 declare global {
   interface SocketMessage {
@@ -1772,7 +1773,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
     const pcs = actors.filter( x => x.isPC());
     const party = actors.filter( x=> x.isPC() ||  x.isNPCAlly() || (x.isDMon() && x.hasPlayerOwner));
     try {
-      await Metaverse.awardXP(defeatedFoes as Shadow[], party);
+      await XPManager.awardXP(defeatedFoes as Shadow[], party);
     } catch  {
       PersonaError.softFail('Problem with awarding XP');
     }

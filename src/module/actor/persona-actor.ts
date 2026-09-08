@@ -61,6 +61,7 @@ import {ActorVoiceLines} from "./actor-voicelines.js";
 import {PersonaFoundryUser} from "../persona-foundry-user.js";
 import {CancelTrigger} from "../../cancel-check-effect.js";
 import {FinalizedCombatResult} from "../combat/finalized-combat-result.js";
+import {XPGainReport, XPGainReportIndividual} from "../combat/xp-report.js";
 
 const BASE_PERSONA_SIDEBOARD = 5 as const;
 
@@ -3013,7 +3014,7 @@ get XPForNextPersonalLevel() : number {
   return Infinity;
 }
 
-async awardPersonalXP(this: ValidAttackers, amt: number, allowMult= true) : Promise<U<XPGainReport>> {
+async awardPersonalXP(this: ValidAttackers, amt: number, allowMult= true) : Promise<U<XPGainReportIndividual>> {
   if (!this.isPC() ) {return undefined;}
   if (!amt) {return;}
   const situation =  {
@@ -3022,6 +3023,7 @@ async awardPersonalXP(this: ValidAttackers, amt: number, allowMult= true) : Prom
   if (allowMult) {
     amt = amt * this.getPersonalBonuses("xp-multiplier").total(situation, "percentage");
   }
+  amt = Math.round(amt);
   const currentXP = this.system.personalXP;
   const newTotal = currentXP + amt;
   if (!PersonaSettings.freezeXPGain()) {
@@ -3062,23 +3064,33 @@ async gainLevel(this: ValidAttackers, amt: number) : Promise<void> {
   }
 }
 
-
 /** returns true on level up */
-async awardXP(this: ValidAttackers, amt: number) : Promise<XPGainReport[]> {
+async awardXP(this: ValidAttackers, amt: number) : Promise<XPGainReport> {
+  amt = Math.floor(amt);
   if (PersonaDB.getNavigator() == this) {
     const navigatorXP = this.persona().getBonuses("navigator-xp-mult").total({user: this.accessor});
     amt = Math.clamp(navigatorXP, 0.1, 1) * amt;
   }
-  if (amt ==0) {return [];}
+  if (amt ==0) {
+    return {
+      mainActor: this,
+      origAmount: amt,
+      reports: []
+    };
+  }
   const personaXPAwards = this.personaList.map( persona=> persona.awardXP(amt));
   const sideboardAwards = this.sideboardPersonas.map( persona=> persona.awardXP(amt));
   const personaGains = (await Promise.allSettled(personaXPAwards.concat(sideboardAwards)))
   .map( pr => pr.status == "fulfilled" ? pr.value : undefined);
-  const possibleLevelUps : U<XPGainReport>[] = [
+  const possibleLevelUps : XPGainReportIndividual[] = [
     await this.awardPersonalXP(amt),
     ...personaGains,
-  ];
-  return possibleLevelUps.filter(x=> x != undefined);
+  ].filter( x=> x != undefined);
+  return {
+    mainActor: this,
+    origAmount: amt,
+    reports: possibleLevelUps,
+  };
 }
 
 XPValue(this: ValidAttackers) : number {

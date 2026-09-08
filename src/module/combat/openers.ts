@@ -103,7 +103,7 @@ export class OpenerManager {
       PersonaError.softFail("No combatnt to make opening roll wtih");
       return "ERROR";
     }
-    const openingData = await this._execOpeningRoll(combatant, rollTotal);
+    const openingData = this._execOpeningRoll(combatant, rollTotal);
     if (!openingData) {return undefined;}
     await this.storeOpenerChoices(openingData);
     return await this.getOpenerMsg(combatant, openingData, rollTotal);
@@ -124,13 +124,13 @@ export class OpenerManager {
     } satisfies SituationComponent.Roll;
   }
 
-  private async _execOpeningRoll( combatant: PersonaCombatant, rollValue: number) : Promise<OpenerOptionsGroups[] | null> {
+  private _execOpeningRoll( combatant: PersonaCombatant, rollValue: number) : N<OpenerOptionsGroups[]> {
     const returns :OpenerOptionsGroups[]= [];
     if (this.combat.isSocial) {return null;}
     const situation = this.generateSituation(combatant, rollValue);
     if (situation == null) {return null;}
     returns.push(
-      ...await this.openerSaves.openerSaves(combatant, situation ),
+      ...this.openerSaves.openerSaves(combatant, situation ),
       this.mandatoryOtherOpeners(combatant, situation),
       this.otherOpeners(combatant, situation),
     );
