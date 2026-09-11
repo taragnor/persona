@@ -198,6 +198,9 @@ type InventoryActions = {
   amount: ConsequenceAmount,
   cropId: Consumable["id"],
   daysToGrow: ConsequenceAmount,
+} | {
+	invAction : Extract<keyof typeof INVENTORY_ACTION, "steal-food">;
+  amount: ConsequenceAmount,
 }
 
 type CancelRequestConsequence = {
@@ -209,7 +212,7 @@ type TriggerEventModifierConsequence = {
   eventMod: keyof typeof TRIGGER_EVENT_CONS,
 } & TriggerEventModifierConsequence_sub;
 
-type TriggerEventModifierConsequence_sub = 
+type TriggerEventModifierConsequence_sub =
   {
     eventMod: "cancel",
   } | {

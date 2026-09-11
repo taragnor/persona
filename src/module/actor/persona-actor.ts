@@ -2387,8 +2387,11 @@ async checkSideboardEmptySpace(this: ValidAttackers) {
     if (buffer.length > 0) {
       const bufferItem = buffer.shift()!;
       sideboard.push(bufferItem);
-      await this.update( {"system.combat.powers_sideboard": sideboard});
-      await this.update( {"system.combat.learnedPowersBuffer" : buffer});
+      await this.update( {
+        "system.combat.powers_sideboard": sideboard,
+        "system.combat.learnedPowersBuffer" : buffer
+      });
+      // await this.update( {"system.combat.learnedPowersBuffer" : buffer});
       continue;
     }
     break;
@@ -2535,7 +2538,6 @@ async removeItem(item: Carryable, amountUsed: number) {
   }
   if (amount > amountUsed) {
     await item.update({"system.amount": amount-amountUsed});
-    // await Logger.sendToChat(`${this.name} removed ${amountUsed} of ${item.name} (original Amount : ${amount})`);
     return;
   }
 }

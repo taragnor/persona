@@ -1120,6 +1120,7 @@
 "persona.consequences.inventoryAction.add-card-item" : "Add Card Item",
 "persona.consequences.inventoryAction.plant-crops" : "Plant Crops",
 "persona.consequences.inventoryAction.harvest-crops" : "Harvest Crops",
+"persona.consequences.inventoryAction.steal-food" : "Steal Food or Drink",
 
 "persona.consequences.triggerEventCons.cancel": "Request Cancel of Triggering Event",
 "persona.consequences.triggerEventCons.allow-as-opener": "Allow Power to be used as Opener",

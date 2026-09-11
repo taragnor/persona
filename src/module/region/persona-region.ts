@@ -719,5 +719,4 @@ Hooks.on("controlRegion", async (region, controlled) => {
   const panel = RegionPanel.panel;
   panel.setRegion(region.document as PersonaRegion);
   await panel.activate();
-  Debug(panel);
 });

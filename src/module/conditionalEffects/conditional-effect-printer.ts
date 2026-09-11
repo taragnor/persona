@@ -699,8 +699,11 @@ export class ConditionalEffectPrinter {
     }
 
     private static printInventoryAction (cons: Consequence & {type: "inventory-action"}) {
-      if (cons.invAction == "harvest-crops") {
-        return "Harvest grown crops";
+      switch (cons.invAction) {
+        case "harvest-crops":
+          return "Harvest grown crops";
+        case "steal-food":
+          return "Steal random food/drink item";
       }
       const amount = this.printConsequenceAmount(cons.amount);
       switch (cons.invAction) {

@@ -14,6 +14,7 @@ import {PersonaError} from "../persona-error.js";
 import {PersonaVariables} from "../persona-variables.js";
 import {SocialActionExecutor} from "../social/exec-social-action.js";
 import {TriggeredEffect} from "../triggered-effect.js";
+import {weightedChoice} from "../utility/array-tools.js";
 import {Logger} from "../utility/logger.js";
 import {EvaluatedDamage} from "./damage-calc.js";
 import {FinalizedCombatResult, ResolvedActorChange} from "./finalized-combat-result.js";
@@ -546,6 +547,22 @@ export class ConsequenceApplier {
       case "add-card-item":
         await actor.addTreasureItem(otherEffect.treasureItem);
         break;
+      case "steal-food": {
+        const items = actor.inventory
+        .filter( x=> x.hasTag(["food", "drink"], null))
+        .map ( x=> ({
+          item: x,
+          weight: x.amount
+        })
+        );
+        for (let i =otherEffect.amount ; i > 0; --i) {
+          const choice = weightedChoice(items);
+          if (choice) {
+            await actor.removeItem(choice, 1);
+          }
+        }
+        break;
+      }
       default:
         otherEffect satisfies never;
         break;

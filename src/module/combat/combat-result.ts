@@ -601,6 +601,9 @@ export class CombatResult  {
       case "harvest-crops":
         effect.otherEffects.push(cons);
         return;
+      // case "steal-food":
+      //   effect.otherEffects.push(cons);
+      //   return;
       case "plant-crops":{
         const amount = this.resolveConsequenceAmount(cons, situation);
         const sourced2=  ConsequenceAmountResolver.extractSourcedFromField(cons, "daysToGrow");

@@ -260,6 +260,7 @@ const INVENTORY_ACTION_LIST = [
   "remove-item",
   "plant-crops",
   "harvest-crops",
+  "steal-food",
 ] as const;
 
 export const INVENTORY_ACTION = HTMLTools.createLocalizationObject(INVENTORY_ACTION_LIST, "persona.consequences.inventoryAction");

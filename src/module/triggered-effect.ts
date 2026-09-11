@@ -68,6 +68,15 @@ export class TriggeredEffect {
       const PowerTriggers = power.getTriggeredEffects(user, {triggerType: trigger});
       triggers.push(...PowerTriggers);
     }
+    if (checkSituationProp(situation, "target")) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      const target = PersonaDB.findActor(situation.target as UniversalActorAccessor<PersonaActor>);
+      if (!target.isValidCombatant()) {
+        const targetTriggers  = target.triggersOn(trigger);
+        triggers.push(...targetTriggers);
+      }
+    }
+
     if (checkSituationProp(situation, "item")) {
       const item = PersonaDB.findItem(situation.item);
       const user = situation.user ? PersonaDB.findActor(situation.user) : null;
