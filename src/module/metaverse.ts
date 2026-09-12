@@ -18,7 +18,7 @@ import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaScene } from "./persona-scene.js";
 import { EnchantedTreasureFormat, TreasureSystem } from "./exploration/treasure-system.js";
-import {RandomEncounter} from "./exploration/random-encounters.js";
+import {Encounter, RandomEncounter} from "./exploration/random-encounters.js";
 import {DungeonGeneratorOptions, GeneratorSceneModifier, RandomDungeonGenerator} from "./exploration/random-dungeon-generator.js";
 import {HTMLTools} from "./utility/HTMLTools.js";
 import {RandomDungeonOutput} from "./exploration/random-dungeon-output.js";
@@ -295,6 +295,35 @@ export class Metaverse {
   static async randomEncounter() {
     const encounter = RandomEncounter.generateEncounter();
     await RandomEncounter.printRandomEncounterList(encounter);
+  }
+
+  static async monsterInABox(shadowList ?: Shadow[], options : {delete?: boolean} = {}) {
+    const region = this.getRegion();
+    if (!region) {throw new PersonaError("No region!");}
+    if (!shadowList) {
+      const enc = RandomEncounter.generateEncounter();
+      shadowList = enc.enemies;
+    }
+    if (shadowList.length == 0) {return;}
+
+    const encounter : Encounter = {
+      enemies: shadowList,
+      encounterDifficulty: "standard",
+      encounterType: "room",
+    };
+    const IP = game?.itempiles?.API;
+    if (!IP) {throw new PersonaError("No item piles");}
+    if (!PersonaSettings.debugMode() && options.delete) {
+      for (const token of region.tokens) {
+        if (IP.isValidItemPile(token)) {
+          await token.delete();
+        }
+      }
+    }
+    await CombatScene.create(encounter, {
+      "advantage": "shadows",
+      "skipConfirmBox": true,
+    });
   }
 
   static async distributeMoney(money: number, players: PersonaActor[]) {

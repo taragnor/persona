@@ -195,7 +195,7 @@ export class CombatScene {
 	}
 
 	static async create(encounter: Encounter, options: CombatSetupOptions = {}) {
-		const battleChoice = await HTMLTools.confirmBox("Battle", "Start Battle Scene?");
+		const battleChoice = options.skipConfirmBox ? true : await HTMLTools.confirmBox("Battle", "Start Battle Scene?");
 		if (!battleChoice) {return false;}
 		const previous = game.scenes.active;
 		this.instance = new CombatScene(previous, encounter);
@@ -309,4 +309,5 @@ window.CombatScene = CombatScene;
 export interface CombatSetupOptions {
 	/** for ambushes */
 	advantage ?: "PCs" | "shadows",
+    skipConfirmBox ?: boolean;
 }

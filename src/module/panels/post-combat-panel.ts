@@ -71,6 +71,12 @@ export class PostCombatPanel extends PersonaPanel {
   }
 
   private async _onReturnToExploring() {
+    if (!game.users.contents.some( x=> x.active && !x.isGM)) {
+      if (CombatScene.instance) {
+        CombatScene.instance.onReturnToExploringVote();
+        return;
+      }
+    }
     if (game.user.isGM) {
       await this.requestVote_GM();
     } else {

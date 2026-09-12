@@ -2001,11 +2001,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   baseHPCostRaw(this: Power) : CalculationV2 {
-    // if (this.customCost) {
-    //   const calc= new CalculationV2(0);
-    //   calc.set(-1, this.system.mpcost, "Custom Cost");
-    //   return calc;
-    // }
     return HPCostCalculatorV2.calcBaseCost(this);
   }
 
@@ -2018,17 +2013,17 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return MPCostCalculatorV2.calcBaseMPCost(this);
   }
 
-get baseHPCost() : EvaluatedCalculation {
-  if (!this.isPower()) {
-    return {
-      total: 0, steps:[]
+  get baseHPCost() : EvaluatedCalculation {
+    if (!this.isPower()) {
+      return {
+        total: 0, steps:[]
+      };
+    }
+    const sit = {
+      usedPower: this.accessor,
     };
+    return this.baseHPCostRaw().eval(sit);
   }
-  const sit = {
-    usedPower: this.accessor,
-  };
-  return this.baseHPCostRaw().eval(sit);
-}
 
   get baseMPCost() : EvaluatedCalculation {
     if (!this.isPower()) {
@@ -2054,15 +2049,15 @@ get baseHPCost() : EvaluatedCalculation {
     return tagEffects;
   }
 
-async addCreatureTag(this: Tag, tag ?: Tag) : Promise<void> {
-  const tags = this.system.creatureTags;
-  if (tag && tag instanceof PersonaItem) {
-    tags.push(tag.id);
-  } else {
-    tags.push("neko");
+  async addCreatureTag(this: Tag, tag ?: Tag) : Promise<void> {
+    const tags = this.system.creatureTags;
+    if (tag && tag instanceof PersonaItem) {
+      tags.push(tag.id);
+    } else {
+      tags.push("neko");
+    }
+    await this.update( {"system.creatureTags": tags});
   }
-  await this.update( {"system.creatureTags": tags});
-}
 
 async deleteCreatureTag(this: Tag, index: number) : Promise<void> {
   const tags = this.system.creatureTags;
