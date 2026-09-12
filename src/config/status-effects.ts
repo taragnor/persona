@@ -89,14 +89,6 @@ export const STATUS_EFFECT_LIST = [
 		id: "mouse",
 		img: "icons/creatures/mammals/rodent-rat-green.webp",
 		tags: ["baneful", "distracting"],
-	// }, {
-		// id: "buffed",
-		// icon:  "icons/svg/upgrade.svg",
-		// tags: [],
-	// }, {
-		// id: "debuffed",
-		// icon:  "icons/svg/downgrade.svg",
-		// tags: [],
 	}, {
 		id: "defense-boost",
 		img:  "icons/svg/mountain.svg",
