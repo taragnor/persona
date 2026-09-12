@@ -329,7 +329,8 @@ export class PersonaRegion extends RegionDocument {
   }
 
   async onEnterRegion(token: TokenDocument<PersonaActor>) {
-    if (token?.actor?.isPCLike()) {
+    // this ahs to be isPC to cehck for party token
+    if (token?.actor?.isPC()) {
       await PersonaSettings.setLastRegion({
         lastRegionId: this.id,
         lastSceneId: this.parent.id,
