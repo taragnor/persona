@@ -77,17 +77,14 @@ export class HPCostCalculatorV2 extends CostCalculator {
       case "medium":
         calc.add(0, 7, `Instant Kill (${pwr.system.instantKillChance})`);
         calc.mult(0, 1.2, `Instant Kill (${pwr.system.instantKillChance})`);
-        // return {mult: 1.2, add: 8};
         break;
       case "high":
         calc.add(0, 11, `Instant Kill (${pwr.system.instantKillChance})`);
         calc.mult(0, 1.3, `Instant Kill (${pwr.system.instantKillChance})`);
-        // return {mult: 1.3, add: 11};
         break;
       case "always":
         calc.add(0, 14, `Instant Kill (${pwr.system.instantKillChance})`);
         calc.mult(0, 1.4, `Instant Kill (${pwr.system.instantKillChance})`);
-        // return {mult: 1.4, add: 14};
         break;
     }
     if (pwr.isFlurryPower()) {
@@ -101,8 +98,6 @@ export class HPCostCalculatorV2 extends CostCalculator {
     const max = pwr.system.attacksMax;
     const maxAdd =  this.HPCOST_MULTIATTACKMULT * (max -1);
     const minAdd = this.HPCOST_MULTIATTACKMULT * (min -1);
-    // const maxAdd =  0.4 * (max -1);
-    // const minAdd = 0.4 * (min -1);
     const costMod = 1 + maxAdd + minAdd;
     calc.add(0, costMod, `Flurry of Attacks Multiplier ${min}-${max}`);
   }
