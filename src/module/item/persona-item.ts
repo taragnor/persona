@@ -1034,7 +1034,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         const hpCostCalc = this.hpCost(persona);
         const hpCost = hpCostCalc.total;
         if (hpCost == 0 ) { return FREE; }
-        // if (hpCost > 0 || this.oldhpCost() > 0) {
         if (options.nestedList) {
           return `${CalculationV2.printEvaluatedHTML(hpCostCalc)}% HP`;
         } else {
@@ -1626,7 +1625,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return 0;
   }
 
-
   isWeaponSkill(): this is PowerSub<'weapon'> {
     if (!this.isUsableType()) {return false;}
     if (this.isSkillCard()) {return false;}
@@ -1650,28 +1648,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.hasTag('exotic', null);
   }
 
-  oldhpCost(this: Usable): number {
-    if (!this.isWeaponSkill()) {
-      return 0;
-    }
-    if (this.isConsumable()) {return 0;}
-    if (this.isBasicPower()) {return 0;}
-    if (this.isTeamwork()) {return 0;}
-    let mult = 1;
-    if (this.hasTag('high-cost', null)) {
-      mult *= 2;
-    }
-    switch (this.system.slot) {
-      case 0: return mult * 6;
-      case 1: return mult * 12;
-      case 2: return mult * 25;
-      case 3: return mult * 50;
-      default:
-        PersonaError.softFail(`Unknwon slot ${ this.system.slot}`);
-        return 100;
-    }
-  }
-
   isOpener(this: UsableAndCard, persona: N<Persona>) : boolean {
     if (this.hasTag('opener', persona?.user ?? null)) {return true;}
     return false;
@@ -1693,7 +1669,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   isTheurgy(this: Power) : boolean {
     return this.hasTag("theurgy", null);
   }
-
 
   canBeUsedAsOpener(this: UsableAndCard, persona: N<Persona>): boolean {
     if (this.isOpener(persona)) {return true;}
