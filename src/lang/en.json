@@ -1101,6 +1101,7 @@
 "persona.consequences.consequences-amount.variable-value": "Var",
 "persona.consequences.consequences-amount.item-property": "I-P",
 "persona.consequences.consequences-amount.actor-property": "A-P",
+"persona.consequences.consequences-amount.bonus-property": "Bon",
 "persona.consequences.consequences-amount.situation-property": "Sit",
 
 "persona.item-property.item-level": "Item Level",
@@ -1438,12 +1439,13 @@
   "persona.combat.outcome.draw" : "Draw",
   "persona.combat.outcome.lose" : "PCs Lose",
 
-  "persona.modifier-v2.attack-roll": "Attack Roll",
+  "persona.modifier-v2.roll-bonus": "Roll bonus",
   "persona.modifier-v2.save": "Save",
   "persona.modifier-v2.treasure-weight": "Treasure Weight",
   "persona.modifier-v2.social-card-weight": "Social Card Weight",
   "persona.modifier-v2.armor-rating": "Armor Rating",
   "persona.modifier-v2.mp-cost": "MP Cost",
+  "persona.modifier-v2.max-recruit-level-bonus": "Max Recruit Level",
 
 	"persona.attack.result.hit": "Hit",
 	"persona.attack.result.miss": "Miss",

@@ -64,6 +64,9 @@ export class ConsequenceAmountResolver {
       case "actor-property": {
         return this.resolveActorProperty(amt, situation);
       }
+      case "bonus-property": {
+        return this.resolveBonusProperty(amt, situation);
+      }
       default:
         amt satisfies never;
         PersonaError.softFail(`Unknown consequence Amount type :${amt["type"] as string}`);
@@ -123,6 +126,18 @@ export class ConsequenceAmountResolver {
       }
     });
     return returns.at(0);
+  }
+
+  private static resolveBonusProperty(amt: Sourced<ConsequenceAmountV2> & {type: "bonus-property"}, situation: Partial<Situation>) : U<number> {
+    const bonusType = amt.modTarget;
+    const target = PersonaCombat.solveEffectiveTargets(amt.target, situation as Situation, amt).at(0);
+    if (!target) {return undefined;}
+    try {
+      const bonuses= target.persona().getBonusesV2(bonusType, null).eval(situation as Situation).total;
+      return bonuses;
+    } catch {
+      return undefined;
+    }
   }
 
   static resolveItemProperty<T extends Sourced<ConsequenceAmountV2> & {type: "item-property"}>( amt: T, _situation: Partial<Situation>) : U<number> {

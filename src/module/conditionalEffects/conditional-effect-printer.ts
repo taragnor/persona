@@ -749,6 +749,11 @@ export class ConditionalEffectPrinter {
             return `${this.translate(consAmt.property, SITUATION_PROPERTIES)}`;
           case "actor-property":
             return `${this.translate(consAmt.property, CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES)}`;
+          case "bonus-property": {
+            const target = this.translate(consAmt.target, CONDITION_TARGETS);
+            const prop = `${this.translate(consAmt.modTarget, MODIFIER_V2_TARGET)}`;
+            return `${target}'s ${prop} bonus`;
+          }
           default:
             consAmt satisfies never;
         }

@@ -66,9 +66,21 @@
 		{{selectOptions POWERSTUFF.STATUSEFFECTS localize=true selected=cons.statusId}}
 	</select>
 {{/if}}
-
-{{/if}}
-
 </span>
 {{/if}}
+
+{{#if (eqAny cons.type "bonus-property")}}
+<span>
+  <select name="{{strcat namePrefix 'modTarget'}}">
+    {{selectOptions POWERSTUFF.MODIFIER_V2_TARGET localize=true selected=cons.modTarget}}
+  </select>
+  <select name="{{strcat namePrefix 'target'}}">
+    {{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cons.target}}
+  </select>
+
+</span>
+  {{/if}}
+
+{{/if}}
+
 </span>

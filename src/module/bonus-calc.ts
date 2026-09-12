@@ -187,6 +187,11 @@ export const MODV2_DETAILS = {
     rounding: "round",
     initial: 1,
     clamp: {min:0, max: 9999},
+  },
+  "max-recruit-level-bonus": {
+    type: "user",
+    rounding: "floor",
+    initial: 0,
   }
 } as const satisfies Record<string, ModV2Type>;
 
