@@ -1024,20 +1024,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return removeDuplicates(talents);
   }
 
-  // modifiedHpCost(this: Usable, persona: Persona, sit ?: Situation) : number {
-  //   const situation = sit ? sit :  {
-  //     user: persona.user.accessor,
-  //     usedPower: this.accessor,
-  //   } satisfies Situation;
-  //   const newHPCost = this.hpCost();
-  //   if (newHPCost > 0) {
-  //     const calcedHPPercent = (this.hpCost() /100) * persona.user.mhpEstimate;
-  //     return Math.round(calcedHPPercent * persona.hpCostMod().total(situation as SituationTypes.BonusQuerySituation, 'percentage'));
-  //   }
-  //   const oldHPCost = this.oldhpCost();
-  //   return Math.clamp(Math.round(oldHPCost * persona.hpCostMod().total(situation as SituationTypes.BonusQuerySituation, 'percentage')), 0, 1000);
-  // }
-
   powerCostString_PC(this: Power, persona: Persona, options: PrintStringOptions = {} ) : string {
     const FREE = '';
     if (this.hasTag("theurgy", null)) {
@@ -1045,19 +1031,21 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
     switch (this.system.subtype) {
       case 'weapon': {
-        const hpCost = this.hpCost(persona).total;
-        if (hpCost > 0 || this.oldhpCost() > 0) {
-          const hpCostPercent = (hpCost > 0) ? ` (${hpCost}%)` : '';
-          return `${hpCost} HP ${hpCostPercent}`;
+        const hpCostCalc = this.hpCost(persona);
+        const hpCost = hpCostCalc.total;
+        if (hpCost == 0 ) { return FREE; }
+        // if (hpCost > 0 || this.oldhpCost() > 0) {
+        if (options.nestedList) {
+          return `${CalculationV2.printEvaluatedHTML(hpCostCalc)}% HP`;
+        } else {
+          return `${hpCost}% HP`;
         }
-
-        else {return FREE;}
+        //}
       }
       case 'magic': {
         const mpcost = this.mpCost(persona);
-        // return `${mpcost.total} MP`;
         if (options.nestedList) {
-        return `${CalculationV2.printEvaluatedHTML(mpcost)} MP`;
+          return `${CalculationV2.printEvaluatedHTML(mpcost)} MP`;
         } else {
           return `${mpcost.total}`;
         }
@@ -2037,44 +2025,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return cost.eval(sit);
   }
 
-  // mpCost(this: Usable, userPersona: Persona | null): number {
-  //   if (this.isConsumable()) {return 0;}
-  //   const mult= this._getMPMultiplier(userPersona);
-  //   const baseMPCost = this.baseMPCost;
-  //   return Math.clamp(Math.round(baseMPCost.total * mult), 0,  1000);
-  // }
-
-  // private getMPMultiplier(this: Usable, userPersona: N<Persona>) : number {
-  //   if (!userPersona) {return 1;}
-  //   const sit : Situation = {
-  //     user: userPersona.user.accessor,
-  //     usedPower: this.accessor,
-  //     attacker: userPersona.user.accessor,
-  //   };
-    // const list = userPersona.getBonuses('power-mp-cost-mult');
-    // return list.total(sit, 'percentage');
-    // const calc = userPersona.getBonusesV2("mp-cost").eval(sit);
-    // return calc.total;
-  // }
-
-  // get oldBaseMPCost(): number {
-  //   if (!this.isPower()
-  //     || this.isTeamwork()
-  //   ) {return 0;}
-  //   if (this.customCost) {return this.system.mpcost;}
-  //   if (this.cache.mpCost == undefined) {
-  //     this.cache.mpCost = PowerCostCalculator.calcMPCost(this);
-  //   }
-  //   if (this.cache.mpCost > 0) { return this.cache.mpCost; }
-  //   return this.system.mpcost;
-  // }
-
   baseHPCostRaw(this: Power) : CalculationV2 {
-    if (this.customCost) {
-      const calc= new CalculationV2(0);
-      calc.set(-1, this.system.mpcost, "Custom Cost");
-      return calc;
-    }
+    // if (this.customCost) {
+    //   const calc= new CalculationV2(0);
+    //   calc.set(-1, this.system.mpcost, "Custom Cost");
+    //   return calc;
+    // }
     return HPCostCalculatorV2.calcBaseCost(this);
   }
 

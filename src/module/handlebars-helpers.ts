@@ -50,6 +50,7 @@ import {HypotheticalPersona} from "./pre-fusion-persona.js";
 import {convertToPercentages} from "./utility/array-tools.js";
 import {NumberTools} from "./utility/numberTools.js";
 import {TagManager} from "./tag-manager.js";
+import {CalculationV2} from "./utility/calculation-v2.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -685,19 +686,20 @@ export class PersonaHandleBarsHelpers {
       return power.isExotic();
     },
 
-    "simplePowerCost": function (power: Power) : string {
-      const customCost = power.customCost ? "*" : "";
+    "simplePowerCost": function (power: Power) : SafeString {
+      let ret = power.customCost ? "*" : "";
       if (power.isWeaponSkill()) {
-        const hpCost = power.hpCost(null).total;
-        return `${hpCost}${customCost}% HP`;
+        const hpCost = power.hpCost(null);
+        ret+= `${CalculationV2.printEvaluatedHTML(hpCost)}% HP`;
       }
       if (power.isMagicSkill()) {
         const mpCost = power.mpCost(null);
+        ret+= `${CalculationV2.printEvaluatedHTML(mpCost)} MP`;
         // const altCost = power.oldBaseMPCost;
-        return `${mpCost.total}${customCost} MP`;
+        // return `${mpCost.total}${customCost} MP`;
         // return `${mpCost}${customCost} MP / ${altCost}`;
       }
-      return "";
+      return new Handlebars.SafeString(ret);
     },
 
     "localizeDamageLevel": function (pwr: Power) : SafeString {

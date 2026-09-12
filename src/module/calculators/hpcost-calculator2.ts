@@ -27,16 +27,15 @@ export class HPCostCalculatorV2 extends CostCalculator {
   }
 
   private static nullCost() : BonusCalculation {
-    const calc= new BonusCalculation("hp-cost");
+    const calc = new BonusCalculation("hp-cost");
     calc.mult(1, 0, "null cost");
     return calc;
   }
 
   private static customCost(cost: number) : BonusCalculation {
-    const calc= new BonusCalculation("hp-cost");
+    const calc = new BonusCalculation("hp-cost");
     calc.set(1, cost, "custom cost");
     return calc;
-
   }
 
   private static _damage(pwr: Power, calc: BonusCalculation) : void {
