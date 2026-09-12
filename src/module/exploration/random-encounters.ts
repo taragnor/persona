@@ -622,19 +622,16 @@ export class RandomEncounter {
       }
       return;
     }
-
     if (!shadowList) {
       const enc = RandomEncounter.generateEncounter();
       shadowList = enc.enemies;
     }
     if (shadowList.length == 0) {return;}
-
     if (game.user.isGM) {
       return await this._monsterInABox_GM(region, shadowList, options);
     } else {
       await this._requestMonsterInBox(region, shadowList, options);
     }
-
   }
 
   private static async _requestMonsterInBox(region: PersonaRegion, shadowList : Shadow[], options: {delete?: boolean}) {
