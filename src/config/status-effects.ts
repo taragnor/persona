@@ -155,7 +155,7 @@ export const STATUS_EFFECT_LIST = [
 		tags: ["downtime", "baneful", "fatigue"],
 	}, {
 		id: "tired",
-		img:   "icons/svg/down.svg",
+		img:   "icons/skills/movement/arrow-down-pink.webp",
 		tags: ["downtime", "fatigue"],
 	}, {
 		id: "fatigued",

@@ -75,6 +75,11 @@ export class PostCombatPanel extends PersonaPanel {
       if (CombatScene.instance) {
         CombatScene.instance.onReturnToExploringVote();
         return;
+      } else {
+        const scene = Metaverse.getRegion()?.parent;
+        if (scene) {
+          await CombatScene.returnToPreviousScene(scene);
+        }
       }
     }
     if (game.user.isGM) {

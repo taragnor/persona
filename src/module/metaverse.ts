@@ -313,6 +313,17 @@ export class Metaverse {
     };
     const IP = game?.itempiles?.API;
     if (!IP) {throw new PersonaError("No item piles");}
+    if (
+      !region.tokens.values()
+      .some(x=> x.actor == PersonaDB.partyTokenActor()) || 
+      !region.tokens.values()
+      .some (x=> IP.isValidItemPile(x))
+    ) {
+      if (game.user.isGM) {
+        ui.notifications.notify("Not proccing monster in box due to no party token or box");
+      }
+      return;
+    }
     if (!PersonaSettings.debugMode() && options.delete) {
       for (const token of region.tokens) {
         if (IP.isValidItemPile(token)) {
