@@ -329,6 +329,12 @@ export class PersonaRegion extends RegionDocument {
   }
 
   async onEnterRegion(token: TokenDocument<PersonaActor>) {
+    if (token?.actor?.isPCLike()) {
+      await PersonaSettings.setLastRegion({
+        lastRegionId: this.id,
+        lastSceneId: this.parent.id,
+      });
+    }
     if (PersonaSettings.debugMode()) {
       console.debug(`Region Entered: ${this.name}`);
     }

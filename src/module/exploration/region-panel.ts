@@ -33,10 +33,6 @@ export class RegionPanel {
 		const lastRegion = PersonaSettings.getLastRegion();
 		if (tokenMove && lastRegion.lastRegionId != region.id) {
 			if (game.user.isGM) {
-				await PersonaSettings.setLastRegion({
-					lastRegionId: region.id,
-					lastSceneId: scene.id,
-				});
 				await (region as PersonaRegion).onEnterRegion(token);
 			}
 		}
