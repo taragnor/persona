@@ -2028,6 +2028,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   /** NPC Fatigue tracking */
   async alterNPCFatigueTracker(this: NPCAlly, amt: number) {
+    if (PersonaDB.getNavigator() == this) {return;}
     const NPC_FATIGUE_THRESHOLD = this.NPC_FATIGUE.THRESHOLD;
     const oldVal = this.system.fatigueTracker ?? 0;
     let newVal = Math.max(0, amt+oldVal);

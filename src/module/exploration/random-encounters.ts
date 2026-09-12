@@ -611,12 +611,12 @@ export class RandomEncounter {
   static async monsterInABox(region: PersonaRegion, shadowList ?: Shadow[], options : {delete?: boolean} = {}) {
     const IP = game?.itempiles?.API;
     if (!IP) {throw new PersonaError("No item piles");}
-    const tokens = region.tokens.values();
-    if ( !tokens
-      .some(x=> x.actor == PersonaDB.partyTokenActor())
-      || !tokens
-      .some (x=> IP.isValidItemPile(x))
-    ) {
+    const tokens = Array.from(region.tokens.values());
+    const partyToken = tokens
+      .some(x=> x.actor == PersonaDB.partyTokenActor());
+    const ValidIP = tokens.some (x=> IP.isValidItemPile(x));
+    if ( !partyToken
+      || !ValidIP) {
       if (game.user.isGM) {
         ui.notifications.notify("Not proccing monster in box due to no party token or box");
       }
