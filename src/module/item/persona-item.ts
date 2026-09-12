@@ -1035,7 +1035,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
         const hpCost = hpCostCalc.total;
         if (hpCost == 0 ) { return FREE; }
         if (options.nestedList) {
-          return `${CalculationV2.printEvaluatedHTML(hpCostCalc)}% HP`;
+          return `${CalculationV2.printEvaluatedHTML(hpCostCalc)}% (${this.realHPCost(persona)} HP)`;
         } else {
           return `${hpCost}% HP`;
         }
@@ -1984,6 +1984,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return cost.eval(sit);
   }
 
+  realHPCost(this: Usable, userPersona: Persona) : number {
+    const percent = this.hpCost(userPersona).total;
+    if (percent <= 0) {return 0;}
+    const mhp = userPersona.user.mhp;
+    const cost = Math.round((percent / 100) * mhp);
+    return Math.max(0, cost);
+  }
+
   mpCost(this: Usable, userPersona: Persona | null): EvaluatedCalculation {
     if (this.isConsumable()) {
       return { steps: [], total: 0};
@@ -1999,6 +2007,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     };
     return cost.eval(sit);
   }
+
 
   baseHPCostRaw(this: Power) : CalculationV2 {
     return HPCostCalculatorV2.calcBaseCost(this);

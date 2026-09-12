@@ -1,3 +1,4 @@
+import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {CombatScene, CombatSetupOptions} from "../combat/combat-scene.js";
 import {ModifierList} from "../combat/modifier-list.js";
@@ -7,6 +8,7 @@ import {NavigatorVoiceLines} from "../navigator/nav-voice-lines.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaScene} from "../persona-scene.js";
+import {PersonaSockets} from "../persona.js";
 import {PersonaRegion} from "../region/persona-region.js";
 import {weightedChoice} from "../utility/array-tools.js";
 import {CreateToken} from "../utility/createToken.js";
@@ -606,6 +608,63 @@ export class RandomEncounter {
     await CreateToken.create(pixie, {x, y});
   }
 
+  static async monsterInABox(region: PersonaRegion, shadowList ?: Shadow[], options : {delete?: boolean} = {}) {
+    const IP = game?.itempiles?.API;
+    if (!IP) {throw new PersonaError("No item piles");}
+    const tokens = region.tokens.values();
+    if ( !tokens
+      .some(x=> x.actor == PersonaDB.partyTokenActor())
+      || !tokens
+      .some (x=> IP.isValidItemPile(x))
+    ) {
+      if (game.user.isGM) {
+        ui.notifications.notify("Not proccing monster in box due to no party token or box");
+      }
+      return;
+    }
+
+    if (!shadowList) {
+      const enc = RandomEncounter.generateEncounter();
+      shadowList = enc.enemies;
+    }
+    if (shadowList.length == 0) {return;}
+
+    if (game.user.isGM) {
+      return await this._monsterInABox_GM(region, shadowList, options);
+    } else {
+      await this._requestMonsterInBox(region, shadowList, options);
+    }
+
+  }
+
+  private static async _requestMonsterInBox(region: PersonaRegion, shadowList : Shadow[], options: {delete?: boolean}) {
+    const gm = game.users.find(x=> x.isGM && x.active);
+    if (!gm) {return;}
+    await PersonaSockets.verifiedSend("MONSTER_BOX", {region: region.id, shadows: shadowList.map(x=> x.id), options}, gm.id);
+  }
+
+  static async _monsterInABox_GM(region: PersonaRegion, shadowList : Shadow[], options: {delete?: boolean} = {}) {
+    const IP = game?.itempiles?.API;
+    if (!region) {throw new PersonaError("No region!");}
+    if (!IP) {throw new PersonaError("No item piles");}
+    const encounter : Encounter = {
+      enemies: shadowList,
+      encounterDifficulty: "standard",
+      encounterType: "room",
+    };
+    if (!PersonaSettings.debugMode() && options.delete) {
+      for (const token of region.tokens) {
+        if (IP.isValidItemPile(token)) {
+          await token.delete();
+        }
+      }
+    }
+    await CombatScene.create(encounter, {
+      "advantage": "shadows",
+      "skipConfirmBox": true,
+    });
+  }
+
 } // End of Class
 
 export type Encounter =  {
@@ -650,3 +709,24 @@ Hooks.on("renderChatMessageHTML", (chat, html) => {
     void RandomEncounter.onChatButtonCombat(chat);
   });
 });
+
+Hooks.on("socketsReady", () => {
+  PersonaSockets.setHandler("MONSTER_BOX", async (data) => {
+    const region = Metaverse.getRegion();
+    if (region?.id != data.region) {
+      throw new PersonaError("Malformed Region Id on Monster in box");
+    }
+    const shadowList = data.shadows.map( x=> PersonaDB.getActorById(x)!)
+      .filter (x=> x.isShadow());
+    await RandomEncounter._monsterInABox_GM(region, shadowList, data.options);
+  });
+
+});
+
+declare global {
+
+  interface SocketMessage {
+    "MONSTER_BOX" : { shadows: Shadow["id"][], region: PersonaRegion["id"], options: {delete ?: boolean};
+    }
+  }
+}

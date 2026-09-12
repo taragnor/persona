@@ -18,7 +18,7 @@ import { PersonaActor } from "./actor/persona-actor.js";
 import { PersonaSettings } from "../config/persona-settings.js";
 import { PersonaScene } from "./persona-scene.js";
 import { EnchantedTreasureFormat, TreasureSystem } from "./exploration/treasure-system.js";
-import {Encounter, RandomEncounter} from "./exploration/random-encounters.js";
+import {RandomEncounter} from "./exploration/random-encounters.js";
 import {DungeonGeneratorOptions, GeneratorSceneModifier, RandomDungeonGenerator} from "./exploration/random-dungeon-generator.js";
 import {HTMLTools} from "./utility/HTMLTools.js";
 import {RandomDungeonOutput} from "./exploration/random-dungeon-output.js";
@@ -298,44 +298,15 @@ export class Metaverse {
   }
 
   static async monsterInABox(shadowList ?: Shadow[], options : {delete?: boolean} = {}) {
+    try {
     const region = this.getRegion();
     if (!region) {throw new PersonaError("No region!");}
-    if (!shadowList) {
-      const enc = RandomEncounter.generateEncounter();
-      shadowList = enc.enemies;
+    return await RandomEncounter.monsterInABox(region, shadowList, options);
+    } catch (e) {
+      PersonaError.softFail(e);
     }
-    if (shadowList.length == 0) {return;}
-
-    const encounter : Encounter = {
-      enemies: shadowList,
-      encounterDifficulty: "standard",
-      encounterType: "room",
-    };
-    const IP = game?.itempiles?.API;
-    if (!IP) {throw new PersonaError("No item piles");}
-    if (
-      !region.tokens.values()
-      .some(x=> x.actor == PersonaDB.partyTokenActor()) || 
-      !region.tokens.values()
-      .some (x=> IP.isValidItemPile(x))
-    ) {
-      if (game.user.isGM) {
-        ui.notifications.notify("Not proccing monster in box due to no party token or box");
-      }
-      return;
-    }
-    if (!PersonaSettings.debugMode() && options.delete) {
-      for (const token of region.tokens) {
-        if (IP.isValidItemPile(token)) {
-          await token.delete();
-        }
-      }
-    }
-    await CombatScene.create(encounter, {
-      "advantage": "shadows",
-      "skipConfirmBox": true,
-    });
   }
+
 
   static async distributeMoney(money: number, players: PersonaActor[]) {
     if (players.length <= 0 || money <= 0) {return;}
