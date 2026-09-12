@@ -654,7 +654,7 @@ export class PersonaHandleBarsHelpers {
       return item.isTrulyUsable() && !item.isMinorActionItem();
     },
     "hpCost": function (item: Power) : number {
-      return item.hpCost();
+      return item.hpCost(null).total;
     },
 
     "getAttackBonus": function (attacker: Persona, power: Usable, target ?: Persona) : number {
@@ -688,7 +688,7 @@ export class PersonaHandleBarsHelpers {
     "simplePowerCost": function (power: Power) : string {
       const customCost = power.customCost ? "*" : "";
       if (power.isWeaponSkill()) {
-        const hpCost = power.hpCost();
+        const hpCost = power.hpCost(null).total;
         return `${hpCost}${customCost}% HP`;
       }
       if (power.isMagicSkill()) {

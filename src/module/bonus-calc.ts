@@ -192,7 +192,13 @@ export const MODV2_DETAILS = {
     type: "user",
     rounding: "floor",
     initial: 0,
-  }
+  },
+  "hp-cost": {
+    type: "power",
+    rounding: "round",
+    initial : 1,
+    clamp: {min: 0, max: 9999},
+  },
 } as const satisfies Record<string, ModV2Type>;
 
 const MODIFIER_V2_TARGET_LIST = Object.keys(MODV2_DETAILS) as (keyof typeof MODV2_DETAILS)[];

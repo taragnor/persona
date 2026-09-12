@@ -31,16 +31,17 @@ export class PersonaPowerSheet extends PersonaPowerLikeBaseSheet {
       action: (_ev: JQuery.Event) => ([
         {
           type: "modifier-v2",
-          amount: 0,
+          amount: 1,
           modTarget : "mp-cost",
           operation: "multiply",
           priority: 0,
         } satisfies NonDeprecatedConsequence,
         {
-          type: "modifier",
+          type: "modifier-v2",
           amount: 0,
-          modifierCategory:"other",
-          modifiedField : "power-hp-cost",
+          modTarget:"hp-cost",
+          operation: "add",
+          priority: 0,
         } satisfies NonDeprecatedConsequence,
         {
           type: "modifier",

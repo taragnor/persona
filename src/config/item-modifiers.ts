@@ -29,6 +29,8 @@ const DEPRECATED_TYPES = [
 	"armor-dr-mult",
 	"power-mp-cost",
 	"power-mp-cost-mult",
+	"power-hp-cost",
+	"hpCostMult",
 ] as const;
 
 export const COMBAT_BONUS_TYPES = [
@@ -83,7 +85,6 @@ export const ACTOR_STATS_TYPES = [
 	"max-resist-boosts",
 	"d-mon-storage",
 	"fusion-xp-boost-sl-percent",
-	"hpCostMult",
 	"pay",
 ] as const;
 
@@ -107,9 +108,6 @@ export const STUDENT_SKILLS_TYPES = [
 export const OTHER_TYPES = [
 	"power-energy-cost",
 	"power-energy-req",
-	// "power-mp-cost",
-	// "power-mp-cost-mult",
-	"power-hp-cost",
 ] as const;
 
 export const PERSONA_MODS_LIST = [

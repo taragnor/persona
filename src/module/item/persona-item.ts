@@ -1,8 +1,6 @@
 import { checkSituationProp } from '../../config/situation.js';
 import { GrowthCalculator } from '../utility/growth-calculator.js';
-import { STATUS_AILMENT_SET } from '../../config/status-effects.js';
-import { PowerCostCalculator } from '../power-cost-calculator.js';
-import { StatusEffectId } from '../../config/status-effects.js';
+import { STATUS_AILMENT_SET, StatusEffectId } from '../../config/status-effects.js';
 import { CATEGORY_SORT_ORDER, DAMAGE_ICONS, ITEM_ICONS, ItemCategory } from '../../config/icons.js';
 import { Persona } from '../persona-class.js';
 import { POWER_ICONS } from '../../config/icons.js';
@@ -18,9 +16,8 @@ import { DamageType } from '../../config/damage-types.js';
 import { EQUIPMENT_TAGS, EquipmentTag } from '../../config/equipment-tags.js';
 import { CreatureTag } from '../../config/creature-tags.js';
 import { removeDuplicates } from '../utility/array-tools.js';
-import { PowerTag } from '../../config/power-tags.js';
+import { PowerTag, POWER_TAGS } from '../../config/power-tags.js';
 import { localize } from '../persona.js';
-import { POWER_TAGS } from '../../config/power-tags.js';
 import { ModifierList, ModifierListItem } from '../combat/modifier-list.js';
 import { CardChoiceData, CardEvent, CardRoll } from '../../config/social-card-config.js';
 import { BASIC_PC_POWER_NAMES } from '../../config/basic-powers.js';
@@ -51,6 +48,7 @@ import {ConditionalEffectManager} from '../conditionalEffects/conditional-effect
 import {BonusCalculation, ModifierV2Target} from '../bonus-calc.js';
 import {MPCostCalculatorV2} from '../calculators/mpcost-calculatorv2.js';
 import {CalculationV2} from '../utility/calculation-v2.js';
+import {HPCostCalculatorV2} from '../calculators/hpcost-calculator2.js';
 
 declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -1026,19 +1024,19 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return removeDuplicates(talents);
   }
 
-  modifiedHpCost(this: Usable, persona: Persona, sit ?: Situation) : number {
-    const situation = sit ? sit :  {
-      user: persona.user.accessor,
-      usedPower: this.accessor,
-    } satisfies Situation;
-    const newHPCost = this.hpCost();
-    if (newHPCost > 0) {
-      const calcedHPPercent = (this.hpCost() /100) * persona.user.mhpEstimate;
-      return Math.round(calcedHPPercent * persona.hpCostMod().total(situation as SituationTypes.BonusQuerySituation, 'percentage'));
-    }
-    const oldHPCost = this.oldhpCost();
-    return Math.clamp(Math.round(oldHPCost * persona.hpCostMod().total(situation as SituationTypes.BonusQuerySituation, 'percentage')), 0, 1000);
-  }
+  // modifiedHpCost(this: Usable, persona: Persona, sit ?: Situation) : number {
+  //   const situation = sit ? sit :  {
+  //     user: persona.user.accessor,
+  //     usedPower: this.accessor,
+  //   } satisfies Situation;
+  //   const newHPCost = this.hpCost();
+  //   if (newHPCost > 0) {
+  //     const calcedHPPercent = (this.hpCost() /100) * persona.user.mhpEstimate;
+  //     return Math.round(calcedHPPercent * persona.hpCostMod().total(situation as SituationTypes.BonusQuerySituation, 'percentage'));
+  //   }
+  //   const oldHPCost = this.oldhpCost();
+  //   return Math.clamp(Math.round(oldHPCost * persona.hpCostMod().total(situation as SituationTypes.BonusQuerySituation, 'percentage')), 0, 1000);
+  // }
 
   powerCostString_PC(this: Power, persona: Persona, options: PrintStringOptions = {} ) : string {
     const FREE = '';
@@ -1047,11 +1045,10 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
     switch (this.system.subtype) {
       case 'weapon': {
-        const hpCost = this.hpCost();
+        const hpCost = this.hpCost(persona).total;
         if (hpCost > 0 || this.oldhpCost() > 0) {
           const hpCostPercent = (hpCost > 0) ? ` (${hpCost}%)` : '';
-          const modCost = this.modifiedHpCost(persona);
-          return `${modCost} HP ${hpCostPercent}`;
+          return `${hpCost} HP ${hpCostPercent}`;
         }
 
         else {return FREE;}
@@ -1661,14 +1658,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.system.attacksMax > 1;
   }
 
-  hpCost(this: Usable): number {
-    if (!this.isWeaponSkill() || !this.isPower()) {return 0;}
-    if (this.isTeamwork()) {return 0;}
-    if (this.customCost) {return this.system.hpcost;}
-    const newSys=  PowerCostCalculator.calcHPPercentCost(this);
-    return newSys;
-  }
-
   isExotic(this: Power) : boolean {
     return this.hasTag('exotic', null);
   }
@@ -2013,6 +2002,25 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
 
+  hpCost(this: Usable, userPersona: Persona | null): EvaluatedCalculation {
+    if (userPersona && userPersona.user.isShadow()) {
+      return { steps: [], total: 0};
+    };
+    if (this.isConsumable()) {
+      return { steps: [], total: 0};
+    }
+    if (!userPersona) {return this.baseHPCost;}
+    const cost = this.baseHPCostRaw();
+    const list = userPersona.getBonusesV2('hp-cost');
+    cost.merge(list);
+    const sit : Situation = {
+      user: userPersona.user.accessor,
+      usedPower: this.accessor,
+      attacker: userPersona.user.accessor,
+    };
+    return cost.eval(sit);
+  }
+
   mpCost(this: Usable, userPersona: Persona | null): EvaluatedCalculation {
     if (this.isConsumable()) {
       return { steps: [], total: 0};
@@ -2036,29 +2044,38 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   //   return Math.clamp(Math.round(baseMPCost.total * mult), 0,  1000);
   // }
 
-  private _getMPMultiplier(this: Usable, userPersona: N<Persona>) : number {
-    if (!userPersona) {return 1;}
-    const sit : Situation = {
-      user: userPersona.user.accessor,
-      usedPower: this.accessor,
-      attacker: userPersona.user.accessor,
-    };
+  // private getMPMultiplier(this: Usable, userPersona: N<Persona>) : number {
+  //   if (!userPersona) {return 1;}
+  //   const sit : Situation = {
+  //     user: userPersona.user.accessor,
+  //     usedPower: this.accessor,
+  //     attacker: userPersona.user.accessor,
+  //   };
     // const list = userPersona.getBonuses('power-mp-cost-mult');
     // return list.total(sit, 'percentage');
-    const calc = userPersona.getBonusesV2("mp-cost").eval(sit);
-    return calc.total;
-  }
+    // const calc = userPersona.getBonusesV2("mp-cost").eval(sit);
+    // return calc.total;
+  // }
 
-  get oldBaseMPCost(): number {
-    if (!this.isPower()
-      || this.isTeamwork()
-    ) {return 0;}
-    if (this.customCost) {return this.system.mpcost;}
-    if (this.cache.mpCost == undefined) {
-      this.cache.mpCost = PowerCostCalculator.calcMPCost(this);
+  // get oldBaseMPCost(): number {
+  //   if (!this.isPower()
+  //     || this.isTeamwork()
+  //   ) {return 0;}
+  //   if (this.customCost) {return this.system.mpcost;}
+  //   if (this.cache.mpCost == undefined) {
+  //     this.cache.mpCost = PowerCostCalculator.calcMPCost(this);
+  //   }
+  //   if (this.cache.mpCost > 0) { return this.cache.mpCost; }
+  //   return this.system.mpcost;
+  // }
+
+  baseHPCostRaw(this: Power) : CalculationV2 {
+    if (this.customCost) {
+      const calc= new CalculationV2(0);
+      calc.set(-1, this.system.mpcost, "Custom Cost");
+      return calc;
     }
-    if (this.cache.mpCost > 0) { return this.cache.mpCost; }
-    return this.system.mpcost;
+    return HPCostCalculatorV2.calcBaseCost(this);
   }
 
   baseMPCostRaw(this: Power) : CalculationV2 {
@@ -2070,6 +2087,18 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return MPCostCalculatorV2.calcBaseMPCost(this);
   }
 
+get baseHPCost() : EvaluatedCalculation {
+  if (!this.isPower()) {
+    return {
+      total: 0, steps:[]
+    };
+  }
+  const sit = {
+    usedPower: this.accessor,
+  };
+  return this.baseHPCostRaw().eval(sit);
+}
+
   get baseMPCost() : EvaluatedCalculation {
     if (!this.isPower()) {
       return {
@@ -2080,17 +2109,6 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       usedPower: this.accessor,
     };
     return this.baseMPCostRaw().eval(sit);
-    // if (this.customCost) {
-    //   return {
-    //     total: this.system.mpcost,
-    //     steps: [`${this.system.mpcost} (custom cost)`],
-    //   };
-    // }
-    // const calc = MPCostCalculatorV2.calcBaseMPCost(this);
-    // const sit = {
-    //   usedPower: this.accessor,
-    // };
-    // return calc.eval(sit);
   }
 
   private _getLinkedEffects (this: ItemModifierContainer, sourceActor: PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) : readonly ConditionalEffectC[] {

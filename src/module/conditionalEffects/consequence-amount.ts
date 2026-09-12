@@ -133,14 +133,14 @@ export class ConsequenceAmountResolver {
     const target = PersonaCombat.solveEffectiveTargets(amt.target, situation as Situation, amt).at(0);
     if (!target) {return undefined;}
     try {
-      const bonuses= target.persona().getBonusesV2(bonusType, null).eval(situation as Situation).total;
+      const bonuses = target.persona().getBonusesV2(bonusType, null).eval(situation as Situation).total;
       return bonuses;
     } catch {
       return undefined;
     }
   }
 
-  static resolveItemProperty<T extends Sourced<ConsequenceAmountV2> & {type: "item-property"}>( amt: T, _situation: Partial<Situation>) : U<number> {
+  private static resolveItemProperty<T extends Sourced<ConsequenceAmountV2> & {type: "item-property"}>( amt: T, _situation: Partial<Situation>) : U<number> {
     let item : U<PersonaItem>;
     switch (amt.itemTarget) {
       case "source": {

@@ -1207,11 +1207,12 @@ export class CombatEngine {
         }, situation);
       }
     }
-    if (!attacker.actor.isShadow() && power.hpCost()) {
+    const hpCost = attacker.actor.isShadow() ? 0 : power.hpCost(attacker.actor.persona()).total;
+    if (hpCost > 0) {
       const deprecatedConvert = DamageCalculation.convertToNewFormConsequence({
         type: 'hp-loss',
         damageType: 'none',
-        amount: power.modifiedHpCost(attacker.actor.persona()),
+        amount: hpCost,
         source: power.accessor,
         owner: attacker.actor.accessor,
         realSource: undefined,

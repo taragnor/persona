@@ -22,7 +22,7 @@ import { ResistType } from "./damage-types.js";
 import { ResistStrength } from "./damage-types.js";
 import { OtherConsequenceType } from "../module/datamodel/other-effects.js";
 import { StatusEffectId } from "./status-effects.js";
-import { DeprecatedModifierTarget, ItemProperty, ModifierCategory, ModifierTarget, NonDeprecatedModifierType } from "./item-modifiers.js";
+import { DeprecatedModifierTarget, ItemProperty, ModifierCategory, NonDeprecatedModifierType } from "./item-modifiers.js";
 import {AttackResult} from "../module/combat/combat-result.js";
 import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js";
 import {StatusDuration} from "../module/persona-ae.js";
@@ -623,7 +623,7 @@ type DamageMultiplierCons = {
 
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _errorCheckDType : Expect<Dep_DamageConsequence["damageSubtype"], DamageSubtype> = true;
+const errorCheckDType : Expect<Dep_DamageConsequence["damageSubtype"], DamageSubtype> = true;
 
 type NonDeprecatedMultiModifierConsequence = {
 	type: "modifier-new",

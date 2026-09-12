@@ -1130,10 +1130,6 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return this.source.totalResists() + leeway < this.maxResists();
   }
 
-  hpCostMod() : ModifierList {
-    return this.getBonuses("hpCostMult");
-  }
-
   canUsePower_getIneligibilityReason (usable: UsableAndCard) : N<string> {
     const msg =
     this._consumableCheck(usable)
@@ -1358,7 +1354,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
         }
         switch (usable.system.subtype) {
           case "weapon":
-            if ( this.user.hp <= (usable as Power).hpCost()) {return "HP cost would kill user";}
+            if ( this.user.hp <= (usable as Power).hpCost(this).total) {return "HP cost would kill user";}
             break;
           case "magic": {
             const mpcost = (usable as Power).mpCost(this).total;

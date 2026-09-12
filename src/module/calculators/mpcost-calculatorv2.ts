@@ -29,12 +29,9 @@ export class MPCostCalculatorV2 extends CostCalculator {
   private static _damage(pwr: Power, calc : BonusCalculation) : void {
     const baselevel = pwr.system.damageLevel;
     if (baselevel == "none" || baselevel == "fixed") {return;}
-    // const levelMult = this.DAMAGE_LEVEL_MULTIPLIERS_MP[baselevel] ;
     const baseCost = Math.round(this.DAMAGE_LEVEL_BASE_COST_MP[baselevel]) - 1;
     const dmgLevel = localize(DAMAGE_LEVELS[baselevel]);
     calc.add(0, baseCost, `${dmgLevel} Damage`);
-    // calc.mult(0, 1.25, `Damage Power mult`);
-    // calc.mult(0, levelMult, `${dmgLevel} Damage`);
   }
 
   private static _targetsAndAoE(pwr: Power, calc: BonusCalculation) : void {
@@ -49,7 +46,7 @@ export class MPCostCalculatorV2 extends CostCalculator {
     }
   }
 
-  static mpCost_buffOrDebuff(pwr: Power, calc: BonusCalculation) : void {
+  private static mpCost_buffOrDebuff(pwr: Power, calc: BonusCalculation) : void {
     const buffsGranted=  pwr.addsStatus(["attack-boost", "damage-boost", "defense-boost", "attack-nerf", "damage-nerf", "defense-nerf"], true);
     if (buffsGranted == 0) {return;}
     const valueOfEachBuffAdded = this.BASE_MP_COSTS["buff"];
@@ -64,7 +61,7 @@ export class MPCostCalculatorV2 extends CostCalculator {
     }
   }
 
-  static status_removal(pwr: Power, calc: BonusCalculation)  : void {
+  private static status_removal(pwr: Power, calc: BonusCalculation)  : void {
     const statusesRemoved = pwr.removesStatus(STATUS_AILMENT_LIST);
     if (statusesRemoved == 0) {return;}
     const scaling = Math.pow(1.2, statusesRemoved /3);
@@ -72,7 +69,7 @@ export class MPCostCalculatorV2 extends CostCalculator {
     calc.add(0, amt, `Ailment Removal (${statusesRemoved})`);
   }
 
-  static mpCost_instantKill(pwr: Power, calc: BonusCalculation): void {
+  private static mpCost_instantKill(pwr: Power, calc: BonusCalculation): void {
     if (!pwr.canInstantKill()) {return;}
     const instantKillGeneralMultAoE = 1.35 as const;
     const instantKillGeneralMult = 1.2 as const;
@@ -89,7 +86,7 @@ export class MPCostCalculatorV2 extends CostCalculator {
     }
   }
 
-  static mpCost_multiattack(pwr: Power, calc: BonusCalculation) : void {
+  private static mpCost_multiattack(pwr: Power, calc: BonusCalculation) : void {
     if (pwr.system.attacksMax == 1) {return;}
     const min = pwr.system.attacksMin;
     const max = pwr.system.attacksMax;
@@ -99,7 +96,7 @@ export class MPCostCalculatorV2 extends CostCalculator {
     calc.mult(0, costMod, `Flurry of Attacks Multiplier ${min}-${max}`);
   }
 
-	static mpCost_dekaja(pwr: Power, calc: BonusCalculation) : void {
+	private static mpCost_dekaja(pwr: Power, calc: BonusCalculation) : void {
 		const buffsRemoved = pwr.removesStatus(["attack-nerf", "damage-nerf", "defense-nerf", "attack-boost", "defense-boost", "damage-boost"]);
     if (buffsRemoved == 0) {return;}
     const dekajaFormula = 1 + (buffsRemoved * 2);

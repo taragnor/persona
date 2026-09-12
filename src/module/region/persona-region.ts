@@ -190,7 +190,7 @@ export class PersonaRegion extends RegionDocument {
     return this.regionData.hazard != "none";
   }
 
-  async secretHazardFound(field: "secret" | "hazard") {
+  private async secretHazardFound(field: "secret" | "hazard") {
     const regionData = this.regionData;
     const fieldValue = regionData[field];
     switch (fieldValue) {
@@ -216,7 +216,9 @@ export class PersonaRegion extends RegionDocument {
 
   async treasureFound( searcher: PCLike, searchRoll: number, ): Promise<EnchantedTreasureFormat[]> {
     const regionData = this.regionData;
-    const searchBonus = searcher.getPersonalBonuses("treasure-roll-bonus").total( {user: searcher.accessor});
+    const searchBonus = searcher
+    .getPersonalBonuses("treasure-roll-bonus")
+    .total( {user: searcher.accessor});
     if (this.treasuresRemaining <= 0) {
       PersonaError.softFail("Can't find a treasure in room with no treasure left");
       return [];
@@ -232,7 +234,6 @@ export class PersonaRegion extends RegionDocument {
     const mods = this.regionData.specialMods;
     let treasureMod = personalModifier ?? 0;
     let treasureMin = 1;
-
     switch (true) {
       case mods.includes("treasure-poor"):
         treasureMod = -50;
@@ -256,7 +257,7 @@ export class PersonaRegion extends RegionDocument {
   }
 
   get treasuresRemaining(): number {
-    const t= this.regionData.treasures;
+    const t = this.regionData.treasures;
     return t.max - t.found;
   }
 
@@ -325,21 +326,18 @@ export class PersonaRegion extends RegionDocument {
       { await this.presenceCheck("wandering"); }
       await Metaverse.passMetaverseTurn();
     }
-
   }
 
   async onEnterRegion(token: TokenDocument<PersonaActor>) {
-    // this ahs to be isPC to cehck for party token
+    // this has to be isPC to check for party token
     if (token?.actor?.isPC()) {
       await PersonaSettings.setLastRegion({
         lastRegionId: this.id,
         lastSceneId: this.parent.id,
       });
-    }
-    if (PersonaSettings.debugMode()) {
-      console.debug(`Region Entered: ${this.name}`);
-    }
-    if (token.actor?.isPC()) {
+      if (PersonaSettings.debugMode()) {
+        console.debug(`Region Entered: ${this.name}`);
+      }
       await this._onPCEnterRegion(token.actor);
     }
   }
@@ -454,7 +452,7 @@ export class PersonaRegion extends RegionDocument {
     await this.setRegionData(rdata);
   }
 
-  formEntryField(field: keyof RegionData) {
+  private formEntryField(field: keyof RegionData) {
     const element = $("<div>");
     element.append($("<label>").text(
       game.i18n.localize(`persona.roomAttribute.${field}` as LocalizationString)

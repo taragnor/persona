@@ -223,6 +223,10 @@ export class ConsequenceConverter {
         return {op: "multiply", V2Name: "armor-rating", priority: 1};
       case undefined:
         return "allAtk"; //for modifiers that have yet to be filled in
+      case "power-hp-cost":
+        return {op: "add", V2Name: "hp-cost", priority: 1};
+      case "hpCostMult":
+        return {op: "multiply", V2Name: "hp-cost", priority: 1};
       default:
         nonDField satisfies never;
     }

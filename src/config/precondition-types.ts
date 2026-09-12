@@ -143,10 +143,6 @@ type ClockTickTrigger = {
 	triggeringClockId: string;
 }
 
-// type ClockOverflowTrigger = {
-// 	triggeringClockId: string;
-// }
-
 export const CONDITION_TARGETS_LIST = [
 	"target",
 	"owner",
@@ -180,7 +176,6 @@ export type ConditionDice = typeof CONDITION_TARGETS_LIST[number];
 export const CONDITION_DICE = Object.fromEntries(
 	CONDITION_DICE_LIST.map( x=> [x, `persona.preconditions.dice.${x}`])
 );
-
 
 const USER_COMPARISON_TARGET_LIST = [
   "triggering-user",
