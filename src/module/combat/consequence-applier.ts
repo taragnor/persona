@@ -548,17 +548,22 @@ export class ConsequenceApplier {
         await actor.addTreasureItem(otherEffect.treasureItem);
         break;
       case "steal-food": {
-        const items = actor.inventory
-        .filter( x=> x.hasTag(["food", "drink"], null))
-        .map ( x=> ({
-          item: x,
-          weight: x.amount
-        })
-        );
-        for (let i =otherEffect.amount ; i > 0; --i) {
+        ui.notifications.notify(`Steal ${otherEffect.amount} food from ${actor.name}`);
+        for (let i = otherEffect.amount ; i > 0; --i) {
+          const items = actor.inventory
+            .filter( x=> x.hasTag(["food", "drink"], null))
+            .map ( x=> ({
+              item: x,
+              weight: x.amount
+            })
+            );
           const choice = weightedChoice(items);
           if (choice) {
+            console.log(`deleted 1 ${choice.name}`);
             await actor.removeItem(choice, 1);
+          }
+          if (!choice) {
+            PersonaError.softFail("Cant find food or drink to steal");
           }
         }
         break;

@@ -566,16 +566,11 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
 
   NPCAllies() : readonly NPCAlly[] {
     return this.permanentCaches.NPCAllies.value;
-    // if (this.#cache.NPCAllies == undefined) {
-    //   this.#cache.NPCAllies = this.allActors().filter( x=>
-    //     x.system.type == "npcAlly") as NPCAlly[];
-    // }
-    // return this.#cache.NPCAllies;
   }
 
   private _NPCAllies() : readonly NPCAlly[] {
     return this.allActors().filter( x=>
-      x.system.type == "npcAlly") as NPCAlly[];
+      x.isNPCAlly() && x.system.tarot.length > 0) as NPCAlly[];
   }
 
   getAllStores(): readonly TokenDocument<PersonaActor>[] {

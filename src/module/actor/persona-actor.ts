@@ -7,7 +7,7 @@ import { PERMA_BUFFS } from "../../config/perma-buff-type.js";
 import { PermaBuffType } from "../../config/perma-buff-type.js";
 import { Trigger } from "../../config/triggers.js";
 import { PersonaRoller } from "../persona-roll.js";
-import { randomSelect } from "../utility/array-tools.js";
+import { randomSelect, weightedChoice } from "../utility/array-tools.js";
 import { MainModifierOptions, Persona } from "../persona-class.js";
 import { SHADOW_CREATURE_TYPE, SHADOW_ROLE } from "../../config/shadow-types.js";
 import { PowerTag } from "../../config/power-tags.js";
@@ -86,8 +86,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     TURN: 1,
     BATTLE: 5,
     EXIT_MV : 2,
-    KO: 8,
-    THRESHOLD: 40,
+    KO: 12,
+    THRESHOLD: 50,
   } as const;
 
   private cache2 = {
@@ -201,20 +201,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       if (proxy) {return proxy.level;}
     }
     return this.cache2.level.value;
-    // if (this.cache.level != undefined) {
-    //   return this.cache.level;
-    // }
-    // if (this.isNPC()) {
-    //   const proxy = this.getNPCAllyProxy();
-    //   if (proxy) {return proxy.level;}
-    // }
-    // if (!this.isValidCombatant()) {
-    //   return this.cache.level = 0;
-    // }
-    // if (this.isPC()) {
-    //   return this.cache.level = this.system.personaleLevel;
-    // }
-    // return this.cache.level = this.system.combat.personaStats.pLevel ?? 0;
   }
 
   private _level() : number {
@@ -762,8 +748,29 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   get maxPersonas() : number {
     if (!this.isValidCombatant()) {return 0;}
     const maxCustomPersonas = this.class.system.uniquePersonas;
-    const wildPersonas = this.class.system.maxPersonas;
+    let wildPersonas = this.class.system.maxPersonas;
+
+    if (wildPersonas > 0 && this.maxPersonaSideboard == 0) {
+      const bonus = this.getPersonalBonuses("persona-sideboard").total({user: this.accessor});
+      wildPersonas += bonus;
+    }
     return Math.max( 0, maxCustomPersonas -1) + wildPersonas;
+  }
+
+  async stealFood(amount: number = 1) {
+    for (let i = amount; i > 0; --i) {
+      const items = this.inventory
+        .filter( x=> x.hasTag(["food", "drink"], null))
+        .map ( x=> ({
+          item: x,
+          weight: x.amount
+        })
+        );
+      const choice = weightedChoice(items);
+      if (choice) {
+        await this.removeItem(choice, 1);
+      }
+    }
   }
 
   get canUseWildPersonas() : boolean {
