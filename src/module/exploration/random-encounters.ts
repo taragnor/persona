@@ -151,7 +151,7 @@ export class RandomEncounter {
   static getEncounterList(sceneOrRegion: PersonaScene | PersonaRegion, shadowType ?: Shadow["system"]["creatureType"]): Shadow[] {
     return sceneOrRegion.encounterList()
       .filter( shadow => shadowType ? shadow.system.creatureType == shadowType : true)
-    .filter (shadow => !(sceneOrRegion instanceof PersonaScene) || !sceneOrRegion.isOnBanList(shadow));
+      .filter (shadow => !(sceneOrRegion instanceof PersonaScene) || !sceneOrRegion.isOnBanList(shadow));
   }
 
   /** queries player to determine if they will ambush, fight , etc.*/
@@ -699,7 +699,7 @@ type PresenceCheckResult = null
 
 //@ts-expect-error adding to global scope
 window.encounterList = (lvl: number) => RandomEncounter.getRandomEncounterListFromDiffLevel(lvl)
-.map( x=> x.directoryName);
+  .map( x=> x.directoryName);
 
 Hooks.on("renderChatMessageHTML", (chat, html) => {
   $(html).find("button.run-combat").on ("click",  () => {
