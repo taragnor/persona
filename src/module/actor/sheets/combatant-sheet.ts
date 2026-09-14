@@ -462,6 +462,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 	async createDamageEstimate( ev: JQuery.MouseOverEvent) {
+    if (PersonaSettings.debugMode()) {return;}
 		const powerId = HTMLTools.getClosestDataSafe(ev, "powerId", "");
     if (powerId.length == 0) {return;}
 		const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.getItemById<Power>(powerId as Power["id"]);
@@ -489,12 +490,12 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	isOnPersonaListTab() : boolean {
 		//placeholder
-		return (this._tabs.at(0)?.active == "persona-list");
+		return this._tabs.at(0)?.active == "persona-list";
 	}
 
 	isOnLearningTab() : boolean {
 		//placeholder
-		return (this._tabs.at(0)?.active == "learning");
+		return this._tabs.at(0)?.active == "learning";
 	}
 
 	async addFiveToAll(_ev : JQuery.ClickEvent) {

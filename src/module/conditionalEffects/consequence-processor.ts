@@ -38,13 +38,8 @@ export class ConsequenceProcessor {
     : ConsequenceProcessed {
       let consequences : ConsequenceProcessed['consequences']= [];
       for (const cons of relevantConsequences) {
-        //why was this copy here?
-        // const sourcedC = {
-        //   ...cons,
-        // };
         const sourcedC = cons.toSourced();
         if (attackerPersona) {
-          // const newCons = this.processConsequence(power, situation, sourcedC, attackerPersona, atkresult);
           const newCons = this.processConsequence(power, situation, sourcedC, attackerPersona, atkresult);
           consequences = consequences.concat(newCons);
         } else {
@@ -72,8 +67,11 @@ export class ConsequenceProcessor {
         switch (cons.combatEffect) {
           case 'damage':
             return this.processConsequence_damage(cons, consTargets, attackerPersona, power, situation);
-          case 'addStatus': case 'removeStatus':
+          case 'addStatus':
+            //this may require some fixes later. since a non healing power with status removal can't be absorbed
             if (!applyToSelf && (absorb || block)) {return [];}
+            // eslint-disable-next-line no-fallthrough
+          case 'removeStatus':
             return consTargets.map( target => {
               return  {applyTo: target ,cons};
             });

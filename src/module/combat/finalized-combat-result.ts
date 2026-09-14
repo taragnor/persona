@@ -116,9 +116,9 @@ export class FinalizedCombatResult {
 
   static changeIsEmpty( change: ResolvedActorChange<ValidAttackers>) : boolean {
     return change.addStatus.length == 0
+      && change.removeStatus.length == 0
       && change.damage.length == 0
       && change.otherEffects.length == 0
-      && change.removeStatus.length == 0
       && change.localEffects.length == 0;
   }
 
@@ -144,16 +144,16 @@ export class FinalizedCombatResult {
   }
 
   #finalize(cr: CombatResult): void {
-    const attacks  = Array.from(cr.attacks.entries()).map(
-      ([atkRes, change]) => {
-        const changes = change.map( change => {
-          return this.#resolveActorChange(change);
-        });
-        return {
-          atkResult: atkRes,
-          changes,
-        } satisfies ResolvedAttackResult;
+    const attacks  = Array.from(cr.attacks.entries())
+    .map( ([atkRes, change]) => {
+      const changes = change.map( change => {
+        return this.#resolveActorChange(change);
       });
+      return {
+        atkResult: atkRes,
+        changes,
+      } satisfies ResolvedAttackResult;
+    });
     this.attacks = attacks;
     for (const atk of this.attacks) {
       atk.changes = atk.changes

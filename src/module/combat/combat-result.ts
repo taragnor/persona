@@ -170,14 +170,16 @@ export class CombatResult  {
         break;
       }
       case "removeStatus": {
-        if (!effect) {break;}
-        // const actor = PersonaDB.findActor(effect.actor);
-        for (const id of multiCheckToArray(cons.statusName)) {
-          if (target && target?.hasStatus(id)) {
-            effect.removeStatus.push({
-              id,
-            });
-          }
+        if (!effect || !target) {break;}
+        const statuses= multiCheckToArray(cons.statusName)
+        .filter (id=> target.hasStatus(id));
+        if (statuses.length == 0) { break; }
+        for (const id of statuses) {
+          // if (target && target?.hasStatus(id)) {
+          effect.removeStatus.push({
+            id,
+          });
+          // }
         }
         break;
       }
@@ -519,6 +521,7 @@ export class CombatResult  {
       this.attacks.set(atkResult, []);
     }
     const effects = this.attacks.get(atkResult)!;
+    if (this.changeIsEmpty(effect)) {return;}
     CombatResult.mergeChanges(effects, [effect]);
   }
 
@@ -918,6 +921,18 @@ export class CombatResult  {
       return `ERROR :${msg}`;
     }
   }
+
+  private changeIsEmpty(change: ActorChange<ValidAttackers> ) : boolean {
+    const arrays = ["addStatus", "removeStatus", "localEffects", "otherEffects"] as const;
+    if (arrays.some( arr => change[arr].length > 0)) {
+      return false;
+    }
+    if (Object.values(change.damage).length > 0) {
+      return false;
+    }
+    return true;
+  }
+
 }
 
 export interface ActorChange<T extends PersonaActor = PersonaActor> {
