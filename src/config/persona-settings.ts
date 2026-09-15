@@ -190,6 +190,17 @@ const SETTINGS = {
 		onChange: (_newVal) => {PersonaSettings.resetCache();}
 	},
 
+	"damageEstimates" : {
+		name: "Damage Estimates",
+		hint: "Show Damage Estimates on mouse over for abilities (May impact performance)",
+		scope: "client",
+		restricted: false,
+		config: true,
+		type :Boolean,
+		default: true,
+		onChange: (_newVal) => {PersonaSettings.resetCache();}
+	},
+
 	"xpLock" : {
 		name: "XP Lock",
 		hint: "Lock XP advancement",

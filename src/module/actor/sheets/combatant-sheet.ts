@@ -462,7 +462,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 	}
 
 	async createDamageEstimate( ev: JQuery.MouseOverEvent) {
-    if (PersonaSettings.debugMode()) {return;}
+    if (! (PersonaSettings.get("damageEstimates") ?? true)) {return;}
 		const powerId = HTMLTools.getClosestDataSafe(ev, "powerId", "");
     if (powerId.length == 0) {return;}
 		const power = this.actor.powers.find(x=> x.id == powerId) ?? PersonaDB.getItemById<Power>(powerId as Power["id"]);

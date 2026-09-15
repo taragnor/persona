@@ -30,7 +30,11 @@ export class MainDamageSystem extends DamageSystemBase {
       PersonaError.softFail("Can't find Basic attack power");
       return new DamageCalculation("physical");
     }
-    const damage = this.getDamage(basicAttack, actor.persona(), target.persona(), situation, { "ignoreResistance": true});
+    const specailizedSituation = {
+      ...situation,
+      attacker: actor.accessor,
+    };
+    const damage = this.getDamage(basicAttack, actor.persona(), target.persona(), specailizedSituation, { "ignoreResistance": true});
     const mult = isAttackLeader ? 1 : this.ALL_OUT_ATTACK_HELPER_DIVISOR;
     damage.add("multiplier", mult, "All out attack helper multiplier");
     return damage;
@@ -44,6 +48,7 @@ export class MainDamageSystem extends DamageSystemBase {
       case !power.isUsableType(): return calc;
       case power.isConsumable():  return calc;
       case damageType == "all-out":
+        break;
       case power.isWeaponSkill():
         if (!attackerPersona) {
           return calc;
@@ -126,9 +131,6 @@ export class MainDamageSystem extends DamageSystemBase {
     const attackStat = power.usesOptimizedDamage(attackerPersona) 
     ? attackerPersona.combatStats.strength + attackerPersona.combatStats.magic
     : attackerPersona.combatStats.strength;
-    // const attackStat = power.usesOptimizedDamage(attackerPersona) && attackerPersona.combatStats.strength < attackerPersona.combatStats.magic
-    //   ? attackerPersona.combatStats.magic
-    //   : attackerPersona.combatStats.strength;
     const endurance = targetPersona.combatStats.endurance;
     const percent = this.getPercentModifier(attackStat, endurance);
     const armorVsWeapon = this.weaponVsArmorMult(attackerPersona, targetPersona);
