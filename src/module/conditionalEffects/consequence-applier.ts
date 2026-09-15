@@ -2,6 +2,11 @@ import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-t
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {StatusEffectId} from "../../config/status-effects.js";
 import {PersonaActor} from "../actor/persona-actor.js";
+import {EvaluatedDamage} from "../combat/damage-calc.js";
+import {FinalizedCombatResult, ResolvedActorChange} from "../combat/finalized-combat-result.js";
+import {PersonaAnimation} from "../combat/persona-animations.js";
+import {PersonaCombat, PToken} from "../combat/persona-combat.js";
+import {PersonaSFX} from "../combat/persona-sfx.js";
 import {ActorConverters} from "../converters/actorConverters.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
 import {PersonaItem} from "../item/persona-item.js";
@@ -16,11 +21,6 @@ import {SocialActionExecutor} from "../social/exec-social-action.js";
 import {TriggeredEffect} from "../triggered-effect.js";
 import {weightedChoice} from "../utility/array-tools.js";
 import {Logger} from "../utility/logger.js";
-import {EvaluatedDamage} from "./damage-calc.js";
-import {FinalizedCombatResult, ResolvedActorChange} from "./finalized-combat-result.js";
-import {PersonaAnimation} from "./persona-animations.js";
-import {PersonaCombat, PToken} from "./persona-combat.js";
-import {PersonaSFX} from "./persona-sfx.js";
 
 export class ConsequenceApplier {
 

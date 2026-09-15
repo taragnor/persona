@@ -1,5 +1,6 @@
 import {StatusEffect} from "../../config/consequence-types.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
+import {CombatPanel} from "../panels/combat-panel.js";
 import {FollowUpPanel} from "../panels/follow-up-panel.js";
 import {UsableListPanel} from "../panels/usable-list-panel.js";
 import {PersonaDB} from "../persona-db.js";
@@ -9,7 +10,6 @@ import {PersonaSocial} from "../social/persona-social.js";
 import {lockObject} from "../utility/anti-loop.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {FlagChangeDiffObject} from "./openers.js";
-import {CombatPanel} from "./panels/combat-panel.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
 import {PersonaTargetting} from "./persona-targetting.js";
 

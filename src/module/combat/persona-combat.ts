@@ -30,7 +30,6 @@ import {CombatEngine} from './combat-engine.js';
 import {ConditionTarget} from '../../config/precondition-types.js';
 import {NavigatorVoiceLines} from '../navigator/nav-voice-lines.js';
 import {OpenerManager} from './openers.js';
-import { CombatPanel } from './panels/combat-panel.js';
 import {TreasureSystem} from '../exploration/treasure-system.js';
 import {ModifierList} from './modifier-list.js';
 import {FollowUpManager} from './follow-up-actions.js';
@@ -41,6 +40,7 @@ import {checkSituationProp} from '../../config/situation.js';
 import {DebugTools} from '../utility/debug.js';
 import {ConditionalEffectC} from '../conditionalEffects/conditional-effect-class.js';
 import {XPManager} from './xp-report.js';
+import {CombatPanel} from '../panels/combat-panel.js';
 
 declare global {
   interface SocketMessage {

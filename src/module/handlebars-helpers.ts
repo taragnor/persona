@@ -35,7 +35,6 @@ import {FusionCombination, FusionTable} from "../config/fusion-table.js";
 import {PCSheet} from "./actor/sheets/pc-sheet.js";
 import {CombatEngine} from "./combat/combat-engine.js";
 import {PersonaCompendium} from "./persona-compendium.js";
-import { CombatPanel } from "./combat/panels/combat-panel.js";
 import {PROBABILITIES, PROBABILITIES_POWER_RARITY, ProbabilityRate} from "../config/probability.js";
 import {CardData} from "./social/social-card-executor.js";
 import {ConditionalEffectPrinter} from "./conditionalEffects/conditional-effect-printer.js";
@@ -51,6 +50,7 @@ import {convertToPercentages} from "./utility/array-tools.js";
 import {NumberTools} from "./utility/numberTools.js";
 import {TagManager} from "./tag-manager.js";
 import {CalculationV2} from "./utility/calculation-v2.js";
+import {CombatPanel} from "./panels/combat-panel.js";
 
 
 export class PersonaHandleBarsHelpers {

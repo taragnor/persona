@@ -1,17 +1,17 @@
-import {PersonaSettings} from "../../../config/persona-settings.js";
-import {PersonaActor} from "../../actor/persona-actor.js";
-import {PersonaActorSheetBase} from "../../actor/sheets/actor-sheet-base.js";
-import {Metaverse} from "../../metaverse.js";
-import {ItemUsePanel} from "../../panels/item-use-panel.js";
-import {PersonaSwitchPanel} from "../../panels/persona-switch-panel.js";
-import {PersonaPanel} from "../../panels/sub-panel.js";
-import {UsableListPanel} from "../../panels/usable-list-panel.js";
-import {PersonaDB} from "../../persona-db.js";
-import {PersonaError} from "../../persona-error.js";
-import {lockObject} from "../../utility/anti-loop.js";
-import {sleep} from "../../utility/async-wait.js";
-import {HTMLTools} from "../../utility/HTMLTools.js";
-import {PersonaCombat, PersonaCombatant, PToken} from "../persona-combat.js";
+import {PersonaSettings} from "../../config/persona-settings.js";
+import {PersonaActor} from "../actor/persona-actor.js";
+import {PersonaActorSheetBase} from "../actor/sheets/actor-sheet-base.js";
+import {PersonaCombat, PersonaCombatant, PToken} from "../combat/persona-combat.js";
+import {Metaverse} from "../metaverse.js";
+import {PersonaDB} from "../persona-db.js";
+import {PersonaError} from "../persona-error.js";
+import {lockObject} from "../utility/anti-loop.js";
+import {sleep} from "../utility/async-wait.js";
+import {HTMLTools} from "../utility/HTMLTools.js";
+import {ItemUsePanel} from "./item-use-panel.js";
+import {PersonaSwitchPanel} from "./persona-switch-panel.js";
+import {PersonaPanel} from "./sub-panel.js";
+import {UsableListPanel} from "./usable-list-panel.js";
 
 export class CombatPanel extends PersonaPanel {
   private _target: U<PToken>;
@@ -376,7 +376,6 @@ export class CombatPanel extends PersonaPanel {
     const filteredPList = actor.personaList
       .filter( p => !p.equals(currentPersona));
     if (filteredPList.length == 1) {
-      // if (!this.isActiveControl()) {
       if (!this.actor?.canSwitchPersonas) {
         ui.notifications.notify("Can't swap right now.");
         return;
@@ -387,7 +386,6 @@ export class CombatPanel extends PersonaPanel {
     }
 
     await this.push(new PersonaSwitchPanel(this.target));
-    // await this.setMode("persona");
   }
 
   private async _onPersonaSwitchButton(event: JQuery.ClickEvent) {

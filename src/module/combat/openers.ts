@@ -1,3 +1,4 @@
+import {CombatPanel} from "../panels/combat-panel.js";
 import {OpenerPanel} from "../panels/openers-panel.js";
 import {UsableListPanel} from "../panels/usable-list-panel.js";
 import {PersonaError} from "../persona-error.js";
@@ -8,7 +9,6 @@ import {randomSelect} from "../utility/array-tools.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {EngagementChecker} from "./engageChecker.js";
 import {OpenerSaves} from "./opener-saves.js";
-import {CombatPanel} from "./panels/combat-panel.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "./persona-combat.js";
 import {PersonaTargetting} from "./persona-targetting.js";
 

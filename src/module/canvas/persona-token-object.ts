@@ -1,7 +1,7 @@
 import {PersonaActor} from "../actor/persona-actor.js";
-import {CombatPanel} from "../combat/panels/combat-panel.js";
 import {PersonaCombat, PToken} from "../combat/persona-combat.js";
 import {Metaverse} from "../metaverse.js";
+import {CombatPanel} from "../panels/combat-panel.js";
 
 export class PersonaTokenObject extends CONFIG.Token.objectClass {
   override get actor() {return super.actor as PersonaActor;}

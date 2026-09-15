@@ -16,7 +16,6 @@ import { ActorChange } from "./combat-result.js";
 import {SocketsNotConnectedError, TimeoutError, VerificationFailedError} from "../utility/socket-manager.js";
 import {RealDamageType} from "../../config/damage-types.js";
 import {CombatOutput} from "./combat-output.js";
-import {ConsequenceApplier} from "./consequence-applier.js";
 import {PersonaSFX} from "./persona-sfx.js";
 import {TriggeredEffect} from "../triggered-effect.js";
 import {sleep} from "../utility/async-wait.js";
@@ -24,6 +23,7 @@ import {LocalEffectCombatResult} from "./local-effect-combat-result.js";
 import {ResolvedRollBundle} from "../roll-bundle.js";
 import {PersonaAnimation} from "./persona-animations.js";
 import {StatusEffectId} from "../../config/status-effects.js";
+import {ConsequenceApplier} from "../conditionalEffects/consequence-applier.js";
 
 const SAFETY_SLEEP_DURATION = 250 as const;
 const DELAY_FOR_UPDATES_TO_GET_THERE_FIRST = 25 as const;
