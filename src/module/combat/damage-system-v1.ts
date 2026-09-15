@@ -16,13 +16,13 @@ export class MainDamageSystem extends DamageSystemBase {
   private MAGIC_DAMAGE_MULT = 0.333 as const;
   private HEALING_MAGIC_MULT = 0.5 as const;
   private BASE_VARIANCE = 2 as const;
-  private ALL_OUT_ATTACK_HELPER_DIVISOR = 0.333 as const;
+  private ALL_OUT_ATTACK_HELPER_DIVISOR = 0.4 as const;
   private BASIC_ATTACK_LEVEL_DIVISOR = 1.00 as const;
   private BASE_DAMAGE_LEVEL_DIVISOR = 0.666 as const;
 
   individualContributionToAllOutAttackDamage(actor: ValidAttackers, target: ValidAttackers, situation: AttackResult['situation'], isAttackLeader: boolean) : DamageCalculation {
     if (!actor.canAllOutAttack()) {
-      PersonaError.softFail(`$actor.name} Incaplbe of All out Attack`);
+      PersonaError.softFail(`${actor.name} Incapable of All out Attack`);
       return new DamageCalculation("physical");
     }
     const basicAttack = PersonaDB.getBasicPower('Basic Attack');
@@ -35,6 +35,9 @@ export class MainDamageSystem extends DamageSystemBase {
       attacker: actor.accessor,
     };
     const damage = this.getDamage(basicAttack, actor.persona(), target.persona(), specailizedSituation, { "ignoreResistance": true});
+    if (specailizedSituation.naturalRoll % 2 == 0) {
+      damage.setApplyEvenBonus();
+    }
     const mult = isAttackLeader ? 1 : this.ALL_OUT_ATTACK_HELPER_DIVISOR;
     damage.add("multiplier", mult, "All out attack helper multiplier");
     return damage;
