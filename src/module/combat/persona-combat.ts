@@ -52,14 +52,8 @@ declare global {
   }
 }
 
-declare global {
-  interface HOOKS {
-    'onUsePower': (power: UsableAndCard, user: PToken, defender: PToken) => unknown;
-  }
-}
-
 export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
-  VAR_FLAG_NAME = "combatVars" as const;
+  static VAR_FLAG_NAME = "combatVars" as const;
   static WAIT_FOR_FOUNRY_DELAY = 750 as const;
   _resolvingAttack: boolean = false;
   _engagedList: EngagementList;
@@ -543,7 +537,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
     }
     const speaker = {alias: 'Combat Turn Start'};
     startTurnMsg = startTurnMsg
-        .filter(txt=> txt.length > 0);
+      .filter(txt=> txt.length > 0);
     const messageData = {
       speaker: speaker,
       content: startTurnMsg.join('<br>'),
@@ -673,9 +667,9 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
   }
 
   async setVariable(id: string, value: number) : Promise<FinalizedCombatResult[]> {
-    const variables = this.getFlag<Record<string, number>>("persona",this.VAR_FLAG_NAME) ?? {};
+    const variables = this.getFlag<Record<string, number>>("persona", PersonaCombat.VAR_FLAG_NAME) ?? {};
     variables[id] = value;
-    await this.setFlag("persona", this.VAR_FLAG_NAME, variables);
+    await this.setFlag("persona", PersonaCombat.VAR_FLAG_NAME, variables);
     const ret : FinalizedCombatResult[] = [];
     for (const comb of this.combatants) {
       if (!comb.actor) {continue;}
@@ -696,16 +690,16 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
   }
 
   getVariable(id: string) : number {
-    const variables = this.getFlag<Record<string, number>>("persona",this.VAR_FLAG_NAME) ?? {};
+    const variables = this.getFlag<Record<string, number>>("persona", PersonaCombat.VAR_FLAG_NAME) ?? {};
     return variables[id] ?? 0;
   }
 
   printVariables() : void {
     if (!game.user.isGM) {return;}
-    const variables = this.getFlag<Record<string, number>>("persona", this.VAR_FLAG_NAME) ?? {};
+    const variables = this.getFlag<Record<string, number>>("persona", PersonaCombat.VAR_FLAG_NAME) ?? {};
     const txt = Object.entries(variables)
-      .map( ([k, v]) => `${k}: ${v}`)
-      .join("\n");
+    .map( ([k, v]) => `${k}: ${v}`)
+    .join("\n");
     console.log(txt);
   }
 
@@ -1011,7 +1005,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
     const combat = game.combat as U<PersonaCombat>;
     if (acc.token && !acc.token.actorLink) {
       try {
-      return PersonaDB.findToken(acc.token) as PToken;
+        return PersonaDB.findToken(acc.token) as PToken;
       } catch { }
     }
     const actor = PersonaDB.findActor(acc);

@@ -184,7 +184,6 @@ export class CombatHooks {
       if (!combatant) {return;}
       if (combatant.id  == combatantId
         && combatant.actor.hasPlayerOwner
-        // && !game.user.isGM
         && combatant.actor.isOwner
         && !game.user.isGM) {
         console.log(`Adding flash to ${combatant.name} msg`);
@@ -206,3 +205,11 @@ export class CombatHooks {
 	}
 
 }//end of class
+
+declare global {
+  interface HOOKS {
+    'onUsePower': (power: UsableAndCard, user: PToken, defender: PToken) => unknown;
+  }
+}
+
+
