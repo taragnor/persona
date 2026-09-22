@@ -1737,6 +1737,30 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
   }
 
+  isSingleTarget(this: UsableAndCard) {
+    if (this.isSkillCard()) {return true;}
+    const targets = this.targets();
+    switch (targets) {
+      case "1-engaged":
+      case "1-nearby":
+      case "1-nearby-dead":
+      case "1-random-enemy":
+      case "self":
+        return true;
+      case "each-attack-random-enemy":
+      case "all-enemies":
+      case "all-allies":
+      case "all-dead-allies":
+      case "all-others":
+      case "everyone":
+      case "everyone-even-dead":
+        return false;
+      default:
+        targets satisfies never;
+        return false;
+    }
+  }
+
   canBeUsedOnAllies(this: Usable) : boolean {
     const targets = this.targets();
     switch (targets) {

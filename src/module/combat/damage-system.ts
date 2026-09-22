@@ -27,12 +27,12 @@ export abstract class DamageSystemBase implements DamageInterface {
     return calc;
   }
 
-  defaultSituation(power : Usable, attackerPersona: Persona, targetPersona: Persona) : Situation {
+  defaultSituation(power : Usable, attackerPersona: Persona, targetPersona: Persona) {
     return {
       user: attackerPersona.user.accessor,
       target: targetPersona.user.accessor,
       usedPower: power.accessor,
-    };
+    } satisfies Situation;
   }
 
   protected setResistance(calc: DamageCalculation, power: Usable, attackerPersona: Persona, situation: U<Situation>, resist: ResistStrength) {

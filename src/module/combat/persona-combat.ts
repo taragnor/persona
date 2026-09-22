@@ -772,10 +772,10 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
   }
 
   handleStartTurnEffects(combatant: Combatant<ValidAttackers>): string[] {
-    const actor= combatant.actor;
+    const actor = combatant.actor;
     if (!actor) {return [];}
     const Msg: string[] = [];
-    const debilitatingStatuses :StatusEffectId[] = [
+    const debilitatingStatuses : StatusEffectId[] = [
       'sleep',
       'shock'
     ];
@@ -813,7 +813,6 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
   }
 
   async postActionCleanup(attacker: PToken, result: FinalizedCombatResult ) {
-    // await this.afterActionTriggered(attacker, result);
     const power = result.power;
     if (!power) {return;}
     const comb = this.combatant;
@@ -822,29 +821,34 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
       return;
     }
     if (comb?.token == attacker) {
-      const shouldEndTurn =
-        (
-          this.hasRunOutOfActions(comb)
-          || power == PersonaDB.getBasicPower('All-out Attack')
-        ) ;
-      const autoEndTurn = PersonaSettings.autoEndTurn() && shouldEndTurn;
-      if (shouldEndTurn) {
-        if (autoEndTurn) {
-          if (this.forceAdvanceTurn) {
-            await this.setForceEndTurn(false);
-          }
-          await this.nextTurn();
-          return;
-        }
-        await this.displayEndTurnMessage();
-      } else {
+      if (! await this.autoEndTurnSequence(comb, power)) {
         await this.displayActionsRemaining(comb);
       }
     }
   }
 
+  async autoEndTurnSequence(comb: PersonaCombatant, power: UsableAndCard)  : Promise<boolean> {
+    const shouldEndTurn =
+    (
+      this.hasRunOutOfActions(comb)
+      || power == PersonaDB.getBasicPower('All-out Attack')
+    ) ;
+    if (!shouldEndTurn) {return false;}
+    const autoEndTurn = PersonaSettings.autoEndTurn() && shouldEndTurn;
+    if (!autoEndTurn) {
+      await this.displayEndTurnMessage();
+      return true;
+    }
+    if (this.forceAdvanceTurn) {
+      await this.setForceEndTurn(false);
+    }
+    await this.nextTurn();
+    return true;
+  }
+
   async checkFollowUpAction(attacker: PToken, activationRoll: number ) {
-    const status = attacker.actor.effects.find( eff=> eff.statuses.has("bonus-action"));
+    const status = attacker.actor.effects
+      .find( eff=> eff.statuses.has("bonus-action"));
     if (status && activationRoll > 0) {
       await this.followUp.onFollowUpAction(attacker, activationRoll);
       return true;
