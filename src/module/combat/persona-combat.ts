@@ -821,19 +821,18 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
       return;
     }
     if (comb?.token == attacker) {
-      if (! await this.autoEndTurnSequence(comb, power)) {
-        await this.displayActionsRemaining(comb);
-      }
+      await this.endTurnCheckSequence(comb, power);
     }
   }
 
-  async autoEndTurnSequence(comb: PersonaCombatant, power: UsableAndCard)  : Promise<boolean> {
+  async endTurnCheckSequence(comb: PersonaCombatant, power: UsableAndCard)  : Promise<boolean> {
     const shouldEndTurn =
-    (
-      this.hasRunOutOfActions(comb)
-      || power == PersonaDB.getBasicPower('All-out Attack')
-    ) ;
-    if (!shouldEndTurn) {return false;}
+    this.hasRunOutOfActions(comb)
+    || power == PersonaDB.getBasicPower('All-out Attack') ;
+    if (!shouldEndTurn) {
+      await this.displayActionsRemaining(comb);
+      return false;
+    }
     const autoEndTurn = PersonaSettings.autoEndTurn() && shouldEndTurn;
     if (!autoEndTurn) {
       await this.displayEndTurnMessage();
