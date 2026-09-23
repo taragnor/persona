@@ -3777,18 +3777,10 @@ async addCreatureTag(tag ?: Tag) : Promise<void> {
 
 async onAddToCombat() {
   if (!game.user.isGM) {return;}
-  switch (this.system.type) {
-    case "shadow": {
-      if (!this.isShadow()) {return;}// a double check purely for TS to recognize it;
-      const energy = this.startingEnergy();
-      await this.setEnergy(energy);
-      break;
-    }
-    case "pc":
-    case "npc":
-    case "tarot":
-      break;
-  }
+  const shadow = this.isShadow() ? this : null;
+  if (!shadow) {return;}
+  const energy = shadow.startingEnergy();
+  await shadow.setEnergy(energy);
 }
 
 startingEnergy(this: Shadow) : number {

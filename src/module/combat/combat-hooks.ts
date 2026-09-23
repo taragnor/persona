@@ -77,22 +77,21 @@ export class CombatHooks {
 			}
 		});
 
-		Hooks.on("createCombatant", async (combatant: Combatant<ValidAttackers>) => {
-			if (!game.user.isGM) {return;}
-			await combatant?.token?.actor?.onAddToCombat();
-			if (combatant.parent?.started) {
-				await (combatant.combat as PersonaCombat).runCombatantStartCombatTriggers(combatant);
-			}
-		});
+    Hooks.on("createCombatant", async (combatant: Combatant<ValidAttackers>) => {
+      if (!game.user.isGM) {return;}
+      await combatant?.token?.actor?.onAddToCombat();
+      if (!combatant.parent?.started) {return;}
+      await (combatant.combat as PersonaCombat).runCombatantStartCombatTriggers(combatant);
+    });
 
 		Hooks.on("personaCalendarAdvance", () => {
 			ui.combat.render(false);
 		});
 
-		Hooks.on("renderCombatTracker", (_item: CombatTracker, element: JQuery<HTMLElement> | HTMLElement, _options: RenderCombatTabOptions) => {
-			const combat = (game.combat as (PersonaCombat | undefined));
+		Hooks.on("renderCombatTracker", (_item: CombatTracker, elem: JQuery<HTMLElement> | HTMLElement, _options: RenderCombatTabOptions) => {
+			const combat = PersonaCombat.combat;
 			if (!combat) {return;}
-			element = $(element);
+			const element = $(elem);
 			if (combat.isSocial) {
 				PersonaSocial.displaySocialPanel(element);
 			} else {
@@ -102,7 +101,7 @@ export class CombatHooks {
 
     Hooks.on("onAddStatus", async function (token: PToken, status: StatusEffect)  {
       if (!game.user.isGM) {
-        throw new PersonaError("Somehow isn't GM executing this");
+        throw new PersonaError("Somehow non-GM executing this");
       }
       switch (status.id) {
         case "down":
@@ -117,11 +116,9 @@ export class CombatHooks {
               });
             if (!standingAllies) {
               const currentTurnCharacter = (game.combat as PersonaCombat).combatant?.actor;
-              if (!currentTurnCharacter) {return;}
-              const currentTurnType = currentTurnCharacter.system.type;
-              if (currentTurnType == "shadow") {
+              if (!currentTurnCharacter) {break;}
+              if (currentTurnCharacter.isShadow()) {
                 await PersonaCombat.allOutAttackPrompt();
-                break;
               } else {
                 PersonaSockets.simpleSend("QUERY_ALL_OUT_ATTACK", {}, game.users
                   .filter( user=> currentTurnCharacter.testUserPermission(user, "OWNER") && !user.isGM )
@@ -178,7 +175,7 @@ export class CombatHooks {
       if (!PersonaCombat.combat) {return;}
       const header = $(content).find(".start-turn-header");
       if (header.length == 0) {return;}
-      const combatantId= HTMLTools.getClosestDataSafe(header, "combatant-id", "");
+      const combatantId = HTMLTools.getClosestDataSafe(header, "combatant-id", "");
       if (!combatantId) {return;}
       const combatant = PersonaCombat.combat.combatant;
       if (!combatant) {return;}
@@ -194,17 +191,14 @@ export class CombatHooks {
 
     Hooks.on("renderCombatTracker", (_tracker, _user, _options)  => {
       const combat = PersonaCombat.combat;
-      if (!combat) {return;}
-      if (combat.isSocial) {
-        console.log("Closing Combat popout");
-        setTimeout( () => ui.combat?.popout?.close(), 250);
-        return;
-      }
+      if (!combat || !combat.isSocial) {return;}
+      console.log("Closing Combat popout");
+      setTimeout( () => ui.combat?.popout?.close(), 250);
     });
 
 	}
 
-}//end of class
+} //end of class
 
 declare global {
   interface HOOKS {

@@ -51,7 +51,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     allPowers: new TimedCache( () => this._allPowers(), this.CACHE_TIME),
   };
 
-  BASE_PC_SIDEBOARD = 1 as const;
+  static BASE_PC_SIDEBOARD = 1 as const;
 
   private basicCaches = {
     mhp: new TimedCache(() => this._mhp(), 3000),
@@ -1046,7 +1046,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
         return 0;
       case "pc": {
         if (!this.source.class.system.canUsePowerSideboard) {return 0;}
-        return this.BASE_PC_SIDEBOARD
+        return Persona.BASE_PC_SIDEBOARD
         + Math.floor(this.source.level / 50)
         + this.getPassiveBonusesIgnoreAuras("extraMaxPowers")
         .total ( {user: this.user.accessor});
