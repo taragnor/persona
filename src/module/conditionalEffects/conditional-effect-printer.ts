@@ -811,7 +811,7 @@ export class ConditionalEffectPrinter {
         case "apply-recovery":
           return `Apply Recovery`;
         case "alter-theurgy":
-          return `Alter Theurgy Amount`;
+          return `Alter Theurgy ${cons.amount}`;
         case "set-cooldown":
           return `Set Power Cooldown : ${cons.durationRounds} rounds`;
         case "add-power-tag-to-attack": {
