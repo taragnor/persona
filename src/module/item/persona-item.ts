@@ -49,6 +49,7 @@ import {BonusCalculation, ModifierV2Target} from '../bonus-calc.js';
 import {MPCostCalculatorV2} from '../calculators/mpcost-calculatorv2.js';
 import {CalculationV2} from '../utility/calculation-v2.js';
 import {HPCostCalculatorV2} from '../calculators/hpcost-calculator2.js';
+import {TARGETTING_TABLE} from '../../config/targetting-tables.js';
 
 declare global {
   type ItemSub<X extends PersonaItem['system']['type']> = Subtype<PersonaItem, X>;
@@ -1713,75 +1714,21 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.restoresHP();
   }
 
-  requiresManualTargets(this: UsableAndCard) {
+  requiresManualTargets(this: UsableAndCard) : boolean {
     if (this.isSkillCard()) {return false;}
     const targets = this.targets();
-    switch (targets) {
-      case "1-engaged":
-      case "1-nearby":
-      case "1-nearby-dead":
-        return true;
-      case "1-random-enemy":
-      case "each-attack-random-enemy":
-      case "self":
-      case "all-enemies":
-      case "all-allies":
-      case "all-dead-allies":
-      case "all-others":
-      case "everyone":
-      case "everyone-even-dead":
-        return false;
-      default:
-        targets satisfies never;
-        return false;
-    }
+    return TARGETTING_TABLE[targets].requiresManualTargets;
   }
 
-  isSingleTarget(this: UsableAndCard) {
+  isSingleTarget(this: UsableAndCard) : boolean {
     if (this.isSkillCard()) {return true;}
     const targets = this.targets();
-    switch (targets) {
-      case "1-engaged":
-      case "1-nearby":
-      case "1-nearby-dead":
-      case "1-random-enemy":
-      case "self":
-        return true;
-      case "each-attack-random-enemy":
-      case "all-enemies":
-      case "all-allies":
-      case "all-dead-allies":
-      case "all-others":
-      case "everyone":
-      case "everyone-even-dead":
-        return false;
-      default:
-        targets satisfies never;
-        return false;
-    }
+    return TARGETTING_TABLE[targets].singleTarget;
   }
 
   canBeUsedOnAllies(this: Usable) : boolean {
     const targets = this.targets();
-    switch (targets) {
-      case "1-nearby-dead":
-      case "1-random-enemy":
-      case "each-attack-random-enemy":
-      case "all-enemies":
-      case "all-others":
-      case "everyone":
-      case "everyone-even-dead":
-        return false;
-      case "1-engaged":
-      case "1-nearby":
-      case "self":
-      case "all-allies":
-      case "all-dead-allies":
-        return true;
-      default:
-        targets satisfies never;
-        return false;
-    }
+    return TARGETTING_TABLE[targets].canBeUsedOnAllies;
   }
 
   isTeamwork(this: UsableAndCard): boolean {
@@ -2449,51 +2396,13 @@ isStatusEffect(this: UsableAndCard) : boolean {
 isMultiTarget(this: UsableAndCard) : boolean {
   if (this.system.type == 'skillCard') {return false;}
   const targets = this.targets();
-  switch (targets) {
-    case '1-nearby-dead':
-    case '1-nearby':
-    case '1-engaged':
-    case '1-random-enemy':
-    case 'self':
-      return false;
-    case 'each-attack-random-enemy':
-    case 'all-enemies':
-    case 'all-allies':
-    case 'all-dead-allies':
-    case 'all-others':
-    case 'everyone':
-    case 'everyone-even-dead':
-      return true;
-    default:
-      targets satisfies never;
-      PersonaError.softFail(`Unknown target type: ${targets as string}`);
-      return false;
-  }
+  return !TARGETTING_TABLE[targets].singleTarget;
 }
 
 isAoE(this: UsableAndCard) : boolean {
   if (this.system.type == 'skillCard') {return false;}
   const targets = this.targets();
-  switch (targets) {
-    case '1-nearby-dead':
-    case '1-nearby':
-    case '1-engaged':
-    case 'self':
-    case '1-random-enemy':
-    case 'each-attack-random-enemy':
-      return false;
-    case 'all-enemies':
-    case 'all-allies':
-    case 'all-dead-allies':
-    case 'all-others':
-    case 'everyone':
-    case 'everyone-even-dead':
-      return true;
-    default:
-      targets satisfies never;
-      PersonaError.softFail(`Unknown target type: ${targets as string}`);
-      return false;
-  }
+  return TARGETTING_TABLE[targets].AoE;
 }
 
 /** used for determining shadows usage limits
@@ -2525,28 +2434,7 @@ async setPowerCost(this: Power, required: number, cost: number) {
 requiresTargetSelection(this: UsableAndCard) : boolean {
   if (this.isSkillCard()) {return false;}
   const targets = this.targets();
-  switch (targets) {
-    case '1-engaged':
-    case '1-nearby':
-      return true;
-    case "each-attack-random-enemy":
-    case '1-random-enemy':
-      return false;
-    case '1-nearby-dead':
-      return true;
-    case 'self':
-      return false;
-    case 'all-enemies':
-    case 'all-allies':
-    case 'all-dead-allies':
-    case 'all-others':
-    case 'everyone':
-    case 'everyone-even-dead':
-      return false;
-    default:
-      targets satisfies never;
-      return false;
-  }
+  return TARGETTING_TABLE[targets].requiresManualTargets;
 }
 
 isInstantDeathAttack(this: Usable) : boolean {
@@ -2558,7 +2446,6 @@ canDealDamage(this: Usable) :  boolean {
   return this.getOnUseEffects(null)
     .some( eff => eff.consequences
       .some( cons => cons.canDealDamage())
-      // .some( cons => cons.cons.type == "combat-effect" && cons.cons.combatEffect == "damage" || cons.cons.type.includes("dmg"))
     );
 }
 

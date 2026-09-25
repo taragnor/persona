@@ -11,16 +11,15 @@ import {PersonaActor} from "../actor/persona-actor.js";
 
 export class CombatHooks {
 
-	static init() {
-
-		Hooks.on("preUpdateCombat" , async (combat: PersonaCombat, _changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
-			const prevActor = combat?.combatant?.actor;
-			if (prevActor && (diffObject?.direction ?? 0) > 0) {
-				if (combat.combatant) {
-					await combat.endTurn(combat.combatant);
-				}
-			}
-		});
+  static init() {
+    Hooks.on("preUpdateCombat" , async (combat: PersonaCombat, _changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
+      const prevActor = combat?.combatant?.actor;
+      if (prevActor && (diffObject?.direction ?? 0) > 0) {
+        if (combat.combatant) {
+          await combat.endTurn(combat.combatant);
+        }
+      }
+    });
 
     Hooks.on("updateCombat" , async (combat: PersonaCombat, changes: Record<string, unknown>, diffObject: {direction?: number}) =>  {
       if (
@@ -61,21 +60,21 @@ export class CombatHooks {
       }
     });
 
-		Hooks.on("updateCombat", async (combat: PersonaCombat, diff) => {
-			await combat.openers.onUpdateCombat(diff as FlagChangeDiffObject );
-		});
+    Hooks.on("updateCombat", async (combat: PersonaCombat, diff) => {
+      await combat.openers.onUpdateCombat(diff as FlagChangeDiffObject );
+    });
 
-		Hooks.on("combatStart", async (combat: PersonaCombat) => {
-			const x = combat.turns[0];
-			if (x.actor) {
-				if (combat.isSocial) {
-					await PersonaSocial.startSocialTurn(x.actor as PC);
-				} else {
-					await combat.runAllCombatantStartCombatTriggers();
-					await combat.startCombatantTurn(x);
-				}
-			}
-		});
+    Hooks.on("combatStart", async (combat: PersonaCombat) => {
+      const x = combat.turns[0];
+      if (x.actor) {
+        if (combat.isSocial) {
+          await PersonaSocial.startSocialTurn(x.actor as PC);
+        } else {
+          await combat.runAllCombatantStartCombatTriggers();
+          await combat.startCombatantTurn(x);
+        }
+      }
+    });
 
     Hooks.on("createCombatant", async (combatant: Combatant<ValidAttackers>) => {
       if (!game.user.isGM) {return;}
@@ -84,20 +83,20 @@ export class CombatHooks {
       await (combatant.combat as PersonaCombat).runCombatantStartCombatTriggers(combatant);
     });
 
-		Hooks.on("personaCalendarAdvance", () => {
-			ui.combat.render(false);
-		});
+    Hooks.on("personaCalendarAdvance", () => {
+      ui.combat.render(false);
+    });
 
-		Hooks.on("renderCombatTracker", (_item: CombatTracker, elem: JQuery<HTMLElement> | HTMLElement, _options: RenderCombatTabOptions) => {
-			const combat = PersonaCombat.combat;
-			if (!combat) {return;}
-			const element = $(elem);
-			if (combat.isSocial) {
-				PersonaSocial.displaySocialPanel(element);
-			} else {
-				combat.displayCombatHeader(element);
-			}
-		});
+    Hooks.on("renderCombatTracker", (_item: CombatTracker, elem: JQuery<HTMLElement> | HTMLElement, _options: RenderCombatTabOptions) => {
+      const combat = PersonaCombat.combat;
+      if (!combat) {return;}
+      const element = $(elem);
+      if (combat.isSocial) {
+        PersonaSocial.displaySocialPanel(element);
+      } else {
+        combat.displayCombatHeader(element);
+      }
+    });
 
     Hooks.on("onAddStatus", async function (token: PToken, status: StatusEffect)  {
       if (!game.user.isGM) {
@@ -129,7 +128,7 @@ export class CombatHooks {
           }
           break;
         default:
-        }
+      }
     });
 
 
@@ -150,9 +149,9 @@ export class CombatHooks {
       }
     });
 
-		Hooks.on("renderChatMessageHTML", (_msg, elem) => {
-			$(elem).find('.outer-roll-block').on('click', (ev) => void PersonaCombat._openRollBlock(ev));
-		});
+    Hooks.on("renderChatMessageHTML", (_msg, elem) => {
+      $(elem).find('.outer-roll-block').on('click', (ev) => void PersonaCombat._openRollBlock(ev));
+    });
 
     Hooks.on("deleteToken", async (tok: TokenDocument<PersonaActor>) => {
       tok.actor?.clearCache();
@@ -196,7 +195,7 @@ export class CombatHooks {
       setTimeout( () => ui.combat?.popout?.close(), 250);
     });
 
-	}
+  }
 
 } //end of class
 

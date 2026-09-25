@@ -44,6 +44,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   CACHE_TIME = 5000 as const;
 
+
   private cache2 = {
     talents: new TimedCache(() => this._talents(), this.CACHE_TIME),
     auras: new TimedCache( ()=> this._aurasInRange(), this.CACHE_TIME),
@@ -52,6 +53,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   };
 
   static BASE_PC_SIDEBOARD = 1 as const;
+  static BASE_SHADOW_ENERGY_GAIN = 3 as const;
 
   private basicCaches = {
     mhp: new TimedCache(() => this._mhp(), 3000),

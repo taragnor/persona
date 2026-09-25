@@ -3747,7 +3747,6 @@ async onKO() : Promise<void> {
 }
 
 onRevive() : Promise<void> {
-  // console.debug("Calling onRevive");
   return Promise.resolve();
 }
 
@@ -3767,30 +3766,24 @@ async deleteCreatureTag(index: number) : Promise<void> {
 
 async addCreatureTag(tag ?: Tag) : Promise<void> {
   const tags = this.system.creatureTags;
-  if (tag && tag instanceof PersonaItem) {
-    tags.push(tag.id);
-  } else {
-    tags.push("neko");
-  }
+  if (!tag) {return;}
+  tags.push(tag && tag instanceof PersonaItem ? tag.id : "neko");
   await this.update( {"system.creatureTags": tags});
 }
 
 async onAddToCombat() {
-  if (!game.user.isGM) {return;}
-  const shadow = this.isShadow() ? this : null;
-  if (!shadow) {return;}
-  const energy = shadow.startingEnergy();
-  await shadow.setEnergy(energy);
+  if (!game.user.isGM || !this.isShadow()) {return;}
+  await this.setEnergy(this.startingEnergy());
 }
 
 startingEnergy(this: Shadow) : number {
   const sit : Situation = {
     user: this.accessor,
   };
-  const bonusEnergy = this.persona().getBonuses("starting-energy").total(sit);
-  // const inc = this.system.combat.classData.incremental.mp;
-  const baseStartingEnergy = 3;
-  return baseStartingEnergy + bonusEnergy;
+  const bonusEnergy = this.persona()
+    .getBonuses("starting-energy")
+    .total(sit);
+  return Persona.BASE_SHADOW_ENERGY_GAIN + bonusEnergy;
 }
 
 /** rate that shadow is encountered in the a scene
