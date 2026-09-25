@@ -426,7 +426,8 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
       const region = CombatScene.instance && game.scenes.active == CombatScene.instance.scene ? CombatScene.instance.region : Metaverse.getRegion();
       if (!region)  {return false;}
       this.consecutiveCombat += 1;
-      const check = await region.presenceCheck('secondary', -this.consecutiveCombat);
+      if (this.consecutiveCombat >= 2) {return false;}
+      const check = await region.presenceCheck('secondary', - this.consecutiveCombat);
       if (!check) {
         this.consecutiveCombat = 0;
         return false;

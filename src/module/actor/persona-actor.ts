@@ -3273,7 +3273,6 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
     const damage = burnStatus.potency;
     await this.modifyHP(-damage);
   }
-  // const bonusEnergy = 3 + this.persona().getBonuses("energy-per-turn").total(situation);
   if (this.isShadow()) {
     await this.alterEnergy(this.shadowEnergyGain);
   }
@@ -3786,8 +3785,7 @@ startingEnergy(this: Shadow) : number {
   return Persona.BASE_SHADOW_ENERGY_GAIN + bonusEnergy;
 }
 
-/** rate that shadow is encountered in the a scene
- */
+/** rate that shadow is encountered in the a scene */
 encounterWeight(this: Shadow, scene: PersonaScene = game.scenes.current as PersonaScene) : number {
   if (this.tarot == undefined) {return 0;}
   const weightMultList = this.persona()

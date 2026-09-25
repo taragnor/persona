@@ -390,7 +390,7 @@ export class PersonaRegion extends RegionDocument {
   async presenceCheck(battleType: PresenceRollData["encounterType"], modifier = 0) : Promise<boolean> {
     const presence = await RandomEncounter.presenceCheck(battleType, this, undefined, modifier);
     if (!presence) {return false;}
-    const shadowTypes =this.encounterList().map(x=> x.system.creatureType);
+    const shadowTypes = this.encounterList().map(x=> x.system.creatureType);
     const shadowType = randomSelect(removeDuplicates(shadowTypes));
     const situation : Situation = {
       trigger: "on-presence-check",
