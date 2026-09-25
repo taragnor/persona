@@ -238,6 +238,7 @@ private static _powerStuffBase: Record<string, unknown>;
     const SHADOW_SUMMONS = Object.fromEntries(
       PersonaDB.shadows()
       .filter( sh => !sh.isBossOrMiniBossType() && !sh.hasRole(['solo', 'treasure-shadow']) && !sh.isCompendiumEntry && !sh.isPersona())
+      .sort( (a,b) => a.name.localeCompare(b.name))
       .map (sh => [sh.id, sh.name])
     );
 
