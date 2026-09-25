@@ -258,9 +258,7 @@ export class CombatScene {
       x: Math.floor( (cr.x + cr.width)  / 2 / gridsize) * gridsize,
       y: Math.floor( (cr.y + cr.height) / 2 / gridsize) * gridsize,
     };
-    if (treasure.items.length == 0) {
-      return;
-    }
+    if (treasure.items.length == 0) { return; }
     const pile = await game.itempiles.API.createItemPile({position:center});
     const pileActor = await foundry.utils.fromUuid(pile.tokenUuid) as TokenDocument<PersonaActor> ;
     if (!pileActor || !(pileActor instanceof TokenDocument) || !pileActor.actor) {
@@ -268,10 +266,6 @@ export class CombatScene {
       return;
     }
     for (const item of treasure.items) {
-      // const itemFormatted : EnchantedTreasureFormat = {
-      //   item: item.accessor,
-      //   enchantments: [],
-      // };
       await pileActor.actor.addTreasureItem(item);
     }
   }
