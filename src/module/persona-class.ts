@@ -189,7 +189,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
         && !power.isFollowUpMove()
         && !power.isMinorActionItem()
         && !power.isTheurgy()
-    );
+      );
   }
 
   get displayedMainSkills() : Power [] {

@@ -29,27 +29,25 @@ export class PersonaTargetting {
     if (attacker.id == target.id) {return true;}
     if (attackerActor.hasStatus('challenged') && !engagingTarget) {
       return false;
-      // throw new TargettingError("Can't target non-engaged when challenged");
     }
     if (targetActor.hasStatus('challenged') && !engagingTarget) {
       return false;
-      // throw new TargettingError("Can't target a challenged target you're not engaged with");
     }
     return true;
   }
 
-	static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[]): PToken[] {
+  static getTargets(attacker: PToken, power: UsableAndCard, altTargets?: PToken[]): PToken[] {
     const baseTargets = altTargets != undefined ? altTargets : this.getDefaultPowerTargets(attacker.actor, power);
     const filteredTargets = baseTargets
-    .filter( target => {
-			const situation : Situation = {
-				user: attacker.actor.accessor,
-				attacker: attacker.actor.accessor,
-				target: target.actor.accessor,
-				usedPower: power.accessor,
-			};
-      return power.targeting().targetMeetsTargettingConditions(attacker.actor, target.actor, situation);
-    });
+      .filter( target => {
+        const situation : Situation = {
+          user: attacker.actor.accessor,
+          attacker: attacker.actor.accessor,
+          target: target.actor.accessor,
+          usedPower: power.accessor,
+        };
+        return power.targeting().targetMeetsTargettingConditions(attacker.actor, target.actor, situation);
+      });
 
     if (filteredTargets.length == 0) {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
@@ -68,7 +66,7 @@ export class PersonaTargetting {
       throw new TargettingError("No valid targets", reasonsObj);
     }
     const challengeFilter = filteredTargets
-    .filter( target => this.challengeFilter(attacker, target));
+      .filter( target => this.challengeFilter(attacker, target));
     if (challengeFilter.length == 0) {
       throw new TargettingError("No valid targets: Challenge Filter");
     }
@@ -181,39 +179,39 @@ export class PersonaTargetting {
         return PersonaDB.activePCParty()
         .map( member => this.getToken(member));
       }
-			case 'self': {
-				return [this.getToken(attacker)];
-			}
-			case 'all-others': {
-				const combat= PersonaCombat.ensureCombatExists();
+      case 'self': {
+        return [this.getToken(attacker)];
+      }
+      case 'all-others': {
+        const combat= PersonaCombat.ensureCombatExists();
         const attackerToken = combat.getCombatantsByActor(attacker).at(0)?.token;
-				return combat.validCombatants(attackerToken as PToken)
-				.filter( x=> x.actor != attacker
-					&& x?.actor?.isAlive())
-				.map( x=> x.token)
-				.filter(target => power.targeting().targetMeetsTargettingConditions(attacker, target.actor));
-				;
-			}
-			case 'everyone': {
-				const combat = PersonaCombat.ensureCombatExists();
+        return combat.validCombatants(attackerToken as PToken)
+        .filter( x=> x.actor != attacker
+          && x?.actor?.isAlive())
+        .map( x=> x.token)
+        .filter(target => power.targeting().targetMeetsTargettingConditions(attacker, target.actor));
+        ;
+      }
+      case 'everyone': {
+        const combat = PersonaCombat.ensureCombatExists();
         const attackerToken = combat.getCombatantsByActor(attacker).at(0)?.token;
-				return combat.validCombatants(attackerToken as PToken)
-				.filter( x=> x?.actor?.isAlive())
-				.map( x=> x.token)
-				.filter(target => power.targeting().targetMeetsTargettingConditions(attacker, target.actor));
-			}
-			case 'everyone-even-dead': {
-				const combat= PersonaCombat.ensureCombatExists();
+        return combat.validCombatants(attackerToken as PToken)
+        .filter( x=> x?.actor?.isAlive())
+        .map( x=> x.token)
+        .filter(target => power.targeting().targetMeetsTargettingConditions(attacker, target.actor));
+      }
+      case 'everyone-even-dead': {
+        const combat= PersonaCombat.ensureCombatExists();
         const attackerToken = combat.getCombatantsByActor(attacker).at(0)?.token;
-				return combat.validCombatants(attackerToken as PToken)
-				.filter( x=> x.actor && !x.actor.isFullyFaded())
-				.map( x=> x.token)
-				.filter(target => power.targeting().targetMeetsTargettingConditions(attacker, target.actor));
-			}
-			default:
-				targets satisfies never;
-				throw new TargettingError(`targets ${targets as string} Not yet implemented`);
-		}
+        return combat.validCombatants(attackerToken as PToken)
+        .filter( x=> x.actor && !x.actor.isFullyFaded())
+        .map( x=> x.token)
+        .filter(target => power.targeting().targetMeetsTargettingConditions(attacker, target.actor));
+      }
+      default:
+        targets satisfies never;
+        throw new TargettingError(`targets ${targets as string} Not yet implemented`);
+    }
 
   }
 
@@ -234,28 +232,28 @@ export class PersonaTargetting {
   }
 
 
-	static checkTargets(min: number, max: number, targets: PToken[], aliveTargets: boolean) {
-		if (!targets.every(x=> PersonaCombat.canBeTargetted(x))) {
-			const error = 'Selection includes an untargettable target';
-			throw new TargettingError(error);
-		}
-		const selected = targets
-			.filter(x=> aliveTargets ? x.actor.isAlive() : (!x.actor.isAlive() && !x.actor.isFullyFaded()));
-		if (selected.length == 0)  {
-			const error = 'Requires Target to be selected';
-			throw new TargettingError(error);
-		}
-		if (selected.length < min) {
-			const error = 'Too few targets selected';
-			ui.notifications.warn(error);
-			throw new TargettingError(error);
-		}
-		if (selected.length > max) {
-			const error = 'Too many targets selected';
-			ui.notifications.warn(error);
-			throw new TargettingError(error);
-		}
-	}
+  static checkTargets(min: number, max: number, targets: PToken[], aliveTargets: boolean) {
+    if (!targets.every(x=> PersonaCombat.canBeTargetted(x))) {
+      const error = 'Selection includes an untargettable target';
+      throw new TargettingError(error);
+    }
+    const selected = targets
+      .filter(x=> aliveTargets ? x.actor.isAlive() : (!x.actor.isAlive() && !x.actor.isFullyFaded()));
+    if (selected.length == 0)  {
+      const error = 'Requires Target to be selected';
+      throw new TargettingError(error);
+    }
+    if (selected.length < min) {
+      const error = 'Too few targets selected';
+      ui.notifications.warn(error);
+      throw new TargettingError(error);
+    }
+    if (selected.length > max) {
+      const error = 'Too many targets selected';
+      ui.notifications.warn(error);
+      throw new TargettingError(error);
+    }
+  }
 
   static getValidTargetsFor(usable: UsableAndCard, user: PersonaCombatant,  possibleTargets?: PersonaCombatant[], situation ?: Situation) : PersonaCombatant[] {
     const userActor = user.token.actor;
@@ -271,7 +269,7 @@ export class PersonaTargetting {
         const targetActor = comb.token.actor;
         if (!targetActor) {return false;}
         if (!PersonaCombat.isPersonaCombatant(comb)) {return false;}
-          return this.isValidTargetFor( usable, user, comb, situation);
+        return this.isValidTargetFor( usable, user, comb, situation);
       });
   }
 
@@ -359,11 +357,11 @@ export class TargettingError extends Error {
 
   reasons: Record<string,string[]>;
 
-	constructor (errormsg: string, reasons: Record<string,string[]> = {}) {
-		super(errormsg);
-		ui.notifications.warn(errormsg);
+  constructor (errormsg: string, reasons: Record<string,string[]> = {}) {
+    super(errormsg);
+    ui.notifications.warn(errormsg);
     this.reasons = reasons;
-	}
+  }
 
   reasonsStr() : string {
     return Object.entries(this.reasons)
