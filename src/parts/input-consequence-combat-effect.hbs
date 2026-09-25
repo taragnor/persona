@@ -97,3 +97,10 @@
 </select>
 {{/if}}
 
+{{#if (eq cons.combatEffect "summon")}}
+<select name="{{strcat namePrefix 'shadowId'}}">
+  {{selectOptions POWERSTUFF.SHADOW_SUMMONS localize=false selected=cons.shadowId}}
+</select>
+
+{{/if}}
+

@@ -4,6 +4,7 @@ import {PersonaActor} from "../actor/persona-actor.js";
 import {FusionAnimation} from "../animation/persona-merge.js";
 import {BonusCalculation, ModifierV2Target} from "../bonus-calc.js";
 import {ResolvedActorChange} from "../combat/finalized-combat-result.js";
+import {PersonaCombat} from "../combat/persona-combat.js";
 import {XPManager} from "../combat/xp-report.js";
 import {ConsequenceApplier} from "../conditionalEffects/consequence-applier.js";
 import {StepsClock} from "../exploration/steps-clock.js";
@@ -360,6 +361,16 @@ export class Tests {
 
   static testError(error: unknown, ...args : unknown[]) {
     PersonaError.softFail(error, ...args);
+  }
+
+  static async summonTest( shadowOrString: Shadow | string = "Pixie") {
+    const shadow = this.resolveShadow(shadowOrString);
+    const combat = PersonaCombat.combat;
+    if (!combat) {throw new Error("No combat");}
+    if (!shadow || !shadow.isShadow()) {
+      throw new Error("Shadow is invalid");
+    }
+    await combat.summon(shadow);
   }
 
   static async batteryOfTests() : Promise<boolean> {

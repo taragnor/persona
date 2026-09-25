@@ -239,12 +239,13 @@ export const COMBAT_EFFECTS_LIST = [
   "extraAttack",
   "extraTurn",
   "scan",
+  "summon",
   "auto-end-turn",
   "apply-recovery",
   "alter-theurgy",
   "set-cooldown",
   "add-power-tag-to-attack",
-  "escape-combat"
+  "escape-combat",
 ] as const;
 
 export type CombatEffect = typeof COMBAT_EFFECTS_LIST[number];

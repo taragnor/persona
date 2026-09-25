@@ -89,21 +89,21 @@ export class CombatScene {
     this.combatOver = false;
     this.voteToReturn = false;
 		await waitUntilTrue( () => game.scenes.current == scene && game.canvas.scene == scene && game.canvas.ready);
-		const tokens : Foundry.Token<PersonaActor>[] = await this.setupShadows();
+		const tokens : Foundry.Token<ValidAttackers>[] = await this.setupShadows();
     const playerTokens = await this.setupPCs();
 		tokens.push(...playerTokens);
 		await this.addTokensToCombat(tokens);
 	}
 
-  private async setupShadows() : Promise<Foundry.Token<PersonaActor>[]> {
+  private async setupShadows() : Promise<Foundry.Token<ValidAttackers>[]> {
 		const INITIAL_OFFSET = { x: 5, y: 5} as const;
 		const SPACING_BLOCKS = 3 as const;
 		const gridsize = this.scene.grid.size;
 		let x = INITIAL_OFFSET.x * gridsize;
 		const y = INITIAL_OFFSET.y * gridsize;
-		const tokens : Foundry.Token<PersonaActor>[] = [];
+		const tokens : Foundry.Token<Shadow>[] = [];
 		for (const shadow of this.encounter.enemies) {
-			const token = await CreateToken.create(shadow, {x,y}, this.scene);
+			const token = await CreateToken.create(shadow, {x,y}, this.scene) as Foundry.TokenDocument<Shadow>;
 			if (token) {
 				tokens.push(token.object!);
 			}
@@ -112,7 +112,7 @@ export class CombatScene {
     return tokens;
   }
 
-  private async setupPCs() : Promise<Foundry.Token<PersonaActor>[]> {
+  private async setupPCs() : Promise<Foundry.Token<PC | NPCAlly>[]> {
     this.clearUnusedPartyMembers();
 		const playerTokens = await this.getPlayerTokens();
 		const INITIAL_OFFSET = { x: 6, y: 12} as const;
@@ -128,17 +128,17 @@ export class CombatScene {
     return playerTokens;
   }
 
-  async getPlayerTokens() : Promise<Foundry.Token<PersonaActor>[]> {
+  async getPlayerTokens() : Promise<Foundry.Token<PCLike>[]> {
     const PCParty = PersonaDB.activePCParty();
     for (const pc of PCParty) {
       if (!this.scene.tokens.contents.some(tok => tok.actor == pc)) {
-        await CreateToken.create(pc, {x: 200, y: 200}, this.scene);
+        await CreateToken.create(pc, {x: 200, y: 200}, this.scene) as Foundry.TokenDocument<PCLike>;
       }
     }
     const playerTokens = PCParty
     .map( actor => this.scene.tokens.find( tok => tok.actor == actor))
     .filter ( t=> t != undefined)
-    .map( t=> t._object);
+    .map( t=> t._object as Foundry.Token<PCLike>);
     return playerTokens;
   }
 
@@ -215,26 +215,12 @@ export class CombatScene {
     }
   }
 
-	async addTokensToCombat(tokens: Foundry.Token<PersonaActor>[], allowDuplicates = false) {
+	async addTokensToCombat(tokens: Foundry.Token<ValidAttackers>[], allowDuplicates = false) {
 		const combat = await this.getOrCreateCombat();
 		if (!allowDuplicates) {
 			tokens = tokens.filter (t => !combat.combatants.contents.some( c=> c.token == t.document));
 		}
-		const createData = tokens.map(t => {
-			return {
-				tokenId: t?.id,
-				sceneId: t?.scene?.id,
-				actorId: t?.document?.actorId,
-				hidden: t?.document?.hidden
-			};
-		});
-		const sanitizedData = createData.filter( x=>
-			x.tokenId && x.sceneId && x.actorId);
-		if (sanitizedData.length < createData.length) {
-			Debug(tokens);
-			Debug(createData);
-		}
-		return combat.createEmbeddedDocuments("Combatant", sanitizedData);
+    return await combat.addTokensToCombat(tokens);
 	}
 
   async getOrCreateCombat(): Promise<PersonaCombat> {

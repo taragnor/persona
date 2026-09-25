@@ -41,6 +41,7 @@ import {DebugTools} from '../utility/debug.js';
 import {ConditionalEffectC} from '../conditionalEffects/conditional-effect-class.js';
 import {XPManager} from './xp-report.js';
 import {CombatPanel} from '../panels/combat-panel.js';
+import {CreateToken} from '../utility/createToken.js';
 
 declare global {
   interface SocketMessage {
@@ -62,6 +63,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
   combatEngine: CombatEngine;
   openers: OpenerManager;
   followUp: FollowUpManager;
+  summonNumber= 0;
 
   constructor (...args: unknown[]) {
     super(...args);
@@ -1970,6 +1972,45 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
     });
     //BUG does not work well for flurry powers yet
     return PCResult;
+  }
+
+  async addTokensToCombat(tokens: Foundry.Token<ValidAttackers>[]) {
+		const createData = tokens.map(t => {
+			return {
+				tokenId: t?.id,
+				sceneId: t?.scene?.id,
+				actorId: t?.document?.actorId,
+				hidden: t?.document?.hidden
+			};
+		});
+		const sanitizedData = createData.filter( x=>
+			x.tokenId && x.sceneId && x.actorId);
+		if (sanitizedData.length < createData.length) {
+			Debug(tokens);
+			Debug(createData);
+		}
+		return this.createEmbeddedDocuments("Combatant", sanitizedData);
+  }
+
+  async summon(shadow: Shadow) :Promise<void> {
+    const scene = this.combatants.find( x=> x.token != undefined)?.token?.parent ?? null;
+    if (!scene || scene != CombatScene.scene) {
+      PersonaError.softFail("Can't find scene to summon token to");
+      return;
+    }
+		const INITIAL_OFFSET = { x: 5, y: 5} as const;
+		const gridsize = scene.grid.size;
+		let x = INITIAL_OFFSET.x * gridsize;
+		const y = INITIAL_OFFSET.y * gridsize;
+    x += this.summonNumber++ * gridsize;
+    const token = await CreateToken.create(shadow, {x, y}, scene);
+    if (token && token.object) {
+    await this.addTokensToCombat([token.object]);
+    }
+    if (!this.started) {return;}
+    const combatant = this.combatants.find(c=> c?.token == token)!;
+    const current = this.combatant?.initiative ?? 0;
+    await combatant.update({initiative : current - .001});
   }
 
   async removeFromCombat(comb: U<PersonaCombatant | ValidAttackers>) : Promise<void> {

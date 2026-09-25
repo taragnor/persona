@@ -820,6 +820,10 @@ export class ConditionalEffectPrinter {
         }
         case "escape-combat":
           return `Escape Combat`;
+        case "summon": {
+          const shadow = PersonaDB.getActorById(cons.shadowId);
+          return `Summon ${shadow?.name ?? "TARGET NOT FOUND"}`;
+        }
         default:
           cons satisfies never;
           return "ERROR (combat-effect)";

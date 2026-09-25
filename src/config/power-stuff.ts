@@ -223,22 +223,28 @@ private static _powerStuffBase: Record<string, unknown>;
 
 		const UNIFIED_EQUIPMENT_TAGS = PersonaDB.createMergedTagLocList(["equipment", "enchantment"], EQUIPMENT_TAGS);
 
-		const UNIFIED_ROLL_AND_CARD_TAGS  = PersonaDB.createMergedTagLocList(["roll", "card"], ROLL_TAGS_AND_CARD_TAGS);
-		 const STATUS_TAGS = { "" : "-",
-				...PersonaDB.tagsOfCategoryLoc("status")
-	};
-		 const TAGS = {
-				"": "-",
-				...PersonaDB.createMergedTagLocList( ["power", "equipment"], {...POWER_TAGS, ...EQUIPMENT_TAGS})
-		 };
+    const UNIFIED_ROLL_AND_CARD_TAGS  = PersonaDB.createMergedTagLocList(["roll", "card"], ROLL_TAGS_AND_CARD_TAGS);
+    const STATUS_TAGS = { "" : "-",
+      ...PersonaDB.tagsOfCategoryLoc("status")
+    };
+    const TAGS = {
+      "": "-",
+      ...PersonaDB.createMergedTagLocList( ["power", "equipment"], {...POWER_TAGS, ...EQUIPMENT_TAGS})
+    };
     const POWER_TAGS_UNIFIED = {
-				...PersonaDB.createMergedTagLocList( ["power"], {...POWER_TAGS})
+      ...PersonaDB.createMergedTagLocList( ["power"], {...POWER_TAGS})
     };
     const ROOMMODS = Object.fromEntries(PersonaDB.getSceneAndRoomModifiers().map( mod => [mod.id, mod.name]));
+    const SHADOW_SUMMONS = Object.fromEntries(
+      PersonaDB.shadows()
+      .filter( sh => !sh.isBossOrMiniBossType() && !sh.hasRole(['solo', 'treasure-shadow']) && !sh.isCompendiumEntry && !sh.isPersona())
+      .map (sh => [sh.id, sh.name])
+    );
 
     const data = {
       ...this.powerStuffBase(),
       SOCIAL_LINKS,
+      SHADOW_SUMMONS,
       TAGS,
       POWER_TAGS: POWER_TAGS_UNIFIED,
       AE_TIMEOUT_TARGETS,

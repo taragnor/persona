@@ -32,7 +32,7 @@ import {ModifierV2Target} from "../module/bonus-calc.js";
 
 
 export type OtherEffect = {__localEffect?: undefined; } &
-  ProcessedConsequenceToOtherEffect< ExpendItemConsequence | SetFlagOtherEffect | StatusResistanceAlterConsequence | InspirationChangeConsequence | DisplayMessageConsequence | UsePowerConsequence | DungeonActionConsequence | AlterMPConsequence |  OtherConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence| GainLevelConsequence |  InventoryActionConsequence | TriggerEventModifierConsequence | SFXConsequence>;
+  ProcessedConsequenceToOtherEffect< ExpendItemConsequence | SetFlagOtherEffect | StatusResistanceAlterConsequence | InspirationChangeConsequence | DisplayMessageConsequence | UsePowerConsequence | DungeonActionConsequence | AlterMPConsequence |  OtherConsequence | CombatEffectConsequence | FatigueConsequence | AlterVariableConsequence | PermabuffConsequence| GainLevelConsequence |  InventoryActionConsequence | TriggerEventModifierConsequence | SFXConsequence >;
 
 type SetFlagOtherEffect = SetFlagConsequence & {
   embeddedEffects: ConditionalEffect[],
@@ -350,6 +350,9 @@ type CombatEffectConsequencesList =
 		amount: number,
 		downgrade: boolean,
 	} | {
+		combatEffect: "summon",
+    shadowId: Shadow["id"],
+  } | {
 		combatEffect: "auto-end-turn",
 	} | ( {
 		combatEffect : "extraAttack",

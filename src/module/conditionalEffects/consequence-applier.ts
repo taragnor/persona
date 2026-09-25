@@ -749,6 +749,14 @@ export class ConsequenceApplier {
         await combat.removeFromCombat(actor);
         break;
       }
+      case "summon": {
+        const combat = PersonaCombat.combat;
+        if (!combat || combat.isSocial) {break;}
+        const shadow = PersonaDB.getActorById(effect.shadowId);
+        if (!shadow || !shadow.isShadow()) {break;}
+        await combat.summon(shadow);
+        break;
+      }
       default:
         effect satisfies never;
         break;

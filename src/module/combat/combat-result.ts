@@ -266,6 +266,9 @@ export class CombatResult  {
       case "escape-combat":
         effect.otherEffects.push(cons);
         break;
+      case "summon":
+        effect.otherEffects.push(cons);
+        break;
       default:
         cons satisfies never;
     }
