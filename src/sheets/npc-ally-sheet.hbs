@@ -41,16 +41,14 @@
         </div>
         {{> "systems/persona/parts/creatureTags.hbs" actor=actor POWERSTUFF=POWERSTUFF allowEdit=true}}
       </div>
-      <div>
-        {{#if (not actor.system.combat.personaImg)}}
+      <div class="persona-img">
+        {{#if (isGM)}}
         <file-picker type="image" value="{{actor.system.combat.personaImg}}" name="system.combat.personaImg" >
         </file-picker>
-          {{/if}}
-          {{#if (isGM)}}
-          <file-picker type="image" value="{{actor.system.combat.personaImg}}" name="system.combat.personaImg" >
-          </file-picker>
-            {{/if}}
-            <img class="profile-img persona-img" src="{{actor.system.combat.personaImg}}">
+         {{/if}}
+        {{#if actor.system.combat.personaImg}}
+        <img class="profile-img persona-img" src="{{actor.system.combat.personaImg}}">
+        {{/if}}
       </div>
     </div>
   </header>

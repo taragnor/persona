@@ -695,9 +695,6 @@ export class PersonaHandleBarsHelpers {
       if (power.isMagicSkill()) {
         const mpCost = power.mpCost(null);
         ret+= `${CalculationV2.printEvaluatedHTML(mpCost)} MP`;
-        // const altCost = power.oldBaseMPCost;
-        // return `${mpCost.total}${customCost} MP`;
-        // return `${mpCost}${customCost} MP / ${altCost}`;
       }
       return new Handlebars.SafeString(ret);
     },
