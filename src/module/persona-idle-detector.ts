@@ -96,6 +96,7 @@ class GMIdleDetector {
     return Date.now() - entry.lastActive > GMIdleDetector.IDLE_TIMER;
   }
 
+  //doesn't work yet
   isLinkDead(user:FoundryUser) : boolean {
     if (!this.isIdle(user) ) {return false;}
     const entry = this.users.get(user.id)!;

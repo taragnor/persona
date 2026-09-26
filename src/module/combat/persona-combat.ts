@@ -505,7 +505,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
     const idleDetector = PersonaIdleDetector.gmDetector;
     if (!idleDetector) {return;}
     if (idleDetector.isIdle(controller)) {
-      this.hourglass( true);
+      this.timer_userIdle(controller);
     }
     idleDetector.userWatch(
       controller,
@@ -523,17 +523,19 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
   }
 
   private timer_userIdle (controller: PersonaFoundryUser) {
-    const idleDetector = PersonaIdleDetector.gmDetector!;
+    // const idleDetector = PersonaIdleDetector.gmDetector!;
     if (controller.isAFK) {return;}
-    if (idleDetector.isLinkDead(controller)) {
-      void this.linkDeadMessage(controller);
-      return;
-    }
+    //this doens seem to work properly
+    // if (idleDetector.isLinkDead(controller)) {
+    //   void this.linkDeadMessage(controller);
+    //   return;
+    // }
     if (!this.hourglass_expire) {
       this.hourglass( true);
     }
   }
 
+  //temporarily unused since it doens't work
   private async linkDeadMessage(controller: PersonaFoundryUser) {
     const msg = `Not recieving any replies from ${controller.name}, they are possibly disconnected`;
     const messageData = {
@@ -550,8 +552,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
 
   onHourglassExpire() {
     if (game.user.isGM) {
-      ui.notifications.notify("Hourlgass Expired");
-      console.log("Hourglass expired");
+      ui.notifications.notify("Hourglass Expired");
     }
     this.hourglass_expire = true;
     if (!game.user.isGM) {return;}
