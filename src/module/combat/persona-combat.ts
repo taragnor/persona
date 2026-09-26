@@ -558,8 +558,9 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
   }
 
   ownerAwayCheckMsg(actor: ValidAttackers) : string {
-    if (!actor.hasPlayerOwner) {return "";}
-    if (!actor.ownersAreAFK()) {return "";}
+    if (!actor.hasPlayerOwner ||
+      !actor.ownersAreAFK()
+    ) {return "";}
     return `<span class="combat-away"> (Away)</span>`;
   }
 

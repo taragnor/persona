@@ -11,19 +11,6 @@ export class OpenerSaves {
   }
 
   public openerSaves(combatant: PersonaCombatant & {actor: ValidAttackers}, situation: SituationComponent.Roll) : OpenerOptionsGroups[] {
-    // const returns :OpenerOptionsGroups[]= [];
-    // returns.push(
-    //   this.fadingRoll(combatant, situation),
-    //   this.saveVsSleep(combatant),
-    //   this.saveVsDizzy(combatant, situation),
-    //   this.saveVsFear(combatant, situation),
-    //   // this.saveVsDespair(combatant, situation),
-    //   this.saveVsConfusion(combatant, situation),
-    //   this.saveVsCharm(combatant, situation),
-    //   this.rageOpener(combatant, situation),
-    //   this.disengageOpener(combatant, situation),
-    // );
-    // return returns;
     return [
       this.fadingRoll(combatant, situation),
       this.saveVsSleep(combatant, situation),
