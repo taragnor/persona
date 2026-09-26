@@ -3764,8 +3764,7 @@ async deleteCreatureTag(index: number) : Promise<void> {
 }
 
 async addCreatureTag(tag ?: Tag) : Promise<void> {
-  const tags = this.system.creatureTags;
-  if (!tag) {return;}
+  const tags = this.system.creatureTags.slice();
   tags.push(tag && tag instanceof PersonaItem ? tag.id : "neko");
   await this.update( {"system.creatureTags": tags});
 }
