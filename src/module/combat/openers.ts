@@ -56,7 +56,6 @@ export class OpenerManager {
     return game.messages.get(msgId);
   }
 
-
   async onEndCombat() {
     await PersonaError.asyncErrorWrapper(
       async () => await this.clearOpenerChoices(null)
@@ -267,7 +266,6 @@ export class OpenerManager {
 
   async cleanUpAfterOpener() {
     await this.panel.pop();
-    // await this.clearOpenerChoices();
   }
 
   async modifyOpenerMsg( opener: OpenerOption) {

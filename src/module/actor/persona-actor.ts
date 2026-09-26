@@ -3916,10 +3916,10 @@ get isTrueOwner() : boolean {
   }
 }
 
-get trueOwner() : U<FoundryUser> {
+get trueOwner() : U<PersonaFoundryUser> {
   if (!this.isPC()) {return undefined;}
   if (!this.system.trueOwner) {return undefined;}
-  return game.users.get(this.system.trueOwner);
+  return game.users.get(this.system.trueOwner) as PersonaFoundryUser;
 }
 
 get fusionCombinations() : FusionCombination[] {

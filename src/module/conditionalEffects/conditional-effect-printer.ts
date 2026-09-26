@@ -44,7 +44,6 @@ export class ConditionalEffectPrinter {
       cond = ConditionalEffectC.createPreconditionOnly(cond).conditions;
     }
     const conditions = cond.map( c=> (c as PreconditionC).cond );
-    // return ConditionalEffectManager.getConditionals(cond, null, null, null)
     return conditions
       .map( c=> this.printConditional(c))
       .join (", ");
@@ -104,7 +103,7 @@ export class ConditionalEffectPrinter {
     static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
       const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, CONDITION_TARGETS) : "";
       const target2 = ("conditionTarget2" in cond) ? this.translate(cond.conditionTarget2, CONDITION_TARGETS): "" ;
-      const not =  !cond.booleanState ? "not" : "";
+      const not = !cond.booleanState ? "not" : "";
       switch (cond.boolComparisonTarget) {
         case "engaged":
           return `${target1} is ${not} engaged with anyone`;
@@ -261,11 +260,10 @@ export class ConditionalEffectPrinter {
           return `${target1} knows Power ${pwr?.displayedName ?? "UNKNOWN POWER"}`;
         }
         case "has-class": {
-          const classes= multiCheckToArray(cond.classId);
+          const classes = multiCheckToArray(cond.classId);
           const CharClasses = classes
           .map( id => PersonaDB.getClassById(id)?.name ?? "Unknown class")
           .join(" ,");
-          ;
           return `${target1} has Class: ${CharClasses}`;
         }
         case "status-to-be-inflicted":

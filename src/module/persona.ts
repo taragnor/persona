@@ -48,7 +48,6 @@ import { PersonaSettings } from "../config/persona-settings.js";
 import { TarotSheet } from "./actor/sheets/tarot-sheet.js";
 import { SearchMenu } from "./exploration/searchMenu.js";
 import { PersonaSocialCardSheet } from "./item/sheets/social-card-sheet.js";
-import { Heartbeat } from "./utility/heartbeat.js";
 import {PersonaTagSheet} from "./item/sheets/tag-sheet.js";
 import {TagPrinter} from "./printers/tag-printer.js";
 import {EnhancedActorDirectory} from "./enhanced-directory/enhanced-directory.js";
@@ -64,6 +63,7 @@ import {TreasureList} from "./printers/treasure-list.js";
 import {PersonaTokenObject} from "./canvas/persona-token-object.js";
 import { PersonaFoundryUser } from "./persona-foundry-user.js";
 import {PersonaCardSheet} from "./item/sheets/skill-card-sheet.js";
+import {PersonaIdleDetector} from "./persona-idle-detector.js";
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -107,7 +107,10 @@ function registerSheetApplications() {
 	Items.registerSheet("persona", PersonaSocialCardSheet, {types: ["socialCard"], makeDefault: true});
 }
 
-Hooks.once("ready", () => {Darkness.init();});
+Hooks.once("ready", () => {
+  PersonaIdleDetector.start();
+  Darkness.init();
+});
 
 Hooks.once("init", function() {
 	console.log("*** PERSONA SYSTEM INIT START ***");
@@ -131,7 +134,7 @@ Hooks.once("init", function() {
 	PersonaSettings.registerSettings();
 	preloadHandlebarsTemplates();
 	// ErrorScanner.check();
-	Heartbeat.start();
+	// Heartbeat.start();
 	PowerPrinter.init();
 	TarotPrinter.init();
 	TagPrinter.init();
@@ -146,6 +149,7 @@ Hooks.once("init", function() {
   MathUtilityFunctions.init();
   TreasureList.init();
 });
+
 
 function registerHandlebarsHelpers() {
 	PersonaHandleBarsHelpers.init();

@@ -195,13 +195,19 @@ export class CombatHooks {
       setTimeout( () => ui.combat?.popout?.close(), 250);
     });
 
+    Hooks.on("hourglassExpire", (_hourglass: object) => {
+      PersonaCombat.combat?.onHourglassExpire();
+    });
+
   }
+
 
 } //end of class
 
 declare global {
   interface HOOKS {
     'onUsePower': (power: UsableAndCard, user: PToken, defender: PToken) => unknown;
+    'hourglassExpire' : (hourglass: unknown) => unknown;
   }
 }
 

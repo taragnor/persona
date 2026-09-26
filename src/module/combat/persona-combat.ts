@@ -42,6 +42,8 @@ import {ConditionalEffectC} from '../conditionalEffects/conditional-effect-class
 import {XPManager} from './xp-report.js';
 import {CombatPanel} from '../panels/combat-panel.js';
 import {CreateToken} from '../utility/createToken.js';
+import {PersonaFoundryUser} from '../persona-foundry-user.js';
+import {PersonaIdleDetector} from '../persona-idle-detector.js';
 
 declare global {
   interface SocketMessage {
@@ -64,6 +66,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
   openers: OpenerManager;
   followUp: FollowUpManager;
   summonNumber= 0;
+  hourglass_expire = false;
 
   constructor (...args: unknown[]) {
     super(...args);
@@ -366,6 +369,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
     if (dialog == false) {return false;}
     const nextCombat = await this.checkForConsecutiveCombat();
     if (!nextCombat) {
+      this.turnTimer_off();
       await this.delete();
       return true;
     }
@@ -494,6 +498,87 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
     }
   }
 
+  private turnTimer(combatant: Combatant<PersonaActor>) {
+    if (this.isSocial) {return;}
+    const controller = this.getControllerUser(combatant);
+    if (controller == game.user || !controller) {return;}
+    const idleDetector = PersonaIdleDetector.gmDetector;
+    if (!idleDetector) {return;}
+    if (idleDetector.isIdle(controller)) {
+      this.hourglass( true);
+    }
+    idleDetector.userWatch(
+      controller,
+      () => this.timer_userIdle(controller),
+      () => this.timer_userActive(controller)
+    );
+  }
+
+  private turnTimer_off() {
+    const idleDetector = PersonaIdleDetector.gmDetector;
+    if (!idleDetector) {return;}
+    this.hourglass(false);
+    idleDetector.clearWatch();
+    this.hourglass_expire = false;
+  }
+
+  private timer_userIdle (_controller: FoundryUser) {
+    if (!this.hourglass_expire) {
+      this.hourglass( true);
+    }
+  }
+
+  private timer_userActive (_controller: FoundryUser) {
+    this.hourglass(false);
+  }
+
+  onHourglassExpire() {
+    if (game.user.isGM) {
+      ui.notifications.notify("Hourlgass Expired");
+      console.log("Hourglass expired");
+    }
+    this.hourglass_expire = true;
+    if (!game.user.isGM) {return;}
+    const idleDetector = PersonaIdleDetector.gmDetector;
+    if (!idleDetector) {return;}
+    idleDetector.clearWatch();
+  }
+
+private hourglass( start: boolean) {
+  //@ts-expect-error unknown setting
+  const presetJson = game.settings.get('hourglass','presets');
+  const presets : Record<string,string>[] = !!presetJson ? JSON.parse(presetJson) as Record<string,string>[] : [];
+  const mainHourglass = presets.find(x=> x.title == "Hourglass");
+  if (!mainHourglass) {
+    console.warn("Can't find main hourglass");
+    return;
+  }
+  if (start) {
+    game.socket.emit('module.hourglass', { type:'show', options: mainHourglass });
+    //@ts-expect-error unknown fn call
+    Hooks.call('showHourglass', mainHourglass);
+  } else {
+    game.socket.emit('module.hourglass', { type:'close', options: mainHourglass });
+    //@ts-expect-error unknown fn call
+    Hooks.call('closeHourglass', mainHourglass);
+  }
+}
+
+  getControllerUser(combatant: Combatant <PersonaActor>) : N<FoundryUser> {
+    if (!combatant.hasPlayerOwner)  {
+      if (game.user.isGM) {return game.user;}
+      return game.users.find(x=> x.isGM && x.active) ?? null;
+    }
+    const actor = combatant.actor;
+    if (!actor) {return null;}
+    const trueOwner = actor.trueOwner;
+    if (trueOwner && trueOwner.active && !trueOwner.isAFK) {return trueOwner;}
+    const allOwners = game.users
+    .filter( u=> !u.isGM && actor.testUserPermission(u, "OWNER"))
+    .filter( u=> u.active && u instanceof PersonaFoundryUser && !u.isAFK);
+    return allOwners.at(0) ?? null;
+  }
+
   async startCombatantTurn( combatant: Combatant<PersonaActor>){
     if (!PersonaCombat.isPersonaCombatant(combatant)) {return;}
     if (!combatant.defeated) {
@@ -506,6 +591,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
       await this.panel.setTarget(combatant.token);
     }
     if (!game.user.isGM) {return;}
+    this.turnTimer(combatant);
     await this.resetBatonStates();
     if (await this.checkEndCombat() == true) {
       return;
@@ -563,7 +649,6 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
     ) {return "";}
     return `<span class="combat-away"> (Away)</span>`;
   }
-
 
   override get combatant() : U<PersonaCombatant> {
     const comb = super.combatant;
@@ -748,6 +833,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
       await PersonaSocial.endSocialTurn(actor);
       return;
     }
+    this.turnTimer_off();
     const triggeringCharacter  = (combatant)?.token?.actor?.accessor;
     if (triggeringCharacter) {
       for (const user of this.combatants) {
@@ -787,7 +873,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
     if (debilitatingStatus) {
       const msg =  `${combatant.name} can't take actions normally because of ${debilitatingStatus.name}`;
       Msg.push(msg) ;
-      if (actor.system.type == 'shadow') {
+      if (actor.isShadow()) {
         void this.skipBox(`${msg}. <br> Skip turn?`); //don't await this so it processes the rest of the code
       }
     }

@@ -7,7 +7,7 @@ export class OpenerSaves {
   combat: PersonaCombat;
 
   constructor (combat: PersonaCombat) {
-    this.combat=  combat;
+    this.combat = combat;
   }
 
   public openerSaves(combatant: PersonaCombatant & {actor: ValidAttackers}, situation: SituationComponent.Roll) : OpenerOptionsGroups[] {
