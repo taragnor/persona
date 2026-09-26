@@ -10,7 +10,7 @@ export class OpenerSaves {
     this.combat=  combat;
   }
 
-  public openerSaves(combatant: PersonaCombatant & {actor: ValidAttackers}, situation: SituationComponent.Roll) {
+  public openerSaves(combatant: PersonaCombatant & {actor: ValidAttackers}, situation: SituationComponent.Roll) : OpenerOptionsGroups[] {
     // const returns :OpenerOptionsGroups[]= [];
     // returns.push(
     //   this.fadingRoll(combatant, situation),
@@ -26,7 +26,7 @@ export class OpenerSaves {
     // return returns;
     return [
       this.fadingRoll(combatant, situation),
-      this.saveVsSleep(combatant),
+      this.saveVsSleep(combatant, situation),
       this.saveVsDizzy(combatant, situation),
       this.saveVsFear(combatant, situation),
       this.saveVsConfusion(combatant, situation),
@@ -227,7 +227,7 @@ export class OpenerSaves {
     return { msg, options};
   }
 
-  private saveVsSleep( combatant: Combatant<ValidAttackers>) : OpenerOptionsGroups {
+  private saveVsSleep( combatant: Combatant<ValidAttackers>, _situation ?: SituationComponent.Roll) : OpenerOptionsGroups {
     const options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     if (!combatant?.actor?.hasStatus('sleep'))  {
