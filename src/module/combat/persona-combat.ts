@@ -523,10 +523,25 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
   }
 
   private timer_userIdle (controller: PersonaFoundryUser) {
+    const idleDetector = PersonaIdleDetector.gmDetector!;
     if (controller.isAFK) {return;}
+    if (idleDetector.isLinkDead(controller)) {
+      void this.linkDeadMessage(controller);
+      return;
+    }
     if (!this.hourglass_expire) {
       this.hourglass( true);
     }
+  }
+
+  private async linkDeadMessage(controller: PersonaFoundryUser) {
+    const msg = `Not recieving any replies from ${controller.name}, they are possibly disconnected`;
+    const messageData = {
+      speaker: {alias: "System"},
+      content: msg,
+      style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+    };
+    return await ChatMessage.create(messageData, {});
   }
 
   private timer_userActive (_controller: PersonaFoundryUser) {
