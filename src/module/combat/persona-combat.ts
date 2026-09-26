@@ -522,13 +522,14 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
     this.hourglass_expire = false;
   }
 
-  private timer_userIdle (_controller: FoundryUser) {
+  private timer_userIdle (controller: PersonaFoundryUser) {
+    if (controller.isAFK) {return;}
     if (!this.hourglass_expire) {
       this.hourglass( true);
     }
   }
 
-  private timer_userActive (_controller: FoundryUser) {
+  private timer_userActive (_controller: PersonaFoundryUser) {
     this.hourglass(false);
   }
 
@@ -564,10 +565,10 @@ private hourglass( start: boolean) {
   }
 }
 
-  getControllerUser(combatant: Combatant <PersonaActor>) : N<FoundryUser> {
+  getControllerUser(combatant: Combatant <PersonaActor>) : N<PersonaFoundryUser> {
     if (!combatant.hasPlayerOwner)  {
-      if (game.user.isGM) {return game.user;}
-      return game.users.find(x=> x.isGM && x.active) ?? null;
+      if (game.user.isGM) {return game.user as PersonaFoundryUser;}
+      return game.users.find(x=> x.isGM && x.active) as PersonaFoundryUser ?? null;
     }
     const actor = combatant.actor;
     if (!actor) {return null;}
@@ -576,7 +577,7 @@ private hourglass( start: boolean) {
     const allOwners = game.users
     .filter( u=> !u.isGM && actor.testUserPermission(u, "OWNER"))
     .filter( u=> u.active && u instanceof PersonaFoundryUser && !u.isAFK);
-    return allOwners.at(0) ?? null;
+    return allOwners.at(0) as PersonaFoundryUser ?? null;
   }
 
   async startCombatantTurn( combatant: Combatant<PersonaActor>){
@@ -591,11 +592,11 @@ private hourglass( start: boolean) {
       await this.panel.setTarget(combatant.token);
     }
     if (!game.user.isGM) {return;}
-    this.turnTimer(combatant);
     await this.resetBatonStates();
     if (await this.checkEndCombat() == true) {
       return;
     }
+    this.turnTimer(combatant);
     const baseRolls : Roll[] = [];
     const rolls : ResolvedRollBundle[] = [];
     await actor.refreshActions();
