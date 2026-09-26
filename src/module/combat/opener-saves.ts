@@ -11,20 +11,29 @@ export class OpenerSaves {
   }
 
   public openerSaves(combatant: PersonaCombatant & {actor: ValidAttackers}, situation: SituationComponent.Roll) {
-    const returns :OpenerOptionsGroups[]= [];
-    returns.push(
+    // const returns :OpenerOptionsGroups[]= [];
+    // returns.push(
+    //   this.fadingRoll(combatant, situation),
+    //   this.saveVsSleep(combatant),
+    //   this.saveVsDizzy(combatant, situation),
+    //   this.saveVsFear(combatant, situation),
+    //   // this.saveVsDespair(combatant, situation),
+    //   this.saveVsConfusion(combatant, situation),
+    //   this.saveVsCharm(combatant, situation),
+    //   this.rageOpener(combatant, situation),
+    //   this.disengageOpener(combatant, situation),
+    // );
+    // return returns;
+    return [
       this.fadingRoll(combatant, situation),
       this.saveVsSleep(combatant),
       this.saveVsDizzy(combatant, situation),
       this.saveVsFear(combatant, situation),
-      // this.saveVsDespair(combatant, situation),
       this.saveVsConfusion(combatant, situation),
       this.saveVsCharm(combatant, situation),
       this.rageOpener(combatant, situation),
       this.disengageOpener(combatant, situation),
-    );
-
-    return returns;
+    ];
   }
 
   static mockOpeningSaveTotal( combatant: Combatant<ValidAttackers> , situation: SituationComponent.Roll, status: StatusEffectId) : number | undefined {
@@ -341,30 +350,5 @@ export class OpenerSaves {
     }
     return {msg, options};
   }
-
-  // private saveVsDespair ( combatant: Combatant<ValidAttackers> , situation: SituationComponent.Roll) : OpenerOptionsGroups {
-  //   const options : OpenerOptionsGroups['options'] = [];
-  //   const msg : string[] = [];
-  //   const saveTotal = OpenerSaves.mockOpeningSaveTotal(combatant, situation, 'despair');
-  //   if (saveTotal == undefined) {
-  //     return {msg, options};
-  //   }
-  //   msg.push(`Resisting Despair (${saveTotal}) -->`);
-  //   switch (true) {
-  //     case (saveTotal >= 11):{
-  //       msg.push('Success');
-  //       break;
-  //     }
-  //     default:
-  //       msg.push('Failure (Miss Turn)');
-  //       options.push({
-  //         optionName: 'Wallow in Despair (Miss Turn)',
-  //         mandatory: true,
-  //       combatant: combatant.id,
-  //         optionEffects: ['skipTurn'],
-  //       });
-  //   }
-  //   return {msg, options};
-  // }
 
 }

@@ -18,6 +18,8 @@ export class OpenerManager {
   static panel = new OpenerPanel();
   static OPENER_MSG_ID_FLAG = "openerMsgId" as const;
 
+  static OPENING_ACTION_COMBATANT_ID_FLAG = "openerCombatantId" as const;
+
   static OPENING_ACTION_FLAG_NAME = "openingActionData" as const;
   static OPENING_CHAT_NAME = "openerChatMsgId" as const;
 
@@ -57,27 +59,36 @@ export class OpenerManager {
 
   async onEndCombat() {
     await PersonaError.asyncErrorWrapper(
-      async () => await this.clearOpenerChoices()
+      async () => await this.clearOpenerChoices(null)
     );
   }
 
-  async onEndTurn(comb: Combatant) {
+  async onEndTurn(comb: PersonaCombatant) {
     //this may be run by PCs so can't do any GM functions
     void this.panel.pop();
     if (game.user.isGM && this.combat.combatant == comb) {
-      await this.clearOpenerChoices();
+      await this.clearOpenerChoices(comb);
     }
   }
 
-  private async storeOpenerChoices (openingReturn: OpenerOptionsGroups[]) {
-    console.log("Openers choices stored");
-    Debug(openingReturn);
+  private async storeOpenerChoices (combatant: PersonaCombatant,  openingReturn: OpenerOptionsGroups[]) : Promise<void> {
+    if (!game.user.isGM) {
+      PersonaError.softFail("Non GM attempting to store opener choices");
+      return;
+    }
+    await this.combat.setFlag("persona", OpenerManager.OPENING_ACTION_COMBATANT_ID_FLAG, combatant.id);
     await this.combat.setFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME, openingReturn);
   }
 
-  private async clearOpenerChoices()  {
+  private async clearOpenerChoices(combatant: N<PersonaCombatant>)  {
     if (!game.user.isGM) {
       PersonaError.softFail(`${game.user.name} trying to clear Opener Choices, this requires GM permissions`);
+      return;
+    }
+    const lastCombatant = this.combat.getFlag("persona", OpenerManager.OPENING_ACTION_COMBATANT_ID_FLAG) as Combatant["id"];
+    if (combatant != null
+      && (!lastCombatant || lastCombatant != combatant.id)
+    ) {
       return;
     }
     await this.combat.unsetFlag("persona", OpenerManager.OPENING_ACTION_FLAG_NAME);
@@ -105,7 +116,7 @@ export class OpenerManager {
     }
     const openingData = this._execOpeningRoll(combatant, rollTotal);
     if (!openingData) {return undefined;}
-    await this.storeOpenerChoices(openingData);
+    await this.storeOpenerChoices(combatant, openingData);
     return await this.getOpenerMsg(combatant, openingData, rollTotal);
   }
 
@@ -137,9 +148,9 @@ export class OpenerManager {
     const mandatory = returns.find(r => r.options.some( o=> o.mandatory));
     if (mandatory) {
       return  [{
-          msg: mandatory.msg,
-          options: [mandatory.options.find(x=> x.mandatory)!],
-        }];
+        msg: mandatory.msg,
+        options: [mandatory.options.find(x=> x.mandatory)!],
+      }];
     };
     const data = returns.filter(x=> x.msg.length > 0);
     return data;
@@ -180,16 +191,16 @@ export class OpenerManager {
     if (options.length > 0) {
       msg.push('Special Actions');
     }
-    return {msg, options};
+    return { msg, options};
   }
 
   private otherOpeners( combatant: PersonaCombatant, situation: SituationComponent.Roll): OpenerOptionsGroups {
     let options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     const actor = combatant.actor;
-    if (!actor) {return { msg, options};}
+    if (!actor) {return {  msg, options};}
     if (!actor.isCapableOfAction()) {
-      return {msg, options};
+      return { msg, options};
     }
     const openerActions = actor.openerActions;
     const usableActions = openerActions
@@ -212,7 +223,6 @@ export class OpenerManager {
         const possibleTargets = this.combat.combatants.contents.filter (x=> PersonaCombat.isPersonaCombatant(x));
         const targets= PersonaTargetting.getValidTargetsFor(action, combatant, possibleTargets);
         if (targets.length == 0) {return [];}
-        // const printableName = this.getOpenerPrintableName(action, targets);
         return [{
           mandatory: action.hasTag('mandatory', combatant.actor),
           combatant: combatant.id,
@@ -229,21 +239,8 @@ export class OpenerManager {
     if (options.length > 0) {
       msg.push('Other Available Options');
     }
-    return {msg, options};
+    return { msg, options};
   }
-
-  // mockOpeningSaveTotal( combatant: Combatant<ValidAttackers> , situation: SituationComponent.Roll, status: StatusEffectId) : number | undefined {
-  //   const rollValue = situation.naturalRoll ?? -999;
-  //   if (!combatant.actor) {return undefined;}
-  //   const statusEffect = combatant.actor.getStatus(status);
-  //   if (!statusEffect && status != 'fading') {return undefined;}
-  //   const saveSituation = {
-  //     ...situation,
-  //     saveVersus: status
-  //   } satisfies Situation;
-  //   const saveBonus = combatant.actor.persona().getBonuses('save').total(saveSituation);
-  //   return saveBonus + rollValue;
-  // }
 
   async _onOpenerSelect (ev: JQuery.ClickEvent) {
     ev.stopPropagation();

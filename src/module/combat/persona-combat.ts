@@ -771,7 +771,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
       await ChatMessage.create(messageData, {});
     }
     await this.followUp.onEndTurn();
-    await this.openers.onEndTurn(combatant);
+    await this.openers.onEndTurn(combatant as PersonaCombatant);
   }
 
   handleStartTurnEffects(combatant: Combatant<ValidAttackers>): string[] {
