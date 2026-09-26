@@ -9,7 +9,7 @@ class PlayerIdleDetector {
   lastReportSent: number = 0;
   private cache =  {
     GMTargets : new TimedCache( () => this._GMTargets(), 60000),
-  }
+  };
 
   constructor( idleTime: number) {
     if (game.user.isGM) {
