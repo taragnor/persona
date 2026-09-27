@@ -12,7 +12,7 @@ export class EnergyClassCalculator extends CostCalculator {
   static MULTIATTACK_MULT = 16 as const;
 
   static calcEnergyCost(pwr: Power, shadow: N<Persona>) : {energyRequired: number, energyCost: number, cooldown: number} {
-    if (!pwr.isWeapon() && !pwr.isMagicSkill()) {
+    if (!pwr.isWeaponSkill() && !pwr.isMagicSkill()) {
       return {energyRequired: 0, energyCost: 0, cooldown: 0};
     }
     const baseCost = this.calcBasePowerCost(pwr);
