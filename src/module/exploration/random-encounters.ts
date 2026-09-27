@@ -44,7 +44,7 @@ export class RandomEncounter {
     );
     const sPresence = region.shadowPresence > 0 ? region.shadowPresence + sModifiers.total(situation as SituationTypes.BonusQuerySituation) : 0;
     if (sPresence > 0) {
-      const sPresenceMod = Math.min(1, sPresence + modifier);
+      const sPresenceMod = Math.max(1, sPresence + modifier);
       if( await this.#enemyPresenceRoll(encounterType, sPresenceMod, region)) {
         return "shadows";
       }
@@ -422,6 +422,7 @@ export class RandomEncounter {
       const pick2 = weightedChoice(weightedList);
       const pick  = this.#choosePick(pick1, pick2, encounter);
       if (!pick) {
+        bailout++;
         continue;
       }
       if (enemyType == undefined) {

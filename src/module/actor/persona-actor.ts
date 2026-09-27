@@ -3424,7 +3424,7 @@ encounterSizeValue() : number {
   const mult = this.persona().getBonuses("encounter-size-multiplier").total(sit, "percentage");
   val *= mult;
   if (this.isNewEnemy() && !this.hasRole("solo")) {val *= 1.2;}
-  return val;
+  return Math.max(0.2, val);
 }
 
 isNewEnemy(): boolean {
@@ -3970,8 +3970,8 @@ getNPCAllyProxy(this: NPC) : U<NPCAlly> {
   return PersonaDB.NPCAllies().find( x=> x.system.NPCSocialProxyId == this.id);
 }
 
-async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: number) : Promise<void> {
-  if (amt <= 0) {
+async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: number, allowNegative = false) : Promise<void> {
+  if (amt <= 0 && allowNegative !== true) {
     PersonaError.softFail(`Negative amount for perma buff for ${this.name}`);
     return;}
   if (this.isNPC()) {
@@ -4014,6 +4014,7 @@ async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: num
       break;
     default:
       buffType satisfies never;
+      PersonaError.softFail(`unknown permabuff type ${buffType as string}`);
       return;
   }
   const permaBuffLocalized = localize(PERMA_BUFFS[buffType]);
