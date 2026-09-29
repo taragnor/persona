@@ -1,6 +1,15 @@
 export class CreateToken {
 	// Ensure the user has permission to drop the actor and create a Token
 	static async create<T extends Actor>(actor: T,  positionData: {x: number, y:number} & Partial<TokenDocument["position"]>, scene: Scene = canvas.scene): Promise<U<TokenDocument<T>>> {
+    if (actor.pack) {
+      let nonCompActor = game.actors.get(actor.id);
+      if (!nonCompActor) {
+
+      }
+      if (nonCompActor && nonCompActor.name == actor.name) {
+        actor = nonCompActor as typeof actor;
+      }
+    }
 		if (scene != canvas.scene) {
 			throw new Error("This scene isn't the canvas scene");
 		}
@@ -17,10 +26,10 @@ export class CreateToken {
 		 return undefined;
     }
     if ( actor.inCompendium ) {
-      const actorData = game.actors.fromCompendium(actor);
+      const actorData = game.actors.fromCompendium(actor, {keepId: true});
 		 //@ts-expect-error doing weird stuff with constructor
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      actor = await actor.constructor.implementation.create(actorData, {fromCompendium: true});
+      actor = await actor.constructor.implementation.create(actorData, {fromCompendium: true, keepId: true});
     }
 
 		// Prepare the Token document

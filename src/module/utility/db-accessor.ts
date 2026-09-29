@@ -181,19 +181,18 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
   }
 
   #findById(id: FoundryDocument["id"], type: ValidDBTypes = "Actor") : Option<ItemType | ActorType> {
-    // let retarr: (Actor<any> | Item<any>)[];
     switch (type) {
       case "Actor": {
-        const actor = this.allActorsMap.get(id);
+        const actor = game.actors.get(id as Actor["id"]) as ActorType;
         if (actor) {return actor;}
-        const actor2 = game.actors.get(id as Actor["id"]);
-        return actor2 ? actor2 as ActorType : null;
+        const actor2 = this.allActorsMap.get(id);
+        return actor2 ? actor2 : null;
       }
       case "Item": {
-        const item = this.allItemsMap.get(id);
+        const item = game.items.get(id as Item["id"]) as ItemType;
         if (item) {return item;}
-        const item2 = game.items.get(id as Item["id"]);
-        return item2 ? item2 as ItemType : null;
+        const item2 = this.allItemsMap.get(id);
+        return item2 ? item2 : null;
       }
       default:
         throw new Error(`Unsupported Type ${type as string}`);

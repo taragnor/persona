@@ -110,7 +110,7 @@ class Collection<T extends FoundryDocument> extends Map<T["id"], T> {
 	get(id: T["id"]) : T | undefined;
 	getName(name: string): T | undefined;
 	find (fn : (item: T) => boolean): T | undefined;
-	fromCompendium (item: T) : T;
+	fromCompendium (item: T, options: FromCompendiumOptions) : T;
   folders: Map<string, Foundry.Folder>;
 }
 
@@ -155,5 +155,24 @@ type N<T> = T | undefined;
 
 type UN<T> = T | undefined | null;
 
+interface FromCompendiumOptions {
+    /** Clear the currently assigned folder. */
+    clearFolder?: boolean;
+
+    /** Clear fields which store Document state. */
+    clearState?: boolean;
+
+    /** Clear the current sort order. */
+    clearSort?: boolean;
+
+    /** Clear Document ownership (recursive). */
+    clearOwnership?: boolean;
+
+    /** Retain the Document ID from the source Compendium. */
+    keepId?: boolean;
+
+    /** In cases where necessary, prompt the user with a confirmation dialog. */
+    dialog?: boolean;
+}
 
 type LocalizationString = Foundry.Branded<string, "localization_brand">

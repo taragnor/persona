@@ -491,16 +491,8 @@ export class RandomEncounter {
           user: shadow.accessor,
           target: shadow.accessor,
         };
-        // const sourced = ConditionalEffectManager.getConditionals(shadow.system.encounter.conditions, null, shadow, null);
         const cond = ConditionalEffectC.createPreconditionOnly(shadow.system.encounter.conditions, null, shadow, null);
         return cond.testPreconditions(situation);
-        // return testPreconditions(sourced, situation, {
-        //   owner: shadow.accessor,
-        //   "_id": -1,
-        //   "creationId": -1,
-        //   "realSource": undefined,
-        //   "source": undefined,
-        // });
       });
 
     return shadows;

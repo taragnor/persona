@@ -20,6 +20,7 @@ import {convertToPercentages, shuffle} from "../utility/array-tools.js";
 import {sleep} from "../utility/async-wait.js";
 import {MultiTierCache, TimedCache} from "../utility/cache.js";
 import {Calculateable} from "../utility/calculation-v2.js";
+import {CreateToken} from "../utility/createToken.js";
 import {NumberTools} from "../utility/numberTools.js";
 import {StringUtilities} from "../utility/string-utility.js";
 
@@ -77,7 +78,7 @@ export class Tests {
   static resolveShadow(shadow: string | Shadow): U<Shadow> {
     if (typeof shadow == "object" && shadow?.isShadow()) {return shadow;}
     if (typeof shadow == "string") {
-      const actor= game.actors.getName(shadow) as U<PersonaActor>;
+      const actor= PersonaDB.getActorByName(shadow);
       if (actor?.isShadow()) {return actor;}
       return undefined;
     }
@@ -397,7 +398,16 @@ export class Tests {
     console.log(results.join("\n"));
     return failures == 0;
   }
+
+  static async tokenCreateTest(shadowNameOrObj: Shadow | string, position = {x:3, y:3}) {
+    const actor = this.resolveShadow(shadowNameOrObj);
+    if (!actor) {
+      throw new PersonaError(`Cant' find shadow ${typeof shadowNameOrObj == "string" ? shadowNameOrObj : shadowNameOrObj?.name ?? "undefined"  }`);
+    }
+    await CreateToken.create(actor, position);
+  }
 }
+
 
 //@ts-expect-error adding to global
 window.tests = Tests;

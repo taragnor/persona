@@ -283,7 +283,10 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     if (this.#cache.shadows) {return this.#cache.shadows;}
     const actors = this.allActors();
     return this.#cache.shadows = actors
-      .filter( act=> act.isShadow());
+      .filter( act=> act.isShadow())
+    //prevents double copies
+      .filter (act => act == PersonaDB.getActorById(act.id))
+    ;
   }
 
   tarotCards(): readonly Tarot[] {
