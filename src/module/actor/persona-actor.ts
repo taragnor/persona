@@ -2069,28 +2069,28 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     await this.update({"system.fatigueTracker": 0});
   }
 
-  get NPCFatigueTracker(): number {
-    if (!this.isNPCAlly()) {return 0;}
-    return this.system.fatigueTracker ?? 0;
-  }
+get NPCFatigueTracker(): number {
+  if (!this.isNPCAlly()) {return 0;}
+  return this.system.fatigueTracker ?? 0;
+}
 
 
-  /** Auto NPC recovery for fatigue to be run each calendar day*/
-  async recoverFatigue(this: NPCAlly) : Promise<number>{
-    if (this.fatigueLevel >= 1) {return -1;}
-    let recoveryDays = Number(this.getFlag<number>("persona", "fatigueRecovery") ?? 0);
-    if (Number.isNaN(recoveryDays)) {
-      PersonaError.softFail(`NaN recovery days for ${this.name}`);
-      recoveryDays = 0;
-    }
-    recoveryDays += 1;
-    if (recoveryDays >= 3) {
-      recoveryDays = 0;
-      await this.alterFatigueLevel(1);
-    }
-    await this.setFlag("persona", "fatigueRecovery", recoveryDays);
-    return recoveryDays;
+/** Auto NPC recovery for fatigue to be run each calendar day*/
+async recoverFatigue(this: NPCAlly) : Promise<number>{
+  if (this.fatigueLevel >= 1) {return -1;}
+  let recoveryDays = Number(this.getFlag<number>("persona", "fatigueRecovery") ?? 0);
+  if (Number.isNaN(recoveryDays)) {
+    PersonaError.softFail(`NaN recovery days for ${this.name}`);
+    recoveryDays = 0;
   }
+  recoveryDays += 1;
+  if (recoveryDays >= 3) {
+    recoveryDays = 0;
+    await this.alterFatigueLevel(1);
+  }
+  await this.setFlag("persona", "fatigueRecovery", recoveryDays);
+  return recoveryDays;
+}
 
 hasAlteredFatigueToday(this:PC): boolean {
   return this.system.fatigue.hasAlteredFatigueToday ?? false;
@@ -3089,7 +3089,7 @@ async awardXP(this: ValidAttackers, amt: number) : Promise<XPGainReport> {
     const navigatorXP = this.persona().getBonuses("navigator-xp-mult").total({user: this.accessor});
     amt = Math.clamp(navigatorXP, 0.1, 1) * amt;
   }
-  if (amt ==0) {
+  if (amt == 0) {
     return {
       mainActor: this,
       origAmount: amt,
@@ -3143,7 +3143,6 @@ async refreshActions(): Promise<number> {
 }
 
 async expendAction(this: ValidAttackers): Promise<number> {
-
   let actions = this.system.combat.actionsRemaining ?? 1;
   if (this.hasStatus("bonus-action")) {
     await this.removeStatus("bonus-action");
@@ -3282,11 +3281,10 @@ async onEndCombatTurn(this : ValidAttackers) : Promise<string[]> {
 
 get shadowEnergyGain() : number {
   if (!this.isShadow()) {return 0;}
-
-    const situation : Situation = {
-      user: this.accessor,
-    };
-    return 3 + this.persona().getBonuses("energy-per-turn").total(situation);
+  const situation : Situation = {
+    user: this.accessor,
+  };
+  return 3 + this.persona().getBonuses("energy-per-turn").total(situation);
 }
 
 despairMPDamage(this: PC | NPCAlly) : number {
@@ -3339,20 +3337,8 @@ async onMetaverseTimeAdvance(): Promise<string[]> {
   return ret;
 }
 
-// async resetMetaverseActivity(this: NPCAlly): Promise<void> {
-//   const activity = this.system.metaverseActivityRounds ?? 0;
-//   await this.update({"system.metaverseActivityRounds" : 0});
-//   const fatigue = this.hasStatus("full-fade")
-//   || activity > 80 ? -2
-//   : activity > 20 ? -1
-//   : 0;
-//   await this.alterFatigueLevel(fatigue);
-// }
-
 async incrementMetaverseActivity_passTurn(this: NPCAlly) : Promise<void> {
   await this.alterNPCFatigueTracker(this.NPC_FATIGUE.TURN);
-  // const activity = this.system.metaverseActivityRounds ?? 0;
-  // await this.update({"system.metaverseActivityRounds" : activity + 1});
 }
 
 async incrementMetaverseActivity_endBattle(this: NPCAlly) : Promise<void> {
@@ -3564,7 +3550,6 @@ async deleteTokenSpend(this: SocialLink, deleteIndex:number) {
 getAvailabilityConditions(this: SocialLink) : ConditionalEffectC {
   if (this.isPC()) {return ConditionalEffectC.EmptyCE;}
   const conds = ConditionalEffectC.createPreconditionOnly(this.system.availabilityConditions);
-  // const conds = ConditionalEffectManager.getConditionals(this.system.availabilityConditions, null, null, null);
   return conds;
 }
 
@@ -3726,7 +3711,7 @@ async onRoll(situation: SituationTypes.Roll) {
     user: this.accessor,
     triggeringCharacter: this.accessor,
     trigger: "on-roll",
-  } as const;
+  } as const satisfies Situation;
   await TriggeredEffect.autoApplyTrigger(rollSituation, this);
 }
 
@@ -3991,21 +3976,14 @@ async addPermaBuff(this: ValidAttackers | NPC, buffType: PermaBuffType, amt: num
       await this.update( {"system.combat.bonusMP": newMP});
       break;
     }
-    case "str":
-    case "mag":
-    case "end":
-    case "agi":
+    case "str": case "mag": case "end": case "agi":
     case "luk": {
       const persona = this.persona();
       if (persona.source != this) {
         return await persona.source.addPermaBuff(buffType, amt);
       }
       const bonuses = this.system.combat.personaStats.permanentStatsBonuses ?? {
-        str: 0,
-        mag: 0,
-        end: 0,
-        agi: 0,
-        luk: 0,
+        str: 0, mag: 0, end: 0, agi: 0, luk: 0,
       };
       const newObj = {...bonuses};
       newObj[buffType] += amt;
@@ -4069,16 +4047,6 @@ async setAsActivePartyMember(this : NPCAlly)  {
 
 get startingLevel() : number {
   return this.cache2.startingLevel.value;
-  // const cVal = this.cache.startingLevel;
-  // if (cVal != undefined) {
-  //   return cVal;
-  // }
-  // if (!this.isShadow()) {
-  //   return this.cache.startingLevel = 0;
-  // }
-  // const lvl = this.system.personaConversion.startingLevel;
-  // if (lvl == 1) {return this.cache.startingLevel = this.level;}
-  // return this.cache.startingLevel = lvl;
 }
 
 _startingLevel() : number {
@@ -4148,8 +4116,6 @@ get isUltimatePersona() : boolean {
 }
 
 }//end of class
-
-
 
 export type SocialBenefit = {
   id: string,

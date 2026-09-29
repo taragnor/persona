@@ -31,7 +31,7 @@ export class CombatPanel extends PersonaPanel {
   }
 
   override buttonConfig() : SidePanel.ButtonConfig[] {
-    const validState= this.combat != undefined && this._target != undefined;
+    const validState = this.combat != undefined && this._target != undefined;
     const turnCheck = !this._target || !this.combat
       ? false
       : this.combat.turnCheck(this._target);
@@ -78,7 +78,6 @@ export class CombatPanel extends PersonaPanel {
 
   get allowGMPCControl () {
     return game.users.filter(user => user.active && !user.isGM).length == 0;
-    // return PersonaSettings.debugMode();
   }
 
   get target() {
@@ -496,7 +495,6 @@ export class CombatPanel extends PersonaPanel {
       if (isSelecting) {
         void panel.setTacticalTarget(token.document as PToken);
       } else {
-        // void panel.setTacticalTarget(null);
       }
 
     });
