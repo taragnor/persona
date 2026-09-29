@@ -979,7 +979,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
         break;
       case "shadow":
         classNameDefault = "Shadow";
-        // classNameDefault = "Shadow";
         break;
       case "npc":
         throw new Error("NPCs have no classes");
@@ -1066,7 +1065,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return mpBase + Math.round((inc/3 * diff));
   }
 
-
   get baseClassHP () : number {
     if (!this.isValidCombatant()) {return 0;}
     return this.class.getClassMHP(this.level);
@@ -1076,7 +1074,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     if (!this.isShadow()) {return false;}
     return this.system.combat.builtInPersona;
   }
-
 
   get mhp() : number {
     if (!this.isValidCombatant()) {return 0;}
@@ -1308,10 +1305,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
         const arr = PersonaItem.getBasicPCPowers().slice();
         const extraSkills = [
           this.teamworkMove,
-          // ...this.navigatorSkills,
         ].flatMap( x=> x != undefined ? [x] : []);
         arr.push (...extraSkills);
-        return arr; 
+        return arr;
       }
       default:
         this.system satisfies never;
@@ -1346,14 +1342,15 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   async addNavigatorPath (this: NPCAlly) : Promise<number> {
     return new Promise ( (resolve, _reject) => {
-      const callback  = async (path: string, _fp: FilePicker) => {
+      const callback = async (path: string, _fp: FilePicker) => {
         let count = 0;
         if (!path) {
           ui.notifications.warn("No folder selected");
-          return -1;}
+          return -1;
+        }
         const files = (await foundry.applications.apps.FilePicker.implementation.browse("data", path)).files;
         if (files && files.length > 0) {
-          const arr=  this.system.combat?.navigatorVoice;
+          const arr = this.system.combat?.navigatorVoice;
           for (const file of files) {
             if (!arr.some(x=> x.fileName == file)) {
               count++;
@@ -1846,7 +1843,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
           removed++;
         }
         newStatus.potency = newPotency;
-        // await this.removeStatus(id);
       }
     }
     return removed > 0 && !cont;
@@ -2399,7 +2395,6 @@ async checkSideboardEmptySpace(this: ValidAttackers) {
         "system.combat.powers_sideboard": sideboard,
         "system.combat.learnedPowersBuffer" : buffer
       });
-      // await this.update( {"system.combat.learnedPowersBuffer" : buffer});
       continue;
     }
     break;
@@ -2813,7 +2808,6 @@ get money() : number {
 
 
 async gainMoney(this: PC, amt: number, options: GainMoneyOptions = {}) {
-  // async gainMoney(this: PC, amt: number, log :boolean, breakLimit = false) {
   if (amt < 0) {
     return this.spendMoney(amt);
   }
@@ -2914,10 +2908,6 @@ _tarot() : (Tarot | undefined) {
 get tarot() : (Tarot | undefined) {
   if (!PersonaDB.isLoaded) {return undefined;}
   return this.cache2.tarot.value;
-  // if (this.cache.tarot != undefined) {
-  //   if (this.cache.tarot.name == "") {return undefined;}
-  //   return this.cache.tarot;
-  // }
 }
 
 numOfIncAdvances(): number {
@@ -2962,7 +2952,6 @@ totalResists (this:ValidAttackers) : number {
     absorb: 3,
     reflect: 3
   } as const;
-
   const physicalTranslator : Record<typeof resists["cold"], number> = {
     weakness: -3,
     normal: 0,
@@ -2970,7 +2959,7 @@ totalResists (this:ValidAttackers) : number {
     block: 3,
     absorb: 4,
     reflect:4,
-  };
+  } as const;
   const shadowTranslator : Record<typeof resists["cold"], number> = {
     weakness: -2.5,
     normal: 0,
