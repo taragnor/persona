@@ -449,7 +449,6 @@ export class ConditionalEffectManager {
       .map(cons=> this.applySourceInformation(cons, sourceItem, sourceActor, realSource));
   }
 
-
   static applySourceInformation <T extends object, ActorType extends PersonaActor, ItemType extends ModifierContainer >( obj: T, sourceItem: N<ItemType>, sourceActor: N<ActorType>, realSource: UN<ModifierContainer>) : Sourced<T> {
     return {
       ...obj,
@@ -559,7 +558,6 @@ export class ConditionalEffectManager {
       };
     });
   }
-
 
   private static openConsequencesMenu<D extends FoundryDocument>(ev: JQuery.ContextMenuEvent, item: MenuHolder<D>, contextMenu: ContextMenu) {
     const options = [{
@@ -785,7 +783,6 @@ export class EMAccessor<T> {
   }
 
 }
-
 
 // **************************************************
 // **********   error checking code  *********** ****

@@ -435,17 +435,9 @@ export class ConditionalEffectDM extends foundry.abstract.DataModel {
   }
 
   static override migrateData(data: ConditionalEffect) : ConditionalEffect {
-    // let change= false;
     const {conditions, consequences} = data;
     data.conditions = this.migrateConditions(conditions);
     data.consequences = this.migrateConsequences(consequences);
-
-    //TODO: fix this so its more accurate
-    // if (data.conditions != conditions
-    //   || data.consequences != consequences) {
-    //   console.debug("Migrate Data for ConditionalEffectDM making changes ");
-    // }
-
     return data;
   }
 

@@ -4,12 +4,10 @@ import { PersonaItemSheetBase } from "./base-item-sheet.js";
 export class PersonaSocialSheetBase extends PersonaItemSheetBase {
 	declare item: SocialCard;
 
-
 	override activateListeners(html: JQuery<HTMLElement>) {
 		super.activateListeners(html);
 		html.find(".add-token-spend").on("click", ev => void this.addTokenSpend(ev));
 		html.find(".del-token-spend").on("click", ev => void this.deleteTokenSpend(ev));
-
 	}
 
 	async addTokenSpend(_ev: JQuery.ClickEvent) {
