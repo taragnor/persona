@@ -1212,7 +1212,7 @@ export class CombatEngine {
       const deprecatedConvert = DamageCalculation.convertToNewFormConsequence({
         type: 'hp-loss',
         damageType: 'none',
-        amount: -hpCost,
+        amount: hpCost,
         source: power.accessor,
         owner: attacker.actor.accessor,
         realSource: undefined,

@@ -1971,14 +1971,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     const cost = this.baseMPCostRaw();
     const list = userPersona.getBonusesV2('mp-cost');
     cost.merge(list);
-    const sit : Situation = {
+    const sit = {
       user: userPersona.user.accessor,
       usedPower: this.accessor,
       attacker: userPersona.user.accessor,
-    };
+    } satisfies Situation;
     return cost.eval(sit);
   }
-
 
   baseHPCostRaw(this: Power) : CalculationV2 {
     return HPCostCalculatorV2.calcBaseCost(this);
@@ -1986,7 +1985,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   baseMPCostRaw(this: Power) : CalculationV2 {
     if (this.customCost) {
-      const calc= new CalculationV2(0);
+      const calc = new CalculationV2(0);
       calc.set(-1, this.system.mpcost, "Custom Cost");
       return calc;
     }
@@ -1995,9 +1994,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   get baseHPCost() : EvaluatedCalculation {
     if (!this.isPower()) {
-      return {
-        total: 0, steps:[]
-      };
+      return { total: 0, steps:[] };
     }
     const sit = {
       usedPower: this.accessor,
@@ -2007,9 +2004,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   get baseMPCost() : EvaluatedCalculation {
     if (!this.isPower()) {
-      return {
-        total: 0, steps:[]
-      };
+      return { total: 0, steps:[] };
     }
     const sit = {
       usedPower: this.accessor,
