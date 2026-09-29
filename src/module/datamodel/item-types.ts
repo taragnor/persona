@@ -417,7 +417,7 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
   static override migrateData(data: SocialCard["system"]) {
     data.availabilityConditions = ConditionalEffectDM.migrateConditions(data.availabilityConditions);
     data.conditions = ConditionalEffectDM.migrateConditions(data.conditions);
-    data.cameoConditions = ConditionalEffectDM.migrateConditions(data.conditions);
+    data.cameoConditions = ConditionalEffectDM.migrateConditions(data.cameoConditions);
     return data;
   }
 }

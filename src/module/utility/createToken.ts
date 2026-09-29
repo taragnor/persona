@@ -1,7 +1,7 @@
 export class CreateToken {
 	// Ensure the user has permission to drop the actor and create a Token
 	static async create<T extends Actor>(actor: T,  positionData: {x: number, y:number} & Partial<TokenDocument["position"]>, scene: Scene = canvas.scene): Promise<U<TokenDocument<T>>> {
-    if (actor.pack) {
+    if (actor.inCompendium) {
       const nonCompActor = game.actors.get(actor.id);
       if (nonCompActor && nonCompActor.name == actor.name) {
         actor = nonCompActor as typeof actor;

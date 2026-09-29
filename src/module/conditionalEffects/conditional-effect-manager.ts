@@ -745,7 +745,7 @@ export class EMAccessor<T> {
       type: "always",
     };
     const that = this as EMAccessor<DeepNoArray<ConditionalEffect["conditions"]>>;
-    const newData = that.data;
+    const newData = that.data.slice();
     newData.push(item);
     await that.update(newData);
   }
