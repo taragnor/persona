@@ -1,6 +1,5 @@
 import {FusionTable} from "../config/fusion-table.js";
 import {LevelUpCalculator} from "../config/level-up-calculator.js";
-import {PersonaSettings} from "../config/persona-settings.js";
 import {PCSheet} from "./actor/sheets/pc-sheet.js";
 import {FusionAnimation} from "./animation/persona-merge.js";
 import {ActorConverters} from "./converters/actorConverters.js";
@@ -124,10 +123,6 @@ export class HypotheticalPersona extends Persona<PC> {
         ) {
           throw new Error(`Invalid Shadow Type to delete for persona merge ${personaShadow.name} ${personaShadow.id}`);
         }
-        // if (PersonaSettings.debugMode()) {
-        //   console.log(`Simulated Delete of ${personaShadow.name}`);
-        //   return;
-        // }
         try {
           await this.user.personas.deletePersona(personaShadow.id);
           await personaShadow.delete();

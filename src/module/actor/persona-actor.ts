@@ -45,7 +45,7 @@ import { ACTORMODELS } from "../datamodel/actor-types.js";
 import { PersonaItem } from "../item/persona-item.js";
 import {Calculation} from "../utility/calculation.js";
 import {Defense} from "../../config/defense-types.js";
-import {FusionCombination, FusionTable} from "../../config/fusion-table.js";
+import { FusionTable} from "../../config/fusion-table.js";
 import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-system.js";
 import {PersonaCompendium} from "../persona-compendium.js";
 import {ActorHooks} from "./actor-hooks.js";
@@ -656,53 +656,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return true;
   }
 
-  // async switchPersona(this: ValidAttackers, sourceId: ValidAttackers["id"]) {
-  //   this.cache2.persona.clear();
-  //   if (this.hasStatus("sealed")) {
-  //     ui.notifications.warn("Can't swap persona while sealed");
-  //     return;
-  //   }
-  //   const persona = this.personaList.find( x=> x.source.id == sourceId);
-  //   if (!persona || !persona.source.isOwner) {
-  //     PersonaError.softFail(`Couldn't find Persona ${sourceId} in your persona List or you aren't its owner`);
-  //     return;
-  //   }
-  //   await this.update({"system.activePersona": sourceId});
-  //   const combat = game.combat as PersonaCombat;
-  //   if (!combat || combat.isSocial) {
-  //     if (this.isPC()) {
-  //       await Logger.sendToChat(`${this.name} activates Persona ${persona.publicName}`);
-  //       return;
-  //     } else {
-  //       ui.notifications.notify(`${this.name} switches Persona to ${persona.publicName}`);
-  //       return;
-  //     }
-  //   } else {
-  //     let msg = "";
-  //     if (sourceId == this.id && !this.basePersona.img) {
-  //       msg = `<div class="persona-switch">
-  //         ${this.publicName} Changes to base Persona </div>`;
-  //     } else {
-  //       msg = `<div class="persona-switch">
-  //         ${this.publicName} changes Persona!
-  //         </div>
-  //         <img class="persona-img" src="${persona.img}" title="${persona.publicName}">
-  //         `;
-  //     }
-  //     const messageData: MessageData = {
-  //       speaker: {alias: `${this.publicName}`},
-  //       content: msg,
-  //       style: CONST.CHAT_MESSAGE_STYLES.OTHER,
-  //     };
-  //     await ChatMessage.create(messageData, {});
-  //   }
-  // }
-
-
-  // get basePersona() : Persona {
-  //   return this.cache2.basePersona.value;
-  // }
-
   get basePersona() : Persona {
     if (this.isNPC()) {
       const proxy : U<NPCAlly> = this.getNPCAllyProxy();
@@ -714,20 +667,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return this.personas.basePersona;
   }
 
-  // _basePersona() : Persona {
-  //   if (this.isNPC()) {
-  //     const proxy : U<NPCAlly> = this.getNPCAllyProxy();
-  //     if (!proxy) {
-  //       throw new PersonaError("Can't call basePersona getter on non combatant");
-  //     }
-  //     return new Persona(proxy, proxy, proxy._mainPowers());
-  //   }
-  //   if (!this.isValidCombatant() && !this.isPC()) {
-  //     throw new PersonaError("Can't call basePersona getter on non combatant");
-  //   }
-  //   return new Persona(this, this, this._mainPowers());
-  // }
-
   persona<T extends ValidAttackers | NPC>(this: T): Persona {
     if (this.isNPC()) {
       const proxy = (this as NPC).getNPCAllyProxy();
@@ -735,54 +674,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       return proxy.personas.persona();
     }
     return this.personas.persona();
-    // return this.cache2.persona.value as unknown as Persona<T extends NPC ? NPCAlly : T>;
   }
-
-  // private _persona<T extends ValidAttackers | NPC>(this: T): Persona<T extends NPC ? NPCAlly : T> {
-  //   type returnType = Persona<T extends NPC ? NPCAlly : T>;
-  //   switch (this.system.type) {
-  //     case "npc": {
-  //       const proxy = (this as NPC).getNPCAllyProxy();
-  //       if (!proxy) {throw new Error("Can't get persona for noncombatant");}
-  //       return proxy.persona() as returnType;
-  //     }
-  //     case "npcAlly":
-  //       return this.basePersona as returnType;
-  //     case "pc": {
-  //       if ((this.isPC() && (this.system.activePersona == null || this.system.activePersona == this.id || this.hasSoloPersona))) {
-  //         return this.basePersona as returnType;
-  //       }
-  //       const activePersona = PersonaDB.getActorById((this as PC).system.activePersona) as ValidAttackers;
-  //       if (!activePersona) {
-  //         return this.basePersona as returnType;
-  //       };
-  //       return new Persona(activePersona, this as ValidAttackers) as returnType;
-  //     }
-  //     case "shadow":
-  //       if (this.system.activePersona) {
-  //         const activePersona = PersonaDB.getActorById((this as PC).system.activePersona) as U<ValidAttackers>;
-  //         if(activePersona) {
-  //           return new Persona(activePersona, this as Shadow) as returnType;
-  //         }
-  //       }
-  //       return this.basePersona as returnType;
-  //     default:
-  //       this.system satisfies never;
-  //       throw new PersonaError(`Can't get persona for ${this.name}`);
-  //   }
-  // }
-
-  // get maxPersonas() : number {
-  //   if (!this.isValidCombatant()) {return 0;}
-  //   const maxCustomPersonas = this.class.system.uniquePersonas;
-  //   let wildPersonas = this.class.system.maxPersonas;
-
-  //   if (wildPersonas > 0 && this.maxPersonaSideboard == 0) {
-  //     const bonus = this.getPersonalBonuses("persona-sideboard").total({user: this.accessor});
-  //     wildPersonas += bonus;
-  //   }
-  //   return Math.max( 0, maxCustomPersonas -1) + wildPersonas;
-  // }
 
   async stealFood(amount: number = 1) {
     for (let i = amount; i > 0; --i) {
@@ -946,18 +838,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     if (mhp) {return mhp;}
     return this.mhp;
   }
-
-  // get hasSoloPersona(): boolean {
-  //   if (!this.isValidCombatant()) {return false;}
-  //   if (this.isNPCAlly()) {return true;}
-  //   if (this.isPC()) {
-  //     const totalPersonas = this.class.system.uniquePersonas + this.class.system.maxPersonas;
-  //     return totalPersonas == 1;
-  //   }
-  //   if (this.isShadow()) {return this.system.personaList.length <= 1;}
-  //   this satisfies never;
-  //   return false;
-  // }
 
   calcBaseClassMMP(this: PC | NPCAlly): number {
     //TODO: still using old level
@@ -1143,51 +1023,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     });
     return pcPowers;
   }
-
-  // get sideboardPersonas(): readonly Persona[] {
-  //   if (!this.isPC()) {return [];}
-  //   if (!this.class.system.canUsePersonaSideboard) {return [];}
-  //   const sideboardIds = this.system.combat.persona_sideboard;
-  //   const personas = sideboardIds
-  //     .flatMap( id =>  {
-  //       const shadow = PersonaDB.getActor(id);
-  //       return shadow != undefined && shadow.isShadow() ? [shadow] : [];
-  //     })
-  //     .map( shadow => new Persona(shadow, this)) ;
-  //   return personas;
-  // }
-
-  // get maxPersonaSideboard() : number {
-  //   if (!this.isPC()) {return 0;}
-  //   if (!this.class.system.canUsePersonaSideboard) {return 0;}
-  //   const base = BASE_PERSONA_SIDEBOARD;
-  //   const bonuses = this.getPersonalBonuses("persona-sideboard").total( {user: this.accessor});
-  //   return base + bonuses;
-  // }
-
-  // async addSideboardPersona(shadow: Shadow) : Promise<boolean> {
-  //   if (!this.isPC() || this.maxPersonaSideboard <= 0) {
-  //     ui.notifications.warn(`${this.name} can't add sideboard Personas`);
-  //     return false;
-  //   }
-  //   if (!shadow.isPersona()) {
-  //     ui.notifications.warn(`Can't add ${shadow.name} as sideboard persona (not a persona)`);
-  //     return false;
-  //   }
-  //   const sideboardIds = this.system.combat.persona_sideboard;
-  //   if (sideboardIds.includes(shadow.id)) {
-  //     ui.notifications.warn(`${shadow.name} already in Persona sideboard`);
-  //     return false;
-  //   }
-  //   if (sideboardIds.length >= this.maxPersonaSideboard) {
-  //     ui.notifications.warn(` Can't add to ${this.name} Sideboard, Sideboard is full`);
-  //     return false;
-  //   }
-  //   sideboardIds.push(shadow.id);
-  //   await this.update( {"system.combat.persona_sideboard": sideboardIds});
-  //   await Logger.sendToChat(`${this.name} added ${shadow.name} as sideboard persona`);
-  //   return true;
-  // }
 
   get basicPowers() : readonly Power [] {
     switch (this.system.type) {

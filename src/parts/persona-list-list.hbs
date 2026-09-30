@@ -1,4 +1,4 @@
-<h2>Persona List (max {{actor.maxPersonas}})</h2>
+<h2>Persona List (max {{actor.personas.maxPersonas}})</h2>
 	<ul class="persona-list">
 		{{#each actor.personaList as |persona i|}}
 
@@ -27,7 +27,7 @@
 	</ul>
 
 	{{#if (and showSideboard actor.sideboardPersonas)}}
-	<h2> Sideboard (max {{actor.maxPersonaSideboard}})</h2>
+	<h2> Sideboard (max {{actor.personas.maxPersonaSideboard}})</h2>
 	<ul class="persona-list">
 		{{#each actor.sideboardPersonas as |persona i|}}
 
