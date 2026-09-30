@@ -60,7 +60,7 @@ export class PCSheet extends PCLikeSheet {
 				return undefined;
 			}
 			case "shadow":
-				await this.actor.addPersona(actor as Shadow);
+				await this.actor.personas.addPersona(actor as Shadow);
 				return undefined;
 			case "tarot":
 				break;
@@ -374,7 +374,7 @@ export class PCSheet extends PCLikeSheet {
 	async selectPersonaForSideboardMove(event: JQuery.ClickEvent) {
 		const personaId = HTMLTools.getClosestData(event, "personaId");
 		if (personaId == this.actor.id) {return;}
-		const persona = this.actor.personaList.find( x=> x.source.id == personaId) ?? this.actor.sideboardPersonas.find(x=> x.source.id == personaId) ;
+		const persona = this.actor.personaList.find( x=> x.source.id == personaId) ?? this.actor.personas.sideboardPersonas.find(x=> x.source.id == personaId) ;
 		if (!persona) {return;}
 		if (this.personaMoveSelector == undefined) {
 			this.personaMoveSelector = persona;
@@ -451,7 +451,7 @@ export class PCSheet extends PCLikeSheet {
 	async _summonPersona (_ev ?: JQuery.ClickEvent) {
 		const selected=  this.selectedCompendium;
 		if (!selected || !selected.source.isShadow()) {return;}
-		const hasDuplicate = this.actor.sideboardPersonas.concat (this.actor.personaList).some(x => x.compendiumEntry && x.compendiumEntry == selected.source);
+		const hasDuplicate = this.actor.personas.sideboardPersonas.concat (this.actor.personaList).some(x => x.compendiumEntry && x.compendiumEntry == selected.source);
 		if (hasDuplicate) {
 			ui.notifications.notify("Can't summon, as you alerady have a persona of this type on your roster");
 			return;
@@ -461,7 +461,7 @@ export class PCSheet extends PCLikeSheet {
 		if (!confirm) {return;}
 		await this.actor.spendMoney(cost);
 		const summoned = await PersonaCompendium.retrieveFromCompendium(selected.source, this.actor);
-		await this.actor.addPersona(summoned);
+		await this.actor.personas.addPersona(summoned);
 		this.render(false);
 		await Logger.sendToChat(`${this.actor.name} summoned ${summoned.name} L${summoned.level} from Compendium for ${cost}.`);
 	}

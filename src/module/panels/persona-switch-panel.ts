@@ -40,7 +40,7 @@ export class PersonaSwitchPanel extends SubPanel {
       PersonaError.softFail("Can't switch personas now");
     }
     const personaId = HTMLTools.getClosestData(event, "personaId");
-    await this._token.actor.switchPersona(personaId as ValidAttackers["id"]);
+    await this._token.actor.personas.switchPersona(personaId as ValidAttackers["id"]);
     await this.pop();
   }
 

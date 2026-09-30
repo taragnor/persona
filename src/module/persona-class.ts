@@ -37,27 +37,30 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   #combatStats: U<PersonaCombatStats>;
   user: T;
   source: S;
-  private _powers: Power[];
   #cache: PersonaClassCache;
   private _tags: PersonaTagManager<this>;
-  private _talentCache: TimedCache<readonly Talent[]>;
+  // private _talentCache: TimedCache<readonly Talent[]>;
+  private _powers: Power[];
 
-  CACHE_TIME = 5000 as const;
+  static CACHE_TIME = 5000 as const;
 
+  get CACHE_TIME() : number {
+    return Persona.CACHE_TIME;
+  }
 
   private cache2 = {
     talents: new TimedCache(() => this._talents(), this.CACHE_TIME),
     auras: new TimedCache( ()=> this._aurasInRange(), this.CACHE_TIME),
     myAuraEffects: new TimedCache(() => this._myAuraEffects(), this.CACHE_TIME),
     allPowers: new TimedCache( () => this._allPowers(), this.CACHE_TIME),
+    mhp: new TimedCache(() => this._mhp(), this.CACHE_TIME),
   };
 
   static BASE_PC_SIDEBOARD = 1 as const;
   static BASE_SHADOW_ENERGY_GAIN = 3 as const;
 
-  private basicCaches = {
-    mhp: new TimedCache(() => this._mhp(), 3000),
-  };
+  // private basicCaches = {
+  // };
 
   static leveling = {
     SHADOWS_TO_LEVEL: 10,
@@ -70,7 +73,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     this.source = source;
     this._powers = powers == undefined ? this.loadPowers(): powers;
     this._tags = new PersonaTagManager(this);
-    this._talentCache = new TimedCache(() => this._talents(), 5000);
+    // this._talentCache = new TimedCache(() => this._talents(), 5000);
     this.#clearManualCaches();
   }
 
@@ -95,12 +98,12 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   clearCache() {
-    Object.values(this.basicCaches)
-      .forEach(cache=> cache.clear());
+    // Object.values(this.basicCaches)
+    //   .forEach(cache=> cache.clear());
     Object.values(this.cache2)
       .forEach(cache=> cache.clear());
     this.tags.clearCache();
-    this._talentCache.clear();
+    // this._talentCache.clear();
     this.#clearManualCaches();
   }
 
@@ -253,7 +256,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   get talents() : readonly Talent[] {
-    return this._talentCache.value;
+    return this.cache2.talents.value;
   }
 
   private _talents() : readonly Talent[] {
@@ -454,7 +457,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   /** return leveled Persona on level up*/
   async awardXP(amt: number, allowMult = true): Promise<U<XPGainReportIndividual>> {
-    const isSideboard = this.user.sideboardPersonas.some(x=> x.equals(this));
+    const isSideboard = this.user.personas.sideboardPersonas.some(x=> x.equals(this));
     const isInactive = !this.user.persona().equals(this) && !isSideboard;
     if (!amt) {
       return undefined;
@@ -1524,7 +1527,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   get mhp() : number {
-    return this.basicCaches.mhp.value;
+    return this.cache2.mhp.value;
   }
 
   private _mhp(): number {

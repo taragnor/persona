@@ -43,7 +43,7 @@ export class CombatPanel extends PersonaPanel {
         label: "Persona",
         onPress: () => this._onPersonaModeSwitchButton(),
         enabled: () => this._target ? this._target.actor.canSwitchPersonas && this._target.isOwner && turnCheck : false,
-        visible: () => this._target ? this._target.isOwner && this._target.actor.hasMultiplePersonas: false,
+        visible: () => this._target ? this._target.isOwner && this._target.actor.personas.hasMultiplePersonas: false,
       }, {
         label: "Item",
         onPress: () => this._onInventoryButton(),
@@ -379,7 +379,7 @@ export class CombatPanel extends PersonaPanel {
         ui.notifications.notify("Can't swap right now.");
         return;
       }
-      await actor.switchPersona(filteredPList.at(0)!.source.id);
+      await actor.personas.switchPersona(filteredPList.at(0)!.source.id);
       await this.setMode("main");
       return;
     }
@@ -394,7 +394,7 @@ export class CombatPanel extends PersonaPanel {
     }
     const personaId = HTMLTools.getClosestData(event, "personaId");
     if (this.target) {
-      await this.target.actor.switchPersona(personaId as ValidAttackers["id"]);
+      await this.target.actor.personas.switchPersona(personaId as ValidAttackers["id"]);
     }
   }
 

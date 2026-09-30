@@ -95,7 +95,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 				ui.notifications.warn("This isn't a persona!");
 				return undefined;
 			}
-			await this.actor.addPersona(actor);
+			await this.actor.personas.addPersona(actor);
 		}
 		return super._onDropActor(_event, actorD);
 	}
@@ -319,7 +319,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
     }
     let persona: Persona;
     if (personaId.length> 0 ) {
-      persona = this.actor.personaList.find( x=> x.source.id == personaId) ?? this.actor.sideboardPersonas.find(x=> x.source.id == personaId)! ;
+      persona = this.actor.personaList.find( x=> x.source.id == personaId) ?? this.actor.personas.sideboardPersonas.find(x=> x.source.id == personaId)! ;
     } else {
       persona = this.actor.basePersona;
     }
@@ -359,7 +359,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 			throw new PersonaError(`Can't find Persona, no Id`);
 		}
 		const persona = this.actor.personaList.find(p=> p.source.id == personaSourceId)
-      ?? this.actor.sideboardPersonas.find( p=> p.source.id == personaSourceId);
+      ?? this.actor.personas.sideboardPersonas.find( p=> p.source.id == personaSourceId);
 		if (!persona) {
 			throw new PersonaError(`Can't find persona id ${personaSourceId} on ${this.actor.name}`);
 		}
@@ -543,7 +543,7 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	setPersonaViewer(event: JQuery.ClickEvent) {
 		const personaId = HTMLTools.getClosestData(event, "personaId");
-		this.selectedPersona = this.actor.personaList.find( x=> x.source.id == personaId) ?? this.actor.sideboardPersonas.find(x=> x.source.id == personaId) ;
+		this.selectedPersona = this.actor.personaList.find( x=> x.source.id == personaId) ?? this.actor.personas.sideboardPersonas.find(x=> x.source.id == personaId) ;
 		void this.render(true);
 	}
 
@@ -554,14 +554,14 @@ export abstract class CombatantSheetBase extends PersonaActorSheetBase {
 
 	async activatePersona(event: JQuery.ClickEvent) {
 		const personaId = HTMLTools.getClosestData(event, "personaId");
-		await this.actor.switchPersona(personaId as ValidAttackers["id"]);
+		await this.actor.personas.switchPersona(personaId as ValidAttackers["id"]);
 	}
 
 	async deletePersona(event: JQuery.ClickEvent) {
 		const personaId = HTMLTools.getClosestData(event, "personaId");
 		if (this.actor.isNPCAlly()) {return;}
 		if (await HTMLTools.confirmBox("Confirm Delete", "Are you sure you want to delete this Persona?")) {
-			await this.actor.deletePersona(personaId as ValidAttackers["id"]);
+			await this.actor.personas.deletePersona(personaId as ValidAttackers["id"]);
 		}
 	}
 

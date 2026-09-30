@@ -108,7 +108,7 @@ export class PersonaTagManager<PType extends Persona> extends TagManager<TagType
         autoPTags.pushUnique(role);
       }
     }
-    if (autoPTags.includes("persona") && this.source.isPC() &&  this.source.hasSoloPersona) {
+    if (autoPTags.includes("persona") && this.source.isPC() &&  this.source.personas.hasSoloPersona) {
       autoPTags.pushUnique("lone-persona");
     }
     return autoPTags;

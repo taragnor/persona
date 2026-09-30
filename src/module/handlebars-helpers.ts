@@ -1065,7 +1065,7 @@ export class PersonaHandleBarsHelpers {
     },
 
     "hasMultiplePersonas": function (actor: PersonaActor) : boolean {
-      return !actor.hasSoloPersona;
+      return !actor.personas.hasSoloPersona;
     },
 
     "PersonaListContainsBasePersona": function (actor: PersonaActor): boolean {
@@ -1121,7 +1121,7 @@ export class PersonaHandleBarsHelpers {
         && persona.user.isPC()
         && persona.user.system.money >= cost
         && PersonaCompendium.canUseCompendium()
-        && persona.user.canAddNewPersona();
+        && persona.user.personas.canAddNewPersona();
     },
     "fusionResult": function (s1: Shadow, s2: Shadow) : U<Shadow> {
 
@@ -1191,14 +1191,14 @@ export class PersonaHandleBarsHelpers {
     },
 
     "fusionableCombinations" : function ( fusor: PC) : FusionCombination[]  {
-      return fusor.fusionCombinations
+      return fusor.personas.fusionCombinations
         .filter (comb=> comb.result != undefined)
         .filter (comb=> FusionTable.meetsConditionsToFuse(comb.result!, fusor))
         .sort( (a,b) => a.result!.name.localeCompare(b.result!.name));
     },
 
     "compendiumFusionOptions" : function ( fusor: PC) : FusionCombination[]  {
-      return fusor.compendiumFusionCombinations()
+      return fusor.personas.compendiumFusionCombinations()
         .filter (comb=> comb.result != undefined)
         .filter (comb=> FusionTable.meetsConditionsToFuse(comb.result!, fusor))
         .sort( (a,b) => a.result!.name.localeCompare(b.result!.name));

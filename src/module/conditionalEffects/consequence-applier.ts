@@ -450,7 +450,7 @@ export class ConsequenceApplier {
     }
     const persona = await ActorConverters.toPersona(shadow, actor);
     if (persona) {
-      if (await actor.addPersona(persona)) {
+      if (await actor.personas.addPersona(persona)) {
         return;
       }
       await persona.delete();

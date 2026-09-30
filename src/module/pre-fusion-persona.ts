@@ -89,14 +89,14 @@ export class HypotheticalPersona extends Persona<PC> {
 		const shadow = await this.createNewFusedPersona();
     void this.mergeSFX(shadow);
 		await this.destroyComponents();
-		await this.user.addPersona(shadow);
+		await this.user.personas.addPersona(shadow);
 		await this.fusionMsg(shadow);
 		this.user.sheet.render(false);
 		return shadow;
 	}
 
 	private async createNewFusedPersona() : Promise<Shadow>{
-		const persona= await ActorConverters.toPersona(this.source, this.user);
+		const persona = await ActorConverters.toPersona(this.source, this.user);
 		const basePowerSet = this.mainPowers.map( pwr => pwr.id);
 		const bonusXP = this.fusionXPBoost;
 		await persona.update( {"system.combat.powers": basePowerSet});
@@ -124,11 +124,14 @@ export class HypotheticalPersona extends Persona<PC> {
         ) {
           throw new Error(`Invalid Shadow Type to delete for persona merge ${personaShadow.name} ${personaShadow.id}`);
         }
-        if (PersonaSettings.debugMode()) {
-          console.log(`Simulated Delete of ${personaShadow.name}`);
-          return;
-        }
-        await personaShadow.delete();
+        // if (PersonaSettings.debugMode()) {
+        //   console.log(`Simulated Delete of ${personaShadow.name}`);
+        //   return;
+        // }
+        try {
+          await this.user.personas.deletePersona(personaShadow.id);
+          await personaShadow.delete();
+        } catch (e) { throw e; }
       } catch (e) {
         PersonaError.softFail(e as Error, `Error in deleting Persona ${personaShadow.name} ${personaShadow.id}`);
       }

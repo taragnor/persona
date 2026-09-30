@@ -36,9 +36,6 @@ export class CreateToken {
 			sort: Math.max(tokenLayer.getMaxSort() + 1, 0)
 		}, {parent: scene}) as TokenDocument<T>;
 
-    // Set the position of the Token such that its center point is the drop position before snapping
-    // const position = CONFIG.Token.objectClass._getDropActorPosition(token, {x: data.x, y: data.y,
-    //   elevation: data.elevation}, {snap: !event.shiftKey});
 		const position : typeof token["position"] = {
 			x: positionData.x,
 			y: positionData.y,
