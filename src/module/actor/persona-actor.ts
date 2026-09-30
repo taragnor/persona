@@ -133,6 +133,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       .forEach( cache => cache.clear());
     this.tags.clearCache();
     this.social.clearCache();
+    this.personas.clearCache();
     // this.cache.complementRating = new Map();
   }
 
@@ -1256,7 +1257,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     t += delta;
     t = Math.clamp(Math.floor(t), 0, this.theurgyMax);
     await this.update( {"system.combat.theurgy.value": t});
-
   }
 
   //** changed to use setHP instead of newval functionality */

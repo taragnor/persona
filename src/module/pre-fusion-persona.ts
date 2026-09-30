@@ -38,7 +38,7 @@ export class HypotheticalPersona extends Persona<PC> {
 	}
 
   override get powerLearning() : never {
-    throw new Error("Hypothetical personas cannot learn powers");
+    throw new PersonaError("Hypothetical personas cannot learn powers");
   }
 
 	async fusionProcess( sheetToUpdate: PCSheet) : Promise<U<Shadow>> {

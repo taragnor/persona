@@ -2014,7 +2014,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   private _getLinkedEffects (this: ItemModifierContainer, sourceActor: PersonaActor | null, CETypes ?: TypedConditionalEffect['conditionalType'][]) : readonly ConditionalEffectC[] {
     const tagEffects : ConditionalEffectC[] = [];
-    if (!this.isTalent() && !this.isTag() && !this.isUniversalModifier()){
+    if (!this.isTalent() && !this.isTag() && !this.isUniversalModifier()) {
       const tags = this.tagList(sourceActor?.isValidCombatant() ? sourceActor : null)
         .filter (tag=> tag instanceof PersonaItem);
       tagEffects.pushUnique(...tags.flatMap(tag =>

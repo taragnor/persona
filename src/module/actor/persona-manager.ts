@@ -11,12 +11,13 @@ export class PersonaManager<ActorType extends ValidAttackers = ValidAttackers> {
   constructor ( private actor: ActorType)
   {}
 
-  private cache = {
-    persona : new TimedCache( () => this._persona(), 3000),
-    basePersona : new TimedCache( () => this._basePersona(), 3000),
-  };
-
+  static CACHE_TIME = 3000 as const;
   static BASE_PERSONA_SIDEBOARD = 5 as const;
+
+  private cache = {
+    persona : new TimedCache( () => this._persona(), PersonaManager.CACHE_TIME),
+    basePersona : new TimedCache( () => this._basePersona(), PersonaManager.CACHE_TIME),
+  };
 
   async addPersona(shadow: Shadow) : Promise<boolean> {
     if (this.actor.isPC() && (!shadow.hasPlayerOwner || !shadow.isOwner)) {
@@ -40,6 +41,11 @@ export class PersonaManager<ActorType extends ValidAttackers = ValidAttackers> {
     }
     PersonaError.softFail(`Couldn't add Persona : ${shadow.name} to ${this.actor.name}`);
     return false;
+  }
+
+  clearCache() {
+    Object.values(this.cache)
+      .forEach( cache => cache.clear());
   }
 
   async addPersonaToMainList(shadow: Shadow, logging = this.actor.isPC()) : Promise<boolean> {
