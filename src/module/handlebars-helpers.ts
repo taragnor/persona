@@ -835,7 +835,12 @@ export class PersonaHandleBarsHelpers {
 
 
     "usingBasePersona": function (actor: ValidAttackers) : boolean {
-      return actor.isUsingBasePersona();
+      try {
+        return actor.personas.isUsingBasePersona();
+      } catch (e) {
+        PersonaError.softFail(e);
+        return false;
+      }
     },
 
     "canSideboardPowers": function (persona: Persona): boolean {

@@ -646,21 +646,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return npc;
   }
 
-  isUsingBasePersona(this: ValidAttackers) : boolean {
-    if ("activePersona" in this.system) {
-      const active = this.system.activePersona;
-      return !active  || active == this.id;
-    }
-    return true;
-  }
-
   get basePersona() : Persona {
     if (this.isNPC()) {
       const proxy : U<NPCAlly> = this.getNPCAllyProxy();
-      if (!proxy) {
+      if (!proxy || !proxy.isValidCombatant()) {
         throw new PersonaError("Can't call basePersona getter on non combatant");
       }
-      return new Persona(proxy, proxy, proxy._mainPowers());
+      return proxy.personas.basePersona;
     }
     return this.personas.basePersona;
   }
@@ -1486,7 +1478,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     } else {
       await Logger.sendToChat(`${this.name} set Teamwork Move to ${power.displayedName.toString()}` , this);
     }
-
   }
 
   get teamworkMove() : Power | undefined {

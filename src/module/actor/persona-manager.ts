@@ -79,7 +79,6 @@ export class PersonaManager<ActorType extends ValidAttackers = ValidAttackers> {
     return this.sideboardPersonas.length < this.maxPersonaSideboard;
   }
 
-
   async deletePersona( personaId: ValidAttackers["id"]) {
     if (await this._deletePersonaFromMainList(personaId)) { return; }
     if (this.actor.isPC() && await this.deletePersonaFromSideboard(personaId)) { return; }
@@ -221,7 +220,6 @@ export class PersonaManager<ActorType extends ValidAttackers = ValidAttackers> {
   }
 
   async switchPersona( sourceId: ValidAttackers["id"]) {
-    this.cache.persona.clear();
     if (this.actor.hasStatus("sealed")) {
       ui.notifications.warn("Can't swap persona while sealed");
       return;
@@ -231,6 +229,7 @@ export class PersonaManager<ActorType extends ValidAttackers = ValidAttackers> {
       PersonaError.softFail(`Couldn't find Persona ${sourceId} in your persona List or you aren't its owner`);
       return;
     }
+    this.cache.persona.clear();
     await this.actor.update({"system.activePersona": sourceId});
     const combat = PersonaCombat.combat;
     if (!combat || combat.isSocial) {
@@ -269,17 +268,11 @@ export class PersonaManager<ActorType extends ValidAttackers = ValidAttackers> {
 
   persona():  Persona<ActorType extends NPC ? NPCAlly : ActorType> {
     return this.cache.persona.value;
-    // return this.cache2.persona.value as unknown as Persona<T extends NPC ? NPCAlly : T>;
   }
 
   private _persona(): Persona<ActorType extends NPC ? NPCAlly : ActorType> {
     type returnType =  Persona<ActorType extends NPC ? NPCAlly : ActorType>;
     switch (this.actor.system.type) {
-      // case "npc": {
-      //   const proxy = (this.actor as NPC).getNPCAllyProxy();
-      //   if (!proxy) {throw new Error("Can't get persona for noncombatant");}
-      //   return proxy.personas.persona() as returnType;
-      // }
       case "npcAlly":
         return this.basePersona as returnType;
       case "pc": {
@@ -334,17 +327,15 @@ export class PersonaManager<ActorType extends ValidAttackers = ValidAttackers> {
   }
 
   _basePersona() : Persona {
-    // if (this.actor.isNPC()) {
-    //   const proxy : U<NPCAlly> = this.getNPCAllyProxy();
-    //   if (!proxy) {
-    //     throw new PersonaError("Can't call basePersona getter on non combatant");
-    //   }
-    //   return new Persona(proxy, proxy, proxy._mainPowers());
-    // }
-    // if (!this.isValidCombatant() && !this.isPC()) {
-    //   throw new PersonaError("Can't call basePersona getter on non combatant");
-    // }
     return new Persona(this.actor, this.actor, this.actor._mainPowers());
+  }
+
+  isUsingBasePersona() : boolean {
+    if ("activePersona" in this.actor.system) {
+      const active = this.actor.system.activePersona;
+      return !active  || active == this.actor.id;
+    }
+    return true;
   }
 
 }
