@@ -93,8 +93,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   private cache2 = {
     startingLevel: new PermanentCache( () => this._startingLevel()),
-    // persona : new TimedCache( () => (this as ValidAttackers)._persona(), 3000),
-    // basePersona : new TimedCache( () => (this as ValidAttackers)._basePersona(), 3000),
     actorMainModifiers: new TimedCache( () => this._actorMainModifiers(), 1000),
     tarot: new PermanentCache( () => this._tarot()),
     level: new PermanentCache( () => this._level()),
@@ -134,7 +132,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     this.tags.clearCache();
     this.social.clearCache();
     this.personas.clearCache();
-    // this.cache.complementRating = new Map();
   }
 
   get mp() : number {
