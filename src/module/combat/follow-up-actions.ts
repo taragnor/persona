@@ -347,6 +347,7 @@ export class FollowUpManager {
   }
 
 
+
   private getPowerTarget(ev: JQuery.Event) : PersonaCombatant {
     const targetId = HTMLTools.getClosestData(ev, "targetCombatantId");
     const combat = this.combat;

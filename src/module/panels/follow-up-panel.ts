@@ -16,15 +16,14 @@ export class FollowUpPanel extends PersonaPanel {
     return [
       {
         label: "Act Again",
-        onPress: () => this._noOpener(),
+        onPress: () => this._noFollowUp(),
       }
     ];
   }
 
-  async _noOpener() {
-    await this.pop();
+  async _noFollowUp() {
     this.followUps = [];
-    await PersonaCombat.combat?.openers.cleanUpAfterOpener();
+    await this.pop();
   }
 
   async setFollowUps(data: FollowUpActionData[], activationRoll: number) {

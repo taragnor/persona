@@ -113,6 +113,7 @@ export class OpenerManager {
       PersonaError.softFail("No combatnt to make opening roll wtih");
       return "ERROR";
     }
+    await this.setOpenerUsed(combatant, false);
     const openingData = this._execOpeningRoll(combatant, rollTotal);
     if (!openingData) {return undefined;}
     await this.storeOpenerChoices(combatant, openingData);
@@ -264,8 +265,13 @@ export class OpenerManager {
     html.find(".opener-selector button.auto-option").on("click", (ev) => void this._onOpenerSelect(ev));
   }
 
-  async cleanUpAfterOpener() {
+  async cleanUpAfterOpener(combatant: PersonaCombatant) {
+    await this.setOpenerUsed(combatant, true);
     await this.panel.pop();
+  }
+
+  async onNoOpenerUsed(combatant: PersonaCombatant) {
+    await this.setOpenerUsed(combatant, true);
   }
 
   async modifyOpenerMsg( opener: OpenerOption) {
@@ -305,9 +311,12 @@ export class OpenerManager {
   }
 
 
-  async requestOpenerChoice() {
-    const comb = this.combat.combatant;
+  async requestOpenerChoice(comb = this.combat.combatant) {
     if (!comb) { return; }
+    if (comb != this.combat.combatant) {
+      PersonaError.softFail("Combatnat isn't the active one");
+      return;
+    }
     if (!comb.actor.isOwner) { return; }
     if (game.user.isGM && comb.actor.hasActivePlayerOwner) { return; }
     const choices = this.getOpenerChoices();
@@ -320,6 +329,10 @@ export class OpenerManager {
       await this._execOpener(mandatory.option);
       return;
     }
+    await this.activatePanel(comb, choices);
+  }
+
+  private async activatePanel(comb : PersonaCombatant, choices : readonly OpenerOptionGroup[] ) {
     this.panel.setOpenerList(comb, choices);
     await SidePanelManager.push(this.panel);
   }
@@ -361,7 +374,7 @@ export class OpenerManager {
     } else {
       await this.simpleOpenerMsg(combatant, option);
     }
-    await this.cleanUpAfterOpener();
+    await this.cleanUpAfterOpener(combatant);
     await this.processOptionEffects(combatant, option.optionEffects);
 
   }
@@ -454,6 +467,24 @@ export class OpenerManager {
       await this.combat.nextTurn();
     }
   }
+
+  hasUsedOpener(combatant: Combatant) : boolean {
+    const flagData = this.combat.getFlag("persona", "openerUsed") as {combatantId?:Combatant["id"], used?: boolean}  ?? {combatantId: "", used: false};
+    if (combatant.id != flagData?.combatantId) {
+      PersonaError.softFail("Combatnat Id doesn't match oepenerUsed data");
+      return true;
+    }
+    return flagData?.used ?? false;
+  }
+
+  async setOpenerUsed(combatant: PersonaCombatant, state : boolean) : Promise<void> {
+    if (combatant == this.combat.combatant) {
+    await this.combat.setFlag("persona", "openerUsed", {combatantId: combatant.id, used: state});
+    } else {
+      PersonaError.softFail("trying to update opener Used for ${combatant.name} when it is not its turn");
+  }
+
+}
 
 }
 

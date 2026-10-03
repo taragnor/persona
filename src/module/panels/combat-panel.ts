@@ -189,6 +189,17 @@ export class CombatPanel extends PersonaPanel {
       this._target = token;
       await this.setMode("main");
       await this.setTacticalTarget(null);
+      const combat = PersonaCombat.combat;
+      if (!combat) {return;}
+      const combatant = combat.getCombatantsByToken(token).at(0);
+      if (!combatant) {
+        PersonaError.softFail(`Can't find combatant for token Id ${token.id} : ${token.name}`);
+        return;
+      }
+      if (combat.combatant == combatant && !combat.openers.hasUsedOpener(combatant)) {
+        await combat.openers.requestOpenerChoice(combatant as PersonaCombatant);
+        return;
+      }
       await this.updatePanelDeferred();
     } catch (e) {
       if (e instanceof Error) {
