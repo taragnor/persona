@@ -1481,43 +1481,27 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   get teamworkMove() : Power | undefined {
-    switch (this.system.type) {
-      case "pc":
-      case "npcAlly":
-        break;
-      case "shadow":
-      case "tarot":
-      case "npc":
-        return undefined;
-      default:
-        this.system satisfies never;
-        return undefined;
-    }
+    if (!this.isPCLike()) { return undefined;}
     const id = this.system.combat.teamworkMove;
-    if (!id)
-    {return undefined;}
+    if (!id) {return undefined;}
     return PersonaDB.allPowers().get(id);
   }
 
   hasStatus (id: StatusEffectId) : boolean {
     if (this.isNPC() && this.getNPCAllyProxy()) {
-      if (this.getNPCAllyProxy()?.hasStatus(id)){
+      if (this.getNPCAllyProxy()?.hasStatus(id)) {
         return false;
       }
     }
     return this.effects.contents.some( eff => eff.statuses.has(id));
-
   }
 
   getStatus( id: StatusEffectId) : PersonaAE | undefined {
     return this.effects.contents.find( eff => eff.statuses.has(id));
-
   }
 
   get tokens() : TokenDocument<this>[] {
-    if (this.token) {
-      return [this.token];
-    }
+    if (this.token) { return [this.token]; }
     return this.getDependentTokens() as TokenDocument<this>[];
   }
 
@@ -1553,7 +1537,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       cont = true;
     }
     let removed =0;
-
     for (const id of remList) {
       if (this.hasStatus(id)) {
         const newPotency = await this.getStatus(id)!.reducePotency(potency || 1);
