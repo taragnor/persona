@@ -301,12 +301,12 @@ export class OpenerManager {
   }
 
   static getMandatory(data: readonly OpenerOptionsGroups[]) : N<{group: OpenerOptionsGroups, option: OpenerOption}> { const group = data
-      .find(r => r.options
-        .some( o=> o.mandatory)
-      );
+    .find(r => r.options
+      .some( o=> o.mandatory)
+    );
     if (!group) {return null;}
     const option = group.options
-      .find(o => o.mandatory)!;
+    .find(o => o.mandatory)!;
     return {group, option};
   }
 
@@ -471,7 +471,6 @@ export class OpenerManager {
   hasUsedOpener(combatant: Combatant) : boolean {
     const flagData = this.combat.getFlag("persona", "openerUsed") as {combatantId?:Combatant["id"], used?: boolean}  ?? {combatantId: "", used: false};
     if (combatant.id != flagData?.combatantId) {
-      PersonaError.softFail("Combatnat Id doesn't match oepenerUsed data");
       return true;
     }
     return flagData?.used ?? false;
@@ -479,12 +478,11 @@ export class OpenerManager {
 
   async setOpenerUsed(combatant: PersonaCombatant, state : boolean) : Promise<void> {
     if (combatant == this.combat.combatant) {
-    await this.combat.setFlag("persona", "openerUsed", {combatantId: combatant.id, used: state});
+      await this.combat.setFlag("persona", "openerUsed", {combatantId: combatant.id, used: state});
     } else {
       PersonaError.softFail("trying to update opener Used for ${combatant.name} when it is not its turn");
+    }
   }
-
-}
 
 }
 

@@ -131,7 +131,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       .forEach( cache => cache.clear());
     this.tags.clearCache();
     this.social.clearCache();
-    this.personas.clearCache();
+    this._personaManager?.clearCache();
   }
 
   get mp() : number {

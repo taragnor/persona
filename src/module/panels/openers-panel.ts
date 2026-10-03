@@ -13,19 +13,25 @@ export class OpenerPanel extends SubPanel {
   }
 
   protected override buttonConfig() {
-    return [ {
+    return [
+      {
         label: "Tactical View",
         onPress: () => this._tacticalView(),
         visible: () => !OpenerManager.getMandatory(this._openers),
       }, {
         label: "No Opener",
-        onPress: () => this._onReturnToMainButton(undefined),
+        onPress: () => this._NoOpener(undefined),
         visible: () => !OpenerManager.getMandatory(this._openers),
       }
     ];
   }
 
-  protected override async _onReturnToMainButton(_ev: U<JQuery.ClickEvent>) {
+  protected override async _onReturnToMainButton() {
+    await super._onReturnToMainButton();
+    await this._tacticalView();
+  }
+
+  protected async _NoOpener(_ev: U<JQuery.ClickEvent>) {
     await this._combatant.parent.openers.onNoOpenerUsed(this._combatant);
     await super._onReturnToMainButton(undefined);
   }
@@ -37,12 +43,12 @@ export class OpenerPanel extends SubPanel {
   protected async _tacticalView() {
     await CombatPanel.instance.activate();
     await CombatPanel.instance.setMode("tactical");
-    await CombatPanel.instance.setTarget(null);
+    await CombatPanel.instance.setTacticalTarget(null);
   }
 
   override async updatePanel() {
     if (!this._combatant.isOwner ||
-    this._combatant != PersonaCombat.combat?.combatant) {
+      this._combatant != PersonaCombat.combat?.combatant) {
       await this.pop();
       return;
     }

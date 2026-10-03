@@ -39,6 +39,7 @@ export class CombatPanel extends PersonaPanel {
       {
         label: "Tactical",
         onPress: () => this._onTacticalMode(),
+        visible: () => this.mode != "tactical",
       }, {
         label: "Persona",
         onPress: () => this._onPersonaModeSwitchButton(),
@@ -66,14 +67,28 @@ export class CombatPanel extends PersonaPanel {
         && validState
         && turnCheck
         && (PersonaSettings.debugMode() || this.combat.outOfActions(this._target)),
-      },
+      }, {
+        label: "Take Action",
+        onPress: () => this._jumpToControlledToken(),
+        cssClasses : ["tall-button"],
+        visible: () => this.mode != "main"
+        && this.combat?.combatant?.isOwner == true
+      }
     ];
   }
 
   get combat() : U<PersonaCombat> {
-    const combat= PersonaCombat.combat;
+    const combat = PersonaCombat.combat;
     if (combat && !combat.isSocial) {return combat;}
     return undefined;
+  }
+
+  private async _jumpToControlledToken() {
+    const combatant = PersonaCombat.combat?.combatant;
+    if (!combatant  || !combatant.isOwner) {
+      return;
+    }
+    await this.setTarget(combatant.token);
   }
 
   get allowGMPCControl () {
@@ -81,7 +96,9 @@ export class CombatPanel extends PersonaPanel {
   }
 
   get target() {
-    if (this.mode == "tactical") {return this.tacticalTarget ?? this._target;}
+    if (this.mode == "tactical") {
+      return this.tacticalTarget ?? this._target;
+    }
     return this._target;
   }
 
@@ -95,7 +112,7 @@ export class CombatPanel extends PersonaPanel {
     const target = this.mode != "tactical" ? this.target?.actor : this.tacticalTarget?.actor ?? this.target?.actor;
     switch (this.mode) {
       case "tactical":
-      return this._observerTemplate();
+        return this._observerTemplate();
       case "overview":
         return this._combatOverview();
       case "main":
@@ -166,6 +183,7 @@ export class CombatPanel extends PersonaPanel {
     if (this.tacticalTarget == token) {return;}
     if (token == undefined) {
       this.tacticalTarget = undefined;
+      await this.setMode("overview");
       await this.updatePanelDeferred();
       return;
     }
@@ -316,13 +334,39 @@ export class CombatPanel extends PersonaPanel {
   }
 
   private async _onReturnToMainButton(ev: JQuery.ClickEvent) {
-    if (this.mode == "main") {return;}
     ev.stopPropagation();
-    await this.setMode("main");
+    if (this.mode == "main") {
+      await this.setMode("overview");
+      return;
+    }
+    const combatant = this.combat?.combatant;
+    if (combatant && combatant.isOwner) {
+      await this.setMode("main");
+      await this.setTarget(combatant.token);
+    } else {
+      await this.setMode("overview");
+    }
   }
 
   async setMode( mode: CombatPanel["mode"]) {
     this.mode = mode;
+    switch (mode) {
+      case "main":
+        if (this.tacticalTarget) {
+          await this.setTarget(this.tacticalTarget);
+        }
+        break;
+      case "tactical":
+        this._target = undefined;
+        break;
+      case "overview": {
+        this._target = undefined;
+        this.tacticalTarget = undefined;
+        break;
+      }
+      default:
+        mode satisfies never;
+    }
     await this.updatePanelDeferred();
   }
 
@@ -505,9 +549,7 @@ export class CombatPanel extends PersonaPanel {
       const panel = this.instance;
       if (isSelecting) {
         void panel.setTacticalTarget(token.document as PToken);
-      } else {
       }
-
     });
 
     Hooks.on("DBLoaded", async () => {
