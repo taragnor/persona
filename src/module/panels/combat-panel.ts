@@ -73,6 +73,11 @@ export class CombatPanel extends PersonaPanel {
         cssClasses : ["tall-button"],
         visible: () => this.mode != "main"
         && this.combat?.combatant?.isOwner == true
+      }, {
+        label: "Overview",
+        cssClasses : ["tall-button"],
+        onPress: () => this.setMode("overview"),
+        visible: () => this.mode != "overview"
       }
     ];
   }
