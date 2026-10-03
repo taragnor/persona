@@ -469,19 +469,19 @@ export class OpenerManager {
   }
 
   hasUsedOpener(combatant: Combatant) : boolean {
-    const flagData = this.combat.getFlag("persona", "openerUsed") as {combatantId?:Combatant["id"], used?: boolean}  ?? {combatantId: "", used: false};
-    if (combatant.id != flagData?.combatantId) {
+    if (combatant != this.combat.combatant) {
       return true;
     }
-    return flagData?.used ?? false;
+    const used = combatant.getFlag("persona", "openerUsed") as boolean;
+    return used ?? false;
   }
 
   async setOpenerUsed(combatant: PersonaCombatant, state : boolean) : Promise<void> {
-    if (combatant == this.combat.combatant) {
-      await this.combat.setFlag("persona", "openerUsed", {combatantId: combatant.id, used: state});
-    } else {
-      PersonaError.softFail("trying to update opener Used for ${combatant.name} when it is not its turn");
+    if (combatant != this.combat.combatant) {
+      PersonaError.softFail(`trying to update opener Used for ${combatant.name} when it is not its turn`);
+      return;
     }
+    await combatant.setFlag("persona", "openerUsed", state);
   }
 
 }

@@ -88,6 +88,7 @@ export class CombatPanel extends PersonaPanel {
     if (!combatant  || !combatant.isOwner) {
       return;
     }
+    await this.setMode("main");
     await this.setTarget(combatant.token);
   }
 
