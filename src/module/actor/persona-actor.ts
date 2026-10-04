@@ -88,7 +88,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     BATTLE: 5,
     EXIT_MV : 2,
     KO: 12,
-    THRESHOLD: 50,
+    THRESHOLD: 58,
   } as const;
 
   private cache2 = {
