@@ -77,9 +77,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   voicelines = new ActorVoiceLines(this);
   _personaManager : N<PersonaManager>  = null;
 
-  // static DOWNED_OPACITY = 0.5 as const;
-  // static FULL_FADE_OPACITY = 0.2 as const;
-
   static MPMap = new Map<number, number>;
   static MONEY_GAIN_LIMIT = 500 as const;
 
@@ -87,7 +84,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     TURN: 1,
     BATTLE: 5,
     EXIT_MV : 2,
-    KO: 12,
+    KO: 14,
     THRESHOLD: 58,
   } as const;
 

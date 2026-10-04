@@ -705,7 +705,12 @@ export class PersonaSocial {
   static isAvailable(activity: Activity | SocialLink, pc : PC) : boolean {
     if (this.isDisabled(activity)) {return false;}
     if (!pc.canTakeNormalDowntimeActions()) {
-      return false;
+      if (activity instanceof PersonaActor) {
+        return false;
+      }
+      if (activity.system.cardType != "recovery") {
+        return false;
+      }
     }
     if (activity instanceof PersonaItem) {
       return this._isAvailable_Activity(activity, pc);
