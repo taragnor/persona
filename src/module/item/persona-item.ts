@@ -379,12 +379,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   _restoresMP(this: Consumable | Power) : boolean {
     return this.getEffects(null, {deepTags: false}).some( eff =>
       eff.consequences.some(cons => {
-        if ( cons.cons.type != "alter-mp") {return false;}
-        const consAmt = cons.cons.amount;
+        if ( cons?.cons?.type != "alter-mp") {return false;}
+        const consAmt = cons?.cons?.amount;
         return typeof consAmt == "number"
           ? consAmt > 0
-          : consAmt.type == "constant"
-          && consAmt.val > 0;
+          : consAmt?.type == "constant"
+          && consAmt?.val > 0;
       })
     );
   }
