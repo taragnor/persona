@@ -275,19 +275,24 @@ export class OpenerManager {
   }
 
   async modifyOpenerMsg( opener: OpenerOption) {
-    const msg = this.chatMessage;
-    if (!msg) {return;}
-    const choice = $(`<div class='opener-choice'>
+    try {
+      const msg = this.chatMessage;
+      if (!msg) {return;}
+      const choice = $(`<div class='opener-choice'>
       <span>Chosen Opener:</span>
       <span>${opener.optionName}</span>
       </div>`);
-    const targetToReplace = $(msg.content).find('.opener-choices');
-    const replacedData = targetToReplace.empty();
-    replacedData.append(choice);
-    const newContent = replacedData
-      .parents().last().html();
-    if (newContent) {
-      await msg.update( {'content': newContent});
+      const targetToReplace = $(msg.content).find('.opener-choices');
+      const replacedData = targetToReplace.empty();
+      replacedData.append(choice);
+      const newContent = replacedData
+        .parents().last().html();
+      if (newContent) {
+        await msg.update( {'content': newContent});
+      }
+    } catch (e) {
+      PersonaError.softFail(e as Error);
+      return;
     }
   }
 
@@ -320,7 +325,10 @@ export class OpenerManager {
     if (!comb.actor.isOwner) { return; }
     if (game.user.isGM && comb.actor.hasActivePlayerOwner) { return; }
     const choices = this.getOpenerChoices();
-    if (choices.length == 0) {return;}
+    if (choices.length == 0) {
+      await this.activatePanel(comb, []);
+      return;
+    }
     await CombatPanel.instance.setTarget(comb.token);
     await CombatPanel.instance.activate();
     const mandatory = OpenerManager.getMandatory(choices);

@@ -107,16 +107,16 @@ export class HPCostCalculatorV2 extends CostCalculator {
 		let add = 0;
 		switch (pwr.system.ailmentChance) {
 			case "low":
-				add += 2;
+				add += 1;
 				break;
 			case "medium":
-				add += 4;
+				add += 3;
 				break;
 			case "high":
-				add += 6;
+				add += 5;
 				break;
 			case "always":
-				add += 8;
+				add += 7;
 				break;
 			case "none":
 				return;

@@ -83,6 +83,7 @@ export class FollowUpManager {
         if (ally == combatant) {return [];}
         const actor = ally.actor;
         if (!actor || !actor.teamworkMove ) {return [];}
+        if (!actor.isDistracted()) {return [];}
         if (!actor.persona().canUsePower(actor.teamworkMove, false)) {return [];}
         const situation : Situation = {
           attacker: actor.accessor,

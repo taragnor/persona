@@ -252,9 +252,9 @@ export class EnergyClassCalculator extends CostCalculator {
   static AILMENT_MULT_CHANCE : Record<keyof typeof INSTANT_KILL_LEVELS, EnergyCostBase> = {
     none: this.NULL_COST,
     low: new EnergyCostBase(5, 5),
-    medium: new EnergyCostBase(12,12),
-    high: new EnergyCostBase(20, 20),
-    always: new EnergyCostBase(30, 30),
+    medium: new EnergyCostBase(10,10),
+    high: new EnergyCostBase(15, 15),
+    always: new EnergyCostBase(25, 25),
   };
 
   static AILMENT_VALUE : Record<typeof STATUS_AILMENT_LIST[number], number> = {

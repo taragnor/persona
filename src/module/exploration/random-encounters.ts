@@ -307,8 +307,16 @@ export class RandomEncounter {
     switch (true) {
       case total == 1 : {
         html += `<div> Failure (enemy advantage)!</div>`;
+        await ChatMessage.create({
+          speaker: {
+            alias: "Player Decision"
+          },
+          content: html,
+          rolls: [roll],
+          style: CONST.CHAT_MESSAGE_STYLES.OTHER,
+        });
         await CombatScene.create(encounter);
-        break;
+        return;
       }
       case total >= 2 && total <= 3: {
         void TensionPool._instance.inc();
@@ -381,7 +389,7 @@ export class RandomEncounter {
     let etype : EncounterDifficulty;
     do {
       etype = options.encounterType ? options.encounterType : this.#getEncounterType(options.frequencies ?? {});
-      const size = this.#getEncounterSize(etype) + (options.sizeMod ?? 0);
+      const size = Math.max(1 , this.#getEncounterSize(etype) + (options.sizeMod ?? 0));
       encounterSizeRemaining = size;
       encounterList = this.#filterByEncounterType(baseList, etype);
     } while (encounterList.length <= 0);

@@ -14,6 +14,7 @@ export abstract class PersonaPanel extends SidePanel {
   }
 
   override async getData() {
+    await PersonaDB.waitUntilLoaded();
     return {
       ...await super.getData(),
       CONST : PersonaActorSheetBase.CONST(),

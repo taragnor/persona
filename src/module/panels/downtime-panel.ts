@@ -92,19 +92,6 @@ export class DowntimePanel extends PersonaPanel {
         cssClasses : ["tall-button"]
       },
       ...DowntimePanel.craftingButtons(this.actor, this),
-      // {
-        // label: "Crafting",
-        // onPress: () => ItemCraftingPanel.open(this.actor!, this),
-        // enabled: () => ItemCraftingPanel.allowCrafting(),
-        // visible: () => this.actor != undefined,
-        // cssClasses : ["tall-button"]
-      // }, {
-        // label: "Card Crafting",
-        // onPress: () => CardCraftingPanel.open(this.actor!, this),
-        // enabled: () => CardCraftingPanel.allowCrafting(),
-        // visible: () => this.actor != undefined && this.actor.hasVelvetRoomAccess,
-        // cssClasses : ["tall-button"]
-      // },
       {
         label: `Swap ${NPCAlly?.displayedName ?? "Teammate"}`,
         onPress: () => void Metaverse.chooseAlly(),

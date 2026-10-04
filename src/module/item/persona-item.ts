@@ -1956,6 +1956,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
   realHPCost(this: Usable, userPersona: Persona) : number {
+    if (this.isBasicPower()) {return 0;}
     const percent = this.hpCost(userPersona).total;
     if (percent <= 0) {return 0;}
     const mhp = userPersona.user.mhp;

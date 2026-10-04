@@ -37,11 +37,6 @@ export class CombatPanel extends PersonaPanel {
       : this.combat.turnCheck(this._target);
     return [
       {
-        label: "Tactical",
-        cssClasses : ["tall-button"],
-        onPress: () => this._onTacticalMode(),
-        visible: () => this.mode != "tactical",
-      }, {
         label: "Persona",
         onPress: () => this._onPersonaModeSwitchButton(),
         enabled: () => this._target ? this._target.actor.canSwitchPersonas && this._target.isOwner && turnCheck : false,
@@ -74,6 +69,11 @@ export class CombatPanel extends PersonaPanel {
         cssClasses : ["tall-button"],
         visible: () => this.mode != "main"
         && this.combat?.combatant?.isOwner == true
+      }, {
+        label: "Tactical",
+        cssClasses : ["tall-button"],
+        onPress: () => this._onTacticalMode(),
+        visible: () => this.mode != "tactical",
       }, {
         label: "Overview",
         cssClasses : ["tall-button"],

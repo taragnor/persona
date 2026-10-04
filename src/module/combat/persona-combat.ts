@@ -561,25 +561,25 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
     idleDetector.clearWatch();
   }
 
-private hourglass( start: boolean) {
-  //@ts-expect-error unknown setting
-  const presetJson = game.settings.get('hourglass','presets');
-  const presets : Record<string,string>[] = !!presetJson ? JSON.parse(presetJson) as Record<string,string>[] : [];
-  const mainHourglass = presets.find(x=> x.title == "Hourglass");
-  if (!mainHourglass) {
-    console.warn("Can't find main hourglass");
-    return;
+  private hourglass( start: boolean) {
+    //@ts-expect-error unknown setting
+    const presetJson = game.settings.get('hourglass','presets');
+    const presets : Record<string,string>[] = !!presetJson ? JSON.parse(presetJson) as Record<string,string>[] : [];
+    const mainHourglass = presets.find(x=> x.title == "Hourglass");
+    if (!mainHourglass) {
+      console.warn("Can't find main hourglass");
+      return;
+    }
+    if (start) {
+      game.socket.emit('module.hourglass', { type:'show', options: mainHourglass });
+      //@ts-expect-error unknown fn call
+      Hooks.call('showHourglass', mainHourglass);
+    } else {
+      game.socket.emit('module.hourglass', { type:'close', options: mainHourglass });
+      //@ts-expect-error unknown fn call
+      Hooks.call('closeHourglass', mainHourglass);
+    }
   }
-  if (start) {
-    game.socket.emit('module.hourglass', { type:'show', options: mainHourglass });
-    //@ts-expect-error unknown fn call
-    Hooks.call('showHourglass', mainHourglass);
-  } else {
-    game.socket.emit('module.hourglass', { type:'close', options: mainHourglass });
-    //@ts-expect-error unknown fn call
-    Hooks.call('closeHourglass', mainHourglass);
-  }
-}
 
   getControllerUser(combatant: Combatant <PersonaActor>) : N<PersonaFoundryUser> {
     if (!combatant.hasPlayerOwner)  {
@@ -2059,90 +2059,90 @@ private hourglass( start: boolean) {
     return [];
   }
 
-  static async testPowerVersusFoes(attacker: PToken, power: Usable) :Promise<string[]> {
-    const processor = this.instance?.combatEngine ?? new CombatEngine(undefined);
-    const testingTargets= this.getSimulationTargets(attacker);
-    const result = await processor.usePower(attacker, power, testingTargets, {askForModifier: false, setRoll: 16, ignorePrereqs : true, simulated: true});
-    const changes = result.attacks.flatMap( atk => atk.changes);
-    const PCResult = testingTargets.map( target => {
-      const PCChanges = changes.filter( ch => {
-        const actor = PersonaDB.findActor(ch.actor);
-        return actor == target.actor;
-      });
-      const HPChanges = PCChanges.map ( x=> x.damage.reduce (
-        (acc, dmg) => acc + dmg.hpChange, 0));
-      const dmg= -1 * HPChanges.reduce( (acc,ch) => acc+ch, 0);
-      return `${target.name} HTK ${(target.actor.mhp / dmg).toFixed(2)}`;
+static async testPowerVersusFoes(attacker: PToken, power: Usable) :Promise<string[]> {
+  const processor = this.instance?.combatEngine ?? new CombatEngine(undefined);
+  const testingTargets= this.getSimulationTargets(attacker);
+  const result = await processor.usePower(attacker, power, testingTargets, {askForModifier: false, setRoll: 16, ignorePrereqs : true, simulated: true});
+  const changes = result.attacks.flatMap( atk => atk.changes);
+  const PCResult = testingTargets.map( target => {
+    const PCChanges = changes.filter( ch => {
+      const actor = PersonaDB.findActor(ch.actor);
+      return actor == target.actor;
     });
-    //BUG does not work well for flurry powers yet
-    return PCResult;
-  }
+    const HPChanges = PCChanges.map ( x=> x.damage.reduce (
+      (acc, dmg) => acc + dmg.hpChange, 0));
+    const dmg= -1 * HPChanges.reduce( (acc,ch) => acc+ch, 0);
+    return `${target.name} HTK ${(target.actor.mhp / dmg).toFixed(2)}`;
+  });
+  //BUG does not work well for flurry powers yet
+  return PCResult;
+}
 
-  async addTokensToCombat(tokens: Foundry.Token<ValidAttackers>[]) {
-		const createData = tokens.map(t => {
-			return {
-				tokenId: t?.id,
-				sceneId: t?.scene?.id,
-				actorId: t?.document?.actorId,
-				hidden: t?.document?.hidden
-			};
-		});
-		const sanitizedData = createData.filter( x=>
-			x.tokenId && x.sceneId && x.actorId);
-		if (sanitizedData.length < createData.length) {
-			Debug(tokens);
-			Debug(createData);
-		}
-		return this.createEmbeddedDocuments("Combatant", sanitizedData);
+async addTokensToCombat(tokens: Foundry.Token<ValidAttackers>[]) {
+  const createData = tokens.map(t => {
+    return {
+      tokenId: t?.id,
+      sceneId: t?.scene?.id,
+      actorId: t?.document?.actorId,
+      hidden: t?.document?.hidden
+    };
+  });
+  const sanitizedData = createData.filter( x=>
+    x.tokenId && x.sceneId && x.actorId);
+  if (sanitizedData.length < createData.length) {
+    Debug(tokens);
+    Debug(createData);
   }
+  return this.createEmbeddedDocuments("Combatant", sanitizedData);
+}
 
-  async summon(shadow: Shadow) :Promise<void> {
-    const scene = this.combatants.find( x=> x.token != undefined)?.token?.parent ?? null;
-    if (!scene || scene != CombatScene.scene) {
-      PersonaError.softFail("Can't find scene to summon token to");
-      return;
-    }
-		const INITIAL_OFFSET = { x: 5, y: 5} as const;
-		const gridsize = scene.grid.size;
-		let x = INITIAL_OFFSET.x * gridsize;
-		const y = INITIAL_OFFSET.y * gridsize;
-    x += this.summonNumber++ * gridsize;
-    const token = await CreateToken.create(shadow, {x, y}, scene);
-    if (token && token.object) {
+async summon(shadow: Shadow) :Promise<void> {
+  const scene = this.combatants.find( x=> x.token != undefined)?.token?.parent ?? null;
+  if (!scene || scene != CombatScene.scene) {
+    PersonaError.softFail("Can't find scene to summon token to");
+    return;
+  }
+  const INITIAL_OFFSET = { x: 5, y: 5} as const;
+  const gridsize = scene.grid.size;
+  let x = INITIAL_OFFSET.x * gridsize;
+  const y = INITIAL_OFFSET.y * gridsize;
+  x += this.summonNumber++ * gridsize;
+  const token = await CreateToken.create(shadow, {x, y}, scene);
+  if (token && token.object) {
     await this.addTokensToCombat([token.object]);
-    }
-    if (!this.started) {return;}
-    const combatant = this.combatants.find(c=> c?.token == token)!;
-    const current = this.combatant?.initiative ?? 0;
-    await combatant.update({initiative : current - .001});
   }
+  if (!this.started) {return;}
+  const combatant = this.combatants.find(c=> c?.token == token)!;
+  const current = this.combatant?.initiative ?? 0;
+  await combatant.update({initiative : current - .001});
+}
 
-  async removeFromCombat(comb: U<PersonaCombatant | ValidAttackers>) : Promise<void> {
-    if (comb instanceof PersonaActor) {
-      comb = this.getCombatantsByActor(comb).at(0) as U<PersonaCombatant>;
-    }
-    if (!comb) {return;}
-    if (this.combatant == comb) {
-      await this.nextTurn();
-    }
-    if (this.combatant == comb) {
-      PersonaError.softFail("Can't escpae combat with only one combatanat");
-    }
-    setTimeout( async () => {
-      const token = comb.token;
-      await comb.delete();
-      if (token) {await token.delete();}
-    }, 10);
+async removeFromCombat(comb: U<PersonaCombatant | ValidAttackers>) : Promise<void> {
+  if (comb instanceof PersonaActor) {
+    comb = this.getCombatantsByActor(comb).at(0) as U<PersonaCombatant>;
   }
+  if (!comb) {return;}
+  if (this.combatant == comb) {
+    await this.nextTurn();
+  }
+  if (this.combatant == comb) {
+    PersonaError.softFail("Can't escpae combat with only one combatanat");
+  }
+  setTimeout( async () => {
+    const token = comb.token;
+    await comb.delete();
+    if (token) {await token.delete();}
+  }, 10);
+}
 
-  disableHeaderFlash() {
-    try {
-      const headers = $(document).find(".start-turn-header.flashing");
-      headers.removeClass("flashing");
-    } catch (e) {
-      PersonaError.softFail(e);
-    }
+disableHeaderFlash() {
+  try {
+    const headers = $(document).find(".start-turn-header.flashing");
+    headers.removeClass("flashing");
+  } catch (e) {
+    PersonaError.softFail(e);
   }
+}
 
 } // end of class
 
