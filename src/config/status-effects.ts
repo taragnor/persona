@@ -240,11 +240,14 @@ const STATUS_PROPERTY_TAGS = [
 "fusion"
 ] as const;
 
-CONFIG.statusEffects = STATUS_EFFECT_LIST
-	.map( ({id, img, tags})=> {
+CONFIG.statusEffects = Object.fromEntries(
+  STATUS_EFFECT_LIST
+  .map( ({id, img, tags})=> {
     const locString = `persona.status.${id}` as LocalizationString;
-	return {id, img, tags, name: locString, label:locString};
-});
+    return [id, {id, img, tags, name: locString, label:locString}];
+  })
+)
+;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DEPRECATED_STATUS_EFFECTS = [
@@ -260,10 +263,11 @@ export type FatigueStatusId = Extract<StatusEffectId, "tired" | "exhausted" | "r
 
 
 export const STATUS_EFFECT_TRANSLATION_TABLE = Object.fromEntries(
-	CONFIG.statusEffects.map( ({id, name}) => [id, name])
+	Object.values(CONFIG.statusEffects).map( ({id, name}) => [id, name])
 ) as Record<StatusEffectId, LocalizationString>;
 
-export const statusMap = new Map(CONFIG.statusEffects.map( k => ([k.id, k])) );
+// export const statusMap = new Map(CONFIG.statusEffects.map( k => ([k.id, k])) );
+export const statusMap = new Map(Object.entries(CONFIG.statusEffects));
 
 export const STATUS_EFFECT_DURATIONS_TYPE_LIST = [
 	"permanent",
@@ -293,17 +297,23 @@ export const STATUS_EFFECT_DURATION_TYPES = HTMLTools.createLocalizationObject(S
 
 Hooks.on("ready", () => {
   console.log("Sorting status effects");
-  CONFIG.statusEffects =
-    CONFIG.statusEffects.map (st => ({
+  const values = 
+    // CONFIG.statusEffects =
+    Object.values(CONFIG.statusEffects)
+    .map (st => ({
       ...st,
       name: st.label ? game.i18n.localize(st.label as LocalizationString) : st.name,
     })
-    );
-  CONFIG.statusEffects.sort( (a,b) =>  {
-    const la = game.i18n.localize(a.label as LocalizationString);
-    const lb = game.i18n.localize(b.label as LocalizationString);
-    return la.localeCompare(lb);
-  });
+    )
+    .sort( (a,b) =>  {
+      // CONFIG.statusEffects.sort( (a,b) =>  {
+      const la = game.i18n.localize(a.label as LocalizationString);
+      const lb = game.i18n.localize(b.label as LocalizationString);
+      return la.localeCompare(lb);
+    });
+  CONFIG.statusEffects = Object.fromEntries(
+    values.map( x=> [x.id, x])
+  );
 });
 
 //const oldSort = Array.prototype.sort;
@@ -365,10 +375,10 @@ export const STATUS_AILMENT_LIST = [
 export const STATUS_AILMENT_SET : Set<StatusEffectId> = new Set(STATUS_AILMENT_LIST);
 
 export const STATUSES_BY_TAG : Record<StatusTag, Set<StatusEffectId>> = Object.fromEntries(
-	STATUS_PROPERTY_TAGS.map( tag => [ tag, new Set( CONFIG.statusEffects
-		.filter( x=> x.tags.includes(tag))
-		.map( x=> x.id as StatusEffectId)
-	)])
+  STATUS_PROPERTY_TAGS.map( tag => [ tag, new Set( Object.values(CONFIG.statusEffects)
+    .filter( x=> x.tags.includes(tag))
+    .map( x=> x.id as StatusEffectId)
+  )])
 ) as Record<StatusTag, Set<StatusEffectId>>;
 
 export type StatusEffectPlus = StatusEffectId

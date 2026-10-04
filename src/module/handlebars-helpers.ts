@@ -894,7 +894,7 @@ export class PersonaHandleBarsHelpers {
 
     },
     "displayStatusIcon": function (statusId: StatusEffectId) : SafeString {
-      const status = CONFIG.statusEffects.find( x=> x.id == statusId);
+      const status = Object.values(CONFIG.statusEffects).find( x=> x.id == statusId);
       if (status) {
         const locName = localize(status.name as LocalizationString);
         // eslint-disable-next-line @typescript-eslint/no-deprecated

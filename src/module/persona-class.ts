@@ -986,7 +986,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
   }
 
   get printableResistanceString() : string {
-    const retdata = CONFIG.statusEffects
+    const retdata = Object.values(CONFIG.statusEffects)
       .map ( st => st.id)
       .map(statusRaw => {
         const actual = this.statusResist(statusRaw as StatusEffectId);

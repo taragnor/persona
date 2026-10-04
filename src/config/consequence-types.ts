@@ -47,15 +47,6 @@ export type LocalEffect =
 type LocalEffectConsequenceTypes =
   SocialCardActionConsequence;
 
-// type NonDepTypes = Prettify<NonDeprecatedConsequence & {type: "damage-new"}>;
-
-// type OE = Prettify<
-//   LocalEffect &  {
-//     type: "social-card-action",
-//     cardAction: "modify-progress-tokens",
-//     // subtype: never,
-//   }>;
-
 export type StatusEffect = StatusEffect_Basic | StatusEffect_NonBasic;
 
 type StatusEffect_Basic = {

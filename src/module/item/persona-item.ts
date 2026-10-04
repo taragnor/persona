@@ -2635,7 +2635,7 @@ statusesRemoved(this: Usable): StatusEffectId[] {
 
 buffsOrDebuffsAdded(this: Usable) : number {
   const statusesGranted = this.statusesAdded();
-  const buffsAndDebuffs = CONFIG.statusEffects
+  const buffsAndDebuffs = Object.values(CONFIG.statusEffects)
     .filter(st => st.tags.includes('buff') || st.tags.includes('debuff'))
     .map( x=> x.id);
   return statusesGranted.reduce( (acc, st) => buffsAndDebuffs.includes(st.status) ? acc + 1 : acc, 0);

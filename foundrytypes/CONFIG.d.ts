@@ -10,9 +10,10 @@ declare interface CONFIG {
   };
   Token: {
     documentClass: typeof TokenDocument<any>;
-    objectClass: typeof Token<any>;
+    objectClass: typeof Foundry.Token<any>;
   }
-  statusEffects: StatusEffectObject[];
+  statusEffects: Record<string, StatusEffectObject>;
+  // statusEffects: StatusEffectObject[];
   ActiveEffect: {
     documentClass: typeof ActiveEffect<any>;
     legacyTransferral: boolean;

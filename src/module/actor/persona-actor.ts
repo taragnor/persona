@@ -1405,7 +1405,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   private async _addStatus(statusEffect: StatusEffect): Promise<boolean> {
 
     const {id, duration} = statusEffect;
-    const stateData = CONFIG.statusEffects.find ( x=> x.id == id);
+    const stateData = Object.values(CONFIG.statusEffects).find ( x=> x.id == id);
     if (!stateData) {
       throw new PersonaError(`Couldn't find status effect Id: ${id}`);
     }
@@ -1449,7 +1449,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       switch (duration.dtype)  {
         case "X-rounds":
         case "3-rounds": {
-          const tags = CONFIG.statusEffects.find(x=> x.id == id)?.tags;
+          const tags = Object.values(CONFIG.statusEffects)
+          .find(x=> x.id == id)?.tags;
           if (!tags) {
             PersonaError.softFail(`Bad status Id: ${id}`);
             return duration;

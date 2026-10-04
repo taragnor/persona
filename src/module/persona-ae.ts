@@ -208,7 +208,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 
   get isBuffStatus() :boolean {
     return Array.from(this.statuses).some( st => {
-      const status = CONFIG.statusEffects.find( x=> x.id == st);
+      const status = Object.values(CONFIG.statusEffects).find( x=> x.id == st);
       if (!status) {return false;}
       if (status.tags.includes("buff")) { return true; }
       return false;
@@ -217,7 +217,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 
   get isDebuffStatus() :boolean {
     return Array.from(this.statuses).some( st => {
-      const status = CONFIG.statusEffects.find( x=> x.id == st);
+      const status = Object.values(CONFIG.statusEffects)
+        .find( x=> x.id == st);
       if (!status) {return false;}
       if (status.tags.includes("debuff")) { return true; }
       return false;
@@ -226,7 +227,7 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 
   get maxPotency() : number {
     for (const st of Array.from(this.statuses)) {
-      const status = CONFIG.statusEffects.find( x=> x.id == st);
+      const status = Object.values(CONFIG.statusEffects).find( x=> x.id == st);
       if (!status) {continue;}
       if (status.tags.includes("buff") || status.tags.includes("debuff")) { return BUFF_MAX_POTENCY; }
       if (status.id == "burn") { return 9000; }
@@ -553,7 +554,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     if (this.statusDuration.dtype == "instant") {return false;}
     if (!this.durationLessThanOrEqualTo({ dtype: "combat"})) {return false;}
     return Array.from(this.statuses).some( st=> {
-      const status = CONFIG.statusEffects.find( x=> x.id == st);
+      const status = Object.values(CONFIG.statusEffects)
+        .find( x=> x.id == st);
       if (st == "sticky") {return false;}
       const tags = status?.tags;
       if (!status || !tags) {return false;}
@@ -804,7 +806,8 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
 
   get isDowntimeStatus(): boolean {
     if (this.statuses.size < 1) {return false;}
-    const downtime = CONFIG.statusEffects.filter(x => x.tags.includes("downtime"));
+    const downtime = Object.values(CONFIG.statusEffects)
+      .filter(x => x.tags.includes("downtime"));
     return downtime.some( st => this.statuses.has(st.id as StatusEffectId) );
   }
 
