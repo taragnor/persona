@@ -42,7 +42,6 @@ export class RegionPanel {
 		await this.panel.updatePanel(region);
 	}
 
-
 	private static initHooks() {
 		console.log("Init Region Panel Hooks");
 

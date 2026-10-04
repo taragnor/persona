@@ -119,8 +119,13 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     }
   }
 
+  hasPersona() : boolean {
+    if (!this.isValidCombatant()) {return false;}
+    return this._personaManager != undefined;
+  }
+
   get personas() : PersonaManager {
-    if (!this._personaManager || !this.isValidCombatant()) {throw new PersonaError(`No persona manager on type ${this.type}`);}
+    if (!this._personaManager || !this.isValidCombatant()) {throw new PersonaError(`No persona manager on type ${this.type} (${this.name})`);}
     return this._personaManager;
   }
 

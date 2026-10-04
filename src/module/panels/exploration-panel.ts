@@ -72,11 +72,6 @@ export class ExplorationPanel extends PersonaPanel {
       onPress: () => void Metaverse.chooseAlly(),
       enabled: () => !PersonaCombat.combat,
     });
-    // buttons.push( {
-    //   label: `Velvet Room`,
-    //   onPress: () => void this._onVelvetRoomButton(),
-    //   enabled: () => !PersonaCompendium.canUseCompendium(),
-    // });
     return buttons;
   }
 
@@ -98,7 +93,7 @@ export class ExplorationPanel extends PersonaPanel {
         label: `${ownedMembers.length > 1 ? member.name : ""} Powers`,
         onPress: () => void this._openUsePowerPanel(member),
         enabled: () => true,
-        visible: () => member.persona().explorationPowers.length > 0
+        visible: () => member.hasPersona() && member.persona().explorationPowers.length > 0
       });
     }
     return buttons;
