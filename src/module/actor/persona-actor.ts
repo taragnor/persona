@@ -1359,6 +1359,19 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return PersonaAE.durationLessThanOrEqualTo(status.duration, {dtype: "combat"});
   }
 
+  async addStatusManual(statusEffect: StatusEffect["id"]) {
+    await this.addStatus( {
+      // a hacky solution for manaul adding
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-explicit-any
+      id: statusEffect as any,
+      duration : {
+        dtype: "permanent",
+        anchorHolder: this.accessor,
+      }
+    });
+
+  }
+
   /** returns true if status is added*/
   async addStatus(statusEffect: StatusEffect, ignoreFatigue= false): Promise<boolean> {
     const {id} = statusEffect;
