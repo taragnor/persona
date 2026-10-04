@@ -316,16 +316,6 @@ Hooks.on("ready", () => {
   );
 });
 
-//const oldSort = Array.prototype.sort;
-
-////@ts-expect-error hacking for debug purposes
-//Array.prototype.sort = function<T>(this: Array<T>, compareFn : (a: T, b:T) => Array<T>) {
-//  if (this == CONFIG.statusEffects) {
-//    debugger;
-//  }
-//  return oldSort.call(this, compareFn) as number;
-//};
-
 export function statusToFatigueLevel(id: FatigueStatusId | undefined) {
 	switch (id) {
 		case "rested": return 2;
