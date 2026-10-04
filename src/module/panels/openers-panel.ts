@@ -20,6 +20,7 @@ export class OpenerPanel extends SubPanel {
         visible: () => !OpenerManager.getMandatory(this._openers),
       }, {
         label: "No Opener",
+        cssClasses : ["tall-button"],
         onPress: () => this._NoOpener(undefined),
         visible: () => !OpenerManager.getMandatory(this._openers),
       }

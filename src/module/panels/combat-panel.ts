@@ -38,6 +38,7 @@ export class CombatPanel extends PersonaPanel {
     return [
       {
         label: "Tactical",
+        cssClasses : ["tall-button"],
         onPress: () => this._onTacticalMode(),
         visible: () => this.mode != "tactical",
       }, {
