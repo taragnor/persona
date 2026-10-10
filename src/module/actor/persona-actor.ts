@@ -111,7 +111,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       this.#powerLearning = new PowerLearningSystem(this);
     }
     this.clearCache();
-    if (this.isValidCombatant()) {
+    if (this.isValidCombatant()
+      ||( this.isPC() && !this.isRealPC() )
+    ) {
       this._personaManager = new PersonaManager(this);
     }
   }
@@ -122,7 +124,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
   }
 
   get personas() : PersonaManager {
-    if (!this._personaManager || !this.isValidCombatant()) {throw new PersonaError(`No persona manager on type ${this.type} (${this.name})`);}
+    if (!this._personaManager) {
+      throw new PersonaError(`No persona manager on type ${this.type} (${this.name})`);
+    }
     return this._personaManager;
   }
 
