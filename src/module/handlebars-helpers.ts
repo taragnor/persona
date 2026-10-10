@@ -1342,7 +1342,17 @@ export class PersonaHandleBarsHelpers {
       }
       // console.log(`Returning non-base item for ${owner.name}`);
       return owner;
-    }
+    },
+
+    "isDead": function (actor: ValidAttackers) : boolean {
+      try {
+        if (!actor || !(actor instanceof PersonaActor)) {return false;}
+        return !actor.isAlive();
+      } catch (e) {
+        PersonaError.softFail(e);
+        return false;
+      }
+    },
 
   };
 

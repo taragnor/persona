@@ -30,7 +30,8 @@ export class PowerTargetSelectionPanel extends SubPanel {
   targetList() :readonly (ValidAttackers | PToken)[] {
     return this._targetList()
       .filter( t=>
-        this.power.targeting().targetMeetsTargettingConditions(this.actor, t instanceof TokenDocument ? t.actor : t)
+        this.power.targeting().isValidTargetFor(this.actor, t instanceof TokenDocument ? t.actor : t)
+        // this.power.targeting().targetMeetsTargettingConditions(this.actor, t instanceof TokenDocument ? t.actor : t)
       );
   }
 

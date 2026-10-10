@@ -57,7 +57,8 @@ export class HPCostCalculatorV2 extends CostCalculator {
 
   private static _targetsAndAoE(pwr: Power, calc: BonusCalculation) : void {
     if (pwr.isAoE()) {
-      calc.mult(0, 1.5, "AoE Multiplier");
+      calc.add(0, 6, "AoE");
+      // calc.mult(0, 1.5, "AoE Multiplier");
     }
     switch (pwr.targets()) {
       case "1-random-enemy":

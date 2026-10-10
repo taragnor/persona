@@ -33,6 +33,10 @@ export class PersonaToken extends TokenDocument<PersonaActor> {
   get img(): string {
     return this.texture.src;
   }
+
+  get displayedName() : string {
+    return this.name;
+  }
 }
 
 

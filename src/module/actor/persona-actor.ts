@@ -1271,7 +1271,9 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
           await this.update( {"system.combat.hp": mhp});
         }
         if (this.theurgyVal < 0 || this.theurgyVal > this.theurgyMax) {
-          await this.update( {"system.combat.theurgy.value": Math.clamp (this.theurgyVal, 0, this.theurgyMax)});
+          await this.update( {
+            "system.combat.theurgy.value": Math.clamp (this.theurgyVal, 0, this.theurgyMax)
+          });
         }
         this.refreshTheurgyBarStyle();
         if (this.hasStatus("full-fade") && hp != 0) {
@@ -1281,7 +1283,8 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
         PersonaError.softFail(`Error on Refresh HP Status for ${this.name}, ${this.id}, hp: ${hp}, mhp: ${mhp}`, e);
       }
     }, {
-      inUseMsg : `Aborting Refreshing HP Status for ${this.name} (anti-loop)`, maxDepth : 3,
+      inUseMsg : `Aborting Refreshing HP Status for ${this.name} (anti-loop)`,
+      maxDepth : 3,
       suppressMessages: !PersonaSettings.debugMode(),
     });
   }
@@ -2556,7 +2559,7 @@ async spendMoney(this: PC, amt: number) {
 }
 
 isAlive(): boolean {
-  if (this.system.type == "npc") {return true;}
+  if (this.isNPC()) {return true;}
   if (this.isPC() && !this.isRealPC()) {return true;}
   return this.hp > 0;
 }
@@ -3436,8 +3439,19 @@ async onKO() : Promise<void> {
   );
 }
 
-onRevive() : Promise<void> {
-  return Promise.resolve();
+async onRevive(this: ValidAttackers) : Promise<void> {
+  try {
+    const combat = PersonaCombat.combat;
+    if (!combat || combat.isSocial) {return;}
+    const combatants = combat.getCombatantsByActor(this) ?? [];
+    for (const comb of combatants) {
+      if (comb.isDefeated) {
+        await comb.update({"defeated": false});
+      }
+    }
+  } catch (e) {
+    PersonaError.softFail(e);
+  }
 }
 
 get tagList() : (Tag | InternalCreatureTag)[] {

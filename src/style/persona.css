@@ -2414,6 +2414,14 @@ img.mod-icon {
     border: 1px solid #666;
   }
 
+  &.dead {
+    opacity: 65%;
+  }
+
+  &.defeated {
+    opacity: 33% !important;
+  }
+
   .portrait img {
     width: 100%;
     height: 100%;

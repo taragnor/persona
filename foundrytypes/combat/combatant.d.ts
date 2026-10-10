@@ -16,7 +16,7 @@ namespace Foundry {
 		img: string;
 		actor: T  | undefined;
 		combat: Combat<T>;
-		isDefeated(): boolean;
+		isDefeated: boolean;
 		isEmbedded(): boolean;
 		isNPC: boolean;
 		token: TokenDocument<T>;
