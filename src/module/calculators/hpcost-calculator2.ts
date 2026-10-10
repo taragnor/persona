@@ -63,7 +63,8 @@ export class HPCostCalculatorV2 extends CostCalculator {
     switch (pwr.targets()) {
       case "1-random-enemy":
       case "each-attack-random-enemy":
-        calc.mult(0, 0.75, "Random Targets");
+        calc.add(0, -4, "Randomly targetted");
+        // calc.mult(0, 0.75, "Random Targets");
         break;
     }
   }

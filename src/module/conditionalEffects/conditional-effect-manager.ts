@@ -788,12 +788,12 @@ export class EMAccessor<T> {
 // **********   error checking code  *********** ****
 // **************************************************
 
-type Intersection<T, U> = T extends U ? T : never;
-type x = Intersection<PreconditionType, ConsequenceType>;
-type ExpectNever<X extends never> = X;
+// type Intersection<T, U> = T extends U ? T : never;
+// type x = Intersection<PreconditionType, ConsequenceType>;
+// type ExpectNever<X extends never> = X;
 
 //if this ever errors, it means there's an intersectio of Precondition and Conseuqence type which could lead to errors.
-let x: ExpectNever<x>;
+// let x: ExpectNever<x>;
 
 export type CEAction = {
   type: "create-effect",

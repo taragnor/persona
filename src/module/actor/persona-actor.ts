@@ -3441,6 +3441,11 @@ async onKO() : Promise<void> {
 
 async onRevive(this: ValidAttackers) : Promise<void> {
   try {
+    for (const st of (["curse", "expel"] as const)) {
+      if (this.hasStatus(st)) {
+        await this.removeStatus(st);
+      }
+    }
     const combat = PersonaCombat.combat;
     if (!combat || combat.isSocial) {return;}
     const combatants = combat.getCombatantsByActor(this) ?? [];

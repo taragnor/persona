@@ -224,7 +224,8 @@ export class Metaverse {
     const combat = PersonaCombat.combat;
     switch (true) {
       case combat?.isSocial : return "downtime";
-      case combat != undefined:
+      case combat != undefined && combat.combatants.size > 0:
+
         return "combat";
       default: {
         if (game.scenes.active == CombatScene.scene) {
