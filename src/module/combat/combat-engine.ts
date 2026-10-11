@@ -1282,8 +1282,10 @@ export class CombatEngine {
       case 'skillCard':
       case 'consumable' : {
         const consumable = usableOrCard as Consumable;
-        if (consumable.isSkillCard()
-          || consumable.isConsumable()) {
+        if (
+          consumable.isSkillCard()
+          || (consumable.isConsumable() && !consumable.isReusable())
+        ) {
           res.addEffect(null, attacker.actor, {
             type: 'expend-item',
             source: usableOrCard.accessor,

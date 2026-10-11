@@ -2118,21 +2118,22 @@ async summon(shadow: Shadow) :Promise<void> {
 }
 
 async removeFromCombat(comb: U<PersonaCombatant | ValidAttackers>) : Promise<void> {
-  if (comb instanceof PersonaActor) {
-    comb = this.getCombatantsByActor(comb).at(0) as U<PersonaCombatant>;
-  }
-  if (!comb) {return;}
-  if (this.combatant == comb) {
-    await this.nextTurn();
-  }
-  if (this.combatant == comb) {
-    PersonaError.softFail("Can't escpae combat with only one combatanat");
-  }
-  setTimeout( async () => {
-    const token = comb.token;
-    await comb.delete();
-    if (token) {await token.delete();}
-  }, 10);
+  setTimeout( async() => {
+    const combatant = (comb instanceof PersonaActor) ?
+      this.getCombatantsByActor(comb).at(0) as U<PersonaCombatant> : comb;
+    if (!combatant) {return;}
+    if (this.combatant == combatant) {
+      await this.nextTurn();
+    }
+    if (this.combatant == combatant) {
+      PersonaError.softFail("Can't escpae combat with only one combatanat");
+    }
+    setTimeout( async () => {
+      const token = combatant.token;
+      await combatant.delete();
+      if (token) {await token.delete();}
+    }, 200);
+  }, 500);
 }
 
 disableHeaderFlash() {

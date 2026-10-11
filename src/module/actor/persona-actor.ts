@@ -1293,10 +1293,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     });
   }
 
-  async resetTheurgy() {
-    if (this.theurgyVal == 0) {return;}
-    console.debug(`Theurgy for ${this.name} reset to 0 (was ${this.theurgyVal})`);
-    await this.update( {"system.combat.theurgy.value": 0});
+  async resetTheurgy(val = 0) {
+    val = Math.floor(val);
+    if (this.theurgyVal == val) {return;}
+    console.debug(`Theurgy for ${this.name} reset to ${val} (was ${this.theurgyVal})`);
+    await this.update( {"system.combat.theurgy.value": val});
   }
 
   refreshTheurgyBarStyle() {
@@ -3436,7 +3437,7 @@ async onKO() : Promise<void> {
     await this.alterNPCFatigueTracker(this.NPC_FATIGUE.KO);
   }
   if (this.isPCLike() && this.theurgyVal > 0 && !PersonaSettings.debugMode()) {
-    await this.resetTheurgy();
+    await this.resetTheurgy(this.theurgyVal / 2);
   }
   await Promise.allSettled(
     this.effects.contents.map( eff => eff.onKO())
@@ -3449,6 +3450,10 @@ async onRevive(this: ValidAttackers) : Promise<void> {
       if (this.hasStatus(st)) {
         await this.removeStatus(st);
       }
+    }
+    if (this.isShadow()) {
+      const energy = Math.max(0, Math.floor(this.energy / 2));
+      await this.setEnergy(energy);
     }
     const combat = PersonaCombat.combat;
     if (!combat || combat.isSocial) {return;}
@@ -3634,29 +3639,6 @@ get trueOwner() : U<PersonaFoundryUser> {
   if (!this.system.trueOwner) {return undefined;}
   return game.users.get(this.system.trueOwner) as PersonaFoundryUser;
 }
-
-// get fusionCombinations() : FusionCombination[] {
-//   const arr = this.personaList
-//     .concat(this.sideboardPersonas);
-//   return FusionTable.fusionCombinationsOutOf(arr);
-// }
-
-// fusionCombinationsRaw() {
-//   const arr = this.personaList
-//     .concat(this.sideboardPersonas);
-//   return FusionTable.fusionCombinationsOutOf(arr, true);
-// }
-
-// compendiumFusionCombinations(this: PC) : FusionCombination[] {
-//   const arr = this.personaList
-//     .concat(this.sideboardPersonas);
-//   const additional = PersonaCompendium.allCompendiumPersonas()
-//     .filter( compPer=> !arr
-//       .some(shadow => shadow.compendiumEntry == compPer)
-//     ).map( shadow => new Persona(shadow, this));
-//   arr.push(...additional);
-//   return FusionTable.fusionCombinationsOutOf(arr);
-// }
 
 getPrimaryPlayerOwner() : typeof game.users.contents[number] | undefined {
   if ("trueOwner" in this.system) {
