@@ -2045,6 +2045,22 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     await this.update( {"system.creatureTags": tags});
   }
 
+  async addStatusSubTag(this: Tag, tag ?: Tag) {
+    const tags = this.system.statusSubTags;
+    if (tag && tag instanceof PersonaItem) {
+      tags.push(tag.id);
+    } else {
+      tags.push("");
+    }
+    await this.update( {"system.statusSubTags": tags});
+  }
+
+  async deleteStatusSubTag(this: Tag, index: number) : Promise<void> {
+    const tags = this.system.statusSubTags;
+    tags.splice(index, 1);
+    await this.update( {"system.statusSubTags": tags});
+  }
+
   private _getBaseMainModifierEffects(this: ItemModifierContainer, sourceActor: N<PersonaActor>, proxyItem: UN<ItemContainers> ) : readonly ConditionalEffectC[] {
     if (this.isCardItem()) {
       return [ConditionalEffectC.fromCard(this)];

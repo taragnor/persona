@@ -20,7 +20,7 @@ import { DEFENSE_TYPES } from "./defense-types.js";
 import {COMPARATORS, COMPARISON_GROUPS, NUMERIC_COMPARISON_TARGET, NUMERIC_V2_ACTOR_STATS, NUMERIC_V2_COMPARISON_TARGETS, RESULT_SUBTYPE_COMPARISON, SIMPLE_COMPARATORS} from "./numeric-comparison.js";
 import {PERMA_BUFFS} from "./perma-buff-type.js";
 import {POWER_TAGS} from "./power-tags.js";
-import {CONDITION_TARGETS, PRECONDITIONTYPES, SOCIAL_LINK_OR_TAROT_OTHER, USER_COMPARISON_TARGETS} from "./precondition-types.js";
+import {CONDITION_TARGETS, PRECONDITIONTYPES, SOCIAL_LINK_OR_TAROT_OTHER, STATUS_SUBTAG_CONDITION_TARGETS, USER_COMPARISON_TARGETS} from "./precondition-types.js";
 import {ROLL_TAGS_AND_CARD_TAGS} from "./roll-tags.js";
 import {SAVE_TYPES_LOCALIZED} from "./save-types.js";
 import {CREATURE_TYPE, SHADOW_ROLE} from "./shadow-types.js";
@@ -155,6 +155,7 @@ private static _powerStuffBase: Record<string, unknown>;
       TREASURE_TABLES,
       PROBABILITIES,
       POWER_COMPARISON_SUBLIST,
+      STATUS_SUBTAG_CONDITION_TARGETS,
       ANIMATION_ACTION,
       SFX_CONSEQUENCE,
       ANIMATION_OFFSET,
@@ -241,6 +242,13 @@ private static _powerStuffBase: Record<string, unknown>;
       .sort( (a,b) => a.name.localeCompare(b.name))
       .map (sh => [sh.id, sh.name])
     );
+    const STATUS_SUBTAGS = {
+      "" : "-",
+      ...Object.fromEntries(
+        PersonaDB.statusSubTags()
+        .map( t => [t.id, t.name])
+      ),
+    };
 
     const data = {
       ...this.powerStuffBase(),
@@ -273,7 +281,8 @@ private static _powerStuffBase: Record<string, unknown>;
       SOCIAL_CARDS,
       ROLL_TAGS_AND_CARD_TAGS: UNIFIED_ROLL_AND_CARD_TAGS,
       STATUS_TAGS,
-    };
+      STATUS_SUBTAGS,
+    } satisfies Record< string, Record<string, string>>;
     return data;
   }
 

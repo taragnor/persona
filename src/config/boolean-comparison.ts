@@ -1,7 +1,7 @@
 import { RollTag } from "./roll-tags.js";
 import { CardTag } from "./card-tags.js";
 import { HTMLTools } from "../module/utility/HTMLTools.js";
-import { DeprecatedPrecondition, NonDeprecatedPrecondition, UserComparisonTarget } from "./precondition-types.js";
+import { DeprecatedPrecondition, NonDeprecatedPrecondition, StatusSubtagConditionTarget, UserComparisonTarget } from "./precondition-types.js";
 import { PowerType } from "./effect-types.js";
 import { DamageType, DamageTypesPlusAffinity } from "./damage-types.js";
 import { TarotCard } from "./tarot.js";
@@ -424,6 +424,7 @@ const TAG_COMPARISON_TYPE_LIST = [
 	"weapon",
   "item-used-consumable",
   "considered-item",
+  "status-subtag",
 ] as const;
 
 type TagComparisonType = typeof TAG_COMPARISON_TYPE_LIST[number];
@@ -454,6 +455,10 @@ type GeneralTagComparison = {
 } | {
   tagComparisonType: "considered-item",
 	itemTag: MultiCheckOrSingle<Tag["id"]>,
+} | {
+  tagComparisonType: "status-subtag",
+  statusSubTagId: MultiCheckOrSingle<Tag["id"]>,
+	conditionTarget : StatusSubtagConditionTarget,
 }
 );
 

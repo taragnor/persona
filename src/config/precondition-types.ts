@@ -157,11 +157,20 @@ export const CONDITION_TARGETS_LIST = [
   "pc-party",
 ] as const;
 
+export const STATUS_SUBTAG_TARGETS_LIST = [
+  ...CONDITION_TARGETS_LIST,
+  "triggering-status",
+] as const;
+
 export type ConditionTarget= typeof CONDITION_TARGETS_LIST[number];
+
+export type StatusSubtagConditionTarget = typeof STATUS_SUBTAG_TARGETS_LIST[number];
 
 export type ConsequenceTarget = ConditionTarget;
 
 export const CONDITION_TARGETS = HTMLTools.createLocalizationObject(CONDITION_TARGETS_LIST, "persona.preconditions.targets");
+
+export const STATUS_SUBTAG_CONDITION_TARGETS = HTMLTools.createLocalizationObject(STATUS_SUBTAG_TARGETS_LIST, "persona.preconditions.targets");
 
 const CONDITION_DICE_LIST= [
 	"escalation",

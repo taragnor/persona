@@ -10,6 +10,7 @@ const TAG_TYPES_LIST = [
 	"role",
 	"enchantment",
 	"status",
+  "status-subtag",
 ] as const;
 
 export type TagType = typeof TAG_TYPES_LIST[number];

@@ -138,5 +138,10 @@
   <div>
     {{> "systems/persona/parts/creatureTags.hbs" actor=item POWERSTUFF=POWERSTUFF allowEdit=true}}
   </div>
+  {{#if (eqAny item.system.tagType "status-subtag" "status")}}
+  <div>
+    {{> "systems/persona/parts/status-subtags.hbs" actor=item POWERSTUFF=POWERSTUFF allowEdit=true}}
+  </div>
+  {{/if}}
 </form>
 

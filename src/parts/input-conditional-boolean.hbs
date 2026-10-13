@@ -55,6 +55,13 @@
 	{{selectOptions POWERSTUFF.TAG_COMPARISON_TYPES localize=true selected=cond.tagComparisonType}}
 </select>
 
+{{#if (eqAny cond.tagComparisonType "status-subtag")}}
+<select name="{{strcat namePrefix 'conditionTarget'}}">
+	{{selectOptions POWERSTUFF.STATUS_SUBTAG_CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+</select>
+{{multicheck (strcat namePrefix 'statusSubTagId') POWERSTUFF.STATUS_SUBTAGS checked=cond.statusSubTagId localize=true}}
+{{/if}}
+
 {{#if (eqAny cond.tagComparisonType "power")}}
 {{multicheck (strcat namePrefix 'powerTag') POWERSTUFF.TAGS checked=cond.powerTag localize=true}}
 {{/if}}

@@ -672,6 +672,10 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     return tarotList;
   }
 
+  statusSubTags(): Tag[] {
+    return this.tagsArr()
+      .filter (tag => tag.system.tagType == "status-subtag");
+  }
 
   averagePCLevel(): number {
     const pcs = this.realPCs();

@@ -1520,6 +1520,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return this.effects.contents.some( eff => eff.statuses.has(id));
   }
 
+  getStatusesWithSubTag(subTags: Tag[] | Tag["id"][]) : PersonaAE[] {
+    const testTags = subTags.map(
+      t=> t instanceof PersonaItem ? t : PersonaDB.allTags().get(t))
+    .filter (t => t != undefined);
+    return this.effects
+      .filter (x=> x.hasStatusTag(testTags));
+  }
+
+  hasStatusWithSubTag(subtags: Tag[] | Tag["id"][]) : boolean {
+    return this.getStatusesWithSubTag(subtags).length > 0;
+  }
+
   getStatus( id: StatusEffectId) : PersonaAE | undefined {
     return this.effects.contents.find( eff => eff.statuses.has(id));
   }

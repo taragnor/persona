@@ -36,6 +36,7 @@ import {Persona} from "../persona-class.js";
 import {PowerTag} from "../../config/power-tags.js";
 import {checkSituationProp} from "../../config/situation.js";
 import {PreconditionC} from "./precondition-class.js";
+import {TagManager} from "../tag-manager.js";
 
 /** @deprecated Use ConditionalEffectC.getActiveConsequences instead */
 export function getActiveConsequences(condEffect: ConditionalEffectC, situation: Situation) : ConditionalEffectC["consequences"] {
@@ -885,6 +886,26 @@ function hasTagConditional(condition: PreconditionType & BooleanComparisonPC & {
       const tagCheck = condition.itemTag;
       const tagIds = unifiedTagList(item.tagList(null));
       return multiCheckContains(tagCheck, tagIds);
+    }
+    case "status-subtag": {
+      if (condition.conditionTarget == "triggering-status") {
+        if (!checkSituationProp(situation, "statusEffect")) {
+          return undefined;
+        }
+        const status = TagManager.resolveTag( situation.statusEffect);
+        if (!(status instanceof PersonaItem)) {
+          return false;
+        }
+        const subtags = status.tagList(null)
+          .filter (x=> x instanceof PersonaItem)
+          .map( x=> x.id);
+        return multiCheckContains(condition.statusSubTagId, subtags);
+      }
+      //do standard condition target check
+      const cond = condition as typeof condition & {conditionTarget: ConditionTarget};
+      const targets = getSubjectActors(cond, situation, "conditionTarget", ownershipInfo);
+      const ids = multiCheckToArray(condition.statusSubTagId);
+      return targets.some( x=> x.hasStatusWithSubTag(ids));
     }
     default:  {
       condition satisfies never;

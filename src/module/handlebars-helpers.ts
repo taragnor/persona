@@ -536,12 +536,16 @@ export class PersonaHandleBarsHelpers {
       return tag.descriptionHTML;
     },
 
-    "getCreatureTagList": function (actorOrItem: PersonaActor | PersonaItem) : SafeString[] {
+    "getCreatureTagList": function (actorOrItem: PersonaActor | PersonaItem) : {displayedNameHTML: SafeString}[] {
       if (actorOrItem instanceof PersonaActor) {
         const actor= actorOrItem;
         const ret =  actor.tagList.map(tag=> {
-          if (tag instanceof PersonaItem) {return tag.displayedNameHTML;}
-          return new Handlebars.SafeString(localize(CREATURE_TAGS[tag]));
+          if (tag instanceof PersonaItem) {
+            return tag;
+          }
+          return {
+            displayedNameHTML : new Handlebars.SafeString(localize(CREATURE_TAGS[tag]))
+          };
         });
         return ret;
       }
@@ -550,7 +554,8 @@ export class PersonaHandleBarsHelpers {
         const ret =  item.tagList(null).map(tag=>
           {
             if (tag instanceof PersonaItem) {
-              return tag.displayedNameHTML;
+              return tag;
+              // return tag.displayedNameHTML;
             }
             return null;
           })
@@ -754,6 +759,7 @@ export class PersonaHandleBarsHelpers {
     "getPowerTagsL": function (actor: U<ValidAttackers>, power: Usable) {
       return power.tagListLocalized(actor ?? null);
     },
+
     "persona": function (actor: ValidAttackers | PersonaCombatant | PToken) : Persona {
       if (actor instanceof TokenDocument) {
         actor = actor.actor;

@@ -1,0 +1,23 @@
+<div class="statusSubtags">
+  {{#if (and allowEdit (isGM))}}
+
+  <h2>
+    <span>Status SubTags</span>
+    <a class="addStatusSubTag">
+      <i class="fa-solid fa-plus"> </i>
+    </a>
+  </h2>
+  <div class="tag-list">
+    {{#each (convertTagsForList actor.system.statusSubTags) as |tag i|}}
+    <div class="tag-item", data-tag-index="{{i}}">
+      <select name="system.statusSubTags.{{i}}">
+        {{selectOptions (defVal tagList ../POWERSTUFF.STATUS_SUBTAGS) localize=true selected=tag}}
+      </select>
+      <a class="delTag">
+        <i class="fa-solid fa-trash-can"></i>
+      </a>
+    </div>
+    {{/each}}
+  </div>
+  {{/if}}
+</div>

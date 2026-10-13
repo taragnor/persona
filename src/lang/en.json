@@ -837,6 +837,8 @@
 	"persona.preconditions.targets.cameo": "Cameo Character" ,
 	"persona.preconditions.targets.navigator": "Navigator" ,
 	"persona.preconditions.targets.pc-party": "PC Party" ,
+	"persona.preconditions.targets.triggering-status": "Triggering Status" ,
+
 
 	"persona.preconditions.dice.escalation": "Escalation DIe" ,
 	"persona.preconditions.dice.activation": "Activation Roll" ,
@@ -1309,6 +1311,7 @@
 	"persona.comparison.tagType.weapon": "Weapon Tag",
 	"persona.comparison.tagType.item-used-consumable": "Item Tag (of used consumable)",
 	"persona.comparison.tagType.considered-item": "Item being considered (Treasure)",
+	"persona.comparison.tagType.status-subtag": "Status Subtag",
 
 	"persona.permabuff.max-hp": "Max HP",
 	"persona.permabuff.max-mp": "Max MP",
@@ -1419,6 +1422,7 @@
 	"persona.tag.tagtype.role": "Shadow Role",
 	"persona.tag.tagtype.enchantment": "Item Enchantment",
 	"persona.tag.tagtype.status": "Status",
+	"persona.tag.tagtype.status-subtag": "Status Subtag",
 
 	"persona.consequenceAmount.actorProperties.hp": "HP",
 	"persona.consequenceAmount.actorProperties.mhp": "MHP",

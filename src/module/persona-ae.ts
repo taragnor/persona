@@ -14,6 +14,7 @@ import {ConditionalEffectC} from "./conditionalEffects/conditional-effect-class.
 import {StatusEffect} from "../config/consequence-types.js";
 import {PersonaSettings} from "../config/persona-settings.js";
 import {PermanentCache, TimedCache} from "./utility/cache.js";
+import {TagManager} from "./tag-manager.js";
 
 const POWER_COOLDOWN_FLAG_NAME =   "cooldownPowerId" as const;
 
@@ -809,6 +810,19 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     const downtime = Object.values(CONFIG.statusEffects)
       .filter(x => x.tags.includes("downtime"));
     return downtime.some( st => this.statuses.has(st.id as StatusEffectId) );
+  }
+
+  hasStatusTag(tags: Tag[]) : boolean {
+    if (tags.some (t =>
+      this.statuses.has(t.system.linkedInternalTag as StatusEffectId
+        || this.statuses.has(t.id as StatusEffectId)
+      )
+    )) {return true;}
+    const actor = this.parent instanceof PersonaActor && this.parent.isValidCombatant() ? this.parent : null;
+    return Array.from(this.statuses)
+      .map( s => TagManager.resolveTag(s))
+      .filter ( s=> s != undefined && s instanceof PersonaItem)
+      .some( s=> s.tags.hasTag(tags, actor));
   }
 
   static getStatusValue (duration : SimpleStatusDuration) : number {

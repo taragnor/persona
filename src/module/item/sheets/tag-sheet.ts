@@ -64,6 +64,8 @@ export class PersonaTagSheet extends PersonaEffectContainerBaseSheet {
     PersonaPowerLikeBaseSheet.powerTagListeners(html, this.item);
 		html.find(".creatureTags .delTag").on("click", ev => void this.deleteCreatureTag(ev));
 		html.find('.addCreatureTag').on("click", ev => void this.onAddCreatureTag(ev));
+		html.find('.addStatusSubTag').on("click", ev => void this.onAddStatusSubTag(ev));
+		html.find('.statusSubtags .delTag').on("click", ev => void this.onDeleteStatusSubTag(ev));
 	}
 
 	async onAddCreatureTag( _ev: JQuery.ClickEvent) {
@@ -71,8 +73,17 @@ export class PersonaTagSheet extends PersonaEffectContainerBaseSheet {
 	}
 
 	async deleteCreatureTag(ev: JQuery.ClickEvent) {
-		const index = HTMLTools.getClosestData(ev, "tagIndex");
+		const index = HTMLTools.getClosestDataNumber(ev, "tagIndex");
 		await this.item.deleteCreatureTag(Number(index));
 	}
+
+  async onAddStatusSubTag(_ev: JQuery.ClickEvent) {
+    return this.item.addStatusSubTag();
+  }
+
+  async onDeleteStatusSubTag(ev: JQuery.ClickEvent) {
+		const index = HTMLTools.getClosestDataNumber(ev, "tagIndex");
+    return this.item.deleteStatusSubTag(Number(index));
+  }
 
 }

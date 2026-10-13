@@ -289,11 +289,19 @@ export class ItemTagManager<I extends PersonaItem> extends TagManager<TagType>{
   }
 
   private getTags_tag(item : Tag) : readonly TagType[] {
-    const tagList = (item.system.tags as TagType[])
-    .concat (item.system.itemTags ?? [])
-    .concat (item.system.tags ?? [])
-    .concat ((item.system.creatureTags ?? []) as TagType[]);
-    return tagList;
+    return [
+      ...(item.system.tags as TagType[]),
+      ...(item.system.itemTags ?? []),
+      ...(item.system.tags ?? []),
+      ...((item.system.creatureTags ?? []) as TagType[]),
+      ...((item.system.statusSubTags ?? []) as TagType[]),
+    ] satisfies TagType[];
+    // const tagList = (item.system.tags as TagType[])
+    //   .concat (item.system.itemTags ?? [])
+    //   .concat (item.system.tags ?? [])
+    //   .concat ((item.system.creatureTags ?? []) as TagType[])
+    //   .concat (item.system.statusSubtags ?? []);
+    // return tagList;
   }
 
 }

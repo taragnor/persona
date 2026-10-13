@@ -7,7 +7,7 @@ import {EQUIPMENT_TAGS, WEAPON_TAGS} from "../../config/equipment-tags.js";
 import {ITEM_PROPERTIES, MODIFIERS_TABLE} from "../../config/item-modifiers.js";
 import {CombatResultComparison} from "../../config/numeric-comparison.js";
 import {POWER_TAGS} from "../../config/power-tags.js";
-import {CONDITION_TARGETS, MultiCheck, NonDeprecatedPrecondition} from "../../config/precondition-types.js";
+import {CONDITION_TARGETS, MultiCheck, NonDeprecatedPrecondition, STATUS_SUBTAG_CONDITION_TARGETS} from "../../config/precondition-types.js";
 import {ROLL_TAGS_AND_CARD_TAGS} from "../../config/roll-tags.js";
 import {CREATURE_TYPE, SHADOW_ROLE} from "../../config/shadow-types.js";
 import {SLOTTYPES} from "../../config/slot-types.js";
@@ -101,7 +101,7 @@ export class ConditionalEffectPrinter {
     }
 
     static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
-      const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, CONDITION_TARGETS) : "";
+      const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, STATUS_SUBTAG_CONDITION_TARGETS) : "";
       const target2 = ("conditionTarget2" in cond) ? this.translate(cond.conditionTarget2, CONDITION_TARGETS): "" ;
       const not = !cond.booleanState ? "not" : "";
       switch (cond.boolComparisonTarget) {
@@ -303,6 +303,10 @@ export class ConditionalEffectPrinter {
           return `used consumable ${not} has Equipment Tag: ${tagName}`;
         case "considered-item":
           return `possible treasure item ${not} has Tag: ${tagName}`;
+        case "status-subtag": {
+          const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, STATUS_SUBTAG_CONDITION_TARGETS) : "";
+          return `${target1} ${not} has Status with subtag Tag: ${tagName}`;
+        }
         default:
           cond satisfies never;
           return "ERROR (has-tag)";
@@ -450,6 +454,9 @@ export class ConditionalEffectPrinter {
           return this.translate(cond.powerTag as keyof typeof EQUIPMENT_TAGS, EQUIPMENT_TAGS);
         case "considered-item":
           return this.translate(cond.itemTag as keyof typeof EQUIPMENT_TAGS, EQUIPMENT_TAGS);
+        case "status-subtag": {
+          return this.translate(cond.statusSubTagId, {});
+        }
         default:
           cond satisfies never;
           return "ERROR (get has-Tag)";

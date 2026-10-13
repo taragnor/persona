@@ -1,35 +1,35 @@
 <div class="creatureTags">
-	{{#if (and allowEdit (isGM))}}
-	<h2>
-		<span>Tags</span>
-		<a class="addCreatureTag">
-			<i class="fa-solid fa-plus"> </i>
-		</a>
-	</h2>
-	<div class="tag-list">
-		{{#each (convertTagsForList actor.system.creatureTags) as |tag i|}}
-		<div class="tag-item", data-tag-index="{{i}}">
-			<select name="system.creatureTags.{{i}}">
-				{{selectOptions (defVal tagList ../POWERSTUFF.CREATURE_TAGS) localize=true selected=tag}}
-			</select>
-			<a class="delTag">
-				<i class="fa-solid fa-trash-can"></i>
-			</a>
-		</div>
-		{{/each}}
-	</div>
-	{{else}}
-	{{#if (getCreatureTagList actor)}}
-	<div>
-		<div class="creature-tag-list f-row">
-			{{#each (getCreatureTagList actor) as |tag i|}}
-			<div>
-				{{tag}}
-			</div>
-			{{/each}}
-		</div>
-	</div>
-	{{/if}}
-	{{/if}}
+  {{#if (and allowEdit (isGM))}}
+  <h2>
+    <span>Actor Tags</span>
+    <a class="addCreatureTag">
+      <i class="fa-solid fa-plus"> </i>
+    </a>
+  </h2>
+  <div class="tag-list">
+    {{#each (convertTagsForList actor.system.creatureTags) as |tag i|}}
+    <div class="tag-item", data-tag-index="{{i}}">
+      <select name="system.creatureTags.{{i}}">
+        {{selectOptions (defVal tagList ../POWERSTUFF.CREATURE_TAGS) localize=true selected=tag}}
+      </select>
+      <a class="delTag">
+        <i class="fa-solid fa-trash-can"></i>
+      </a>
+    </div>
+    {{/each}}
+  </div>
+  {{else}}
+  {{#if (getCreatureTagList actor)}}
+  <div>
+    <div class="creature-tag-list f-row" title="{{tag.description}}">
+      {{#each (getCreatureTagList actor) as |tag i|}}
+      <div>
+        {{tag.displayedNameHTML}}
+      </div>
+      {{/each}}
+    </div>
+  </div>
+  {{/if}}
+  {{/if}}
 </div>
 
