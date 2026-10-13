@@ -8,7 +8,7 @@
 </div>
 {{/if}}
 
-{{#if (eq cond.powerProp "power-type-is") }}
+{{#if (eq (defVal cond.powerProp "power-type-is") "power-type-is") }}
 <select name="{{strcat namePrefix 'powerType'}}">
 	{{selectOptions POWERSTUFF.POWERTYPES localize=true selected=cond.powerType}}
 </select>
@@ -22,7 +22,7 @@
 {{multicheck (strcat namePrefix 'powerDamageType') POWERSTUFF.DAMAGE_TYPES_PLUS_AFFINITY checked=cond.powerDamageType localize=true}}
 {{/if}}
 
-{{#if (eq (defVal cond.powerProp "has-tag") "has-tag") }}
+{{#if (eq cond.powerProp "has-tag") }}
 {{multicheck (strcat namePrefix 'powerTag') POWERSTUFF.TAGS checked=cond.powerTag localize=true}}
 {{/if}}
 

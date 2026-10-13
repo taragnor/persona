@@ -28,7 +28,7 @@
 
 <div>
 	<select id="comparison-target" name="{{strcat namePrefix 'boolComparisonTarget'}}">
-		{{selectOptions (deprecationList cond.boolComparisonTarget POWERSTUFF.NONDEPBOOLEAN_COMPARISON_TARGET POWERSTUFF.BOOLEAN_COMPARISON_TARGET) localize=true selected=cond.boolComparisonTarget}}
+		{{selectOptions (deprecationList cond.boolComparisonTarget POWERSTUFF.NONDEPBOOLEAN_COMPARISON_TARGET POWERSTUFF.BOOLEAN_COMPARISON_TARGET) localize=true selected=(defVal cond.boolComparisonTarget "combat-comparison")}}
 	</select>
 </div>
 <div>
@@ -289,7 +289,7 @@
 </select>
 {{/if}}
 
-{{#if (eq cond.boolComparisonTarget "combat-comparison")}}
+{{#if (eq (defVal cond.boolComparisonTarget "combat-comparison") "combat-comparison")}}
 <select name="{{strcat namePrefix 'combatProp'}}">
 	{{selectOptions POWERSTUFF.COMBAT_COMPARISON_SUBLIST localize=true selected=cond.combatProp}}
 </select>
