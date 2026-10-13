@@ -2033,7 +2033,7 @@ get printableActiveStatuses(): {name: string, description: string, id: PersonaAE
     .filter( eff=> eff.isStatus)
     .flatMap (eff => {
       return eff.statusTags.map( stTag=> ({
-        name: stTag.displayedName,
+        name: stTag.fullDescriptiveName,
         description: stTag.description.toString() + "\n" + eff.statusDurationString(),
         id: eff.id,
       }));

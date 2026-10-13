@@ -1235,6 +1235,25 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
   }
 
+  get fullDescriptiveName() : string {
+    switch (this.system.type) {
+      case "tag": {
+        const subtags = this.tags.tagList(null);
+        let substring = "";
+        if (subtags.length > 0) {
+          const subName = subtags
+            .map( x=> x instanceof PersonaItem ? x.displayedName : x)
+          .join();
+          substring = ` (${subName})`;
+        }
+        return `${this.displayedName}${substring}`;
+      }
+      default:
+        return this.displayedName;
+    }
+
+  }
+
   get displayedName() : string {
     switch (this.system.type) {
       case 'skillCard': {
