@@ -236,6 +236,7 @@ export const COMBAT_EFFECTS_LIST = [
   "alter-energy",
   "addStatus",
   "removeStatus",
+  "removeStatusBySubtag",
   "extraAttack",
   "extraTurn",
   "scan",
@@ -253,6 +254,8 @@ export type CombatEffect = typeof COMBAT_EFFECTS_LIST[number];
 export const COMBAT_EFFECTS = Object.fromEntries(
   COMBAT_EFFECTS_LIST.map( x=> [x, `persona.combat-effects-subtypes.${x}`])
 );
+
+
 
 const INVENTORY_ACTION_LIST = [
   "add-item",

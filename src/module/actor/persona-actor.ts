@@ -1631,17 +1631,39 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return returnStatus;
   }
 
-  async removeStatus(status: Pick<StatusEffect, "id"> | StatusEffectId) : Promise<boolean>{
+  async removeStatusesWithSubTag(subTag: Tag) : Promise<PersonaAE[]> {
+    try {
+      const tagsToRemove = this.effects
+        .filter( eff => eff.hasStatusTag([subTag]));
+      const promises = tagsToRemove.map( async (eff) => await eff.delete());
+      await Promise.all(promises);
+      return tagsToRemove;
+    } catch (e) {
+      PersonaError.softFail(`Error removing statuses with subtag ${subTag?.name ?? "ERROR"}`,e );
+      return [];
+    }
+  }
+
+  async removeStatus(statusOrSubTagId: Pick<StatusEffect, "id"> | StatusEffectId | Tag["id"] | ActiveEffect["id"]) : Promise<PersonaAE[]>{
+    const AE = this.effects.get(statusOrSubTagId as ActiveEffect["id"]);
+    if (AE) {
+      await AE.delete();
+      return [AE];
+    }
+    const tag = PersonaDB.allTags().get(statusOrSubTagId as Tag["id"]);
+    if (tag) {return this.removeStatusesWithSubTag(tag);}
+    const status = statusOrSubTagId as Pick<StatusEffect, "id"> | StatusEffectId;
     const id = typeof status == "object" ? status.id : status;
     try {
-      const promises = this.effects
-        .filter( eff => eff.statuses.has(id))
+      const statusesToRemove = this.effects
+        .filter( eff => eff.statuses.has(id));
+      const promises = statusesToRemove
         .map( async (eff) => await eff.delete());
       await Promise.all(promises);
-      return promises.length > 0;
+      return statusesToRemove;
     } catch (e) {
       PersonaError.softFail(`Error removing status ${id}`,e );
-      return false;
+      return []
     }
   }
 

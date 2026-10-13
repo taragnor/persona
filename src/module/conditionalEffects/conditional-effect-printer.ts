@@ -829,6 +829,10 @@ export class ConditionalEffectPrinter {
           const shadow = PersonaDB.getActorById(cons.shadowId);
           return `Summon ${shadow?.name ?? "TARGET NOT FOUND"}`;
         }
+        case "removeStatusBySubtag": {
+          const tags = this.translate(cons.tagId, {});
+          return `Remove Status with subtag (${tags})`;
+        }
         default:
           cons satisfies never;
           return "ERROR (combat-effect)";

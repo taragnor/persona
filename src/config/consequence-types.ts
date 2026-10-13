@@ -325,53 +325,68 @@ type CombatEffectConsequence = {
 } & CombatEffectConsequencesList;
 
 type CombatEffectConsequencesList =
-	NewDamageConsequence
-	| ({
-		combatEffect : "addStatus",
-		statusName: StatusEffect["id"],
-    potency: number,
-	} & DurationComponent)
-	| {
-		combatEffect: "removeStatus",
-		statusName: MultiCheckOrSingle<StatusEffect["id"]>,
-	} | {
-		combatEffect: "extraTurn",
-	} | {
-		combatEffect: "scan",
-		amount: number,
-		downgrade: boolean,
-	} | {
-		combatEffect: "summon",
+  NewDamageConsequence
+// | ({
+// 	combatEffect : "addStatus",
+// 	statusName: StatusEffect["id"],
+// potency: number,
+// } & DurationComponent)
+// | {
+// 	combatEffect: "removeStatus",
+// 	statusName: MultiCheckOrSingle<StatusEffect["id"]>,
+// } | {
+  | StatusAlterConsequence
+  | {
+    combatEffect: "extraTurn",
+  } | {
+    combatEffect: "scan",
+    amount: number,
+    downgrade: boolean,
+  } | {
+    combatEffect: "summon",
     shadowId: Shadow["id"],
   } | {
-		combatEffect: "auto-end-turn",
-	} | ( {
-		combatEffect : "extraAttack",
-		iterativePenalty: number,
-	} & NumberedConsequencePart)
-	| {
-		combatEffect: "alter-energy",
-		amount: number,
-	} | {
-		combatEffect: "apply-recovery",
-	} | {
-		combatEffect: "alter-theurgy",
-		applyTo : ConsequenceTarget,
-		subtype: AlterMPSubtype,
-		amount: number,
-	} | {
-		applyTo: ConsequenceTarget
-		powerId: Power["id"],
-		combatEffect: "set-cooldown",
-		durationRounds: number,
-	} | {
+    combatEffect: "auto-end-turn",
+  } | ( {
+    combatEffect : "extraAttack",
+    iterativePenalty: number,
+  } & NumberedConsequencePart)
+  | {
+    combatEffect: "alter-energy",
+    amount: number,
+  } | {
+    combatEffect: "apply-recovery",
+  } | {
+    combatEffect: "alter-theurgy",
+    applyTo : ConsequenceTarget,
+    subtype: AlterMPSubtype,
+    amount: number,
+  } | {
+    applyTo: ConsequenceTarget
+    powerId: Power["id"],
+    combatEffect: "set-cooldown",
+    durationRounds: number,
+  } | {
     combatEffect: "add-power-tag-to-attack",
     powerTag: PowerTagOrId
   } | {
-		applyTo: ConsequenceTarget,
+    applyTo: ConsequenceTarget,
     combatEffect: "escape-combat",
   }
 ;
+
+type StatusAlterConsequence = ({
+  combatEffect : "addStatus",
+  statusName: StatusEffect["id"],
+  potency: number,
+} & DurationComponent)
+  | {
+    combatEffect: "removeStatus",
+    statusName: MultiCheckOrSingle<StatusEffect["id"]>,
+  } | {
+    combatEffect: "removeStatusBySubtag",
+    tagId: MultiCheckOrSingle<Tag["id"]>,
+  };
 
 export type NewDamageConsequence =
 	{

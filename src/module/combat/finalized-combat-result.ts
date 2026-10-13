@@ -519,7 +519,8 @@ export interface ResolvedActorChange<T extends PersonaActor = PersonaActor> {
   damage: EvaluatedDamage[];
   addStatus: StatusEffect[];
   otherEffects: Sourced<OtherEffect>[];
-  removeStatus: Pick<StatusEffect, "id">[];
+	removeStatus: (Pick<StatusEffect, "id"> | {id: ActiveEffect["id"]})[],
+  // removeStatus: Pick<StatusEffect, "id"> [];
   localEffects: Sourced<LocalEffect>[];
 }
 

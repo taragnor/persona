@@ -105,14 +105,23 @@ export class ConsequenceApplier {
     return chained;
   }
 
-  private static async _removeStatus (status: StatusEffectId, actor : ValidAttackers, power: U<UsableAndCard>,  attacker : U<UniversalTokenAccessor<PToken>>, token : U<PToken>) : Promise<FinalizedCombatResult[]> {
+  private static async _removeStatus (status: StatusEffectId | ActiveEffect["id"], actor : ValidAttackers, power: U<UsableAndCard>,  attacker : U<UniversalTokenAccessor<PToken>>, token : U<PToken>) : Promise<FinalizedCombatResult[]> {
     const statusRem = await actor.removeStatus(status);
+    if (statusRem.length == 0) {return [];}
     const chained : FinalizedCombatResult[] = [];
-    if (statusRem && attacker && token && power?.isUsableType()) {
-      chained.push(...this._resolveRemoveStatus(token, attacker, status, power));
+    if (attacker && token && power?.isUsableType()) {
+      for (const AE of statusRem) {
+        for (const statusId of AE.statuses) {
+          chained.push(...this._resolveRemoveStatus(token, attacker, statusId, power));
+        }
+      }
     }
-    if (statusRem && token) {
-      Hooks.callAll("onRemoveStatus", token, status);
+    if (token) {
+      for (const AE of statusRem) {
+        for (const statusId of AE.statuses) {
+          Hooks.callAll("onRemoveStatus", token, statusId);
+        }
+      }
     }
     return chained;
   }
@@ -720,8 +729,10 @@ export class ConsequenceApplier {
         break;
       }
       case "addStatus":
+      case "removeStatusBySubtag":
       case "removeStatus":
       case "extraAttack":
+        break;
       case "apply-recovery" :
         await actor.spendRecovery(null);
         break;

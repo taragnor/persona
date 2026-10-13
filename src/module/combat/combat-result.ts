@@ -22,6 +22,7 @@ import {checkSituationProp} from "../../config/situation.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {ConsequenceC} from "../conditionalEffects/consequence-class.js";
 import {StringUtilities} from "../utility/string-utility.js";
+import {TagManager} from "../tag-manager.js";
 
 declare global {
 	interface SocketMessage {
@@ -181,6 +182,17 @@ export class CombatResult  {
           });
           // }
         }
+        break;
+      }
+      case "removeStatusBySubtag": {
+        if (!effect || !target) {break;}
+        const tags= multiCheckToArray(cons.tagId)
+        .map (t=> TagManager.resolveTag(t))
+        .filter (t=> t instanceof PersonaItem);
+        const statusesToRemove= target
+        .getStatusesWithSubTag(tags)
+        .map (x=> ({id: x.id}));
+        effect.removeStatus.push(...statusesToRemove);
         break;
       }
       case "extraAttack": {
@@ -943,7 +955,7 @@ export interface ActorChange<T extends PersonaActor = PersonaActor> {
 	damage: Partial<Record<NonNullable<DamageCalculation["damageType"]>, DamageCalculation>>;
 	addStatus: StatusEffect[],
 	otherEffects: (Sourced<OtherEffect>)[],
-	removeStatus: Pick<StatusEffect, "id">[],
+	removeStatus: (Pick<StatusEffect, "id"> | {id: ActiveEffect["id"]})[],
   localEffects: Sourced<LocalEffect>[],
 }
 
