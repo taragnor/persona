@@ -49,11 +49,15 @@ export class PreconditionC<C extends NonDeprecatedPrecondition = NonDeprecatedPr
 
   private _checkTriggered() : string[] {
     const cond = this.cond as NonDeprecatedPrecondition;
-    if (cond.type == "boolean"
+    if (
+      cond.type == "boolean"
       && cond.boolComparisonTarget == "target-owner-comparison"
-      && cond.booleanState == true) {
+      && cond.booleanState == true
+    ) {
       const arr = [cond.conditionTarget, cond.conditionTarget2];
-      if (arr.includes("owner") && arr.includes("target") && this.parent?.conditionalType == "triggered") {
+      if (arr.includes("owner")
+        && arr.includes("target")
+        && this.parent?.conditionalType == "triggered") {
         return ["may require change to defensive trigger"];
       }
     }

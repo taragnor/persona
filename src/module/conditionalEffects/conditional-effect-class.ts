@@ -6,7 +6,7 @@ import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {CacheI, MultiTierCache, PermanentCache, TimedCache} from "../utility/cache.js";
-import {CETypes, ConditionalEffectManager} from "./conditional-effect-manager.js";
+import {CETypes} from "./conditional-effect-manager.js";
 import {ConditionalEffectPrinter} from "./conditional-effect-printer.js";
 import { ConsequenceC} from "./consequence-class.js";
 import {PreconditionC} from "./precondition-class.js";
@@ -58,7 +58,7 @@ export class ConditionalEffectC {
 
   static cache = {
     conditionalEffectType: new WeakMap() as DataCache<TypedConditionalEffect["conditionalType"]>,
-  }
+  };
 
   private constructor (card: CardItem);
   private constructor (ce: CondEffectObject, sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource ?: N<ConditonalEffectHolderItem>);
@@ -209,11 +209,22 @@ export class ConditionalEffectC {
   get name() : string {
     let ret = "";
     if (this.realSource && !PersonaDB.accessorEq(this.realSource, this.source)) {
-      ret += this.findRealSource()?.name;
+      const realSource = this.findRealSource();
+      ret += realSource?.name ?? "unknown name";
     }
     if (this.source) {
-      const sourceName = this.findSource()?.name;
+      const source = this.findSource();
+      const sourceName = source?.name;
       ret += ` (${sourceName})`;
+      if ( source && source instanceof PersonaItem) {
+        const parent = source?.parent;
+        if (parent
+          && parent instanceof PersonaActor
+          && parent.isTarot()) {
+          ret =  parent.displayedName + ` ${ret}`;
+        }
+      }
+
     }
     if (this.owner) {
       const ownerName = this.findOwner()?.name;
@@ -407,7 +418,6 @@ export class ConditionalEffectC {
   }
 
   static getConditionalType<I extends ConditonalEffectHolderItem>( ce: ConditionalEffect, sourceItem ?: I | null ) : TypedConditionalEffect["conditionalType"] {
-
     const cache = this.cache.conditionalEffectType;
     let cached = cache.get(ce);
     if (cached == undefined) {
@@ -416,14 +426,6 @@ export class ConditionalEffectC {
       cached = item;
     }
     return cached.value;
-    // if (cached) {
-    //   ++this.cache.hits;
-    //   return cached;
-    // }
-    // const data =  this._getConditionalType(ce, sourceItem);
-    // ++this.cache.misses;
-    // this.cache.conditionalEffectType.set(ce, data);
-    // return data;
   }
 
 
