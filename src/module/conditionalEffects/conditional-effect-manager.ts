@@ -327,66 +327,64 @@ export class ConditionalEffectManager {
     return ConditionalEffectC.convertBatch(conditionalEffects, sourceItem, sourceActor, realSource);
   }
 
-  static getConditionalType<I extends ConditonalEffectHolderItem>( ce: ConditionalEffect, sourceItem ?: I | null ) : TypedConditionalEffect["conditionalType"] {
+  // static getConditionalType<I extends ConditonalEffectHolderItem>( ce: ConditionalEffect, sourceItem ?: I | null ) : TypedConditionalEffect["conditionalType"] {
+  //   const cached = this.cache.conditionalEffectType.get(ce);
+  //   if (cached) {
+  //     ++this.cache.hits;
+  //     return cached;
+  //   }
+  //   const data =  this._getConditionalType(ce, sourceItem);
+  //   ++this.cache.misses;
+  //   this.cache.conditionalEffectType.set(ce, data);
+  //   return data;
+  // }
 
-    const cached = this.cache.conditionalEffectType.get(ce);
-    if (cached) {
-      ++this.cache.hits;
-      return cached;
-    }
-    const data =  this._getConditionalType(ce, sourceItem);
-    ++this.cache.misses;
-    this.cache.conditionalEffectType.set(ce, data);
-    return data;
-  }
+  // private static _getConditionalType<I extends ConditonalEffectHolderItem>( ce: ConditionalEffect, sourceItem ?: I | null ) : TypedConditionalEffect["conditionalType"] {
+  //   if (ce.isDefensive) {return "defensive";}
+  //   for (const cond of ce.conditions) {
+  //     if (this.isTriggeredCondition(cond)) {
+  //       return "triggered";
+  //     }
+  //   }
+  //   for (const cons of ce.consequences) {
+  //     switch (true) {
+  //       case this.isBonusConsequence(cons):
+  //       case this.grantsPowers(cons) :
+  //       case this.changesResistance(cons) :
+  //         return "passive";
+  //     }
+  //   }
+  //   if (sourceItem && sourceItem.defaultConditionalEffectType) {
+  //     return sourceItem.defaultConditionalEffectType();
+  //   }
+  //   return "unknown";
+  // }
 
-  private static _getConditionalType<I extends ConditonalEffectHolderItem>( ce: ConditionalEffect, sourceItem ?: I | null ) : TypedConditionalEffect["conditionalType"] {
-    if (ce.isDefensive) {return "defensive";}
-    for (const cond of ce.conditions) {
-      if (this.isTriggeredCondition(cond)) {
-        return "triggered";
-      }
-    }
-    for (const cons of ce.consequences) {
-      switch (true) {
-        case this.isBonusConsequence(cons):
-        case this.grantsPowers(cons) :
-        case this.changesResistance(cons) :
-          return "passive";
-      }
-    }
-    if (sourceItem && sourceItem.defaultConditionalEffectType) {
-      return sourceItem.defaultConditionalEffectType();
-    }
-    return "unknown";
-  }
+  // static grantsPowers(cons: ConditionalEffect["consequences"][number]) : boolean {
+  //   return cons.type == "add-power-to-list";
+  // }
 
-  static grantsPowers(cons: ConditionalEffect["consequences"][number]) : boolean {
-    return cons.type == "add-power-to-list";
-  }
-
-  static changesResistance(cons: ConditionalEffect["consequences"][number]) : boolean {
-    switch (cons.type) {
-      case "raise-resistance":
-      case "raise-status-resistance":
-      case "lower-resistance":
-        return true;
-    }
-    return false;
-
-  }
+  // static changesResistance(cons: ConditionalEffect["consequences"][number]) : boolean {
+  //   switch (cons.type) {
+  //     case "raise-resistance":
+  //     case "raise-status-resistance":
+  //     case "lower-resistance":
+  //       return true;
+  //   }
+  //   return false;
+  // }
 
   static hasSocialQualifier(cond: ConditionalEffect["conditions"][number]) : boolean {
     if (cond.type == "numeric" && cond.comparisonTarget == "social-link-level") {return true;}
     return false;
   }
 
-  static isBonusConsequence(cons: ConditionalEffect["consequences"][number]) : boolean {
-    return (cons.type == "modifier-new"
-      || cons.type =="modifier"
-      || cons.type == "modifier-v2"
-    );
-  }
+  // static isBonusConsequence(cons: ConditionalEffect["consequences"][number]) : boolean {
+  //   return (cons.type == "modifier-new"
+  //     || cons.type =="modifier"
+  //     || cons.type == "modifier-v2"
+  //   );
+  // }
 
   static isTriggeredCondition(cond: ConditionalEffect["conditions"][number]): boolean {
     return (cond.type == "on-trigger");
@@ -823,6 +821,7 @@ export const CETypes = [
   "unknown", // can't classify
   "triggered", // triggers
   "defensive", // invoked as a defensive power
+  "defensive-triggered", // triggered effect that's defensive
   // "social" //social link granted
 ] as const;
 

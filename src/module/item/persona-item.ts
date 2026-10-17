@@ -2132,6 +2132,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
           case 'unknown':
             effects.pushUnique(...this.getEffects(sourceActor, options).filter( x=> x.conditionalType == cType));
             break;
+          case "defensive-triggered":
+            effects.pushUnique(...this.getEffects(sourceActor, options).filter( x=> x.conditionalType == cType));
+            break;
           default:
             cType satisfies never;
         }
@@ -2148,7 +2151,7 @@ getEmbeddedEffects(this: ItemModifierContainer, sourceActor : PersonaActor | nul
     return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
       .filter (ce => ce.isEmbedded);
   };
-  const embedded= this.#accessEffectsCache('embeddedEffects', sourceActor, options, effectsGetterFn);
+  const embedded = this.#accessEffectsCache('embeddedEffects', sourceActor, options, effectsGetterFn);
   const {CETypes} = options;
   if (CETypes == undefined || CETypes.length == 0) {return embedded;}
   return embedded
@@ -2198,7 +2201,7 @@ getAuraEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, o
 getTriggeredEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null, options: GetEffectsOptions = {}) : readonly ConditionalEffectC[] {
   options = {...options, CETypes: []};
   const data= this.#accessEffectsCache('triggeredEffects', sourceActor, options, () => this.getEffects(sourceActor, options)
-    .filter( x => x.conditionalType === 'triggered')
+    .filter( x => x.conditionalType === 'triggered' || x.conditionalType == "defensive-triggered")
   );
   if (!options.triggerType) {return data;}
   return data

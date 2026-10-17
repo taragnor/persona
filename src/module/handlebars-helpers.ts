@@ -929,7 +929,7 @@ export class PersonaHandleBarsHelpers {
           someObj = someObj["parent"] as object;
         }
       }
-      return ConditionalEffectManager.getConditionalType(ce, item as ContainerTypes);
+      return ConditionalEffectC.getConditionalType(ce, item as ContainerTypes);
     },
 
     "hasPersona": function (actor: PersonaActor) : boolean {

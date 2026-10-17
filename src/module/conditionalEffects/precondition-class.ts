@@ -41,8 +41,29 @@ export class PreconditionC<C extends NonDeprecatedPrecondition = NonDeprecatedPr
   }
 
   override errorCheck() : string[]{
-    return super.errorCheck();
+    return [
+      ...super.errorCheck(),
+      ...this._checkTriggered(),
+    ];
   }
+
+  private _checkTriggered() : string[] {
+    const cond = this.cond as NonDeprecatedPrecondition;
+    if (cond.type == "boolean"
+      && cond.boolComparisonTarget == "target-owner-comparison"
+      && cond.booleanState == true) {
+      const arr = [cond.conditionTarget, cond.conditionTarget2];
+      if (arr.includes("owner") && arr.includes("target") && this.parent?.conditionalType == "triggered") {
+        return ["may require change to defensive trigger"];
+      }
+    }
+    return [];
+  }
+
+  static isTriggeredCondition(cond: ConditionalEffect["conditions"][number]): boolean {
+    return (cond.type == "on-trigger");
+  }
+
 
 }
 

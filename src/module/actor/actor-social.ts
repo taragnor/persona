@@ -200,6 +200,12 @@ export class ActorSocial <T extends PersonaActor> {
       });
   }
 
+  getAvailabilityConditions(this: ActorSocial<PC | NPC | NPCAlly>) : ConditionalEffectC {
+    if (this.actor.isPC()) {return ConditionalEffectC.EmptyCE;}
+    const conds = ConditionalEffectC.createPreconditionOnly(this.actor.system.availabilityConditions);
+    return conds;
+  }
+
   isDating(linkId: string) : boolean;
   isDating( link: PersonaActor) : boolean;
 
@@ -329,7 +335,7 @@ export class ActorSocial <T extends PersonaActor> {
       user: pc.accessor,
       target: sl.accessor,
     };
-    if(!sl.getAvailabilityConditions().testPreconditions(sit)) { return false; }
+    if(!sl.social.getAvailabilityConditions().testPreconditions(sit)) { return false; }
 
     // if(!testPreconditions(sl.getAvailabilityConditions(), sit, {
     //   owner: undefined,

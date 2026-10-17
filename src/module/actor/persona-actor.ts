@@ -71,7 +71,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   _pendingRefresh = false;
   _farming : U<Farming>;
-  social = new ActorSocial<typeof this>(this);
+  _social = new ActorSocial<typeof this>(this);
   #powerLearning : PowerLearningSystem<ValidAttackers>;
   tags = new ActorTagManager(this);
   voicelines = new ActorVoiceLines(this);
@@ -116,6 +116,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     ) {
       this._personaManager = new PersonaManager(this);
     }
+  }
+
+  get social(): ActorSocial<this> {
+    return this._social;
   }
 
   hasPersona() : boolean {
@@ -2497,10 +2501,18 @@ isFading(this: ValidAttackers): boolean {
   return this.hp <= 0 && !this.hasStatus("full-fade");
 }
 
-triggersOn( trigger : Trigger) : ConditionalEffectC[] {
-  const triggers= this.triggers;
+triggersOn( trigger : Trigger, type : "standard" | "defensive") : ConditionalEffectC[] {
+  const triggers=  type == "standard" ? this.triggers : this.defensiveTriggers;
+  // const triggers= this.triggers;
   return triggers.filter( CE => PersonaItem.triggersOn(CE, trigger));
 }
+
+get defensiveTriggers() : ConditionalEffectC [] {
+  return (this as ValidAttackers)
+    .mainModifiers()
+    .filter( x=> x.conditionalType == "defensive-triggered");
+}
+
 
 get triggers() : ConditionalEffectC[] {
   switch (this.system.type ) {
@@ -3295,11 +3307,11 @@ async deleteTokenSpend(this: SocialLink, deleteIndex:number) {
   await this.update({"system.tokenSpends":list});
 }
 
-getAvailabilityConditions(this: SocialLink) : ConditionalEffectC {
-  if (this.isPC()) {return ConditionalEffectC.EmptyCE;}
-  const conds = ConditionalEffectC.createPreconditionOnly(this.system.availabilityConditions);
-  return conds;
-}
+// getAvailabilityConditions(this: SocialLink) : ConditionalEffectC {
+//   if (this.isPC()) {return ConditionalEffectC.EmptyCE;}
+//   const conds = ConditionalEffectC.createPreconditionOnly(this.system.availabilityConditions);
+//   return conds;
+// }
 
 canTakeNormalDowntimeActions(): boolean {
   return !this.hasStatus("jailed") && !this.hasStatus("crippled");

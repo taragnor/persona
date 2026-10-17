@@ -60,7 +60,7 @@ export class TriggeredEffect {
       .getTriggeredEffects(null, {triggerType: trigger})
     );
     if (actor) {
-      triggers.push(...actor.triggersOn(trigger));
+      triggers.push(...actor.triggersOn(trigger, "standard"));
     }
     if (checkSituationProp(situation, "usedPower")) {
       const power = PersonaDB.findItem(situation.usedPower);
@@ -70,13 +70,10 @@ export class TriggeredEffect {
     }
     if (checkSituationProp(situation, "target")) {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      const target = PersonaDB.findActor(situation.target as UniversalActorAccessor<PersonaActor>);
-      if (!target.isValidCombatant()) {
-        const targetTriggers  = target.triggersOn(trigger);
+      const target = PersonaDB.findActor(situation.target as UniversalActorAccessor<ValidAttackers | NPC>);
+        const targetTriggers  = target.triggersOn(trigger, "defensive");
         triggers.push(...targetTriggers);
-      }
     }
-
     if (checkSituationProp(situation, "item")) {
       const item = PersonaDB.findItem(situation.item);
       const user = situation.user ? PersonaDB.findActor(situation.user) : null;
@@ -87,12 +84,13 @@ export class TriggeredEffect {
       const rm = Metaverse.activeRoomModifiers()
         .flatMap (mod => mod.getEffects(null));
       triggers.push(...rm);
-      const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger));
+      const PCTriggers = PersonaDB.PCs().flatMap( x=> x.triggersOn(trigger, "standard"));
       triggers.push(...PCTriggers);
     }
     const filteredEffects = removeDuplicates(triggers
       .filter ( x=>
-        x.conditionalType == "triggered"
+        (x.conditionalType == "triggered"
+        || x.conditionalType == "defensive-triggered")
         && x.conditions.some( cond => cond.cond.type == "on-trigger" && cond.cond.trigger == trigger)
       )
     );

@@ -155,11 +155,17 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
   }
 
   override errorCheck() : string[] {
-    const data = super.errorCheck();
-    data.push(...this._errorCheckDefensiveRequired());
-    data.push(...this._errorCheckGrantedPersonaItems());
-    data.push(...this._damageCheck());
-    return data;
+    return [
+      ...super.errorCheck(),
+      ...this._errorCheckDefensiveRequired(),
+      ...this._errorCheckGrantedPersonaItems(),
+      ...this._damageCheck(),
+    ];
+    // const data = super.errorCheck();
+    // data.push(...this._errorCheckDefensiveRequired());
+    // data.push(...this._errorCheckGrantedPersonaItems());
+    // data.push(...this._damageCheck());
+    // return data;
   }
 
   private _errorCheckDefensiveRequired(): string[] {
@@ -306,6 +312,28 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
       }
     }
     return [];
+  }
+
+
+  static isBonusConsequence(cons: ConditionalEffect["consequences"][number]) : boolean {
+    return (cons.type == "modifier-new"
+      || cons.type =="modifier"
+      || cons.type == "modifier-v2"
+    );
+  }
+
+  static grantsPowers(cons: ConditionalEffect["consequences"][number]) : boolean {
+    return cons.type == "add-power-to-list";
+  }
+
+  static changesResistance(cons: ConditionalEffect["consequences"][number]) : boolean {
+    switch (cons.type) {
+      case "raise-resistance":
+      case "raise-status-resistance":
+      case "lower-resistance":
+        return true;
+    }
+    return false;
   }
 
 }

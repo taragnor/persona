@@ -354,12 +354,12 @@ export class DBAccessor<ActorType extends Actor<any, ItemType> , ItemType extend
     return tok as any;
   }
 
-  tryfindActor<T extends Actor<any>>(accessor: UniversalActorAccessor<T>) : U<T> {
+  tryfindActor<const T extends Actor<any>>(accessor: UniversalActorAccessor<T>) : U<T> {
     try{ return this.findActor(accessor); }
     catch {return undefined;}
   }
 
-  findActor<T extends Actor<any>>(accessor: UniversalActorAccessor<T>) : T {
+  findActor<const T extends Actor<any>>(accessor: UniversalActorAccessor<T>) : T {
     if (accessor.token != undefined && accessor.token.actorLink == false) {
       const token =  this.findToken(accessor.token);
       return token.actor as T;

@@ -5,7 +5,7 @@ import {ModifierV2Target} from "../bonus-calc.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
-import {MultiTierCache, PermanentCache, TimedCache} from "../utility/cache.js";
+import {CacheI, MultiTierCache, PermanentCache, TimedCache} from "../utility/cache.js";
 import {CETypes, ConditionalEffectManager} from "./conditional-effect-manager.js";
 import {ConditionalEffectPrinter} from "./conditional-effect-printer.js";
 import { ConsequenceC} from "./consequence-class.js";
@@ -56,6 +56,10 @@ export class ConditionalEffectC {
     bonusTypes : new MultiTierCache( (bonusType: ModifierV2Target) => new TimedCache ( () => this._grantsBonusType(bonusType) , this.#CACHE_TIME)),
   };
 
+  static cache = {
+    conditionalEffectType: new WeakMap() as DataCache<TypedConditionalEffect["conditionalType"]>,
+  }
+
   private constructor (card: CardItem);
   private constructor (ce: CondEffectObject, sourceItem: N<ConditonalEffectHolderItem> , sourceActor: N<PersonaActor>, realSource ?: N<ConditonalEffectHolderItem>);
   private constructor (ce: CondEffectObject | CardItem, sourceItem?: N<ConditonalEffectHolderItem> , sourceActor?: N<PersonaActor>, realSource ?: N<ConditonalEffectHolderItem>) {
@@ -68,7 +72,7 @@ export class ConditionalEffectC {
     this._buildCoreData(ce);
     this._isEmbedded = ce.isEmbedded ?? false;
     this._isAura = ce.isAura ?? false;
-    this._conditionalType = this.#determineConditionalType(ce, this._preconditions, this._consequences, sourceItem!);
+    this._conditionalType = this._determineConditionalType(ce, this._preconditions, this._consequences, sourceItem!);
     this._isDefensiveRaw = ce.isDefensive ?? false;
     this._isMainModifier = !this._isEmbedded && !this._isAura;
     this.setGrantedBonuses();
@@ -384,23 +388,70 @@ export class ConditionalEffectC {
       .filter (x => x != null);
   }
 
-  #determineConditionalType (ce: CondEffectObject, _conditions: ConditionalEffectC["conditions"], _consequences : ConditionalEffectC["consequences"], sourceItem: N<ConditonalEffectHolderItem> ) : this["conditionalType"] {
+  private _determineConditionalType (ce: CondEffectObject, _conditions: ConditionalEffectC["conditions"], _consequences : ConditionalEffectC["consequences"], sourceItem: N<ConditonalEffectHolderItem> ) : this["conditionalType"] {
     let condType : this["conditionalType"] = "unknown";
     const forceDefensive = (sourceItem?.isDefensive)
       ? sourceItem.isDefensive()
       : false;
     switch (true) {
-      case forceDefensive || ce.isDefensive:
-        return "defensive";
+        // case forceDefensive || ce.isDefensive:
+        case forceDefensive :
+          return "defensive";
       default:
-        // if (sourceItem!.name == "Soma") {debugger;}
-        condType = !forceDefensive ? ConditionalEffectManager.getConditionalType(ce, sourceItem): "defensive";
+        condType = !forceDefensive ? ConditionalEffectC.getConditionalType(ce, sourceItem): "defensive";
         if (condType == "unknown" && sourceItem) {
           return (sourceItem.defaultConditionalEffectType) ? sourceItem.defaultConditionalEffectType() : "passive";
         }
     }
     return condType;
   }
+
+  static getConditionalType<I extends ConditonalEffectHolderItem>( ce: ConditionalEffect, sourceItem ?: I | null ) : TypedConditionalEffect["conditionalType"] {
+
+    const cache = this.cache.conditionalEffectType;
+    let cached = cache.get(ce);
+    if (cached == undefined) {
+      const item = new PermanentCache( () => this._getConditionalType(ce, sourceItem));
+      cache.set(ce, item);
+      cached = item;
+    }
+    return cached.value;
+    // if (cached) {
+    //   ++this.cache.hits;
+    //   return cached;
+    // }
+    // const data =  this._getConditionalType(ce, sourceItem);
+    // ++this.cache.misses;
+    // this.cache.conditionalEffectType.set(ce, data);
+    // return data;
+  }
+
+
+
+  private static _getConditionalType<I extends ConditonalEffectHolderItem>( ce: ConditionalEffect, sourceItem ?: N<I> | null ) : TypedConditionalEffect["conditionalType"] {
+    for (const cond of ce.conditions) {
+      if (PreconditionC.isTriggeredCondition(cond)) {
+        if (ce.isDefensive) {
+          return "defensive-triggered";
+        }
+        return "triggered";
+      }
+    }
+    if (ce.isDefensive) {return "defensive";}
+    for (const cons of ce.consequences) {
+      switch (true) {
+        case ConsequenceC.isBonusConsequence(cons):
+        case ConsequenceC.grantsPowers(cons) :
+        case ConsequenceC.changesResistance(cons) :
+          return "passive";
+      }
+    }
+    if (sourceItem && sourceItem.defaultConditionalEffectType) {
+      return sourceItem.defaultConditionalEffectType();
+    }
+    return "unknown";
+  }
+
 
   public canAllowOpenersForPowers() : boolean {
     return this.#cache.allowOpenersForPowers.value;
@@ -506,3 +557,7 @@ export type EffectOwnershipData = {
   creationId: number;
   _id: number;
 };
+
+
+type DataCache<T> = WeakMap<object, CacheI<T>>;
+
