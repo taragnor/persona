@@ -67,6 +67,9 @@ export class ConsequenceAmountResolver {
       case "bonus-property": {
         return this.resolveBonusProperty(amt, situation);
       }
+      case "special-property": {
+        return this.resolveSpecialProperty(amt, situation);
+      }
       default:
         amt satisfies never;
         PersonaError.softFail(`Unknown consequence Amount type :${amt["type"] as string}`);
@@ -137,6 +140,18 @@ export class ConsequenceAmountResolver {
       return bonuses;
     } catch {
       return undefined;
+    }
+  }
+
+  private static resolveSpecialProperty(amt: Sourced<ConsequenceAmountV2> & {type: "special-property"}, _situation: Partial<Situation>) : U<number> {
+    switch (amt.specialProp) {
+      case "round-count":
+        return game?.combat?.round ?? 0;
+      default:
+          amt.specialProp satisfies never;
+        PersonaError.softFail(`Unknown special porperty resolve`);
+        console.log(amt);
+        return undefined;
     }
   }
 

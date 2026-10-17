@@ -1108,8 +1108,11 @@
 "persona.consequences.consequences-amount.actor-property": "A-P",
 "persona.consequences.consequences-amount.bonus-property": "Bon",
 "persona.consequences.consequences-amount.situation-property": "Sit",
+"persona.consequences.consequences-amount.special-property": "Spec",
 
 "persona.item-property.item-level": "Item Level",
+
+"persona.special-property.round-count": "# of Combat Round",
 
 "persona.consequences.item-selector.specific": "Specific Item",
 "persona.consequences.item-selector.randomTreasure": "Random Treasure",

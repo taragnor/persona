@@ -1032,7 +1032,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
     switch (this.system.subtype) {
       case 'weapon': {
-        const hpCostCalc = this.hpCost(persona);
+        const hpCostCalc = this.hpCostPercentage(persona);
         const hpCost = hpCostCalc.total;
         if (hpCost == 0 ) { return FREE; }
         if (options.nestedList) {
@@ -1967,7 +1967,12 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
   }
 
 
-  hpCost(this: Usable, userPersona: Persona | null): EvaluatedCalculation {
+  hpCost(this: Usable, userPersona: Persona): number {
+    const percent = this.hpCostPercentage(userPersona).total * userPersona.user.mhp;
+    return percent;
+  }
+
+  hpCostPercentage(this: Usable, userPersona: Persona | null): EvaluatedCalculation {
     if (userPersona && userPersona.user.isShadow()) {
       return { steps: [], total: 0};
     };
@@ -1988,7 +1993,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   realHPCost(this: Usable, userPersona: Persona) : number {
     if (this.isBasicPower()) {return 0;}
-    const percent = this.hpCost(userPersona).total;
+    const percent = this.hpCostPercentage(userPersona).total;
     if (percent <= 0) {return 0;}
     const mhp = userPersona.user.mhp;
     const cost = Math.round((percent / 100) * mhp);

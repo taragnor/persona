@@ -167,5 +167,14 @@ const ITEM_PROPERTIES_LIST = [
 
 export type ItemProperty = typeof ITEM_PROPERTIES_LIST[number];
 
-
 export const ITEM_PROPERTIES = HTMLTools.createLocalizationObject(ITEM_PROPERTIES_LIST, "persona.item-property");
+
+
+const SPECIAL_PROPERTIES_LIST = [
+  "round-count",
+] as const;
+
+export type SpecialProperty = typeof SPECIAL_PROPERTIES_LIST[number];
+
+export const SPECIAL_PROPERTIES = HTMLTools.createLocalizationObject(SPECIAL_PROPERTIES_LIST, "persona.special-property");
+

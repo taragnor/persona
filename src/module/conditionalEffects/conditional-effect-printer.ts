@@ -4,7 +4,7 @@ import {DAYS} from "../../config/days.js";
 import {DEFENSE_TYPES} from "../../config/defense-types.js";
 import {DAMAGE_SUBTYPES, POWERTYPES, TARGETING} from "../../config/effect-types.js";
 import {EQUIPMENT_TAGS, WEAPON_TAGS} from "../../config/equipment-tags.js";
-import {ITEM_PROPERTIES, MODIFIERS_TABLE} from "../../config/item-modifiers.js";
+import {ITEM_PROPERTIES, MODIFIERS_TABLE, SPECIAL_PROPERTIES} from "../../config/item-modifiers.js";
 import {CombatResultComparison} from "../../config/numeric-comparison.js";
 import {POWER_TAGS} from "../../config/power-tags.js";
 import {CONDITION_TARGETS, MultiCheck, NonDeprecatedPrecondition, STATUS_SUBTAG_CONDITION_TARGETS} from "../../config/precondition-types.js";
@@ -758,6 +758,10 @@ export class ConditionalEffectPrinter {
             const target = this.translate(consAmt.target, CONDITION_TARGETS);
             const prop = `${this.translate(consAmt.modTarget, MODIFIER_V2_TARGET)}`;
             return `${target}'s ${prop} bonus`;
+          }
+          case "special-property": {
+            const prop = `${this.translate(consAmt.specialProp, SPECIAL_PROPERTIES)}`;
+            return `${prop}`;
           }
           default:
             consAmt satisfies never;

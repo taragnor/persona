@@ -22,7 +22,7 @@ import { ResistType } from "./damage-types.js";
 import { ResistStrength } from "./damage-types.js";
 import { OtherConsequenceType } from "../module/datamodel/other-effects.js";
 import { StatusEffectId } from "./status-effects.js";
-import { DeprecatedModifierTarget, ItemProperty, ModifierCategory, NonDeprecatedModifierType } from "./item-modifiers.js";
+import { DeprecatedModifierTarget, ItemProperty, ModifierCategory, NonDeprecatedModifierType, SpecialProperty } from "./item-modifiers.js";
 import {AttackResult} from "../module/combat/combat-result.js";
 import {EnchantedTreasureFormat} from "../module/exploration/treasure-system.js";
 import {StatusDuration} from "../module/persona-ae.js";
@@ -876,6 +876,7 @@ export type ConsequenceAmountV2 =
 	| SituationPropertyAmount
 	| ActorProperty
   | BonusProperty
+  | SpecialPropertyAmount
 );
 
 export type SituationPropertyAmount = {
@@ -887,7 +888,6 @@ export type ItemPropertyAmount = {
 	type : "item-property",
 	itemTarget: "source",
 	property: ItemProperty,
-
 }
 
 export type BonusProperty = {
@@ -895,6 +895,11 @@ export type BonusProperty = {
   modTarget: ModifierV2Target
 	target:  ConditionTarget,
 }
+
+export type SpecialPropertyAmount = {
+  type: "special-property",
+  specialProp: SpecialProperty,
+};
 
 export type ActorProperty =
 	{
@@ -954,6 +959,7 @@ const CONSEQUENCE_AMOUNT_TYPES_LIST = [
 	"situation-property",
 	"actor-property",
   "bonus-property",
+  "special-property",
 ] as const;
 
 		type ConsequenceAmountType = typeof CONSEQUENCE_AMOUNT_TYPES_LIST[number];

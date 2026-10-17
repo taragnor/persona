@@ -81,6 +81,14 @@
 </span>
   {{/if}}
 
+  {{#if (eqAny cons.type "special-property")}}
+  <span>
+    <select name="{{strcat namePrefix 'specialProp'}}">
+      {{selectOptions POWERSTUFF.SPECIAL_PROPERTIES localize=true selected=cons.specialProp}}
+    </select>
+  </span>
+  {{/if}}
+
 {{/if}}
 
 </span>

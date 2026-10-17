@@ -1358,9 +1358,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
           return null;
         }
         switch (usable.system.subtype) {
-          case "weapon":
-            if ( this.user.hp <= (usable as Power).hpCost(this).total) {return "HP cost would kill user";}
+          case "weapon": {
+            const hpCost = (usable as Power).realHPCost(this);
+              if ( this.user.hp <= hpCost ) {return "HP cost would kill user";}
             break;
+          }
           case "magic": {
             const mpcost = (usable as Power).mpCost(this).total;
             if (mpcost > 0 && this.user.mp < mpcost) {
