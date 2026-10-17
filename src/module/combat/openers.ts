@@ -325,7 +325,8 @@ export class OpenerManager {
     if (!comb.actor.isOwner) { return; }
     if (game.user.isGM && comb.actor.hasActivePlayerOwner) { return; }
     const choices = this.getOpenerChoices();
-    if (choices.length == 0) {
+    if (choices.every( x=> x.options.length == 0)) {
+      await this.setOpenerUsed(comb, true);
       await this.combat.panel.activate();
       await this.combat.panel.setTarget(comb.token);
       // await this.activatePanel(comb, []);
