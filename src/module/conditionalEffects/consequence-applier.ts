@@ -449,7 +449,7 @@ export class ConsequenceApplier {
         if (!oldAlly || !newAlly || newAlly == oldAlly) {
           PersonaError.softFail("Something went wrong with the selection");
           return;
-       }
+        }
         await PersonaCombat.combat?.swapCharacter(oldAlly, newAlly);
         break;
       }

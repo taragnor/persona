@@ -1833,21 +1833,45 @@ get NPCFatigueTracker(): number {
   return this.system.fatigueTracker ?? 0;
 }
 
-
-/** Auto NPC recovery for fatigue to be run each calendar day*/
-async recoverFatigue(this: NPCAlly) : Promise<number>{
-  if (this.fatigueLevel >= 1) {return -1;}
+async incRecoveryDay (this: NPCAlly) : Promise<number> {
   let recoveryDays = Number(this.getFlag<number>("persona", "fatigueRecovery") ?? 0);
+  recoveryDays += 1;
   if (Number.isNaN(recoveryDays)) {
     PersonaError.softFail(`NaN recovery days for ${this.name}`);
     recoveryDays = 0;
   }
-  recoveryDays += 1;
-  if (recoveryDays >= 3) {
-    recoveryDays = 0;
-    await this.alterFatigueLevel(1);
-  }
   await this.setFlag("persona", "fatigueRecovery", recoveryDays);
+  return recoveryDays;
+}
+
+async resetRecoveryDays(this: NPCAlly): Promise<void> {
+  await this.setFlag("persona", "fatigueRecovery", 0);
+}
+
+/** Auto NPC recovery for fatigue to be run each calendar day*/
+async NPCRecovery(this: NPCAlly) : Promise<number | undefined>{
+  // let recoveryDays = Number(this.getFlag<number>("persona", "fatigueRecovery") ?? 0);
+  const recoveryDays = await this.incRecoveryDay();
+  if (this.hasStatus("crippled")) {
+    if (recoveryDays < 7) {return recoveryDays;}
+    await this.resetRecoveryDays();
+    await this.removeStatus("crippled");
+    await this.addStatusManual("injured");
+    return recoveryDays;
+  }
+  if (this.hasStatus("injured")) {
+    if (recoveryDays < 3) {return recoveryDays;}
+    await this.resetRecoveryDays();
+    await this.removeStatus("injured");
+    return recoveryDays;
+  }
+  if (this.fatigueLevel >= 1) {return -1;}
+  // let recoveryDays = Number(this.getFlag<number>("persona", "fatigueRecovery") ?? 0);
+  if (recoveryDays >= 3) {
+    await this.resetRecoveryDays();
+    await this.alterFatigueLevel(1);
+    return recoveryDays;
+  }
   return recoveryDays;
 }
 
@@ -3145,7 +3169,7 @@ async onStartDay() : Promise<string[]> {
     arr.push(...await this.farming.advanceCrops(1));
   }
   if (this.isNPCAlly()) {
-    await this.recoverFatigue();
+    await this.NPCRecovery();
   }
   return arr;
 }
