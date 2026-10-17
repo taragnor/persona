@@ -552,12 +552,12 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
     const duration = this.statusDuration;
     if (duration.clearOnDeath) { return true;}
     if (this.statuses.size == 0) {return false;}
-    if (this.statusDuration.dtype == "instant") {return false;}
+    if (this.statusDuration.dtype == "instant") {return true;}
     if (!this.durationLessThanOrEqualTo({ dtype: "combat"})) {return false;}
     return Array.from(this.statuses).some( st=> {
+      if (st == "sticky") {return false;}
       const status = Object.values(CONFIG.statusEffects)
         .find( x=> x.id == st);
-      if (st == "sticky") {return false;}
       const tags = status?.tags;
       if (!status || !tags) {return false;}
       if (tags.includes("identifier")) {return false;}

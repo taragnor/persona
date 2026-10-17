@@ -15,8 +15,6 @@ import { PersonaActor } from "../actor/persona-actor.js";
 import { NonDeprecatedPrecondition } from "../../config/precondition-types.js";
 import { HTMLTools } from "../utility/HTMLTools.js";
 import { PersonaError } from "../persona-error.js";
-import { PreconditionType } from "../../config/precondition-types.js";
-import { ConsequenceType } from "../../config/effect-types.js";
 import { CONSQUENCELIST } from "../../config/effect-types.js";
 import { PRECONDITIONLIST } from "../../config/precondition-types.js";
 import { PersonaDB } from "../persona-db.js";

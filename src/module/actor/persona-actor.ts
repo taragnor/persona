@@ -1663,7 +1663,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       return statusesToRemove;
     } catch (e) {
       PersonaError.softFail(`Error removing status ${id}`,e );
-      return []
+      return [];
     }
   }
 

@@ -1791,6 +1791,14 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return this.system.subtype == "reusable";
   }
 
+  isSingleUse(this: UsableAndCard) : boolean {
+    if (this.isSkillCard()) {return true;}
+    if (this.isConsumable()) {
+      return !this.isReusable();
+    }
+    return false;
+  }
+
   isWeapon() : this is Weapon {
     return this.system.type == "weapon";
   }
