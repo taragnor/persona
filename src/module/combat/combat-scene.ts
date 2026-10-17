@@ -270,6 +270,16 @@ export class CombatScene {
     }
   }
 
+  static async replaceToken<T extends Actor>(toBeReplaced: TokenDocument, newActor: T ) : Promise<TokenDocument<T>> {
+    const newTok = await CreateToken.create(newActor, {x: toBeReplaced.x, y: toBeReplaced.y}, this.scene);
+    if (!(toBeReplaced instanceof TokenDocument)) {
+      throw new PersonaError("Trying to remove a non-Token");
+    }
+    await toBeReplaced.delete();
+    if (!newTok) {throw new PersonaError("Error replacing Token");}
+    return newTok;
+  }
+
 }
 
 type EncounterResult = boolean;

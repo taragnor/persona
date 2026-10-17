@@ -880,6 +880,8 @@ export class ConditionalEffectPrinter {
           const personaName = PersonaDB.getActor(cons.id)?.name || "ERROR (grant-persona)";
           return `grant Persona: ${personaName}`;
         }
+        case "swap-teammate-in-combat":
+          return `Swap Teammate in Battle`;
         default:
           cons satisfies never;
           return "ERROR (other-effect)";
@@ -890,7 +892,6 @@ export class ConditionalEffectPrinter {
       let signedAmount;
       if ("amount" in cons){
         signedAmount = this.printConsequenceAmount(cons.amount);
-        // signedAmount = this.signedAmount(cons.amount);
       }
       switch (cons.cardAction) {
         case "stop-execution":

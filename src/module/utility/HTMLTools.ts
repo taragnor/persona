@@ -122,7 +122,7 @@ export class HTMLTools {
   }
 
 
-	static async singleChoiceBox<K extends string, const T extends Record<K, unknown>>(choices: T, options: ChoiceBoxOptions<T> = {}) : Promise<K | null> {
+	static async singleChoiceBox<const K extends string, const T extends Record<K, unknown>>(choices: T, options: ChoiceBoxOptions<T> = {}) : Promise<K | null> {
 		const localize = options.localize ?? false;
 		const defaultChoice = options.default ?? undefined;
 		const html = await foundry.applications.handlebars.renderTemplate(`systems/${game.system.id}/module/utility/singleChoiceBox.hbs`, {choices, localize, defaultChoice});

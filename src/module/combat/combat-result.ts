@@ -358,6 +358,9 @@ export class CombatResult  {
               ...cons,
             });
             break;
+          case "swap-teammate-in-combat":
+            this.globalOtherEffects.push({...cons});
+            break;
           case "add-talent-to-list":
           case "add-power-to-list":
           case "add-creature-tag":

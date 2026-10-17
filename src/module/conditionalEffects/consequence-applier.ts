@@ -439,6 +439,20 @@ export class ConsequenceApplier {
         await this.grantPersona(actor, shadow);
         break;
       }
+      case "swap-teammate-in-combat": {
+        const oldAlly = PersonaDB.activePCParty()
+        .find( x=> x.isNPCAlly());
+        const newAlly = await Metaverse.chooseAlly();
+        if (Metaverse.getPhase() != "combat") {
+          return;
+        }
+        if (!oldAlly || !newAlly || newAlly == oldAlly) {
+          PersonaError.softFail("Something went wrong with the selection");
+          return;
+       }
+        await PersonaCombat.combat?.swapCharacter(oldAlly, newAlly);
+        break;
+      }
       default:
         otherEffect satisfies never;
     }

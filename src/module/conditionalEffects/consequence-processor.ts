@@ -91,6 +91,7 @@ export class ConsequenceProcessor {
       case "grant-persona":
       case "teach-power":
         return targets.map( applyTo => ({applyTo, cons}));
+      case "swap-teammate-in-combat":
       case "add-room-effect":
         return [{applyTo: "global", cons}];
       default:

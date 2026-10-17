@@ -173,9 +173,18 @@ export class Metaverse {
     }
   }
 
-  static async chooseAlly() {
+  static async chooseAlly() : Promise<U<NPCAlly>> {
     try {
-      if (!game.users.contents.some( user=> !user.isGM && user.active)) {return;}
+      if (!game.users.contents.some( user=> !user.isGM && user.active)) {
+        const obj = Object.fromEntries(
+          PersonaDB.NPCAllies().map ( x=> [x.name, x])
+        );
+        const allyName = await HTMLTools.singleChoiceBox(obj);
+        if (!allyName) {return undefined;}
+        const ally = obj[allyName];
+        await ally.setAsActivePartyMember();
+        return ally;
+      }
       const alliesNames = PersonaDB.NPCAllies()
         .map (x=> x.name);
       const dialog = new VotingDialog(alliesNames, "NPC Ally Selection");
@@ -187,6 +196,7 @@ export class Metaverse {
           return;
         }
         await newAlly.setAsActivePartyMember();
+        return newAlly;
       }
     } catch (e) {
       PersonaError.softFail(e as Error);
@@ -239,8 +249,6 @@ export class Metaverse {
   static async exitMetaverse() {
     const PCsAndNPCs = (PersonaDB.NPCAllies() as PCLike[])
       .concat(PersonaDB.PCs());
-    // (game.actors as Collection<PersonaActor>)
-    // .filter( (x: PersonaActor)=> x.isRealPC() || x.isNPCAlly())
     PCsAndNPCs
       .forEach( (x: PC | NPCAlly) => void x.onExitMetaverse());
     const promises = game.scenes.contents.map(sc => (sc as PersonaScene).onExitMetaverse());

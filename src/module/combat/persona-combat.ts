@@ -2092,6 +2092,7 @@ async addTokensToCombat(tokens: Foundry.Token<ValidAttackers>[]) {
   if (sanitizedData.length < createData.length) {
     Debug(tokens);
     Debug(createData);
+    console.log("Possible issue iwth adding tokens to battle");
   }
   return this.createEmbeddedDocuments("Combatant", sanitizedData);
 }
@@ -2134,6 +2135,25 @@ async removeFromCombat(comb: U<PersonaCombatant | ValidAttackers>) : Promise<voi
       if (token) {await token.delete();}
     }, 200);
   }, 500);
+}
+
+async swapCharacter(actorToBeReplaced: ValidAttackers, newActor: ValidAttackers) {
+  const combs = this.getCombatantsByActor(actorToBeReplaced);
+  if (combs.length != 1) {
+    throw new PersonaError("Unexpected Result");
+  }
+  const comb = combs.at(0)!;
+  const init = comb.initiative;
+  const newTok = await CombatScene.replaceToken(comb.token, newActor);
+  if (!newTok.object) {
+    throw new PersonaError("No object for token, swap failed");
+  }
+  await this.addTokensToCombat([newTok.object]);
+  const newCombs = this.getCombatantsByToken(newTok);
+  for (const newComb of newCombs) {
+    await newComb.update( {"initiative" : init});
+  }
+  return newTok;
 }
 
 disableHeaderFlash() {

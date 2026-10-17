@@ -497,6 +497,8 @@ type OtherConsequences = {
   applyTo : ConsequenceTarget,
 	otherEffect:  "grant-persona"
 	id: Shadow["id"], // id of power
+} | {
+	otherEffect:  "swap-teammate-in-combat",
 };
 
 type ElementalResistanceAlterConsequence = {

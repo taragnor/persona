@@ -9,6 +9,7 @@ import {XPManager} from "../combat/xp-report.js";
 import {ConsequenceApplier} from "../conditionalEffects/consequence-applier.js";
 import {StepsClock} from "../exploration/steps-clock.js";
 import {TreasureSystem} from "../exploration/treasure-system.js";
+import {Metaverse} from "../metaverse.js";
 import {StatusDuration} from "../persona-ae.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
@@ -406,6 +407,20 @@ export class Tests {
     }
     await CreateToken.create(actor, position);
   }
+
+  static async combatSwapTest() {
+    const oldAlly = PersonaDB.activePCParty()
+      .find( x=> x.isNPCAlly());
+    const newAlly = await Metaverse.chooseAlly();
+    if (Metaverse.getPhase() != "combat") {
+      return "No combat so just swapping ally and bailing";
+    }
+    if (!oldAlly || !newAlly || newAlly == oldAlly) {
+      return "Not doing swap, data missing";
+    }
+    return await PersonaCombat.combat?.swapCharacter(oldAlly, newAlly);
+  }
+
 }
 
 
