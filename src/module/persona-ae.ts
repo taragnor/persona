@@ -562,9 +562,6 @@ export class PersonaAE extends ActiveEffect<PersonaActor, PersonaItem> implement
       if (!status || !tags) {return false;}
       if ((["identifier", "fade", "downtime"] as const)
         .some( x=> tags.includes(x))) {return false;}
-      // if (tags.includes("identifier")) {return false;}
-      // if (tags.includes("fade")) {return false;}
-      // if (tags.includes("downtime")) {return false;}
       return true;
     });
   }
