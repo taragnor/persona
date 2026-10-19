@@ -164,14 +164,14 @@ export class ConditionalEffectPrinter {
           const weekday = this.translate(cond.days, DAYS);
           return `weekday is ${not} : ${weekday}`;
         }
-        case "social-target-is": { const link = cond.socialLinkIdOrTarot ? (game.actors.get(cond.socialLinkIdOrTarot as PersonaActor["id"]) as PersonaActor)?.displayedName : "ERROR (social-target-is)";
-          return `social Target is ${not} ${link}`;
-        }
-        case "social-target-is-multi": {
-          const actors = multiCheckToArray(cond.socialLinkIdOrTarot)
-          .map( x=> x ? (game.actors.get(x as PersonaActor["id"]) as PersonaActor)?.displayedName ?? x : "ERROR (social-target-is-multi)");
-          return `social Target is ${not} ${actors.join(", ")}`;
-        }
+        // case "social-target-is": { const link = cond.socialLinkIdOrTarot ? (game.actors.get(cond.socialLinkIdOrTarot as PersonaActor["id"]) as PersonaActor)?.displayedName : "ERROR (social-target-is)";
+        //   return `social Target is ${not} ${link}`;
+        // }
+        // case "social-target-is-multi": {
+        //   const actors = multiCheckToArray(cond.socialLinkIdOrTarot)
+        //   .map( x=> x ? (game.actors.get(x as PersonaActor["id"]) as PersonaActor)?.displayedName ?? x : "ERROR (social-target-is-multi)");
+        //   return `social Target is ${not} ${actors.join(", ")}`;
+        // }
         // case "shadow-role-is": {
         //   const shadowRole = this.translate(cond.shadowRole, SHADOW_ROLE);
         //   return `${target1} role is is ${not} ${shadowRole}`;
@@ -345,6 +345,14 @@ export class ConditionalEffectPrinter {
         case "arcana-is": {
           const arcana = this.translate(cond.tarot, TAROT_DECK);
           return `Arcana is ${not} ${arcana}`;
+        }
+        case "social-target-is": { const link = cond.socialLinkIdOrTarot ? (game.actors.get(cond.socialLinkIdOrTarot as PersonaActor["id"]) as PersonaActor)?.displayedName : "ERROR (social-target-is)";
+          return `social Target is ${not} ${link}`;
+        }
+        case "social-target-is-multi": {
+          const actors = multiCheckToArray(cond.socialLinkIdOrTarot)
+          .map( x=> x ? (game.actors.get(x as PersonaActor["id"]) as PersonaActor)?.displayedName ?? x : "ERROR (social-target-is-multi)");
+          return `social Target is ${not} ${actors.join(", ")}`;
         }
         default:
           cond satisfies never;

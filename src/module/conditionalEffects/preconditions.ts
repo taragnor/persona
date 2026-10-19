@@ -680,21 +680,21 @@ function getBoolTestState(condition: PreconditionType & {type: "boolean"}, situa
       return condition.days[weekday];
     }
 
-    case "social-target-is": {
-      const arr = getSubjects(condition, situation, "conditionTarget", ownershipInfo);
-      if (!arr) {return undefined;}
-      return arr.some( target => {
-        const desiredActor = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, ownershipInfo.source);
-        return target == desiredActor;
-      });
-    }
+    // case "social-target-is": {
+    //   const arr = getSubjects(condition, situation, "conditionTarget", ownershipInfo);
+    //   if (!arr) {return undefined;}
+    //   return arr.some( target => {
+    //     const desiredActor = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, ownershipInfo.source);
+    //     return target == desiredActor;
+    //   });
+    // }
 
-    case "social-target-is-multi": {
-      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
-      if (!target) { return undefined; }
-      const actors= multiCheckToArray(condition.socialLinkIdOrTarot) as SocialLinkIdOrTarot[];
-      return actors.some(actor => getSocialLinkTarget(actor, situation, ownershipInfo.source) == target);
-    }
+    // case "social-target-is-multi": {
+    //   const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
+    //   if (!target) { return undefined; }
+    //   const actors= multiCheckToArray(condition.socialLinkIdOrTarot) as SocialLinkIdOrTarot[];
+    //   return actors.some(actor => getSocialLinkTarget(actor, situation, ownershipInfo.source) == target);
+    // }
 
     // case "shadow-role-is": {
     //   const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
@@ -941,6 +941,22 @@ function ActorBooleanComparison (condition: PreconditionType & BooleanComparison
       if (!tarot) {return undefined;}
       return target.system.tarot == condition.tarot;
     }
+
+    case "social-target-is": {
+      const arr = getSubjects(condition, situation, "conditionTarget", ownershipInfo);
+      if (!arr) {return undefined;}
+      return arr.some( target => {
+        const desiredActor = getSocialLinkTarget(condition.socialLinkIdOrTarot, situation, ownershipInfo.source);
+        return target == desiredActor;
+      });
+    }
+    case "social-target-is-multi": {
+      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
+      if (!target) { return undefined; }
+      const actors= multiCheckToArray(condition.socialLinkIdOrTarot) as SocialLinkIdOrTarot[];
+      return actors.some(actor => getSocialLinkTarget(actor, situation, ownershipInfo.source) == target);
+    }
+
     default:
       condition satisfies never;
   }

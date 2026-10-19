@@ -307,6 +307,20 @@ export class PreconditionConverter {
           actorProperty: cond.boolComparisonTarget,
           ___deprecated: undefined,
         } satisfies NonDeprecatedPrecondition;
+      case "social-target-is-multi":
+        return {
+          ...cond,
+          boolComparisonTarget: "actor-property",
+          actorProperty: cond.boolComparisonTarget,
+          ___deprecated: undefined,
+        } satisfies NonDeprecatedPrecondition;
+      case "social-target-is":
+        return {
+          ...cond,
+          boolComparisonTarget: "actor-property",
+          actorProperty: cond.boolComparisonTarget,
+          ___deprecated: undefined,
+        } satisfies NonDeprecatedPrecondition;
       case "actor-exists":
         return {
           ...cond,
@@ -324,6 +338,14 @@ export class PreconditionConverter {
           actorProperty: cond.boolComparisonTarget,
           ___deprecated: undefined,
         } satisfies NonDeprecatedPrecondition;
+      case "cameo-in-scene":
+        return {
+          ...cond,
+          boolComparisonTarget: "actor-property",
+          actorProperty: "actor-exists",
+          conditionTarget: "cameo",
+          ___deprecated: undefined,
+        };
       default:
         return cond;
     }

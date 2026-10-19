@@ -39,8 +39,8 @@ const ACTIVE_BOOLEAN_COMPARISON_TARGET_LIST = [
 	"flag-state",
 	"weather-is",
 	"weekday-is",
-	"social-target-is",
-	"social-target-is-multi", //can have multiple
+	// "social-target-is",
+	// "social-target-is-multi", //can have multiple
 	// "shadow-role-is",
 	"active-scene-is",
 	"is-gm",
@@ -55,7 +55,6 @@ const ACTIVE_BOOLEAN_COMPARISON_TARGET_LIST = [
 	// "has-class",
 	// "actor-exists",
   "special-boolean",
-	...BASIC_BOOLEAN_COMPARISON_LIST,
 ] as const;
 
 const DEPRECATED_BOOLEAN_COMPARISON_LIST = [
@@ -90,6 +89,9 @@ const DEPRECATED_BOOLEAN_COMPARISON_LIST = [
 	"using-meta-pod",
 	"has-item-in-inventory",
 	"arcana-is",
+	"social-target-is",
+	"social-target-is-multi", //can have multiple
+  ...BASIC_BOOLEAN_COMPARISON_LIST
 ] as const;
 
 const BOOLEAN_COMPARISON_TARGET_LIST = [
@@ -133,6 +135,8 @@ const ACTOR_PROPERTY_SUBLIST_LIST = [
 	"has-item-in-inventory",
   "can-switch-persona",
 	"arcana-is",
+	"social-target-is",
+	"social-target-is-multi", //can have multiple
 ] as const;
 
 const COMBAT_COMPARISON_SUBLIST_LIST = [
@@ -194,7 +198,7 @@ type NonDeprecatedBoolComparisons = BasicBComparisonPC | NonBasicBoolComparison 
 }
 
 type NonBasicBoolComparison =
-TagComparisonPC | FlagComparisonPC |   WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti | SceneComparison | PlayerTypeCheckComparison | CreatureTypeCheckComparion | SocialComparison | BinaryLogicalComparison | SceneClockNameComparison | StatusInflictComparisonPC | PowerComparison | RollPropertyComparison | CombatComparison | SpecialComparion | ActorPropertyBooleanComparison;
+TagComparisonPC | FlagComparisonPC |   WeatherComparison | WeekdayComparison | SceneComparison | PlayerTypeCheckComparison | CreatureTypeCheckComparion | SocialComparison | BinaryLogicalComparison | SceneClockNameComparison | StatusInflictComparisonPC | PowerComparison | RollPropertyComparison | CombatComparison | SpecialComparion | ActorPropertyBooleanComparison;
 ;
 
 type PowerComparison = {
@@ -285,7 +289,7 @@ type ActorExistsComparison =  {
 };
 
 type DeprecatedBoolComparisons =
-	DeprecatedSimpleComparisons | PowerTypeComparison | PowerTypeComparisonPC | DeprecatedTagComparisons | SlotTypeComparison | DamageTypeComparisonPC | DeprecatedSingleTargetComparison | DeprecatedTwoTargetComparisons | ResistanceCheck | IsEnemyComparison | GeneralActorComparison | ActorExistsComparison | HasClassComparison | KnowsPowerComparison | ShadowRoleComparison   | TwoTargetComparison | StatusComparisonPC | HasItemCheckComparison | TargettedBComparisonPC | ArcanaComparison;
+	DeprecatedSimpleComparisons | PowerTypeComparison | PowerTypeComparisonPC | DeprecatedTagComparisons | SlotTypeComparison | DamageTypeComparisonPC | DeprecatedSingleTargetComparison | DeprecatedTwoTargetComparisons | ResistanceCheck | IsEnemyComparison | GeneralActorComparison | ActorExistsComparison | HasClassComparison | KnowsPowerComparison | ShadowRoleComparison   | TwoTargetComparison | StatusComparisonPC | HasItemCheckComparison | TargettedBComparisonPC | ArcanaComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti ;
 
 type DeprecatedSimpleComparisons = {
 	boolComparisonTarget: "is-critical" | "is-hit" | "is-within-ailment-range" | "is-within-instant-death-range" | "metaverse-enhanced" | "is-consumable"|	"in-combat";
@@ -408,7 +412,6 @@ type HasItemCheckSublist = {
   itemCheck: "has-tag",
   tagId: MultiCheckOrSingle<string | Tag["id"]>,
 };
-
 
 type SocialTargetIsComparisonMulti = {
 	boolComparisonTarget: "social-target-is-multi",
@@ -563,6 +566,16 @@ type ActorPropertyItems = {
     actorProperty: "arcana-is",
     conditionTarget: ConditionTarget,
     tarot: TarotCard;
+  }
+  | {
+    actorProperty: "social-target-is-multi",
+    conditionTarget : ConditionTarget,
+    socialLinkIdOrTarot : MultiCheck<string>,
+  }
+  | {
+    actorProperty: "social-target-is",
+    conditionTarget : ConditionTarget,
+    socialLinkIdOrTarot : SocialLinkIdOrTarot,
   }
 ;
 
