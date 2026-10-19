@@ -227,7 +227,7 @@ export class PersonaManager<ActorType extends ValidAttackers = ValidAttackers> {
         ui.notifications.warn("Can't swap personas right now");
         return;
       }
-      if (await HTMLTools.cancelBox("override", "Can't switch personas right now, use GM Override?")) {
+      if (await HTMLTools.cancelBox("Can't switch personas right now, use GM Override?", "GM Override")) {
         return;
       }
     }

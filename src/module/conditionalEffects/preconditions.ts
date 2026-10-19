@@ -854,7 +854,7 @@ function ActorBooleanComparison (condition: PreconditionType & BooleanComparison
     case "has-item-in-inventory": {
       const targets = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo);
       if (!targets) {return undefined;}
-      const itemList = targets.flatMap( target=> condition.equipped
+      const itemList = targets.flatMap( target => condition.equipped
         ? target.equippedItems()
         : target.items.contents);
       switch (condition.itemCheck) {
@@ -867,7 +867,7 @@ function ActorBooleanComparison (condition: PreconditionType & BooleanComparison
         case "has-tag":{
           const MCArray = multiCheckToArray(condition.tagId);
           return itemList.some( item =>
-            item.tagList(null).some( tag=> 
+            item.tagList(null).some( tag =>
               tag instanceof PersonaItem
               ? MCArray.includes(tag.system.linkedInternalTag) || MCArray.includes(tag.id)
               : MCArray.includes(tag))
