@@ -258,6 +258,72 @@ export class PreconditionConverter {
           comparison2,
         };
       }
+      case "has-class":
+        return {
+          ...cond,
+          boolComparisonTarget: "actor-property",
+          actorProperty: cond.boolComparisonTarget,
+          ___deprecated: undefined,
+        } satisfies NonDeprecatedPrecondition;
+      case "knows-power":
+        return {
+          ...cond,
+          boolComparisonTarget: "actor-property",
+          actorProperty: cond.boolComparisonTarget,
+          ___deprecated: undefined,
+        } satisfies NonDeprecatedPrecondition;
+      case "arcana-is":
+        return {
+          ...cond,
+          boolComparisonTarget: "actor-property",
+          actorProperty: cond.boolComparisonTarget,
+          ___deprecated: undefined,
+        } satisfies NonDeprecatedPrecondition;
+      case "shadow-role-is":
+        return {
+          ...cond,
+          boolComparisonTarget: "actor-property",
+          actorProperty: cond.boolComparisonTarget,
+          ___deprecated: undefined,
+        } satisfies NonDeprecatedPrecondition;
+      case "target-owner-comparison":
+        return {
+          ...cond,
+          boolComparisonTarget: "actor-property",
+          actorProperty: cond.boolComparisonTarget,
+          ___deprecated: undefined,
+        } satisfies NonDeprecatedPrecondition;
+      case "has-status":
+        return {
+          ...cond,
+          boolComparisonTarget: "actor-property",
+          actorProperty: cond.boolComparisonTarget,
+          ___deprecated: undefined,
+        } satisfies NonDeprecatedPrecondition;
+      case "has-item-in-inventory":
+        return {
+          ...cond,
+          boolComparisonTarget: "actor-property",
+          actorProperty: cond.boolComparisonTarget,
+          ___deprecated: undefined,
+        } satisfies NonDeprecatedPrecondition;
+      case "actor-exists":
+        return {
+          ...cond,
+          boolComparisonTarget: "actor-property",
+          actorProperty: cond.boolComparisonTarget,
+          ___deprecated: undefined,
+        } satisfies NonDeprecatedPrecondition;
+      case "is-shadow":
+      case "is-pc":
+      case "using-meta-pod":
+      case "is-same-arcana":
+        return {
+          ...cond,
+          boolComparisonTarget: "actor-property",
+          actorProperty: cond.boolComparisonTarget,
+          ___deprecated: undefined,
+        } satisfies NonDeprecatedPrecondition;
       default:
         return cond;
     }

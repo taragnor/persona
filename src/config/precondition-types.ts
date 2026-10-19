@@ -58,6 +58,7 @@ type SaveVersus = {
 
 export type Triggered = { type: "on-trigger"} & TriggeredEvents;
 
+
 type  TriggeredEvents = SimpleTrigger
 | AdvancedTrigger
 | DeprecatedTriggers

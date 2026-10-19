@@ -39,7 +39,7 @@ export class CombatPanel extends PersonaPanel {
       {
         label: "Persona",
         onPress: () => this._onPersonaModeSwitchButton(),
-        enabled: () => this._target ? this._target.actor.canSwitchPersonas && this._target.isOwner && turnCheck : false,
+        enabled: () => this._target ? this._target.actor.personas.canSwitchPersonas && this._target.isOwner && turnCheck : false,
         visible: () => this._target ? this._target.isOwner && this._target.actor.personas.hasMultiplePersonas: false,
       }, {
         label: "Item",
@@ -437,7 +437,7 @@ export class CombatPanel extends PersonaPanel {
     const filteredPList = actor.personaList
       .filter( p => !p.equals(currentPersona));
     if (filteredPList.length == 1) {
-      if (!this.actor?.canSwitchPersonas) {
+      if (!this.actor?.personas.canSwitchPersonas) {
         ui.notifications.notify("Can't swap right now.");
         return;
       }

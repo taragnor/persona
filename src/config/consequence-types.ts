@@ -372,6 +372,8 @@ type CombatEffectConsequencesList =
   } | {
     applyTo: ConsequenceTarget,
     combatEffect: "escape-combat",
+  } | {
+    combatEffect:"instant-kill",
   }
 ;
 

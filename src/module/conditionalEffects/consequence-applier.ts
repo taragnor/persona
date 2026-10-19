@@ -336,8 +336,7 @@ export class ConsequenceApplier {
         }
         break;
       case "combat-effect":
-        await this._applyCombatEffect(otherEffect, actor, mutableState);
-        break;
+        return await this._applyCombatEffect(otherEffect, actor, mutableState, attacker);
       case "alter-fatigue-lvl":
         await actor.alterFatigueLevel(otherEffect.amount);
         break;
@@ -682,7 +681,7 @@ export class ConsequenceApplier {
     }
   }
 
-  static async _applyCombatEffect(effect: OtherEffect & {type: "combat-effect"}, actor: ValidAttackers, mutableState: MutableActorState) {
+  static async _applyCombatEffect(effect: OtherEffect & {type: "combat-effect"}, actor: ValidAttackers, mutableState: MutableActorState, attacker : U<UniversalTokenAccessor<PToken>>) :Promise<FinalizedCombatResult[]> {
     switch (effect.combatEffect) {
       case "auto-end-turn":
         if (PersonaCombat.combat
@@ -782,10 +781,20 @@ export class ConsequenceApplier {
         await combat.summon(shadow);
         break;
       }
+      case "instant-kill": {
+        const attackerToken = PersonaDB.findToken(attacker);
+        const targetToken = PersonaCombat.combat?.getCombatantsByActor(actor).at(0)?.token;
+        if (targetToken) {
+          return await this.#onDefeatOpponent(targetToken as PToken, attackerToken);
+        }
+        break;
+      }
       default:
         effect satisfies never;
         break;
     }
+    return []
+
   }
 
   static async #onDefeatOpponent(target: PToken, attacker ?: U<PToken>) : Promise<FinalizedCombatResult[]> {

@@ -6,7 +6,7 @@ import {PersonaDB} from "../module/persona-db.js";
 import {VARIABLE_TYPE} from "../module/persona-variables.js";
 import {CALCULATION_OPERATION} from "../module/utility/calculation.js";
 import {ProgressClock} from "../module/utility/progress-clock.js";
-import {BOOLEAN_COMPARISON_TARGET, COMBAT_COMPARISON_SUBLIST, ITEM_CHECK_TYPE, NONDEPBOOLEAN_COMPARISON_TARGET, POWER_COMPARISON_SUBLIST, ROLL_COMPARISON_SUBLIST, SOCIAL_CHECKS, SPECIAL_BOOLEAN_SUBLIST, TAG_COMPARISON_TYPES} from "./boolean-comparison.js";
+import {ACTOR_PROPERTY_SUBLIST, BOOLEAN_COMPARISON_TARGET, COMBAT_COMPARISON_SUBLIST, ITEM_CHECK_TYPE, NONDEPBOOLEAN_COMPARISON_TARGET, POWER_COMPARISON_SUBLIST, ROLL_COMPARISON_SUBLIST, SOCIAL_CHECKS, SPECIAL_BOOLEAN_SUBLIST, TAG_COMPARISON_TYPES} from "./boolean-comparison.js";
 import {CARD_TAGS} from "./card-tags.js";
 import {ARITHMETIC_OPERATORS, CONS_TARGETS, CONSEQUENCE_AMOUNT_ACTOR_PROPERTIES, CONSEQUENCE_AMOUNT_TYPES, ITEM_SELECTOR_TYPE, LEVEL_GAIN_TARGETS, SITUATION_PROPERTIES, VARIABLE_ACTIONS} from "./consequence-types.js";
 import {CREATURE_TAGS, SHADOW_TAGS} from "./creature-tags.js";
@@ -165,6 +165,7 @@ private static _powerStuffBase: Record<string, unknown>;
       SCENE_WEATHER_TYPES: Object.fromEntries(
         ([""].concat(Object.keys(CONFIG.weatherEffects))).map( x=> [x,x])
       ),
+      BOOLEAN_ACTOR_PROPERTIES : ACTOR_PROPERTY_SUBLIST,
     };
     return this._powerStuffBase;
   }

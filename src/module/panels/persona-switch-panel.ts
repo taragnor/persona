@@ -36,7 +36,7 @@ export class PersonaSwitchPanel extends SubPanel {
   private async _onPersonaSwitchButton(event: JQuery.ClickEvent) {
     event.stopPropagation();
     if (!game.user.isGM
-      && !this._token.actor.canSwitchPersonas) {
+      && !this._token.actor.personas.canSwitchPersonas) {
       PersonaError.softFail("Can't switch personas now");
     }
     const personaId = HTMLTools.getClosestData(event, "personaId");

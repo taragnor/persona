@@ -210,7 +210,8 @@ namespace TriggeredSituation {
     PowerUsageCheck
     | EquipCheck
     | LegalTargetCheck
-    | NullifyAttackCheck;
+    | NullifyAttackCheck
+    | CheckPersonaSwitch;
 
 
 type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
@@ -227,6 +228,12 @@ type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
     SituationComponent.TriggeringCharacter &
     {
       trigger: "check-nullify-attack",
+    }
+
+  type CheckPersonaSwitch  = SituationComponent.User &
+    SituationComponent.TriggeringCharacter &
+    {
+      trigger: "check-persona-switch",
     }
 
   type EquipCheck = SituationComponent.Item &

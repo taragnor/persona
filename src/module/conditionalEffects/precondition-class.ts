@@ -51,7 +51,8 @@ export class PreconditionC<C extends NonDeprecatedPrecondition = NonDeprecatedPr
     const cond = this.cond as NonDeprecatedPrecondition;
     if (
       cond.type == "boolean"
-      && cond.boolComparisonTarget == "target-owner-comparison"
+      && cond.boolComparisonTarget == "actor-property"
+      && cond.actorProperty == "target-owner-comparison"
       && cond.booleanState == true
     ) {
       const arr = [cond.conditionTarget, cond.conditionTarget2];

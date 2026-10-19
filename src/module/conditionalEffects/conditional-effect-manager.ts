@@ -523,7 +523,9 @@ export class ConditionalEffectManager {
         action: (ev: JQuery.Event) => {
           const cond = {
             type : "boolean",
-            boolComparisonTarget: "has-status",
+            boolComparisonTarget: "actor-property",
+            actorProperty: "has-status",
+            // boolComparisonTarget: "has-status",
             status: {},
             booleanState: true,
             conditionTarget: "user",

@@ -54,11 +54,12 @@ export const SHARED_TRIGGERS = [
 	"on-active-effect-end",
 ] as const;
 
-export const CANCEL_CHECK = [
+const CANCEL_CHECK = [
 	"on-power-usage-check",
   "on-equip-check",
   "check-legal-target",
   "check-nullify-attack",
+  "check-persona-switch",
 ] as const;
 
 

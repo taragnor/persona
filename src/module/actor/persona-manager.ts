@@ -1,3 +1,4 @@
+import {CancelTrigger} from "../../cancel-check-effect.js";
 import {FusionCombination, FusionTable} from "../../config/fusion-table.js";
 import {PersonaCombat} from "../combat/persona-combat.js";
 import {Persona} from "../persona-class.js";
@@ -5,6 +6,7 @@ import {PersonaCompendium} from "../persona-compendium.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {TimedCache} from "../utility/cache.js";
+import {HTMLTools} from "../utility/HTMLTools.js";
 import {Logger} from "../utility/logger.js";
 
 export class PersonaManager<ActorType extends ValidAttackers = ValidAttackers> {
@@ -220,14 +222,22 @@ export class PersonaManager<ActorType extends ValidAttackers = ValidAttackers> {
   }
 
   async switchPersona( sourceId: ValidAttackers["id"]) {
-    if (this.actor.hasStatus("sealed")) {
-      ui.notifications.warn("Can't swap persona while sealed");
-      return;
+    if (!this.actor.personas.canSwitchPersonas) {
+      if (!game.user.isGM) {
+        ui.notifications.warn("Can't swap personas right now");
+        return;
+      }
+      if (await HTMLTools.cancelBox("override", "Can't switch personas right now, use GM Override?")) {
+        return;
+      }
     }
     const persona = this.personaList.find( x=> x.source.id == sourceId);
-    if (!persona || !persona.source.isOwner) {
+    if (!persona || !this.personaList.find(p => p.source.id == sourceId)) {
       PersonaError.softFail(`Couldn't find Persona ${sourceId} in your persona List or you aren't its owner`);
       return;
+    }
+    if (!persona.isOwner && !persona.source.hasPlayerOwner) {
+      PersonaError.softFail("You don't have ownership of this persona");
     }
     this.cache.persona.clear();
     await this.actor.update({"system.activePersona": sourceId});
@@ -328,6 +338,28 @@ export class PersonaManager<ActorType extends ValidAttackers = ValidAttackers> {
 
   _basePersona() : Persona {
     return new Persona(this.actor, this.actor, this.actor._mainPowers());
+  }
+
+/** returns true if actor can take the switch persona action*/
+  get canSwitchPersonas() : boolean {
+    const actor =this.actor;
+    if (!actor.isValidCombatant()) {return false;}
+    if (!actor.canTakeNormalActions) {return false;}
+    if (actor.hasStatus("sealed")) {return false;}
+    return this.hasMultiplePersonas
+      && actor.canTakeNormalActions
+      && this._checkPersonaSwitchCancelEffect();
+  }
+
+  private _checkPersonaSwitchCancelEffect() : boolean {
+    const actor = this.actor;
+    const situation = {
+      trigger : "check-persona-switch",
+      user: actor.accessor,
+      triggeringCharacter: actor.accessor,
+      triggeringUser: game.user.id,
+    } satisfies Situation;
+    return !CancelTrigger.cancelCheck(situation, actor);
   }
 
   isUsingBasePersona() : boolean {

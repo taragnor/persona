@@ -247,6 +247,7 @@ export const COMBAT_EFFECTS_LIST = [
   "set-cooldown",
   "add-power-tag-to-attack",
   "escape-combat",
+  "instant-kill",
 ] as const;
 
 export type CombatEffect = typeof COMBAT_EFFECTS_LIST[number];

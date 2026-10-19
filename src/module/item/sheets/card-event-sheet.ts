@@ -207,7 +207,8 @@ export class CardEventSheet extends FormApplication<SocialCardEventDM> implement
       action : () => ({
         type: "boolean",
         booleanState: true,
-        boolComparisonTarget: "actor-exists",
+        boolComparisonTarget: "actor-property",
+        actorProperty: "actor-exists",
         "conditionTarget": "cameo",
       }),
     }, {

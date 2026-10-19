@@ -28,56 +28,68 @@ const ACTIVE_BOOLEAN_COMPARISON_TARGET_LIST = [
 	"power-has",
 	"roll-property-is",
 	"combat-comparison",
-	"is-shadow",
-	"is-pc",
+  "actor-property",
+	// "is-shadow",
+	// "is-pc",
 	"has-tag",//universal tag finder
-	"target-owner-comparison",
-	"has-status",
+	// "target-owner-comparison",
+	// "has-status",
 	"status-to-be-inflicted",
-	"is-same-arcana",
+	// "is-same-arcana",
 	"flag-state",
 	"weather-is",
 	"weekday-is",
 	"social-target-is",
 	"social-target-is-multi", //can have multiple
-	"shadow-role-is",
+	// "shadow-role-is",
 	"active-scene-is",
 	"is-gm",
-	"has-item-in-inventory",
+	// "has-item-in-inventory",
 	"creature-type-is",
 	"social-availability",
-	"arcana-is",
 	"logical-or",
 	"logical-and",
 	"scene-clock-name-is",
-	"using-meta-pod",
-	"knows-power",
-	"has-class",
-	"actor-exists",
+	// "using-meta-pod",
+	// "knows-power",
+	// "has-class",
+	// "actor-exists",
   "special-boolean",
 	...BASIC_BOOLEAN_COMPARISON_LIST,
 ] as const;
 
 const DEPRECATED_BOOLEAN_COMPARISON_LIST = [
-	 "has-creature-tag", // Deprecated
-	 "metaverse-enhanced", // Deprecated
-	 "power-target-type-is",
-	 "power-type-is",
-	 "power-slot-is",
-	 "damage-type-is",
-	 "is-consumable",
-	 "is-critical",
-	 "is-hit",
-	 "is-within-ailment-range",
-	 "is-within-instant-death-range",
-	 "in-combat",
-	 "is-dead",
-	 "engaged",
-	 "engaged-with",
-	 "is-enemy",
-	 "struck-weakness",
-	 "is-resistant-to",
-	 "is-distracted",
+  "has-creature-tag",
+  "metaverse-enhanced",
+  "power-target-type-is",
+  "power-type-is",
+  "power-slot-is",
+  "damage-type-is",
+  "is-consumable",
+  "is-critical",
+  "is-hit",
+  "is-within-ailment-range",
+  "is-within-instant-death-range",
+  "in-combat",
+  "is-dead",
+  "engaged",
+  "engaged-with",
+  "is-enemy",
+  "struck-weakness",
+  "is-resistant-to",
+  "is-distracted",
+  "knows-power",
+  "has-class",
+  "actor-exists",
+	"shadow-role-is",
+	"target-owner-comparison",
+	"has-status",
+	"is-shadow",
+	"is-pc",
+	"is-same-arcana",
+	"using-meta-pod",
+	"has-item-in-inventory",
+	"arcana-is",
 ] as const;
 
 const BOOLEAN_COMPARISON_TARGET_LIST = [
@@ -105,6 +117,22 @@ const ROLL_COMPARISON_SUBLIST_LIST = [
   "is-within-instant-death-range",
   "is-any-full-miss",
   "is-basic-miss",
+] as const;
+
+const ACTOR_PROPERTY_SUBLIST_LIST = [
+	"has-status",
+  "actor-exists",
+  "has-class",
+	"knows-power",
+	"shadow-role-is",
+	"target-owner-comparison",
+	"is-shadow",
+	"is-pc",
+	"is-same-arcana",
+	"using-meta-pod",
+	"has-item-in-inventory",
+  "can-switch-persona",
+	"arcana-is",
 ] as const;
 
 const COMBAT_COMPARISON_SUBLIST_LIST = [
@@ -143,6 +171,10 @@ export const BOOLEAN_COMPARISON_TARGET = HTMLTools.createLocalizationObject(BOOL
 
 export const NONDEPBOOLEAN_COMPARISON_TARGET = HTMLTools.createLocalizationObject(ACTIVE_BOOLEAN_COMPARISON_TARGET_LIST, "persona.preconditions.comparison");
 
+export const ACTOR_PROPERTY_SUBLIST = HTMLTools.createLocalizationObject(ACTOR_PROPERTY_SUBLIST_LIST, "persona.preconditions.comparison");
+
+type ActorProperty = typeof ACTOR_PROPERTY_SUBLIST_LIST[number];
+
 
 type BasicComparisonTargets = typeof BASIC_BOOLEAN_COMPARISON_LIST[number];
 
@@ -162,7 +194,7 @@ type NonDeprecatedBoolComparisons = BasicBComparisonPC | NonBasicBoolComparison 
 }
 
 type NonBasicBoolComparison =
-StatusComparisonPC | TagComparisonPC | FlagComparisonPC | TargettedBComparisonPC |   WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti |  ShadowRoleComparison | SceneComparison | PlayerTypeCheckComparison | HasItemCheckComparison | CreatureTypeCheckComparion | SocialComparison | ArcanaComparison | GeneralActorComparison | BinaryLogicalComparison | SceneClockNameComparison | ActorExistsComparison | KnowsPowerComparison | HasClassComparison | StatusInflictComparisonPC | PowerComparison | RollPropertyComparison | CombatComparison | SpecialComparion;
+TagComparisonPC | FlagComparisonPC |   WeatherComparison | WeekdayComparison | SocialTargetIsComparison | SocialTargetIsComparisonMulti | SceneComparison | PlayerTypeCheckComparison | CreatureTypeCheckComparion | SocialComparison | BinaryLogicalComparison | SceneClockNameComparison | StatusInflictComparisonPC | PowerComparison | RollPropertyComparison | CombatComparison | SpecialComparion | ActorPropertyBooleanComparison;
 ;
 
 type PowerComparison = {
@@ -253,7 +285,7 @@ type ActorExistsComparison =  {
 };
 
 type DeprecatedBoolComparisons =
-	DeprecatedSimpleComparisons | PowerTypeComparison | PowerTypeComparisonPC | DeprecatedTagComparisons | SlotTypeComparison | DamageTypeComparisonPC | DeprecatedSingleTargetComparison | DeprecatedTwoTargetComparisons | ResistanceCheck | IsEnemyComparison ;
+	DeprecatedSimpleComparisons | PowerTypeComparison | PowerTypeComparisonPC | DeprecatedTagComparisons | SlotTypeComparison | DamageTypeComparisonPC | DeprecatedSingleTargetComparison | DeprecatedTwoTargetComparisons | ResistanceCheck | IsEnemyComparison | GeneralActorComparison | ActorExistsComparison | HasClassComparison | KnowsPowerComparison | ShadowRoleComparison   | TwoTargetComparison | StatusComparisonPC | HasItemCheckComparison | TargettedBComparisonPC | ArcanaComparison;
 
 type DeprecatedSimpleComparisons = {
 	boolComparisonTarget: "is-critical" | "is-hit" | "is-within-ailment-range" | "is-within-instant-death-range" | "metaverse-enhanced" | "is-consumable"|	"in-combat";
@@ -321,7 +353,7 @@ export type RelationshipTypeComparison = {
 	relationshipType: string;
 };
 
-export type TargettedBComparisonPC = SingleTargetComparison | TwoTargetComparison;
+export type TargettedBComparisonPC = SingleTargetComparison;
 
 type SlotTypeComparison = {
 	boolComparisonTarget: "power-slot-is",
@@ -364,7 +396,6 @@ type DeprecatedTwoTargetComparisons = {
 
 type HasItemCheckComparison = {
 	boolComparisonTarget: "has-item-in-inventory",
-	// itemId: PersonaItem["id"],
 	conditionTarget: ConditionTarget,
 	equipped: boolean,
   itemCheck: U<keyof typeof ITEM_CHECK_TYPE>
@@ -489,6 +520,58 @@ type PowerTypeComparisonPC = {
 	boolComparisonTarget: "power-type-is",
 	powerType : PowerType,
 };
+
+type ActorPropertyBooleanComparison = {
+  boolComparisonTarget: "actor-property",
+  actorProperty : ActorProperty,
+} & ActorPropertyItems;
+
+type ActorPropertyItems = {
+  actorProperty: Extract<ActorProperty, "can-switch-persona">,
+}
+  | GeneralActorComparisonS
+  | {
+    actorProperty: "has-class",
+    classId: MultiCheck<CClass["id"]>;
+    conditionTarget: ConditionTarget;
+  }
+  | {
+    actorProperty: "knows-power";
+    powerId: string;
+    conditionTarget: ConditionTarget,
+  }
+  | {
+    actorProperty: "shadow-role-is",
+    conditionTarget: ConditionTarget,
+    shadowRole: ShadowRole | MultiCheck<ShadowRole>,
+  }
+  | {
+    actorProperty: "target-owner-comparison",
+    conditionTarget : ConditionTarget,
+    conditionTarget2: ConditionTarget,
+  } | {
+    actorProperty: "has-status",
+    status : MultiCheckOrSingle<StatusEffectId>,
+    conditionTarget : ConditionTarget,
+  } | ({
+    actorProperty: "has-item-in-inventory",
+    conditionTarget: ConditionTarget,
+    equipped: boolean,
+    itemCheck: U<keyof typeof ITEM_CHECK_TYPE>
+  } & HasItemCheckSublist) 
+  | {
+    actorProperty: "arcana-is",
+    conditionTarget: ConditionTarget,
+    tarot: TarotCard;
+  }
+;
+
+
+type GeneralActorComparisonS = {
+	actorProperty: "is-pc" | "is-shadow" | "using-meta-pod" | "actor-exists" | "is-same-arcana",
+	conditionTarget: ConditionTarget,
+};
+
 
 type FlagComparisonPC = {
 	boolComparisonTarget: "flag-state",

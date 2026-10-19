@@ -271,15 +271,12 @@ export class CombatResult  {
         });
         break;
       case "set-cooldown":
+      case "escape-combat":
+      case "summon":
+      case "instant-kill":
         effect.otherEffects.push( cons);
         break;
       case "add-power-tag-to-attack":
-        break;
-      case "escape-combat":
-        effect.otherEffects.push(cons);
-        break;
-      case "summon":
-        effect.otherEffects.push(cons);
         break;
       default:
         cons satisfies never;
@@ -386,7 +383,7 @@ export class CombatResult  {
         });
         break;
       }
-      case "display-msg":{
+      case "display-msg": {
         const msg = this.processMessage(cons.msg, situation);
         if (effect && !cons.newChatMsg) {
           effect.otherEffects.push( {
@@ -403,7 +400,7 @@ export class CombatResult  {
         }
         break;
       }
-      case "use-power":  {
+      case "use-power": {
         if (!effect) {break;}
         if (!cons.owner) {
           PersonaError.softFail("No actor owner for usepower ability");
@@ -490,7 +487,6 @@ export class CombatResult  {
               value,
             });
           }
-
         } else {
           if (target) {
             effect?.otherEffects.push(alterVarCons);
@@ -508,9 +504,6 @@ export class CombatResult  {
         if (!effect) {break;}
         effect.otherEffects.push(cons);
         break;
-      // case "play-sound":
-      //   this.globalOtherEffects.push(cons);
-      //   break;
       case "inventory-action": {
         if (!effect) {
           PersonaError.softFail(`No Target to apply Effect to ${cons.invAction}`);

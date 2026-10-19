@@ -100,61 +100,62 @@ export class ConditionalEffectPrinter {
       return translationTable ? localize(translationTable[item] as LocalizationString) : item;
     }
 
-    static #printBooleanCond (cond: Precondition & {type: "boolean"}) :string {
+    static #printBooleanCond (cond: NonDeprecatedPrecondition & {type: "boolean"}) :string {
       const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, STATUS_SUBTAG_CONDITION_TARGETS) : "";
-      const target2 = ("conditionTarget2" in cond) ? this.translate(cond.conditionTarget2, CONDITION_TARGETS): "" ;
+      // const target2 = ("conditionTarget2" in cond) ? this.translate(cond.conditionTarget2, CONDITION_TARGETS): "" ;
       const not = !cond.booleanState ? "not" : "";
       switch (cond.boolComparisonTarget) {
-        case "engaged":
-          return `${target1} is ${not} engaged with anyone`;
-        case "engaged-with":
-          return `${target1} is ${not} engaged with ${target2}`;
-        case "metaverse-enhanced":
-          return `metaverse is ${not} enhanced`;
-        case "is-shadow":
-          return `${target1} is ${not} enemy type`;
-        case "is-pc":
-          return `${target1} is ${not} PC type`;
+        // case "engaged":
+        //   return `${target1} is ${not} engaged with anyone`;
+        // case "engaged-with":
+        //   return `${target1} is ${not} engaged with ${target2}`;
+        // case "metaverse-enhanced":
+        //   return `metaverse is ${not} enhanced`;
+        // case "is-shadow":
+        //   return `${target1} is ${not} enemy type`;
+        // case "is-pc":
+        //   return `${target1} is ${not} PC type`;
         case "has-tag": {
           return this.#printHasTagCond(cond);
         }
-        case "in-combat":
-          return `is ${not} in combat`;
-        case "is-critical":
-          return `${not} critical hit/success`;
-        case "is-hit":
-          return `${not} hit/success`;
-        case "is-dead":
-          return `${target1} is ${not} dead`;
-        case "target-owner-comparison":
-          return `${target1} is ${not} equal to ${target2}`;
-        case "damage-type-is": {
-          const damageType = this.translate(cond.powerDamageType, DAMAGE_TYPES_PLUS_AFFINITY);
-          return `Power Damage Type is ${not} ${damageType}`;
-        }
-        case "power-type-is": {
-          const powerType = this.translate(cond.powerType, POWERTYPES);
-          return `Power Type is ${not} ${powerType}`;
-        }
-        case "has-status": {
-          const status = this.translate(cond.status, STATUS_EFFECT_TRANSLATION_TABLE);
-          return `${target1} ${not} has status: ${status}`;
-        }
-        case "struck-weakness":
-          return `attack ${not} targets a weakness`;
-        case "is-resistant-to": {
-          const damageType = this.translate(cond.powerDamageType, DAMAGE_TYPES_PLUS_AFFINITY);
-          return `${target1} is ${not} resistant to ${damageType}`;
-        }  case "is-same-arcana":
-          return `${target1} is ${not} the same arcana as attacker`;
+        // case "in-combat":
+        //   return `is ${not} in combat`;
+        // case "is-critical":
+        //   return `${not} critical hit/success`;
+        // case "is-hit":
+        //   return `${not} hit/success`;
+        // case "is-dead":
+        //   return `${target1} is ${not} dead`;
+        // case "target-owner-comparison":
+        //   return `${target1} is ${not} equal to ${target2}`;
+        // case "damage-type-is": {
+        //   const damageType = this.translate(cond.powerDamageType, DAMAGE_TYPES_PLUS_AFFINITY);
+        //   return `Power Damage Type is ${not} ${damageType}`;
+        // }
+        // case "power-type-is": {
+        //   const powerType = this.translate(cond.powerType, POWERTYPES);
+        //   return `Power Type is ${not} ${powerType}`;
+        // }
+        // case "has-status": {
+        //   const status = this.translate(cond.status, STATUS_EFFECT_TRANSLATION_TABLE);
+        //   return `${target1} ${not} has status: ${status}`;
+        // }
+        // case "struck-weakness":
+        //   return `attack ${not} targets a weakness`;
+        // case "is-resistant-to": {
+        //   const damageType = this.translate(cond.powerDamageType, DAMAGE_TYPES_PLUS_AFFINITY);
+        //   return `${target1} is ${not} resistant to ${damageType}`;
+        // }
+      // case "is-same-arcana":
+      //     return `${target1} is ${not} the same arcana as attacker`;
         case "flag-state":
           return `${target1} flag ${cond.flagId} is ${not} true`;
-        case "is-consumable":
-          return `used power/item is ${not} a consumable item`;
-        case "power-target-type-is": {
-          const targetType = this.translate(cond.powerTargetType, TARGETING);
-          return `used power targets type is ${not}: ${targetType}`;
-        }
+        // case "is-consumable":
+        //   return `used power/item is ${not} a consumable item`;
+        // case "power-target-type-is": {
+        //   const targetType = this.translate(cond.powerTargetType, TARGETING);
+        //   return `used power targets type is ${not}: ${targetType}`;
+        // }
         case "weather-is": {
           const weather = this.translate(cond.weatherComparison, WEATHER_TYPES);
           return `weather is ${not}: ${weather}`;
@@ -171,16 +172,147 @@ export class ConditionalEffectPrinter {
           .map( x=> x ? (game.actors.get(x as PersonaActor["id"]) as PersonaActor)?.displayedName ?? x : "ERROR (social-target-is-multi)");
           return `social Target is ${not} ${actors.join(", ")}`;
         }
-        case "shadow-role-is": {
-          const shadowRole = this.translate(cond.shadowRole, SHADOW_ROLE);
-          return `${target1} role is is ${not} ${shadowRole}`;
-        }
-        case "is-distracted":
-          return `${target1} is ${not} distracted`;
+        // case "shadow-role-is": {
+        //   const shadowRole = this.translate(cond.shadowRole, SHADOW_ROLE);
+        //   return `${target1} role is is ${not} ${shadowRole}`;
+        // }
+        // case "is-distracted":
+        //   return `${target1} is ${not} distracted`;
         case "active-scene-is":
           return `Active Scene is ${not} ${cond.sceneId}`;
         case "is-gm":
           return `User is ${not} GM`;
+        // case "has-item-in-inventory": {
+        //   switch (cond.itemCheck) {
+        //     case undefined:
+        //     case "specific-item": {
+        //       const item = PersonaDB.getItemById(cond.itemId);
+        //       return `${target1} ${not} has ${item?.name ?? "Unknown Item"} in Inventory`;
+        //     }
+        //     case "has-tag": {
+        //       const tagList= this.translate(cond.tagId, {
+        //         ...POWER_TAGS,
+        //         ...EQUIPMENT_TAGS
+        //       });
+        //       return `${target1} ${not} has item with tags: ${tagList}`;
+        //     }
+        //     default:
+        //       cond satisfies never;
+        //       return "ERROR (has-tag)";
+        //   }
+        // }
+        case "creature-type-is": {
+          const creatureType = this.translate(cond.creatureType, CREATURE_TYPE);
+          return `${target1} is ${not} of creature type: ${creatureType}`;
+        }
+        // case "power-slot-is": {
+        //   const slot = this.translate(cond.slotType, SLOTTYPES);
+        //   return `Power is ${not} of slot type: ${slot}`;
+        // }
+        case "social-availability":
+          switch (cond.socialTypeCheck) {
+            case "relationship-type-check":
+              return `Relationship Type with ${target1} is ${not} ${cond.relationshipType}`;
+            case "is-social-disabled":
+              return `${target1} is ${not} socially Disabled`;
+            case "is-available":
+              return `${target1} is ${not} socially available`;
+            case "is-dating":
+              return `initiator is ${not} dating ${target1}`;
+            default:
+              cond satisfies never;
+              return `ERROR (relationship-type-check)`;
+          }
+        // case "has-creature-tag": {
+        //   const tags = this.translate(cond.creatureTag, CREATURE_TAGS);
+        //   return `${target1} ${not} has Tag: ${tags}`;
+        // }
+        case "cameo-in-scene": {
+          return `Scene ${not} has a cameo `;
+        }
+        // case "arcana-is": {
+        //   const arcana = this.translate(cond.tarot, TAROT_DECK);
+        //   return `Arcana is ${not} ${arcana}`;
+        // }
+        // case "is-enemy":
+        //   return `${target1} is ${not} enemy of ${target2}`;
+        case "logical-and": {
+          const c1= this.printConditional(cond.comparison1 as NonDeprecatedPrecondition<Precondition>);
+          const c2= this.printConditional(cond.comparison2 as NonDeprecatedPrecondition<Precondition>);
+          return `(${c1} AND ${c2})`;
+        }
+        case "logical-or": {
+          const c1= this.printConditional(cond.comparison1 as NonDeprecatedPrecondition<Precondition>);
+          const c2= this.printConditional(cond.comparison2 as NonDeprecatedPrecondition<Precondition>);
+          return `(${c1} OR ${c2})`;
+        }
+        case "scene-clock-name-is":
+          return `Scene Clock is named ${cond.clockName}`;
+        // case "is-within-ailment-range":
+        //   return `Attack Roll hits and is within ailment range`;
+        // case "is-within-instant-death-range":
+        //   return `Attack roll hits and is within instant death range`;
+        // case "using-meta-pod":
+        //   return `${target1} is using Meta Pod`;
+        // case "actor-exists":
+        //   return `${target1} is present in scene`;
+        // case "knows-power": {
+        //   const pwr = PersonaDB.allPowers().get(cond.powerId);
+        //   return `${target1} knows Power ${pwr?.displayedName ?? "UNKNOWN POWER"}`;
+        // }
+        // case "has-class": {
+        //   const classes = multiCheckToArray(cond.classId);
+        //   const CharClasses = classes
+        //   .map( id => PersonaDB.getClassById(id)?.name ?? "Unknown class")
+        //   .join(" ,");
+        //   return `${target1} has Class: ${CharClasses}`;
+        // }
+        case "status-to-be-inflicted":
+          return `Status ${this.translate(cond.status, STATUS_EFFECT_TRANSLATION_TABLE)} is about to be inflicted`;
+        case "power-has":
+          return this.printPowerHasConditional(cond);
+        case "roll-property-is":
+          return this.printRollPropertyConditional(cond);
+        case "combat-comparison":
+          return this.printCombatComparison(cond);
+        case "special-boolean":
+          return this.printSpecialBooleanComparison(cond);
+        case "actor-property":
+          return this.printActorPropertyBoolean(cond);
+        default:
+          cond satisfies never;
+          return "";
+      }
+    }
+
+    static printActorPropertyBoolean(cond: NonDeprecatedPrecondition & {type: "boolean"; boolComparisonTarget: "actor-property"}) : string {
+      const not =  !cond.booleanState ? "not" : "";
+      const target1 = ("conditionTarget" in cond) ? this.translate(cond.conditionTarget, STATUS_SUBTAG_CONDITION_TARGETS) : "";
+      const target2 = ("conditionTarget2" in cond) ? this.translate(cond.conditionTarget2, CONDITION_TARGETS): "" ;
+      switch (cond.actorProperty) {
+        case "has-status": {
+          const status = this.translate(cond.status, STATUS_EFFECT_TRANSLATION_TABLE);
+          return `${target1} ${not} has status: ${status}`;
+        }
+        case "has-class": {
+          const classes = multiCheckToArray(cond.classId);
+          const CharClasses = classes
+          .map( id => PersonaDB.getClassById(id)?.name ?? "Unknown class")
+          .join(" ,");
+          return `${target1} has Class: ${CharClasses}`;
+        }
+        case "using-meta-pod":
+          return `${target1} is using Meta Pod`;
+        case "actor-exists":
+          return `${target1} is present in scene`;
+        case "knows-power": {
+          const pwr = PersonaDB.allPowers().get(cond.powerId);
+          return `${target1} knows Power ${pwr?.displayedName ?? "UNKNOWN POWER"}`;
+        }
+        case "shadow-role-is": {
+          const shadowRole = this.translate(cond.shadowRole, SHADOW_ROLE);
+          return `${target1} role is is ${not} ${shadowRole}`;
+        }
         case "has-item-in-inventory": {
           switch (cond.itemCheck) {
             case undefined:
@@ -200,85 +332,24 @@ export class ConditionalEffectPrinter {
               return "ERROR (has-tag)";
           }
         }
-        case "creature-type-is": {
-          const creatureType = this.translate(cond.creatureType, CREATURE_TYPE);
-          return `${target1} is ${not} of creature type: ${creatureType}`;
-        }
-        case "power-slot-is": {
-          const slot = this.translate(cond.slotType, SLOTTYPES);
-          return `Power is ${not} of slot type: ${slot}`;
-        }
-        case "social-availability":
-          switch (cond.socialTypeCheck) {
-            case "relationship-type-check":
-              return `Relationship Type with ${target1} is ${not} ${cond.relationshipType}`;
-            case "is-social-disabled":
-              return `${target1} is ${not} socially Disabled`;
-            case "is-available":
-              return `${target1} is ${not} socially available`;
-            case "is-dating":
-              return `initiator is ${not} dating ${target1}`;
-            default:
-              cond satisfies never;
-              return `ERROR (relationship-type-check)`;
-          }
-        case "has-creature-tag": {
-          const tags = this.translate(cond.creatureTag, CREATURE_TAGS);
-          return `${target1} ${not} has Tag: ${tags}`;
-        }
-        case "cameo-in-scene": {
-          return `Scene ${not} has a cameo `;
-        }
+        case "target-owner-comparison":
+          return `${target1} is ${not} equal to ${target2}`;
+        case "is-shadow":
+          return `${target1} is ${not} enemy type`;
+        case "is-pc":
+          return `${target1} is ${not} PC type`;
+        case "can-switch-persona":
+          return `User can switch personas`;
+        case "is-same-arcana":
+          return `${target1} is ${not} the same arcana as attacker`;
         case "arcana-is": {
           const arcana = this.translate(cond.tarot, TAROT_DECK);
           return `Arcana is ${not} ${arcana}`;
         }
-        case "is-enemy":
-          return `${target1} is ${not} enemy of ${target2}`;
-        case "logical-and": {
-          const c1= this.printConditional(cond.comparison1 as NonDeprecatedPrecondition<Precondition>);
-          const c2= this.printConditional(cond.comparison2 as NonDeprecatedPrecondition<Precondition>);
-          return `(${c1} AND ${c2})`;
-        }
-        case "logical-or": {
-          const c1= this.printConditional(cond.comparison1 as NonDeprecatedPrecondition<Precondition>);
-          const c2= this.printConditional(cond.comparison2 as NonDeprecatedPrecondition<Precondition>);
-          return `(${c1} OR ${c2})`;
-        }
-        case "scene-clock-name-is":
-          return `Scene Clock is named ${cond.clockName}`;
-        case "is-within-ailment-range":
-          return `Attack Roll hits and is within ailment range`;
-        case "is-within-instant-death-range":
-          return `Attack roll hits and is within instant death range`;
-        case "using-meta-pod":
-          return `${target1} is using Meta Pod`;
-        case "actor-exists":
-          return `${target1} is present in scene`;
-        case "knows-power": {
-          const pwr = PersonaDB.allPowers().get(cond.powerId);
-          return `${target1} knows Power ${pwr?.displayedName ?? "UNKNOWN POWER"}`;
-        }
-        case "has-class": {
-          const classes = multiCheckToArray(cond.classId);
-          const CharClasses = classes
-          .map( id => PersonaDB.getClassById(id)?.name ?? "Unknown class")
-          .join(" ,");
-          return `${target1} has Class: ${CharClasses}`;
-        }
-        case "status-to-be-inflicted":
-          return `Status ${this.translate(cond.status, STATUS_EFFECT_TRANSLATION_TABLE)} is about to be inflicted`;
-        case "power-has":
-          return this.printPowerHasConditional(cond);
-        case "roll-property-is":
-          return this.printRollPropertyConditional(cond);
-        case "combat-comparison":
-          return this.printCombatComparison(cond);
-        case "special-boolean":
-          return this.printSpecialBooleanComparison(cond);
         default:
           cond satisfies never;
-          return "";
+          return `ERROR unhandled ${(cond as Record<string, string>)?.actorProperty ?? "unknown property"}`;
+
       }
     }
 
@@ -836,6 +907,9 @@ export class ConditionalEffectPrinter {
         case "removeStatusBySubtag": {
           const tags = this.translate(cons.tagId, {});
           return `Remove Status with subtag (${tags})`;
+        }
+        case "instant-kill": {
+          return `Instant Kill`;
         }
         default:
           cons satisfies never;

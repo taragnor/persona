@@ -549,6 +549,7 @@ function triggerComparison(condition: PreconditionType & {type: "on-trigger"}, s
     case "check-legal-target":
     case "on-attack-nullified":
     case "check-nullify-attack":
+    case "check-persona-switch":
       return true;
     case "on-clock-change":
     case "on-clock-tick":
@@ -614,36 +615,36 @@ function triggerComparison(condition: PreconditionType & {type: "on-trigger"}, s
 /** returns undefined in case of a state that just shouldn't be analzyed at all*/
 function getBoolTestState(condition: PreconditionType & {type: "boolean"}, situation: Situation, ownershipInfo: EffectOwnershipData): boolean | undefined {
   switch(condition.boolComparisonTarget) {
-    case "is-shadow": {
-      const arr = getSubjects(condition, situation, "conditionTarget", ownershipInfo);
-      if (!arr) {return undefined;}
-      return arr.some( target => {
-        const targetActor = target instanceof PersonaActor ? target : target.actor;
-        return targetActor.isShadow();
-      });
-    }
-    case "is-pc": {
-      const targets = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo);
-      if (!targets) {return undefined;}
-      return targets.some( target => target.isRealPC());
-    }
+    // case "is-shadow": {
+    //   const arr = getSubjects(condition, situation, "conditionTarget", ownershipInfo);
+    //   if (!arr) {return undefined;}
+    //   return arr.some( target => {
+    //     const targetActor = target instanceof PersonaActor ? target : target.actor;
+    //     return targetActor.isShadow();
+    //   });
+    // }
+    // case "is-pc": {
+    //   const targets = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo);
+    //   if (!targets) {return undefined;}
+    //   return targets.some( target => target.isRealPC());
+    // }
     case "has-tag": {
       return hasTagConditional(condition, situation, ownershipInfo);
     }
-    case "has-status" : {
-      const arr = getSubjects(condition, situation, "conditionTarget", ownershipInfo);
-      if (!arr) {return undefined;}
-      return arr.some( target => {
-        const targetActor = target instanceof PersonaActor ? target : target.actor;
-        if (typeof condition.status == "string") {
-          return (targetActor.statuses.has(condition.status));
-        } else {
-          return Object.entries(condition.status)
-            .filter( ([_, val]) => val== true)
-            .some( ([sname,_]) => targetActor.statuses.has(sname as StatusEffectId));
-        }
-      });
-    }
+    // case "has-status" : {
+    //   const arr = getSubjects(condition, situation, "conditionTarget", ownershipInfo);
+    //   if (!arr) {return undefined;}
+    //   return arr.some( target => {
+    //     const targetActor = target instanceof PersonaActor ? target : target.actor;
+    //     if (typeof condition.status == "string") {
+    //       return (targetActor.statuses.has(condition.status));
+    //     } else {
+    //       return Object.entries(condition.status)
+    //         .filter( ([_, val]) => val== true)
+    //         .some( ([sname,_]) => targetActor.statuses.has(sname as StatusEffectId));
+    //     }
+    //   });
+    // }
     case "flag-state": {
       const targetActors= getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo);
       if (targetActors.length == 0) {return undefined;}
@@ -651,20 +652,20 @@ function getBoolTestState(condition: PreconditionType & {type: "boolean"}, situa
       .some ( a=> a.getFlagState(condition.flagId));
     }
 
-    case "is-same-arcana": {
-      if (!checkSituationProp(situation, "attacker")) { return undefined; };
-      const actor = PersonaDB.findActor<SocialLink | ValidAttackers>(situation.attacker);
-      const targetActor = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo)[0];
-      if (!targetActor) {return undefined;}
-      return actor.system.tarot == targetActor.system.tarot;
-    }
+    // case "is-same-arcana": {
+    //   if (!checkSituationProp(situation, "attacker")) { return undefined; };
+    //   const actor = PersonaDB.findActor<SocialLink | ValidAttackers>(situation.attacker);
+    //   const targetActor = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo)[0];
+    //   if (!targetActor) {return undefined;}
+    //   return actor.system.tarot == targetActor.system.tarot;
+    // }
 
-    case "target-owner-comparison": {
-      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
-      const target2 = getSubjectActors(condition, situation, "conditionTarget2", ownershipInfo)[0];
-      if (!target || !target2) {return undefined;}
-      return target == target2;
-    }
+    // case "target-owner-comparison": {
+    //   const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
+    //   const target2 = getSubjectActors(condition, situation, "conditionTarget2", ownershipInfo)[0];
+    //   if (!target || !target2) {return undefined;}
+    //   return target == target2;
+    // }
     case "weather-is": {
       const weather = PersonaCalendar.getWeather();
       const comparison = condition.weatherComparison;
@@ -695,15 +696,15 @@ function getBoolTestState(condition: PreconditionType & {type: "boolean"}, situa
       return actors.some(actor => getSocialLinkTarget(actor, situation, ownershipInfo.source) == target);
     }
 
-    case "shadow-role-is": {
-      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
-      if (!target) {return undefined;}
-      if (!target.isShadow()) {return false;}
-      if (typeof condition.shadowRole == "string") {
-        return target.hasRole(condition.shadowRole);
-      }
-      return multiCheckContains(condition.shadowRole, target.shadowRoles);
-    }
+    // case "shadow-role-is": {
+    //   const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
+    //   if (!target) {return undefined;}
+    //   if (!target.isShadow()) {return false;}
+    //   if (typeof condition.shadowRole == "string") {
+    //     return target.hasRole(condition.shadowRole);
+    //   }
+    //   return multiCheckContains(condition.shadowRole, target.shadowRoles);
+    // }
 
     case "active-scene-is": {
       const scene = game.scenes.active;
@@ -716,35 +717,34 @@ function getBoolTestState(condition: PreconditionType & {type: "boolean"}, situa
       return user?.isGM ?? undefined;
     }
 
-    case "has-item-in-inventory": {
-      const targets = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo);
-      if (!targets) {return undefined;}
-      const itemList = targets.flatMap( target=> condition.equipped
-        ? target.equippedItems()
-        : target.items.contents);
-      switch (condition.itemCheck) {
-        case undefined:
-        case "specific-item": {
-          const targetItem = PersonaDB.getItemById(condition.itemId);
-
-          if (!targetItem || !targetItem.isCarryableType()) {return undefined;}
-          return itemList.some(item=> item.isSameBaseItem(targetItem));
-        }
-        case "has-tag":{
-          const MCArray = multiCheckToArray(condition.tagId);
-          return itemList.some( item =>
-            item.tagList(null).some( tag=> 
-              tag instanceof PersonaItem
-              ? MCArray.includes(tag.system.linkedInternalTag) || MCArray.includes(tag.id)
-              : MCArray.includes(tag))
-          );
-        }
-        default:
-          condition satisfies never;
-          PersonaError.softFail(`Bad conmparison type for inventoyr item check:  ${(condition as GenericObject).itemCheck as string}`);
-          return undefined;
-      }
-    }
+    // case "has-item-in-inventory": {
+    //   const targets = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo);
+    //   if (!targets) {return undefined;}
+    //   const itemList = targets.flatMap( target=> condition.equipped
+    //     ? target.equippedItems()
+    //     : target.items.contents);
+    //   switch (condition.itemCheck) {
+    //     case undefined:
+    //     case "specific-item": {
+    //       const targetItem = PersonaDB.getItemById(condition.itemId);
+    //       if (!targetItem || !targetItem.isCarryableType()) {return undefined;}
+    //       return itemList.some(item=> item.isSameBaseItem(targetItem));
+    //     }
+        // case "has-tag":{
+        //   const MCArray = multiCheckToArray(condition.tagId);
+        //   return itemList.some( item =>
+        //     item.tagList(null).some( tag=> 
+        //       tag instanceof PersonaItem
+        //       ? MCArray.includes(tag.system.linkedInternalTag) || MCArray.includes(tag.id)
+        //       : MCArray.includes(tag))
+        //   );
+        // }
+        // default:
+        //   condition satisfies never;
+        //   PersonaError.softFail(`Bad conmparison type for inventoyr item check:  ${(condition as GenericObject).itemCheck as string}`);
+        //   return undefined;
+      // }
+    // }
     case "creature-type-is": {
       const target = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo)[0];
       if (!target) {return undefined;}
@@ -760,13 +760,13 @@ function getBoolTestState(condition: PreconditionType & {type: "boolean"}, situa
       return Boolean(situation.cameo);
     }
 
-    case "arcana-is": {
-      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
-      if (!target) {return undefined;}
-      const tarot = target.system.tarot;
-      if (!tarot) {return undefined;}
-      return target.system.tarot == condition.tarot;
-    }
+    // case "arcana-is": {
+    //   const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
+    //   if (!target) {return undefined;}
+    //   const tarot = target.system.tarot;
+    //   if (!tarot) {return undefined;}
+    //   return target.system.tarot == condition.tarot;
+    // }
 
     case "logical-and":
     case "logical-or": {
@@ -788,6 +788,103 @@ function getBoolTestState(condition: PreconditionType & {type: "boolean"}, situa
     }
     case "scene-clock-name-is":
       return SceneClock.instance.clockName.toUpperCase().trim() == condition.clockName.toUpperCase().trim();
+    // case "using-meta-pod": {
+    //   const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
+    //   if (!target.isValidCombatant()) {return false;}
+    //   return target.isUsingMetaPod();
+    // }
+    // case "actor-exists": {
+    //   const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
+    //   return (target != undefined);
+    // }
+    // case "knows-power": {
+    //   const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
+    //   const power = PersonaDB.allPowers().get(condition.powerId);
+    //   if (!power) {return false;}
+    //   return target.powers.includes(power);
+    // }
+    // case "has-class": {
+    //   const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
+    //   if (!target) {return undefined;}
+    //   return multiCheckContains(condition.classId, [target.class.id]);
+    // }
+    case "status-to-be-inflicted": {
+      if ("statusEffect" in situation && typeof situation.statusEffect == "string") {
+        return multiCheckContains(condition.status, [situation.statusEffect]);
+      }
+      return false;
+    }
+    case "power-has":
+      return powerHasConditional(condition, situation, ownershipInfo);
+    case "roll-property-is":
+      return rollPropertyIs(condition, situation);
+    case "combat-comparison":
+      return combatComparison(condition, situation, ownershipInfo);
+    case "special-boolean":
+      return specialComparison(condition, situation);
+    case "actor-property":
+      return ActorBooleanComparison(condition, situation, ownershipInfo);
+    default :
+      condition satisfies never;
+      return undefined;
+  }
+}
+
+function ActorBooleanComparison (condition: PreconditionType & BooleanComparisonPC & {boolComparisonTarget: "actor-property"}, situation: Situation,  ownershipInfo: EffectOwnershipData) : U<boolean> {
+  switch (condition.actorProperty) {
+    case "can-switch-persona": {
+      if (!checkSituationProp(situation, "user")) { return undefined; };
+      const user = PersonaDB.findActor(situation.user);
+      return user.personas.canSwitchPersonas;
+    }
+    case "has-status" : {
+      const arr = getSubjects(condition, situation, "conditionTarget", ownershipInfo);
+      if (!arr) {return undefined;}
+      return arr.some( target => {
+        const targetActor = target instanceof PersonaActor ? target : target.actor;
+        if (typeof condition.status == "string") {
+          return (targetActor.statuses.has(condition.status));
+        } else {
+          return Object.entries(condition.status)
+            .filter( ([_, val]) => val== true)
+            .some( ([sname,_]) => targetActor.statuses.has(sname as StatusEffectId));
+        }
+      });
+    }
+    case "has-item-in-inventory": {
+      const targets = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo);
+      if (!targets) {return undefined;}
+      const itemList = targets.flatMap( target=> condition.equipped
+        ? target.equippedItems()
+        : target.items.contents);
+      switch (condition.itemCheck) {
+        case undefined:
+        case "specific-item": {
+          const targetItem = PersonaDB.getItemById(condition.itemId);
+          if (!targetItem || !targetItem.isCarryableType()) {return undefined;}
+          return itemList.some(item=> item.isSameBaseItem(targetItem));
+        }
+        case "has-tag":{
+          const MCArray = multiCheckToArray(condition.tagId);
+          return itemList.some( item =>
+            item.tagList(null).some( tag=> 
+              tag instanceof PersonaItem
+              ? MCArray.includes(tag.system.linkedInternalTag) || MCArray.includes(tag.id)
+              : MCArray.includes(tag))
+          );
+        }
+        default:
+          condition satisfies never;
+          PersonaError.softFail(`Bad conmparison type for inventoyr item check:  ${(condition as GenericObject).itemCheck as string}`);
+          return undefined;
+      }
+    }
+    case "target-owner-comparison": {
+      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
+      const target2 = getSubjectActors(condition, situation, "conditionTarget2", ownershipInfo)[0];
+      if (!target || !target2) {return undefined;}
+      return target == target2;
+    }
     case "using-meta-pod": {
       const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
       if (!target.isValidCombatant()) {return false;}
@@ -808,25 +905,48 @@ function getBoolTestState(condition: PreconditionType & {type: "boolean"}, situa
       if (!target) {return undefined;}
       return multiCheckContains(condition.classId, [target.class.id]);
     }
-    case "status-to-be-inflicted": {
-      if ("statusEffect" in situation && typeof situation.statusEffect == "string") {
-        return multiCheckContains(condition.status, [situation.statusEffect]);
+    case "shadow-role-is": {
+      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
+      if (!target) {return undefined;}
+      if (!target.isShadow()) {return false;}
+      if (typeof condition.shadowRole == "string") {
+        return target.hasRole(condition.shadowRole);
       }
-      return false;
+      return multiCheckContains(condition.shadowRole, target.shadowRoles);
     }
-    case "power-has":
-      return powerHasConditional(condition, situation, ownershipInfo);
-    case "roll-property-is":
-      return rollPropertyIs(condition, situation);
-    case "combat-comparison":
-      return combatComparison(condition, situation, ownershipInfo);
-    case "special-boolean":
-      return specialComparison(condition, situation);
-    default :
+    case "is-same-arcana": {
+      if (!checkSituationProp(situation, "attacker")) { return undefined; };
+      const actor = PersonaDB.findActor<SocialLink | ValidAttackers>(situation.attacker);
+      const targetActor = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo)[0];
+      if (!targetActor) {return undefined;}
+      return actor.system.tarot == targetActor.system.tarot;
+    }
+    case "is-shadow": {
+      const arr = getSubjects(condition, situation, "conditionTarget", ownershipInfo);
+      if (!arr) {return undefined;}
+      return arr.some( target => {
+        const targetActor = target instanceof PersonaActor ? target : target.actor;
+        return targetActor.isShadow();
+      });
+    }
+    case "is-pc": {
+      const targets = getSubjectActors(condition, situation,  "conditionTarget", ownershipInfo);
+      if (!targets) {return undefined;}
+      return targets.some( target => target.isRealPC());
+    }
+    case "arcana-is": {
+      const target = getSubjectActors(condition, situation, "conditionTarget", ownershipInfo)[0];
+      if (!target) {return undefined;}
+      const tarot = target.system.tarot;
+      if (!tarot) {return undefined;}
+      return target.system.tarot == condition.tarot;
+    }
+    default:
       condition satisfies never;
-      return undefined;
   }
 }
+
+
 
 function hasTagConditional(condition: PreconditionType & BooleanComparisonPC & {boolComparisonTarget: "has-tag"}, situation: Situation, ownershipInfo: EffectOwnershipData) : boolean | undefined {
   switch (condition.tagComparisonType) {

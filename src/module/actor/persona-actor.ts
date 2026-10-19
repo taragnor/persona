@@ -1379,7 +1379,7 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
       duration : {
         dtype: "permanent",
         anchorHolder: this.accessor,
-      }
+      },
     });
 
   }
@@ -3075,11 +3075,6 @@ despairMPDamage(this: PC | NPCAlly) : number {
   return Math.floor(this.mmp * 0.15);
 }
 
-// get hasMultiplePersonas() : boolean {
-//   if (!this.isValidCombatant()) {return false;}
-//   return this.personaList.length > 1;
-// }
-
 /** says if character can take normal actions, requires alive and turn is in combat */
 get canTakeNormalActions() : boolean {
   if (!this.isValidCombatant()) {return false;}
@@ -3099,13 +3094,15 @@ get canUseConsumables() : boolean {
 }
 
 /** returns true if actor can take the switch persona action*/
-get canSwitchPersonas() : boolean {
-  if (!this.isValidCombatant()) {return false;}
-  if (!this.canTakeNormalActions) {return false;}
-  if (this.hasStatus("sealed")) {return false;}
-  return this.personas.hasMultiplePersonas
-    && this.canTakeNormalActions;
-}
+// get canSwitchPersonas() : boolean {
+//   if (!this.isValidCombatant()) {return false;}
+//   if (!this.canTakeNormalActions) {return false;}
+//   if (this.hasStatus("sealed")) {return false;}
+//   return this.personas.hasMultiplePersonas
+//     && this.canTakeNormalActions
+//   && this._checkPersonaSwitchCancelEffect();
+// }
+
 
 /** should get called after a search action or after entering a new region*/
 async onMetaverseTimeAdvance(): Promise<string[]> {

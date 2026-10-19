@@ -1,5 +1,6 @@
 import { Consequence, ConsequenceAmountV2 } from "../../config/consequence-types.js";
 import {NonDeprecatedModifierTarget, NonDeprecatedModifierType} from "../../config/item-modifiers.js";
+import {Triggered} from "../../config/precondition-types.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {ModifierV2Target} from "../bonus-calc.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
@@ -562,4 +563,11 @@ export type EffectOwnershipData = {
 
 
 type DataCache<T> = WeakMap<object, CacheI<T>>;
+
+
+type X = Prettify<PreconditionType & R>;
+
+type PreconditionType = ConditionalEffectC["conditions"][number]["cond"] & {type: "on-trigger"};
+
+type R = Prettify<Triggered & {trigger : "check-persona-switch"}>;
 

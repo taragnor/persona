@@ -1,0 +1,87 @@
+<span>
+	<select name="{{strcat namePrefix 'actorProperty'}}">
+		{{selectOptions POWERSTUFF.BOOLEAN_ACTOR_PROPERTIES localize=true selected=(defVal cond.actorProperty "has-status") }}
+	</select>
+</span>
+
+{{#if (eqAny cond.actorProperty "target-owner-comparison" "engaged-with" )}}
+<div>
+	<select name="{{strcat namePrefix 'conditionTarget2'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget2}}
+	</select>
+	<span>==</span>
+	<select name="{{strcat namePrefix 'conditionTarget'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+	</select>
+</div>
+{{/if}}
+
+{{#if (eqAny cond.actorProperty "is-pc" "is-shadow" "is-dead" "is-same-arcana" "has-status" "flag-state" "is-resistant-to" "social-target-is" "is-distracted" "is-enemy" "actor-exists" "using-meta-pod" "arcana-is")}}
+<div>
+	<select name="{{strcat namePrefix 'conditionTarget'}}">
+		{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+	</select>
+</div>
+{{/if}}
+
+{{#if (eq cond.actorProperty "knows-power")}}
+<select name="{{strcat namePrefix 'conditionTarget'}}">
+	{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+</select>
+<select name="{{strcat namePrefix 'powerId'}}">
+	{{selectOptions POWERSTUFF.COMPENDIUM_POWERS localize=true selected=cond.powerId}}
+</select>
+{{/if}}
+
+{{#if (eq cond.actorProperty "has-class")}}
+<select name="{{strcat namePrefix 'conditionTarget'}}">
+	{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+</select>
+{{multicheck (strcat namePrefix 'classId') POWERSTUFF.CLASSES checked=cond.classId localize=true}}
+{{/if}}
+
+{{#if (eq cond.actorProperty  "shadow-role-is")}}
+<select name="{{strcat namePrefix 'conditionTarget'}}">
+	{{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+</select>
+{{multicheck (strcat namePrefix 'shadowRole') POWERSTUFF.SHADOW_ROLE checked=cond.shadowRole localize=true}}
+{{/if}}
+
+{{#if (eq cond.actorProperty  "has-item-in-inventory")}}
+<select name="{{strcat namePrefix 'conditionTarget'}}">
+  {{selectOptions POWERSTUFF.CONDITION_TARGETS localize=true selected=cond.conditionTarget}}
+</select>
+<div>
+  <select name="{{strcat namePrefix 'itemCheck'}}">
+    {{selectOptions POWERSTUFF.ITEM_CHECK_TYPE localize=true selected=(defVal cond.itemCheck "specific-item")}}
+  </select>
+</div>
+{{#if (eqAny (defVal cond.itemCheck "specific-item") "specific-item")}}
+<select name="{{strcat namePrefix 'itemId'}}">
+  {{selectOptions POWERSTUFF.ITEMS localize=false selected=cond.itemId}}
+</select>
+{{/if}}
+{{#if (eqAny cond.itemCheck "has-tag")}}
+{{multicheck (strcat namePrefix 'tagId') POWERSTUFF.TAGS checked=cond.tagId localize=false}}
+{{/if}}
+<div>
+  <span>
+    <label> Must Be Equipped </label>
+    <input type="checkbox" id="flagState" name="{{strcat namePrefix 'equipped'}}" {{checked cond.equipped}}>
+  </span>
+</div>
+{{/if}}
+
+{{#if (eq cond.actorProperty  "arcana-is")}}
+<select name="{{strcat namePrefix 'tarot'}}">
+	{{selectOptions POWERSTUFF.TAROT_DECK localize=true selected=cond.tarot}}
+</select>
+{{/if}}
+
+
+{{#if (eq (defVal cond.actorProperty "has-status") "has-status")}}
+<div>
+	{{multicheck (strcat namePrefix 'status') POWERSTUFF.STATUSEFFECTS checked=cond.status localize=true}}
+</div>
+{{/if}}
+
