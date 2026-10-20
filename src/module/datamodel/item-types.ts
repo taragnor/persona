@@ -359,9 +359,15 @@ class SocialCardSchema extends foundry.abstract.TypeDataModel {
   }
 
   static override migrateData(data: SocialCard["system"]) {
-    data.availabilityConditions = ConditionalEffectDM.migrateConditions(data.availabilityConditions);
-    data.conditions = ConditionalEffectDM.migrateConditions(data.conditions);
-    data.cameoConditions = ConditionalEffectDM.migrateConditions(data.cameoConditions);
+    if (data.availabilityConditions) {
+      data.availabilityConditions = ConditionalEffectDM.migrateConditions(data.availabilityConditions);
+    }
+    if (data.conditions) {
+      data.conditions = ConditionalEffectDM.migrateConditions(data.conditions);
+    }
+    if (data.cameoConditions) {
+      data.cameoConditions = ConditionalEffectDM.migrateConditions(data.cameoConditions);
+    }
     return data;
   }
 }
@@ -504,7 +510,10 @@ export class SocialCardEventDM extends foundry.abstract.DataModel {
     };
     const ret = await cardObj.update(updateObj);
     if (ret == undefined) {
-      cardObj._initialize();
+      //what does this code do?
+      // cardObj._initialize();
+      ui.notifications.notify("Update to Social Card event didn't stick?");
+      Debug(updateObj);
     }
     const evRefresh = cardObj.system.events[index];
     if (!(evRefresh instanceof SocialCardEventDM)) {

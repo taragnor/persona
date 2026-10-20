@@ -793,8 +793,7 @@ export class ConsequenceApplier {
         effect satisfies never;
         break;
     }
-    return []
-
+    return [];
   }
 
   static async #onDefeatOpponent(target: PToken, attacker ?: U<PToken>) : Promise<FinalizedCombatResult[]> {

@@ -564,10 +564,3 @@ export type EffectOwnershipData = {
 
 type DataCache<T> = WeakMap<object, CacheI<T>>;
 
-
-type X = Prettify<PreconditionType & R>;
-
-type PreconditionType = ConditionalEffectC["conditions"][number]["cond"] & {type: "on-trigger"};
-
-type R = Prettify<Triggered & {trigger : "check-persona-switch"}>;
-
