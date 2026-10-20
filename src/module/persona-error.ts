@@ -24,6 +24,10 @@ export class PersonaError extends Error {
     debugArgs.forEach(x=> Debug(x));
   }
 
+  static userError(reason: string) {
+    ui.notifications.notify(reason);
+  }
+
   static softFail(error: unknown, ...debugArgs: unknown[]) : void {
     try {
       if (error instanceof Error) {

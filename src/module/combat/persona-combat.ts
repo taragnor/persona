@@ -2221,7 +2221,9 @@ export interface CombatOptions {
   simulated?: boolean;
   modifiers?: ModifierList;
   subAttack?: boolean;
+  isOpener?: boolean;
 }
+
 
 void CombatPanel.init();
 

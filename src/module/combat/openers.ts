@@ -364,19 +364,36 @@ export class OpenerManager {
       return false;
     }
     if (!combatant.isOwner) {
-      PersonaError.softFail("You don't own this combatant");
+      PersonaError.userError("You don't own this combatant");
       return false;
     }
     if (!this.combat.turnCheck(combatant.actor)) {
-      PersonaError.softFail(`${combatant.name} is not currently able to take actions (Out of Turn Action?)`);
+      PersonaError.userError(`${combatant.name} is not currently able to take actions (Out of Turn Action?)`);
       return false;
     }
     return true;
   }
 
+  private async _checkForIllegalOpener(combatant: PersonaCombatant) : Promise<boolean> {
+    if (this.hasUsedOpener(combatant)) {
+      if (!game.user.isGM) {
+        PersonaError.userError(`${combatant.name} already used their opener`);
+        return true;
+      } else {
+        if (await HTMLTools.cancelBox(`${combatant.name} already used their opener. Override?`)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   private async _execOpener(option: OpenerOption, targetIndex ?: number) {
     const combatant = this.combat.combatants.find(c=> c.id == option.combatant);
     if (!this.validateCombatant(combatant)) {
+      return;
+    }
+    if (await this._checkForIllegalOpener(combatant)) {
       return;
     }
     await this.modifyOpenerMsg (option);
@@ -409,7 +426,7 @@ export class OpenerManager {
       .filter(comb => comb.id == targetId)
       .map(comb => comb?.token as PToken)
       : undefined;
-    await this.combat.combatEngine.usePower(combatant.token, power, resolvedTargets);
+    await this.combat.combatEngine.usePower(combatant.token, power, resolvedTargets, {isOpener: true});
   }
 
   async simpleOpenerMsg(combatant: PersonaCombatant, opener: OpenerOption ) {
@@ -447,7 +464,7 @@ export class OpenerManager {
           .filter( comb => comb.actor.getAllegiance() != combatant.actor.getAllegiance());
           const targets = engaged.length > 0 ? engaged.map( x=> x.token) : this.combat.getAllEnemiesOf(combatant.token).filter (x=> x.actor.isAlive());
           const choice = randomSelect(targets);
-          await this.combat.combatEngine.usePower(combatant.token, combatant.actor.basicAttack, [choice]);
+          await this.combat.combatEngine.usePower(combatant.token, combatant.actor.basicAttack, [choice], {isOpener: true});
           await this.advanceTurn(combatant);
           break;
         }
@@ -456,7 +473,7 @@ export class OpenerManager {
           .filter( comb => comb.actor.getAllegiance() == combatant.actor.getAllegiance());
           const targets = engaged.length > 0 ? engaged.map( x=> x.token) : PersonaCombat.getAllAlliesOf(combatant.token).filter (x=> x.actor.isAlive() && x != combatant.token);
           const choice = randomSelect(targets);
-          await this.combat.combatEngine.usePower(combatant.token, combatant.actor.basicAttack, [choice]);
+          await this.combat.combatEngine.usePower(combatant.token, combatant.actor.basicAttack, [choice], {isOpener:true});
           await this.advanceTurn(combatant);
           break;
         }
@@ -487,9 +504,9 @@ export class OpenerManager {
     return used ?? false;
   }
 
-  async setOpenerUsed(combatant: PersonaCombatant, state : boolean) : Promise<void> {
+  async setOpenerUsed(combatant: Combatant, state : boolean) : Promise<void> {
     if (combatant != this.combat.combatant) {
-      PersonaError.softFail(`trying to update opener Used for ${combatant.name} when it is not its turn`);
+      PersonaError.softFail(`trying to update opener Used for ${combatant.name} to ${state} when it is not its turn`);
       return;
     }
     await combatant.setFlag("persona", "openerUsed", state);

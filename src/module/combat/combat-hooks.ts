@@ -8,6 +8,7 @@ import {FlagChangeDiffObject} from "./openers.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {sleep} from "../utility/async-wait.js";
 import {PersonaActor} from "../actor/persona-actor.js";
+import {FinalizedCombatResult} from "./finalized-combat-result.js";
 
 export class CombatHooks {
 
@@ -208,6 +209,7 @@ declare global {
   interface HOOKS {
     'onUsePower': (power: UsableAndCard, user: PToken, defender: PToken) => unknown;
     'hourglassExpire' : (hourglass: unknown) => unknown;
+    'usedPower': (attacker: PToken, power: UsableAndCard, result: FinalizedCombatResult) => unknown;
   }
 }
 

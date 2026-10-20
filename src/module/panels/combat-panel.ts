@@ -565,6 +565,12 @@ export class CombatPanel extends PersonaPanel {
       }
     });
 
+    Hooks.on("usedPower", () => {
+      if (Metaverse.getPhase() == "combat") {
+        void this.instance.activate();
+      }
+    });
+
   }
 
 }

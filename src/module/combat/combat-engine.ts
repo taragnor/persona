@@ -95,10 +95,12 @@ export class CombatEngine {
     }
   }
 
-  async preAttackInit(attacker: PToken, power: UsableAndCard, options : CombatOptions = {}) {
+  async preAttackInit(attacker: PToken, power: UsableAndCard, options : CombatOptions) {
     Helpers.ownerCheck(attacker.actor);
     Helpers.pauseCheck();
-    this.setPendingResult();
+    if (!options.simulated) {
+      this.setPendingResult();
+    }
     TimeLog.reset();
     this.startTime = Date.now();
     if (attacker instanceof foundry.canvas.placeables.Token) {
@@ -107,12 +109,34 @@ export class CombatEngine {
     if (!options.ignorePrereqs && !await this.checkPowerPreqs(attacker, power)) {
       return new CombatResult().finalize();
     }
+    if (await this._checkOpenerWarning(attacker, options)) {return new CombatResult().finalize();}
     return undefined;
+  }
+
+  //* retrun true to cancel attack
+  private async _checkOpenerWarning(attacker: PToken, options: CombatOptions) : Promise<boolean> {
+    const atkComb = PersonaCombat.combat?.getCombatantsByToken(attacker).at(0);
+    if (!atkComb || options.simulated || options.subAttack) {return false;}
+    const usedOpener = PersonaCombat.combat!.openers.hasUsedOpener(atkComb);
+    if (options.isOpener) {
+      if (usedOpener && !game.user.isGM ) {
+        PersonaError.userError("You already used your opener or you used a non-opener first during this turn.");
+        return true;
+      }
+      return false;
+    }
+    options.isOpener satisfies U<false>;
+    if (usedOpener) { return false;}
+    return await HTMLTools.cancelBox("Doing this action will cause you to lose your opener for this turn, are you sure you want to do it?");
   }
 
   async usePower(attacker: PToken, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) : Promise<FinalizedCombatResult> {
     const earlyExit = await this.preAttackInit(attacker, power, options);
-    if (earlyExit) {return earlyExit;}
+    const isOpener = options.isOpener ?? power.isOpener(attacker.actor.persona());
+    if (earlyExit) {
+      this.clearPendingResult();
+      return earlyExit;
+    }
     try {
       const targets = presetTargets ? presetTargets :  PersonaTargetting.getTargets(attacker, power);
       this.ensureCombatCheck(power, attacker, targets);
@@ -129,7 +153,11 @@ export class CombatEngine {
       result.merge(costs);
       const finalizedResult = result.finalize();
       if (options.simulated) { return finalizedResult;}
-      if (!power.isOpener(attacker.actor.persona()))  {
+      if (!isOpener)  {
+        const comb = this.combat?.getCombatantsByToken(attacker).at(0);
+        if (comb) {
+          await this.combat?.openers.setOpenerUsed(comb, true);
+        }
         await attacker.actor.expendAction();
       }
       await attacker.actor.removeStatusesOfType("out-of-turn-action");
@@ -141,6 +169,10 @@ export class CombatEngine {
         });
       }
       await this.postActionCleanup(attacker, finalizedResult);
+      if (!options.simulated) {
+        Hooks.callAll("usedPower", attacker, power, finalizedResult);
+      }
+      this.clearPendingResult();
       return finalizedResult;
     } catch(e) {
       this.clearPendingResult();
