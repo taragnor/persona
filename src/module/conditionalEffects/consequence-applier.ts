@@ -1,6 +1,6 @@
 import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
-import {StatusEffectId} from "../../config/status-effects.js";
+import {StatusEffectId, statusMap} from "../../config/status-effects.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {EvaluatedDamage} from "../combat/damage-calc.js";
 import {FinalizedCombatResult, ResolvedActorChange} from "../combat/finalized-combat-result.js";
@@ -457,11 +457,19 @@ export class ConsequenceApplier {
         for (const pair of pairs) {
           const AE = actor.effects.find(eff=> eff.statuses.has(pair[0]) || eff.statuses.has(pair[1]));
           if (!AE) {
-            PersonaError.softFail(`Can't find AE with buff/debuff to flip on ${actor.name}`);
             continue;
           }
           const newStatus = AE.statuses.has(pair[0]) ? pair[1]: pair[0];
-          await AE.update( {statuses: [newStatus]});
+          const arr = Array.from(AE.statuses);
+          console.log(`Flipping ${arr.join()} with ${newStatus}`);
+          const newStatusData = statusMap.get(newStatus);
+          if (!newStatusData) {continue;}
+          await AE.update(
+            {
+              name: newStatusData.name,
+              img: newStatusData.img,
+              statuses: [newStatus]
+            });
         }
       }
         break;

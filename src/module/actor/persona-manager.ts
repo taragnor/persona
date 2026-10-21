@@ -5,6 +5,7 @@ import {Persona} from "../persona-class.js";
 import {PersonaCompendium} from "../persona-compendium.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
+import {TriggeredEffect} from "../triggered-effect.js";
 import {TimedCache} from "../utility/cache.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {Logger} from "../utility/logger.js";
@@ -245,10 +246,8 @@ export class PersonaManager<ActorType extends ValidAttackers = ValidAttackers> {
     if (!combat || combat.isSocial) {
       if (this.actor.isPC()) {
         await Logger.sendToChat(`${this.actor.name} activates Persona ${persona.publicName}`);
-        return;
       } else {
         ui.notifications.notify(`${this.actor.name} switches Persona to ${persona.publicName}`);
-        return;
       }
     } else {
       let msg = "";
@@ -269,6 +268,13 @@ export class PersonaManager<ActorType extends ValidAttackers = ValidAttackers> {
       };
       await ChatMessage.create(messageData, {});
     }
+    const situation = {
+      trigger: "on-switch-persona",
+      triggeringCharacter: this.actor.accessor,
+      user: this.actor.accessor,
+    } satisfies Situation;
+    const trig = TriggeredEffect.onTrigger(situation, this.actor);
+    await trig.emptyCheck()?.autoApplyResult();
   }
 
   get hasMultiplePersonas() : boolean {

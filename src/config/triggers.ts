@@ -16,6 +16,7 @@ export const COMBAT_TRIGGER_LIST = [
 	"start-turn",
 	"end-turn",
   "get-added-power-tags",
+  "on-switch-persona",
 ] as const;
 
 export const NONCOMBAT_TRIGGER_LIST = [
