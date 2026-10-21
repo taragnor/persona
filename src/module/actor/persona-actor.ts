@@ -1443,10 +1443,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
         .emptyCheck()
         ?.toMessage("Response to acquiring Status", this);
       if (ret.hasCancelRequest()) {return false;}
-      const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
-      if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
-        await this.setHP(0);
-      }
+      // const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
+      // if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
+      //   await this.setHP(0);
+      // }
     }
     const newState = {
       ...stateData,
