@@ -106,9 +106,9 @@ export class ConsequenceApplier {
     if (statusAdd && token) {
       Hooks.callAll("onAddStatus", token, status);
       if (status?.duration?.dtype == "instant") {
-        console.log(`Setting timeout for ${status.id}`);
+        // console.log(`Setting timeout for ${status.id}`);
         setTimeout ( () => {
-          console.log(`Autoremoving ${status.id}`);
+          // console.log(`Autoremoving ${status.id}`);
           void actor.removeStatus(status);
         }, ConsequenceApplier.INSTANT_STATUS_REMOVE_DELAY);
       }
