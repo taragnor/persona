@@ -158,7 +158,9 @@ export class CombatEngine {
         if (comb) {
           await this.combat?.openers.setOpenerUsed(comb, true);
         }
-        await attacker.actor.expendAction();
+        if (!power.isFreeAction(attacker.actor.persona())) {
+          await attacker.actor.expendAction();
+        }
       }
       await attacker.actor.removeStatusesOfType("out-of-turn-action");
       await finalizedResult.toMessage(power.name, attacker.actor);
@@ -167,11 +169,9 @@ export class CombatEngine {
           targets: targets.map( x=> x.actor),
           usedPower: power.isUsableType() ? power : undefined,
         });
-      }
-      await this.postActionCleanup(attacker, finalizedResult);
-      if (!options.simulated) {
         Hooks.callAll("usedPower", attacker, power, finalizedResult);
       }
+      await this.postActionCleanup(attacker, finalizedResult);
       this.clearPendingResult();
       return finalizedResult;
     } catch(e) {

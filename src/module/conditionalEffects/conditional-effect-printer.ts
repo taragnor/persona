@@ -964,6 +964,8 @@ export class ConditionalEffectPrinter {
         }
         case "swap-teammate-in-combat":
           return `Swap Teammate in Battle`;
+        case "flip-buffs":
+          return `Flip Buffs/Debuffs `;
         default:
           cons satisfies never;
           return "ERROR (other-effect)";

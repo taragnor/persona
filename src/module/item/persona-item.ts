@@ -1673,6 +1673,13 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     return false;
   }
 
+  isFreeAction(this: UsableAndCard, persona: N<Persona>) : boolean {
+    if (this.isSkillCard()) {return true;}
+    return this.hasTag("free-action", persona);
+  }
+
+
+
   private _openerElevators(this: UsableAndCard, persona: Persona) : ConditionalEffectC[]  {
     const situation = {
       trigger: "on-power-usage-check",

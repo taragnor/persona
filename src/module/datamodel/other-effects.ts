@@ -8,6 +8,7 @@ export const OTHER_CONSEQUENCE_LIST= [
   "add-room-effect",
   "grant-persona",
   "swap-teammate-in-combat",
+  "flip-buffs",
 ] as const;
 
 	export const OTHER_CONSEQUENCES = Object.fromEntries (

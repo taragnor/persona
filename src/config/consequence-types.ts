@@ -326,15 +326,6 @@ type CombatEffectConsequence = {
 
 type CombatEffectConsequencesList =
   NewDamageConsequence
-// | ({
-// 	combatEffect : "addStatus",
-// 	statusName: StatusEffect["id"],
-// potency: number,
-// } & DurationComponent)
-// | {
-// 	combatEffect: "removeStatus",
-// 	statusName: MultiCheckOrSingle<StatusEffect["id"]>,
-// } | {
   | StatusAlterConsequence
   | {
     combatEffect: "extraTurn",
@@ -501,6 +492,9 @@ type OtherConsequences = {
 	id: Shadow["id"], // id of power
 } | {
 	otherEffect:  "swap-teammate-in-combat",
+} | {
+  applyTo : ConsequenceTarget,
+  otherEffect: "flip-buffs",
 };
 
 type ElementalResistanceAlterConsequence = {

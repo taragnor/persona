@@ -209,7 +209,9 @@ export class CombatResult  {
         if (checkSituationProp(situation, "usedPower")) {
           const user = situation.user ? PersonaDB.findActor(situation.user) : null;
           const power = PersonaDB.findItem(situation.usedPower);
-          if (power.isOpener(user?.persona() ?? null)) {break;}
+          const persona = user?.persona() ?? null;
+          if (power.isOpener(persona)) {break;}
+          if (power.isFreeAction(persona)) {break;}
           if (power.isTeamwork()) {break;}
         }
         if (!effect) {break;}
@@ -350,6 +352,7 @@ export class CombatResult  {
             });
             break;
           case "grant-persona":
+          case "flip-buffs":
             if (!effect) {break;}
             effect.otherEffects.push( {
               ...cons,

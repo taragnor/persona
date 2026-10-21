@@ -90,6 +90,7 @@ export class ConsequenceProcessor {
       case "ignore-surprise":
       case "grant-persona":
       case "teach-power":
+      case "flip-buffs":
         return targets.map( applyTo => ({applyTo, cons}));
       case "swap-teammate-in-combat":
       case "add-room-effect":

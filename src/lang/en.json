@@ -508,6 +508,7 @@
 	"persona.power.tag.mandatory": "Mandatory",
 	"persona.power.tag.summon": "Summoning",
 	"persona.power.tag.swappable": "Swappable",
+	"persona.power.tag.free-action": "Free Action",
 	"persona.power.tag.instantKill": "Instant Kill",
 	"persona.power.tag.no-crit": "Can't Crit",
 	"persona.power.tag.passive": "Passive",
@@ -1029,6 +1030,7 @@
 	"persona.othereffect.teach-power": "Permanently Teach power",
 	"persona.othereffect.grant-persona": "Grant Persona",
 	"persona.othereffect.swap-teammate-in-combat": "Swap Teammate",
+	"persona.othereffect.flip-buffs": "Flip Buffs/Debuffs",
 
 	"persona.othereffect.add-room-effect": "Add Effect to Room (Permanent)",
 

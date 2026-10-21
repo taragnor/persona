@@ -452,6 +452,19 @@ export class ConsequenceApplier {
         await PersonaCombat.combat?.swapCharacter(oldAlly, newAlly);
         break;
       }
+      case "flip-buffs": {
+        const pairs : [StatusEffectId, StatusEffectId][] = [["attack-boost", "attack-nerf"], ["defense-boost", "defense-nerf"], ["damage-boost", "damage-nerf"]] as const;
+        for (const pair of pairs) {
+          const AE = actor.effects.find(eff=> eff.statuses.has(pair[0]) || eff.statuses.has(pair[1]));
+          if (!AE) {
+            PersonaError.softFail(`Can't find AE with buff/debuff to flip on ${actor.name}`);
+            continue;
+          }
+          const newStatus = AE.statuses.has(pair[0]) ? pair[1]: pair[0];
+          await AE.update( {statuses: [newStatus]});
+        }
+      }
+        break;
       default:
         otherEffect satisfies never;
     }
