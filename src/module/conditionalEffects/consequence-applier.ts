@@ -25,6 +25,8 @@ import {Logger} from "../utility/logger.js";
 
 export class ConsequenceApplier {
 
+  static INSTANT_STATUS_REMOVE_DELAY = 6000;
+
   public static async applyLocalEffect( effect: Sourced<LocalEffect>, actor : N<PersonaActor>) : Promise<void> {
     await PersonaError.asyncErrorWrapper(  () => this._applyLocalEffect(effect, actor));
   }
@@ -94,14 +96,22 @@ export class ConsequenceApplier {
 
   private static async _applyStatus (status: StatusEffect, actor : ValidAttackers, power: U<UsableAndCard>,  attacker : U<UniversalTokenAccessor<PToken>>, token : U<PToken>) : Promise<FinalizedCombatResult[]> {
     const statusAdd = await actor.addStatus(status);
-    void actor.voicelines.onEvent("status-added" , {"statusAdded" : status.id});
     const chained : FinalizedCombatResult[] = [];
+    if (!statusAdd) {return chained;}
+    void actor.voicelines.onEvent("status-added" , {"statusAdded" : status.id});
     if (statusAdd && attacker && token && power?.isUsableType()) {
       chained.push(...(await this._resolveCombatStatus(token, attacker, status, power))
       );
     }
     if (statusAdd && token) {
       Hooks.callAll("onAddStatus", token, status);
+      if (status?.duration?.dtype == "instant") {
+        console.log(`Setting timeout for ${status.id}`);
+        setTimeout ( () => {
+          console.log(`Autoremoving ${status.id}`);
+          void actor.removeStatus(status);
+        }, ConsequenceApplier.INSTANT_STATUS_REMOVE_DELAY);
+      }
     }
     return chained;
   }
