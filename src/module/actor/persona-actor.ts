@@ -1227,21 +1227,29 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
     return [];
   }
 
-  async modifyHP( this: ValidAttackers, delta: number) {
+  async modifyHP( this: ValidAttackers, delta: number) : Promise<DamageReturn> {
     const startingHP = this.system.combat.hp;
-    if (delta == 0) {return;}
+    const retObj : DamageReturn = {
+      "killed": false,
+      "originalHP": startingHP,
+      "resurrected": false,
+    };
+    if (delta == 0) {return retObj;}
     const hp = Math.clamp(startingHP + delta, 0, this.mhp);
     await this.update( {"system.combat.hp": hp});
     const newval = hp;
     if (hp != undefined) {
       if (startingHP > 0  && newval <= 0) {
         await this.onKO();
+        retObj.killed= true;
       }
       if (startingHP <= 0 && newval > 0) {
+        retObj.resurrected=  true;
         await this.onRevive();
       }
     }
     await (this as PC | Shadow).refreshHpStatus();
+    return retObj;
   }
 
   async modifyMP( this: PC | NPCAlly, delta: number) {
@@ -1415,7 +1423,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   /** actually adds a new status, use addStauts to also check for duplicates and merge if needed */
   private async _addStatus(statusEffect: StatusEffect): Promise<boolean> {
-
     const {id, duration} = statusEffect;
     const stateData = Object.values(CONFIG.statusEffects).find ( x=> x.id == id);
     if (!stateData) {
@@ -3930,3 +3937,9 @@ type GainMoneyOptions = {
 
 
 // type CustomPersonaLearningList= Record<number, {slot: keyof typeof SLOTTYPES, rarity: keyof typeof PROBABILITIES_POWER_RARITY}>;
+
+type DamageReturn = {
+  killed: boolean;
+  originalHP: number;
+  resurrected: boolean;
+}

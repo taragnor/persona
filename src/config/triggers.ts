@@ -56,11 +56,13 @@ export const SHARED_TRIGGERS = [
 ] as const;
 
 const CANCEL_CHECK = [
+  //-pre-take-damage technically allows cancel as aberrtatiunon,
 	"on-power-usage-check",
   "on-equip-check",
   "check-legal-target",
   "check-nullify-attack",
   "check-persona-switch",
+  "check-instant-kill",
 ] as const;
 
 

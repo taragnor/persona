@@ -211,7 +211,8 @@ namespace TriggeredSituation {
     | EquipCheck
     | LegalTargetCheck
     | NullifyAttackCheck
-    | CheckPersonaSwitch;
+    | CheckPersonaSwitch
+    | CheckInstantKill ;
 
 
 type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
@@ -235,6 +236,12 @@ type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
     {
       trigger: "check-persona-switch",
     }
+
+  type CheckInstantKill = SituationComponent.User &
+    SituationComponent.Targetted & Partial<SituationComponent.Attacker> & SituationComponent.TriggeringCharacter & 
+    {
+      trigger: "check-instant-kill",
+    };
 
   type EquipCheck = SituationComponent.Item &
     SituationComponent.User &

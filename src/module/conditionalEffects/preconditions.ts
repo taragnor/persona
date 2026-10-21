@@ -550,6 +550,7 @@ function triggerComparison(condition: PreconditionType & {type: "on-trigger"}, s
     case "on-attack-nullified":
     case "check-nullify-attack":
     case "check-persona-switch":
+    case "check-instant-kill":
     case "on-switch-persona":
       return true;
     case "on-clock-change":

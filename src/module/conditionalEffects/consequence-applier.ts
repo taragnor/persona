@@ -1,3 +1,4 @@
+import {CancelTrigger} from "../../cancel-check-effect.js";
 import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {StatusEffectId, statusMap} from "../../config/status-effects.js";
@@ -157,13 +158,14 @@ export class ConsequenceApplier {
         .finalize()
         .emptyCheck() ;
       if (eff) {
-        // console.log("Pushing Chained effect after knockdown");
         chained.push(eff);
+        // console.log("Pushing Chained effect after knockdown");
       }
-      if ((status.id == "curse" || status.id == "expel")) {
-        const attackerToken = PersonaDB.findToken(attacker);
-        chained.push(...await this.#onDefeatOpponent(targetToken, attackerToken));
-      }
+      //need to refactor this to use instant kill instead
+      // if ((status.id == "curse" || status.id == "expel")) {
+      //   const attackerToken = PersonaDB.findToken(attacker);
+      //   chained.push(...await this.#onDefeatOpponent(targetToken, attackerToken));
+      // }
     }
     return chained;
   }
@@ -257,10 +259,13 @@ export class ConsequenceApplier {
     if (token) {
       Hooks.callAll("onTakeDamage", token, dmg.hpChange, dmg.damageType);
     }
-    await actor.modifyHP(dmg.hpChange);
-    if (actor.hp <= 0 && token) {
+    const dmgReturn = await actor.modifyHP(dmg.hpChange);
+    if (dmgReturn.killed && token)  {
       ret.push(... await this.#onDefeatOpponent(token, attackerToken));
     }
+    // if (actor.hp <= 0 && token) {
+    //   ret.push(... await this.#onDefeatOpponent(token, attackerToken));
+    // }
     return ret;
   }
 
@@ -805,6 +810,17 @@ export class ConsequenceApplier {
       case "instant-kill": {
         const attackerToken = PersonaDB.findToken(attacker);
         const targetToken = PersonaCombat.combat?.getCombatantsByActor(actor).at(0)?.token;
+        const situation = {
+          trigger : "check-instant-kill",
+          attacker: attackerToken?.actor.accessor,
+          target: actor.accessor,
+          user: actor.accessor,
+          triggeringCharacter: actor.accessor,
+        } as const satisfies Situation;
+        if (CancelTrigger.cancelCheck(situation, actor)) {
+          break;
+        }
+        await actor.setHP(0);
         if (targetToken) {
           return await this.#onDefeatOpponent(targetToken as PToken, attackerToken);
         }
