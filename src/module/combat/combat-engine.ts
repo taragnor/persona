@@ -156,7 +156,7 @@ export class CombatEngine {
       if (!isOpener)  {
         const comb = this.combat?.getCombatantsByToken(attacker).at(0);
         if (comb) {
-          await this.combat?.openers.setOpenerUsed(comb, true);
+          await this.combat?.openers.setOpenerUsed(comb, true, true);
         }
         if (!power.isFreeAction(attacker.actor.persona())) {
           await attacker.actor.expendAction();

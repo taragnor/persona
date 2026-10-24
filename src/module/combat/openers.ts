@@ -1,3 +1,4 @@
+import {PersonaSettings} from "../../config/persona-settings.js";
 import {CombatPanel} from "../panels/combat-panel.js";
 import {OpenerPanel} from "../panels/openers-panel.js";
 import {UsableListPanel} from "../panels/usable-list-panel.js";
@@ -504,8 +505,9 @@ export class OpenerManager {
     return used ?? false;
   }
 
-  async setOpenerUsed(combatant: Combatant, state : boolean) : Promise<void> {
+  async setOpenerUsed(combatant: Combatant, state : boolean, suppressOutOfTurnMsg = false) : Promise<void> {
     if (combatant != this.combat.combatant) {
+      if (suppressOutOfTurnMsg || PersonaSettings.debugMode()) {return;}
       PersonaError.softFail(`trying to update opener Used for ${combatant.name} to ${state} when it is not its turn`);
       return;
     }

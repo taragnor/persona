@@ -23,17 +23,16 @@
     {{/if}}
 
     {{#if (eq cons.otherEffect "add-room-effect")}}
+    <label> Random Effect From group </label>
     <input type="checkbox" name="{{strcat namePrefix 'randomEffect'}}" {{checked cons.randomEffect}}>
-
-    {{#if (eq cons.randomEffect false)}}
-    <select name="{{strcat namePrefix 'roomEffectId'}}">
-      {{selectOptions POWERSTUFF.ROOMMODS localize=false selected=cons.roomEffectId}}
-    </select>
-    {{/if}}
 
     {{#if (eq cons.randomEffect true)}}
       <select name="{{strcat namePrefix 'roomEffectGroup'}}">
         {{selectOptions POWERSTUFF.ROOM_EFFECT_GROUPS localize=false selected=cons.roomEffectGroup}}
+      </select>
+      {{else}}
+      <select name="{{strcat namePrefix 'roomEffectId'}}">
+        {{selectOptions POWERSTUFF.ROOMMODS localize=false selected=cons.roomEffectId}}
       </select>
     {{/if}}
 
