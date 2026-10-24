@@ -90,7 +90,7 @@ export class ShadowSheet extends CombatantSheetBase {
 				PersonaDB.treasureItems()
 				.filter( item => item.isCraftingItem)
 				.sort( (a, b) => a.name.localeCompare(b.name))
-				.map( x=> [x.id, x.name])
+				.map( x=> [x.id, `${x.name} (${x.itemLevel()})`  ])
 			)
 		) as Record<Item["id"], string>;
 		data.SHADOW_STUFF =  {

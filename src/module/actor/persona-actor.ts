@@ -548,7 +548,10 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
         if (!combat) {return this.name;}
         const token = combat.getCombatantsByActor(this as ValidAttackers).at(0)?.token;
         if (!token) {return this.prototypeToken.name;}
-        return token.name;
+        if (!this.isValidCombatant()) {return this.prototypeToken.name;}
+        return this.persona().scanLevelRaw > 1 ?
+        this.name
+        : token.name;
       }
       default:
         return this.name;
