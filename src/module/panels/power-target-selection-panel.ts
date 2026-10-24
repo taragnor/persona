@@ -4,6 +4,7 @@ import {PersonaTargetting} from "../combat/persona-targetting.js";
 import {Metaverse} from "../metaverse.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
+import {randomSelect} from "../utility/array-tools.js";
 import {HTMLTools} from "../utility/HTMLTools.js";
 import {SubPanel} from "./sub-panel.js";
 import {UsableListPanel} from "./usable-list-panel.js";
@@ -31,7 +32,6 @@ export class PowerTargetSelectionPanel extends SubPanel {
     return this._targetList()
       .filter( t=>
         this.power.targeting().isValidTargetFor(this.actor, t instanceof TokenDocument ? t.actor : t)
-        // this.power.targeting().targetMeetsTargettingConditions(this.actor, t instanceof TokenDocument ? t.actor : t)
       );
   }
 
@@ -58,12 +58,30 @@ export class PowerTargetSelectionPanel extends SubPanel {
     }
   }
 
+  GMSelect() : U<ValidAttackers | PToken> {
+    try {
+      if (this.actor.hasPlayerOwner) { return undefined;}
+      const power = this.power;
+      if (!power.canDealDamage() && !power.hasTag("ailment", this.actor)) {
+        return undefined;
+      }
+      return randomSelect(
+        this.targetList()
+        .filter( x=> x instanceof TokenDocument ? x.actor.isPCLike() : x.isPCLike())
+      );
+    } catch (e) {
+      PersonaError.softFail (e as Error);
+      return undefined;
+    }
+  }
+
   override async getData() {
     return {
       ...await super.getData(),
       persona: this.actor.persona(),
       power: this.power,
       targets: this.targetList(),
+      GMSelect: this.GMSelect(),
     };
   }
 

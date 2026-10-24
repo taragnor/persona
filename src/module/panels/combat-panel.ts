@@ -1,6 +1,7 @@
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {PersonaActorSheetBase} from "../actor/sheets/actor-sheet-base.js";
+import {PersonaAI} from "../combat/persona-ai.js";
 import {PersonaCombat, PersonaCombatant, PToken} from "../combat/persona-combat.js";
 import {Metaverse} from "../metaverse.js";
 import {PersonaDB} from "../persona-db.js";
@@ -20,6 +21,7 @@ export class CombatPanel extends PersonaPanel {
   tacticalTarget: U<PToken>;
   deferUpdate = false;
   static DEFER_SLEEP_TIME = 300;
+  _selectedPower: N<Power>;
 
   constructor() {
     super ("combat-panel");
@@ -199,6 +201,12 @@ export class CombatPanel extends PersonaPanel {
     await this.updatePanelDeferred();
   }
 
+
+  selectPower() {
+    if (!this.target) {return null;}
+    return PersonaAI.selectPowerSimple(this.target.actor.persona());
+  }
+
   async setTarget(token: UN<PToken>) {
     if (!PersonaSettings.combatPanel()) {return;}
     if (this._target == token) {return;}
@@ -212,6 +220,7 @@ export class CombatPanel extends PersonaPanel {
     }
     try {
       this._target = token;
+      this._selectedPower = this.selectPower();
       await this.setMode("main");
       await this.setTacticalTarget(null);
       const combat = PersonaCombat.combat;
@@ -265,6 +274,7 @@ export class CombatPanel extends PersonaPanel {
       ...data,
       mode: this.mode,
       engagedList,
+      selectedPower: this._selectedPower,
       CONST,
       target: this.target,
       combatant,

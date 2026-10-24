@@ -1,4 +1,4 @@
-<div class="character-card {{#if combatant.isDefeated}} defeated {{/if}} {{#if (isDead combatant.actor)}} dead {{/if}}" data-target-id="{{token.id}}">
+<div class="character-card {{#if combatant.isDefeated}} defeated {{/if}} {{#if (isDead combatant.actor)}} dead {{/if}} {{#if (eq combatant highlight)}} highlighted{{/if}}" data-target-id="{{token.id}}">
   <div class="portrait">
     <img src="{{combatant.img}}" alt="Character Portrait">
   </div>

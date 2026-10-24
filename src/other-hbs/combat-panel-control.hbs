@@ -27,7 +27,7 @@
 
   <body>
     {{#if (eq mode "main")}}
-    {{> "systems/persona/parts/combat-panel-control-body-main.hbs" CONST=CONST persona=persona actor=persona.user}}
+    {{> "systems/persona/parts/combat-panel-control-body-main.hbs" CONST=CONST selected=selectedPower persona=persona actor=persona.user}}
     {{/if}}
   </body>
 </div>

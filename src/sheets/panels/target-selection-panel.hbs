@@ -3,13 +3,7 @@
 <section class="target-list">
   {{#each targets as |target i|}}
 
-  {{> "systems/persona/parts/character-summary-box.hbs" combatant=target token=target}}
-
-  {{#if false}}
-  <button class="target" data-target-id="{{target.id}}">
-    {{target.name}}
-  </button>
-  {{/if}}
+  {{> "systems/persona/parts/character-summary-box.hbs" combatant=target token=target highlight=../GMSelect}}
 
   {{/each}}
 </section>
