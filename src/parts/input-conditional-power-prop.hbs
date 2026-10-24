@@ -9,9 +9,7 @@
 {{/if}}
 
 {{#if (eq (defVal cond.powerProp "power-type-is") "power-type-is") }}
-<select name="{{strcat namePrefix 'powerType'}}">
-	{{selectOptions POWERSTUFF.POWERTYPES localize=true selected=cond.powerType}}
-</select>
+	{{multicheck (strcat namePrefix 'powerType') POWERSTUFF.POWERTYPES checked=cond.powerType localize=true}}
 {{/if}}
 
 {{#if (eq cond.powerProp "power-slot-is") }}

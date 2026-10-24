@@ -1480,8 +1480,10 @@ function powerHasConditional(condition : PreconditionType  & {type: "boolean"; b
       return damageTypeComparison(condition, condition.powerDamageType, powerDType, ownershipInfo);
     }
     case "power-type-is": {
-      return power.system.type == "power" && power.system.subtype == condition.powerType;
-
+      if (!power.isPower()) {return false;}
+      const set =  multiCheckToSet(condition.powerType);
+      return set.has(power.system.subtype);
+      // power.system.subtype == condition.powerType;
     }
     case "power-slot-is": {
       if (power.system.type == "consumable") {return undefined;}

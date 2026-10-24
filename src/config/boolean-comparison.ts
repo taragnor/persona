@@ -250,7 +250,8 @@ type PowerComparisonsSub = {
 	powerTargetType: MultiCheck<Power["system"]["targets"]>,
 } | {
 	powerProp: "power-type-is",
-	powerType : PowerType,
+	// powerType : PowerType,
+	powerType : MultiCheckOrSingle<PowerType>,
 } | {
 	powerProp: "power-slot-is",
 	slotType: MultiCheck<string>,
