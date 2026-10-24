@@ -47,8 +47,13 @@
 		</div>
 		{{/if}}
 
-		{{#if (eqAny item.system.scope "room") }}
-        <input type="text" name="system.effect_group" value="{{item.system.effect_group}}" title="Effect Group" placeholder="Effect Group">
+    {{#if (eqAny item.system.scope "room") }}
+    <span>
+      <label>
+        Universal Modifier Group
+      </label>
+      <input class="short-text" type="text" name="system.effect_group" value="{{item.system.effect_group}}" title="Effect Group" placeholder="Effect Group">
+    </span>
     {{/if}}
 
 		<textarea name="system.description">{{item.system.description}}</textarea>

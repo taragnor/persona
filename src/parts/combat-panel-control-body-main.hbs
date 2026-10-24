@@ -5,6 +5,7 @@
 
 {{> "systems/persona/parts/basic-powers-section.hbs" CONST=CONST persona=persona actor=actor disabled=(not (isCombatPanelActive))}}
 
+
 {{#if engagedList}}
 <img src="systems/persona/img/icon/engaged-icon.gif" title="Engaged By {{#each engagedList as |comb i|}} {{comb.name}} {{/each}}">
 {{/if}}
