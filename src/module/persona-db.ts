@@ -190,14 +190,14 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
     return this.#cache.worldModifiers;
   }
 
-  getRoomModifiers() : readonly UniversalModifier [] {
+  getRoomModifiers() : readonly RoomEffect [] {
     if (this.#cache.roomModifiers == undefined) {
       const UMs = this.allUniversalModifierTypes();
       this.#cache.roomModifiers = UMs
         .filter(um=> um.system.scope == "room")
         .sort ( (a,b) => a.name.localeCompare(b.name));
     }
-    return this.#cache.roomModifiers;
+    return this.#cache.roomModifiers as RoomEffect[];
   }
 
   allUniversalModifierTypes() : readonly UniversalModifier[] {
@@ -710,6 +710,12 @@ class PersonaDatabase extends DBAccessor<PersonaActor, PersonaItem> {
       .filter( p=> p.canAutoSpendStatPoints())
       .map( p=> p.resetCombatStats(true));
     return await Promise.allSettled(promises);
+  }
+
+  roomEffectGroups() : string[] {
+    return this.getRoomModifiers()
+      .map(mod => mod.system.effect_group ?? "")
+      .filter (x=> x.length > 0);
   }
 
 }

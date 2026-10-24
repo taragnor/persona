@@ -952,11 +952,15 @@ export class ConditionalEffectPrinter {
           return `Add ${tag} tag`;
         }
         case "add-room-effect":{
-          const RE = PersonaDB.getRoomModifiers().find( x=> x.id == cons.roomEffectId);
+          if (!cons.randomEffect) {
+            const RE = PersonaDB.getRoomModifiers().find( x=> x.id == cons.roomEffectId);
           if (!RE) {
             return "ERROR (add-room-effect)";
           }
           return `add ${RE.name} to Room`;
+          } else {
+            return `Add Random Room effect from group ${cons.roomEffectGroup}`;
+          }
         }
         case "grant-persona":{
           const personaName = PersonaDB.getActor(cons.id)?.name || "ERROR (grant-persona)";

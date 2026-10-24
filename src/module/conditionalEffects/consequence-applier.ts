@@ -20,7 +20,7 @@ import {PersonaError} from "../persona-error.js";
 import {PersonaVariables} from "../persona-variables.js";
 import {SocialActionExecutor} from "../social/exec-social-action.js";
 import {TriggeredEffect} from "../triggered-effect.js";
-import {weightedChoice} from "../utility/array-tools.js";
+import {randomSelect, weightedChoice} from "../utility/array-tools.js";
 import {Logger} from "../utility/logger.js";
 
 export class ConsequenceApplier {
@@ -100,8 +100,7 @@ export class ConsequenceApplier {
     if (!statusAdd) {return chained;}
     void actor.voicelines.onEvent("status-added" , {"statusAdded" : status.id});
     if (statusAdd && attacker && token && power?.isUsableType()) {
-      chained.push(...(await this._resolveCombatStatus(token, attacker, status, power))
-      );
+      chained.push(...this._resolveCombatStatus(token, attacker, status, power) );
     }
     if (statusAdd && token) {
       Hooks.callAll("onAddStatus", token, status);
@@ -137,7 +136,7 @@ export class ConsequenceApplier {
     return chained;
   }
 
-  private static async _resolveCombatStatus(targetToken: PToken, attacker: UniversalTokenAccessor<PToken>, status: StatusEffect, power: U<Usable>) : Promise<FinalizedCombatResult[]> {
+  private static _resolveCombatStatus(targetToken: PToken, attacker: UniversalTokenAccessor<PToken>, status: StatusEffect, power: U<Usable>) : FinalizedCombatResult[] {
     const targetActor = targetToken.actor;
     const chained : FinalizedCombatResult[] = [];
     const attackerActor = PersonaDB.findToken(attacker)?.actor;
@@ -149,7 +148,7 @@ export class ConsequenceApplier {
     if (PersonaSettings.debugMode()) {
       console.log(`On inflict status: ${status.id} ${targetActor.name}`);
     }
-    const sitPartial ={
+    const sitPartial = {
       target: targetActor.accessor,
       triggeringCharacter: attackerActor.accessor,
       attacker: attackerActor.accessor,
@@ -169,7 +168,6 @@ export class ConsequenceApplier {
         .emptyCheck() ;
       if (eff) {
         chained.push(eff);
-        // console.log("Pushing Chained effect after knockdown");
       }
       //need to refactor this to use instant kill instead
       // if ((status.id == "curse" || status.id == "expel")) {
@@ -690,11 +688,41 @@ export class ConsequenceApplier {
     }
   }
 
+  static resolveRoomEffect(otherEffect: OtherEffect & {type: "other-effect", otherEffect: "add-room-effect"}) : U<RoomEffect> {
+    if (!otherEffect.randomEffect) {
+      const mod = PersonaDB.getRoomModifiers()
+        .find (eff=> eff.id == otherEffect.roomEffectId);
+      if (!mod) {
+        PersonaError.softFail(`Can't find room effect otherEffect.roomEffectId}`, otherEffect);
+      }
+      return mod;
+    } else {
+      const group = otherEffect.roomEffectGroup;
+      if (!group) {
+        PersonaError.softFail(`No Random effect group provided in Othereffect`, otherEffect);
+        return undefined;
+      }
+    const groupEffects = PersonaDB.getRoomModifiers()
+      .filter (x=> x.system.effect_group == group);
+      if (groupEffects.length == 0) {
+        PersonaError.softFail(`Random Effect group has no members: ${group}`, otherEffect);
+        return undefined;
+      }
+      const region = Metaverse.getRegion();
+      if (!region) {
+        PersonaError.softFail(`No region can't add room effect`, otherEffect);
+        return undefined;
+      }
+      const regionEffects = region.personalRoomEffectsOnly();
+      const selected = groupEffects
+        .filter( x=> !regionEffects.some( y=> x == y));
+      return randomSelect(selected);
+    }
+  }
+
   static async addRoomEffect( otherEffect: OtherEffect & {type: "other-effect", otherEffect: "add-room-effect"}) {
-    const mod = PersonaDB.getRoomModifiers()
-      .find (eff=> eff.id == otherEffect.roomEffectId);
+    const mod = this.resolveRoomEffect(otherEffect);
     if (!mod) {
-      PersonaError.softFail(`Can't find room effect ${otherEffect.roomEffectId}`, otherEffect);
       return;
     }
     if (Metaverse.getPhase() == "downtime") {

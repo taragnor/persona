@@ -253,13 +253,13 @@ type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
   type StartSocialCardTrigger =
     {trigger: "on-start-social-card"} &
     SituationComponent.TriggeringCharacter &
-    SituationComponent.User
+    SituationComponent.User;
 
 
     type EndSocialCardTrigger =
     { trigger: "on-end-social-card", } &
     SituationComponent.TriggeringCharacter &
-    SituationComponent.User
+    SituationComponent.User;
 
 
   type LegalTargetCheck = SituationComponent.PowerUse &

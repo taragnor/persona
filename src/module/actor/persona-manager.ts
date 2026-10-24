@@ -245,9 +245,9 @@ export class PersonaManager<ActorType extends ValidAttackers = ValidAttackers> {
     const combat = PersonaCombat.combat;
     if (!combat || combat.isSocial) {
       if (this.actor.isPC()) {
-        await Logger.sendToChat(`${this.actor.name} activates Persona ${persona.publicName}`);
+        await Logger.sendToChat(`${this.actor.name} activates Persona ${persona.name}`);
       } else {
-        ui.notifications.notify(`${this.actor.name} switches Persona to ${persona.publicName}`);
+        ui.notifications.notify(`${this.actor.name} switches Persona to ${persona.name}`);
       }
     } else {
       let msg = "";

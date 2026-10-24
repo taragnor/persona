@@ -252,6 +252,14 @@ private static _powerStuffBase: Record<string, unknown>;
       ),
     };
 
+    const ROOM_EFFECT_GROUPS = {
+      "" : "-",
+      ...Object.fromEntries(
+        PersonaDB.roomEffectGroups()
+        .map( t => [t, t])
+      ),
+    };
+
     const data = {
       ...this.powerStuffBase(),
       SOCIAL_LINKS,
@@ -284,6 +292,7 @@ private static _powerStuffBase: Record<string, unknown>;
       ROLL_TAGS_AND_CARD_TAGS: UNIFIED_ROLL_AND_CARD_TAGS,
       STATUS_TAGS,
       STATUS_SUBTAGS,
+      ROOM_EFFECT_GROUPS,
     } satisfies Record< string, Record<string, string>>;
     return data;
   }

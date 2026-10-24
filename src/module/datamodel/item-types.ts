@@ -165,6 +165,7 @@ class UniversalModifierDM extends foundry.abstract.TypeDataModel {
       description: new html(),
       room_effect: new bool({initial: false}), //deprecated in favor of scope
       scope: new txt({choices: UNIVERSAL_MODIFIERS_TYPE_LIST, initial: "scene"}),
+      effect_group: new txt(),
       duration: new num( {initial: 0, integer: true}),
       sceneList: new arr( new id()),
       ...effects (false),

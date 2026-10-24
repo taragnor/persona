@@ -2120,14 +2120,15 @@ async summon(shadow: Shadow) :Promise<void> {
 
 async removeFromCombat(comb: U<PersonaCombatant | ValidAttackers>) : Promise<void> {
   setTimeout( async() => {
-    const combatant = (comb instanceof PersonaActor) ?
-      this.getCombatantsByActor(comb).at(0) as U<PersonaCombatant> : comb;
+    const combatant = (comb instanceof PersonaActor)
+      ? this.getCombatantsByActor(comb).at(0) as U<PersonaCombatant>
+      : comb;
     if (!combatant) {return;}
     if (this.combatant == combatant) {
       await this.nextTurn();
     }
     if (this.combatant == combatant) {
-      PersonaError.softFail("Can't escpae combat with only one combatanat");
+      PersonaError.softFail("Can't escape combat with only one combatanat");
     }
     setTimeout( async () => {
       const token = combatant.token;

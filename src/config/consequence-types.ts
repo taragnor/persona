@@ -464,38 +464,46 @@ type OtherConsequence = {
 
 type OtherConsequences = {
   otherEffect: "add-talent-to-list",
-	id: Talent["id"], //id of talent
+  id: Talent["id"], //id of talent
 } | {
   otherEffect: "add-power-to-list",
-	id: Power["id"], // id of power
+  id: Power["id"], // id of power
 } | {
   applyTo : ConsequenceTarget,
-	otherEffect:  "teach-power"
-	id: Power["id"], // id of power
-	randomPower: false,
+  otherEffect:  "teach-power"
+  id: Power["id"], // id of power
+  randomPower: false,
 } | {
   applyTo : ConsequenceTarget,
-	otherEffect:  "teach-power"
-	randomPower: true,
+  otherEffect:  "teach-power"
+  randomPower: true,
   criteria: NonDeprecatedPrecondition,
 } | {
   otherEffect: "add-creature-tag",
-	creatureTag: InternalCreatureTag | Tag["id"];
+  creatureTag: InternalCreatureTag | Tag["id"];
 } | {
   otherEffect: "search-twice" | "ignore-surprise",
-} | {
+} | AddRoomEffectConsequence
+  | {
+    applyTo : ConsequenceTarget,
+    otherEffect:  "grant-persona"
+    id: Shadow["id"], // id of power
+  } | {
+    otherEffect:  "swap-teammate-in-combat",
+  } | {
+    applyTo : ConsequenceTarget,
+    otherEffect: "flip-buffs",
+  };
+
+type AddRoomEffectConsequence = {
   otherEffect: "add-room-effect",
+} & ({
+  randomEffect: false,
   roomEffectId: UniversalModifier["id"],
 } | {
-  applyTo : ConsequenceTarget,
-	otherEffect:  "grant-persona"
-	id: Shadow["id"], // id of power
-} | {
-	otherEffect:  "swap-teammate-in-combat",
-} | {
-  applyTo : ConsequenceTarget,
-  otherEffect: "flip-buffs",
-};
+  randomEffect: true,
+  roomEffectGroup:  string,
+});
 
 type ElementalResistanceAlterConsequence = {
 	type: "raise-resistance" | "lower-resistance";

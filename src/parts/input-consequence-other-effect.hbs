@@ -1,0 +1,61 @@
+<div class="other-effect-block">
+
+    <select name="{{strcat namePrefix 'otherEffect'}}">
+      {{selectOptions POWERSTUFF.OTHER_CONSEQUENCES localize=true selected=cons.otherEffect}}
+    </select>
+
+    {{#if (eq cons.otherEffect "add-creature-tag")}}
+    <select name="{{strcat namePrefix 'creatureTag'}}">
+      {{selectOptions POWERSTUFF.CREATURE_TAGS localize=true selected=cons.creatureTag}}
+    </select>
+    {{/if}}
+
+    {{#if (eq cons.otherEffect "add-talent-to-list")}}
+    <select name="{{strcat namePrefix 'id'}}">
+      {{selectOptions POWERSTUFF.COMPENDIUM_TALENTS localize=true selected=cons.id}}
+    </select>
+    {{/if}}
+
+    {{#if (eq cons.otherEffect "add-power-to-list")}}
+    <select name="{{strcat namePrefix 'id'}}">
+      {{selectOptions POWERSTUFF.COMPENDIUM_POWERS localize=false selected=cons.id}}
+    </select>
+    {{/if}}
+
+    {{#if (eq cons.otherEffect "add-room-effect")}}
+    <input type="checkbox" name="{{strcat namePrefix 'randomEffect'}}" {{checked cons.randomEffect}}>
+
+    {{#if (eq cons.randomEffect false)}}
+    <select name="{{strcat namePrefix 'roomEffectId'}}">
+      {{selectOptions POWERSTUFF.ROOMMODS localize=false selected=cons.roomEffectId}}
+    </select>
+    {{/if}}
+
+    {{#if (eq cons.randomEffect true)}}
+      <select name="{{strcat namePrefix 'roomEffectGroup'}}">
+        {{selectOptions POWERSTUFF.ROOM_EFFECT_GROUPS localize=false selected=cons.roomEffectGroup}}
+      </select>
+    {{/if}}
+
+    {{/if}}
+
+    {{#if (eq cons.otherEffect "teach-power")}}
+    <label> Random Power </label>
+    <input type="checkbox" name="{{strcat namePrefix 'randomPower'}}" {{checked (defVal cons.randomPower false)}}>
+    {{/if}}
+
+    {{#if (eqAny cons.otherEffect	"teach-power")}}
+
+    {{#if (not cons.randomPower)}}
+    <select name="{{strcat namePrefix 'id'}}">
+      {{selectOptions POWERSTUFF.COMPENDIUM_POWERS localize=false selected=cons.id}}
+    </select>
+    {{/if}}
+    {{#if (and (eqAny cons.otherEffect "teach-power") cons.randomPower)}}
+    {{> "systems/persona/parts/input-condition-body.hbs" namePrefix=(strcat namePrefix "criteria.")  cond=cons.criteria POWERSTUFF=POWERSTUFF owner=owner}}
+    {{/if}}
+
+    {{/if}}
+  </div>
+
+
