@@ -15,7 +15,7 @@
 		<div>
 			<label> Identifier: </label> {{persona.user.prototypeToken.name}}
 		</div>
-		{{#if (and (ne persona.user.prototypeToken.name persona.user.name) (scanLevelgte persona 1))}}
+		{{#if (and (ne persona.user.prototypeToken.name persona.user.displayedName) (scanLevelgte persona 1))}}
 		<div>
 			<label> Actual Name: </label> {{persona.user.displayedName}}
 		</div>

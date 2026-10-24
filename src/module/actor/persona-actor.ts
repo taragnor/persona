@@ -550,12 +550,18 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
         if (!token) {return this.prototypeToken.name;}
         if (!this.isValidCombatant()) {return this.prototypeToken.name;}
         return this.persona().scanLevelRaw > 1 ?
-        this.name
+        this.trueName
         : token.name;
       }
       default:
         return this.name;
     }
+  }
+
+  get trueName() : string {
+    if (!this.isToken) {return this.name;}
+    return PersonaDB.getActorById(this.id)
+      ?.trueName ?? this.name;
   }
 
   /** Shadow from which this was derived, used for shadows used in Personas*/

@@ -4,7 +4,10 @@
 {{/if}}
 <div class="control-panel {{#if (isCombatPanelActive)}}active-control-panel{{/if}} {{#if (eq mode 'tactical')}}tactical-view{{/if}}">
   <header>
-    <h3 class="token-name"> {{token.name}}</h3>
+    <h3 class="token-name"> {{token.actor.displayedName}}</h3>
+    {{#if (ne token.actor.displayedName token.name)}}
+    <b>Token: </b> {{token.name}}
+    {{/if}}
     {{#if actor.canSwitchPersonas}}
     <div>
       <b>
