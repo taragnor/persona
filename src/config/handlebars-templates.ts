@@ -116,7 +116,8 @@ const templateFileNames : string[] =[
   "npc-valid-cards.hbs",
   "other-effect.hbs",
   "status-subtags.hbs",
-  "input-conditional-boolean-actor-prop.hbs"
+  "input-conditional-boolean-actor-prop.hbs",
+  "input-consequence-other-effect.hbs",
 ];
 
 export const templatePaths = templateFileNames.
