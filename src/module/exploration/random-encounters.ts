@@ -388,7 +388,7 @@ export class RandomEncounter {
     }
     let etype : EncounterDifficulty;
     do {
-      etype = options.encounterType ? options.encounterType : this.#getEncounterType(options.frequencies ?? {});
+      etype = options.encounterType ? options.encounterType : this.#getEncounterType(baseList, options.frequencies ?? {});
       const size = Math.max(1 , this.#getEncounterSize(etype) + (options.sizeMod ?? 0));
       encounterSizeRemaining = size;
       encounterList = this.#filterByEncounterType(baseList, etype);
@@ -463,22 +463,28 @@ export class RandomEncounter {
     return {enemies: encounter, encounterDifficulty: etype};
   }
 
-  static #getEncounterType(frequencies: {hard ?: number, mixed ?: number, treasure ?: number}): EncounterDifficulty {
+  static #getEncounterType(encounterList: readonly Shadow[], frequencies: {hard ?: number, mixed ?: number, treasure ?: number}): EncounterDifficulty {
     const {hard, mixed, treasure} = frequencies;
+    const baseStd = encounterList
+      .filter( x=> !x.hasRole(["treasure-shadow", "duo", "solo"]))
+      .length;
+    const baseTough = encounterList
+      .filter( x=> x.hasRole(["duo", "solo"]))
+      .length;
     const choices = [{
       item: "standard",
-      weight: 10,
+      weight: baseStd,
     }, {
       item: "tough",
-      weight: 2 + (hard ?? 0),
+      weight: baseTough + (hard ?? 0),
     }, {
       item: "treasure",
       weight: 1 + (treasure?? 0),
     }, {
       item: "mixed",
-      weight: 1 + (mixed ?? 0),
+      weight: 3 + (mixed ?? 0),
     },
-    ] as const;
+      ] as const;
     const choice =  weightedChoice(choices);
     if (choice == undefined) {
       PersonaError.softFail("Weighted Choice returned undefined");

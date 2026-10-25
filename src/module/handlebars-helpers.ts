@@ -781,7 +781,10 @@ export class PersonaHandleBarsHelpers {
     },
 
     "scanLevel": function (persona: Persona) : number {
-      return persona.effectiveScanLevel;
+      if (persona && persona instanceof Persona) {
+        return persona?.effectiveScanLevel ?? 0;
+      }
+      return 0;
     },
 
     "scanLevelgte": function (persona: Persona | ValidAttackers, val: number) : boolean {
@@ -789,7 +792,7 @@ export class PersonaHandleBarsHelpers {
         persona = persona.persona();
       }
       if (game.user.isGM) {return true;}
-      return persona.effectiveScanLevel >= val;
+      return (persona?.effectiveScanLevel ?? 0) >= val;
     },
 
     "getTreasureRarityByCategory" : function (treasure: TreasureItem, category: keyof TreasureItem["system"]["treasure"]) : string {

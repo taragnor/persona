@@ -2054,7 +2054,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
       if (!combatant) {return [];}
       return combat.getFoes(combatant)
         .map( comb => comb.token)
-        .filter( token => token.actor.persona().effectiveScanLevel >= 2);
+        .filter( token => (token.actor.persona()?.effectiveScanLevel ?? 0) >= 2 );
     }
     return [];
   }

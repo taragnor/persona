@@ -1,5 +1,7 @@
 <section class="combat-panel-overview">
   <h2> Overview </h2>
+    {{> "systems/persona/parts/room-modifiers-list.hbs" roomModifiers=roomModifiers}}
+
   {{#each turnOrder as |combatant i|}}
   {{> "systems/persona/parts/character-summary-box.hbs" combatant=combatant token=combatant.token}}
   {{/each}}
