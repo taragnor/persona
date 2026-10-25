@@ -202,9 +202,15 @@ export class CombatPanel extends PersonaPanel {
   }
 
 
-  selectPower() {
-    if (!this.target) {return null;}
-    return PersonaAI.selectPowerSimple(this.target.actor.persona());
+  selectPower() : N<Power> {
+    try {
+      if (!this.target) {return null;}
+      if (this.target.actor.isPCLike()) {return null;}
+      return PersonaAI.selectPowerSimple(this.target.actor.persona());
+    } catch (e) {
+      PersonaError.softFail(e as Error);
+      return null;
+    }
   }
 
   async setTarget(token: UN<PToken>) {
