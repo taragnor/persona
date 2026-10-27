@@ -3530,6 +3530,7 @@ async onKO() : Promise<void> {
 
 async onRevive(this: ValidAttackers) : Promise<void> {
   try {
+    console.log("On revive");
     for (const st of (["curse", "expel"] as const)) {
       if (this.hasStatus(st)) {
         await this.removeStatus(st);

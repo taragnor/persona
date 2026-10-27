@@ -155,8 +155,14 @@ export abstract class DamageSystemBase implements DamageInterface {
     let dmgCalc: U<DamageCalculation>;
     let tempDamageType : N<DamageType> = null;
     const power = powerUsed instanceof PersonaItem && powerUsed.isUsableType() ? powerUsed : undefined;
+    switch (cons.damageSubtype) {
+      case "set-to-const":
+      case "set-to-percent": {
+        return cons;
+      }
+    }
     if (cons.damageType == undefined) {
-      PersonaError.softFail(`Damage type is undefined for ${power?.name ?? "Undefined Power"}`, cons);
+      PersonaError.softFail(`Damage type is undefined for ${power?.name ?? "Undefined Power"} : ${cons.damageSubtype} `, cons);
       return null;
     }
     switch (cons.damageType) {
@@ -176,17 +182,10 @@ export abstract class DamageSystemBase implements DamageInterface {
       tempDamageType = tempDamageType != 'by-power' ? tempDamageType : power.getDamageType(attacker);
     }
     const damageType = tempDamageType as RealDamageType;
-    // let damageType : U<RealDamageType> = cons.damageType != "by-power" ? cons.damageType : "none";
     cons = {
       ...cons,
       damageType,
     };
-    switch (cons.damageSubtype) {
-      case "set-to-const":
-      case "set-to-percent": {
-        return cons;
-      }
-    }
     switch (cons.damageSubtype) {
       case 'low':
       case 'high':
@@ -252,9 +251,11 @@ export abstract class DamageSystemBase implements DamageInterface {
       case 'percentage-current':
       case 'percentage':
       case 'mult-stack':
+      case "set-to-const":
+      case "set-to-percent":
         return cons;
       default:
-        cons.damageSubtype satisfies never;
+        cons satisfies never;
         return null;
     }
 
