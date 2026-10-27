@@ -2,7 +2,7 @@ import { HTMLTools } from "../module/utility/HTMLTools.js";
 
 export const COMBAT_TRIGGER_LIST = [
 	"on-damage",
-	"pre-take-damage",
+	// "pre-take-damage",
 	"on-kill-target",
 	"on-event-start",
 	"on-event-end",
@@ -11,7 +11,7 @@ export const COMBAT_TRIGGER_LIST = [
 	"on-combat-end-dual",
 	"on-combat-start-dual",
 	"on-inflict-status",
-	"pre-inflict-status",
+	// "pre-inflict-status",
   "on-remove-status",
 	"start-turn",
 	"end-turn",
@@ -65,11 +65,17 @@ const CANCEL_CHECK = [
   "check-instant-kill",
 ] as const;
 
+const CANCEL_WITH_EFFECT_CHECK = [
+	"pre-inflict-status",
+	"pre-take-damage",
+] as const;
+
 
 export const TRIGGER_LIST = [
 	...COMBAT_TRIGGER_LIST,
 	...NONCOMBAT_TRIGGER_LIST,
 	...SHARED_TRIGGERS,
+  ...CANCEL_WITH_EFFECT_CHECK,
   ...CANCEL_CHECK,
 ] as const;
 
@@ -81,5 +87,8 @@ export type CombatTriggerTypes = typeof COMBAT_TRIGGER_LIST[number];
 
 export type NonCombatTriggerTypes = typeof NONCOMBAT_TRIGGER_LIST[number];
 
-export type CancelCheck = typeof CANCEL_CHECK[number];
+export type CancelWithEffectsCheck = typeof CANCEL_WITH_EFFECT_CHECK[number];
+
+export type CancelCheck = typeof CANCEL_CHECK[number] | CancelWithEffectsCheck;
+
 

@@ -1161,6 +1161,16 @@ h5.choices-block {
   flex: 10 0 auto;
 }
 
+.room-modifiers {
+  border: 1px solid #555;
+  border-radius: 8px;
+  transition:
+  border-color 0.2s ease,
+  background-color 0.2s ease,
+  box-shadow 0.2s ease;
+}
+
+
 
 .no-wrap {
   flex-wrap: nowrap !important;

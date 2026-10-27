@@ -2169,7 +2169,8 @@ canEquip(this: PC | NPCAlly, item: Weapon | InvItem) : boolean {
     item: item.accessor,
     user: this.accessor,
     triggeringCharacter: this.accessor,
-  } satisfies Situation;
+    triggeringUser: game.user.id,
+  } as const satisfies Situation;
   return !CancelTrigger.cancelCheck(situation, this);
 }
 

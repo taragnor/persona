@@ -212,7 +212,9 @@ namespace TriggeredSituation {
     | LegalTargetCheck
     | NullifyAttackCheck
     | CheckPersonaSwitch
-    | CheckInstantKill ;
+    | CheckInstantKill
+    | PreDamageTrigger
+  ;
 
 
 type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>

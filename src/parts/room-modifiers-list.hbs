@@ -1,8 +1,8 @@
-{{#if roomModifiers}}
-<h4> Room Modifers</h4>
+{{#if (roomModifiers)}}
 <section class="room-modifiers">
+<h4> Room Modifers</h4>
   <div class="room-mods f-row">
-    {{#each roomModifiers as |mod|}}
+    {{#each (roomModifiers) as |mod|}}
     <div class="mod" data-mod-id="{{mod.id}}">
       <span class="tooltip">
         {{#if mod.img}}

@@ -787,6 +787,11 @@ export class PersonaHandleBarsHelpers {
       return 0;
     },
 
+    "roomModifiers": function () : readonly UniversalModifier[] {
+      const combat = PersonaCombat.combat;
+      return combat ? combat.getRoomEffects() : [];
+    },
+
     "scanLevelgte": function (persona: Persona | ValidAttackers, val: number) : boolean {
       if (persona instanceof PersonaActor) {
         persona = persona.persona();

@@ -1,4 +1,4 @@
-import {CancelTrigger} from "../../cancel-check-effect.js";
+import {CancelTrigger, CheckParam} from "../../cancel-check-effect.js";
 import {LocalEffect, OtherEffect, StatusEffect} from "../../config/consequence-types.js";
 import {PersonaSettings} from "../../config/persona-settings.js";
 import {StatusEffectId, statusMap} from "../../config/status-effects.js";
@@ -232,13 +232,18 @@ export class ConsequenceApplier {
       } as const;
       const preDamageSit = {
         ...situation,
+        triggeringUser: game.user.id,
         trigger: "pre-take-damage",
-      } as const;
-      const preCR = (TriggeredEffect.onTrigger(preDamageSit, actor)).finalize();
-      if (preCR.hasCancelRequest()) {
-        ret.push(preCR);
-        return ret;
-      }
+      } as const satisfies TriggeredSituation.Select<"pre-take-damage"> & CheckParam<"pre-take-damage">;
+      const preCancelChecks = CancelTrigger.cancelCheckWithCons(preDamageSit, actor);
+      const preCR = preCancelChecks.CR.finalize();
+      // const preCR = (TriggeredEffect.onTrigger(preDamageSit, actor)).finalize();
+      ret.push(preCR);
+      if (preCancelChecks.cancel) {return ret;}
+      // if (preCR.hasCancelRequest()) {
+      //   ret.push(preCR);
+      //   return ret;
+      // }
       const DamageSit= {
         ...situation,
         trigger: "on-damage",
@@ -854,6 +859,7 @@ export class ConsequenceApplier {
           target: actor.accessor,
           user: actor.accessor,
           triggeringCharacter: actor.accessor,
+          triggeringUser: game.user.id,
         } as const satisfies Situation;
         if (CancelTrigger.cancelCheck(situation, actor)) {
           break;

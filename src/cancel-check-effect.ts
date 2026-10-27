@@ -1,6 +1,7 @@
 import {PersonaSettings} from "./config/persona-settings.js";
-import {CancelCheck, Trigger} from "./config/triggers.js";
+import {CancelCheck, CancelWithEffectsCheck, Trigger} from "./config/triggers.js";
 import {PersonaActor} from "./module/actor/persona-actor.js";
+import {CombatResult} from "./module/combat/combat-result.js";
 import {ConditionalEffectC} from "./module/conditionalEffects/conditional-effect-class.js";
 import {ConditionalEffectPrinter} from "./module/conditionalEffects/conditional-effect-printer.js";
 import {TriggeredEffect} from "./module/triggered-effect.js";
@@ -8,7 +9,8 @@ import {TriggeredEffect} from "./module/triggered-effect.js";
 export class CancelTrigger {
 
   /** returns true on cancel */
-  static cancelCheck<T extends CancelCheck>(situation: CheckParam<T>, actor: U<ValidAttackers>) : boolean {
+  static cancelCheck<const T extends CancelCheck>(situation: TriggeredSituation.Select<T> & CheckParam<T>, actor: U<ValidAttackers>) : boolean {
+  // static cancelCheck<T extends CancelCheck>(situation: CheckParam<T>, actor: U<ValidAttackers>) : boolean {
     const situationCopy = {
       ...(situation satisfies CheckParam<T>),
       triggeringUser: game.user.id,
@@ -16,9 +18,15 @@ export class CancelTrigger {
     const triggers = this.getTriggerList(situationCopy.trigger, actor, situationCopy);
     return triggers
       .filter ( trig => trig.canCancel())
-      .filter ( trig => trig.testPreconditions(situation))
-      .length > 0;
+      .some ( trig => trig.testPreconditions(situation));
   }
+
+  static cancelCheckWithCons<const T extends CancelWithEffectsCheck> (situation: TriggeredSituation.Select<T> & CheckParam<T>, actor: U<ValidAttackers>) : {cancel : boolean, CR: CombatResult} {
+      const CR = TriggeredEffect.onTrigger(situation, actor);
+    const cancel = this.cancelCheck(situation, actor);
+    return { CR, cancel };
+  }
+
 
   private static _cancelCheckCEs<const T extends CancelCheck>(situation: CheckParam<T>, actor : U<ValidAttackers>) : ConditionalEffectC[] {
     const situationCopy = {
@@ -51,5 +59,4 @@ export class CancelTrigger {
 
 }
 
-type CheckParam<T extends CancelCheck=CancelCheck> = PartialKeys<TriggeredSituation.CancelSituation, "triggeringUser"> & {trigger: T};
-
+export type CheckParam<T extends CancelCheck=CancelCheck> = PartialKeys<TriggeredSituation.CancelSituation, "triggeringUser"> & {trigger: T};

@@ -64,6 +64,9 @@ import {PersonaTokenObject} from "./canvas/persona-token-object.js";
 import { PersonaFoundryUser } from "./persona-foundry-user.js";
 import {PersonaCardSheet} from "./item/sheets/skill-card-sheet.js";
 import {PersonaIdleDetector} from "./persona-idle-detector.js";
+import {chatFix} from "./utility/f14-chat-fix.js";
+
+
 
 export const PersonaSockets = new SocketManager ("persona", true);
 
@@ -71,6 +74,8 @@ function registerDataModels() {
 	CONFIG.Actor.dataModels = ACTORMODELS;
 	CONFIG.Item.dataModels = ITEMMODELS;
 }
+
+chatFix();
 
 function registerDocumentClasses() {
   CONFIG.Actor.documentClass = PersonaActor;
@@ -219,4 +224,8 @@ Hooks.on("renderChatMessageHTML", (msg, html) => {
 //@ts-expect-error adding to global
 window.seededRandom = SeededRandom;
 
+
+function ChatFix() {
+  throw new Error("Function not implemented.");
+}
 

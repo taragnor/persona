@@ -479,10 +479,10 @@ export class RandomEncounter {
       weight: baseTough + (hard ?? 0),
     }, {
       item: "treasure",
-      weight: 1 + (treasure?? 0),
+      weight: 0.5 + (treasure?? 0),
     }, {
       item: "mixed",
-      weight: 3 + (mixed ?? 0),
+      weight: 2 + (mixed ?? 0),
     },
       ] as const;
     const choice =  weightedChoice(choices);
