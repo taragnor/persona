@@ -597,6 +597,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
   }
 
   async startCombatantTurn( combatant: Combatant<PersonaActor>){
+    combatant?.actor?.clearCache();
     if (!PersonaCombat.isPersonaCombatant(combatant)) {return;}
     if (!combatant.defeated) {
       void canvas.animatePan( {...combatant.token, duration: 750});

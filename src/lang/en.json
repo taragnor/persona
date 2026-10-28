@@ -1003,6 +1003,7 @@
 	"persona.triggers.check-nullify-attack": "Check (Nullify Attack)",
 	"persona.triggers.check-persona-switch": "Check (Persona Switch Legal)",
 	"persona.triggers.check-instant-kill": "Check (Instant Kill)",
+	"persona.triggers.check-social-powers": "Check (Social Powers Allowed)",
 	"persona.triggers.get-added-power-tags": "Attack Start (generate Extra Power Tags)",
 	"persona.triggers.on-open-door": "A door opens",
 	"persona.triggers.on-inflict-status": "Inflict a Status",

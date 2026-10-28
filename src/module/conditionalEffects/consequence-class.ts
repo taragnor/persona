@@ -336,6 +336,7 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
     return false;
   }
 
+
 }
 
 const sourceCache = new WeakMap<ConditionalEffectComponent, Sourced<object>> ();

@@ -1,5 +1,6 @@
 import { Consequence, ConsequenceAmountV2 } from "../../config/consequence-types.js";
 import {NonDeprecatedModifierTarget, NonDeprecatedModifierType} from "../../config/item-modifiers.js";
+import {CancelCheck, Trigger} from "../../config/triggers.js";
 import {PersonaActor} from "../actor/persona-actor.js";
 import {ModifierV2Target} from "../bonus-calc.js";
 import {ModifierContainer, PersonaItem} from "../item/persona-item.js";
@@ -271,24 +272,30 @@ export class ConditionalEffectC {
 
   _grantsBonusType( btype : ModifierV2Target) : boolean {
     return this.consequences.some(cons=> cons.getGrantedBonusesV2() == btype);
-    // return this.consequences
-    //   .some(cons => cons.cons.type == "modifier-v2"
-    //     && cons.cons.modTarget== btype
-    //   );
   }
 
 
   private _conditionsRaw(): ConditionalEffect["conditions"] {
-    // return this.conditions.slice();
     return this.conditions.map(cond => cond.cond);
   }
 
   private _consequencesRaw(): ConditionalEffect["consequences"] {
-    // return this.consequences.slice();
     return this.consequences.map(cons => cons.cons);
   }
 
   get conditions() {
+    const rs = this.findRealSource();
+    if (rs && rs instanceof PersonaItem && rs._social_focus) {
+      const pre = this._preconditions.slice();
+      const newPre = new PreconditionC( {
+        "type": "boolean",
+        booleanState: true,
+        "boolComparisonTarget": "special-boolean",
+        "specialType": "social-abilities-allowed"
+      }, this);
+      pre.push(newPre);
+      return pre;
+    }
     return this._preconditions;
   }
 
@@ -360,6 +367,15 @@ export class ConditionalEffectC {
     return this.consequences;
   }
 
+triggersOn( trig: Trigger) : boolean {
+  return this.conditions
+    .some (cond => cond.isTriggeredCondition(trig)
+      // cond.cond.type === 'on-trigger'
+      // && cond.cond.trigger == trig);
+    );
+}
+
+
   static failedPreconditions(conditions: readonly PreconditionC[], situation: Situation): PreconditionC[];
   static failedPreconditions(conditions: readonly SourcedPrecondition[], situation: Situation, ownershipInfo: EffectOwnershipData) : SourcedPrecondition[];
   static failedPreconditions(conditions: readonly (PreconditionC | SourcedPrecondition)[], situation: Situation, ownershipInfo?: EffectOwnershipData) {
@@ -386,7 +402,7 @@ export class ConditionalEffectC {
     return this.conditions;
   }
 
-  checkForCancelEffect(situation: Situation) : boolean {
+  checkForCancelEffect<const T extends CancelCheck>(situation: TriggeredSituation.Select<T>) : boolean {
     return this.canCancel() && this.testPreconditions(situation);
   }
 

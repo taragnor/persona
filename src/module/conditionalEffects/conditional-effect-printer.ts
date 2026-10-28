@@ -511,6 +511,8 @@ export class ConditionalEffectPrinter {
           const mod = PersonaDB.getSceneAndRoomModifiers().find(x=> x.id == cond.roomModifierId)?.displayedName ?? "ERROR (room-has-modifier)" ;
           return `Room Has Room Trait: ${mod}`;
         }
+        case "social-abilities-allowed":
+          return "Social abilities allowed";
         default:
           cond satisfies never;
           return "ERROR (special-boolean)";

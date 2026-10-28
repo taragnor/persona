@@ -1506,6 +1506,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     if (options?.omitPowers) {return false;}
     if (options?.omitTalents) {return false;}
     if (options?.omitTags) {return false;}
+    if (options?.omitSocial) {return false;}
     return true;
 
   }
@@ -1625,6 +1626,7 @@ export interface MainModifierOptions {
   omitTalents ?: boolean;
   omitTags ?: boolean;
   omitAuras ?: boolean;
+  omitSocial ?: boolean;
 }
 
 type FailReason = string;

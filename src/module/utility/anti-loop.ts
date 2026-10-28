@@ -47,3 +47,87 @@ interface LockObjectOptions {
   maxDepth?: number;
   suppressMessages?: boolean;
 };
+
+
+
+
+export class RecursionControl {
+  static lockedObjects : WeakMap<object, number> = new WeakMap(); //number is depth of recursion
+
+  private maxDepth: number = 1;
+  private _lockObject: object;
+
+  constructor (lockObject: object, options ?: RecursionControlOptions) {
+    this._lockObject = lockObject;
+    // RecursionControl.lockedObjects.set(this._lockObject, 0);
+    this.maxDepth = options?.maxDepth ?? 1;
+  }
+
+  canLock () : boolean {
+    const locks = RecursionControl.locksOnObject(this._lockObject);
+    return locks < this.maxDepth;
+  }
+
+  lock() {
+    RecursionControl.lockObject(this._lockObject);
+  }
+
+  release() {
+    RecursionControl.releaseLock(this._lockObject);
+  }
+
+  altFn<T>(baseFn: () =>T, altFn: () => T) : T {
+    if (this.canLock() ) {
+      try {
+        this.lock();
+        return baseFn();
+      } finally {
+        this.release();
+      }
+    } else {
+      try {
+        this.lock();
+        return altFn();
+      } finally {
+        this.release();
+      }
+    }
+  }
+
+  /** runs an alt function if the first object exceeds maxlocks*/
+  static altFunction<T>(lockObject: object, baseFn: () => T, altFn: () => T, options ?: RecursionControlOptions) : T {
+    const control = new RecursionControl(lockObject, options);
+    return control.altFn(baseFn, altFn);
+  }
+
+  static locksOnObject (lockObject: object): number {
+    return this.lockedObjects.get(lockObject) ?? 0;
+  }
+
+  static lockObject(lockObject: object) : number {
+    let locks = this.lockedObjects.get(lockObject) ?? 0;
+    locks += 1;
+    this.lockedObjects.set(lockObject, locks);
+    return locks;
+  }
+
+  static releaseLock (lockObject: object) : number {
+    let locks = this.lockedObjects.get(lockObject) ?? 0;
+    if (locks <= 0) {
+      Debug(lockObject);
+      const name = "name" in lockObject?  lockObject.name : "unknown";
+      throw new Error(`Somehow object is not locked but lock is being released:  ${name as string}`);
+    }
+    locks -= 1;
+    this.lockedObjects.set(lockObject, locks);
+    return locks;
+  }
+
+
+
+}
+
+type RecursionControlOptions = {
+  maxDepth ?: number;
+
+}

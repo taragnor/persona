@@ -51,6 +51,7 @@ import {NumberTools} from "./utility/numberTools.js";
 import {TagManager} from "./tag-manager.js";
 import {CalculationV2} from "./utility/calculation-v2.js";
 import {CombatPanel} from "./panels/combat-panel.js";
+import {Metaverse} from "./metaverse.js";
 
 
 export class PersonaHandleBarsHelpers {
@@ -788,8 +789,9 @@ export class PersonaHandleBarsHelpers {
     },
 
     "roomModifiers": function () : readonly UniversalModifier[] {
-      const combat = PersonaCombat.combat;
-      return combat ? combat.getRoomEffects() : [];
+      return Metaverse.activeRoomModifiers();
+      // const combat = PersonaCombat.combat;
+      // return combat ? combat.getRoomEffects() : [];
     },
 
     "scanLevelgte": function (persona: Persona | ValidAttackers, val: number) : boolean {

@@ -63,6 +63,7 @@ const CANCEL_CHECK = [
   "check-nullify-attack",
   "check-persona-switch",
   "check-instant-kill",
+  "check-social-powers",
 ] as const;
 
 const CANCEL_WITH_EFFECT_CHECK = [

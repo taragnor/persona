@@ -550,6 +550,7 @@ function triggerComparison(condition: PreconditionType & {type: "on-trigger"}, s
     case "on-attack-nullified":
     case "check-nullify-attack":
     case "check-persona-switch":
+    case "check-social-powers":
     case "check-instant-kill":
     case "on-switch-persona":
       return true;
@@ -1730,6 +1731,11 @@ function specialComparison(condition: PreconditionType & {type: "boolean", boolC
       if (!region) {return undefined;}
       return region.allRoomEffects
       .some (eff=> eff.id == condition.roomModifierId);
+    }
+    case "social-abilities-allowed": {
+      if (!checkSituationProp(situation, "user")) {return undefined;}
+      const user = PersonaDB.findActor(situation.user);
+      return !Metaverse.socialPowersBlocked(user);
     }
     default:
       condition satisfies never;

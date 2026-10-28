@@ -614,12 +614,38 @@ export class Metaverse {
   }
 
   static activeRoomModifiers() : readonly UniversalModifier[] {
-    if (PersonaCombat.combat) {
-      return PersonaCombat.combat.getRoomEffects();
-    } else {
-      return Metaverse.getRegion()?.allRoomEffects ?? [];
+    const phase = this.getPhase();
+    switch (phase) {
+      case "downtime":
+        return [];
+      case "combat":
+      case "exploration":
+      case "postcombat":
+      if (PersonaCombat.combat) {
+        return PersonaCombat.combat.getRoomEffects();
+      } else {
+        return Metaverse.getRegion()?.allRoomEffects ?? [];
+      }
+      default:
+        phase satisfies never;
+        return [];
     }
   }
+
+  static socialPowersBlocked(actor: ValidAttackers) : boolean {
+    const sit = {
+      trigger: "check-social-powers",
+      triggeringUser: game.user.id,
+      user: actor.accessor,
+    } as const satisfies Situation;
+    //getting all modifiers here casues an infinite loop;
+    const modifiers = this.activeRoomModifiers()
+      .flatMap(ce => ce.getTriggeredEffects(null))
+      .filter ( ce=> ce.triggersOn("check-social-powers"));
+    return modifiers .some (ce => ce.checkForCancelEffect(sit));
+  }
+
+
 
 }
 

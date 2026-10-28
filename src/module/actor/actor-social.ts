@@ -4,6 +4,7 @@ import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class
 import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
 import {resolveActorIdOrTarot} from "../conditionalEffects/preconditions.js";
 import {PersonaItem} from "../item/persona-item.js";
+import {Metaverse} from "../metaverse.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaSounds} from "../persona-sounds.js";
@@ -243,19 +244,28 @@ export class ActorSocial <T extends PersonaActor> {
     return this.caches.slinkData.value;
   }
 
+  private _canUseSocialFocii(linkLevel: number, focus: Focus) : boolean {
+    function meetsSL(linkLevel: number, focus:Focus) {
+      return linkLevel >= focus.requiredLinkLevel();
+    };
+    if (!this.actor.isValidCombatant()) {return false;}
+    return meetsSL(linkLevel, focus);
+  }
+
   private _refreshSocialLinkData() : readonly SocialLinkData[] {
     if (!this.actor.isPC() || !PersonaDB.isLoaded) {return [] as SocialLinkData[];}
     return this.actor.system.social.flatMap(({linkId, linkLevel, inspiration, currentProgress, relationshipType}) => {
       const npc = PersonaDB.getActor(linkId);
       if (!npc) {return [];}
-      function meetsSL(linkLevel: number, focus:Focus) {
-        return linkLevel >= focus.requiredLinkLevel();
-      };
+      // function meetsSL(linkLevel: number, focus:Focus) {
+      //   return linkLevel >= focus.requiredLinkLevel();
+      // };
       const isDating = relationshipType == "DATE";
       relationshipType = relationshipType ? relationshipType : npc.social.baseRelationship;
       if (npc.isNPC()) {
         const allFocii = npc.social.getSocialFocii_NPC(npc);
-        const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
+        // const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
+        const qualifiedFocii = allFocii.filter( f=> this._canUseSocialFocii(linkLevel, f));
         return [{
           currentProgress,
           linkLevel,
@@ -275,7 +285,7 @@ export class ActorSocial <T extends PersonaActor> {
             return [];
           }
           const allFocii = personalLink.social.getSocialFocii_PC(personalLink, npc as PC);
-          const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
+          const qualifiedFocii = allFocii.filter( f=> this._canUseSocialFocii(linkLevel, f));
           return [{
             currentProgress,
             linkLevel,
@@ -294,7 +304,7 @@ export class ActorSocial <T extends PersonaActor> {
             return [];
           }
           const allFocii = teammate.social.getSocialFocii_PC(teammate, npc as PC);
-          const qualifiedFocii = allFocii.filter( f=> meetsSL(linkLevel, f));
+          const qualifiedFocii = allFocii.filter( f=> this._canUseSocialFocii(linkLevel, f));
           return [{
             currentProgress,
             linkLevel,
@@ -508,9 +518,14 @@ export class ActorSocial <T extends PersonaActor> {
 
   private _getAllSocialFocii() : readonly Focus[] {
     if (!this.actor.isPC()) {return [];}
-    const x = this.socialLinks()
+    const focii = this.socialLinks()
       .flatMap( link => link.focii);
-    return x;
+    for (const f of focii) {
+      if (!f._social_focus) {
+        f._social_focus = true;
+      }
+    }
+    return focii;
   }
 
   async createSocialLink(this: ActorSocial<PC>, npc: SocialLink) {

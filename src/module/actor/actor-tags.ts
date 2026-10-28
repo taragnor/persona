@@ -1,5 +1,6 @@
 import {InternalCreatureTag, PersonaTag} from "../../config/creature-tags.js";
 import {FullTag, TagManager} from "../tag-manager.js";
+import {RecursionControl} from "../utility/anti-loop.js";
 import {TimedCache} from "../utility/cache.js";
 import {PersonaActor} from "./persona-actor.js";
 
@@ -31,7 +32,20 @@ export class ActorTagManager<AType extends PersonaActor> extends TagManager<TagT
   }
 
   tagList(_context?: null ) : (Tag | InternalCreatureTag)[] {
-    return this.cache.tagList.value;
+    return RecursionControl.altFunction( this.actor,
+      () => this.cache.tagList.value,
+      () => this._simpleTagList(),
+      {maxDepth: 5}
+    );
+    // return this.cache.tagList.value;
+  }
+
+  _simpleTagList() : (Tag | InternalCreatureTag)[] {
+    console.log(`Using simple Tag List for ${this.actor.name}`);
+    const list : (Tag["id"] | InternalCreatureTag)[] = this.idCheck(this.system.creatureTags.slice());
+     const replacedList = this.idCheck(list);
+    return replacedList
+      .map( tag=> TagManager.searchForPotentialTagMatch(tag) ?? (tag as InternalCreatureTag));
   }
 
   _tagList() : (Tag | InternalCreatureTag)[] {

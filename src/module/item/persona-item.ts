@@ -59,6 +59,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   static LONG_CACHE = 500000 as const;
   private _tags = new ItemTagManager(this);
+  _social_focus : boolean = false; //ghetto way of figuring this out, changing this variable when its given as a socail power
 
   static #cache =  {
     basicPCPowers: undefined as readonly Power[] | undefined,
@@ -2106,8 +2107,9 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     }
     const effects = this.itemBase.system.effects;
     proxyItem = proxyItem ? proxyItem : this;
-    return ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
+    const eff =  ConditionalEffectManager.getEffects(effects, proxyItem, sourceActor, this)
       .filter (ce => ce.isMainModifier);
+    return eff;
   }
 
   getEffects(this: ItemModifierContainer, sourceActor : PersonaActor | null, options : GetEffectsOptions = {}): readonly ConditionalEffectC[] {
@@ -2259,10 +2261,11 @@ hasAuraEffects(this: ItemModifierContainer, sourceActor: PersonaActor | null) : 
   return this.getAuraEffects(sourceActor).length > 0;
 }
 
-static triggersOn( eff: ConditionalEffectC, trig: Trigger) : boolean {
-  return eff.conditions
-    .some (cond => cond.cond.type === 'on-trigger' && cond.cond.trigger == trig);
-}
+// static triggersOn( eff: ConditionalEffectC, trig: Trigger) : boolean {
+//   return eff.triggersOn(trig);
+//   // return eff.conditions
+//   //   .some (cond => cond.cond.type === 'on-trigger' && cond.cond.trigger == trig);
+// }
 
 triggersOn(this: ItemModifierContainer, trig: Trigger)  :boolean {
   const effects= this.getTriggeredEffects(null);

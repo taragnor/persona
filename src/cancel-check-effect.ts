@@ -17,8 +17,9 @@ export class CancelTrigger {
     } satisfies TriggeredSituation.CancelSituation;
     const triggers = this.getTriggerList(situationCopy.trigger, actor, situationCopy);
     return triggers
-      .filter ( trig => trig.canCancel())
-      .some ( trig => trig.testPreconditions(situation));
+    .some( trig=> trig.checkForCancelEffect(situation));
+      // .filter ( trig => trig.canCancel())
+      // .some ( trig => trig.testPreconditions(situation));
   }
 
   static cancelCheckWithCons<const T extends CancelWithEffectsCheck> (situation: TriggeredSituation.Select<T> & CheckParam<T>, actor: U<ValidAttackers>) : {cancel : boolean, CR: CombatResult} {

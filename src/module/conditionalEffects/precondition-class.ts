@@ -3,6 +3,7 @@ import {PreconditionConverter} from "../migration/convertPrecondition.js";
 import {ConditionalEffectComponent} from "./conditional-component.js";
 import {ConditionalEffectC} from "./conditional-effect-class.js";
 import {ConditionalEffectManager} from "./conditional-effect-manager.js";
+import { Trigger } from "../../config/triggers.js";
 
 export class PreconditionC<C extends NonDeprecatedPrecondition = NonDeprecatedPrecondition> extends ConditionalEffectComponent {
   private _cond: Readonly<C>;
@@ -62,12 +63,32 @@ export class PreconditionC<C extends NonDeprecatedPrecondition = NonDeprecatedPr
         return ["may require change to defensive trigger"];
       }
     }
+    if (this.isTriggeredCondition("check-social-powers")) {
+      const checks = this._limitedLoopChecks(cond);
+      if (checks.length > 0) {return checks;}
+    }
     return [];
   }
 
-  static isTriggeredCondition(cond: ConditionalEffect["conditions"][number]): boolean {
-    return (cond.type == "on-trigger");
+  private _limitedLoopChecks(cond: NonDeprecatedPrecondition) : string[] {
+    if (cond.type == "boolean") {
+      if (cond.boolComparisonTarget == "has-tag") {
+        return ["Can't check tags in limited context"];
+      }
+    }
+    return [];
   }
+
+  isTriggeredCondition(triggerType ?: Trigger) : boolean{
+    return PreconditionC.isTriggeredCondition(this.cond as  NonDeprecatedPrecondition, triggerType);
+  }
+
+  static isTriggeredCondition(cond: ConditionalEffect["conditions"][number], triggerType ?: Trigger): boolean {
+    if (cond.type != "on-trigger" ) {return false;}
+    if (!triggerType) {return true;}
+    return triggerType == cond.trigger;
+  }
+
 
 
 }

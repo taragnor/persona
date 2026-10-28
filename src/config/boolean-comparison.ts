@@ -158,7 +158,8 @@ const SPECIAL_BOOLEAN_SUBLIST_LIST = [
   "farming-can-plant",
   "room-has-secret",
   "room-has-hazard",
-  "room-has-modifier"
+  "room-has-modifier",
+  "social-abilities-allowed",
 ] as const;
 
 export const COMBAT_COMPARISON_SUBLIST = HTMLTools.createLocalizationObject(COMBAT_COMPARISON_SUBLIST_LIST, "persona.preconditions.comparison");
@@ -621,7 +622,12 @@ type SpecialComparion = {
 } & (
   FarmingAction
   | RoomQuery
+  | SocialAllowedComparison
 );
+
+type SocialAllowedComparison = {
+  specialType: "social-abilities-allowed",
+};
 
 type RoomQuery = {
   specialType:"room-has-secret" | "room-has-hazard",

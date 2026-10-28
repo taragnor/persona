@@ -213,6 +213,7 @@ namespace TriggeredSituation {
     | NullifyAttackCheck
     | CheckPersonaSwitch
     | CheckInstantKill
+    | CheckSocialPowers
     | PreDamageTrigger
   ;
 
@@ -238,6 +239,12 @@ type UnhandledTriggers = Exclude<Trigger, TriggerTypes["trigger"]>
     {
       trigger: "check-persona-switch",
     }
+
+  type CheckSocialPowers = SituationComponent.User & 
+    {
+      trigger: "check-social-powers";
+    };
+
 
   type CheckInstantKill = SituationComponent.User &
     SituationComponent.Targetted & Partial<SituationComponent.Attacker> & SituationComponent.TriggeringCharacter & 

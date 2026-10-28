@@ -50,7 +50,7 @@ import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-s
 import {PersonaCompendium} from "../persona-compendium.js";
 import {ActorHooks} from "./actor-hooks.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
-import {antiLoop} from "../utility/anti-loop.js";
+import {antiLoop, lockObject} from "../utility/anti-loop.js";
 import {PersonaAE, StatusDuration} from "../persona-ae.js";
 import {PowerLearningSystem} from "../power-learning.js";
 import {Farming} from "./farming.js";
@@ -1452,10 +1452,6 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
         .emptyCheck()
         ?.toMessage("Response to acquiring Status", this);
       if (ret.hasCancelRequest()) {return false;}
-      // const instantKillStatus : StatusEffectId[] = ["curse", "expel"];
-      // if ( instantKillStatus.some(status => id == status) && this.isValidCombatant()) {
-      //   await this.setHP(0);
-      // }
     }
     const newState = {
       ...stateData,
@@ -1737,10 +1733,11 @@ export class PersonaActor extends Actor<typeof ACTORMODELS, PersonaItem, Persona
 
   _actorMainModifiers(options ?: MainModifierOptions): readonly ModifierContainer[] {
     const tags = (options && options.omitTags) ? [] : this.tags.realTags();
+    const social = (options && options.omitSocial) ? [] : this.social.getAllSocialFocii();
     const ret : readonly ModifierContainer[] = [
       ...this.focii,
       ...this.passiveItems(),
-      ...this.social.getAllSocialFocii(),
+      ...social,
       ...this.equippedItems(),
       ...tags,
       ...this.statusModifiers(),
@@ -2353,12 +2350,12 @@ async expendItem(item: Carryable, amountUsed = 1) {
   return this.removeItem(item, amountUsed);
 }
 
-roomModifiers() : UniversalModifier[] {
-  return (game.combats.contents as PersonaCombat[])
-    .filter(combat => combat.combatants.contents
-      .some( comb => comb.actor == this)
-    ).flatMap( combat=> combat.getRoomEffects());
-}
+// roomModifiers() : UniversalModifier[] {
+//   return (game.combats.contents as PersonaCombat[])
+//     .filter(combat => combat.combatants.contents
+//       .some( comb => comb.actor == this)
+//     ).flatMap( combat=> combat.getRoomEffects());
+// }
 
 /** used for determining all out attack viability*/
 isStanding() : boolean {
@@ -2545,7 +2542,7 @@ isFading(this: ValidAttackers): boolean {
 triggersOn( trigger : Trigger, type : "standard" | "defensive") : ConditionalEffectC[] {
   const triggers=  type == "standard" ? this.triggers : this.defensiveTriggers;
   // const triggers= this.triggers;
-  return triggers.filter( CE => PersonaItem.triggersOn(CE, trigger));
+  return triggers.filter( CE => CE.triggersOn(trigger));
 }
 
 get defensiveTriggers() : ConditionalEffectC [] {
@@ -3530,7 +3527,7 @@ async onKO() : Promise<void> {
 
 async onRevive(this: ValidAttackers) : Promise<void> {
   try {
-    console.log("On revive");
+    console.debug(`On revive for ${this.name}`);
     for (const st of (["curse", "expel"] as const)) {
       if (this.hasStatus(st)) {
         await this.removeStatus(st);
@@ -3554,6 +3551,7 @@ async onRevive(this: ValidAttackers) : Promise<void> {
 }
 
 get tagList() : (Tag | InternalCreatureTag)[] {
+  //need to put a lock on this so it won't keep endlessly recursing
   return this.tags.tagList();
 }
 
