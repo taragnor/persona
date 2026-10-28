@@ -1,8 +1,10 @@
 import {InternalCreatureTag, PersonaTag} from "../config/creature-tags.js";
+import {PersonaSettings} from "../config/persona-settings.js";
 import {Persona} from "./persona-class.js";
 import {FullTag, TagManager} from "./tag-manager.js";
 import {RecursionControl} from "./utility/anti-loop.js";
 import {TimedCache} from "./utility/cache.js";
+import {DebugTools} from "./utility/debug.js";
 
 export class PersonaTagManager<PType extends Persona> extends TagManager<TagType> {
   private persona: PType;
@@ -37,7 +39,10 @@ export class PersonaTagManager<PType extends Persona> extends TagManager<TagType
   }
 
   _simpleTagList() : (PersonaTag | Tag["id"] | InternalCreatureTag)[]  {
-    console.log(`Using simple Tag List for Persona ${this.persona.name}`);
+    if (PersonaSettings.debugMode()) {
+      console.log(`Using simple Tag List for Persona ${this.persona.name}`);
+      Debug(DebugTools.stackTrace());
+    }
     type ret = (PersonaTag | Tag["id"] | InternalCreatureTag)[];
     const sources = [
       ...this.source.system.combat.personaTags.slice() as ret,
