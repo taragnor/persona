@@ -1,6 +1,7 @@
 import {InternalCreatureTag, PersonaTag} from "../config/creature-tags.js";
 import {Persona} from "./persona-class.js";
 import {FullTag, TagManager} from "./tag-manager.js";
+import {RecursionControl} from "./utility/anti-loop.js";
 import {TimedCache} from "./utility/cache.js";
 
 export class PersonaTagManager<PType extends Persona> extends TagManager<TagType> {
@@ -27,7 +28,33 @@ export class PersonaTagManager<PType extends Persona> extends TagManager<TagType
   get user() { return this.persona.user; }
 
   tagListPartial() : (PersonaTag | Tag["id"] | InternalCreatureTag)[] {
-    return this.cache.value;
+    return RecursionControl.altFunction(this.persona,
+      () =>  this.cache.value,
+      () => this._simpleTagList(),
+      {maxDepth: 5}
+    );
+    // return this.cache.value;
+  }
+
+  _simpleTagList() : (PersonaTag | Tag["id"] | InternalCreatureTag)[]  {
+    console.log(`Using simple Tag List for Persona ${this.persona.name}`);
+    type ret = (PersonaTag | Tag["id"] | InternalCreatureTag)[];
+    const sources = [
+      ...this.source.system.combat.personaTags.slice() as ret,
+      ...this.source.system.creatureTags,
+      ...this._autoTags(),
+      ...this.userTypeTags(),
+    ];
+    const base = ([] as ret)
+      .pushUnique(...this.idCheck(sources));
+    const extraTags = base.map(tag => TagManager.searchForPotentialTagMatch(tag))
+      .filter (x=> x != undefined)
+    //this maybe should be user instead of source
+      .flatMap( tag=> tag.tags["tagListRaw"](this.source)) ;
+    if (extraTags.length == 0) {return this.idCheck(base);}
+    const combinedTags = base.slice();
+    combinedTags.pushUnique(...this.idCheck(extraTags) as TagType[]);
+    return this.idCheck(combinedTags);
   }
 
   _tagListPartial() : (PersonaTag | Tag["id"] | InternalCreatureTag)[] {
@@ -36,8 +63,8 @@ export class PersonaTagManager<PType extends Persona> extends TagManager<TagType
       ...this.source.system.combat.personaTags.slice() as ret,
       ...this.source.system.creatureTags,
       ...this._autoTags(),
-      ...this._getConferredTags(),
       ...this.userTypeTags(),
+      ...this._getConferredTags(),
     ];
     const base = ([] as ret)
       .pushUnique(...this.idCheck(sources));

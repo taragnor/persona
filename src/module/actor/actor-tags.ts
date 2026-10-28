@@ -43,7 +43,12 @@ export class ActorTagManager<AType extends PersonaActor> extends TagManager<TagT
   _simpleTagList() : (Tag | InternalCreatureTag)[] {
     console.log(`Using simple Tag List for ${this.actor.name}`);
     const list : (Tag["id"] | InternalCreatureTag)[] = this.idCheck(this.system.creatureTags.slice());
-     const replacedList = this.idCheck(list);
+    if (this.actor.isValidCombatant()) {
+      const p = this.actor.persona();
+      const personaTags = p.tags.tagListPartial();
+      list.pushUnique(...personaTags as TagType[]);
+    }
+    const replacedList = this.idCheck(list);
     return replacedList
       .map( tag=> TagManager.searchForPotentialTagMatch(tag) ?? (tag as InternalCreatureTag));
   }
