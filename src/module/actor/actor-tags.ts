@@ -1,4 +1,5 @@
 import {InternalCreatureTag, PersonaTag} from "../../config/creature-tags.js";
+import {PersonaSettings} from "../../config/persona-settings.js";
 import {FullTag, TagManager} from "../tag-manager.js";
 import {RecursionControl} from "../utility/anti-loop.js";
 import {TimedCache} from "../utility/cache.js";
@@ -41,7 +42,9 @@ export class ActorTagManager<AType extends PersonaActor> extends TagManager<TagT
   }
 
   _simpleTagList() : (Tag | InternalCreatureTag)[] {
-    console.log(`Using simple Tag List for ${this.actor.name}`);
+    if (PersonaSettings.debugMode()) {
+      console.log(`Using simple Tag List for ${this.actor.name}`);
+    }
     const list : (Tag["id"] | InternalCreatureTag)[] = this.idCheck(this.system.creatureTags.slice());
     if (this.actor.isValidCombatant()) {
       const p = this.actor.persona();
