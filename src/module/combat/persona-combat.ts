@@ -603,12 +603,12 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
       void canvas.animatePan( {...combatant.token, duration: 750});
     }
     const actor = combatant.actor;
-    await actor.voicelines.onEvent( "on-turn-start");
     if (!game.user.isGM && actor.isOwner) {
       await this.panel.activate(true);
       await this.panel.setTarget(combatant.token);
     }
     if (!game.user.isGM) {return;}
+    await actor.voicelines.onEvent( "on-turn-start");
     await this.resetBatonStates();
     if (await this.checkEndCombat() == true) {
       return;

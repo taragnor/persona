@@ -4,6 +4,7 @@ import {PersonaCombat} from "../combat/persona-combat.js";
 import {GENERAL_COMBATANT_VOICE_TRIGGERS} from "../navigator/nav-voice-lines.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
+import {PersonaSockets} from "../persona.js";
 import {randomSelect} from "../utility/array-tools.js";
 import {sleep} from "../utility/async-wait.js";
 import {PersonaActor} from "./persona-actor.js";
@@ -11,7 +12,7 @@ import {PersonaActor} from "./persona-actor.js";
 export class ActorVoiceLines {
   private actor: PersonaActor;
 
-  private nowPlaying: boolean = false;
+  private static nowPlaying: boolean = false;
 
   constructor (actor: PersonaActor) {
     this.actor = actor;
@@ -56,7 +57,7 @@ export class ActorVoiceLines {
 
   private async playVoice(trigger: keyof typeof GENERAL_COMBATANT_VOICE_TRIGGERS, options : VoiceLineOptions =  {}) : Promise<boolean> {
     try {
-      if (this.nowPlaying) {return false;}
+      if (ActorVoiceLines.nowPlaying) {return false;}
       if (!PersonaSettings.get("navigatorVoiceLines")) {
         return false;
       }
@@ -93,24 +94,36 @@ export class ActorVoiceLines {
     } catch (e) {
       Debug(e);
       PersonaError.softFail("Error in Voicelines", e);
-      this.nowPlaying = false;
       return false;
     }
   }
 
   private async _playVoice(fileName: string, selfOnly: boolean = false) : Promise<void> {
     try {
-      if (this.nowPlaying) {return;}
-      this.nowPlaying = true;
       await ActorVoiceLines.playVoice(fileName, selfOnly);
     } catch (e) {
       PersonaError.softFail(`Erorr with sound playback : ${fileName}`, e as Error);
     }
-    this.nowPlaying = false;
+  }
+
+  static sendGMSoundRequest(fileName: string) {
+    const gmId = game.users.find(x=> x.isGM && x.active)?.id;
+    if (!gmId) {return;}
+    PersonaSockets.simpleSend("GM_SOUND_REQUEST", {fileName}, [gmId]);
+  }
+
+  static onRecieveRequest(data: SocketMessage["GM_SOUND_REQUEST"]) {
+    void this.playVoice(data.fileName);
   }
 
   static async playVoice(fileName: string, selfOnly: boolean = false) : Promise<void> {
+    if (this.nowPlaying) {return;}
+    if (!selfOnly && !game.user.isGM) {
+      this.sendGMSoundRequest(fileName);
+      return;
+    }
     try {
+      this.nowPlaying = true;
       if (fileName == undefined) {
         console.debug(`Navigatior voiceline: playing undefined navigator voice`);
         if (PersonaSettings.debugMode()) {
@@ -122,6 +135,8 @@ export class ActorVoiceLines {
         .play({local: selfOnly} );
     } catch (e) {
       PersonaError.softFail(`Erorr with sound playback : ${fileName}`, e as Error);
+    } finally {
+      this.nowPlaying = false;
     }
   }
 
@@ -246,3 +261,14 @@ type VoiceEventOptions = {
   selfOnly ?: boolean,
   damageType?: RealDamageType,
 }
+
+declare global {
+  interface SocketMessage {
+    "GM_SOUND_REQUEST" : {fileName: string}
+  }
+}
+
+Hooks.on("socketsReady",(manager) => {
+  manager.setHandler("GM_SOUND_REQUEST", data => ActorVoiceLines.onRecieveRequest(data));
+});
+
