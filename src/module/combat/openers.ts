@@ -337,7 +337,6 @@ export class OpenerManager {
     await CombatPanel.instance.activate();
     const mandatory = OpenerManager.getMandatory(choices);
     if (mandatory) {
-      console.log("Executing Mandatory Opener");
       await this._execOpener(mandatory.option);
       return;
     }

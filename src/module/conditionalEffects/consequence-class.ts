@@ -154,6 +154,12 @@ export class ConsequenceC<C extends NonDeprecatedConsequence = NonDeprecatedCons
     return EMPTY_SET as Set<StatusEffectId>;
   }
 
+  grantsTalents() : boolean {
+    const cons = this.cons as NonDeprecatedConsequence;
+    return cons.type == "other-effect"
+      && cons.otherEffect == "add-talent-to-list";
+  }
+
   override errorCheck() : string[] {
     return [
       ...super.errorCheck(),

@@ -261,7 +261,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
 
   private _talents() : readonly Talent[] {
     const extraTalents = this.mainModifiers({omitTalents: true, omitPowers: true, omitAuras: true})
-      .filter( CE=> PersonaItem.grantsTalents(CE))
+      .filter( CE=> CE.grantsTalents())
       .flatMap(CE => CE.getGrantedTalents(this.user));
     ;
     const mainTalents= this.source.system.combat.talents

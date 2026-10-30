@@ -307,6 +307,7 @@ export class ConditionalEffectC {
     return this._consequences;
   }
 
+
   get consequencesRaw() : Consequence[] {
     return this._consequences.map( x=> x.cons);
   }
@@ -367,13 +368,15 @@ export class ConditionalEffectC {
     return this.consequences;
   }
 
-triggersOn( trig: Trigger) : boolean {
-  return this.conditions
-    .some (cond => cond.isTriggeredCondition(trig)
-      // cond.cond.type === 'on-trigger'
-      // && cond.cond.trigger == trig);
-    );
-}
+  triggersOn( trig: Trigger) : boolean {
+    return this.conditions
+      .some (cond => cond.isTriggeredCondition(trig)
+      );
+  }
+
+  grantsTalents () : boolean {
+    return this.consequences.some( cons => cons.grantsTalents());
+  }
 
 
   static failedPreconditions(conditions: readonly PreconditionC[], situation: Situation): PreconditionC[];

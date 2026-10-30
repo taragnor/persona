@@ -3012,11 +3012,6 @@ hasDefenderAura(): boolean {
   return this.statuses.has("sticky");
 }
 
-canUseOpener(): boolean {
-  //TODO: placeholder
-  return true;
-}
-
 isBossOrMiniBossType() : boolean {
   if (this.system.type != "shadow") {return false;}
   const bossRoles : Shadow["system"]["role"][] = [

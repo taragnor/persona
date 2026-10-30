@@ -43,7 +43,7 @@ import {PersonaTargetting} from '../combat/persona-targetting.js';
 import {PersonaSocial} from '../social/persona-social.js';
 import {ItemTagManager} from './item-tags.js';
 import {ItemHooks} from './item-hooks.js';
-import {TimedCache} from '../utility/cache.js';
+import {PermanentCache, TimedCache} from '../utility/cache.js';
 import {ConditionalEffectManager} from '../conditionalEffects/conditional-effect-manager.js';
 import {BonusCalculation, ModifierV2Target} from '../bonus-calc.js';
 import {MPCostCalculatorV2} from '../calculators/mpcost-calculatorv2.js';
@@ -77,7 +77,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
     statsModified: Map<ModifierTarget, boolean>,
     hasTriggers: U<boolean>,
     grantsPowers: U<boolean>,
-    grantsTalents: U<boolean>,
+    // grantsTalents: U<boolean>,
     mpCost: U<number>,
     mpGrowthTable: U<GrowthCalculator>,
     hpGrowthTable: U<GrowthCalculator>,
@@ -95,6 +95,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       this._isCraftingMaterial(), PersonaItem.LONG_CACHE),
     powerCategory: new TimedCache( () =>
       (this as Usable)._getPowerCategory(), PersonaItem.LONG_CACHE),
+    grantsTalents: new PermanentCache( () => (this as Consumable | Power)._grantsTalents()),
   };
 
   static cacheStats = {
@@ -149,7 +150,7 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
       statsModified: new Map(),
       hasTriggers: undefined,
       grantsPowers: undefined,
-      grantsTalents: undefined,
+      // grantsTalents: undefined,
       mpCost: undefined,
       mpGrowthTable: undefined,
       hpGrowthTable: undefined,
@@ -945,30 +946,42 @@ export class PersonaItem extends Item<typeof ITEMMODELS, PersonaActor, PersonaAE
 
   grantsTalents(this: ItemModifierContainer) : boolean {
     if (!PersonaDB.isLoaded) {return false;}
-    if (this.cache.grantsTalents != undefined) {
-      return this.cache.grantsTalents;
-    }
-    try{
-      const grantsTalents= this.getEffects(null).some(
-        eff => eff.consequences.some(
-          cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == "add-talent-to-list"
-          // cons.type == 'add-talent-to-list'
-        ));
-      this.cache.grantsTalents = grantsTalents;
-      return this.cache.grantsTalents;
-    } catch  {
-      console.log(this);
+    try {
+      return this.cache2.grantsTalents.value;
+    } catch (e) {
+      PersonaError.softFail(e as Error, this);
+      this.cache2.grantsTalents.clear();
       return false;
     }
   }
 
-  static grantsTalents (eff: ConditionalEffectC) : boolean {
-    return eff.consequences.some(
-      cons => cons.cons.type == "other-effect" && cons.cons.otherEffect == "add-talent-to-list"
-      // cons.type == 'add-talent-to-list'
-    );
+  // grantsTalents(this: ItemModifierContainer) : boolean {
+  //   if (!PersonaDB.isLoaded) {return false;}
+  //   if (this.cache.grantsTalents != undefined) {
+  //     return this.cache.grantsTalents;
+  //   }
+  //   try{
+  //     const grantsTalents= this.getEffects(null)
+  //       .some( eff => eff.grantsTalents());
+  //     this.cache.grantsTalents = grantsTalents;
+  //     return this.cache.grantsTalents;
+  //   } catch  {
+  //     console.log(this);
+  //     return false;
+  //   }
+  // }
+
+  private _grantsTalents(this: ItemModifierContainer) : boolean {
+    try{
+      const grantsTalents= this.getEffects(null)
+        .some( eff => eff.grantsTalents());
+      return grantsTalents;
+    } catch (e) {
+      throw e;
+    }
   }
 
+  /** tests Opener Specific Prereqs, does NOT test default prereqs to use a power */
   testOpenerPrereqs (this: UsableAndCard, situation: SituationComponent.PowerUse & SituationComponent.RollParts.CompletedRollPart, user: ValidAttackers) : boolean {
     if (this.isCardItem()) {return false;}
     if (this.isPower() && user.isPowerOnCooldown(this)) {return false;}
