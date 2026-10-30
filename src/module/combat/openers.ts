@@ -4,6 +4,7 @@ import {OpenerPanel} from "../panels/openers-panel.js";
 import {UsableListPanel} from "../panels/usable-list-panel.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaRoller} from "../persona-roll.js";
+import {PersonaSockets} from "../persona.js";
 import {SidePanelManager} from "../side-panel/side-panel-manager.js";
 import {lockObject} from "../utility/anti-loop.js";
 import {randomSelect} from "../utility/array-tools.js";
@@ -161,7 +162,6 @@ export class OpenerManager {
     let options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     if (!combatant.actor) {return { msg, options};}
-    const persona = combatant.actor.persona();
     const mandatoryActions = combatant.actor.openerActions.filter( x=> x.hasTag('mandatory', combatant.actor));
     const usableActions = mandatoryActions
       .filter( action => {
@@ -278,10 +278,20 @@ export class OpenerManager {
     await this.setOpenerUsed(combatant, true);
   }
 
-  async modifyOpenerMsg( opener: OpenerOption) {
+  // async modifyOpenerMsg( opener: OpenerOption) {
+  async modifyOpenerMsg( opener: Pick<OpenerOption, "optionName">) {
     try {
       const msg = this.chatMessage;
       if (!msg) {return;}
+      if (!msg.testUserPermission(game.user, "OWNER")) {
+        const gmId = game.users.find(x=> x.isGM && x.active)?.id;
+        if (!gmId) {
+          PersonaError.softFail("No active GM can't modify opener message");
+          return;
+        }
+        await PersonaSockets.verifiedSend("OPENER_MSG_EDIT_REQUEST", opener, gmId);
+        return;
+      }
       const choice = $(`<div class='opener-choice'>
       <span>Chosen Opener:</span>
       <span>${opener.optionName}</span>
@@ -563,6 +573,16 @@ declare global {
   interface CombatFlags extends Record<typeof OpenerManager["OPENING_ACTION_FLAG_NAME"], OpenerOption[]> {
   }
 }
+
+declare global {
+  interface SocketMessage {
+    "OPENER_MSG_EDIT_REQUEST": Pick<OpenerOption, "optionName">;
+  }
+}
+
+Hooks.on("socketsReady", (s) => {
+  s.setHandler("OPENER_MSG_EDIT_REQUEST", (data) => PersonaCombat.combat?.openers?.modifyOpenerMsg(data));
+});
 
 
 Hooks.on("renderChatMessageHTML", (_msg, content) => {

@@ -264,7 +264,7 @@ type VoiceEventOptions = {
 
 declare global {
   interface SocketMessage {
-    "GM_SOUND_REQUEST" : {fileName: string}
+    "GM_SOUND_REQUEST" : {fileName: string};
   }
 }
 
