@@ -1180,7 +1180,7 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
     return null;
   }
 
-  canUsePower (usable: UsableAndCard, outputReason: boolean) : boolean {
+  canUsePower (usable: UsableAndCard, outputReason = false) : boolean {
     const msg = this.canUsePower_getIneligibilityReason(usable);
     if (msg === null) {return true;}
     if (outputReason) { ui.notifications.warn(msg); }

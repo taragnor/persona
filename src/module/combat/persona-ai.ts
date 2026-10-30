@@ -167,9 +167,12 @@ export abstract class PersonaAI {
       const combatant = game.combat?.getCombatantsByActor(persona.user)?.at(0);
       if (!combatant) {return null;}
       const usable = persona.powers
+      .filter ( p=> p.isTrulyUsable())
+      .filter (p => !p.isBasicPower())
       .filter( p => persona.canUsePower(p, false))
       .filter( p=> p.targeting().getValidTargetsFor(combatant as PersonaCombatant));
       usable.sort( (a,b) => b.energyCost(persona) - a.energyCost(persona));
+      if (usable.length == 0) {return null;}
       return randomSelect(usable);
     } catch (e) {
       PersonaError.softFail(e as Error);

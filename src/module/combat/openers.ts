@@ -161,6 +161,7 @@ export class OpenerManager {
     let options : OpenerOptionsGroups['options'] = [];
     const msg : string[] = [];
     if (!combatant.actor) {return { msg, options};}
+    const persona = combatant.actor.persona();
     const mandatoryActions = combatant.actor.openerActions.filter( x=> x.hasTag('mandatory', combatant.actor));
     const usableActions = mandatoryActions
       .filter( action => {
@@ -203,6 +204,7 @@ export class OpenerManager {
     if (!actor.isCapableOfAction()) {
       return { msg, options};
     }
+    const persona = actor.persona();
     const openerActions = actor.openerActions;
     const usableActions = openerActions
       .filter( action => {
@@ -216,7 +218,8 @@ export class OpenerManager {
           target: situation.user,
           usedPower: action.accessor,
         } satisfies Situation;
-        if (!actor.persona().canPayActivationCost(action)) {return false;}
+        if (!persona.canPayActivationCost(action)) {return false;}
+        if (!persona.canUsePower(action)) {return false;}
         return action.testOpenerPrereqs(useSituation, combatant.actor);
       });
     options = usableActions
