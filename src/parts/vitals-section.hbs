@@ -1,18 +1,20 @@
 <section class="vitals">
-	<div>
-		<label> HP </label>
-		<span> {{persona.user.hp}} / {{persona.mhp}} </span>
-	</div>
-	{{#if persona.user.mp}}
-	<div>
-		<label> MP </label>
-		<span> {{persona.user.mp}} / {{persona.mmp}} </span>
-	</div>
-	{{/if}}
-	{{#if persona.user.energy}}
-	<label> Energy </label>
-	<span> {{persona.user.energy}} / {{persona.maxEnergy}} </span>
-	{{/if}}
+  <div class="base-vitals">
+    <div>
+      <label> HP </label>
+      <span> {{persona.user.hp}} / {{persona.mhp}} </span>
+    </div>
+    {{#if persona.user.mp}}
+    <div>
+      <label> MP </label>
+      <span> {{persona.user.mp}} / {{persona.mmp}} </span>
+    </div>
+    {{/if}}
+    {{#if persona.user.energy}}
+    <label> Energy </label>
+    <span> {{persona.user.energy}} / {{persona.maxEnergy}} </span>
+    {{/if}}
+  </div>
 
 	{{#if persona.user.theurgyMax}}
 	<div class="theurgy-bar" title="Theurgy Charge">

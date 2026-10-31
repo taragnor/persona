@@ -195,6 +195,11 @@ export class Persona<T extends ValidAttackers = ValidAttackers, S extends ValidA
       );
   }
 
+  get usableBonusPowers() : Power[] {
+    return this.displayedBonusPowers
+    .filter (power => this.canUsePower(power));
+  }
+
   get displayedMainSkills() : Power [] {
     const bonusCombatSkills = this.bonusPowers;
     return [

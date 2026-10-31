@@ -1,5 +1,7 @@
 
+{{#if false}}
 {{> "systems/persona/parts/defenses-section.hbs" CONST=CONST persona=persona}}
+{{/if}}
 
 {{> "systems/persona/parts/resistance-section.hbs" CONST=CONST persona=persona hideNormal=true}}
 
@@ -19,7 +21,7 @@
 </section>
 
 <section class="bonus-powers">
-  {{> "systems/persona/parts/bubble-power-list.hbs" CONST=CONST persona=persona powerList=persona.displayedBonusPowers}}
+  {{> "systems/persona/parts/bubble-power-list.hbs" CONST=CONST persona=persona powerList=persona.usableBonusPowers}}
 </section>
 
 <hr>

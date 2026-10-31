@@ -2008,6 +2008,11 @@ div.message-content .answers {
   max-width: 100%;
 }
 
+.combat-panel .button-list {
+  flex-shrink: 0;
+  /* flex: 1; */
+}
+
 @keyframes theurgy-breathe {
   0%,
   100% {
@@ -2019,6 +2024,7 @@ div.message-content .answers {
     transform: scaleX(1.25);
   }
 }
+
 
 .shimmer {
   position: relative;
@@ -2090,6 +2096,13 @@ div.message-content .answers {
   font-size: smaller;
   padding: 1px;
   border-radius: 6px;     /* rounded corners */
+}
+
+.combat-panel .base-vitals {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 12px;
 }
 
 .combat-panel .main-powers {
