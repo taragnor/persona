@@ -365,6 +365,9 @@ type CombatEffectConsequencesList =
     combatEffect: "escape-combat",
   } | {
     combatEffect:"instant-kill",
+  } | {
+    applyTo: ConsequenceTarget,
+    combatEffect: "set-as-interrupt-combatant",
   }
 ;
 

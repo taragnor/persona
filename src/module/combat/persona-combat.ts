@@ -596,7 +596,9 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
     return allOwners.at(0) as PersonaFoundryUser ?? null;
   }
 
-  async startCombatantTurn( combatant: Combatant<PersonaActor>){
+  async startCombatantTurn() {
+    const combatant = super.combatant; //we want to ignore the interrupt combatant and get the real one
+    if (!combatant) {return;}
     combatant?.actor?.clearCache();
     if (!PersonaCombat.isPersonaCombatant(combatant)) {return;}
     if (!combatant.defeated) {
@@ -608,6 +610,7 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
       await this.panel.setTarget(combatant.token);
     }
     if (!game.user.isGM) {return;}
+    await this.clearInterruptCombatant();
     await actor.voicelines.onEvent( "on-turn-start");
     await this.resetBatonStates();
     if (await this.checkEndCombat() == true) {
@@ -670,8 +673,43 @@ export class PersonaCombat extends Combat<ValidAttackers, PersonaCombatant> {
 
   override get combatant() : U<PersonaCombatant> {
     const comb = super.combatant;
+    if (comb && this.interruptCombatant()) {
+      return this.interruptCombatant();
+    }
     if (!comb || !PersonaCombat.isPersonaCombatant(comb)) {return undefined;}
     return comb;
+  }
+
+  async setInterruptCombatant(comb: Combatant<ValidAttackers> | ValidAttackers): Promise<void> {
+    if (comb instanceof PersonaActor) {
+      const cTest= this.getCombatantsByActor(comb).at(0);
+      if (cTest) {comb = cTest;}
+    }
+    if (comb instanceof Combatant) {
+      await this.setFlag("persona", "interruptCombatant", comb.id);
+      await comb.actor?.refreshActions(1);
+    } else {
+      Debug (comb);
+      PersonaError.softFail("Non combatant passed to setInterruptCombatant");
+    }
+  }
+
+  interruptCombatant() : U<PersonaCombatant> {
+    const combId = this.getFlag<Combatant["id"]>("persona", "interruptCombatant");
+    if (!combId) {return undefined;}
+    const comb = this.combatants.get(combId);
+    if (!comb) {
+      PersonaError.softFail(`Can't find interrupt combatnat ${combId}`);
+      return undefined;
+    }
+    if (!PersonaCombat.isPersonaCombatant(comb)) {
+      return undefined;
+    }
+    return comb;
+  }
+
+  async clearInterruptCombatant() : Promise<void> {
+    await this.unsetFlag("persona", "interruptCombatant");
   }
 
   static addOpeningActionListeners(elem: JQuery) : void {
@@ -2129,8 +2167,6 @@ removeFromCombat(comb: U<PersonaCombatant | ValidAttackers>) : Promise<void> {
       if (!combatant) {return;}
       if (this.combatant == combatant) {
         await this.nextTurn();
-      }
-      if (this.combatant == combatant) {
         const msg = `Can't remove ${combatant.name} as it is the last combatant`;
         rej(new PersonaError(msg));
       }

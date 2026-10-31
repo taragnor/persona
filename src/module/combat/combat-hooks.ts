@@ -54,7 +54,7 @@ export class CombatHooks {
             }
           } else {
             if (combat.combatant) {
-              await combat.startCombatantTurn(combat.combatant);
+              await combat.startCombatantTurn();
             }
           }
         }
@@ -72,7 +72,7 @@ export class CombatHooks {
           await PersonaSocial.startSocialTurn(x.actor as PC);
         } else {
           await combat.runAllCombatantStartCombatTriggers();
-          await combat.startCombatantTurn(x);
+          await combat.startCombatantTurn();
         }
       }
     });

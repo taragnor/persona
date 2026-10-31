@@ -871,6 +871,10 @@ export class ConsequenceApplier {
         }
         break;
       }
+      case "set-as-interrupt-combatant":
+        await PersonaCombat.combat?.setInterruptCombatant(actor);
+        ui.notifications.notify("setting interrupt combatant");
+        break;
       default:
         effect satisfies never;
         break;

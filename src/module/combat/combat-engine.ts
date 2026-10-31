@@ -72,9 +72,11 @@ export class CombatEngine {
   static async usePower(actor: ValidAttackers, power: UsableAndCard, presetTargets ?: PToken[], options : CombatOptions = {}) {
     try {
       Helpers.ownerCheck(actor);
-      Helpers.pauseCheck();
+      if (!options.simulated) {
+        Helpers.pauseCheck();
+      }
       const attacker = this.getTokenFromActor(actor);
-      const combat = game.combat as U<PersonaCombat>;
+      const combat = PersonaCombat.combat;
       const engine = combat ? combat.combatEngine : new CombatEngine(undefined);
       return await engine.usePower(attacker, power, presetTargets, options );
     } catch (e) {
@@ -97,8 +99,8 @@ export class CombatEngine {
 
   async preAttackInit(attacker: PToken, power: UsableAndCard, options : CombatOptions) {
     Helpers.ownerCheck(attacker.actor);
-    Helpers.pauseCheck();
     if (!options.simulated) {
+      Helpers.pauseCheck();
       this.setPendingResult();
     }
     TimeLog.reset();

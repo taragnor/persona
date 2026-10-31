@@ -215,7 +215,7 @@ export class CombatResult  {
           if (power.isTeamwork()) {break;}
         }
         if (!effect) {break;}
-        const combat = game.combat as PersonaCombat;
+        const combat = PersonaCombat.combat;
         if (!combat || combat.isSocial) {break;}
         if (effect.addStatus.some( x=> x.id =="bonus-action")) {
           break;
@@ -227,6 +227,16 @@ export class CombatResult  {
             anchorHolder: effect.actor,
           },
         });
+        if (target != combat.combatant?.actor) {
+          effect.otherEffects.push({
+            type: "combat-effect",
+            combatEffect: "set-as-interrupt-combatant",
+            applyTo: "target",
+            source: undefined,
+            realSource: undefined,
+            owner: undefined,
+          });
+        }
         break;
       }
       case "scan":
@@ -279,6 +289,11 @@ export class CombatResult  {
         effect.otherEffects.push( cons);
         break;
       case "add-power-tag-to-attack":
+        break;
+      case "set-as-interrupt-combatant":
+        effect.otherEffects.push( {
+          ...cons,
+        });
         break;
       default:
         cons satisfies never;

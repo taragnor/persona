@@ -765,6 +765,7 @@
 "persona.combat-effects-subtypes.add-power-tag-to-attack": "Add Power Tag to Attack",
 "persona.combat-effects-subtypes.escape-combat": "Escape Combat",
 "persona.combat-effects-subtypes.instant-kill": "Instantly Kill Target",
+"persona.combat-effects-subtypes.set-as-interrupt-combatant": "Set as active interrupt combatant",
 
 	"persona.preconditions.always": "always",
 	"persona.preconditions.numeric": "Numeric Criteria",

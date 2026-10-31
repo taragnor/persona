@@ -921,6 +921,9 @@ export class ConditionalEffectPrinter {
         case "instant-kill": {
           return `Instant Kill`;
         }
+        case "set-as-interrupt-combatant": {
+          return `Set ${cons.applyTo} as interrupt combatant`;
+        }
         default:
           cons satisfies never;
           return "ERROR (combat-effect)";

@@ -2923,7 +2923,7 @@ maxActions(this: ValidAttackers): number  {
   return Math.max(0, 1 + this.persona().getBonuses("actions-per-turn").total( {user: this.accessor}));
 }
 
-async refreshActions(): Promise<number> {
+async refreshActions(actionCap ?: number): Promise<number> {
   switch (this.system.type) {
     case "tarot":
     case "npc":
@@ -2935,7 +2935,7 @@ async refreshActions(): Promise<number> {
     default:
       this.system satisfies never;
   }
-  const maxActions = (this as ValidAttackers).maxActions();
+  const maxActions = Math.min(actionCap ?? 999, (this as ValidAttackers).maxActions());
   await this.update({"system.combat.actionsRemaining": maxActions});
   return maxActions;
 }
