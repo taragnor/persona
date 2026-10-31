@@ -50,7 +50,7 @@ import {EnchantedTreasureFormat, TreasureSystem} from "../exploration/treasure-s
 import {PersonaCompendium} from "../persona-compendium.js";
 import {ActorHooks} from "./actor-hooks.js";
 import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class.js";
-import {antiLoop, lockObject} from "../utility/anti-loop.js";
+import {antiLoop} from "../utility/anti-loop.js";
 import {PersonaAE, StatusDuration} from "../persona-ae.js";
 import {PowerLearningSystem} from "../power-learning.js";
 import {Farming} from "./farming.js";

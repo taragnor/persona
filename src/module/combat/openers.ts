@@ -292,10 +292,12 @@ export class OpenerManager {
         await PersonaSockets.verifiedSend("OPENER_MSG_EDIT_REQUEST", opener, gmId);
         return;
       }
-      const choice = $(`<div class='opener-choice'>
-      <span>Chosen Opener:</span>
-      <span>${opener.optionName}</span>
-      </div>`);
+      const choice = $(
+        `<div class='opener-choice'>
+        <span>Chosen Opener:</span>
+        <span>${opener.optionName}</span>
+        </div>
+        `);
       const targetToReplace = $(msg.content).find('.opener-choices');
       const replacedData = targetToReplace.empty();
       replacedData.append(choice);

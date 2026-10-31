@@ -245,7 +245,6 @@ export class ActorVoiceLines {
 
 }
 
-
 type VoiceLineOptions = {
   severity ?: number | {min : number; max: number};
   selfOnly ?: boolean;

@@ -839,7 +839,8 @@ export class ConsequenceApplier {
       case "escape-combat": {
         const combat = PersonaCombat.combat;
         if (!combat) {break;}
-        await combat.removeFromCombat(actor);
+        //we don't wait here we just let it go due to some issues with  removing a combatant in middle of resolving a result.
+        void combat.removeFromCombat(actor);
         break;
       }
       case "summon": {

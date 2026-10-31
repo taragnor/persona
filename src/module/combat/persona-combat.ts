@@ -2119,24 +2119,29 @@ async summon(shadow: Shadow) :Promise<void> {
   await combatant.update({initiative : current - .001});
 }
 
-async removeFromCombat(comb: U<PersonaCombatant | ValidAttackers>) : Promise<void> {
-  setTimeout( async() => {
-    const combatant = (comb instanceof PersonaActor)
-      ? this.getCombatantsByActor(comb).at(0) as U<PersonaCombatant>
-      : comb;
-    if (!combatant) {return;}
-    if (this.combatant == combatant) {
-      await this.nextTurn();
-    }
-    if (this.combatant == combatant) {
-      PersonaError.softFail("Can't escape combat with only one combatanat");
-    }
-    setTimeout( async () => {
-      const token = combatant.token;
-      await combatant.delete();
-      if (token) {await token.delete();}
-    }, 200);
-  }, 500);
+/** result is delayed, generally want to void this promise if done during the escapers turn */
+removeFromCombat(comb: U<PersonaCombatant | ValidAttackers>) : Promise<void> {
+  return new Promise( (res, rej) => {
+    setTimeout( async() => {
+      const combatant = (comb instanceof PersonaActor)
+        ? this.getCombatantsByActor(comb).at(0) as U<PersonaCombatant>
+        : comb;
+      if (!combatant) {return;}
+      if (this.combatant == combatant) {
+        await this.nextTurn();
+      }
+      if (this.combatant == combatant) {
+        const msg = `Can't remove ${combatant.name} as it is the last combatant`;
+        rej(new PersonaError(msg));
+      }
+      setTimeout( async () => {
+        const token = combatant.token;
+        await combatant.delete();
+        if (token) {await token.delete();}
+        res();
+      }, 200);
+    }, 500);
+  });
 }
 
 async swapCharacter(actorToBeReplaced: ValidAttackers, newActor: ValidAttackers) {

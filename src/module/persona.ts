@@ -225,7 +225,3 @@ Hooks.on("renderChatMessageHTML", (msg, html) => {
 window.seededRandom = SeededRandom;
 
 
-function ChatFix() {
-  throw new Error("Function not implemented.");
-}
-

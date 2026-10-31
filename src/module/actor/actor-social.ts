@@ -4,7 +4,6 @@ import {ConditionalEffectC} from "../conditionalEffects/conditional-effect-class
 import {ConditionalEffectManager} from "../conditionalEffects/conditional-effect-manager.js";
 import {resolveActorIdOrTarot} from "../conditionalEffects/preconditions.js";
 import {PersonaItem} from "../item/persona-item.js";
-import {Metaverse} from "../metaverse.js";
 import {PersonaDB} from "../persona-db.js";
 import {PersonaError} from "../persona-error.js";
 import {PersonaSounds} from "../persona-sounds.js";
@@ -16,8 +15,8 @@ import {PersonaActor, SocialBenefit} from "./persona-actor.js";
 export class ActorSocial <T extends PersonaActor> {
   private actor: T;
 
-  SOCIAL_EFFECTS_CACHE_LIFESPAN = 30000 as const;
-  GENERAL_CACHE_LIFESPAN = 3000 as const;
+  static SOCIAL_EFFECTS_CACHE_LIFESPAN = 30000 as const;
+  static GENERAL_CACHE_LIFESPAN = 3000 as const;
 
   private caches : {
     slinkData : TimedCache<readonly SocialLinkData[]>,
@@ -28,9 +27,9 @@ export class ActorSocial <T extends PersonaActor> {
   constructor (parent: T) {
     this.actor = parent;
     this.caches = {
-      slinkData: new TimedCache( () => this._refreshSocialLinkData(), this.SOCIAL_EFFECTS_CACHE_LIFESPAN),
-      fociiCache: new TimedCache ( () => this._getAllSocialFocii(), this.SOCIAL_EFFECTS_CACHE_LIFESPAN),
-      socialEffects: new TimedCache( () => this._socialEffects(), this.SOCIAL_EFFECTS_CACHE_LIFESPAN),
+      slinkData: new TimedCache( () => this._refreshSocialLinkData(), ActorSocial.SOCIAL_EFFECTS_CACHE_LIFESPAN),
+      fociiCache: new TimedCache ( () => this._getAllSocialFocii(), ActorSocial.SOCIAL_EFFECTS_CACHE_LIFESPAN),
+      socialEffects: new TimedCache( () => this._socialEffects(), ActorSocial.SOCIAL_EFFECTS_CACHE_LIFESPAN),
     };
   }
 
