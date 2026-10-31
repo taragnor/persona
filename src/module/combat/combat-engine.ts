@@ -1205,13 +1205,25 @@ export class CombatEngine {
 
   async checkPowerPreqs(attacker: PToken, power: UsableAndCard) : Promise<boolean> {
     const combat = this.combat;
-    if (combat && !combat.turnCheck(attacker)) {
-      if (!game.user.isGM) {
-        ui.notifications.warn("It's not your turn!");
-        return false;
-      } else {
-        if (!await HTMLTools.confirmBox('Out of turn Action', "It's not your turn, act anyway?")) {
+    if (combat) {
+      if (!combat.turnCheck(attacker)) {
+        if (!game.user.isGM) {
+          ui.notifications.warn("It's not your turn!");
           return false;
+        } else {
+          if (!await HTMLTools.confirmBox('Out of turn Action', "It's not your turn, act anyway?")) {
+            return false;
+          }
+        }
+      }
+      if (!combat.isSocial && combat?.outOfActions(attacker)) {
+        if (!game.user.isGM) {
+          ui.notifications.warn("You are out of actions");
+          return false;
+        } else {
+          if (!await HTMLTools.confirmBox('You are out of actions', "You are out of actions, act anyway?")) {
+            return false;
+          }
         }
       }
     }
